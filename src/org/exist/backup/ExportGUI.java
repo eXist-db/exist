@@ -27,6 +27,7 @@ import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
+import org.exist.util.SystemExitCodes;
 import org.exist.xquery.TerminatedException;
 
 import java.io.File;
@@ -377,7 +378,7 @@ public class ExportGUI extends javax.swing.JFrame {
 
     private void menuQuitActionPerformed(java.awt.event.ActionEvent evt) { // GEN-FIRST:event_menuQuitActionPerformed
         BrokerPool.stopAll(false);
-        System.exit(0);
+        System.exit(SystemExitCodes.OK_EXIT_CODE);
     } // GEN-LAST:event_menuQuitActionPerformed
 
 

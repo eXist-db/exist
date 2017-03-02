@@ -21,16 +21,15 @@
  */
 package org.exist.backup;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
-import org.apache.avalon.excalibur.cli.CLArgsParser;
-import org.apache.avalon.excalibur.cli.CLOption;
-import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
-import org.apache.avalon.excalibur.cli.CLUtil;
-
+import org.exist.util.SystemExitCodes;
 import org.xml.sax.SAXException;
 
 import org.xmldb.api.DatabaseManager;
@@ -46,7 +45,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -65,6 +63,11 @@ import org.exist.backup.restore.listener.ConsoleRestoreListener;
 import org.exist.backup.restore.listener.GuiRestoreListener;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.client.ClientFrame;
+import se.softhouse.jargo.*;
+
+import static org.exist.util.ArgumentUtil.getBool;
+import static org.exist.util.ArgumentUtil.getOpt;
+import static se.softhouse.jargo.Arguments.*;
 
 /**
  * Main.java
@@ -72,152 +75,99 @@ import org.exist.client.ClientFrame;
  * @author Wolfgang Meier
  */
 public class Main {
-    private final static int HELP_OPT = 'h';
-    private final static int USER_OPT = 'u';
-    private final static int PASS_OPT = 'p';
-    private final static int DBA_PASS_OPT = 'P';
-    private final static int BACKUP_OPT = 'b';
-    private final static int BACKUP_DIR_OPT = 'd';
-    private final static int RESTORE_OPT = 'r';
-    private final static int OPTION_OPT = 'o';
-    private final static int GUI_OPT = 'U';
-    private final static int QUIET_OPT = 'q';
-    private final static int REBUILD_OPT = 'R';
 
-    private final static CLOptionDescriptor[] OPTIONS = new CLOptionDescriptor[]{
-            new CLOptionDescriptor("help", CLOptionDescriptor.ARGUMENT_DISALLOWED, HELP_OPT, "print help on command line options and exit."),
-            new CLOptionDescriptor("gui", CLOptionDescriptor.ARGUMENT_DISALLOWED, GUI_OPT, "start in GUI mode"),
-            new CLOptionDescriptor("user", CLOptionDescriptor.ARGUMENT_REQUIRED, USER_OPT, "set user."),
-            new CLOptionDescriptor("password", CLOptionDescriptor.ARGUMENT_REQUIRED, PASS_OPT, "set the password for connecting to the database."),
-            new CLOptionDescriptor("dba-password", CLOptionDescriptor.ARGUMENT_REQUIRED, DBA_PASS_OPT, "if the backup specifies a different password for the admin/dba user, use this option " + "to specify the new password. Otherwise you will get a permission denied"),
-            new CLOptionDescriptor("backup", CLOptionDescriptor.ARGUMENT_REQUIRED, BACKUP_OPT, "backup the specified collection."),
-            new CLOptionDescriptor("dir", CLOptionDescriptor.ARGUMENT_REQUIRED, BACKUP_DIR_OPT, "specify the directory to use for backups."),
-            new CLOptionDescriptor("restore", CLOptionDescriptor.ARGUMENT_REQUIRED, RESTORE_OPT, "read the specified restore file and restore the " + "resources described there."),
-            new CLOptionDescriptor("option", CLOptionDescriptor.ARGUMENTS_REQUIRED_2 | CLOptionDescriptor.DUPLICATES_ALLOWED, OPTION_OPT, "specify extra options: property=value. For available properties see " + "client.properties."),
-            new CLOptionDescriptor("quiet", CLOptionDescriptor.ARGUMENT_DISALLOWED, QUIET_OPT, "be quiet. Just print errors."),
-            new CLOptionDescriptor("rebuild", CLOptionDescriptor.ARGUMENT_DISALLOWED, REBUILD_OPT, "rebuild the app repository after restore.")
-    };
+    /* general arguments */
+    private static final Argument<?> helpArg = helpArgument("-h", "--help");
+    private static final Argument<Boolean> guiArg = optionArgument("-U", "--gui")
+            .description("start in GUI mode")
+            .defaultValue(false)
+            .build();
+    private static final Argument<Boolean> quietArg = optionArgument("-q", "--quiet")
+            .description("be quiet. Just print errors.")
+            .defaultValue(false)
+            .build();
+    private static final Argument<Map<String, String>> optionArg = stringArgument("-o", "--option")
+            .description("specify extra options: property=value. For available properties see client.properties.")
+            .asKeyValuesWithKeyParser(StringParsers.stringParser())
+            .build();
+
+
+    /* user/pass arguments */
+    private static final Argument<String> userArg = stringArgument("-u", "--user")
+            .description("set user.")
+            .required()
+            .build();
+    private static final Argument<String> passwordArg = stringArgument("-p", "--password")
+            .description("set the password for connecting to the database.")
+            .required()
+            .build();
+    private static final Argument<String> dbaPasswordArg = stringArgument("-P", "--dba-password")
+            .description("if the backup specifies a different password for the admin user, use this option to specify the new password. Otherwise you will get a permission denied")
+            .build();
+
+
+    /* backup arguments */
+    private static final Argument<String> backupCollectionArg = stringArgument("-b", "--backup")
+            .description("backup the specified collection.")
+            .required()
+            .build();
+    private static final Argument<File> backupOutputDirArg = fileArgument("-d", "--dir")
+            .description("specify the directory to use for backups.")
+            .build();
+
+
+    /* restore arguments */
+    private static final Argument<File> restoreArg = fileArgument("-r", "--restore")
+            .description("read the specified __contents__.xml file and restore the resources described there.")
+            .build();
+    private static final Argument<Boolean> rebuildExpathRepoArg = optionArgument("-R", "--rebuild")
+            .description("rebuild the EXpath app repository after restore.")
+            .defaultValue(false)
+            .build();
+
+    private static Properties loadProperties() {
+        // read properties
+        final Path propFile = ConfigurationHelper.lookup("backup.properties");
+        final Properties properties = new Properties();
+        try {
+            if (Files.isReadable(propFile)) {
+                try(final InputStream pin = Files.newInputStream(propFile)) {
+                    properties.load(pin);
+                }
+            } else {
+                try(final InputStream pin = Main.class.getResourceAsStream("backup.properties")) {
+                    properties.load(pin);
+                }
+            }
+        } catch (final IOException e) {
+            System.err.println("WARN - Unable to load properties from: " + propFile.toAbsolutePath().toString());
+        }
+        return properties;
+    }
 
     /**
      * Constructor for Main.
      *
-     * @param args DOCUMENT ME!
+     * @param arguments parsed command line arguments
      */
-    @SuppressWarnings("unchecked")
-    public static void process(String[] args) {
-        // read properties
-        final Properties properties = new Properties();
-
-        try {
-            final Path propFile = ConfigurationHelper.lookup("backup.properties");
-            InputStream pin;
-
-            if (Files.isReadable(propFile)) {
-                pin = Files.newInputStream(propFile);
-            } else {
-                pin = Main.class.getResourceAsStream("backup.properties");
-            }
-
-            if (pin != null) {
-
-                try {
-                    properties.load(pin);
-                } finally {
-                    pin.close();
-                }
-            }
-
-        } catch (final IOException ioe) {
-        }
-
+    public static void process(final ParsedArguments arguments) {
+        final Properties properties = loadProperties();
         final Preferences preferences = Preferences.userNodeForPackage(Main.class);
 
-        // parse command-line options
-        final CLArgsParser optParser = new CLArgsParser(args, OPTIONS);
+        final boolean guiMode = getBool(arguments, guiArg);
+        final boolean quiet = getBool(arguments, quietArg);
+        Optional.ofNullable(arguments.get(optionArg)).ifPresent(options -> options.forEach(properties::setProperty));
 
-        if (optParser.getErrorString() != null) {
-            System.err.println("ERROR: " + optParser.getErrorString());
-            return;
-        }
-        final List<CLOption> opts = optParser.getArguments();
-        String optionBackup = null;
-        String optionRestore = null;
-        String optionPass = null;
-        String optionDbaPass = null;
-        boolean doBackup = false;
-        boolean doRestore = false;
-        boolean guiMode = false;
-        boolean quiet = false;
-        boolean rebuildRepo = false;
+        properties.setProperty("user", arguments.get(userArg));
+        final String optionPass = arguments.get(passwordArg);
+        properties.setProperty("password", optionPass);
+        final Optional<String> optionDbaPass = getOpt(arguments, dbaPasswordArg);
 
-        for (final CLOption option : opts) {
+        final Optional<String> backupCollection = getOpt(arguments, backupCollectionArg);
+        getOpt(arguments, backupOutputDirArg).ifPresent(backupOutputDir -> properties.setProperty("backup-dir", backupOutputDir.getAbsolutePath()));
 
-            switch (option.getId()) {
-
-                case HELP_OPT: {
-                    printUsage();
-                    return;
-                }
-
-                case GUI_OPT: {
-                    guiMode = true;
-                    break;
-                }
-
-                case QUIET_OPT: {
-                    quiet = true;
-                    break;
-                }
-                case OPTION_OPT: {
-                    properties.setProperty(option.getArgument(0), option.getArgument(1));
-                    break;
-                }
-
-                case USER_OPT: {
-                    properties.setProperty("user", option.getArgument());
-                    break;
-                }
-
-                case PASS_OPT: {
-                    properties.setProperty("password", option.getArgument());
-                    optionPass = option.getArgument(); //remove after change inside restore
-                    break;
-                }
-
-                case DBA_PASS_OPT: {
-                    optionDbaPass = option.getArgument();
-                    break;
-                }
-
-                case BACKUP_OPT: {
-                    if (option.getArgumentCount() == 1) {
-                        optionBackup = option.getArgument();
-                    } else {
-                        optionBackup = null;
-                    }
-                    doBackup = true;
-                    break;
-                }
-
-                case RESTORE_OPT: {
-                    if (option.getArgumentCount() == 1) {
-                        optionRestore = option.getArgument();
-                    }
-                    doRestore = true;
-                    break;
-                }
-
-                case BACKUP_DIR_OPT: {
-                    properties.setProperty("backup-dir", option.getArgument());
-                    break;
-                }
-
-                case REBUILD_OPT: {
-                    rebuildRepo = true;
-                    break;
-                }
-            }
-        }
+        final Optional<Path> restorePath = getOpt(arguments, restoreArg).map(File::toPath);
+        final boolean rebuildRepo = getBool(arguments, rebuildExpathRepoArg);
 
         // initialize driver
         Database database;
@@ -231,41 +181,36 @@ public class Main {
                 database.setProperty("configuration", properties.getProperty("configuration"));
             }
             DatabaseManager.registerDatabase(database);
-        } catch (final ClassNotFoundException e) {
-            reportError(e);
-            return;
-        } catch (final InstantiationException e) {
-            reportError(e);
-            return;
-        } catch (final IllegalAccessException e) {
-            reportError(e);
-            return;
-        } catch (final XMLDBException e) {
+        } catch (final ClassNotFoundException | InstantiationException | XMLDBException | IllegalAccessException e) {
             reportError(e);
             return;
         }
 
         // process
-        if (doBackup) {
-
-            if (optionBackup == null) {
-
+        if (backupCollection.isPresent()) {
+            String collection = backupCollection.get();
+            if (collection.isEmpty()) {
                 if (guiMode) {
                     final CreateBackupDialog dialog = new CreateBackupDialog(properties.getProperty("uri", "xmldb:exist://"), properties.getProperty("user", "admin"), properties.getProperty("password", ""), Paths.get(preferences.get("directory.backup", System.getProperty("user.dir"))));
 
                     if (JOptionPane.showOptionDialog(null, dialog, "Create Backup", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null) == JOptionPane.YES_OPTION) {
-                        optionBackup = dialog.getCollection();
+                        collection = dialog.getCollection();
                         properties.setProperty("backup-dir", dialog.getBackupTarget());
                     }
                 } else {
-                    optionBackup = XmldbURI.ROOT_COLLECTION;
+                    collection = XmldbURI.ROOT_COLLECTION;
                 }
             }
 
-            if (optionBackup != null) {
-
+            if (!collection.isEmpty()) {
                 try {
-                    final Backup backup = new Backup(properties.getProperty("user", "admin"), properties.getProperty("password", ""), Paths.get(properties.getProperty("backup-dir", "backup")), XmldbURI.xmldbUriFor(properties.getProperty("uri", "xmldb:exist://") + optionBackup), properties);
+                    final Backup backup = new Backup(
+                            properties.getProperty("user", "admin"),
+                            properties.getProperty("password", ""),
+                            Paths.get(properties.getProperty("backup-dir", "backup")),
+                            XmldbURI.xmldbUriFor(properties.getProperty("uri", "xmldb:exist://") + collection),
+                            properties
+                    );
                     backup.backup(guiMode, null);
                 } catch (final Exception e) {
                     reportError(e);
@@ -273,30 +218,27 @@ public class Main {
             }
         }
 
-        if (doRestore) {
-
-            if ((optionRestore == null) && guiMode) {
+        if (restorePath.isPresent()) {
+            Path path = restorePath.get();
+            if (!Files.exists(path) && guiMode) {
                 final JFileChooser chooser = new JFileChooser();
                 chooser.setMultiSelectionEnabled(false);
                 chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
                 if (chooser.showDialog(null, "Select backup file for restore") == JFileChooser.APPROVE_OPTION) {
-                    final Path f = chooser.getSelectedFile().toPath();
-                    optionRestore = f.toAbsolutePath().toString();
+                    path = chooser.getSelectedFile().toPath();
                 }
             }
 
-            if (optionRestore != null) {
-
+            if (Files.exists(path)) {
                 final String username = properties.getProperty("user", "admin");
-                final Path f = Paths.get(optionRestore);
                 final String uri = properties.getProperty("uri", "xmldb:exist://");
 
                 try {
                     if (guiMode) {
-                        restoreWithGui(username, optionPass, optionDbaPass, f, uri);
+                        restoreWithGui(username, optionPass, optionDbaPass, path, uri);
                     } else {
-                        restoreWithoutGui(username, optionPass, optionDbaPass, f, uri, rebuildRepo, quiet);
+                        restoreWithoutGui(username, optionPass, optionDbaPass, path, uri, rebuildRepo, quiet);
                     }
                 } catch (final Exception e) {
                     reportError(e);
@@ -310,22 +252,22 @@ public class Main {
                 uri += XmldbURI.ROOT_COLLECTION;
             }
 
-            final Collection root = DatabaseManager.getCollection(uri, properties.getProperty("user", "admin"), (optionDbaPass == null) ? optionPass : optionDbaPass);
+            final Collection root = DatabaseManager.getCollection(uri, properties.getProperty("user", "admin"), optionDbaPass.orElse(optionPass));
             shutdown(root);
         } catch (final Exception e) {
             reportError(e);
         }
-        System.exit(0);
+        System.exit(SystemExitCodes.OK_EXIT_CODE);
     }
 
-    private static void restoreWithoutGui(final String username, final String password, final String dbaPassword, final Path f,
+    private static void restoreWithoutGui(final String username, final String password, final Optional<String> dbaPassword, final Path f,
                                           final String uri, final boolean rebuildRepo, boolean quiet) {
 
         final RestoreListener listener = new ConsoleRestoreListener(quiet);
         final Restore restore = new Restore();
 
         try {
-            restore.restore(listener, username, password, dbaPassword, f, uri);
+            restore.restore(listener, username, password, dbaPassword.orElse(null), f, uri);
         } catch (final IOException | URISyntaxException | ParserConfigurationException | XMLDBException | SAXException ioe) {
             listener.error(ioe.getMessage());
         }
@@ -341,7 +283,7 @@ public class Main {
                 if (!(rootURI.contains(XmldbURI.ROOT_COLLECTION) || rootURI.endsWith(XmldbURI.ROOT_COLLECTION))) {
                     rootURI += XmldbURI.ROOT_COLLECTION;
                 }
-                final Collection root = DatabaseManager.getCollection(rootURI, username, dbaPassword);
+                final Collection root = DatabaseManager.getCollection(rootURI, username, dbaPassword.orElse(password));
                 if (root != null) {
                     ClientFrame.repairRepository(root);
                     System.out.println("Application repository rebuilt successfully.");
@@ -363,7 +305,7 @@ public class Main {
         }
     }
 
-    private static void restoreWithGui(final String username, final String password, final String dbaPassword, final Path f, final String uri) {
+    private static void restoreWithGui(final String username, final String password, final Optional<String> dbaPassword, final Path f, final String uri) {
 
         final GuiRestoreListener listener = new GuiRestoreListener();
 
@@ -375,7 +317,7 @@ public class Main {
                 final Restore restore = new Restore();
 
                 try {
-                    restore.restore(listener, username, password, dbaPassword, f, uri);
+                    restore.restore(listener, username, password, dbaPassword.orElse(null), f, uri);
 
                     listener.hideDialog();
 
@@ -387,7 +329,7 @@ public class Main {
                             if (!(rootURI.contains(XmldbURI.ROOT_COLLECTION) || rootURI.endsWith(XmldbURI.ROOT_COLLECTION))) {
                                 rootURI += XmldbURI.ROOT_COLLECTION;
                             }
-                            final Collection root = DatabaseManager.getCollection(rootURI, username, dbaPassword);
+                            final Collection root = DatabaseManager.getCollection(rootURI, username, dbaPassword.orElse(password));
                             ClientFrame.repairRepository(root);
                             System.out.println("Application repository rebuilt successfully.");
                         } catch (XMLDBException e) {
@@ -424,7 +366,7 @@ public class Main {
     }
 
 
-    private static void reportError(Throwable e) {
+    private static void reportError(final Throwable e) {
         e.printStackTrace();
 
         if (e.getCause() != null) {
@@ -432,17 +374,10 @@ public class Main {
             e.getCause().printStackTrace();
         }
 
-        System.exit(1);
+        System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
     }
 
-
-    private static void printUsage() {
-        System.out.println("Usage: java " + Main.class.getName() + " [options]");
-        System.out.println(CLUtil.describeOptions(OPTIONS).toString());
-    }
-
-
-    private static void shutdown(Collection root) {
+    private static void shutdown(final Collection root) {
         try {
             final DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
 
@@ -459,12 +394,23 @@ public class Main {
     }
 
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         try {
-            process(args);
+            final ParsedArguments arguments = CommandLineParser
+                    .withArguments(userArg, passwordArg, dbaPasswordArg)
+                    .andArguments(backupCollectionArg, backupOutputDirArg)
+                    .andArguments(restoreArg, rebuildExpathRepoArg)
+                    .andArguments(helpArg, guiArg, quietArg, optionArg)
+                    .parse(args);
+
+            process(arguments);
+        } catch(final ArgumentException e) {
+            System.out.println(e.getMessageAndUsage());
+            System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);
+
         } catch (final Throwable e) {
             e.printStackTrace();
-            System.exit(1);
+            System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
         }
     }
 }

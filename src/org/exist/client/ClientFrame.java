@@ -116,6 +116,7 @@ import org.exist.security.internal.aider.PermissionAiderFactory;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
+import org.exist.util.SystemExitCodes;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.*;
@@ -1399,7 +1400,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         setVisible(false);
         dispose();
         process.terminate();
-        System.exit(0);
+        System.exit(SystemExitCodes.OK_EXIT_CODE);
     }
 
     private void actionFinished() {

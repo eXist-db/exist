@@ -57,7 +57,7 @@ public class JnlpJarFiles {
             "commons-io-%latest%",
             "commons-logging-%latest%",
             "commons-pool-%latest%",
-            "excalibur-cli-%latest%",
+            "jargo-%latest%",
             "gnu-crypto-%latest%",
             "j8fu-%latest%",
             "jackson-core-%latest%",
