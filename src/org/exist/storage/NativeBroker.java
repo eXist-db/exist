@@ -1938,6 +1938,9 @@ public class NativeBroker extends DBBroker {
                 temp.addDocument(transaction, this, targetDoc);
 
                 storeXMLResource(transaction, targetDoc);
+
+                saveCollection(transaction, temp);
+
                 flush();
                 closeDocument();
                 //commit the transaction
