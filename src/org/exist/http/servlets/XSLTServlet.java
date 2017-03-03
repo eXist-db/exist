@@ -1,23 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2010 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2017 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * $Id$
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.http.servlets;
 
@@ -25,16 +23,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.exist.EXistException;
-import org.exist.collections.Collection;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.AuthenticationException;
-import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.internal.web.HttpAccount;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.serializers.XIncludeFilter;
 import org.exist.util.serializer.Receiver;
@@ -49,8 +42,11 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.exist.xslt.Stylesheet;
+import org.exist.xslt.TemplatesFactory;
 import org.exist.xslt.TransformerFactoryAllocator;
 
+import org.exist.xslt.XSLTErrorsListener;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -61,25 +57,16 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import javax.xml.transform.Source;
-import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.URIResolver;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamSource;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -104,9 +91,17 @@ public class XSLTServlet extends HttpServlet {
 
     private final static Logger LOG = LogManager.getLogger(XSLTServlet.class);
 
+    private final static XSLTErrorsListener<ServletException> errorListener =
+        new XSLTErrorsListener<ServletException>(true, false) {
+
+            @Override
+            protected void raiseError(String error, Exception ex) throws ServletException {
+                throw new ServletException(error, ex);
+            }
+        };
+
     private BrokerPool pool;
 
-    private final Map<String, CachedStylesheet> cache = new HashMap<String, CachedStylesheet>();
     private Boolean caching = null;
 
     /**
@@ -124,12 +119,11 @@ public class XSLTServlet extends HttpServlet {
         return caching;
     }
 
-
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        final String stylesheet = (String) request.getAttribute(REQ_ATTRIBUTE_STYLESHEET);
-        if (stylesheet == null) {
+        final String uri = (String) request.getAttribute(REQ_ATTRIBUTE_STYLESHEET);
+        if (uri == null) {
             throw new ServletException("No stylesheet source specified!");
         }
 
@@ -155,7 +149,9 @@ public class XSLTServlet extends HttpServlet {
                                 sourceAttrib);
                     }
 
-                    LOG.debug("Taking XSLT input from request attribute " + sourceAttrib);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Taking XSLT input from request attribute " + sourceAttrib);
+                    }
 
                 } else {
                     throw new ServletException("Input for XSLT servlet is not a node. Read from attribute " +
@@ -190,16 +186,15 @@ public class XSLTServlet extends HttpServlet {
             }
         }
 
-        final SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(pool);
-        final Templates templates = getSource(user, request, response, factory, stylesheet);
-        if (templates == null) {
+        final Stylesheet stylesheet = stylesheet(uri, request, response);
+        if (stylesheet == null) {
             return;
         }
 
         //do the transformation
         try (final DBBroker broker = pool.get(Optional.of(user))) {
 
-            final TransformerHandler handler = factory.newTransformerHandler(templates);
+            final TransformerHandler handler = stylesheet.newTransformerHandler(broker, errorListener);
             setTransformerParameters(request, handler.getTransformer());
 
             final Properties properties = handler.getTransformer().getOutputProperties();
@@ -213,12 +208,8 @@ public class XSLTServlet extends HttpServlet {
 
             final String mediaType = properties.getProperty("media-type");
             if (mediaType != null) {
-                if (encoding == null) {
-                    response.setContentType(mediaType);
-                }
-
                 //check, do mediaType have "charset"
-                else if (mediaType.indexOf("charset") == -1) {
+                if (!mediaType.contains("charset")) {
                     response.setContentType(mediaType + "; charset=" + encoding);
                 } else {
                     response.setContentType(mediaType);
@@ -239,18 +230,17 @@ public class XSLTServlet extends HttpServlet {
             try {
                 XIncludeFilter xinclude = new XIncludeFilter(serializer, receiver);
                 receiver = xinclude;
-                String moduleLoadPath;
 
+                String baseUri;
                 final String base = (String) request.getAttribute(REQ_ATTRIBUTE_BASE);
                 if (base != null) {
-                    moduleLoadPath = getServletContext().getRealPath(base);
-                } else if (stylesheet.startsWith("xmldb:exist://")) {
-                    moduleLoadPath = XmldbURI.xmldbUriFor(stylesheet).getCollectionPath();
+                    baseUri = getServletContext().getRealPath(base);
+                } else if (uri.startsWith("xmldb:exist://")) {
+                    baseUri = XmldbURI.xmldbUriFor(uri).getCollectionPath();
                 } else {
-                    moduleLoadPath = getCurrentDir(request).toAbsolutePath().toString();
+                    baseUri = getCurrentDir(request).toAbsolutePath().toString();
                 }
-
-                xinclude.setModuleLoadPath(moduleLoadPath);
+                xinclude.setModuleLoadPath(baseUri);
 
                 serializer.setReceiver(receiver);
                 if (inputNode != null) {
@@ -306,9 +296,8 @@ public class XSLTServlet extends HttpServlet {
     /*
      * Please add comments to this method. make assumption clear. These might not be valid.
      */
-    private Templates getSource(Subject user, HttpServletRequest request, HttpServletResponse response,
-                                SAXTransformerFactory factory, String stylesheet)
-            throws ServletException, IOException {
+    private Stylesheet stylesheet(String stylesheet, HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
 
         // Check if stylesheet contains an URI. If not, try to resolve from file system
         if (stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
@@ -348,26 +337,7 @@ public class XSLTServlet extends HttpServlet {
             }
         }
 
-        // Try to figure out the base directory of the stylesheet file.
-        // This is required to locate resources imported within the stylesheet.
-        String base;
-        final int p = stylesheet.lastIndexOf("/");
-        if (p != Constants.STRING_NOT_FOUND) {
-            base = stylesheet.substring(0, p);
-        } else {
-            base = stylesheet;
-        }
-
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Loading stylesheet from " + stylesheet);
-        }
-
-        CachedStylesheet cached = cache.get(stylesheet);
-        if (cached == null) {
-            cached = new CachedStylesheet(factory, user, stylesheet, base);
-            cache.put(stylesheet, cached);
-        }
-        return cached.getTemplates(user);
+        return TemplatesFactory.stylesheet(stylesheet, "", isCaching());
     }
 
     /*
@@ -429,187 +399,6 @@ public class XSLTServlet extends HttpServlet {
                     properties.setProperty(name.substring(REQ_ATTRIBUTE_OUTPUT.length()), value.toString());
                 }
             }
-        }
-    }
-
-    private class CachedStylesheet {
-
-        SAXTransformerFactory factory;
-        long lastModified = -1;
-        Templates templates = null;
-        String uri;
-
-        public CachedStylesheet(SAXTransformerFactory factory, Subject user, String uri, String baseURI) throws ServletException {
-            this.factory = factory;
-            this.uri = uri;
-            if (!baseURI.startsWith("xmldb:exist://")) {
-                factory.setURIResolver(new ExternalResolver(baseURI));
-            }
-            getTemplates(user);
-        }
-
-        public Templates getTemplates(Subject user) throws ServletException {
-            if (uri.startsWith("xmldb:exist://")) {
-                final String docPath = uri.substring("xmldb:exist://".length());
-
-
-                try (final DBBroker broker = pool.get(Optional.of(user))) {
-                    DocumentImpl doc = null;
-                    try {
-                        doc = broker.getXMLResource(XmldbURI.create(docPath), LockMode.READ_LOCK);
-                        if (doc == null) {
-                            throw new ServletException("Stylesheet not found: " + docPath);
-                        }
-
-                        if (!isCaching() || (doc != null && (templates == null
-                                || doc.getMetadata().getLastModified() > lastModified))) {
-                            templates = getSource(broker, doc);
-                        }
-
-                        lastModified = doc.getMetadata().getLastModified();
-                    } finally {
-                        if (doc != null) {
-                            doc.getUpdateLock().release(LockMode.READ_LOCK);
-                        }
-                    }
-                } catch (final PermissionDeniedException e) {
-                    throw new ServletException("Permission denied to read stylesheet: " + uri, e);
-
-                } catch (final EXistException e) {
-                    throw new ServletException("Error while reading stylesheet source from db: " + e.getMessage(), e);
-
-                }
-            } else {
-                try {
-                    final URL url = new URL(uri);
-                    final URLConnection connection = url.openConnection();
-                    long modified = connection.getLastModified();
-
-                    if (!isCaching() || (templates == null || modified > lastModified || modified == 0)) {
-                        LOG.debug("compiling stylesheet " + url.toString());
-                        templates = factory.newTemplates(new StreamSource(connection.getInputStream()));
-                    }
-                    lastModified = modified;
-
-                } catch (final IOException e) {
-                    throw new ServletException("Error while reading stylesheet source from uri: " + uri +
-                            ": " + e.getMessage(), e);
-
-                } catch (final TransformerConfigurationException e) {
-                    throw new ServletException("Error while reading stylesheet source from uri: " + uri +
-                            ": " + e.getMessage(), e);
-                }
-            }
-            return templates;
-        }
-
-        private Templates getSource(DBBroker broker, DocumentImpl stylesheet)
-                throws ServletException {
-            factory.setURIResolver(new DatabaseResolver(broker, stylesheet));
-            try {
-                final TemplatesHandler handler = factory.newTemplatesHandler();
-                handler.startDocument();
-
-                final Serializer serializer = broker.getSerializer();
-                serializer.reset();
-                serializer.setSAXHandlers(handler, null);
-                serializer.toSAX(stylesheet);
-
-                handler.endDocument();
-                return handler.getTemplates();
-
-            } catch (final SAXException e) {
-                throw new ServletException("A SAX exception occurred while compiling the stylesheet: "
-                        + e.getMessage(), e);
-
-            } catch (final TransformerConfigurationException e) {
-                throw new ServletException("A configuration exception occurred while " +
-                        "compiling the stylesheet: " + e.getMessage(), e);
-            }
-        }
-    }
-
-    /*
-     * TODO: create generic resolver for whole database
-     */
-    private static class ExternalResolver implements URIResolver {
-
-        private String baseURI;
-
-        public ExternalResolver(String base) {
-            this.baseURI = base;
-        }
-
-        /* (non-Javadoc)
-         * @see javax.xml.transform.URIResolver#resolve(java.lang.String, java.lang.String)
-         */
-        @Override
-        public Source resolve(String href, String base)
-                throws TransformerException {
-            URL url;
-            try {
-                //TODO : use dedicated function in XmldbURI
-                url = new URL(baseURI + "/" + href);
-                final URLConnection connection = url.openConnection();
-                return new StreamSource(connection.getInputStream());
-
-            } catch (final MalformedURLException e) {
-                return null;
-
-            } catch (final IOException e) {
-                return null;
-            }
-        }
-    }
-
-    /*
-     * TODO: create generic resolver for whole database
-     */
-    private static class DatabaseResolver implements URIResolver {
-
-        DocumentImpl doc;
-        DBBroker broker;
-
-        public DatabaseResolver(DBBroker broker, DocumentImpl myDoc) {
-            this.broker = broker;
-            this.doc = myDoc;
-        }
-
-
-        /* (non-Javadoc)
-         * @see javax.xml.transform.URIResolver#resolve(java.lang.String, java.lang.String)
-         */
-        @Override
-        public Source resolve(String href, String base)
-                throws TransformerException {
-            final Collection collection = doc.getCollection();
-            String path;
-
-            //TODO : use dedicated function in XmldbURI
-            if (href.startsWith("/")) {
-                path = href;
-            } else {
-                path = collection.getURI() + "/" + href;
-            }
-
-            DocumentImpl xslDoc;
-            try {
-                xslDoc = (DocumentImpl) broker.getXMLResource(XmldbURI.create(path));
-            } catch (final PermissionDeniedException e) {
-                throw new TransformerException(e.getMessage(), e);
-            }
-
-            if (xslDoc == null) {
-                LOG.debug("Document " + href + " not found in collection " + collection.getURI());
-                return null;
-            }
-
-            if (!xslDoc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
-                throw new TransformerException("Insufficient privileges to read resource " + path);
-            }
-
-            final DOMSource source = new DOMSource(xslDoc);
-            return source;
         }
     }
 }

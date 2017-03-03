@@ -14,7 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.xmlgraphics.io.ResourceResolver;
 import org.apache.xmlgraphics.io.URIResolverAdapter;
 import org.exist.storage.DBBroker;
-import org.exist.xquery.functions.transform.EXistURIResolver;
+import org.exist.xslt.EXistURIResolver;
 import org.exist.xquery.value.NodeValue;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -126,7 +126,9 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
      */
     private ResourceResolver getResourceResolver(final DBBroker broker, final String baseUri) {
         final ResourceResolverFactory.SchemeAwareResourceResolverBuilder builder = ResourceResolverFactory.createSchemeAwareResourceResolverBuilder(ResourceResolverFactory.createDefaultResourceResolver());
-        final URIResolverAdapter uriResolver = new URIResolverAdapter(new ExistSchemeRewriter(new EXistURIResolver(broker, baseUri)));
+        final URIResolverAdapter uriResolver = new URIResolverAdapter(
+            new ExistSchemeRewriter(new EXistURIResolver(broker.getBrokerPool(), baseUri))
+        );
         builder.registerResourceResolverForScheme("exist", uriResolver);
         builder.registerResourceResolverForScheme("http", uriResolver);
         builder.registerResourceResolverForScheme("https", uriResolver);

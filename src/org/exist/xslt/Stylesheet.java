@@ -19,14 +19,22 @@
  */
 package org.exist.xslt;
 
-import org.exist.xquery.XPathException;
-import org.exist.xquery.value.Sequence;
+import java.io.IOException;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.sax.TransformerHandler;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
+import org.xml.sax.SAXException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
  */
-public abstract class Transformer extends javax.xml.transform.Transformer {
+public interface Stylesheet {
 
-	public abstract Sequence transform(Sequence xmlSource) throws XPathException;
+  <E extends Exception> Templates templates(DBBroker broker, XSLTErrorsListener<E> errorListener)
+      throws E, PermissionDeniedException, SAXException, TransformerConfigurationException, IOException;
+
+  <E extends Exception> TransformerHandler newTransformerHandler(DBBroker broker, XSLTErrorsListener<E> errorListener)
+      throws E, PermissionDeniedException, SAXException, TransformerConfigurationException, IOException;
 }
