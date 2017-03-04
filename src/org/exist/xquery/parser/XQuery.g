@@ -2484,10 +2484,10 @@ options {
 	APOS_ATTRIBUTE_CONTENT
 	{ $setType(APOS_ATTRIBUTE_CONTENT); }
 	|
-	{ !(parseStringLiterals || inElementContent) }?
+	{ !(parseStringLiterals || inElementContent || inStringConstructor) }?
 	QUOT { $setType(QUOT); }
 	|
-	{ !(parseStringLiterals || inElementContent) }?
+	{ !(parseStringLiterals || inElementContent || inStringConstructor) }?
 	APOS { $setType(APOS); }
 	|
 	{ inElementContent }?
@@ -2514,7 +2514,7 @@ options {
 		$setType(Token.SKIP);
 	}
 	|
-	{ !(inAttributeContent || inElementContent) }?
+	{ !(inAttributeContent || inElementContent || inStringConstructor) }?
 	EXPR_COMMENT
 	{
 		String comment = $getText;
@@ -2532,7 +2532,7 @@ options {
 	|
 	ncname:NCNAME { $setType(ncname.getType()); }
 	|
-	{ parseStringLiterals && !inElementContent }?
+	{ parseStringLiterals && !inElementContent && !inStringConstructor }?
 	STRING_LITERAL { $setType(STRING_LITERAL); }
 	|
 	BRACED_URI_LITERAL { $setType(BRACED_URI_LITERAL); }

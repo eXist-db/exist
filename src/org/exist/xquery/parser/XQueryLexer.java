@@ -4469,7 +4469,7 @@ inputState.guessing--;
 						
 				}
 			}
-			else if (((LA(1)=='(') && (LA(2)==':') && ((LA(3) >= '\u0003' && LA(3) <= '\ufffe')) && ((LA(4) >= '\u0003' && LA(4) <= '\ufffe')))&&( !(inAttributeContent || inElementContent) )) {
+			else if (((LA(1)=='(') && (LA(2)==':') && ((LA(3) >= '\u0003' && LA(3) <= '\ufffe')) && ((LA(4) >= '\u0003' && LA(4) <= '\ufffe')))&&( !(inAttributeContent || inElementContent || inStringConstructor) )) {
 				mEXPR_COMMENT(false);
 				if ( inputState.guessing==0 ) {
 					
@@ -4700,7 +4700,7 @@ inputState.guessing--;
 								_ttype = ESCAPE_QUOT;
 							}
 						}
-						else if (((LA(1)=='"'||LA(1)=='\'') && ((LA(2) >= '\u0003' && LA(2) <= '\ufffe')) && (true) && (true))&&( parseStringLiterals && !inElementContent )) {
+						else if (((LA(1)=='"'||LA(1)=='\'') && ((LA(2) >= '\u0003' && LA(2) <= '\ufffe')) && (true) && (true))&&( parseStringLiterals && !inElementContent && !inStringConstructor )) {
 							mSTRING_LITERAL(false);
 							if ( inputState.guessing==0 ) {
 								_ttype = STRING_LITERAL;
@@ -4839,13 +4839,13 @@ inputState.guessing--;
 										_ttype = APOS_ATTRIBUTE_CONTENT;
 									}
 								}
-								else if (((LA(1)=='"') && (true) && (true) && (true))&&( !(parseStringLiterals || inElementContent) )) {
+								else if (((LA(1)=='"') && (true) && (true) && (true))&&( !(parseStringLiterals || inElementContent || inStringConstructor) )) {
 									mQUOT(false);
 									if ( inputState.guessing==0 ) {
 										_ttype = QUOT;
 									}
 								}
-								else if (((LA(1)=='\'') && (true) && (true) && (true))&&( !(parseStringLiterals || inElementContent) )) {
+								else if (((LA(1)=='\'') && (true) && (true) && (true))&&( !(parseStringLiterals || inElementContent || inStringConstructor) )) {
 									mAPOS(false);
 									if ( inputState.guessing==0 ) {
 										_ttype = APOS;
