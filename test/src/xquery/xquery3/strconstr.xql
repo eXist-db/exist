@@ -17,12 +17,29 @@ function sc:simple() {
     ``[Hello world!]``
 };
 
+(:
+ : Character entities are not expanded, chars like <> are allowed.
+ :)
+declare
+    %test:assertEquals("Hello &amp;<world>{!}(:no comment:)")
+function sc:special-chars() {
+    ``[Hello &<world>{!}(:no comment:)]``
+};
+
 declare
     %test:assertEquals("Hello my world!")
 function sc:simple-interpolation() {
     let $a := "my"
     return
         ``[Hello `{$a}` world!]``
+};
+
+declare
+    %test:assertEquals('Hello "my" ''my'' world!')
+function sc:simple-interpolation-quoted() {
+    let $a := "my"
+    return
+        ``[Hello "`{$a}`" '`{$a}`' world!]``
 };
 
 declare
