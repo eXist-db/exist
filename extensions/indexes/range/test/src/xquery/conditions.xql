@@ -25,6 +25,14 @@ declare variable $ct:COLLECTION_CONFIG :=
                     <condition attribute="type" value="text_type" />
                     <field name="text_type" type="xs:string" case="no"></field>
                 </create>
+                <create qname="tei:note">
+                    <condition attribute="type" operator="starts-with" value="start" />
+                    <field name="text_type_start" type="xs:string" case="no"></field>
+                </create>
+                <create qname="tei:note">
+                    <condition attribute="type" operator="ends-with" value="end" />
+                    <field name="text_type_end" type="xs:string" case="no"></field>
+                </create>
                 <create match="//tei:note">
                     <condition attribute="type" value="orig_place" />
                     <field name="orig_place" match="tei:place/tei:placeName" type="xs:string" case="no"></field>
@@ -41,6 +49,63 @@ declare variable $ct:COLLECTION_CONFIG :=
                 <create qname="tei:placeName">
                     <condition attribute="cert" value="low" />
                     <field name="typesOfUncertainPlaces" match="@type" type="xs:string" />
+                </create>
+
+                <create qname="tei:term">
+                    <condition attribute="n" operator="lt" value="b" />
+                    <field name="termsBeforeB" type="xs:string" />
+                </create>
+                <create qname="tei:term">
+                    <condition attribute="n" operator="gt" value="b" />
+                    <field name="termsAfterB" type="xs:string" />
+                </create>
+                <create qname="tei:term">
+                    <condition attribute="n" operator="le" value="b" />
+                    <field name="termsBeforeOrEqualB" type="xs:string" />
+                </create>
+                <create qname="tei:term">
+                    <condition attribute="n" operator="ge" value="b" />
+                    <field name="termsAfterOrEqualB" type="xs:string" />
+                </create>
+                <create qname="tei:term">
+                    <condition attribute="n" operator="ne" value="b" />
+                    <field name="termsNotB" type="xs:string" />
+                </create>
+
+                <create qname="tei:entry">
+                    <condition attribute="n" operator="contains" value="1234" />
+                    <field name="entryNContains1234" type="xs:string" />
+                </create>
+                <create qname="tei:entry">
+                    <condition attribute="n" operator="matches" value="some_\d+_thing" />
+                    <field name="entryNMatches" type="xs:string" />
+                </create>
+
+                <create qname="tei:num">
+                    <condition attribute="value" operator="lt" value="2" />
+                    <field name="lessThanTwoString" type="xs:string" />
+                </create>
+                <create qname="tei:num">
+                    <condition attribute="value" operator="lt" value="2" numeric="yes"/>
+                    <field name="lessThanTwoNumeric" type="xs:string" />
+                </create>
+                <create qname="tei:num">
+                    <condition attribute="value" operator="eq" value="1" numeric="yes"/>
+                    <field name="exactlyOne" type="xs:string" />
+                </create>
+
+                <create qname="tei:figure">
+                    <condition attribute="n" operator="lt" value="2" numeric="yes"/>
+                    <field name="figNLT2" type="xs:string" />
+                </create>
+
+                <create qname="tei:p">
+                    <condition attribute="type" value="aabbcc" case="no" />
+                    <field name="pCase" type="xs:string" />
+                </create>
+                <create qname="tei:p">
+                    <condition attribute="type" operator="matches" value="bb" case="no" />
+                    <field name="pMatchCase" type="xs:string" />
                 </create>
             </range>
         </index>
@@ -75,6 +140,7 @@ declare variable $ct:DATA :=
                                     <placeName cert="high" type="someOtherType">Alexandria</placeName>
                                 </place>
                             </note>
+                            <note type="start_end">startswithendswith</note>
                             <note>foo</note>
                             <note type="bar">foo</note>
                             <note type="something">literarisch</note>
@@ -83,6 +149,28 @@ declare variable $ct:DATA :=
                 </msDesc>
             </sourceDesc>
         </teiHeader>
+        <text>
+            <body>
+                <p>
+                    <term n="a">eins</term>
+                    <term n="b">zwei</term>
+                    <term n="c">drei</term>
+
+                    <entry n="some_1234_thing">something</entry>
+
+                    <num value="1">one</num>
+                    <num value="110">onehundredandten</num>
+                    <num value="2">two</num>
+                    <num value="001.0">zerozeroonepointzero</num>
+
+                    <figure n="1">one</figure>
+                    <figure n="110">onehundredandten</figure>
+                    <figure n="2">two</figure>
+                </p>
+
+                <p type="aaBBcc">CaseSensitivity</p>
+            </body>
+        </text>
     </TEI>;
 
 declare variable $ct:COLLECTION_NAME := "optimizertest";
@@ -110,16 +198,95 @@ function ct:cleanup() {
 declare
 %test:stats
 %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
-function ct:optimize-with-condition() {
+function ct:optimize-eq() {
     collection($ct:COLLECTION)//tei:note[@type="availability"][.="publiziert"]
 };
+
+(: rewrite expression with predicate that matches a condition to a field  :)
+(: the standard range lookup should not be used for the @type predicate :)
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-eq-numeric() {
+    collection($ct:COLLECTION)//tei:num[@value = 1][.="publiziert"]
+};
+
+(: rewrite expression with predicate that matches a condition to a field  :)
+(: the standard range lookup should not be used for the @type predicate :)
+declare
+%test:stats
+%test:assertXPath("not($result//stats:index[@type = 'new-range'][@optimization = 2])")
+function ct:no-optimize-eq-numeric() {
+    collection($ct:COLLECTION)//tei:num[@value = "1"][.="publiziert"]
+};
+
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-eq-var() {
+    let $var := "availability"
+    return collection($ct:COLLECTION)//tei:note[@type=$var][.="publiziert"]
+};
+
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-eq-func() {
+    collection($ct:COLLECTION)//tei:note[@type=lower-case("AVAILABILITY")][.="publiziert"]
+};
+
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-eq-reverse-var-nested() {
+    let $var := "availability"
+    let $var2 := $var
+    return collection($ct:COLLECTION)//tei:note[$var2=@type][.="publiziert"]
+};
+
+declare variable $ct:var := "availability";
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-eq-static-var() {
+    collection($ct:COLLECTION)//tei:note[@type=$ct:var][.="publiziert"]
+};
+
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-eq-reverse() {
+    collection($ct:COLLECTION)//tei:note["availability" = @type][.="publiziert"]
+};
+
 
 (: rewrite expression with predicate that matches a condition to a field  :)
 declare
 %test:stats
 %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
-function ct:optimize-with-condition2() {
+function ct:optimize-eq2() {
     collection($ct:COLLECTION)//tei:note[@type="orig_place"][tei:place/tei:placeName eq "Oxyrhynchos"]
+};
+
+
+
+declare
+%test:assertEquals(1)
+function ct:index-eq-no-case() {
+count(range:index-keys-for-field("pCase", function($k, $n) { $k }, 10))
+};
+
+declare
+%test:stats
+%test:assertXPath("not($result//stats:index[@type = 'new-range'][@optimization = 2])")
+function ct:optimize-case() {
+collection($ct:COLLECTION)//tei:note[@type="Availablity"][.="publiziert"]
+};
+
+declare
+%test:assertXPath("count($result) eq 2 and contains($result, 'one') and contains($result, 'zerozeroonepointzero')")
+function ct:index-eq-numeric() {
+range:index-keys-for-field("exactlyOne", function($k, $n) { $k }, 10)
 };
 
 (: do not use a conditional field for optimizing if condition does not match :)
@@ -127,13 +294,13 @@ declare
 %test:stats
 %test:assertXPath("not($result//stats:index[@type = 'new-range'][@optimization = 2])")
 function ct:no-optimize-condition2() {
-    collection($ct:COLLECTION)//tei:note[@type="something"][. = "literarisch"]
+collection($ct:COLLECTION)//tei:note[@type="something"][. = "literarisch"]
 };
 
 (: only the elements matching the condition should have been indexed :)
 declare
 %test:assertEquals(1)
-function ct:conditional-config-restricts-results() {
+function ct:conditional-config-results-eq() {
 count(collection($ct:COLLECTION)//range:field-eq("text_type", "literarisch"))
 };
 
@@ -166,3 +333,196 @@ declare
 function ct:multiple-conditions-inbetween() {
 collection($ct:COLLECTION)//tei:placeName[@cert="high"][not(.="")][@type="someType"][.="Achmim"]
 };
+
+
+declare
+%test:assertEquals("startswithendswith")
+function ct:index-ends-with() {
+range:index-keys-for-field("text_type_end", function($k, $n) { $k }, 10)
+};
+
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-ends-with() {
+collection($ct:COLLECTION)//tei:note[ends-with(@type, "end")][. = "startswithendswith"]
+};
+
+declare
+%test:assertEquals("startswithendswith")
+function ct:index-starts-with() {
+range:index-keys-for-field("text_type_start", function($k, $n) { $k }, 10)
+};
+
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-starts-with() {
+collection($ct:COLLECTION)//tei:note[starts-with(@type, "start")][. = "startswithendswith"]
+};
+
+declare
+%test:assertEquals("eins")
+function ct:index-lt() {
+range:index-keys-for-field("termsBeforeB", function($k, $n) { $k }, 10)
+};
+
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-lt() {
+collection($ct:COLLECTION)//tei:term[@n < "b"][. = "eins"]
+};
+
+
+declare
+%test:assertEquals("eins")
+function ct:index-lt() {
+range:index-keys-for-field("termsBeforeB", function($k, $n) { $k }, 10)
+};
+
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-lt() {
+collection($ct:COLLECTION)//tei:term[@n < "b"][. = "eins"]
+};
+
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-lt-numeric() {
+collection($ct:COLLECTION)//tei:figure[@n < 2][. = "one"]
+};
+
+declare
+%test:stats
+%test:assertXPath("not($result//stats:index[@type = 'new-range'][@optimization = 2])")
+function ct:no-optimize-lt-numeric() {
+collection($ct:COLLECTION)//tei:figure[@n < "2"][. = "one"]
+};
+
+
+declare
+%test:assertXPath("count($result) eq 3 and contains($result, 'one') and contains($result, 'onehundredandten') and contains($result, 'zerozeroonepointzero')")
+function ct:index-lt-non-numeric() {
+range:index-keys-for-field("lessThanTwoString", function($k, $n) { $k }, 10)
+};
+
+declare
+%test:assertXPath("count($result) eq 2 and contains($result, 'one') and contains($result, 'zerozeroonepointzero')")
+function ct:index-lt-numeric() {
+range:index-keys-for-field("lessThanTwoNumeric", function($k, $n) { $k }, 10)
+};
+
+declare
+%test:assertEquals("drei")
+function ct:index-gt() {
+range:index-keys-for-field("termsAfterB", function($k, $n) { $k }, 10)
+};
+
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-gt() {
+collection($ct:COLLECTION)//tei:term[@n > "b"][. = "drei"]
+};
+
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-gt-inverse() {
+collection($ct:COLLECTION)//tei:term["b" < @n][. = "eins"]
+};
+
+declare
+%test:assertEquals("drei")
+function ct:result-gt() {
+collection($ct:COLLECTION)//tei:term[@n > "b"][. = "drei"]/text()
+};
+
+declare
+%test:assertEquals("eins")
+function ct:result-gt-inverse() {
+collection($ct:COLLECTION)//tei:term["b" > @n][. = "eins"]/text()
+};
+
+declare
+%test:assertXPath("count($result) eq 2 and contains($result, 'eins') and contains($result, 'zwei')")
+function ct:index-le() {
+range:index-keys-for-field("termsBeforeOrEqualB", function($k, $n) { $k }, 10)
+};
+
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-le() {
+collection($ct:COLLECTION)//tei:term[@n le "b"][. = "eins"]
+};
+
+declare
+%test:assertXPath("count($result) eq 2 and contains($result, 'zwei') and contains($result, 'drei')")
+function ct:result-le-inverse() {
+collection($ct:COLLECTION)//tei:term["b" le @n][true()]
+};
+
+declare
+%test:assertXPath("count($result) eq 2 and contains($result, 'zwei') and contains($result, 'drei')")
+function ct:index-ge() {
+range:index-keys-for-field("termsAfterOrEqualB", function($k, $n) { $k }, 10)
+};
+
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-ge() {
+collection($ct:COLLECTION)//tei:term[@n ge "b"][. = "drei"]
+};
+
+
+declare
+%test:assertXPath("count($result) eq 2 and contains($result, 'eins') and contains($result, 'drei')")
+function ct:index-ne() {
+range:index-keys-for-field("termsNotB", function($k, $n) { $k }, 10)
+};
+
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-ne() {
+collection($ct:COLLECTION)//tei:term[@n ne "b"][. = "drei"]
+};
+
+declare
+%test:assertEquals("something")
+function ct:index-contains() {
+range:index-keys-for-field("entryNContains1234", function($k, $n) { $k }, 10)
+};
+
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-contains() {
+collection($ct:COLLECTION)//tei:entry[contains(@n, "1234")][. = "something"]
+};
+
+declare
+%test:assertEquals("something")
+function ct:index-matches() {
+range:index-keys-for-field("entryNMatches", function($k, $n) { $k }, 10)
+};
+
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-matches() {
+collection($ct:COLLECTION)//tei:entry[matches(@n, "some_\d+_thing")][. = "something"]
+};
+
+declare
+%test:stats
+%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+function ct:optimize-matches-no-case() {
+collection($ct:COLLECTION)//tei:p[matches(@type, "bb")][. = "something"]
+};
+

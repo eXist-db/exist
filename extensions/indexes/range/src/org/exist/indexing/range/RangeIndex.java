@@ -29,6 +29,9 @@ import org.exist.indexing.IndexWorker;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.storage.DBBroker;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Main implementation class for the new range index. This extends the existing LuceneIndex.
  *
@@ -58,6 +61,15 @@ public class RangeIndex extends LuceneIndex {
         private final String name;
         private final boolean supportsCollation;
 
+        private static final Map<String, Operator> LOOKUP_MAP;
+
+        static {
+            LOOKUP_MAP = new HashMap<String, Operator>();
+            for (Operator operator : Operator.values()) {
+                LOOKUP_MAP.put(operator.name, operator);
+            }
+        }
+
         Operator(String name, boolean supportsCollation) {
             this.name = name;
             this.supportsCollation = supportsCollation;
@@ -71,6 +83,8 @@ public class RangeIndex extends LuceneIndex {
         public boolean supportsCollation() {
             return supportsCollation;
         }
+
+        public static Operator getByName(String name) { return LOOKUP_MAP.get(name); }
     }
 
     private static final String DIR_NAME = "range";

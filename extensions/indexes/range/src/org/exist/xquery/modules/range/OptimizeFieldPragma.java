@@ -151,28 +151,9 @@ public class OptimizeFieldPragma extends Pragma {
                             matchedPreds.clear();
 
                             for (Predicate precedingPred : precedingPreds ) {
-                                Expression inner = precedingPred.getExpression(0);
-                                if (inner instanceof InternalFunctionCall) {
-                                    Function function = ((InternalFunctionCall)inner).getFunction();
-                                    if (function instanceof Lookup) {
-                                        inner = ((Lookup)function).getFallback();
-                                    }
-                                }
 
-                                if (inner instanceof GeneralComparison) {
-                                    final GeneralComparison comparison = (GeneralComparison) inner;
-
-                                    final Expression lhe = comparison.getLeft();
-                                    final Expression rhe = comparison.getRight();
-                                    if (lhe instanceof LocationStep && rhe instanceof LiteralValue) {
-                                        final QName lh = ((LocationStep)lhe).getTest().getName();
-                                        final String rh = ((LiteralValue) rhe).getValue().toString();
-                                        final RangeIndex.Operator operator = RangeQueryRewriter.getOperator(inner);
-
-                                        if (lh != null && testRice.findCondition(lh, rh, operator)) {
-                                            matchedPreds.add(precedingPred);
-                                        }
-                                    }
+                                if (testRice.findCondition(precedingPred)) {
+                                    matchedPreds.add(precedingPred);
                                 }
 
                             }
