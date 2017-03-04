@@ -89,6 +89,8 @@ public class QueryField extends Query implements Optimizable {
     /* (non-Javadoc)
     * @see org.exist.xquery.PathExpr#analyze(org.exist.xquery.Expression)
     */
+
+    @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(new AnalyzeContextInfo(contextInfo));
 
@@ -174,6 +176,7 @@ public class QueryField extends Query implements Optimizable {
         return result;
     }
 
+    @Override
     public int getDependencies() {
         return Dependency.CONTEXT_SET;
     }
