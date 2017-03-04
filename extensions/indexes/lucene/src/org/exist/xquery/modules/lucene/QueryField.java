@@ -89,7 +89,12 @@ public class QueryField extends Query implements Optimizable {
     /* (non-Javadoc)
     * @see org.exist.xquery.PathExpr#analyze(org.exist.xquery.Expression)
     */
+
+    @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        super.analyze(new AnalyzeContextInfo(contextInfo));
+
+        this.contextId = contextInfo.getContextId();
     }
 
     public boolean canOptimize(Sequence contextSequence) {
@@ -166,9 +171,14 @@ public class QueryField extends Query implements Optimizable {
         		context.getProfiler().traceIndexUsage( context, "lucene", this, PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start );
         	}
         } else {
-            result = preselectResult;
+            result = preselectResult.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT, true, getContextId(), true);;
         }
         return result;
+    }
+
+    @Override
+    public int getDependencies() {
+        return Dependency.CONTEXT_SET;
     }
 
     @Override
