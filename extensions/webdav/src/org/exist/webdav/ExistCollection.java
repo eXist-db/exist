@@ -443,16 +443,17 @@ public class ExistCollection extends ExistResource {
         }
 
         Collection srcCollection = null;
-        final LockMode srcCollectionLockMode = (mode == Mode.COPY ? LockMode.READ_LOCK : LockMode.WRITE_LOCK);
+        // This class contains already the URI of the resource that shall be moved/copied
+        final XmldbURI srcCollectionUri = xmldbUri;
+        // use WRITE_LOCK if moving or if src and dest collection are the same
+        final LockMode srcCollectionLockMode = mode == Mode.MOVE
+                || destCollectionUri.equals(srcCollectionUri) ? LockMode.WRITE_LOCK : LockMode.READ_LOCK;
         Collection destCollection = null;
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
         try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
             final Txn txn = txnManager.beginTransaction()) {
-
-            // This class contains already the URI of the resource that shall be moved/copied
-            XmldbURI srcCollectionUri = xmldbUri;
 
             // Open collection if possible, else abort
             srcCollection = broker.openCollection(srcCollectionUri, srcCollectionLockMode);
