@@ -895,7 +895,7 @@ public class Folder extends NamedResource implements Cloneable {
 	 * Remove all resources and subfolders from this folder, but keep the folder itself.
 	 */
 	public void clear() {
-		transact(LockMode.READ_LOCK);
+		transact(LockMode.WRITE_LOCK);
 		try {
 			if (handle.getDocumentCount(broker) == 0 && handle.getChildCollectionCount(broker) == 0) return;
 			broker.removeCollection(tx.tx, handle);
