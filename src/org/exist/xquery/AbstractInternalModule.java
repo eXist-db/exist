@@ -88,6 +88,11 @@ public abstract class AbstractInternalModule implements InternalModule {
     }
 
     @Override
+    public void setContextItem(Sequence contextItem) {
+        // not used for internal modules
+    }
+
+    @Override
     public boolean isReady() {
         return true; // internal modules don't need to be compiled
     }

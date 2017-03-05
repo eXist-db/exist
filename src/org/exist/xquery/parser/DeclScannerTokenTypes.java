@@ -107,10 +107,10 @@ public interface DeclScannerTokenTypes {
 	int LITERAL_inherit = 101;
 	// "no-inherit" = 102
 	int DOLLAR = 103;
-	int LCURLY = 104;
-	int RCURLY = 105;
-	int COLON = 106;
-	int LITERAL_external = 107;
+	int LITERAL_external = 104;
+	int COLON = 105;
+	int LCURLY = 106;
+	int RCURLY = 107;
 	int LITERAL_schema = 108;
 	int BRACED_URI_LITERAL = 109;
 	int LITERAL_as = 110;
