@@ -952,7 +952,7 @@ public class MutableCollection implements Collection {
             throw new PermissionDeniedException("Permission denied to write collection: " + path);
         }
 
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
+        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
             final DocumentImpl doc = getDocument(broker, name);
             
             if(doc.isLockedForWrite()) {
