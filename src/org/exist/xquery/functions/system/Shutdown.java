@@ -96,9 +96,9 @@ public class Shutdown extends BasicFunction
 				
 			if(delay > 0)
 			{
-				logger.info("Shuttting down in " + delay + " milliseconds.");
+				logger.info("Shutdown in " + delay + " milliseconds.");
 				final TimerTask task = new DelayedShutdownTask(pool);
-				final Timer timer = new Timer();
+				final Timer timer = new Timer("eXist-db shutdown schedule", true);
 				timer.schedule(task, delay);
 			}
 			else
