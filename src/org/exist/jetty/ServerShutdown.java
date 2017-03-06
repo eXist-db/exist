@@ -44,15 +44,13 @@ public class ServerShutdown {
     /* database connection arguments */
     private static final Argument<String> userArg = stringArgument("-u", "--user")
             .description("specify username (has to be a member of group dba).")
-            .required()
             .defaultValue("admin")
             .build();
     private static final Argument<String> passwordArg = stringArgument("-p", "--password")
             .description("specify password for the user.")
-            .required()
             .defaultValue("")
             .build();
-    private static final Argument<String> uriArg = stringArgument("-u", "--uri")
+    private static final Argument<String> uriArg = stringArgument("-l", "--uri")
             .description("the XML:DB URI of the database instance to be shut down.")
             .build();
 
