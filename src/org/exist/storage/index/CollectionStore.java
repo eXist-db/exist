@@ -1,7 +1,21 @@
 /*
- * CollectionStore.java - Jun 19, 2003
- * 
- * @author wolf
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2017 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.storage.index;
 
@@ -10,14 +24,11 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.Value;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.*;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Path;
-import java.util.Stack;
 
 /**
  * Handles access to the central collection storage file (collections.dbx). 
@@ -37,8 +48,8 @@ public class CollectionStore extends BFile {
     public final static byte KEY_TYPE_COLLECTION = 0;
     public final static byte KEY_TYPE_DOCUMENT = 1;
 
-    private Stack<Integer> freeResourceIds = new Stack<>();
-    private Stack<Integer> freeCollectionIds = new Stack<>();
+    private ConcurrentStack<Integer> freeResourceIds = new ConcurrentStack<>();
+    private ConcurrentStack<Integer> freeCollectionIds = new ConcurrentStack<>();
 
     /**
      * @param pool
@@ -80,67 +91,22 @@ public class CollectionStore extends BFile {
     }
 
     public void freeResourceId(int id) {
-        final Lock lock = getLock();
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
-
-            freeResourceIds.push(id);
-        } catch (LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(getFile()), e);
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
-        }
+        freeResourceIds.push(id);
     }
 
     public int getFreeResourceId() {
-        int freeDocId = DocumentImpl.UNKNOWN_DOCUMENT_ID;
-        final Lock lock = getLock();
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
+        Integer id = freeResourceIds.pop();
 
-            if (!freeResourceIds.isEmpty()) {
-                freeDocId = freeResourceIds.pop();
-            }
-        } catch (final LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(getFile()), e);
-            return DocumentImpl.UNKNOWN_DOCUMENT_ID;
-            //TODO : rethrow ? -pb
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
-        }
-        return freeDocId;
+        return id != null ? id : DocumentImpl.UNKNOWN_DOCUMENT_ID;
     }
 
     public void freeCollectionId(int id) {
-        final Lock lock = getLock();
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
-
-            freeCollectionIds.push(id);
-        } catch (LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(getFile()), e);
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
-        }
+        freeCollectionIds.push(id);
     }
 
     public int getFreeCollectionId() {
-        int freeCollectionId = Collection.UNKNOWN_COLLECTION_ID;
-        final Lock lock = getLock();
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
-
-            if (!freeCollectionIds.isEmpty()) {
-                freeCollectionId = freeCollectionIds.pop();
-            }
-        } catch (final LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(getFile()), e);
-            return Collection.UNKNOWN_COLLECTION_ID;
-            //TODO : rethrow ? -pb
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
-        }
-        return freeCollectionId;
+        Integer id = freeCollectionIds.pop();
+        return id != null ? id : Collection.UNKNOWN_COLLECTION_ID;
     }
 
     protected void dumpValue(Writer writer, Value value) throws IOException {
