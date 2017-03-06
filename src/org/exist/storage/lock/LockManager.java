@@ -113,31 +113,52 @@ public class LockManager {
         String path = '/' + segments[0].toString();
         final ReentrantReadWriteLock root = getCollectionLock(path);
         try {
+            lockTable.attempt(path, LockManager.class, Lock.LockMode.READ_LOCK);
+
             root.readLock().lockInterruptibly();
+
+            lockTable.acquired(path, LockManager.class, Lock.LockMode.READ_LOCK);
         } catch(final InterruptedException e) {
+            lockTable.attemptFailed(path, getClass(), Lock.LockMode.READ_LOCK);
             throw new LockException("Unable to acquire READ_LOCK for: " + path, e);
         }
 
         ReentrantReadWriteLock current = root;
+        String currentPath = path;
 
         for(int i = 1; i < segments.length; i++) {
             path += '/' + segments[i].toString();
             final ReentrantReadWriteLock son = getCollectionLock(path);
 
             try {
+                lockTable.attempt(path, LockManager.class, Lock.LockMode.READ_LOCK);
+
                 son.readLock().lockInterruptibly();
+
+                lockTable.acquired(path, LockManager.class, Lock.LockMode.READ_LOCK);
             } catch(final InterruptedException e) {
+                lockTable.attemptFailed(path, getClass(), Lock.LockMode.READ_LOCK);
+
                 current.readLock().unlock();
+                lockTable.released(currentPath, LockManager.class, Lock.LockMode.READ_LOCK);
+
                 throw new LockException("Unable to acquire READ_LOCK for: " + path, e);
             }
 
             current.readLock().unlock();
+            lockTable.released(currentPath, LockManager.class, Lock.LockMode.READ_LOCK);
+
             current = son;
+            currentPath = path;
         }
 
         final ReentrantReadWriteLock collectionReadLock = current;
+        final String collectionReadLockPath = currentPath;
 
-        return new ManagedCollectionLock(collectionPath, Either.Left(collectionReadLock.readLock()), () -> collectionReadLock.readLock().unlock());
+        return new ManagedCollectionLock(collectionPath, Either.Left(collectionReadLock.readLock()), () -> {
+            collectionReadLock.readLock().unlock();
+            lockTable.released(collectionReadLockPath, LockManager.class, Lock.LockMode.READ_LOCK);
+        });
     }
 
     /**
@@ -150,28 +171,51 @@ public class LockManager {
 
         String path = '/' + segments[0].toString();
         final ReentrantReadWriteLock root = getCollectionLock(path);
-        if(!root.readLock().tryLock()) {
+
+        lockTable.attempt(path, LockManager.class, Lock.LockMode.READ_LOCK);
+        boolean hasLock = root.readLock().tryLock();
+        if(hasLock) {
+            lockTable.acquired(path, LockManager.class, Lock.LockMode.READ_LOCK);
+        } else {
+            lockTable.attemptFailed(path, LockManager.class, Lock.LockMode.READ_LOCK);
             throw new LockException("Unable to acquire READ_LOCK for: " + path);
         }
 
         ReentrantReadWriteLock current = root;
+        String currentPath = path;
 
         for(int i = 1; i < segments.length; i++) {
             path += '/' + segments[i].toString();
             final ReentrantReadWriteLock son = getCollectionLock(path);
 
-            if(!son.readLock().tryLock()) {
+            lockTable.attempt(path, LockManager.class, Lock.LockMode.READ_LOCK);
+            hasLock = son.readLock().tryLock();
+
+            if(hasLock) {
+                lockTable.acquired(path, LockManager.class, Lock.LockMode.READ_LOCK);
+            } else {
+                lockTable.attemptFailed(path, LockManager.class, Lock.LockMode.READ_LOCK);
+
                 current.readLock().unlock();
+                lockTable.released(currentPath, LockManager.class, Lock.LockMode.READ_LOCK);
+
                 throw new LockException("Unable to acquire READ_LOCK for: " + path);
             }
 
             current.readLock().unlock();
+            lockTable.released(currentPath, LockManager.class, Lock.LockMode.READ_LOCK);
+
             current = son;
+            currentPath = path;
         }
 
         final ReentrantReadWriteLock collectionReadLock = current;
+        final String collectionReadLockPath = currentPath;
 
-        return new ManagedCollectionLock(collectionPath, Either.Left(collectionReadLock.readLock()), () -> collectionReadLock.readLock().unlock());
+        return new ManagedCollectionLock(collectionPath, Either.Left(collectionReadLock.readLock()), () -> {
+            collectionReadLock.readLock().unlock();
+            lockTable.released(collectionReadLockPath, LockManager.class, Lock.LockMode.READ_LOCK);
+        });
     }
 
     //TODO(AR) there are several reasons we might lock a collection for writes
@@ -204,13 +248,23 @@ public class LockManager {
         }
 
         try {
+            lockTable.attempt(path, LockManager.class, rootMode);
+
             rootModeLock.lockInterruptibly();
+
+            lockTable.acquired(path, LockManager.class, rootMode);
         } catch(final InterruptedException e) {
+            lockTable.attemptFailed(path, LockManager.class, rootMode);
             throw new LockException("Unable to acquire " + rootMode.name() + " for: " + path, e);
         }
 
         java.util.concurrent.locks.Lock currentModeLock = rootModeLock;
+        Lock.LockMode currentMode = rootMode;
+        String currentModePath = path;
+
         java.util.concurrent.locks.Lock parentModeLock = null;
+        Lock.LockMode parentMode = null;
+        String parentPath = null;
 
         final int lastSegmentIdx = segments.length - 1;
 
@@ -230,33 +284,59 @@ public class LockManager {
             }
 
             try {
+                lockTable.attempt(path, LockManager.class, rootMode);
+
                 sonModeLock.lockInterruptibly();
+
+                lockTable.acquired(path, LockManager.class, rootMode);
             } catch(final InterruptedException e) {
+                lockTable.attemptFailed(path, LockManager.class, rootMode);
+
                 currentModeLock.unlock();
+                lockTable.released(currentModePath, LockManager.class, currentMode);
+
                 throw new LockException("Unable to acquire " + sonMode.name() + " for: " + path, e);
             }
 
             if(!(i == lastSegmentIdx && lockParent)) {
                 currentModeLock.unlock();
+                lockTable.released(currentModePath, LockManager.class, currentMode);
             } else {
                 parentModeLock = currentModeLock;
+                parentMode = currentMode;
+                parentPath = path;
             }
 
             currentModeLock = sonModeLock;
+            currentMode = sonMode;
+            currentModePath = path;
         }
+
+        final String collectionPathStr = path;
 
         if(lockParent && parentModeLock != null) {
             //we return two locks as a single managed lock, the first lock is the parent collection and the second is the actual collection
             final java.util.concurrent.locks.Lock parentCollectionLock = parentModeLock;
+            final Lock.LockMode parentCollectionMode = parentMode;
+            final String parentCollectionString = parentPath;
+
             final java.util.concurrent.locks.Lock collectionLock = currentModeLock;
+            final Lock.LockMode collectionMode = currentMode;
+
             return new ManagedCollectionLock(collectionPath, Either.Right(new Tuple2<>(parentCollectionLock, collectionLock)), () -> {
-                    //TODO(AR) should this order be inverted?
-                    collectionLock.unlock();
-                    parentCollectionLock.unlock();
+                //TODO(AR) should this unlock order be inverted?
+                collectionLock.unlock();
+                lockTable.released(collectionPathStr, LockManager.class, collectionMode);
+
+                parentCollectionLock.unlock();
+                lockTable.released(parentCollectionString, LockManager.class, parentCollectionMode);
             });
         } else {
             final java.util.concurrent.locks.Lock collectionLock = currentModeLock;
-            return new ManagedCollectionLock(collectionPath, Either.Left(collectionLock), () -> collectionLock.unlock());
+            return new ManagedCollectionLock(collectionPath, Either.Left(collectionLock), () -> {
+                collectionLock.unlock();
+                lockTable.released(collectionPathStr, LockManager.class, Lock.LockMode.WRITE_LOCK);
+            });
         }
     }
 
