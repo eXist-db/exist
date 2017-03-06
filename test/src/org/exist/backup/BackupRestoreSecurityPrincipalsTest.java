@@ -90,8 +90,8 @@ public class BackupRestoreSecurityPrincipalsTest {
     @Before
     public void setup() throws PermissionDeniedException, EXistException, XMLDBException, SAXException, IOException, DatabaseConfigurationException, AuthenticationException {
         //we need to temporarily disable the auto-deploy trigger, as deploying eXide creates user accounts which interferes with this test
-	autodeploy = System.getProperty(AUTODEPLOY_PROPERTY, "off");
-	System.setProperty(AUTODEPLOY_PROPERTY, "off");
+	    autodeploy = System.getProperty(AUTODEPLOY_PROPERTY, "off");
+	    System.setProperty(AUTODEPLOY_PROPERTY, "off");
 
         startupDatabase();
 
@@ -137,7 +137,7 @@ public class BackupRestoreSecurityPrincipalsTest {
      * to clear the database
      */
     private void deleteAllDataFiles(final Path root) throws IOException {
-        List<Path> dataFiles = Collections.emptyList();
+        final List<Path> dataFiles;
         try(final Stream<Path> filesStream = Files.list(root)) {
             dataFiles = filesStream
                     .filter(path -> !(FileUtils.fileName(path).equals("RECOVERY") || FileUtils.fileName(path).equals("README") || FileUtils.fileName(path).equals(".DO_NOT_DELETE")))
@@ -258,25 +258,29 @@ public class BackupRestoreSecurityPrincipalsTest {
 
     private void createUser(final String username, final String password) throws XMLDBException, PermissionDeniedException {
         final Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
-        final UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
+        try {
+            final UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
 
-        final Account user = new UserAider(username);
-        user.setPassword(password);
+            final Account user = new UserAider(username);
+            user.setPassword(password);
 
-        //create the personal group
-        Group group = new GroupAider(username);
-        group.setMetadataValue(EXistSchemaType.DESCRIPTION, "Personal group for " + username);
-        group.addManager(ums.getAccount("admin"));
-        ums.addGroup(group);
+            //create the personal group
+            Group group = new GroupAider(username);
+            group.setMetadataValue(EXistSchemaType.DESCRIPTION, "Personal group for " + username);
+            group.addManager(ums.getAccount("admin"));
+            ums.addGroup(group);
 
-        //add the personal group as the primary group
-        user.addGroup(username);
+            //add the personal group as the primary group
+            user.addGroup(username);
 
-        //create the account
-        ums.addAccount(user);
+            //create the account
+            ums.addAccount(user);
 
-        //add the new account as a manager of their personal group
-        ums.addGroupManager(username, group.getName());
+            //add the new account as a manager of their personal group
+            ums.addGroupManager(username, group.getName());
+        } finally {
+            root.close();
+        }
     }
 
     private class NullRestoreListener implements RestoreListener {
