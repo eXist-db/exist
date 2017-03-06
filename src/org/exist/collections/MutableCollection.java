@@ -794,10 +794,11 @@ public class MutableCollection implements Collection {
         final int size;
         final Iterator<XmldbURI> i;
 
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
+        //TODO(AR) should we READ_LOCK the Collection to stop it being modified concurrently? see NativeBroker#saveCollection line 1801 - already has WRITE_LOCK ;-)
+//        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
             size = subCollections.size();
             i = subCollections.stableIterator();
-        }
+//        }
 
         outputStream.writeInt(size);
         while(i.hasNext()) {
