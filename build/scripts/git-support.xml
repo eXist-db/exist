@@ -34,7 +34,7 @@
                 
                 <copy file="${basedir}/VERSION.txt.tmpl" tofile="${basedir}/VERSION.txt" overwrite="true" filtering="true">
                         <filterset>
-                                <filter token="version" value="${project.version}"/>
+                                <filter token="version" value="${project.version.numeric}"/>
                                 <filter token="timestamp" value="${DSTAMP}${TSTAMP}"/>
                                 <filter token="scm.branch" value="${git.branch}"/>
                                 <filter token="scm.revision" value="${git.revision}"/>

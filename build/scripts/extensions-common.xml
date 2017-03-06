@@ -218,7 +218,7 @@ to add: -pre-compile steps
       <jar jarfile="${dist.extension.jar}" basedir="${build.classes.dir}" compress="yes">
          <manifest>
             <attribute name="Project-Name" value="${project.name}"/>
-            <attribute name="Project-Version" value="${project.version}"/>
+            <attribute name="Project-Version" value="${project.version.numeric}"/>
             <attribute name="Project-Build" value="${DSTAMP}"/>
             <attribute name="Project-CodeName" value="${project.codename}"/>
             <attribute name="Git-commit" value="${git.commit}"/>
@@ -268,7 +268,7 @@ to add: -pre-compile steps
       <jar jarfile="${build.dir}/exist-${extension.name}-javadoc.jar" basedir="${build.javadoc.dir}" compress="yes">
          <manifest>
             <attribute name="Project-Name" value="${project.name}"/>
-            <attribute name="Project-Version" value="${project.version}"/>
+            <attribute name="Project-Version" value="${project.version.numeric}"/>
             <attribute name="Project-Build" value="${DSTAMP}"/>
             <attribute name="Project-CodeName" value="${project.codename}"/>
             <attribute name="Git-commit" value="${git.commit}"/>
