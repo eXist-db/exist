@@ -39,16 +39,14 @@ import org.exist.xmldb.XmldbURI;
  * cache is owned by {@link org.exist.storage.index.CollectionStore}.
  *
  * It is not synchronized. Thus a lock should be obtained on the collection store before
- * accessing the cache. For the synchronization purposes of this object, {@link #getLock()}
- * may be used
+ * accessing the cache. For the synchronization purposes of this object,
+ * {@link LockManager#acquireCollectionCacheLock()} or {@link LockManager#tryCollectionCacheLock()} may be used
  * 
  * @author wolf
  */
 @NotThreadSafe
 public class CollectionCache extends LRUCache<Collection> implements BrokerPoolService {
     private final static Logger LOG = LogManager.getLogger(CollectionCache.class);
-
-    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(getClass().getSimpleName());
 
     private final BrokerPool pool;
     private Object2LongHashMap<String> names;
@@ -57,10 +55,6 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
         super("collection cache", blockBuffers, 2.0, growthThreshold, CacheManager.DATA_CACHE);
         this.pool = pool;
         this.names = new Object2LongHashMap<>(blockBuffers);
-    }
-
-    public Lock getLock() {
-        return lock;
     }
 
     @Override
