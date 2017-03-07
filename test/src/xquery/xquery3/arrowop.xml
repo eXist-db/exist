@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>xquery3 arrow operator</testName>
+    <description>
+        <p>Arrow operator in XQuery 3</p>
+        <author>Joe Wicentowski</author>
+        <author>Dmitriy Shabanov</author>
+    </description>
+    <test output="text" id="arrow-op-from-31">
+        <task></task>
+        <code><![CDATA[
+xquery version "3.0";
+
+"hello" => string-length()
+
+]]></code>
+        <error>EXXQDY0003</error>
+    </test>
+</TestSet>

@@ -1,4 +1,4 @@
-xquery version "3.0";
+xquery version "3.1";
 
 module namespace ao="http://exist-db.org/xquery/test/arrowop";
 
