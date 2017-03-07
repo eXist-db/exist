@@ -256,7 +256,7 @@ public class Deploy extends BasicFunction {
 
         public Path load(final String name, final Version version) throws IOException {
             String pkgURL = repoURL + "?name=" + URLEncoder.encode(name, "UTF-8") +
-                "&processor=" + SystemProperties.getInstance().getSystemProperty("product-semver", "2.2.0");
+                "&processor=" + SystemProperties.getInstance().getSystemProperty("product-version", "2.2.0");
             if (version != null) {
                 if (version.getMin() != null) {
                     pkgURL += "&semver-min=" + version.getMin();
