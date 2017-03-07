@@ -49,7 +49,7 @@
             displayname="eXist-db"
             identifier="org.exist.start.Main"
             mainclassname="org.exist.start.Main"
-            shortversion="${project.version.numeric}"
+            shortversion="${project.version}"
             icon="${app.icon}">
             <classpath dir=".">
                 <include name="start.jar"/>
@@ -201,7 +201,7 @@
         <!-- Set this property value to your application name -->
         <property name="app.name" value="${project.name}"/>
 
-        <property name="dmg.name" value="${app.name}-${project.version}-${git.commit}.dmg"/>
+        <property name="dmg.name" value="${app.name}-${project.version}${build.label}.dmg"/>
         <echo message="Creating ${dmg.name}..."/>
 
         <!-- Set this property value to a directory where you can

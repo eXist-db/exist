@@ -39,7 +39,7 @@
             displayname="eXist-db"
             identifier="org.exist.start.Main"
             mainclassname="org.exist.start.Main"
-            shortversion="${project.version.numeric}"
+            shortversion="${project.version}"
             icon="${installer.mac.icon}">
             <classpath file="start.jar"/>
             <option value="-Dexist.home=$APP_ROOT/.."/>
@@ -87,7 +87,7 @@
                 <pathelement location="${asocat-exist.jar}"/>
             </classpath>
         </taskdef>
-        <fetch dest="${apps.dir}" url="${apps.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes&amp;processor=${project.version.numeric}"
+        <fetch dest="${apps.dir}" url="${apps.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes&amp;processor=${project.version}"
             failonerror="false" maxtime="360">
             <patternset>
                 <include name="**/*.xar"/>
@@ -143,7 +143,7 @@
 
     <target depends="git.details, prepare-installer,commandline-installer" name="installer" description="Create installer">
         <echo message="Calling IzPack to create installer ..."/>
-        <property name="inst-jar" value="installer/${project.name}-setup-${project.version}-${git.commit}.jar"/>
+        <property name="inst-jar" value="installer/${project.name}-setup-${project.version}${build.label}.jar"/>
         <izpack input="installer/install.xml"
             output="${inst-jar}"
             basedir="." izPackDir="${izpack.dir}"

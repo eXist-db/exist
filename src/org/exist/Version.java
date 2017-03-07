@@ -31,10 +31,11 @@ import org.exist.xquery.functions.system.GetVersion;
  */
 public final class Version {
 
-	private static final String NAME = "eXist";
+	private static final String NAME;
 
 	private static final String VERSION;
 	private static final String BUILD;
+	private static final String GIT_BRANCH;
 	private static final String GIT_COMMIT;
 	
 	static {
@@ -43,10 +44,12 @@ public final class Version {
 			properties.load(GetVersion.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
 		} catch (final IOException e) {
 		}
-		
-		VERSION 		= (String) properties.get("product-version");
-		BUILD 			= (String) properties.get("product-build");
-		GIT_COMMIT 	= (String) properties.get("git-commit");
+
+		NAME = properties.getProperty("product-name", "eXist");
+		VERSION = properties.getProperty("product-version");
+		BUILD = properties.getProperty("product-build");
+		GIT_BRANCH = properties.getProperty("git-branch");
+		GIT_COMMIT = properties.getProperty("git-commit");
 	}
 	
 	public static String getProductName() {
@@ -61,9 +64,16 @@ public final class Version {
 		return BUILD;
 	}
 
-        @Deprecated
+	/**
+	 * @deprecated Use {@link #getGitCommit()}
+	 */
+	@Deprecated
 	public static String getSvnRevision() {
 		return GIT_COMMIT;
+	}
+
+	public static String getGitBranch() {
+		return GIT_BRANCH;
 	}
 
 	public static String getGitCommit() {
