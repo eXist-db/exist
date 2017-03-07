@@ -79,7 +79,7 @@ function install_systemd_config {
     fi
     systemd_service="${systemd_sys_dir}/eXist-db.service"
     echo "Installing template ${wrapper_home}/templates/systemd.vm as non-privileged service ${systemd_service}";
-    sudo echo -e "$(eval "echo -e \"`<${wrapper_home}/templates/systemd.vm`\"")" > "${systemd_service}";
+    eval "echo -e \"`<${wrapper_home}/templates/systemd.vm`\"" | sudo tee "${systemd_service}" > /dev/null
     sudo chmod 664 "${systemd_service}"
     echo -e "\nEnabling the service...\n";
     sudo systemctl daemon-reload
