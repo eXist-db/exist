@@ -54,7 +54,8 @@
     <!-- Create .war file                                                   -->
     <!-- ================================================================== -->
     <target name="dist-war" depends="git.details,webapps" description="Create war file">
-      <war destfile="${dist}/exist-${project.version}-${git.commit}.war" webxml="webapp/WEB-INF/web.xml">
+
+      <war destfile="${dist}/exist-${project.version}${build.label}.war" webxml="webapp/WEB-INF/web.xml">
                 
             <!-- Add files to WEB-INF/lib -->
             <lib dir=".">
@@ -179,11 +180,26 @@
             
             <!-- Add additional information -->
             <manifest>
+                <attribute name="Implementation-Title" value="${project.name} Core"/>
+                <attribute name="Implementation-Version" value="${project.version}"/>
+                <attribute name="Implementation-Vendor" value="The eXist Project"/>
+                <attribute name="Implementation-Vendor-Id" value="org.exist-db"/>
+                <attribute name="Implementation-URL" value="https://github.com/exist-db/exist"/>
+
+                <attribute name="Specification-Title" value="${project.name} Core"/>
+                <attribute name="Specification-Version" value="${project.version}"/>
+                <attribute name="Specification-Vendor" value="The eXist Project"/>
+
+                <attribute name="Source-Repository" value="scm:git:https://github.com/exist-db/exist.git"/>
+                <attribute name="Git-Commit" value="${git.revision.full}"/>
+                <attribute name="Git-Commit-Abbrev" value="${git.revision}"/>
+                <attribute name="Build-Tag" value="${git.branch.full}"/>
+                <attribute name="Build-Timestamp" value="${DSTAMP}${TSTAMP}"/>
                 <attribute name="Built-By" value="${user.name}"/>
-                <attribute name="Project-Name" value="${project.name}"/>
-                <attribute name="Project-Version" value="${project.version}"/>
-                <attribute name="Project-Build" value="${DSTAMP}"/>
-                <attribute name="Git-commit" value="${git.commit}"/>
+                <attribute name="Build-Jdk" value="${java.version}"/>
+
+                <attribute name="Description" value="eXist XML Native Database"/>
+                <attribute name="Created-By" value="${ant.version}"/>
             </manifest>
 
         </war>
@@ -346,14 +362,14 @@
     <target depends="dist" name="dist-zip" description="Create dist-zip">
         <zip basedir="${dist}" compress="true"
                 excludes="${project.name}-${project.version}.zip"
-                zipfile="${dist}/${project.name}-${project.version}.zip"/>
+                zipfile="${dist}/${project.name}-${project.version}${build.label}.zip"/>
     </target>
     
     <!-- ================================================================== -->
     <!-- Create dist-tgz                                                    -->
     <!-- ================================================================== -->
     <target depends="dist" name="dist-tgz" description="Create dist-tgz">
-        <property name="dist.name" value="${project.name}-${project.version}"/>
+        <property name="dist.name" value="${project.name}-${project.version}${build.label}"/>
         <delete file="${dist}/${dist.name}.tar.gz"/>
         <delete file="${dist}/${dist.name}.tar"/>
         <tar basedir="${dist}" excludes="${dist.name}.zip" longfile="gnu" tarfile="${dist}/${dist.name}.tar"/>

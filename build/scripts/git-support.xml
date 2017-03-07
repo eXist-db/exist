@@ -11,7 +11,12 @@
                 </exec>
                 
                 <propertyregex property="git.branch" input="${git.branch.full}" regexp="(\\|\/)" replace="_" global="true" override="true" defaultvalue="${git.branch.full}"/>
-                
+
+                <exec executable="git" outputproperty="git.revision.full" failifexecutionfails="false">
+                        <arg value="rev-parse"/>
+                        <arg value="HEAD"/>
+                </exec>
+
                 <exec executable="git" outputproperty="git.revision" failifexecutionfails="false">
                         <arg value="rev-parse"/>
                         <arg value="--short"/>
@@ -29,8 +34,17 @@
                 </condition>
                 
                 <tstamp>
-                        <format property="TSTAMP" pattern="hhmmss"/>
+                        <format property="TSTAMP" pattern="HHmmss" timezone="UTC"/>
                 </tstamp>
+
+                <!-- The BUILD label from our Semantic Versioning scheme -->
+                <condition property="build.label" value="+${DSTAMP}${TSTAMP}">
+                        <matches string="${project.version}" pattern="^[0-9]+\.[0-9]+\.[0-9]+-SNAPSHOT$"/>
+                </condition>
+                <condition property="build.label" value="">
+                        <not><isset property="build.label"/></not>
+                </condition>
+
                 
                 <copy file="${basedir}/VERSION.txt.tmpl" tofile="${basedir}/VERSION.txt" overwrite="true" filtering="true">
                         <filterset>
