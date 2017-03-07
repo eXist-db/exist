@@ -49,7 +49,7 @@ public class LockTable {
     private volatile boolean enableLogEvents = true;    // set to false to disable all events
     //TODO(AR) probably better to create an Enum of reasons and statically use those from call sites
     //TODO(AR) or make configurable from conf.xml
-    private volatile boolean traceReason = false;   // whether we should try and determine a reason for the lock
+    private volatile boolean traceReason = true;   // whether we should try and determine a reason for the lock
 
     //TODO(AR) {@link #attempting) and {@link #acquired} are at class member level so that they can later be exposed via XQuery methods etc for reporting
 
@@ -126,10 +126,14 @@ public class LockTable {
         final Thread currentThread = Thread.currentThread();
         final String threadName = currentThread.getName();
         final String reason = getReason(currentThread);
-        if (threadName.startsWith("DefaultQuartzScheduler_")) return; //TODO(AR) temp for filtering
+        if (threadName.startsWith("DefaultQuartzScheduler_") || id.equals("dom.dbx") || id.equals("collections.dbx") || id.equals("collections.dbx") || id.equals("structure.dbx") || id.equals("values.dbx") || id.equals("CollectionCache")) return; //TODO(AR) temp for filtering
         final LockAction lockAction = new LockAction(action, id, lockType, mode, threadName, count, timestamp, reason);
 
         queue.add(Either.Right(lockAction));
+    }
+
+    public boolean hasPendingEvents() {
+        return !queue.isEmpty();
     }
 
     private static final String NATIVE_BROKER_CLASS_NAME = NativeBroker.class.getName();
@@ -141,7 +145,9 @@ public class LockTable {
             for (final StackTraceElement stackTraceElement : thread.getStackTrace()) {
                 final String className = stackTraceElement.getClassName();
                 if (className.equals(NATIVE_BROKER_CLASS_NAME) || className.equals(COLLECTION_STORE_CLASS_NAME) || className.equals(TXN_CLASS_NAME)) {
-                    return stackTraceElement.getMethodName() + '(' + stackTraceElement.getLineNumber() + ')';
+                    if(!(stackTraceElement.getMethodName().endsWith("LockCollection") || stackTraceElement.getMethodName().equals("lockCollectionCache"))) {
+                        return stackTraceElement.getMethodName() + '(' + stackTraceElement.getLineNumber() + ')';
+                    }
                 }
             }
         }
