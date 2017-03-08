@@ -98,7 +98,7 @@ public class MatchDocumentsTest {
 
         Collection col1 = null;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            col1 = broker.openCollection(col1uri, LockMode.READ_LOCK);
+            col1 = broker.openCollection(col1uri, LockMode.WRITE_LOCK);
 
             final DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
 
@@ -138,7 +138,7 @@ public class MatchDocumentsTest {
 
         } finally {
             if(col1 != null) {
-                col1.release(LockMode.READ_LOCK);
+                col1.release(LockMode.WRITE_LOCK);
             }
         }
     }

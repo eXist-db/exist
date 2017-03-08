@@ -151,6 +151,8 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
 
     private void stopDb() throws XMLDBException {
         if (database != null) {
+            root.close();
+
             DatabaseManager.deregisterDatabase(database);
             final DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
             dim.shutdown();

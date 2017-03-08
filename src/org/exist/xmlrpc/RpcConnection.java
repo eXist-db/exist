@@ -3023,8 +3023,12 @@ public class RpcConnection implements RpcAPI {
                                        final XmldbURI newName, final boolean move)
             throws EXistException, PermissionDeniedException {
 
+        // use WRITE_LOCK if moving or if src and dest collection are the same
+        final LockMode srcCollectionMode = move
+                || docUri.removeLastSegment().equals(destUri) ? LockMode.WRITE_LOCK : LockMode.READ_LOCK;
+
         return withDb((broker, transaction) ->
-                this.<Boolean>withCollection(move ? LockMode.WRITE_LOCK : LockMode.READ_LOCK, broker, transaction, docUri.removeLastSegment()).apply((source, broker1, transaction1) ->
+                this.<Boolean>withCollection(srcCollectionMode, broker, transaction, docUri.removeLastSegment()).apply((source, broker1, transaction1) ->
                         this.<Boolean>writeDocument(broker1, transaction1, source, docUri).apply((document, broker2, transaction2) ->
                                 this.<Boolean>writeCollection(broker2, transaction2, destUri).apply((destination, broker3, transaction3) -> {
                                     if (move) {
@@ -3050,8 +3054,13 @@ public class RpcConnection implements RpcAPI {
     private boolean moveOrCopyCollection(final XmldbURI collUri, final XmldbURI destUri,
                                          final XmldbURI newName, final boolean move)
             throws EXistException, PermissionDeniedException {
+
+        // use WRITE_LOCK if moving or if src and dest collection are the same
+        final LockMode srcCollectionMode = move
+                || collUri.equals(destUri) ? LockMode.WRITE_LOCK : LockMode.READ_LOCK;
+
         return withDb((broker, transaction) ->
-                this.<Boolean>withCollection(move ? LockMode.WRITE_LOCK : LockMode.READ_LOCK, broker, transaction, collUri).apply((source, broker1, transaction1) ->
+                this.<Boolean>withCollection(srcCollectionMode, broker, transaction, collUri).apply((source, broker1, transaction1) ->
                         this.<Boolean>writeCollection(broker1, transaction1, destUri).apply((destination, broker2, transaction2) -> {
                             if (move) {
                                 broker2.moveCollection(transaction2, source, destination, newName);

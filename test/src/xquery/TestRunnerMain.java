@@ -78,6 +78,7 @@ public class TestRunnerMain {
 		try {
 			final ParsedArguments arguments = CommandLineParser
 					.withArguments(singleTestArg)
+					.andArguments(fileArg)
 					.andArguments(helpArg)
 					.parse(args);
 

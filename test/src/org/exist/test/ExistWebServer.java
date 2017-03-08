@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Random;
 
+import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
+
 /**
  * Exist Jetty Web Server Rule for JUnit
  */
@@ -17,10 +19,12 @@ public class ExistWebServer extends ExternalResource {
     private final static int MAX_RANDOM_PORT_ATTEMPTS = 10;
 
     private JettyStart server = null;
+    private String prevAutoDeploy = "off";
 
     private final Random random = new Random();
     private final boolean useRandomPort;
     private final boolean cleanupDbOnShutdown;
+    private final boolean disableAutoDeploy;
 
     public ExistWebServer() {
         this(false);
@@ -31,8 +35,13 @@ public class ExistWebServer extends ExternalResource {
     }
 
     public ExistWebServer(final boolean useRandomPort, final boolean cleanupDbOnShutdown) {
+        this(useRandomPort, cleanupDbOnShutdown, false);
+    }
+
+    public ExistWebServer(final boolean useRandomPort, final boolean cleanupDbOnShutdown, final boolean disableAutoDeploy) {
         this.useRandomPort = useRandomPort;
         this.cleanupDbOnShutdown = cleanupDbOnShutdown;
+        this.disableAutoDeploy = disableAutoDeploy;
     }
 
     public final int getPort() {
@@ -45,6 +54,11 @@ public class ExistWebServer extends ExternalResource {
 
     @Override
     protected void before() throws Throwable {
+        if(disableAutoDeploy) {
+            this.prevAutoDeploy = System.getProperty(AUTODEPLOY_PROPERTY, "off");
+            System.setProperty(AUTODEPLOY_PROPERTY, "off");
+        }
+
         if (server == null) {
             if(useRandomPort) {
                 System.setProperty("jetty.port", Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT)));
@@ -84,6 +98,12 @@ public class ExistWebServer extends ExternalResource {
         } else {
             throw new IllegalStateException("ExistWebServer already stopped");
         }
+
+        if(disableAutoDeploy) {
+            //set the autodeploy trigger enablement back to how it was before this test class
+            System.setProperty(AUTODEPLOY_PROPERTY, this.prevAutoDeploy);
+        }
+
         super.after();
     }
 

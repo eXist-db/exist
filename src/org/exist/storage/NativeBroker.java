@@ -1718,17 +1718,16 @@ public class NativeBroker extends DBBroker {
                 collection.setId(getNextCollectionId(transaction));
             }
             final Value name = new CollectionStore.CollectionKey(collection.getURI().toString());
-            final VariableByteOutputStream os = new VariableByteOutputStream(8);
-            collection.serialize(os);
-            final long address = collectionsDb.put(transaction, name, os.data(), true);
-            if(address == BFile.UNKNOWN_ADDRESS) {
-                //TODO : exception !!! -pb
-                LOG.warn("could not store collection data for '" + collection.getURI() + "'");
-                return;
+            try(final VariableByteOutputStream os = new VariableByteOutputStream(8)) {
+                collection.serialize(os);
+                final long address = collectionsDb.put(transaction, name, os.data(), true);
+                if (address == BFile.UNKNOWN_ADDRESS) {
+                    //TODO : exception !!! -pb
+                    LOG.warn("could not store collection data for '" + collection.getURI() + "'");
+                    return;
+                }
+                collection.setAddress(address);
             }
-            collection.setAddress(address);
-            os.close();
-
         } catch(final ReadOnlyException e) {
             LOG.warn(DATABASE_IS_READ_ONLY);
         } catch(final LockException e) {
@@ -2052,9 +2051,8 @@ public class NativeBroker extends DBBroker {
 
 
         final Lock lock = collectionsDb.getLock();
-        try {
+        try(final VariableByteOutputStream os = new VariableByteOutputStream(8)) {
             lock.acquire(LockMode.WRITE_LOCK);
-            final VariableByteOutputStream os = new VariableByteOutputStream(8);
             doc.write(os);
             final Value key = new CollectionStore.DocumentKey(doc.getCollection().getId(), doc.getResourceType(), doc.getDocId());
             collectionsDb.put(transaction, key, os.data(), true);

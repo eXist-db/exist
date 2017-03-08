@@ -103,13 +103,12 @@ public class Node extends Item {
 	private int computeHashCode() {
 		if (item instanceof NodeProxy) {
 			NodeProxy proxy = (NodeProxy) item;
-			VariableByteOutputStream buf = new VariableByteOutputStream();
-			try {
+			try(final VariableByteOutputStream buf = new VariableByteOutputStream()) {
 				proxy.getNodeId().write(buf);
+				return proxy.getOwnerDocument().getURI().hashCode() ^ Arrays.hashCode(buf.toByteArray());
 			} catch (IOException e) {
 				throw new RuntimeException("unable to serialize node's id to compute hashCode", e);
 			}
-			return proxy.getOwnerDocument().getURI().hashCode() ^ Arrays.hashCode(buf.toByteArray());
 		} else {
 			return item.hashCode();
 		}

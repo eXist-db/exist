@@ -531,7 +531,9 @@ public class ExistDocument extends ExistResource {
         }
 
         Collection srcCollection = null;
-        final LockMode srcCollectionLockMode = (mode == Mode.COPY ? LockMode.READ_LOCK : LockMode.WRITE_LOCK);
+        // use WRITE_LOCK if moving or if src and dest collection are the same
+        final LockMode srcCollectionLockMode = mode == Mode.MOVE
+                || destCollectionUri.equals(xmldbUri.removeLastSegment()) ? LockMode.WRITE_LOCK : LockMode.READ_LOCK;
         DocumentImpl srcDocument = null;
 
         Collection destCollection = null;
