@@ -13,7 +13,7 @@ import static org.junit.Assert.fail;
 
 public class XmldbURITest {
 
-    private final static String jettyPort = System.getProperty("jetty.port");
+    private final static String jettyPort = System.getProperty("jetty.port", "8080");
 
     @Test
     public void xmldbURIConstructors() throws URISyntaxException {
@@ -350,26 +350,6 @@ public class XmldbURITest {
         try{
             @SuppressWarnings("unused")
             XmldbURI xmldbURI = XmldbURI.create("exist:///db");
-        } catch (Exception e) {
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
-    }
-
-    @Test
-    public void xmldbURIFaultyConstructor2() {
-        boolean exceptionThrown = false;
-        try{
-            @SuppressWarnings("unused")
-            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:///db");
-        } catch (URISyntaxException e) {
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
-        exceptionThrown = false;
-        try{
-            @SuppressWarnings("unused")
-            XmldbURI xmldbURI = XmldbURI.create("xmldb:///db");
         } catch (Exception e) {
             exceptionThrown = true;
         }
