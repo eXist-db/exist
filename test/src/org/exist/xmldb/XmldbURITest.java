@@ -41,6 +41,9 @@ public class XmldbURITest {
         XmldbURI.xmldbUriFor("//localhost:" + jettyPort + "/db/");
         //XXX: this MUST work or no MS OS support at all
         //XmldbURI.xmldbUriFor("D:\\workspace\\");
+
+        XmldbURI.xmldbUriFor("xmldb:///db/");
+        XmldbURI.xmldbUriFor("xmldb:///db/test");
     }
 
     @Test
@@ -320,6 +323,17 @@ public class XmldbURITest {
         assertEquals(XmldbURI.API_LOCAL, xmldbURI.getApiName());
         assertEquals("123",xmldbURI.getFragment());
         assertEquals("param=value",xmldbURI.getQuery());
+    }
+
+    @Test
+    public void xmldbURIConstructor16() throws URISyntaxException {
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:///db/aa/bb/ccc");
+        assertEquals("xmldb", xmldbURI.getInstanceName());
+        assertNull(xmldbURI.getHost());
+        assertEquals(-1, xmldbURI.getPort());
+        assertNull(xmldbURI.getContext());
+        assertEquals("/db/aa/bb/ccc", xmldbURI.getCollectionPath());
+        assertEquals(XmldbURI.API_LOCAL, xmldbURI.getApiName());
     }
 
     @Test
