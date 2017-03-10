@@ -1,21 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2017 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.client;
 
@@ -363,21 +363,28 @@ public class InteractiveClient {
                 cols[0] = perm.toString();
                 cols[1] = getOwnerName(perm);
                 cols[2] = getGroupName(perm);
-                cols[3] = URIUtils.urlDecodeUtf8(childCollections[i]);
+                cols[3] = childCollections[i];
                 resources[i] = 'd' + formatString(cols, colSizes);
             } else {
-                resources[i] = URIUtils.urlDecodeUtf8(childCollections[i]);
+                resources[i] = childCollections[i];
             }
 
             final Date created = mgtService.getSubCollectionCreationTime(current, childCollections[i]);
 
             if (options.startGUI) {
-                tableData.add(new ResourceDescriptor.Collection(
-                        XmldbURI.create(childCollections[i]),
-                        getOwnerName(perm),
-                        getGroupName(perm),
-                        "c" + ((perm instanceof ACLPermission && ((ACLPermission) perm).getACECount() > 0) ? perm.toString() + '+' : perm.toString()),
-                        created));
+                try {
+                    tableData.add(
+                        new ResourceDescriptor.Collection(
+                            XmldbURI.xmldbUriFor(childCollections[i]),
+                            getOwnerName(perm),
+                            getGroupName(perm),
+                            "c" + ((perm instanceof ACLPermission && ((ACLPermission) perm).getACECount() > 0) ? perm.toString() + '+' : perm.toString()),
+                            created
+                        )
+                    );
+                } catch (final URISyntaxException e) {
+                    errorln("could not parse collection name into a valid URI: " + e.getMessage());
+                }
             }
             completitions.add(childCollections[i]);
         }
@@ -391,21 +398,28 @@ public class InteractiveClient {
             if ("true".equals(properties.getProperty("permissions"))) {
                 resources[i] = '-' + perm.toString() + '\t' + perm.getOwner().getName()
                         + '\t' + perm.getGroup().getName() + '\t'
-                        + URIUtils.urlDecodeUtf8(childResources[j]);
+                        + childResources[j];
             } else {
-                resources[i] = URIUtils.urlDecodeUtf8(childResources[j]);
+                resources[i] = childResources[j];
             }
 
             final Date lastModificationTime = ((EXistResource) res).getLastModificationTime();
             resources[i] += "\t" + lastModificationTime;
 
             if (options.startGUI) {
-                tableData.add(new ResourceDescriptor.Document(
-                        XmldbURI.create(childResources[j]),
-                        getOwnerName(perm),
-                        getGroupName(perm),
-                        "-" + ((perm instanceof ACLPermission && ((ACLPermission) perm).getACECount() > 0) ? perm.toString() + '+' : perm.toString()),
-                        lastModificationTime));
+                try {
+                    tableData.add(
+                        new ResourceDescriptor.Document(
+                            XmldbURI.xmldbUriFor(childResources[j]),
+                            getOwnerName(perm),
+                            getGroupName(perm),
+                            "-" + ((perm instanceof ACLPermission && ((ACLPermission) perm).getACECount() > 0) ? perm.toString() + '+' : perm.toString()),
+                            lastModificationTime
+                        )
+                    );
+                } catch (final URISyntaxException e) {
+                    errorln("could not parse document name into a valid URI: " + e.getMessage());
+                }
             }
             completitions.add(childResources[j]);
         }
@@ -521,7 +535,7 @@ public class InteractiveClient {
                 if (args.length < 2 || args[1] == null) {
                     collectionPath = XmldbURI.ROOT_COLLECTION_URI;
                 } else {
-                    collectionPath = XmldbURI.xmldbUriFor(URIUtils.urlEncodeUtf8(args[1]));
+                    collectionPath = XmldbURI.xmldbUriFor(args[1]);
                 }
                 collectionPath = currUri.resolveCollectionPath(collectionPath);
                 if (collectionPath.numSegments() == 0) {
@@ -549,8 +563,8 @@ public class InteractiveClient {
                 }
                 final XmldbURI src, dest;
                 try {
-                    src = URIUtils.encodeXmldbUriFor(args[1]);
-                    dest = URIUtils.encodeXmldbUriFor(args[2]);
+                    src = XmldbURI.xmldbUriFor(args[1]);
+                    dest = XmldbURI.xmldbUriFor(args[2]);
                 } catch (final URISyntaxException e) {
                     errorln("could not parse collection name into a valid URI: " + e.getMessage());
                     return false;
@@ -562,7 +576,7 @@ public class InteractiveClient {
                 if (args.length == 2) {
                     final XmldbURI resource;
                     try {
-                        resource = URIUtils.encodeXmldbUriFor(args[1]);
+                        resource = XmldbURI.xmldbUriFor(args[1]);
                     } catch (final URISyntaxException e) {
                         errorln("could not parse resource name into a valid URI: " + e.getMessage());
                         return false;
@@ -578,7 +592,7 @@ public class InteractiveClient {
                 }
                 final XmldbURI resource;
                 try {
-                    resource = URIUtils.encodeXmldbUriFor(args[1]);
+                    resource = XmldbURI.xmldbUriFor(args[1]);
                 } catch (final URISyntaxException e) {
                     errorln("could not parse resource name into a valid URI: " + e.getMessage());
                     return false;
@@ -697,7 +711,7 @@ public class InteractiveClient {
                 }
                 final XmldbURI collUri;
                 try {
-                    collUri = URIUtils.encodeXmldbUriFor(args[1]);
+                    collUri = XmldbURI.xmldbUriFor(args[1]);
                 } catch (final URISyntaxException e) {
                     errorln("could not parse collection name into a valid URI: " + e.getMessage());
                     return false;
@@ -781,7 +795,7 @@ public class InteractiveClient {
                 }
                 final XmldbURI collUri;
                 try {
-                    collUri = URIUtils.encodeXmldbUriFor(args[1]);
+                    collUri = XmldbURI.xmldbUriFor(args[1]);
                 } catch (final URISyntaxException e) {
                     errorln("could not parse collection name into a valid URI: " + e.getMessage());
                     return false;
@@ -1242,24 +1256,28 @@ public class InteractiveClient {
     }
 
     private void copy(final XmldbURI source, XmldbURI destination) throws XMLDBException {
-        final CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl) current.getService("CollectionManagementService", "1.0");
-        final XmldbURI destName = destination.lastSegment();
-        final Collection destCol = resolveCollection(destination);
-        if (destCol == null) {
-            if (destination.numSegments() == 1) {
-                destination = XmldbURI.create(current.getName());
-            } else {
-                destination = destination.removeLastSegment();
+        try {
+            final CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl) current.getService("CollectionManagementService", "1.0");
+            final XmldbURI destName = destination.lastSegment();
+            final Collection destCol = resolveCollection(destination);
+            if (destCol == null) {
+                if (destination.numSegments() == 1) {
+                    destination = XmldbURI.xmldbUriFor(current.getName());
+                } else {
+                    destination = destination.removeLastSegment();
+                }
             }
-        }
-        final Resource srcDoc = resolveResource(source);
-        if (srcDoc != null) {
-            final XmldbURI resourcePath = XmldbURI.create(srcDoc.getParentCollection().getName()).append(srcDoc.getId());
-            messageln("Copying resource '" + resourcePath + "' to '" + destination + "'");
-            mgtService.copyResource(resourcePath, destination, destName);
-        } else {
-            messageln("Copying collection '" + source + "' to '" + destination + "'");
-            mgtService.copy(source, destination, destName);
+            final Resource srcDoc = resolveResource(source);
+            if (srcDoc != null) {
+                final XmldbURI resourcePath = XmldbURI.xmldbUriFor(srcDoc.getParentCollection().getName()).append(srcDoc.getId());
+                messageln("Copying resource '" + resourcePath + "' to '" + destination + "'");
+                mgtService.copyResource(resourcePath, destination, destName);
+            } else {
+                messageln("Copying collection '" + source + "' to '" + destination + "'");
+                mgtService.copy(source, destination, destName);
+            }
+        } catch (final URISyntaxException e) {
+            errorln("could not parse name into a valid URI: " + e.getMessage());
         }
     }
 
@@ -1301,7 +1319,7 @@ public class InteractiveClient {
                         c = collection.getChildCollection(FileUtils.fileName(file));
                         if (c == null) {
                             mgtService = (CollectionManagementServiceImpl) collection.getService("CollectionManagementService", "1.0");
-                            c = mgtService.createCollection(URIUtils.encodeXmldbUriFor(FileUtils.fileName(file)));
+                            c = mgtService.createCollection(XmldbURI.xmldbUriFor(FileUtils.fileName(file)));
                         }
 
                         if (c instanceof Observable && options.verbose) {
@@ -1317,7 +1335,7 @@ public class InteractiveClient {
                             mimeType = MimeType.BINARY_TYPE;
                         }
                         message("storing document " + FileUtils.fileName(file) + " (" + i + " of " + files.size() + ") " + "...");
-                        document = collection.createResource(URIUtils.urlEncodeUtf8(FileUtils.fileName(file)), mimeType.getXMLDBType());
+                        document = collection.createResource(FileUtils.fileName(file), mimeType.getXMLDBType());
                         document.setContent(file);
                         ((EXistResource) document).setMimeType(mimeType.getName());
                         collection.storeResource(document);
@@ -1419,7 +1437,7 @@ public class InteractiveClient {
                     c = collection.getChildCollection(FileUtils.fileName(file));
                     if (c == null) {
                         mgtService = (CollectionManagementServiceImpl) collection.getService("CollectionManagementService", "1.0");
-                        c = mgtService.createCollection(URIUtils.encodeXmldbUriFor(FileUtils.fileName(file)));
+                        c = mgtService.createCollection(XmldbURI.xmldbUriFor(FileUtils.fileName(file)));
                     }
                     if (c instanceof Observable && options.verbose) {
                         final ProgressObserver observer = new ProgressObserver();
@@ -1447,7 +1465,7 @@ public class InteractiveClient {
                         mimeType = MimeType.BINARY_TYPE;
                     }
                     message("storing document " + compressedName + " (" + i + " of " + files.size() + ") " + "...");
-                    document = collection.createResource(URIUtils.urlEncodeUtf8(compressedName), mimeType.getXMLDBType());
+                    document = collection.createResource(compressedName, mimeType.getXMLDBType());
                     document.setContent(isCompressed ? new GZIPInputSource(file) : file);
                     ((EXistResource) document).setMimeType(mimeType.getName());
                     collection.storeResource(document);
@@ -1587,7 +1605,7 @@ public class InteractiveClient {
                         Collection c = base.getChildCollection(pathSteps[i]);
                         if (c == null) {
                             final CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl) base.getService("CollectionManagementService", "1.0");
-                            c = mgtService.createCollection(URIUtils.encodeXmldbUriFor(pathSteps[i]));
+                            c = mgtService.createCollection(XmldbURI.xmldbUriFor(pathSteps[i]));
                         }
                         base = c;
                     }
@@ -1680,7 +1698,7 @@ public class InteractiveClient {
 
         final XmldbURI filenameUri;
         try {
-            filenameUri = URIUtils.encodeXmldbUriFor(FileUtils.fileName(file));
+            filenameUri = XmldbURI.xmldbUriFor(FileUtils.fileName(file));
         } catch (final URISyntaxException e1) {
             upload.showMessage(file.toAbsolutePath() + " could not be encoded as a URI");
             return;
@@ -2475,16 +2493,27 @@ public class InteractiveClient {
     }
 
     private Resource resolveResource(final XmldbURI path) throws XMLDBException {
-        final XmldbURI collectionPath = path.numSegments() == 1 ? XmldbURI.create(current.getName()) : path.removeLastSegment();
-        final XmldbURI resourceName = path.lastSegment();
+        try {
+            final XmldbURI collectionPath =
+                path.numSegments() == 1 ?
+                    XmldbURI.xmldbUriFor(current.getName()) : path.removeLastSegment();
 
-        final Collection collection = resolveCollection(collectionPath);
-        if (collection == null) {
-            messageln("Collection " + collectionPath + " not found.");
-            return null;
+            final XmldbURI resourceName = path.lastSegment();
+
+            final Collection collection = resolveCollection(collectionPath);
+
+            if (collection == null) {
+                messageln("Collection " + collectionPath + " not found.");
+                return null;
+            }
+
+            messageln("Locating resource " + resourceName + " in collection " + collection.getName());
+
+            return collection.getResource(resourceName.toString());
+        } catch (final URISyntaxException e) {
+            errorln("could not parse collection name into a valid URI: " + e.getMessage());
         }
-        messageln("Locating resource " + resourceName + " in collection " + collection.getName());
-        return collection.getResource(resourceName.toString());
+        return null;
     }
 
     private class CollectionCompleter implements Completor {
