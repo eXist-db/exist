@@ -1423,7 +1423,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 final ResourceDescriptor resource = resources.getRow(row);
                 if (resource.isCollection()) {
                     // cd into collection
-                    final String command = "cd " + '"' + URIUtils.urlDecodeUtf8(resource.getName()) + '"'; //$NON-NLS-1$
+                    final String command = "cd " + '"' + resource.getName() + '"'; //$NON-NLS-1$
                     display(command + "\n"); //$NON-NLS-1$
                     process.setAction(command);
                 } else {
