@@ -1,23 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2013 The eXist-db Project
- *  http://exist-db.org
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
- *  $Id$
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2017 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.security;
 
@@ -26,6 +24,9 @@ import static org.exist.security.PermissionRequired.IS_DBA;
 import static org.exist.security.PermissionRequired.IS_MEMBER;
 import static org.exist.security.PermissionRequired.IS_OWNER;
 import static org.exist.security.PermissionRequired.IS_SET_GID;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.security.internal.RealmImpl;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -43,6 +44,8 @@ import org.exist.storage.io.VariableByteOutputStream;
  * @author Adam Retter <adam@exist-db.org>
  */
 public class UnixStylePermission extends AbstractUnixStylePermission implements Permission {
+
+    public final static Logger LOG = LogManager.getLogger(SecurityManager.class);
 
     protected final SecurityManager sm;
 
@@ -78,7 +81,16 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
      */
     @Override
     public Account getOwner() {
-        return sm.getAccount(getOwnerId());
+        int id = getOwnerId();
+        Account account = sm.getAccount(id);
+        if (account == null) {
+            LOG.fatal(
+                "Detected a Security Database corruption. Could not find account for id: {}.",
+                id
+            );
+            return sm.getSystemSubject();
+        }
+        return account;
     }
 
     private int getOwnerId() {
@@ -151,7 +163,16 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
      */
     @Override
     public Group getGroup() {
-        return sm.getGroup(getGroupId());
+        int id = getGroupId();
+        Group group = sm.getGroup(id);
+        if (group == null) {
+            LOG.fatal(
+                "Detected a Security Database corruption. Could not find group for id: {}.",
+                id
+            );
+            return sm.getDBAGroup();
+        }
+        return group;
     }
 
     private int getGroupId() {
