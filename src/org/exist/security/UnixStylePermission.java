@@ -24,6 +24,9 @@ import static org.exist.security.PermissionRequired.IS_DBA;
 import static org.exist.security.PermissionRequired.IS_MEMBER;
 import static org.exist.security.PermissionRequired.IS_OWNER;
 import static org.exist.security.PermissionRequired.IS_SET_GID;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.security.internal.RealmImpl;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -41,6 +44,8 @@ import org.exist.storage.io.VariableByteOutputStream;
  * @author Adam Retter <adam@exist-db.org>
  */
 public class UnixStylePermission extends AbstractUnixStylePermission implements Permission {
+
+    public final static Logger LOG = LogManager.getLogger(SecurityManager.class);
 
     protected final SecurityManager sm;
 
@@ -76,8 +81,13 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
      */
     @Override
     public Account getOwner() {
-        Account account = sm.getAccount(getOwnerId());
+        int id = getOwnerId();
+        Account account = sm.getAccount(id);
         if (account == null) {
+            LOG.fatal(
+                "Detected a Security Database corruption. Could not find account for id: {}.",
+                id
+            );
             return sm.getSystemSubject();
         }
         return account;
@@ -153,8 +163,13 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
      */
     @Override
     public Group getGroup() {
-        Group group = sm.getGroup(getGroupId());
+        int id = getGroupId();
+        Group group = sm.getGroup(id);
         if (group == null) {
+            LOG.fatal(
+                "Detected a Security Database corruption. Could not find group for id: {}.",
+                id
+            );
             return sm.getDBAGroup();
         }
         return group;
