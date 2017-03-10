@@ -1600,7 +1600,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 final ResourceDescriptor row = getRow(rowIndex);
                 switch (columnIndex) {
                     case 0:
-                        return row.getName();
+                        return row.getName().toString();
                     case 1:
                         return dateFormat.format(row.getDate());
                     case 2:
