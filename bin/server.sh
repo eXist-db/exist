@@ -5,11 +5,11 @@
 # $Id$
 # -----------------------------------------------------------------------------
 
-## @UNIX_INSTALLER_1@ 
+## @UNIX_INSTALLER_1@
 
 #
-# In addition to the other parameter options for the standalone server 
-# pass -j or --jmx to enable JMX agent.  The port for it can be specified 
+# In addition to the other parameter options for the standalone server
+# pass -j or --jmx to enable JMX agent.  The port for it can be specified
 # with optional port number e.g. -j1099 or --jmx=1099.
 #
 
@@ -44,6 +44,14 @@ check_jmx_status;
 # save LANG
 set_locale_lang;
 
-"${JAVA_RUN}" $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" standalone "${JAVA_OPTS[@]}"
+if [ $FORKING == "1" ]; then
+    JAVA_RUN="exec ${JAVA_RUN}"
+fi
+
+if [ $PIDFILE ]; then
+    echo $$ > $PIDFILE
+fi
+
+${JAVA_RUN} $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" standalone "${JAVA_OPTS[@]}"
 
 restore_locale_lang;
