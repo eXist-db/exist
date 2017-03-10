@@ -338,7 +338,7 @@ public class Launcher extends Observable implements Observer {
             popup.addSeparator();
             final Desktop desktop = Desktop.getDesktop();
             if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                dashboardItem = new MenuItem("Open dashboard");
+                dashboardItem = new MenuItem("Open Dashboard");
                 popup.add(dashboardItem);
                 dashboardItem.addActionListener(actionEvent -> dashboard(desktop));
                 eXideItem = new MenuItem("Open eXide");
