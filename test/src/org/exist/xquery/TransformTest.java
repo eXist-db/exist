@@ -49,8 +49,54 @@ public class TransformTest {
                 "<p>End Template 1</p>" +
                 "</doc>");
     }
-    
-    
+
+    @Test
+    public void isSameNodeTest() throws XMLDBException {
+        String result = execQuery("xquery version \"3.0\";\n"
+            + "declare namespace xmldb = \"http://exist-db.org/xquery/xmldb\";\n"
+            + "declare option exist:serialize \"method=xml media-type=text/html\";\n"
+            + "\n"
+            + "let $lut :=\n"
+            + "<lut>\n"
+            + "   <product>\n"
+            + "     <name>First</name>\n"
+            + "     <id>100</id>\n"
+            + "   </product>\n"
+            + "   <product>\n"
+            + "     <name>Second</name>\n"
+            + "     <id>200</id>\n"
+            + "   </product>\n"
+            + "</lut>\n"
+            + "\n"
+            + "let $store := xmldb:store('/db/"+TEST_COLLECTION_NAME+"', 'A-Lut.xml', $lut)\n"
+            + "\n"
+            + "let $xmlin :=\n"
+            + "<root>\n"
+            + "   <product>\n"
+            + "     <id>100</id>\n"
+            + "   </product>\n"
+            + "</root>\n"
+            + "\n"
+            + "let $xslSheet :=\n"
+            + "   <xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"\n"
+            + "version=\"2.0\">\n"
+            + "     <xsl:param name=\"lut\">A-Lut.xml</xsl:param>\n"
+            + "     <xsl:template match=\"id\">\n"
+            + "       <xsl:variable name=\"lutdoc\" select=\"doc($lut)\"/>\n"
+            + "       Lutdoc:<xsl:value-of select=\"$lutdoc\"/>\n"
+            + "       LutIds:<xsl:value-of select=\"$lutdoc//product/id\"/>\n"
+            + "       Name:<xsl:value-of select=\"$lutdoc//product/id[. = current()]/../name\"/>\n"
+            + "     </xsl:template>\n"
+            + "   </xsl:stylesheet>\n"
+            + "\n"
+            + "let $xmlout := transform:transform($xmlin, $xslSheet, ())\n"
+            + "return <ok>{$xmlout}</ok>");
+        assertEquals(result, "<ok>\n"
+            + "       Lutdoc:First100Second200\n"
+            + "       LutIds:100 200\n"
+            + "       Name:First</ok>");
+    }
+
     private String execQuery(String query) throws XMLDBException {
     	XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
         service.setProperty("indent", "no");
