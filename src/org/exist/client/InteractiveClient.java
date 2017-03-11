@@ -1833,7 +1833,7 @@ public class InteractiveClient {
                     properties.load(pin);
                 }
             }
-        } catch (final IOException e) {
+        } catch (final NullPointerException | IOException e) {
             System.err.println("WARN - Unable to load properties from: " + propFile.toAbsolutePath().toString());
         }
         return properties;
