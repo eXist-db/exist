@@ -68,7 +68,7 @@ public class JnlpJarFiles {
             "log4j-core-%latest%",
             "log4j-jul-%latest%",
             "log4j-slf4j-impl-%latest%",
-            "pkg-repo",
+            "pkg-java-fork",
             "quartz-%latest%",
             "rsyntaxtextarea-%latest%",
             "slf4j-api-%latest%",
