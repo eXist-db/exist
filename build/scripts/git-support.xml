@@ -29,6 +29,8 @@
                         <arg value="HEAD"/>
                 </exec>
                 
+                <propertyregex property="git.branch" input="${git.branch.full}" regexp="(\\|\/)" replace="_" global="true" override="true" defaultvalue="${git.branch.full}"/>
+                
                 <condition property="git.commit" value="${git.commit}" else="${git.branch}-${git.revision}">
                         <isset property="git.commit" />      
                 </condition>
