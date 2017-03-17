@@ -1,23 +1,21 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2014 The eXist Project
+ * Copyright (C) 2001-2017 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
- *  $Id$
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.dom.persistent;
 
@@ -27,12 +25,12 @@ import org.exist.dom.QName;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.numbering.NodeId;
-import org.exist.security.ACLPermission;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
+import org.exist.security.SimpleACLPermission;
 import org.exist.security.UnixStylePermission;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -76,8 +74,6 @@ import java.io.IOException;
  */
 public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Document {
 
-    public static final int UNKNOWN_DOCUMENT_ID = -1;
-
     public static final byte XML_FILE = 0;
     public static final byte BINARY_FILE = 1;
 
@@ -102,7 +98,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     /**
      * the document's id
      */
-    private int docId = UNKNOWN_DOCUMENT_ID;
+    private final int docId;
 
     /**
      * the document's file name
@@ -113,16 +109,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     private transient Lock updateLock = null;
 
-    private DocumentMetadata metadata = null;
-
-    /**
-     * Creates a new <code>DocumentImpl</code> instance.
-     *
-     * @param pool a <code>BrokerPool</code> instance representing the db
-     */
-    public DocumentImpl(final BrokerPool pool) {
-        this(pool, null, null);
-    }
+    private final DocumentMetadata metadata;
 
     /**
      * Creates a new <code>DocumentImpl</code> instance.
@@ -131,7 +118,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      * @param collection a <code>Collection</code> value
      * @param fileURI    a <code>XmldbURI</code> value
      */
-    public DocumentImpl(final BrokerPool pool, final Collection collection, final XmldbURI fileURI) {
+    public DocumentImpl(final BrokerPool pool, final int id, final Collection collection, final XmldbURI fileURI) {
+        this.docId = id;
         this.pool = pool;
         this.collection = collection;
         this.fileURI = fileURI;
@@ -147,6 +135,58 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
                 throw new IllegalArgumentException(pde); //TODO improve
             }
         }
+
+        metadata = new DocumentMetadata();
+    }
+
+    /**
+     * Creates a new <code>DocumentImpl</code> instance.
+     *
+     * @param pool        a <code>BrokerPool</code> instance representing the db
+     * @param collection  a <code>Collection</code> value
+     * @param fileURI     a <code>XmldbURI</code> value
+     * @param permissions a <code>Permission</code> value
+     * @param metadata    a <code>DocumentMetadata</code> value
+     */
+    protected DocumentImpl(
+        final BrokerPool db,
+        final int id,
+        final XmldbURI fileURI,
+        final Permission permissions,
+        final DocumentMetadata metadata
+    ) {
+        this.docId = id;
+        this.pool = db;
+        this.collection = null;
+        this.fileURI = fileURI;
+
+        this.permissions = permissions;
+
+        this.metadata = metadata;
+    }
+
+    /**
+     * Creates a new <code>DocumentImpl</code> instance.
+     *
+     * @param pool         a <code>BrokerPool</code> instance representing the db
+     * @param collection   a <code>Collection</code> value
+     * @param fileURI      a <code>XmldbURI</code> value
+     * @param permissions  a <code>Permission</code> value
+     * @param childAddress a <code>long[]</code> value
+     * @param metadata     a <code>DocumentMetadata</code> value
+     */
+    private DocumentImpl(
+        final BrokerPool db,
+        final int id,
+        final XmldbURI fileURI,
+        final Permission permissions,
+        final long[] childAddress,
+        final DocumentMetadata metadata
+    ) {
+        this(db, id, fileURI, permissions, metadata);
+
+        children = childAddress.length;
+        this.childAddress = childAddress;
     }
 
     //TODO document really should not hold a reference to the brokerpool
@@ -205,15 +245,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     public int getDocId() {
         return docId;
-    }
-
-    /**
-     * The method <code>setDocId</code>
-     *
-     * @param docId an <code>int</code> value
-     */
-    public void setDocId(final int docId) {
-        this.docId = docId;
     }
 
     /**
@@ -282,18 +313,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     @Deprecated
     public void setMetadata(final DocumentMetadata meta) {
-        this.metadata = meta;
+        this.metadata.copyOf(meta);
     }
 
     @Override
     public DocumentMetadata getMetadata() {
-        if(metadata == null) {
-            try(final DBBroker broker = pool.getBroker()) {
-                broker.getResourceMetadata(this);
-            } catch(final EXistException e) {
-                LOG.warn("Error while loading document metadata: " + e.getMessage(), e);
-            }
-        }
         return metadata;
     }
 
@@ -317,12 +341,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     public void copyOf(final DocumentImpl other, final boolean preserve) {
         childAddress = null;
         children = 0;
-
-        //XXX: why reusing? better to create new instance? -shabanovd
-        metadata = getMetadata();
-        if(metadata == null) {
-            metadata = new DocumentMetadata();
-        }
 
         //copy metadata
         metadata.copyOf(other.getMetadata());
@@ -511,74 +529,29 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     /**
      * The method <code>read</code>
      *
-     * @param istream a <code>VariableByteInput</code> value
+     * @param db database
+     * @param stream a <code>VariableByteInput</code> value
      * @throws IOException  if an error occurs
      * @throws EOFException if an error occurs
      */
-    public void read(final VariableByteInput istream) throws IOException, EOFException {
-        try {
-            docId = istream.readInt();
-            fileURI = XmldbURI.createInternal(istream.readUTF());
-            getPermissions().read(istream);
-            //Should be > 0 ;-)
-            children = istream.readInt();
-            childAddress = new long[children];
-            for(int i = 0; i < children; i++) {
-                childAddress[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
-            }
-        } catch(final IOException e) {
-            LOG.error("IO error while reading document data for document " + fileURI, e);
-            //TODO : raise exception ?
+    public static DocumentImpl read(final BrokerPool db, final VariableByteInput stream) throws IOException {
+        int docId = stream.readInt();
+        XmldbURI fileURI = XmldbURI.createInternal(stream.readUTF());
+
+        SimpleACLPermission permissions = SimpleACLPermission.read(db.getSecurityManager(), stream);
+
+        int children = stream.readInt();
+        assert children > 0;
+
+        long[] childAddress = new long[children];
+        for(int i = 0; i < children; i++) {
+            childAddress[i] = StorageAddress.createPointer(stream.readInt(), stream.readShort());
         }
-    }
 
-    public void readWithMetadata(final VariableByteInput istream) throws IOException, EOFException {
-        try {
-            docId = istream.readInt();
-            fileURI = XmldbURI.createInternal(istream.readUTF());
-            getPermissions().read(istream);
-            //Should be > 0 ;-)
-            children = istream.readInt();
-            childAddress = new long[children];
-            for(int i = 0; i < children; i++) {
-                childAddress[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
-            }
-            metadata = new DocumentMetadata();
-            metadata.read(pool.getSymbols(), istream);
-        } catch(final IOException e) {
-            LOG.error("IO error while reading document data for document " + fileURI, e);
-            //TODO : raise exception ?
-        }
-    }
+        DocumentMetadata metadata = new DocumentMetadata();
+        metadata.read(db.getSymbols(), stream);
 
-    /**
-     * The method <code>readDocumentMeta</code>
-     *
-     * @param istream a <code>VariableByteInput</code> value
-     */
-    public void readDocumentMeta(final VariableByteInput istream) {
-        // skip over already known document data
-        try {
-            istream.skip(1); //docId
-            istream.readUTF(); //fileURI.toString()
-
-            //istream.skip(2 + 2); //uid, gid, mode, children count
-            istream.skip(1); //unix style permission uses a single long
-            if(permissions instanceof ACLPermission) {
-                final int aceCount = istream.read();
-                istream.skip(aceCount);
-            }
-
-            istream.skip(1); //children size
-            istream.skip(children * 2); //actual children
-
-            metadata = new DocumentMetadata();
-            metadata.read(pool.getSymbols(), istream);
-
-        } catch(final IOException e) {
-            LOG.error("IO error while reading document metadata for " + fileURI, e);
-            //TODO : raise exception ?
-        }
+        return new DocumentImpl(db, docId, fileURI, permissions, childAddress, metadata);
     }
 
     /**

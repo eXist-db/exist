@@ -1,23 +1,25 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2017 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.storage;
+
+import static org.exist.storage.BrokerPoolConstants.UNKNOWN_ID;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -690,8 +692,11 @@ public class NativeBroker extends DBBroker {
                     final CollectionTrigger trigger = new CollectionTriggers(this);
                     trigger.beforeCreateCollection(this, transaction, XmldbURI.ROOT_COLLECTION_URI);
 
-                    current = new MutableCollection(this, XmldbURI.ROOT_COLLECTION_URI);
-                    current.setId(getNextCollectionId(transaction));
+                    current = new MutableCollection(
+                        getNextCollectionId(transaction),
+                        XmldbURI.ROOT_COLLECTION_URI,
+                        PermissionFactory.getDefaultCollectionPermission(getBrokerPool().getSecurityManager())
+                    );
                     current.setCreationTime(System.currentTimeMillis());
 
                     if(transaction != null) {
@@ -766,13 +771,20 @@ public class NativeBroker extends DBBroker {
                         final CollectionTrigger trigger = new CollectionTriggers(this, current);
                         trigger.beforeCreateCollection(this, transaction, path);
 
-                        sub = new MutableCollection(this, path);
+                        Permission permissions = PermissionFactory
+                            .getDefaultCollectionPermission(getBrokerPool().getSecurityManager());
+
                         //inherit the group to the sub-collection if current collection is setGid
                         if(current.getPermissions().isSetGid()) {
-                            sub.getPermissions().setGroupFrom(current.getPermissions()); //inherit group
-                            sub.getPermissions().setSetGid(true); //inherit setGid bit
+                            permissions.setGroupFrom(current.getPermissions()); //inherit group
+                            permissions.setSetGid(true); //inherit setGid bit
                         }
-                        sub.setId(getNextCollectionId(transaction));
+
+                        sub = new MutableCollection(
+                            getNextCollectionId(transaction),
+                            path,
+                            permissions
+                        );
 
                         if(transaction != null) {
                             transaction.acquireLock(sub.getLock(), LockMode.WRITE_LOCK);
@@ -795,8 +807,6 @@ public class NativeBroker extends DBBroker {
             } catch(final LockException e) {
                 LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
                 return null;
-            } catch(final ReadOnlyException e) {
-                throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
             }
         }
     }
@@ -932,7 +942,7 @@ public class NativeBroker extends DBBroker {
                     if(is == null) {
                         return null;
                     }
-                    collection = MutableCollection.load(this, uri, is);
+                    collection = MutableCollection.read(this, uri, is);
 
                     collectionsCache.add(collection);
 
@@ -1143,7 +1153,12 @@ public class NativeBroker extends DBBroker {
             DocumentImpl createdDoc;
             if(child.getResourceType() == DocumentImpl.XML_FILE) {
                 //TODO : put a lock on newDoc ?
-                final DocumentImpl newDoc = new DocumentImpl(pool, destCollection._2, child.getFileURI());
+                final DocumentImpl newDoc = new DocumentImpl(
+                    pool,
+                    getNextResourceId(transaction),
+                    destCollection._2,
+                    child.getFileURI()
+                );
                 newDoc.copyOf(child, false);
                 if(oldDoc != null) {
                     //preserve permissions from existing doc we are replacing
@@ -1155,20 +1170,23 @@ public class NativeBroker extends DBBroker {
                     copyModeAndAcl(srcPerm, destPerm);
                 }
 
-                newDoc.setDocId(getNextResourceId(transaction, destination));
                 copyXMLResource(transaction, child, newDoc);
                 storeXMLResource(transaction, newDoc);
                 destCollection._2.addDocument(transaction, this, newDoc);
 
                 createdDoc = newDoc;
             } else {
-                final BinaryDocument newDoc = new BinaryDocument(pool, destCollection._2, child.getFileURI());
+                final BinaryDocument newDoc = new BinaryDocument(
+                    pool,
+                    getNextResourceId(transaction),
+                    destCollection._2,
+                    child.getFileURI()
+                );
                 newDoc.copyOf(child, false);
                 if(oldDoc != null) {
                     //preserve permissions from existing doc we are replacing
                     newDoc.setPermissions(oldDoc.getPermissions()); //TODO use newDoc.copyOf(oldDoc) ideally, but we cannot currently access oldDoc without READ access to it, which we may not have (and should not need for this)!
                 }
-                newDoc.setDocId(getNextResourceId(transaction, destination));
 
                 try(final InputStream is = getBinaryResource((BinaryDocument) child)) {
                     storeBinaryResource(transaction, newDoc, is);
@@ -1708,15 +1726,16 @@ public class NativeBroker extends DBBroker {
             throw new IOException(DATABASE_IS_READ_ONLY);
         }
 
+        if(collection.getId() == UNKNOWN_ID) {
+            throw new IOException("collection have no id");
+        }
+
         pool.getCollectionsCache().add(collection);
 
         final Lock lock = collectionsDb.getLock();
         try {
             lock.acquire(LockMode.WRITE_LOCK);
 
-            if(collection.getId() == Collection.UNKNOWN_COLLECTION_ID) {
-                collection.setId(getNextCollectionId(transaction));
-            }
             final Value name = new CollectionStore.CollectionKey(collection.getURI().toString());
             try(final VariableByteOutputStream os = new VariableByteOutputStream(8)) {
                 collection.serialize(os);
@@ -1724,12 +1743,8 @@ public class NativeBroker extends DBBroker {
                 if (address == BFile.UNKNOWN_ADDRESS) {
                     //TODO : exception !!! -pb
                     LOG.warn("could not store collection data for '" + collection.getURI() + "'");
-                    return;
                 }
-                collection.setAddress(address);
             }
-        } catch(final ReadOnlyException e) {
-            LOG.warn(DATABASE_IS_READ_ONLY);
         } catch(final LockException e) {
             LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
         } finally {
@@ -1741,11 +1756,11 @@ public class NativeBroker extends DBBroker {
      * Get the next available unique collection id.
      *
      * @return next available unique collection id
-     * @throws ReadOnlyException
+     * @throws IOException If there's no free collection id
      */
-    public int getNextCollectionId(final Txn transaction) throws ReadOnlyException {
+    public int getNextCollectionId(final Txn transaction) throws IOException {
         int nextCollectionId = collectionsDb.getFreeCollectionId();
-        if(nextCollectionId != Collection.UNKNOWN_COLLECTION_ID) {
+        if(nextCollectionId >= 0) {
             return nextCollectionId;
         }
         final Lock lock = collectionsDb.getLock();
@@ -1753,18 +1768,28 @@ public class NativeBroker extends DBBroker {
             lock.acquire(LockMode.WRITE_LOCK);
             final Value key = new CollectionStore.CollectionKey(CollectionStore.NEXT_COLLECTION_ID_KEY);
             final Value data = collectionsDb.get(key);
+
             if(data != null) {
                 nextCollectionId = ByteConversion.byteToInt(data.getData(), OFFSET_COLLECTION_ID);
                 ++nextCollectionId;
+                if(nextCollectionId == 0x7FFFFFFF || nextCollectionId < 0) {
+                    pool.setReadOnly();
+                    throw new IOException("Max. number of collections ids reached. "
+                        + "Database is set to read-only state. "
+                        + "Please do a complete backup/restore to compact the db and free document ids.");
+                }
+            } else {
+                nextCollectionId = 1;
             }
+
             final byte[] d = new byte[Collection.LENGTH_COLLECTION_ID];
             ByteConversion.intToByte(nextCollectionId, d, OFFSET_COLLECTION_ID);
             collectionsDb.put(transaction, key, d, true);
+
             return nextCollectionId;
+
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
-            return Collection.UNKNOWN_COLLECTION_ID;
-            //TODO : rethrow ? -pb
+            throw new IOException("can't allocate collection id");
         } finally {
             lock.release(LockMode.WRITE_LOCK);
         }
@@ -1922,14 +1947,18 @@ public class NativeBroker extends DBBroker {
                     created = true;
                 }
                 //create a temporary document
-                final DocumentImpl targetDoc = new DocumentImpl(pool, temp, docName);
+                final DocumentImpl targetDoc = new DocumentImpl(
+                    pool,
+                    getNextResourceId(transaction),
+                    temp,
+                    docName
+                );
                 targetDoc.getPermissions().setMode(Permission.DEFAULT_TEMPORARY_DOCUMENT_PERM);
                 final long now = System.currentTimeMillis();
                 final DocumentMetadata metadata = new DocumentMetadata();
                 metadata.setLastModified(now);
                 metadata.setCreated(now);
                 targetDoc.setMetadata(metadata);
-                targetDoc.setDocId(getNextResourceId(transaction, temp));
                 //index the temporary document
                 final DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
                 indexer.scan();
@@ -2406,26 +2435,6 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    //TODO : consider a better cooperation with Collection -pb
-    @Override
-    public void getResourceMetadata(final DocumentImpl document) {
-        final Lock lock = collectionsDb.getLock();
-        try {
-            lock.acquire(LockMode.READ_LOCK);
-            final Value key = new CollectionStore.DocumentKey(document.getCollection().getId(), document.getResourceType(), document.getDocId());
-            final VariableByteInput is = collectionsDb.getAsStream(key);
-            if(is != null) {
-                document.readDocumentMeta(is);
-            }
-        } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
-        } catch(final IOException e) {
-            LOG.warn("IOException while reading document data", e);
-        } finally {
-            lock.release(LockMode.READ_LOCK);
-        }
-    }
-
     /**
      * @param doc         src document
      * @param destination destination collection
@@ -2507,9 +2516,13 @@ public class NativeBroker extends DBBroker {
                         }
                     }
                 } else {
-                    final DocumentImpl newDoc = new DocumentImpl(pool, destination, newName);
+                    final DocumentImpl newDoc = new DocumentImpl(
+                        pool,
+                        getNextResourceId(transaction),
+                        destination,
+                        newName
+                    );
                     newDoc.copyOf(doc, oldDoc != null);
-                    newDoc.setDocId(getNextResourceId(transaction, destination));
                     newDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
                     try {
                         copyXMLResource(transaction, doc, newDoc);
@@ -2844,46 +2857,50 @@ public class NativeBroker extends DBBroker {
     }
 
     /**
-     * get next Free Doc Id
+     * Get a new document id
      *
-     * @throws EXistException If there's no free document id
+     * @throws IOException If there's no free document id
      */
     @Override
-    public int getNextResourceId(final Txn transaction, final Collection collection) throws EXistException {
+    public int getNextResourceId(final Txn transaction) throws IOException {
         int nextDocId = collectionsDb.getFreeResourceId();
-        if(nextDocId != DocumentImpl.UNKNOWN_DOCUMENT_ID) {
+        if(nextDocId >= 0) {
             return nextDocId;
         }
-        nextDocId = 1;
         final Lock lock = collectionsDb.getLock();
         try {
             lock.acquire(LockMode.WRITE_LOCK);
             final Value key = new CollectionStore.CollectionKey(CollectionStore.NEXT_DOC_ID_KEY);
             final Value data = collectionsDb.get(key);
-            if(data != null) {
+            if (data != null) {
                 nextDocId = ByteConversion.byteToInt(data.getData(), 0);
                 ++nextDocId;
-                if(nextDocId == 0x7FFFFFFF) {
+                if(nextDocId == 0x7FFFFFFF || nextDocId < 0) {
                     pool.setReadOnly();
-                    throw new EXistException("Max. number of document ids reached. Database is set to " +
+                    throw new IOException("Max. number of document ids reached. Database is set to " +
                         "read-only state. Please do a complete backup/restore to compact the db and " +
                         "free document ids.");
                 }
+            } else {
+                nextDocId = 1;
             }
             final byte[] d = new byte[4];
             ByteConversion.intToByte(nextDocId, d, 0);
             collectionsDb.put(transaction, key, d, true);
-            //} catch (ReadOnlyException e) {
-            //LOG.warn("Database is read-only");
-            //return DocumentImpl.UNKNOWN_DOCUMENT_ID;
-            //TODO : rethrow ? -pb
+
+            return nextDocId;
+
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
-            //TODO : rethrow ? -pb
+            throw new IOException("can't allocate resource id", e);
         } finally {
             lock.release(LockMode.WRITE_LOCK);
         }
-        return nextDocId;
+    }
+
+    @Override
+    @Deprecated //for internal use only
+    public void freeResourceId(int id) {
+        collectionsDb.freeResourceId(id);
     }
 
     @Override
@@ -2951,9 +2968,13 @@ public class NativeBroker extends DBBroker {
                 }
             }.run();
             // create a copy of the old doc to copy the nodes into it
-            final DocumentImpl tempDoc = new DocumentImpl(pool, doc.getCollection(), doc.getFileURI());
+            final DocumentImpl tempDoc = new DocumentImpl(
+                pool,
+                doc.getDocId(),
+                doc.getCollection(),
+                doc.getFileURI()
+            );
             tempDoc.copyOf(doc, true);
-            tempDoc.setDocId(doc.getDocId());
             final StreamListener listener = indexController.getStreamListener(doc, ReindexMode.STORE);
             // copy the nodes
             final NodeList nodes = doc.getChildNodes();
@@ -3982,11 +4003,10 @@ public class NativeBroker extends DBBroker {
 
                 final DocumentImpl doc;
                 if(type == DocumentImpl.BINARY_FILE) {
-                    doc = new BinaryDocument(pool);
+                    doc = BinaryDocument.read(pool, is);
                 } else {
-                    doc = new DocumentImpl(pool);
+                    doc = DocumentImpl.read(pool, is);
                 }
-                doc.read(is);
 
                 collectionInternalAccess.addDocument(doc);
             } catch(final EXistException | IOException e) {

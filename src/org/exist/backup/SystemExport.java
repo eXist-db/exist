@@ -1,21 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2016 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2017 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.backup;
 
@@ -770,8 +770,8 @@ public class SystemExport {
                         callback.startCollection(uri);
                     }
 
-                    final VariableByteInput istream = store.getAsStream(pointer);
-                    final Collection collection = MutableCollection.load(broker, XmldbURI.createInternal(uri), istream);
+                    final VariableByteInput stream = store.getAsStream(pointer);
+                    final Collection collection = MutableCollection.read(broker, XmldbURI.createInternal(uri), stream);
 
                     BackupDescriptor bd = null;
 
@@ -832,15 +832,14 @@ public class SystemExport {
 
                 try {
                     final byte type = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + DocumentImpl.LENGTH_DOCUMENT_TYPE];
-                    final VariableByteInput istream = store.getAsStream(pointer);
-                    DocumentImpl doc = null;
+                    final VariableByteInput stream = store.getAsStream(pointer);
 
+                    final DocumentImpl doc;
                     if (type == DocumentImpl.BINARY_FILE) {
-                        doc = new BinaryDocument(broker.getBrokerPool());
+                        doc = BinaryDocument.read(broker.getBrokerPool(), stream);
                     } else {
-                        doc = new DocumentImpl(broker.getBrokerPool());
+                        doc = DocumentImpl.read(broker.getBrokerPool(), stream);
                     }
-                    doc.readWithMetadata(istream);
                     reportError("Found an orphaned document: " + doc.getFileURI().toString(), null);
 
                     if (writtenDocs != null) {

@@ -1,28 +1,27 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2014 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2017 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.dom.persistent;
 
 import org.exist.collections.Collection;
+import org.exist.security.Permission;
+import org.exist.security.SimpleACLPermission;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.io.VariableByteInput;
@@ -44,12 +43,23 @@ public class BinaryDocument extends DocumentImpl {
     private long pageNr = Page.NO_PAGE;
     private long realSize = 0L;
 
-    public BinaryDocument(final BrokerPool pool) {
-        super(pool);
+    public BinaryDocument(final BrokerPool pool, final int id, final Collection collection, final XmldbURI fileURI) {
+        super(pool, id, collection, fileURI);
     }
 
-    public BinaryDocument(final BrokerPool pool, final Collection collection, final XmldbURI fileURI) {
-        super(pool, collection, fileURI);
+    private BinaryDocument(
+        final BrokerPool db,
+        final int id,
+        final XmldbURI fileURI,
+        final Permission permissions,
+        final DocumentMetadata metadata,
+        long pageNr,
+        long realSize
+    ) {
+        super(db, id, fileURI, permissions, metadata);
+
+        this.pageNr = pageNr;
+        this.realSize = realSize;
     }
 
     @Override
@@ -86,17 +96,19 @@ public class BinaryDocument extends DocumentImpl {
         getMetadata().write(getBrokerPool().getSymbols(), ostream);
     }
 
-    @Override
-    public void read(final VariableByteInput istream) throws IOException {
-        setDocId(istream.readInt());
-        setFileURI(XmldbURI.create(istream.readUTF()));
-        this.pageNr = istream.readLong();
+    public static BinaryDocument read(final BrokerPool db, final VariableByteInput stream) throws IOException {
+        int docId = stream.readInt();
+        XmldbURI fileURI = XmldbURI.createInternal(stream.readUTF());
 
-        getPermissions().read(istream);
+        long pageNr = stream.readLong();
 
-        this.realSize = istream.readLong();
-        final DocumentMetadata metadata = new DocumentMetadata();
-        metadata.read(getBrokerPool().getSymbols(), istream);
-        setMetadata(metadata);
+        SimpleACLPermission permissions = SimpleACLPermission.read(db.getSecurityManager(), stream);
+
+        long realSize = stream.readLong();
+
+        DocumentMetadata metadata = new DocumentMetadata();
+        metadata.read(db.getSymbols(), stream);
+
+        return new BinaryDocument(db, docId, fileURI, permissions, metadata, pageNr, realSize);
     }
 }

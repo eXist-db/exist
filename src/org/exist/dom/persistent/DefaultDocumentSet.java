@@ -1,25 +1,25 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2000-2014 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2017 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.dom.persistent;
+
+import static org.exist.storage.BrokerPoolConstants.UNKNOWN_ID;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.exist.collections.Collection;
@@ -218,10 +218,10 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
     }
 
     public int getMinDocId() {
-        int min = DocumentImpl.UNKNOWN_DOCUMENT_ID;
+        int min = UNKNOWN_ID;
         for (final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); ) {
             final DocumentImpl d = i.next();
-            if (min == DocumentImpl.UNKNOWN_DOCUMENT_ID) {
+            if (min == UNKNOWN_ID) {
                 min = d.getDocId();
             } else if (d.getDocId() < min) {
                 min = d.getDocId();
@@ -231,7 +231,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
     }
 
     public int getMaxDocId() {
-        int max = DocumentImpl.UNKNOWN_DOCUMENT_ID;
+        int max = UNKNOWN_ID;
         for (final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); ) {
             final DocumentImpl d = i.next();
             if (d.getDocId() > max) {

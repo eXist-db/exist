@@ -1,3 +1,22 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2017 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 package org.exist.collections;
 
 import org.exist.EXistException;
@@ -49,11 +68,6 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
     int LENGTH_COLLECTION_ID = 4; //sizeof int
 
     /**
-     * The ID of an unknown Collection
-     */
-    int UNKNOWN_COLLECTION_ID = -1;
-
-    /**
      * Get's the lock for this Collection
      * <p>
      * Note - this does not actually acquire the lock
@@ -79,27 +93,6 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @return The id of the Collection
      */
     int getId();
-
-    /**
-     * Set the internal id
-     *
-     * @param id The id of the Collection
-     */
-    void setId(int id);
-
-    /**
-     * Set the internal storage address of the Collection data
-     *
-     * @param address The internal storage address
-     */
-    void setAddress(long address);
-
-    /**
-     * Gets the internal storage address of the Collection data
-     *
-     * @return The internal storage address
-     */
-    long getAddress();
 
     /**
      * Get the URI path of the Collection

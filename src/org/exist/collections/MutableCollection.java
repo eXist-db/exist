@@ -1,21 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2017 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.collections;
 
@@ -45,10 +45,9 @@ import org.exist.indexing.StreamListener;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.PermissionFactory;
+import org.exist.security.SimpleACLPermission;
 import org.exist.security.Subject;
 import org.exist.storage.*;
-import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.*;
@@ -84,12 +83,11 @@ public class MutableCollection implements Collection {
     private static final int DOCUMENT_SIZE = 450;
     private static final int POOL_PARSER_THRESHOLD = 500;
 
-    private int collectionId = UNKNOWN_COLLECTION_ID;
+    private final int collectionId;
     private XmldbURI path;
     private final Lock lock;
-    @GuardedBy("lock") private final Map<String, DocumentImpl> documents = new TreeMap<>();
-    @GuardedBy("lock") private ObjectHashSet<XmldbURI> subCollections = new ObjectHashSet<>(19);
-    private long address = BFile.UNKNOWN_ADDRESS;  // Storage address of the collection in the BFile
+    @GuardedBy("lock") private final Map<String, DocumentImpl> documents;
+    @GuardedBy("lock") private final ObjectHashSet<XmldbURI> subCollections;
     private long created = 0;
     private volatile boolean collectionConfigEnabled = true;
     private boolean triggersEnabled = true;
@@ -105,35 +103,45 @@ public class MutableCollection implements Collection {
 
     /**
      * Constructs a Collection Object (not yet persisted)
-     *
-     * @param broker The database broker
-     * @param path The path of the Collection
      */
-    public MutableCollection(final DBBroker broker, final XmldbURI path) {
-        //The permissions assigned to this collection
-        permissions = PermissionFactory.getDefaultCollectionPermission(broker.getBrokerPool().getSecurityManager());
+    public MutableCollection(final int id, final XmldbURI path, final Permission permissions) {
+        this.collectionId = id;
+        this.permissions = permissions;
 
         setPath(path);
+
         lock = new ReentrantReadWriteLock(path);
-        this.collectionMetadata = new CollectionMetadata(this);
+
+        created = System.currentTimeMillis();
+        collectionMetadata = new CollectionMetadata(this);
+
+        documents = new TreeMap<>();
+        subCollections = new ObjectHashSet<>(19);
     }
 
     /**
-     * Deserializes a Collection object
-     *
-     * Counterpart method to {@link #serialize(VariableByteOutputStream)}
-     *
-     * @param broker The database broker
-     * @param path The path of the Collection
-     * @param inputStream The input stream to deserialize the Collection from
-     *
-     * @return The Collection Object
+     * Constructs a Collection Object that was loaded
      */
-    public static MutableCollection load(final DBBroker broker, final XmldbURI path, final VariableByteInput inputStream)
-            throws PermissionDeniedException, IOException, LockException {
-        final MutableCollection collection = new MutableCollection(broker, path);
-        collection.deserialize(broker, inputStream);
-        return collection;
+    private MutableCollection(
+        final int id,
+        final XmldbURI path,
+        final Permission permissions,
+        final long created,
+        final ObjectHashSet<XmldbURI> subCollections,
+        final Map<String, DocumentImpl> documents
+    ) {
+        this.collectionId = id;
+        this.permissions = permissions;
+
+        setPath(path);
+
+        lock = new ReentrantReadWriteLock(path);
+
+        this.created = created;
+        collectionMetadata = new CollectionMetadata(this);
+
+        this.subCollections = subCollections;
+        this.documents = documents;
     }
 
     @Override
@@ -287,14 +295,8 @@ public class MutableCollection implements Collection {
             }
         }
         
-        if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID) {
-            try {
-                doc.setDocId(broker.getNextResourceId(transaction, this));
-            } catch(final EXistException e) {
-                LOG.error("Collection error " + e.getMessage(), e);
-                // TODO : re-raise the exception ? -pb
-                return;
-            }
+        if (doc.getDocId() < 0) {
+            throw new PermissionDeniedException("document must have id");
         }
 
         getLock().acquire(LockMode.WRITE_LOCK);
@@ -907,54 +909,56 @@ public class MutableCollection implements Collection {
      * Counterpart method to {@link #serialize(VariableByteOutputStream)}
      *
      * @param broker the database broker
-     * @param istream The input data
+     * @param path the collection path
+     * @param stream The input data
      */
-    private void deserialize(final DBBroker broker, final VariableByteInput istream)
-            throws IOException, PermissionDeniedException, LockException {
-        collectionId = istream.readInt();
+    public static MutableCollection read(final DBBroker broker, final XmldbURI path, final VariableByteInput stream)
+            throws IOException, PermissionDeniedException {
+
+        int collectionId = stream.readInt();
         if (collectionId < 0) {
             throw new IOException("Internal error reading collection: invalid collection id");
         }
-        final int collLen = istream.readInt();
+        int collLen = stream.readInt();
 
-        getLock().acquire(LockMode.WRITE_LOCK);
-        try {
-            subCollections = new ObjectHashSet<>(collLen == 0 ? 19 : collLen); //TODO(AR) why is this number 19?
-            for (int i = 0; i < collLen; i++) {
-                subCollections.add(XmldbURI.create(istream.readUTF()));
-            }
-
-            permissions.read(istream);
-
-            created = istream.readLong();
-
-            if (!permissions.validate(broker.getCurrentSubject(), Permission.EXECUTE)) {
-                throw new PermissionDeniedException("Permission denied to open the Collection " + path);
-            }
-
-            final Collection col = this;
-
-            broker.getCollectionResources(new InternalAccess() {
-                @Override
-                public void addDocument(final DocumentImpl doc) throws EXistException {
-                    doc.setCollection(col);
-
-                    if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID) {
-                        LOG.error("Document must have ID. [" + doc + "]");
-                        throw new EXistException("Document must have ID.");
-                    }
-
-                    documents.put(doc.getFileURI().getRawCollectionPath(), doc);
-                }
-
-                @Override
-                public int getId() {
-                    return col.getId();
-                }
-            });
-        } finally {
-            getLock().release(LockMode.WRITE_LOCK);
+        ObjectHashSet<XmldbURI> subCollections = new ObjectHashSet<>(collLen == 0 ? 19 : collLen);
+        for (int i = 0; i < collLen; i++) {
+            subCollections.add(XmldbURI.create(stream.readUTF()));
         }
+
+        SimpleACLPermission permissions =
+            SimpleACLPermission.read(broker.getBrokerPool().getSecurityManager(), stream);
+
+        long created = stream.readLong();
+
+        if (!permissions.validate(broker.getCurrentSubject(), Permission.EXECUTE)) {
+            throw new PermissionDeniedException("Permission denied to open the Collection " + path);
+        }
+
+        Map<String, DocumentImpl> documents = new TreeMap<>();
+
+        MutableCollection col = new MutableCollection(collectionId, path, permissions, created, subCollections, documents);
+
+        broker.getCollectionResources(new InternalAccess() {
+            @Override
+            public void addDocument(final DocumentImpl doc) throws EXistException {
+                doc.setCollection(col);
+
+                if (doc.getDocId() < 0) {
+                    LOG.error("Document must have ID. [" + doc + "]");
+                    throw new EXistException("Document must have ID.");
+                }
+
+                documents.put(doc.getFileURI().getRawCollectionPath(), doc);
+            }
+
+            @Override
+            public int getId() {
+                return col.getId();
+            }
+        });
+
+        return col;
     }
 
     @Override
@@ -1399,8 +1403,10 @@ public class MutableCollection implements Collection {
         db.getProcessMonitor().startJob(ProcessMonitor.ACTION_VALIDATE_DOC, name);
         getLock().acquire(LockMode.WRITE_LOCK);
         try {
-            DocumentImpl document = new DocumentImpl((BrokerPool) db, this, name);
             oldDoc = documents.get(name.getRawCollectionPath());
+
+            DocumentImpl document = new DocumentImpl((BrokerPool) db, broker.getNextResourceId(transaction), this, name);
+
             checkPermissionsForAddDocument(broker, oldDoc);
             checkCollectionConflict(name);
             manageDocumentInformation(oldDoc, document);
@@ -1462,17 +1468,19 @@ public class MutableCollection implements Collection {
 //                    	transaction.acquireLock(document.getUpdateLock(), LockMode.WRITE_LOCK);
 //                	else
                     document.getUpdateLock().acquire(LockMode.WRITE_LOCK);
-                    
-                    document.setDocId(broker.getNextResourceId(transaction, this));
+
                     addDocument(transaction, broker, document);
                 } else {
-                    //TODO : use a more elaborated method ? No triggers...
+                    //TODO: create copy instead of reusing old document to allow concurrent read without page exception
                     broker.removeXMLResource(transaction, oldDoc, false);
                     oldDoc.copyOf(document, true);
                     indexer.setDocumentObject(oldDoc);
+
+                    broker.freeResourceId(document.getDocId());
+
                     //old has become new at this point
                     document = oldDoc;
-                    oldDocLocked = false;		
+                    oldDocLocked = false;
                 }
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("removed old document " + oldDoc.getFileURI());
@@ -1485,7 +1493,6 @@ public class MutableCollection implements Collection {
 //            	else
                 document.getUpdateLock().acquire(LockMode.WRITE_LOCK);
             	
-                document.setDocId(broker.getNextResourceId(transaction, this));
                 addDocument(transaction, broker, document);
             }
             
@@ -1641,13 +1648,13 @@ public class MutableCollection implements Collection {
 
     @Override
     public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputStream is, final String mimeType, final long size, final Date created, final Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
-        final BinaryDocument blob = new BinaryDocument(broker.getBrokerPool(), this, name);
+        final BinaryDocument blob = new BinaryDocument(broker.getBrokerPool(), broker.getNextResourceId(transaction), this, name);
         return addBinaryResource(transaction, broker, blob, is, mimeType, size, created, modified);
     }
 
     @Override
     public BinaryDocument validateBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name) throws PermissionDeniedException, LockException, TriggerException, IOException {
-        return new BinaryDocument(broker.getBrokerPool(), this, name);
+        return new BinaryDocument(broker.getBrokerPool(), broker.getNextResourceId(transaction), this, name);
     }
 
     @Override
@@ -1719,11 +1726,6 @@ public class MutableCollection implements Collection {
     }
 
     @Override
-    public void setId(final int id) {
-        this.collectionId = id;
-    }
-
-    @Override
     public void setPermissions(final int mode) throws LockException, PermissionDeniedException {
         try {
             getLock().acquire(LockMode.WRITE_LOCK);
@@ -1786,16 +1788,6 @@ public class MutableCollection implements Collection {
     @Override
     public boolean isCollectionConfigEnabled() {
         return collectionConfigEnabled;
-    }
-
-    @Override
-    public void setAddress(final long addr) {
-        this.address = addr;
-    }
-
-    @Override
-    public long getAddress() {
-        return this.address;
     }
 
     @Override

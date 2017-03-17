@@ -1,23 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2011 The eXist-db Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2017 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- *  $Id: UnixStylePermission.java 14502 2011-05-23 10:12:51Z deliriumsky $
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.security;
 
@@ -45,7 +43,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
 
     private final static int MAX_ACL_LENGTH = 255; //restrict to sizeof 1 byte
 
-    private int acl[] = new int[0];
+    private int[] acl;
 
     public SimpleACLPermission(SecurityManager sm) {
         super(sm);
@@ -53,10 +51,20 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
 
     public SimpleACLPermission(SecurityManager sm, long vector) {
         super(sm, vector);
+
+        acl = new int[0];
     }
     
     public SimpleACLPermission(SecurityManager sm, int ownerId, int groupId, int mode) {
         super(sm, ownerId, groupId, mode);
+
+        acl = new int[0];
+    }
+
+    private SimpleACLPermission(SecurityManager sm, long vector, int[] acl) {
+        super(sm, vector);
+
+        this.acl = acl;
     }
     
     public void addUserACE(ACE_ACCESS_TYPE access_type, int userId, int mode) throws PermissionDeniedException {
@@ -268,7 +276,23 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
         return acl.length;
     }
 
+    public static SimpleACLPermission read(SecurityManager sm, VariableByteInput stream) throws IOException {
+        long vector = stream.readLong();
+
+        final int aclLength = stream.read();
+
+        assert aclLength > 0;
+
+        int[] acl = new int[aclLength];
+        for(int i = 0; i < aclLength; i++) {
+            acl[i] = stream.readInt();
+        }
+
+        return new SimpleACLPermission(sm, vector, acl);
+    }
+
     @Override
+    @Deprecated
     public void read(VariableByteInput istream) throws IOException {
         super.read(istream);
         final int aclLength = istream.read();
