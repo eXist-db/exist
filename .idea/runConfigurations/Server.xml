@@ -4,7 +4,7 @@
     <log_file path="$PROJECT_DIR$/tools/jetty/logs/*.log" checked="true" skipped="true" show_all="true" alias="jetty logs" />
     <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
     <option name="MAIN_CLASS_NAME" value="org.exist.start.Main" />
-    <option name="VM_PARAMETERS" value="" />
+    <option name="VM_PARAMETERS" value="-Dlog4j.configurationFile=$MODULE_DIR$/log4j2.xml" />
     <option name="PROGRAM_PARAMETERS" value="jetty" />
     <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
