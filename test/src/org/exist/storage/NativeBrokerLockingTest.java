@@ -39,6 +39,8 @@ public class NativeBrokerLockingTest {
     private final static XmldbURI COLLECTION_A =  TEST_COLLECTION.append("colA");
     private final static XmldbURI COLLECTION_B =  TEST_COLLECTION.append("colB");
 
+    private final static int TRACE_STACK_DEPTH = 5;
+
     @Rule
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
 
@@ -82,7 +84,7 @@ public class NativeBrokerLockingTest {
     @Test
     public void openCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final LockTable lockTable = LockTable.getInstance();
-        lockTable.setTraceReason(true);
+        lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
 
         final LockSymmetryListener lockSymmetryListener = new LockSymmetryListener();
         boolean registered = false;
@@ -114,7 +116,7 @@ public class NativeBrokerLockingTest {
     @Test
     public void openCollection_doesntExist() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final LockTable lockTable = LockTable.getInstance();
-        lockTable.setTraceReason(true);
+        lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
 
         final LockSymmetryListener lockSymmetryListener = new LockSymmetryListener();
         boolean registered = false;
@@ -146,7 +148,7 @@ public class NativeBrokerLockingTest {
     @Test
     public void getCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final LockTable lockTable = LockTable.getInstance();
-        lockTable.setTraceReason(true);
+        lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
 
         final LockSymmetryListener lockSymmetryListener = new LockSymmetryListener();
         boolean registered = false;
@@ -177,7 +179,7 @@ public class NativeBrokerLockingTest {
     @Test
     public void getCollection_doesntExist() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final LockTable lockTable = LockTable.getInstance();
-        lockTable.setTraceReason(true);
+        lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
 
         final LockSymmetryListener lockSymmetryListener = new LockSymmetryListener();
         boolean registered = false;
@@ -208,7 +210,7 @@ public class NativeBrokerLockingTest {
     @Test
     public void getOrCreateCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final LockTable lockTable = LockTable.getInstance();
-        lockTable.setTraceReason(true);
+        lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
 
         final LockSymmetryListener lockSymmetryListener = new LockSymmetryListener();
         boolean registered = false;
@@ -241,7 +243,7 @@ public class NativeBrokerLockingTest {
     @Test
     public void moveCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final LockTable lockTable = LockTable.getInstance();
-        lockTable.setTraceReason(true);
+        lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
 
         final LockSymmetryListener lockSymmetryListener = new LockSymmetryListener();
         boolean registered = false;
@@ -274,7 +276,7 @@ public class NativeBrokerLockingTest {
     @Test
     public void copyEmptyCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final LockTable lockTable = LockTable.getInstance();
-        lockTable.setTraceReason(true);
+        lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
 
         final LockSymmetryListener lockSymmetryListener = new LockSymmetryListener();
         boolean registered = false;
@@ -307,7 +309,7 @@ public class NativeBrokerLockingTest {
     @Test
     public void removeEmptyCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final LockTable lockTable = LockTable.getInstance();
-        lockTable.setTraceReason(true);
+        lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
 
         final LockSymmetryListener lockSymmetryListener = new LockSymmetryListener();
         boolean registered = false;
@@ -367,7 +369,7 @@ public class NativeBrokerLockingTest {
         public void accept(final LockTable.LockAction lockAction) {
 
             // ignore sync events
-            final String reason = lockAction.reason;
+            final String reason = lockAction.getSimpleStackReason();
             if(reason != null && (reason.equals("sync") || reason.equals("notifySync"))) {
                 return;
             }

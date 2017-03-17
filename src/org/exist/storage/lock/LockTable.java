@@ -21,12 +21,14 @@ package org.exist.storage.lock;
 
 import com.evolvedbinary.j8fu.Either;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -40,16 +42,18 @@ import static org.exist.storage.lock.LockTable.LockAction.Action.*;
  * It is arranged by the id of the lock
  * which is typically an indicator of the
  * lock subject
+ *
+ * @author Adam Retter <adam@evolvedbinary.com>
  */
 public class LockTable {
+
     private final static Logger LOG = LogManager.getLogger(LockTable.class);
     private final static LockTable instance = new LockTable();
 
     //TODO(AR) make configurable
     private volatile boolean enableLogEvents = true;    // set to false to disable all events
-    //TODO(AR) probably better to create an Enum of reasons and statically use those from call sites
-    //TODO(AR) or make configurable from conf.xml
-    private volatile boolean traceReason = true;   // whether we should try and determine a reason for the lock
+    //TODO(AR) make configurable from conf.xml
+    private volatile int traceStackDepth = 5;   // whether we should try and determine a reason for the lock, -1 means all stack, 0 means no stack, n means n stack frames
 
     //TODO(AR) {@link #attempting) and {@link #acquired} are at class member level so that they can later be exposed via XQuery methods etc for reporting
 
@@ -58,14 +62,14 @@ public class LockTable {
      *
      * Map<Id, Map<Lock Type, List<Map<Lock Mode, Thread Name>>>>
      */
-    private final ConcurrentMap<String, Map<String, List<Tuple2<LockMode, String>>>> attempting = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Map<LockType, List<Tuple2<LockMode, String>>>> attempting = new ConcurrentHashMap<>();
 
     /**
      * Reference count of acquired locks by id and type
      *
      * Map<Id, Map<Lock Type, List<Map<Lock Mode, Reference Count>>>>
      */
-    private final ConcurrentMap<String, Map<String, Map<LockMode, Integer>>> acquired = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Map<LockType, Map<LockMode, Integer>>> acquired = new ConcurrentHashMap<>();
 
     /**
      * The {@link #queue} holds lock events and lock listener events
@@ -81,7 +85,7 @@ public class LockTable {
 
         // add a log listener if trace level logging is enabled
         if(LOG.isTraceEnabled()) {
-            registerListener(new LockEventLogListener(LOG));
+            registerListener(new LockEventLogListener(LOG, Level.TRACE));
         }
     }
 
@@ -89,45 +93,61 @@ public class LockTable {
         return instance;
     }
 
-    public void setTraceReason(final boolean traceReason) {
-        this.traceReason = traceReason;
+    /**
+     * Set the depth at which we should trace lock events through the stack
+     *
+     * @param traceStackDepth -1 traces the whole stack, 0 means no stack traces, n means n stack frames
+     */
+    public void setTraceStackDepth(final int traceStackDepth) {
+        this.traceStackDepth = traceStackDepth;
     }
 
-    public void attempt(final String id, final Class lockType, final LockMode mode) {
-        event(Attempt, id, lockType, mode);
+    public void attempt(final long groupId, final String id, final LockType lockType, final LockMode mode) {
+        event(Attempt, groupId, id, lockType, mode);
     }
 
-    public void attemptFailed(final String id, final Class lockType, final LockMode mode) {
-        event(AttemptFailed, id, lockType, mode);
+    public void attemptFailed(final long groupId, final String id, final LockType lockType, final LockMode mode) {
+        event(AttemptFailed, groupId, id, lockType, mode);
     }
 
-    public void acquired(final String id, final Class lockType, final LockMode mode) {
-        event(Acquired, id, lockType, mode);
+    public void acquired(final long groupId, final String id, final LockType lockType, final LockMode mode) {
+        event(Acquired, groupId, id, lockType, mode);
     }
 
-    public void released(final String id, final Class lockType, final LockMode mode) {
-        event(Released, id, lockType, mode);
+    public void released(final long groupId, final String id, final LockType lockType, final LockMode mode) {
+        event(Released, groupId, id, lockType, mode);
     }
 
-    public void released(final String id, final Class lockType, final LockMode mode, final int count) {
-        event(Released, id, lockType, mode, count);
+    @Deprecated
+    public void released(final long groupId, final String id, final LockType lockType, final LockMode mode, final int count) {
+        event(Released, groupId, id, lockType, mode, count);
     }
 
-    private void event(final LockAction.Action action, final String id, final Class lockType, final LockMode mode) {
-        event(action, id, lockType, mode, 1);
+    private void event(final LockAction.Action action, final long groupId, final String id, final LockType lockType, final LockMode mode) {
+        event(action, groupId, id, lockType, mode, 1);
     }
 
-    private void event(final LockAction.Action action, final String id, final Class lockType, final LockMode mode, final int count) {
+    private void event(final LockAction.Action action, final long groupId, final String id, final LockType lockType, final LockMode mode, final int count) {
         if(!enableLogEvents) {
             return;
         }
 
-        final long timestamp = System.currentTimeMillis();
+        final long timestamp = System.nanoTime();
         final Thread currentThread = Thread.currentThread();
         final String threadName = currentThread.getName();
-        final String reason = getReason(currentThread);
-        if (threadName.startsWith("DefaultQuartzScheduler_") || id.equals("dom.dbx") || id.equals("collections.dbx") || id.equals("collections.dbx") || id.equals("structure.dbx") || id.equals("values.dbx") || id.equals("CollectionCache")) return; //TODO(AR) temp for filtering
-        final LockAction lockAction = new LockAction(action, id, lockType, mode, threadName, count, timestamp, reason);
+        @Nullable final StackTraceElement[] stackTrace = getStackTrace(currentThread);
+
+        //TODO(AR) temp for filtering
+        if (threadName.startsWith("DefaultQuartzScheduler_") || id.equals("dom.dbx") || id.equals("collections.dbx") || id.equals("collections.dbx") || id.equals("structure.dbx") || id.equals("values.dbx") || id.equals("CollectionCache")) return;
+
+        final LockAction lockAction = new LockAction(action, groupId, id, lockType, mode, threadName, count, timestamp, stackTrace);
+
+        /**
+         * Very useful for debugging Lock life cycles
+         */
+        if(LOG.isTraceEnabled()) {
+            sanityCheckLockLifecycles(lockAction);
+        }
 
         queue.add(Either.Right(lockAction));
     }
@@ -136,23 +156,41 @@ public class LockTable {
         return !queue.isEmpty();
     }
 
-    private static final String NATIVE_BROKER_CLASS_NAME = NativeBroker.class.getName();
-    private static final String COLLECTION_STORE_CLASS_NAME = NativeBroker.class.getName();
-    private static final String TXN_CLASS_NAME = Txn.class.getName();
+    @Nullable
+    private StackTraceElement[] getStackTrace(final Thread thread) {
+        if(traceStackDepth == 0) {
+            return null;
+        } else {
+            final StackTraceElement[] stackTrace = thread.getStackTrace();
+            final int lastStackTraceElementIdx = stackTrace.length - 1;
 
-    private String getReason(final Thread thread) {
-        if(traceReason) {
-            for (final StackTraceElement stackTraceElement : thread.getStackTrace()) {
-                final String className = stackTraceElement.getClassName();
-                if (className.equals(NATIVE_BROKER_CLASS_NAME) || className.equals(COLLECTION_STORE_CLASS_NAME) || className.equals(TXN_CLASS_NAME)) {
-                    if(!(stackTraceElement.getMethodName().endsWith("LockCollection") || stackTraceElement.getMethodName().equals("lockCollectionCache"))) {
-                        return stackTraceElement.getMethodName() + '(' + stackTraceElement.getLineNumber() + ')';
-                    }
+            final int from = findFirstExternalFrame(stackTrace);
+            final int to;
+            if (traceStackDepth == -1) {
+                to = lastStackTraceElementIdx;
+            } else {
+                final int calcTo = from + traceStackDepth;
+                if (calcTo > lastStackTraceElementIdx) {
+                    to = lastStackTraceElementIdx;
+                } else {
+                    to = calcTo;
                 }
             }
-        }
 
-        return null;
+            return Arrays.copyOfRange(stackTrace, from, to);
+        }
+    }
+
+    private static final String THIS_CLASS_NAME = LockTable.class.getName();
+
+    private int findFirstExternalFrame(final StackTraceElement[] stackTrace) {
+        // we start with i = 1 to avoid Thread#getStackTrace() frame
+        for(int i = 1; i < stackTrace.length; i++) {
+            if(!THIS_CLASS_NAME.equals(stackTrace[i].getClassName())) {
+                return i;
+            }
+        }
+        return 0;
     }
 
     public void registerListener(final LockEventListener lockEventListener) {
@@ -167,13 +205,13 @@ public class LockTable {
 
     private static class QueueConsumer implements Runnable {
         private final TransferQueue<Either<ListenerAction, LockAction>> queue;
-        private final ConcurrentMap<String, Map<String, List<Tuple2<LockMode, String>>>> attempting;
-        private final ConcurrentMap<String, Map<String, Map<LockMode, Integer>>> acquired;
+        private final ConcurrentMap<String, Map<LockType, List<Tuple2<LockMode, String>>>> attempting;
+        private final ConcurrentMap<String, Map<LockType, Map<LockMode, Integer>>> acquired;
         private final List<LockEventListener> listeners = new ArrayList<>();
 
         QueueConsumer(final TransferQueue<Either<ListenerAction, LockAction>> queue,
-                      final ConcurrentMap<String, Map<String, List<Tuple2<LockMode, String>>>> attempting,
-                      final ConcurrentMap<String, Map<String, Map<LockMode, Integer>>> acquired) {
+                      final ConcurrentMap<String, Map<LockType, List<Tuple2<LockMode, String>>>> attempting,
+                      final ConcurrentMap<String, Map<LockType, Map<LockMode, Integer>>> acquired) {
             this.queue = queue;
             this.attempting = attempting;
             this.acquired = acquired;
@@ -249,7 +287,7 @@ public class LockTable {
                     attempts = new HashMap<>();
                 }
 
-                attempts.compute(lockAction.lockType.getSimpleName(), (lockType, v) -> {
+                attempts.compute(lockAction.lockType, (lockType, v) -> {
                     if (v == null) {
                         v = new ArrayList<>();
                     }
@@ -267,7 +305,7 @@ public class LockTable {
                 if (attempts == null) {
                     return null;
                 } else {
-                    attempts.compute(lockAction.lockType.getSimpleName(), (lockType, v) -> {
+                    attempts.compute(lockAction.lockType, (lockType, v) -> {
                         if (v == null) {
                             return null;
                         }
@@ -295,7 +333,7 @@ public class LockTable {
                     acqu = new HashMap<>();
                 }
 
-                acqu.compute(lockAction.lockType.getSimpleName(), (lockType, v) -> {
+                acqu.compute(lockAction.lockType, (lockType, v) -> {
                     if (v == null) {
                         v = new HashMap<>();
                     }
@@ -325,7 +363,7 @@ public class LockTable {
                     return null;
                 }
 
-                acqu.compute(lockAction.lockType.getSimpleName(), (lockType, v) -> {
+                acqu.compute(lockAction.lockType, (lockType, v) -> {
                     if (v == null) {
                         return null;
                     }
@@ -397,27 +435,32 @@ public class LockTable {
         }
 
         public final Action action;
+        public final long groupId;
         public final String id;
-        public final Class lockType;
+        public final LockType lockType;
         public final LockMode mode;
         public final String threadName;
         public final int count;
+        /**
+         * System#nanoTime()
+         */
         public final long timestamp;
-        public final String reason;
+        @Nullable public final StackTraceElement[] stackTrace;
 
-        LockAction(final Action action, final String id, final Class lockType, final LockMode mode, final String threadName, final int count, final long timestamp, final String reason) {
+        LockAction(final Action action, final long groupId, final String id, final LockType lockType, final LockMode mode, final String threadName, final int count, final long timestamp, @Nullable final StackTraceElement[] stackTrace) {
             this.action = action;
+            this.groupId = groupId;
             this.id = id;
             this.lockType = lockType;
             this.mode = mode;
             this.threadName = threadName;
             this.count = count;
             this.timestamp = timestamp;
-            this.reason = reason;
+            this.stackTrace = stackTrace;
         }
 
         public LockAction withCount(final int count) {
-            return new LockAction(action, id, lockType, mode, threadName, count, timestamp, reason);
+            return new LockAction(action, groupId, id, lockType, mode, threadName, count, timestamp, stackTrace);
         }
 
         @Override
@@ -425,16 +468,26 @@ public class LockTable {
             final StringBuilder builder = new StringBuilder()
                     .append(action.toString())
                     .append(' ')
-                    .append(lockType.getSimpleName())
-                    .append('(')
+                    .append(lockType.name());
+
+                if(groupId > -1) {
+                    builder
+                            .append("#")
+                            .append(groupId);
+                }
+
+                builder.append('(')
                     .append(mode.toString())
                     .append(") of ")
                     .append(id);
 
-            if(reason != null) {
-                builder
-                    .append(" for #")
-                    .append(reason);
+            if(stackTrace != null) {
+                final String reason = getSimpleStackReason();
+                if(reason != null) {
+                    builder
+                            .append(" for #")
+                            .append(reason);
+                }
             }
 
             builder
@@ -451,18 +504,83 @@ public class LockTable {
 
             return builder.toString();
         }
+
+        private static final String NATIVE_BROKER_CLASS_NAME = NativeBroker.class.getName();
+        private static final String COLLECTION_STORE_CLASS_NAME = NativeBroker.class.getName();
+        private static final String TXN_CLASS_NAME = Txn.class.getName();
+
+        @Nullable
+        public String getSimpleStackReason() {
+            for (final StackTraceElement stackTraceElement : stackTrace) {
+                final String className = stackTraceElement.getClassName();
+
+                if (className.equals(NATIVE_BROKER_CLASS_NAME) || className.equals(COLLECTION_STORE_CLASS_NAME) || className.equals(TXN_CLASS_NAME)) {
+                    if (!(stackTraceElement.getMethodName().endsWith("LockCollection") || stackTraceElement.getMethodName().equals("lockCollectionCache"))) {
+                        return stackTraceElement.getMethodName() + '(' + stackTraceElement.getLineNumber() + ')';
+                    }
+                }
+            }
+
+            return null;
+        }
     }
 
-    private static class LockEventLogListener implements LockEventListener {
-        private final Logger log;
+    public enum LockType {
+        @Deprecated LEGACY_COLLECTION,
+        @Deprecated LEGACY_DOCUMENT,
 
-        private LockEventLogListener(final Logger log) {
-            this.log = log;
-        }
+        COLLECTION,
+        DOCUMENT,
 
-        @Override
-        public void accept(final LockAction lockAction) {
-            log.trace(lockAction);
+        COLLECTION_CACHE
+    }
+
+    /** debugging tools below **/
+
+
+    /**
+     * Holds a count of READ and WRITE locks by {@link LockAction#id}
+     */
+    private final Map<String, Tuple2<Long, Long>> lockCounts = new HashMap<>();
+
+    /**
+     * Checks that there are not more releases and then acquires
+     */
+    private void sanityCheckLockLifecycles(final LockAction lockAction) {
+        synchronized(lockCounts) {
+            long read = 0;
+            long write = 0;
+
+            final Tuple2<Long, Long> lockCount = lockCounts.get(lockAction.id);
+            if(lockCount != null) {
+                read = lockCount._1;
+                write = lockCount._2;
+            }
+
+            if(lockAction.action == LockAction.Action.Acquired) {
+                if(lockAction.mode == LockMode.READ_LOCK) {
+                    read++;
+                } else if(lockAction.mode == LockMode.WRITE_LOCK) {
+                    write++;
+                }
+            } else if(lockAction.action == LockAction.Action.Released) {
+                if(lockAction.mode == LockMode.READ_LOCK) {
+                    if(read == 0) {
+                        LOG.error("Negative READ_LOCKs", new IllegalStateException());
+                    }
+                    read--;
+                } else if(lockAction.mode == LockMode.WRITE_LOCK) {
+                    if(write == 0) {
+                        LOG.error("Negative WRITE_LOCKs", new IllegalStateException());
+                    }
+                    write--;
+                }
+            }
+
+            LOG.trace("QUEUE: {} (read={} write={})", lockAction.toString(), read, write);
+
+            lockCounts.put(lockAction.id, new Tuple2<>(read, write));
         }
     }
+
 }

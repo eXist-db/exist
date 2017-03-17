@@ -39,6 +39,7 @@ package org.exist.storage.lock;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.storage.lock.LockTable.LockType;
 import org.exist.util.DeadlockException;
 import org.exist.util.LockException;
 
@@ -58,6 +59,8 @@ public class MultiReadReentrantLock implements Lock {
     private final static Logger LOG = LogManager.getLogger(MultiReadReentrantLock.class);
 
     private final static LockTable lockTable = LockTable.getInstance();
+
+    private final long groupId = System.nanoTime();
 
     private final String id;
 
@@ -118,22 +121,22 @@ public class MultiReadReentrantLock implements Lock {
                     return true;
 
                 case READ_LOCK:
-                    lockTable.attempt(id, getClass(), mode);
+                    lockTable.attempt(groupId, id, LockType.LEGACY_DOCUMENT, mode);
                     final boolean readLockResult = readLock(true);
-                    lockTable.acquired(id, getClass(), mode);
+                    lockTable.acquired(groupId, id,LockType.LEGACY_DOCUMENT, mode);
                     return readLockResult;
 
                 case WRITE_LOCK:
-                    lockTable.attempt(id, getClass(), mode);
+                    lockTable.attempt(groupId, id, LockType.LEGACY_DOCUMENT, mode);
                     final boolean writeLockResult = writeLock(true);
-                    lockTable.acquired(id, getClass(), mode);
+                    lockTable.acquired(groupId, id, LockType.LEGACY_DOCUMENT, mode);
                     return writeLockResult;
 
                 default:
                     throw new IllegalStateException();
             }
         } catch(final LockException e) {
-            lockTable.attemptFailed(id, getClass(), mode);
+            lockTable.attemptFailed(groupId, id, LockType.LEGACY_DOCUMENT, mode);
             throw e;
         }
     }
@@ -147,22 +150,22 @@ public class MultiReadReentrantLock implements Lock {
                     return true;
 
                 case READ_LOCK:
-                    lockTable.attempt(id, getClass(), mode);
+                    lockTable.attempt(groupId, id, LockType.LEGACY_DOCUMENT, mode);
                     final boolean readLockResult = readLock(false);
-                    lockTable.acquired(id, getClass(), mode);
+                    lockTable.acquired(groupId, id, LockType.LEGACY_DOCUMENT, mode);
                     return readLockResult;
 
                 case WRITE_LOCK:
-                    lockTable.attempt(id, getClass(), mode);
+                    lockTable.attempt(groupId, id, LockType.LEGACY_DOCUMENT, mode);
                     final boolean writeLockResult = writeLock(false);
-                    lockTable.acquired(id, getClass(), mode);
+                    lockTable.acquired(groupId, id, LockType.LEGACY_DOCUMENT, mode);
                     return writeLockResult;
 
                 default:
                     throw new IllegalStateException();
             }
         } catch (final LockException e) {
-            lockTable.attemptFailed(id, getClass(), LockMode.READ_LOCK);
+            lockTable.attemptFailed(groupId, id, LockType.LEGACY_DOCUMENT, LockMode.READ_LOCK);
             return false;
         }
     }
@@ -301,12 +304,12 @@ public class MultiReadReentrantLock implements Lock {
 
             case READ_LOCK:
                 releaseRead(1);
-                lockTable.released(id, getClass(), mode);
+                lockTable.released(groupId, id, LockType.LEGACY_DOCUMENT, mode);
                 break;
 
             case WRITE_LOCK:
                 releaseWrite(1);
-                lockTable.released(id, getClass(), mode);
+                lockTable.released(groupId, id, LockType.LEGACY_DOCUMENT, mode);
                 break;
 
             default:
@@ -323,12 +326,12 @@ public class MultiReadReentrantLock implements Lock {
 
             case READ_LOCK:
                 releaseRead(count);
-                lockTable.released(id, getClass(), mode, count);
+                lockTable.released(groupId, id, LockType.LEGACY_DOCUMENT, mode, count);
                 break;
 
             case WRITE_LOCK:
                 releaseWrite(count);
-                lockTable.released(id, getClass(), mode, count);
+                lockTable.released(groupId, id, LockType.LEGACY_DOCUMENT, mode, count);
                 break;
 
             default:

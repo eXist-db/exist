@@ -114,7 +114,7 @@ public class StartupLockingTest {
      * as before the call was made
      */
     @Test
-    public void getOrCreateCollectionDoesNotGrainLocks() throws InterruptedException, EXistException, PermissionDeniedException, IOException, TriggerException {
+    public void getOrCreateCollectionDoesNotGainLocks() throws InterruptedException, EXistException, PermissionDeniedException, IOException, TriggerException {
         lockTable.deregisterListener(lockCountListener);
 
         // wait for the listener to be deregistered
@@ -169,6 +169,9 @@ public class StartupLockingTest {
             return registered.get();
         }
 
+        /**
+         * @return Tuple2<readCount, writeCount>
+         */
         public Tuple2<Long, Long> getlockCount() {
             synchronized (lockReadWriteCount) {
                 long readCount = 0;

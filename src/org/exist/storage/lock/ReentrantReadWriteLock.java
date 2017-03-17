@@ -36,6 +36,7 @@ import java.util.Deque;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.storage.lock.LockTable.LockType;
 import org.exist.util.LockException;
 
 /**
@@ -52,6 +53,8 @@ import org.exist.util.LockException;
 public class ReentrantReadWriteLock implements Lock {
 
     private static final int WAIT_CHECK_PERIOD = 200;
+
+    private final long groupId = System.nanoTime();
 
     private static class SuspendedWaiter {
         final Thread thread;
@@ -107,13 +110,13 @@ public class ReentrantReadWriteLock implements Lock {
             return true;
         }
 
-        lockTable.attempt(id_, getClass(), mode);
+        lockTable.attempt(groupId, id_, LockType.LEGACY_COLLECTION, mode);
         try {
             final boolean result = _acquire(mode);
-            lockTable.acquired(id_, getClass(), mode);
+            lockTable.acquired(groupId, id_, LockType.LEGACY_COLLECTION, mode);
             return result;
         } catch(final LockException e) {
-            lockTable.attemptFailed(id_, getClass(), mode);
+            lockTable.attemptFailed(groupId, id_, LockType.LEGACY_COLLECTION, mode);
             throw e;
         }
     }
@@ -233,13 +236,13 @@ public class ReentrantReadWriteLock implements Lock {
             return true;
         }
 
-        lockTable.attempt(id_, getClass(), mode);
+        lockTable.attempt(groupId, id_, LockType.LEGACY_COLLECTION, mode);
         try {
             final boolean result = _attempt(mode);
-            lockTable.acquired(id_, getClass(), mode);
+            lockTable.acquired(groupId, id_, LockType.LEGACY_COLLECTION, mode);
             return result;
         } catch(final Throwable t) {
-            lockTable.attemptFailed(id_, getClass(), mode);
+            lockTable.attemptFailed(groupId, id_, LockType.LEGACY_COLLECTION, mode);
             throw t;
         }
     }
@@ -311,7 +314,7 @@ public class ReentrantReadWriteLock implements Lock {
         }
 
         _release(mode);
-        lockTable.released(id_, getClass(), mode);
+        lockTable.released(groupId, id_, LockType.LEGACY_COLLECTION, mode);
     }
 
     private void _release(final LockMode mode) {
