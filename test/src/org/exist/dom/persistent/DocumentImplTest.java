@@ -53,9 +53,6 @@ public class DocumentImplTest {
         Group mockCurrentSubjectGroup= EasyMock.createMock(Group.class);
         SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
 
-        //test values
-        final DocumentMetadata otherMetadata = new DocumentMetadata();
-
         //expectations
         expect(mockBrokerPool.getSecurityManager()).andReturn(mockSecurityManager).times(2);
         expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
@@ -71,10 +68,9 @@ public class DocumentImplTest {
         //test setup
         TestableDocumentImpl doc = new TestableDocumentImpl(mockBrokerPool);
         DocumentImpl other = new DocumentImpl(mockBrokerPool, -1, null, null);
-        other.setMetadata(otherMetadata);
 
         //actions
-        doc.copyOf(other, false);
+        other.copyOf(doc, false);
 
         verify(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
@@ -91,10 +87,6 @@ public class DocumentImplTest {
         Group mockCurrentSubjectGroup= EasyMock.createMock(Group.class);
         SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
 
-        //test values
-        final TestableDocumentMetadata docMetadata = new TestableDocumentMetadata();
-        final DocumentMetadata otherMetadata = new DocumentMetadata();
-
         //expectations
         expect(mockBrokerPool.getSecurityManager()).andReturn(mockSecurityManager).times(2);
         expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
@@ -109,17 +101,12 @@ public class DocumentImplTest {
 
         //test setup
         DocumentImpl doc = new DocumentImpl(mockBrokerPool, -1, null, null);
-        doc.setMetadata(docMetadata);
         DocumentImpl other = new DocumentImpl(mockBrokerPool, -1, null, null);
-        other.setMetadata(otherMetadata);
 
         //actions
         doc.copyOf(other, false);
 
         verify(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
-
-        //assertions
-        assertEquals(1, docMetadata.getCopyOf_invCount());
     }
 
     @Test
@@ -131,9 +118,6 @@ public class DocumentImplTest {
         Group mockCurrentSubjectGroup= EasyMock.createMock(Group.class);
         SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
 
-        //test values
-        final DocumentMetadata docMetadata = new TestableDocumentMetadata();
-        final DocumentMetadata otherMetadata = new DocumentMetadata();
         final long otherCreated = System.currentTimeMillis() - 2000;
         final long otherLastModified = System.currentTimeMillis() - 1000;
 
@@ -151,9 +135,10 @@ public class DocumentImplTest {
 
         //test setup
         DocumentImpl doc = new DocumentImpl(mockBrokerPool, -1, null, null);
-        doc.setMetadata(docMetadata);
         DocumentImpl other = new DocumentImpl(mockBrokerPool, -1, null, null);
-        other.setMetadata(otherMetadata);
+
+        //test values
+        final DocumentMetadata docMetadata = doc.getMetadata();
 
         //actions
         doc.copyOf(other, false);
@@ -185,20 +170,6 @@ public class DocumentImplTest {
         }
     }
 
-    public class TestableDocumentMetadata extends DocumentMetadata {
-
-        private int copyOf_invCount = 0;
-
-        public int getCopyOf_invCount() {
-            return copyOf_invCount;
-        }
-
-        @Override
-        public void copyOf(DocumentMetadata other) {
-            copyOf_invCount++;
-        }
-    }
-
     public class LessThan extends BaseMatcher<Long> {
         private final Long actual;
 
@@ -217,7 +188,7 @@ public class DocumentImplTest {
 
         @Override
         public void describeTo(Description description) {
-            description.appendText("Less than");
+            description.appendText("Less than "+actual);
         }
-    };
+    }
 }
