@@ -285,9 +285,6 @@ public class ExistCollection extends ExistResource {
             LOG.error(e);
             throw e;
 
-        } catch (IOException e) {
-            LOG.error(e);
-
         } catch (Throwable e) {
             LOG.error(e);
             throw new EXistException(e);
