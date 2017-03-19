@@ -123,7 +123,6 @@ public class Main {
     /* backup arguments */
     private static final Argument<String> backupCollectionArg = stringArgument("-b", "--backup")
             .description("backup the specified collection.")
-            .required()
             .build();
     private static final Argument<File> backupOutputDirArg = fileArgument("-d", "--dir")
             .description("specify the directory to use for backups.")
