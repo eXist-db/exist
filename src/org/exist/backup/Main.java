@@ -76,6 +76,20 @@ import static se.softhouse.jargo.Arguments.*;
  */
 public class Main {
 
+    private static final String USER_PROP = "user";
+    private static final String PASSWORD_PROP = "password";
+    private static final String URI_PROP = "uri";
+    private static final String CONFIGURATION_PROP = "configuration";
+    private static final String DRIVER_PROP = "driver";
+    private static final String CREATE_DATABASE_PROP = "create-database";
+    private static final String BACKUP_DIR_PROP = "backup-dir";
+
+    private static final String DEFAULT_USER = "admin";
+    private static final String DEFAULT_PASSWORD = "admin";
+    private static final String DEFAULT_URI = "xmldb:exist://";
+    private static final String DEFAULT_DRIVER = "org.exist.xmldb.DatabaseImpl";
+    private static final String DEFAULT_BACKUP_DIR = "backup";
+
     /* general arguments */
     private static final Argument<?> helpArg = helpArgument("-h", "--help");
     private static final Argument<Boolean> guiArg = optionArgument("-U", "--gui")
@@ -158,13 +172,13 @@ public class Main {
         final boolean quiet = getBool(arguments, quietArg);
         Optional.ofNullable(arguments.get(optionArg)).ifPresent(options -> options.forEach(properties::setProperty));
 
-        properties.setProperty("user", arguments.get(userArg));
+        properties.setProperty(USER_PROP, arguments.get(userArg));
         final String optionPass = arguments.get(passwordArg);
-        properties.setProperty("password", optionPass);
+        properties.setProperty(PASSWORD_PROP, optionPass);
         final Optional<String> optionDbaPass = getOpt(arguments, dbaPasswordArg);
 
         final Optional<String> backupCollection = getOpt(arguments, backupCollectionArg);
-        getOpt(arguments, backupOutputDirArg).ifPresent(backupOutputDir -> properties.setProperty("backup-dir", backupOutputDir.getAbsolutePath()));
+        getOpt(arguments, backupOutputDirArg).ifPresent(backupOutputDir -> properties.setProperty(BACKUP_DIR_PROP, backupOutputDir.getAbsolutePath()));
 
         final Optional<Path> restorePath = getOpt(arguments, restoreArg).map(File::toPath);
         final boolean rebuildRepo = getBool(arguments, rebuildExpathRepoArg);
@@ -173,12 +187,12 @@ public class Main {
         Database database;
 
         try {
-            final Class<?> cl = Class.forName(properties.getProperty("driver", "org.exist.xmldb.DatabaseImpl"));
+            final Class<?> cl = Class.forName(properties.getProperty(DRIVER_PROP, DEFAULT_DRIVER));
             database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
+            database.setProperty(CREATE_DATABASE_PROP, "true");
 
-            if (properties.containsKey("configuration")) {
-                database.setProperty("configuration", properties.getProperty("configuration"));
+            if (properties.containsKey(CONFIGURATION_PROP)) {
+                database.setProperty(CONFIGURATION_PROP, properties.getProperty(CONFIGURATION_PROP));
             }
             DatabaseManager.registerDatabase(database);
         } catch (final ClassNotFoundException | InstantiationException | XMLDBException | IllegalAccessException e) {
@@ -191,11 +205,11 @@ public class Main {
             String collection = backupCollection.get();
             if (collection.isEmpty()) {
                 if (guiMode) {
-                    final CreateBackupDialog dialog = new CreateBackupDialog(properties.getProperty("uri", "xmldb:exist://"), properties.getProperty("user", "admin"), properties.getProperty("password", ""), Paths.get(preferences.get("directory.backup", System.getProperty("user.dir"))));
+                    final CreateBackupDialog dialog = new CreateBackupDialog(properties.getProperty(URI_PROP, DEFAULT_URI), properties.getProperty(USER_PROP, DEFAULT_USER), properties.getProperty(PASSWORD_PROP, DEFAULT_PASSWORD), Paths.get(preferences.get("directory.backup", System.getProperty("user.dir"))));
 
                     if (JOptionPane.showOptionDialog(null, dialog, "Create Backup", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null) == JOptionPane.YES_OPTION) {
                         collection = dialog.getCollection();
-                        properties.setProperty("backup-dir", dialog.getBackupTarget());
+                        properties.setProperty(BACKUP_DIR_PROP, dialog.getBackupTarget());
                     }
                 } else {
                     collection = XmldbURI.ROOT_COLLECTION;
@@ -205,10 +219,10 @@ public class Main {
             if (!collection.isEmpty()) {
                 try {
                     final Backup backup = new Backup(
-                            properties.getProperty("user", "admin"),
-                            properties.getProperty("password", ""),
-                            Paths.get(properties.getProperty("backup-dir", "backup")),
-                            XmldbURI.xmldbUriFor(properties.getProperty("uri", "xmldb:exist://") + collection),
+                            properties.getProperty(USER_PROP, DEFAULT_USER),
+                            properties.getProperty(PASSWORD_PROP, DEFAULT_PASSWORD),
+                            Paths.get(properties.getProperty(BACKUP_DIR_PROP, DEFAULT_BACKUP_DIR)),
+                            XmldbURI.xmldbUriFor(properties.getProperty(URI_PROP, DEFAULT_URI) + collection),
                             properties
                     );
                     backup.backup(guiMode, null);
@@ -231,8 +245,8 @@ public class Main {
             }
 
             if (Files.exists(path)) {
-                final String username = properties.getProperty("user", "admin");
-                final String uri = properties.getProperty("uri", "xmldb:exist://");
+                final String username = properties.getProperty(USER_PROP, DEFAULT_USER);
+                final String uri = properties.getProperty(URI_PROP, DEFAULT_URI);
 
                 try {
                     if (guiMode) {
@@ -247,12 +261,12 @@ public class Main {
         }
 
         try {
-            String uri = properties.getProperty("uri", XmldbURI.EMBEDDED_SERVER_URI_PREFIX);
+            String uri = properties.getProperty(URI_PROP, XmldbURI.EMBEDDED_SERVER_URI_PREFIX);
             if (!(uri.contains(XmldbURI.ROOT_COLLECTION) || uri.endsWith(XmldbURI.ROOT_COLLECTION))) {
                 uri += XmldbURI.ROOT_COLLECTION;
             }
 
-            final Collection root = DatabaseManager.getCollection(uri, properties.getProperty("user", "admin"), optionDbaPass.orElse(optionPass));
+            final Collection root = DatabaseManager.getCollection(uri, properties.getProperty(USER_PROP, DEFAULT_USER), optionDbaPass.orElse(optionPass));
             shutdown(root);
         } catch (final Exception e) {
             reportError(e);
