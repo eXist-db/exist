@@ -1855,7 +1855,7 @@ public class InteractiveClient {
         options.options.forEach(properties::setProperty);
 
         options.username.ifPresent(username -> props.setProperty(USER, username));
-        options.password.ifPresent(password -> props.setProperty(USER, password));
+        options.password.ifPresent(password -> props.setProperty(PASSWORD, password));
         boolean needPassword = options.username.isPresent() && !options.password.isPresent();
         if(options.useSSL) {
             props.setProperty(SSL_ENABLE, "TRUE");
