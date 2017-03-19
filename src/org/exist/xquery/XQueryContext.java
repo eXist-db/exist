@@ -3643,6 +3643,8 @@ public class XQueryContext implements BinaryValueManager, Context
                 LOG.error("Cleaning up XQueryContext: Ignoring: " + t.getMessage(), t);
             }
         }
+        // now it is safe to clear the cleanup tasks list as we know they have run
+        // do not move this anywhere else
         cleanupTasks.clear();
     }
 }
