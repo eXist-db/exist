@@ -103,16 +103,22 @@ public class InteractiveClient {
     public static final String USER = "user";
     public static final String PASSWORD = "password";
     public static final String URI = "uri";
+    public static final String PERMISSIONS = "permissions";
+    public static final String INDENT = "indent";
+    public static final String ENCODING = "encoding";
+    public static final String COLORS = "colors";
+    public static final String EDITOR = "editor";
+    public static final String EXPAND_XINCLUDES = "expand-xincludes";
     public static final String CONFIGURATION = "configuration";
     public static final String DRIVER = "driver";
     public static final String SSL_ENABLE = "ssl-enable";
+    public static final String CREATE_DATABASE = "create-database";
     public static final String LOCAL_MODE = "local-mode-opt";
     public static final String NO_EMBED_MODE = "NO_EMBED_MODE";
 
     // values
     protected static final String EDIT_CMD = "emacsclient -t $file";
-    protected static final String ENCODING = "UTF-8";
-    protected static final String PASS = null;
+    protected static final Charset ENCODING_DEFAULT = StandardCharsets.UTF_8;
     protected static final String URI_DEFAULT = "xmldb:exist://localhost:8080/exist/xmlrpc";
     protected static final String SSL_ENABLE_DEFAULT = "FALSE";
     protected static final String LOCAL_MODE_DEFAULT = "FALSE";
@@ -126,12 +132,12 @@ public class InteractiveClient {
         defaultProps.setProperty(DRIVER, driver);
         defaultProps.setProperty(URI, URI_DEFAULT);
         defaultProps.setProperty(USER, USER_DEFAULT);
-        defaultProps.setProperty("editor", EDIT_CMD);
-        defaultProps.setProperty("indent", "true");
-        defaultProps.setProperty("encoding", ENCODING);
-        defaultProps.setProperty("colors", "false");
-        defaultProps.setProperty("permissions", "false");
-        defaultProps.setProperty("expand-xincludes", "true");
+        defaultProps.setProperty(EDITOR, EDIT_CMD);
+        defaultProps.setProperty(INDENT, "true");
+        defaultProps.setProperty(ENCODING, ENCODING_DEFAULT.name());
+        defaultProps.setProperty(COLORS, "false");
+        defaultProps.setProperty(PERMISSIONS, "false");
+        defaultProps.setProperty(EXPAND_XINCLUDES, "true");
         defaultProps.setProperty(SSL_ENABLE, SSL_ENABLE_DEFAULT);
     }
 
@@ -266,22 +272,22 @@ public class InteractiveClient {
         final Database database = (Database) cl.newInstance();
 
         // Configure database
-        database.setProperty("create-database", "true");
-        database.setProperty("ssl-enable", properties.getProperty(SSL_ENABLE));
+        database.setProperty(CREATE_DATABASE, "true");
+        database.setProperty(SSL_ENABLE, properties.getProperty(SSL_ENABLE));
 
         // secure empty configuration
         final String configProp = properties.getProperty(InteractiveClient.CONFIGURATION);
 
         if (configProp != null && (!configProp.isEmpty())) {
-            database.setProperty("configuration", configProp);
+            database.setProperty(CONFIGURATION, configProp);
         }
 
         DatabaseManager.registerDatabase(database);
 
         final String collectionUri = uri + path;
-        current = DatabaseManager.getCollection(collectionUri, properties.getProperty("user"), properties.getProperty("password"));
+        current = DatabaseManager.getCollection(collectionUri, properties.getProperty(USER), properties.getProperty(PASSWORD));
         if (options.startGUI && frame != null) {
-            frame.setStatus("connected to " + uri + " as user " + properties.getProperty("user"));
+            frame.setStatus("connected to " + uri + " as user " + properties.getProperty(USER));
         }
 
         System.out.println("Connected :-)");
@@ -301,9 +307,9 @@ public class InteractiveClient {
     }
 
     public void reloadCollection() throws XMLDBException {
-        current = DatabaseManager.getCollection(properties.getProperty("uri")
-                        + path, properties.getProperty("user"),
-                properties.getProperty("password"));
+        current = DatabaseManager.getCollection(properties.getProperty(URI)
+                        + path, properties.getProperty(USER),
+                properties.getProperty(PASSWORD));
         getResources();
     }
 
@@ -359,7 +365,7 @@ public class InteractiveClient {
 
             perm = mgtService.getSubCollectionPermissions(current, childCollections[i]);
 
-            if ("true".equals(properties.getProperty("permissions"))) {
+            if ("true".equals(properties.getProperty(PERMISSIONS))) {
                 cols[0] = perm.toString();
                 cols[1] = getOwnerName(perm);
                 cols[2] = getGroupName(perm);
@@ -388,7 +394,7 @@ public class InteractiveClient {
             if (perm == null) {
                 System.out.println("null"); //TODO this is not useful!
             }
-            if ("true".equals(properties.getProperty("permissions"))) {
+            if ("true".equals(properties.getProperty(PERMISSIONS))) {
                 resources[i] = '-' + perm.toString() + '\t' + perm.getOwner().getName()
                         + '\t' + perm.getGroup().getName() + '\t'
                         + URIUtils.urlDecodeUtf8(childResources[j]);
@@ -490,11 +496,11 @@ public class InteractiveClient {
 
         try {
             XmldbURI newPath = path;
-            final XmldbURI currUri = XmldbURI.xmldbUriFor(properties.getProperty("uri")).resolveCollectionPath(path);
+            final XmldbURI currUri = XmldbURI.xmldbUriFor(properties.getProperty(URI)).resolveCollectionPath(path);
             if (args[0].equalsIgnoreCase("ls")) {
                 // list collection contents
                 getResources();
-                if ("true".equals(properties.getProperty("permissions"))) {
+                if ("true".equals(properties.getProperty(PERMISSIONS))) {
                     for (int i = 0; i < resources.length; i++) {
                         messageln(resources[i]);
                     }
@@ -530,8 +536,8 @@ public class InteractiveClient {
                 }
                 temp = DatabaseManager.getCollection(
                         collectionPath.toString(),
-                        properties.getProperty("user"),
-                        properties.getProperty("password"));
+                        properties.getProperty(USER),
+                        properties.getProperty(PASSWORD));
                 if (temp != null) {
                     current = temp;
                     newPath = collectionPath.toCollectionPathURI();
@@ -713,8 +719,8 @@ public class InteractiveClient {
 
                 // re-read current collection
                 current = DatabaseManager.getCollection(properties
-                        .getProperty("uri")
-                        + path, properties.getProperty("user"), properties
+                        .getProperty(URI)
+                        + path, properties.getProperty(USER), properties
                         .getProperty("password"));
                 getResources();
 
@@ -769,7 +775,7 @@ public class InteractiveClient {
                 // re-read current collection
                 current = DatabaseManager.getCollection(properties
                         .getProperty("uri")
-                        + path, properties.getProperty("user"), properties
+                        + path, properties.getProperty(USER), properties
                         .getProperty("password"));
                 getResources();
 
@@ -789,9 +795,9 @@ public class InteractiveClient {
                 rmcol(collUri);
                 // re-read current collection
                 current = DatabaseManager.getCollection(properties
-                        .getProperty("uri")
-                        + path, properties.getProperty("user"), properties
-                        .getProperty("password"));
+                        .getProperty(URI)
+                        + path, properties.getProperty(USER), properties
+                        .getProperty(PASSWORD));
                 getResources();
             } else if (args[0].equalsIgnoreCase("adduser")) {
                 if (args.length < 2) {
@@ -885,7 +891,7 @@ public class InteractiveClient {
                     }
                     user.setPassword(p1);
                     mgtService.updateAccount(user);
-                    properties.setProperty("password", p1);
+                    properties.setProperty(PASSWORD, p1);
                 } catch (final Exception e) {
                     errorln("ERROR: " + e.getMessage());
                     e.printStackTrace();
@@ -923,9 +929,9 @@ public class InteractiveClient {
                 }
                 // re-read current collection
                 current = DatabaseManager.getCollection(properties
-                        .getProperty("uri")
-                        + path, properties.getProperty("user"), properties
-                        .getProperty("password"));
+                        .getProperty(URI)
+                        + path, properties.getProperty(USER), properties
+                        .getProperty(PASSWORD));
                 getResources();
             } else if (args[0].equalsIgnoreCase("chown")) {
                 if (args.length < 3) {
@@ -977,7 +983,7 @@ public class InteractiveClient {
                 if (res != null) {
                     final UserManagementService mgtService = (UserManagementService)
                             current.getService("UserManagementService", "1.0");
-                    final Account user = mgtService.getAccount(properties.getProperty("user", "guest"));
+                    final Account user = mgtService.getAccount(properties.getProperty(USER, "guest"));
                     if (args[0].equalsIgnoreCase("lock")) {
                         mgtService.lockResource(res, user);
                     } else {
@@ -1172,8 +1178,8 @@ public class InteractiveClient {
         }
 
         final XPathQueryServiceImpl service = (XPathQueryServiceImpl) current.getService("XPathQueryService", "1.0");
-        service.setProperty(OutputKeys.INDENT, properties.getProperty("indent"));
-        service.setProperty(OutputKeys.ENCODING, properties.getProperty("encoding"));
+        service.setProperty(OutputKeys.INDENT, properties.getProperty(INDENT));
+        service.setProperty(OutputKeys.ENCODING, properties.getProperty(ENCODING));
 
         for (final Map.Entry<String, String> mapping : namespaceMappings.entrySet()) {
             service.setNamespace(mapping.getKey(), mapping.getValue());
@@ -1183,7 +1189,7 @@ public class InteractiveClient {
     }
 
     protected final Resource retrieve(final XmldbURI resource) throws XMLDBException {
-        return retrieve(resource, properties.getProperty("indent"));
+        return retrieve(resource, properties.getProperty(INDENT));
     }
 
     protected final Resource retrieve(final XmldbURI resource, final String indent) throws XMLDBException {
@@ -1757,7 +1763,7 @@ public class InteractiveClient {
         XmldbURI p = XmldbURI.ROOT_COLLECTION_URI;
         for (int i = 1; i < segments.length; i++) {
             p = p.append(segments[i]);
-            final Collection c = DatabaseManager.getCollection(properties.getProperty("uri") + p, properties.getProperty("user"), properties.getProperty("password"));
+            final Collection c = DatabaseManager.getCollection(properties.getProperty(URI) + p, properties.getProperty(USER), properties.getProperty(PASSWORD));
             if (c == null) {
                 final CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl) current.getService("CollectionManagementService", "1.0");
                 current = mgtService.createCollection(segments[i]);
@@ -1769,7 +1775,7 @@ public class InteractiveClient {
     }
 
     protected Collection getCollection(final String path) throws XMLDBException {
-        return DatabaseManager.getCollection(properties.getProperty("uri") + path, properties.getProperty("user"), properties.getProperty("password"));
+        return DatabaseManager.getCollection(properties.getProperty(URI) + path, properties.getProperty(USER), properties.getProperty(PASSWORD));
     }
     
     /*private char[] readPassword(InputStream in) throws IOException {
@@ -1848,19 +1854,19 @@ public class InteractiveClient {
     protected void setPropertiesFromCommandLine(final CommandlineOptions options, final Properties props) {
         options.options.forEach(properties::setProperty);
 
-        options.username.ifPresent(username -> props.setProperty(InteractiveClient.USER, username));
-        options.password.ifPresent(password -> props.setProperty(InteractiveClient.USER, password));
+        options.username.ifPresent(username -> props.setProperty(USER, username));
+        options.password.ifPresent(password -> props.setProperty(USER, password));
         boolean needPassword = options.username.isPresent() && !options.password.isPresent();
         if(options.useSSL) {
-            props.setProperty(InteractiveClient.SSL_ENABLE, "TRUE");
+            props.setProperty(SSL_ENABLE, "TRUE");
         }
         if(options.embedded) {
-            props.setProperty(InteractiveClient.LOCAL_MODE, "TRUE");
-            props.setProperty(InteractiveClient.URI, XmldbURI.EMBEDDED_SERVER_URI.toString());
+            props.setProperty(LOCAL_MODE, "TRUE");
+            props.setProperty(URI, XmldbURI.EMBEDDED_SERVER_URI.toString());
         }
-        options.embeddedConfig.ifPresent(config -> properties.setProperty(InteractiveClient.CONFIGURATION, config.toAbsolutePath().toString()));
+        options.embeddedConfig.ifPresent(config -> properties.setProperty(CONFIGURATION, config.toAbsolutePath().toString()));
         if(options.noEmbeddedMode) {
-            props.setProperty(InteractiveClient.NO_EMBED_MODE, "TRUE");
+            props.setProperty(NO_EMBED_MODE, "TRUE");
         }
     }
 
@@ -2123,7 +2129,7 @@ public class InteractiveClient {
         }
 
         // Fix "uri" property: Excalibur CLI can't parse dashes, so we need to URL encode them:
-        properties.setProperty("uri", URLDecoder.decode(properties.getProperty("uri"), "UTF-8"));
+        properties.setProperty(URI, URLDecoder.decode(properties.getProperty(URI), "UTF-8"));
 
         boolean interactive = true;
         if((!options.parseDocs.isEmpty()) || options.rmDoc.isPresent() || options.getDoc.isPresent()
@@ -2142,7 +2148,7 @@ public class InteractiveClient {
 
         } else if (options.username.isPresent() && !options.password.isPresent()) {
             try {
-                properties.setProperty("password", console.readLine("password: ", Character.valueOf('*')));
+                properties.setProperty(PASSWORD, console.readLine("password: ", Character.valueOf('*')));
             } catch (final Exception e) {
             }
         }
@@ -2363,7 +2369,7 @@ public class InteractiveClient {
         boolean cont = true;
         while (cont) {
             try {
-                if ("true".equals(properties.getProperty("colors"))) {
+                if ("true".equals(properties.getProperty(COLORS))) {
                     line = console.readLine(ANSI_CYAN + "exist:" + path + ">"
                             + ANSI_WHITE);
                 } else {
@@ -2469,9 +2475,9 @@ public class InteractiveClient {
 
     private Collection resolveCollection(final XmldbURI path) throws XMLDBException {
         return DatabaseManager.getCollection(
-                properties.getProperty("uri") + path,
-                properties.getProperty("user"),
-                properties.getProperty("password"));
+                properties.getProperty(URI) + path,
+                properties.getProperty(USER),
+                properties.getProperty(PASSWORD));
     }
 
     private Resource resolveResource(final XmldbURI path) throws XMLDBException {
@@ -2540,7 +2546,7 @@ public class InteractiveClient {
             if (data instanceof byte[]) {
                 os.write((byte[]) data);
             } else {
-                try(final Writer writer = new OutputStreamWriter(os, Charset.forName(properties.getProperty("encoding")))) {
+                try(final Writer writer = new OutputStreamWriter(os, Charset.forName(properties.getProperty(ENCODING)))) {
                     writer.write(data.toString());
                 }
             }
