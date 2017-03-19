@@ -109,11 +109,10 @@ public class Main {
     /* user/pass arguments */
     private static final Argument<String> userArg = stringArgument("-u", "--user")
             .description("set user.")
-            .required()
+            .defaultValue(DEFAULT_USER)
             .build();
     private static final Argument<String> passwordArg = stringArgument("-p", "--password")
             .description("set the password for connecting to the database.")
-            .required()
             .build();
     private static final Argument<String> dbaPasswordArg = stringArgument("-P", "--dba-password")
             .description("if the backup specifies a different password for the admin user, use this option to specify the new password. Otherwise you will get a permission denied")
