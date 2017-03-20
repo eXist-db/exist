@@ -44,4 +44,22 @@
             </classpath>
         </javac>
     </target>
+
+    <target name="compile-test" description="Compile test sources" if="${run.tests}">
+
+        <echo>Compiling tests '${extension.name}'</echo>
+
+        <mkdir dir="${test.classes.dir}"/>
+
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}"
+               destdir="${test.classes.dir}" encoding="UTF-8" optimize="${build.optimize}" srcdir="${test.src.dir}"
+               source="${build.compiler.source}" target="${build.compiler.target}">
+            <classpath>
+                <path refid="classpath.core"/>
+                <path refid="classpath.extension.custom"/>
+                <pathelement path="${build.classes.dir}"/>
+                <path refid="classpath.test"/>
+            </classpath>
+        </javac>
+    </target>
 </project>

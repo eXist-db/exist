@@ -50,11 +50,11 @@ public class LuceneIndexConfig {
     private final static String MATCH_SIBLING_ATTR_ELEMENT = "match-sibling-attribute";
     private final static String HAS_SIBLING_ATTR_ELEMENT = "has-sibling-attribute";
 
-    private static final String QNAME_ATTR = "qname";
-    private static final String MATCH_ATTR = "match";
+    public static final String QNAME_ATTR = "qname";
+    public static final String MATCH_ATTR = "match";
 
-    private static final String FIELD_ATTR = "field";
-    private static final String TYPE_ATTR = "type";
+    public static final String FIELD_ATTR = "field";
+    public static final String TYPE_ATTR = "type";
 
     private String name = null;
 
@@ -298,6 +298,7 @@ public class LuceneIndexConfig {
             isAttribute = true;
             name = name.substring(1);
         }
+
         try {
             String prefix = QName.extractPrefix(name);
             String localName = QName.extractLocalName(name);

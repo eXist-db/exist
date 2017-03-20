@@ -9,6 +9,7 @@ import org.exist.dom.QName;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -17,14 +18,14 @@ import java.util.*;
 
 public class RangeIndexConfig {
 
-    private static final String CONFIG_ROOT = "range";
-    private static final String CREATE_ELEM = "create";
+    static final String CONFIG_ROOT = "range";
+    static final String CREATE_ELEM = "create";
     private static final String FIELD_ELEM = "field";
     private final static String CONDITION_ELEM = "condition";
 
     private static final Logger LOG = LogManager.getLogger(RangeIndexConfig.class);
 
-    private Map<QName, RangeIndexConfigElement> paths = new TreeMap<QName, RangeIndexConfigElement>();
+    private Map<QName, RangeIndexConfigElement> paths = new TreeMap<>();
 
     private Analyzer analyzer;
 
@@ -96,8 +97,18 @@ public class RangeIndexConfig {
                     } else {
                         idxConf.add(newConfig);
                     }
-                } catch (DatabaseConfigurationException e) {
-                    LOG.error("Invalid range index configuration: " + e.getMessage());
+                } catch (final DatabaseConfigurationException e) {
+                    String uri = null;
+                    final Document doc = node.getOwnerDocument();
+                    if(doc != null) {
+                        uri = doc.getDocumentURI();
+                    }
+
+                    if(uri != null) {
+                        LOG.error("Invalid range index configuration (" + uri + "): " + e.getMessage());
+                    } else {
+                        LOG.error("Invalid range index configuration: " + e.getMessage());
+                    }
                 }
             }
         }

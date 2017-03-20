@@ -30,6 +30,7 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/security/activedirectory/test" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/xUnit/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/xUnit/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/range/test/src" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/autodeploy" />
       <excludeFolder url="file://$MODULE_DIR$/backup" />
       <excludeFolder url="file://$MODULE_DIR$/build" />

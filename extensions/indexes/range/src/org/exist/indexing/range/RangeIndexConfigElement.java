@@ -21,6 +21,10 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.IOException;
 import java.util.Map;
 
+import static org.exist.indexing.lucene.LuceneIndexConfig.MATCH_ATTR;
+import static org.exist.indexing.lucene.LuceneIndexConfig.QNAME_ATTR;
+import static org.exist.indexing.lucene.LuceneIndexConfig.TYPE_ATTR;
+
 public class RangeIndexConfigElement {
 
     protected final static String FILTER_ELEMENT = "filter";
@@ -37,7 +41,7 @@ public class RangeIndexConfigElement {
     private org.exist.indexing.range.conversion.TypeConverter typeConverter = null;
 
     public RangeIndexConfigElement(Element node, Map<String, String> namespaces) throws DatabaseConfigurationException {
-        String match = node.getAttribute("match");
+        String match = node.getAttribute(MATCH_ATTR);
         if (match != null && match.length() > 0) {
             try {
                 path = new NodePath(namespaces, match);
@@ -46,13 +50,13 @@ public class RangeIndexConfigElement {
             } catch (IllegalArgumentException e) {
                 throw new DatabaseConfigurationException("Range index module: invalid qname in configuration: " + e.getMessage());
             }
-        } else if (node.hasAttribute("qname")) {
+        } else if (node.hasAttribute(QNAME_ATTR)) {
             QName qname = LuceneIndexConfig.parseQName(node, namespaces);
             path = new NodePath(NodePath.SKIP);
             path.addComponent(qname);
             isQNameIndex = true;
         }
-        String typeStr = node.getAttribute("type");
+        String typeStr = node.getAttribute(TYPE_ATTR);
         if (typeStr != null && typeStr.length() > 0) {
             try {
                 this.type = Type.getType(typeStr);
