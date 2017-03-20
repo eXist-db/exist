@@ -2765,14 +2765,18 @@ public class XQueryContext implements BinaryValueManager, Context
                 }
             } // NOTE: expathrepo related, closes the EXPath else (if module != null)
         }
-        if (namespaceURI == null) {
-            namespaceURI = module.getNamespaceURI();
+
+        if(module != null) {
+            if (namespaceURI == null) {
+                namespaceURI = module.getNamespaceURI();
+            }
+            if (prefix == null) {
+                prefix = module.getDefaultPrefix();
+            }
+
+            declareNamespace(prefix, namespaceURI);
         }
-        if( prefix == null ) {
-            prefix = module.getDefaultPrefix();
-        }
-        declareNamespace( prefix, namespaceURI );
-        
+
         return module;
     }
 
@@ -2817,9 +2821,12 @@ public class XQueryContext implements BinaryValueManager, Context
     {
         final ExternalModule module = compileModule( prefix, namespaceURI, location, source );
 
-        setModule( module.getNamespaceURI(), module );
-        declareModuleVars( module );
-        return( module );
+        if(module != null) {
+            setModule(module.getNamespaceURI(), module);
+            declareModuleVars(module);
+        }
+
+        return module;
     }
 
 
