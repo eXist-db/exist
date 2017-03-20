@@ -85,7 +85,7 @@ public class Main {
     private static final String BACKUP_DIR_PROP = "backup-dir";
 
     private static final String DEFAULT_USER = "admin";
-    private static final String DEFAULT_PASSWORD = "admin";
+    private static final String DEFAULT_PASSWORD = "";
     private static final String DEFAULT_URI = "xmldb:exist://";
     private static final String DEFAULT_DRIVER = "org.exist.xmldb.DatabaseImpl";
     private static final String DEFAULT_BACKUP_DIR = "backup";
