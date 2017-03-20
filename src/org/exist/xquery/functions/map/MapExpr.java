@@ -76,13 +76,24 @@ public class MapExpr extends AbstractExpression {
         dumper.display("}");
     }
 
+    @Override
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        mappings.forEach(m -> m.resetState(postOptimization));
+    }
+
     private static class Mapping {
-        Expression key;
-        Expression value;
+        final Expression key;
+        final Expression value;
 
         public Mapping(Expression key, Expression value) {
             this.key = key;
             this.value = value;
+        }
+
+        private void resetState(boolean postOptimization) {
+            key.resetState(postOptimization);
+            value.resetState(postOptimization);
         }
     }
 }
