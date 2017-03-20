@@ -17,14 +17,14 @@ import java.util.*;
 
 public class RangeIndexConfig {
 
-    private static final String CONFIG_ROOT = "range";
-    private static final String CREATE_ELEM = "create";
+    static final String CONFIG_ROOT = "range";
+    static final String CREATE_ELEM = "create";
     private static final String FIELD_ELEM = "field";
     private final static String CONDITION_ELEM = "condition";
 
     private static final Logger LOG = LogManager.getLogger(RangeIndexConfig.class);
 
-    private Map<QName, RangeIndexConfigElement> paths = new TreeMap<QName, RangeIndexConfigElement>();
+    private Map<QName, RangeIndexConfigElement> paths = new TreeMap<>();
 
     private Analyzer analyzer;
 
