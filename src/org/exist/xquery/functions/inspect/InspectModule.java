@@ -40,23 +40,25 @@ public class InspectModule extends BasicFunction {
     private static final QName MODULE_QNAME = new QName("module");
     private static final QName VARIABLE_QNAME = new QName("variable");
 
-    public InspectModule(XQueryContext context, FunctionSignature signature) {
+    public InspectModule(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        Module module;
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+
         final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
         tempContext.setModuleLoadPath(context.getModuleLoadPath());
+        final Module module;
         if (isCalledAs("inspect-module")) {
             module = tempContext.importModule(null, null, args[0].getStringValue());
         } else {
             module = tempContext.importModule(args[0].getStringValue(), null, null);
         }
 
-        if (module == null)
-            {return Sequence.EMPTY_SEQUENCE;}
+        if (module == null) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
         final MemTreeBuilder builder = context.getDocumentBuilder();
         final AttributesImpl attribs = new AttributesImpl();
         attribs.addAttribute("", "uri", "uri", "CDATA", module.getNamespaceURI());
@@ -67,8 +69,9 @@ public class InspectModule extends BasicFunction {
             attribs.addAttribute("", "location", "location", "CDATA", args[0].getStringValue());
         }
         final int nodeNr = builder.startElement(MODULE_QNAME, attribs);
-        if (!module.isInternalModule())
-            {XQDocHelper.parse((ExternalModule) module);}
+        if (!module.isInternalModule()) {
+            XQDocHelper.parse((ExternalModule) module);
+        }
         if (module.getDescription() != null) {
             builder.startElement(InspectFunction.DESCRIPTION_QNAME, null);
             builder.characters(module.getDescription());
@@ -77,14 +80,14 @@ public class InspectModule extends BasicFunction {
         if (!module.isInternalModule()) {
             final ExternalModule externalModule = (ExternalModule) module;
             if (externalModule.getMetadata() != null) {
-                for (final Map.Entry<String, String> entry: externalModule.getMetadata().entrySet()) {
+                for (final Map.Entry<String, String> entry : externalModule.getMetadata().entrySet()) {
                     builder.startElement(new QName(entry.getKey()), null);
                     builder.characters(entry.getValue());
                     builder.endElement();
                 }
             }
             // variables
-            for (final VariableDeclaration var: externalModule.getVariableDeclarations()) {
+            for (final VariableDeclaration var : externalModule.getVariableDeclarations()) {
                 attribs.clear();
                 attribs.addAttribute("", "name", "name", "CDATA", var.getName().toString());
                 final SequenceType type = var.getSequenceType();
