@@ -33,6 +33,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.xml.sax.SAXParseException;
 
 /**
  * Implements the XQuery's fn:doc-available() function.
@@ -83,23 +84,28 @@ public class FunDocAvailable extends Function {
             }
         }
 
-        final Sequence result;
+        Sequence result = BooleanValue.FALSE;
         final Sequence arg = getArgument(0).eval(contextSequence, contextItem);
-        if (arg.isEmpty()) {
-            result = BooleanValue.FALSE;
-        } else {
+        if (!arg.isEmpty()) {
             final String path = arg.itemAt(0).getStringValue();
             try {
                 result = BooleanValue.valueOf(DocUtils.isDocumentAvailable(this.context, path));
             } catch (final XPathException e) {
-                e.prependMessage(ErrorCodes.FODC0005, "");
-                throw e;
+                if (e.getCause() instanceof SAXParseException) {
+                    result = BooleanValue.FALSE;
+                } else if(e.getMessage().contains("is a binary resource, not an XML document")) {
+                    result = BooleanValue.FALSE;
+                } else {
+                    e.prependMessage(ErrorCodes.FODC0005, "");
+                    throw e;
+                }
             }
         }
 
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().end(this, "", result);
         }
+
         return result;
     }
 
