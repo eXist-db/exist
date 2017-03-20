@@ -4,13 +4,32 @@
         <available file="${basedir}/.git" type="dir" property="git.present"/>
 
         <target name="git.details" description="Setup ${git.branch}, ${git.revision} and ${git.description} properties" if="git.present">
-                <exec executable="git" outputproperty="git.branch.full" failifexecutionfails="false">
-                        <arg value="rev-parse"/>
-                        <arg value="--abbrev-ref"/>
+                <exec executable="git" outputproperty="git.branch.full" errorproperty="git.branch.full.error" failifexecutionfails="false">
+                        <arg value="symbolic-ref"/>
+                        <arg value="-q"/>
+                        <arg value="--short"/>
                         <arg value="HEAD"/>
                 </exec>
-                
-                <propertyregex property="git.branch" input="${git.branch.full}" regexp="(\\|\/)" replace="_" global="true" override="true" defaultvalue="${git.branch.full}"/>
+
+                <exec executable="git" outputproperty="git.tag.full" errorproperty="git.tag.error" failifexecutionfails="false">
+                        <arg value="describe"/>
+                        <arg value="--tags"/>
+                        <arg value="--exact-match"/>
+                </exec>
+
+                <!-- if we are not on a branch, we are on a tag, so set the branch to the tag path -->
+                <if>
+                        <or>
+                                <not><isset property="git.branch.full"/></not>
+                                <equals arg1="${git.branch.full}" arg2=""/>
+                        </or>
+                        <then>
+                                <property name="git.branch" value="refs/tags/${git.tag.full}"/>
+                        </then>
+                        <else>
+                                <property name="git.branch" value="${git.branch.full}"/>
+                        </else>
+                </if>
 
                 <exec executable="git" outputproperty="git.revision.full" failifexecutionfails="false">
                         <arg value="rev-parse"/>
