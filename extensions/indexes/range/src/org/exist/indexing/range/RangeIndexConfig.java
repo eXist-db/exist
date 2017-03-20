@@ -9,6 +9,7 @@ import org.exist.dom.QName;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -96,8 +97,18 @@ public class RangeIndexConfig {
                     } else {
                         idxConf.add(newConfig);
                     }
-                } catch (DatabaseConfigurationException e) {
-                    LOG.error("Invalid range index configuration: " + e.getMessage());
+                } catch (final DatabaseConfigurationException e) {
+                    String uri = null;
+                    final Document doc = node.getOwnerDocument();
+                    if(doc != null) {
+                        uri = doc.getDocumentURI();
+                    }
+
+                    if(uri != null) {
+                        LOG.error("Invalid range index configuration (" + uri + "): " + e.getMessage());
+                    } else {
+                        LOG.error("Invalid range index configuration: " + e.getMessage());
+                    }
                 }
             }
         }

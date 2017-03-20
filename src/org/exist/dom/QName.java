@@ -262,7 +262,7 @@ public class QName implements Comparable<QName> {
         } else if (p == qname.length()) {
             throw new IllegalArgumentException("Illegal QName: ends with a ':'");
         } else if (!isQName(qname)) {
-            throw new IllegalArgumentException("Illegal QName: not a valid local name.");
+            throw new IllegalArgumentException("Illegal QName: '" + qname + "' not a valid local name.");
         }
 
         return qname.substring(p + 1);
