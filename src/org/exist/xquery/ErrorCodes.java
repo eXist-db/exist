@@ -132,6 +132,7 @@ public class ErrorCodes {
             "Bind a prefix to the namespace URI http://www.w3.org/2000/xmlns/.\n" +
             "Bind any prefix (including the empty prefix) to a zero-length namespace URI.");
     public static final ErrorCode XQDY0138 = new W3CErrorCode("XQDY0138", "Position n does not exist in this array");
+    public static final ErrorCode XQDY0102 = new W3CErrorCode("XQDY0102", "If the name of an element in an element constructor is in no namespace, creating a default namespace for that element using a computed namespace constructor is an error.");
 
     /* XQuery 1.0 and XPath 2.0 Functions and Operators http://www.w3.org/TR/xpath-functions/#error-summary */
     public static final ErrorCode FOER0000 = new W3CErrorCode("FOER0000", "Unidentified error.");

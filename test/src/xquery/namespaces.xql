@@ -3,10 +3,11 @@ xquery version "3.0";
 module namespace nt="http://exist-db.org/xquery/test/namespaces";
 
 declare namespace z="http://www.zorba-xquery.com/";
+declare namespace ok="http://place-on-interwebz.com/a-ok";
 
 import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
 
-declare 
+declare
     %test:assertEquals("<test xmlns:foo='http://foo.com'/>")
 function nt:dynamicNSConstr1() {
     <test>
@@ -232,4 +233,30 @@ function nt:dynamicNSNodeFromFunc() {
 
 declare function nt:getNSNode() {
     namespace { "foo" } { "http://foo.com" }
+};
+
+declare
+    %test:assertError("XQDY0102")
+function nt:cannot-override-no-ns() {
+    element root {
+        namespace {""} {"http://also-on-interwebz.com/problem"},
+        namespace ok {"http://place-on-interwebz.com/a-ok"},
+        for $n in 1 to 3
+        return
+            element stuff {$n}
+    }
+};
+
+declare
+    %test:assertEquals(3)
+function nt:ns-default-constructor() {
+    count(
+        element ok:root {
+            namespace {""} {"http://also-on-interwebz.com/problem"},
+            namespace ok {"http://place-on-interwebz.com/a-ok"},
+            for $n in 1 to 3
+            return
+                element stuff {$n}
+        }/stuff
+    )
 };
