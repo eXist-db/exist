@@ -72,7 +72,7 @@ import java.util.Arrays;
  *
  * @author wolf
  */
-public class DocumentImpl extends NodeImpl<DocumentImpl> implements IDocument {
+public class DocumentImpl extends NodeImpl<DocumentImpl> implements IDocument, Document {
 
     private static final int NODE_SIZE = 16;
     private static final int ATTR_SIZE = 8;

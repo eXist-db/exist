@@ -73,7 +73,7 @@ import java.io.IOException;
  *
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  */
-public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, IDocument {
+public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, IDocument, Document {
 
     public static final int UNKNOWN_DOCUMENT_ID = -1;
 
