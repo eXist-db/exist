@@ -85,8 +85,7 @@ public class TemplatesFactory {
       if (Files.isReadable(f)) {
         uri = f.toUri().toASCIIString();
       } else {
-        stylesheet = baseUri + File.separatorChar + stylesheet;
-        f = Paths.get(stylesheet).normalize();
+        f = Paths.get(baseUri, stylesheet).normalize();
         if (Files.isReadable(f)) {
           uri = f.toUri().toASCIIString();
         }
