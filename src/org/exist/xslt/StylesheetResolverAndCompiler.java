@@ -44,11 +44,13 @@ import org.exist.xquery.Constants;
 import org.xml.sax.SAXException;
 
 /**
+ * {@link javax.xml.transform.Templates} resolver and compiler.
+ *
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
-public class StylesheetUri implements Stylesheet {
+public class StylesheetResolverAndCompiler implements Stylesheet {
 
-  protected final static Logger LOG = LogManager.getLogger(StylesheetUri.class);
+  protected final static Logger LOG = LogManager.getLogger(StylesheetResolverAndCompiler.class);
 
   SAXTransformerFactory factory;
 
@@ -60,7 +62,7 @@ public class StylesheetUri implements Stylesheet {
 
   Properties properties;
 
-  public StylesheetUri(String uri) {
+  public StylesheetResolverAndCompiler(String uri) {
     this.uri = uri;
 
     final int p = uri.lastIndexOf("/");
@@ -71,7 +73,7 @@ public class StylesheetUri implements Stylesheet {
     }
   }
 
-  public StylesheetUri(String uri, Properties properties) {
+  public StylesheetResolverAndCompiler(String uri, Properties properties) {
     this(uri);
 
     this.properties = properties;

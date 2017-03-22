@@ -44,7 +44,7 @@ import org.xml.sax.SAXException;
  */
 public class TemplatesFactory {
 
-  private final static ConcurrentMap<String, StylesheetUri> cache = new ConcurrentHashMap<>();
+  private final static ConcurrentMap<String, StylesheetResolverAndCompiler> cache = new ConcurrentHashMap<>();
 
   public static Stylesheet stylesheet(String stylesheet, String baseUri, Properties properties, boolean useCache) {
 
@@ -54,14 +54,14 @@ public class TemplatesFactory {
 
     String uri = uri(stylesheet, baseUri);
 
-    return new StylesheetUri(uri, properties);
+    return new StylesheetResolverAndCompiler(uri, properties);
   }
 
   private static Stylesheet stylesheet(String stylesheet, String baseUri) {
 
     String uri = uri(stylesheet, baseUri);
 
-    cache.computeIfAbsent(uri, StylesheetUri::new);
+    cache.computeIfAbsent(uri, StylesheetResolverAndCompiler::new);
     return cache.get(uri);
   }
 
@@ -69,7 +69,7 @@ public class TemplatesFactory {
     if (useCache) {
       return stylesheet(stylesheet, baseUri);
     } else {
-      return new StylesheetUri(uri(stylesheet, baseUri));
+      return new StylesheetResolverAndCompiler(uri(stylesheet, baseUri));
     }
   }
 
