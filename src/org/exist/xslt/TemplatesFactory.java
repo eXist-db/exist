@@ -32,6 +32,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
+import net.jcip.annotations.ThreadSafe;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.Constants;
@@ -40,8 +41,12 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
+ * Factory for stylesheet resolver and compiler instances
+ * and if instance is safe for reuse then it cached.
+ *
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
+@ThreadSafe
 public class TemplatesFactory {
 
   private final static ConcurrentMap<String, StylesheetResolverAndCompiler> cache = new ConcurrentHashMap<>();

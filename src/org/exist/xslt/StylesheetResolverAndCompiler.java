@@ -31,6 +31,7 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
@@ -48,6 +49,7 @@ import org.xml.sax.SAXException;
  *
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
+@ThreadSafe
 public class StylesheetResolverAndCompiler implements Stylesheet {
 
   protected final static Logger LOG = LogManager.getLogger(StylesheetResolverAndCompiler.class);

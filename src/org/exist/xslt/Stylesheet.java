@@ -28,6 +28,8 @@ import org.exist.storage.DBBroker;
 import org.xml.sax.SAXException;
 
 /**
+ * {@link javax.xml.transform.Templates} resolver and compiler interface.
+ *
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public interface Stylesheet {
