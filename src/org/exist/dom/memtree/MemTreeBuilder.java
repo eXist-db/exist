@@ -428,7 +428,7 @@ public class MemTreeBuilder {
                 final String elemPrefix = (elemQN.getPrefix() == null) ? XMLConstants.DEFAULT_NS_PREFIX : elemQN.getPrefix();
                 if (checkNS
                     && XMLConstants.DEFAULT_NS_PREFIX.equals(elemPrefix)
-                    && "xmlns".equals(qname.getPrefix())
+                    && XMLConstants.XMLNS_ATTRIBUTE.equals(qname.getPrefix())
                     && "".equals(qname.getLocalPart())) {
 
                     throw new DOMException(
