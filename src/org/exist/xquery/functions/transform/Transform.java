@@ -36,7 +36,6 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.value.*;
-import org.exist.xslt.StylesheetUri;
 import org.exist.xslt.Stylesheet;
 import org.exist.xslt.TemplatesFactory;
 import org.exist.xslt.TransformerFactoryAllocator;
@@ -54,8 +53,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 /**
