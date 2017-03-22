@@ -90,6 +90,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public static final String OPTION_LEADING_WILDCARD = "leading-wildcard";
     public static final String OPTION_FILTER_REWRITE = "filter-rewrite";
     public static final String DEFAULT_OPERATOR_OR = "or";
+    public static final String OPTION_LOWERCASE_EXPANDED_TERMS = "lowercase-expanded-terms";
 
     public static final org.apache.lucene.document.FieldType TYPE_NODE_ID = new org.apache.lucene.document.FieldType();
     static {
@@ -487,6 +488,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             else
                 parser.setMultiTermRewriteMethod(MultiTermQuery.CONSTANT_SCORE_BOOLEAN_QUERY_REWRITE);
         }
+        option = options.getProperty(OPTION_LOWERCASE_EXPANDED_TERMS);
+        if (option != null) {
+            parser.setLowercaseExpandedTerms("yes".equalsIgnoreCase(option));
+        }        
     }
 
     /**
