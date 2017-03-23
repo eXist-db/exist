@@ -91,12 +91,18 @@ public class PersistentLogin {
             seriesMap.remove(tokens[0]);
             return null;
         }
+
+    // sequential token checking is disabled by default
+    if (data.seqBehavior) {
+        LOG.debug("Using sequential tokens");
         if (!data.checkAndUpdateToken(tokens[1])) {
             LOG.debug("Out-of-sequence request or cookie theft attack. Deleting session.");
             seriesMap.remove(tokens[0]);
             throw new XPathException("Token mismatch. This may indicate an out-of-sequence request (likely) or a cookie theft attack.  " +
                     "Session is deleted for security reasons.");
         }
+    }
+
         return data;
     }
 
@@ -137,6 +143,9 @@ public class PersistentLogin {
         private String series;
         private long expires;
         private DurationValue timeToLive;
+
+        // disable sequential token checking by default
+        private boolean seqBehavior = false;
 
         private Map<String, Long> invalidatedTokens = new HashMap<>();
 
