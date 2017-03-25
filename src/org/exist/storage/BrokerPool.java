@@ -1466,7 +1466,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
     /**
      * Schedules a system maintenance task for the database instance. If the database is idle,
-     * the task will be run immediately. Otherwise, the task will be deffered
+     * the task will be run immediately. Otherwise, the task will be deferred
      * until all running threads have returned.
      *
      * @param task The task
