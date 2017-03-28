@@ -290,13 +290,13 @@ public class LockManager {
             }
 
             try {
-                lockTable.attempt(groupId, path, LockType.COLLECTION, rootMode);
+                lockTable.attempt(groupId, path, LockType.COLLECTION, sonMode);
 
                 sonModeLock.lockInterruptibly();
 
-                lockTable.acquired(groupId, path, LockType.COLLECTION, rootMode);
+                lockTable.acquired(groupId, path, LockType.COLLECTION, sonMode);
             } catch(final InterruptedException e) {
-                lockTable.attemptFailed(groupId, path, LockType.COLLECTION, rootMode);
+                lockTable.attemptFailed(groupId, path, LockType.COLLECTION, sonMode);
 
                 currentModeLock.unlock();
                 lockTable.released(groupId, currentModePath, LockType.COLLECTION, currentMode);
@@ -310,7 +310,7 @@ public class LockManager {
             } else {
                 parentModeLock = currentModeLock;
                 parentMode = currentMode;
-                parentPath = path;
+                parentPath = currentModePath;
             }
 
             currentModeLock = sonModeLock;
