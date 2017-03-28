@@ -264,21 +264,45 @@ public class LockTable {
         }
 
         private void notifyListenersOfAttempt(final LockAction lockAction) {
-            listeners.forEach(listener -> listener.accept(lockAction));
+            for(final LockEventListener listener : listeners) {
+                try {
+                    listener.accept(lockAction);
+                } catch (final Exception e) {
+                    LOG.error("Listener '{}' error: ", listener.getClass().getName(), e);
+                }
+            }
         }
 
         private void notifyListenersOfAttemptFailed(final LockAction lockAction) {
-            listeners.forEach(listener -> listener.accept(lockAction));
+            for(final LockEventListener listener : listeners) {
+                try {
+                    listener.accept(lockAction);
+                } catch (final Exception e) {
+                    LOG.error("Listener '{}' error: ", listener.getClass().getName(), e);
+                }
+            }
         }
 
         private void notifyListenersOfAcquire(final LockAction lockAction, final int newReferenceCount) {
             final LockAction newLockAction = lockAction.withCount(newReferenceCount);
-            listeners.forEach(listener -> listener.accept(newLockAction));
+            for(final LockEventListener listener : listeners) {
+                try {
+                    listener.accept(newLockAction);
+                } catch (final Exception e) {
+                    LOG.error("Listener '{}' error: ", listener.getClass().getName(), e);
+                }
+            }
         }
 
         private void notifyListenersOfRelease(final LockAction lockAction, final int newReferenceCount) {
             final LockAction newLockAction = lockAction.withCount(newReferenceCount);
-            listeners.forEach(listener -> listener.accept(newLockAction));
+            for(final LockEventListener listener : listeners) {
+                try {
+                    listener.accept(newLockAction);
+                } catch (final Exception e) {
+                    LOG.error("Listener '{}' error: ", listener.getClass().getName(), e);
+                }
+            }
         }
 
         private void addToAttempting(final LockAction lockAction) {
