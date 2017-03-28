@@ -3,6 +3,8 @@ package org.exist.storage.lock;
 import net.jcip.annotations.ThreadSafe;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Stack;
@@ -19,6 +21,22 @@ import static org.junit.Assert.*;
 public class LockManagerTest {
 
     private static final int CONCURRENCY_LEVEL = 100;
+    private static String previousLockEventsState = null;
+
+
+    @BeforeClass
+    public static void enableLockEventsState() {
+        previousLockEventsState = System.setProperty(LockTable.PROP_ENABLE, "true");
+    }
+
+    @AfterClass
+    public static void restoreLockEventsState() {
+        if(previousLockEventsState != null) {
+            System.setProperty(LockTable.PROP_ENABLE, previousLockEventsState);
+        } else {
+            System.clearProperty(LockTable.PROP_ENABLE);
+        }
+    }
 
     @Test
     public void getCollectionLock_isStripedByPath() {

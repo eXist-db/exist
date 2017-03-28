@@ -47,13 +47,29 @@ import static org.exist.storage.lock.LockTable.LockAction.Action.*;
  */
 public class LockTable {
 
+    public final static String PROP_ENABLE = "exist.locktable.enabled";
+    public final static String PROP_SANITY_CHECK = "exist.locktable.sanity.check";
+    public final static String PROP_TRACE_STACK_DEPTH = "exist.locktable.trace.stack.depth";
+
     private final static Logger LOG = LogManager.getLogger(LockTable.class);
     private final static LockTable instance = new LockTable();
 
-    //TODO(AR) make configurable
-    private volatile boolean enableLogEvents = true;    // set to false to disable all events
-    //TODO(AR) make configurable from conf.xml
-    private volatile int traceStackDepth = 5;   // whether we should try and determine a reason for the lock, -1 means all stack, 0 means no stack, n means n stack frames
+    /**
+     * Set to false to disable all events
+     */
+    private volatile boolean enableEvents = Boolean.getBoolean(PROP_ENABLE);
+
+    /**
+     * Set to true to enable sanity checking of lock leases
+     */
+    private volatile boolean sanityCheck = Boolean.getBoolean(PROP_SANITY_CHECK);
+
+    /**
+     * Whether we should try and trace the stack for the lock event, -1 means all stack,
+     * 0 means no stack, n means n stack frames, 5 is a reasonable value
+     */
+    private volatile int traceStackDepth = Optional.ofNullable(Integer.getInteger(PROP_TRACE_STACK_DEPTH))
+            .orElse(0);
 
     //TODO(AR) {@link #attempting) and {@link #acquired} are at class member level so that they can later be exposed via XQuery methods etc for reporting
 
@@ -128,7 +144,7 @@ public class LockTable {
     }
 
     private void event(final LockAction.Action action, final long groupId, final String id, final LockType lockType, final LockMode mode, final int count) {
-        if(!enableLogEvents) {
+        if(!enableEvents) {
             return;
         }
 
@@ -137,19 +153,41 @@ public class LockTable {
         final String threadName = currentThread.getName();
         @Nullable final StackTraceElement[] stackTrace = getStackTrace(currentThread);
 
-        //TODO(AR) temp for filtering
-        if (threadName.startsWith("DefaultQuartzScheduler_") || id.equals("dom.dbx") || id.equals("collections.dbx") || id.equals("collections.dbx") || id.equals("structure.dbx") || id.equals("values.dbx") || id.equals("CollectionCache")) return;
+        if(ignoreEvent(threadName, id)) {
+            return;
+        }
 
         final LockAction lockAction = new LockAction(action, groupId, id, lockType, mode, threadName, count, timestamp, stackTrace);
 
         /**
          * Very useful for debugging Lock life cycles
          */
-        if(LOG.isTraceEnabled()) {
+        if(sanityCheck) {
             sanityCheckLockLifecycles(lockAction);
         }
 
         queue.add(Either.Right(lockAction));
+    }
+
+    /**
+     * Simple filtering to ignore events that are not of interest
+     *
+     * @param threadName The name of the thread that triggered the event
+     * @param id The id of the lock
+     *
+     * @return true if the event should be ignored
+     */
+    private boolean ignoreEvent(final String threadName, final String id) {
+        return false;
+
+        // useful for debugging specific log events
+//        return threadName.startsWith("DefaultQuartzScheduler_")
+//                || id.equals("dom.dbx")
+//                || id.equals("collections.dbx")
+//                || id.equals("collections.dbx")
+//                || id.equals("structure.dbx")
+//                || id.equals("values.dbx")
+//                || id.equals("CollectionCache");
     }
 
     public boolean hasPendingEvents() {
@@ -601,7 +639,9 @@ public class LockTable {
                 }
             }
 
-            LOG.trace("QUEUE: {} (read={} write={})", lockAction.toString(), read, write);
+            if(LOG.isTraceEnabled()) {
+                LOG.trace("QUEUE: {} (read={} write={})", lockAction.toString(), read, write);
+            }
 
             lockCounts.put(lockAction.id, new Tuple2<>(read, write));
         }
