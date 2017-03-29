@@ -21,12 +21,27 @@
  */
 package org.exist.management.impl;
 
+import java.util.Date;
+
 import javax.management.openmbean.TabularData;
 
-/**
- * 
- */
-public interface LockManagerMBean {
+public interface SanityReportMXBean {
 
-    public TabularData getWaitingThreads();
+    public Date getLastCheckStart();
+
+    public Date getLastCheckEnd();
+
+    public String getLastActionInfo();
+
+    public Date getActualCheckStart();
+
+    public String getStatus();
+
+    public long getPingTime();
+    
+    public TabularData getErrors();
+
+    public void triggerCheck(String output, String backup, String incremental);
+    
+    public long ping(boolean checkQueryEngine);
 }

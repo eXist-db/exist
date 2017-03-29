@@ -51,7 +51,7 @@ import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 
-public class SanityReport extends NotificationBroadcasterSupport implements SanityReportMBean {
+public class SanityReport extends NotificationBroadcasterSupport implements SanityReportMXBean {
 
     private final static Logger LOG = LogManager.getLogger(SanityReport.class.getName());
 

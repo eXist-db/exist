@@ -31,7 +31,7 @@ import org.exist.SystemProperties;
  * @author wessels
  * @author ljo
  */
-public class SystemInfo implements SystemInfoMBean {
+public class SystemInfo implements SystemInfoMXBean {
 
     public SystemInfo() {
     }

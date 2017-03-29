@@ -41,7 +41,7 @@ import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.CompositeDataSupport;
 import org.exist.storage.ProcessMonitor.QueryHistory;
 
-public class ProcessReport implements ProcessReportMBean {
+public class ProcessReport implements ProcessReportMXBean {
 
     private final static Logger LOG = LogManager.getLogger(ProcessReport.class);
 

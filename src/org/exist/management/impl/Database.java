@@ -28,7 +28,7 @@ import javax.management.openmbean.*;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 
-public class Database implements DatabaseMBean {
+public class Database implements DatabaseMXBean {
 
     private static final String[] itemNames = {
         "owner", "referenceCount", "stack", "stackAcquired"};

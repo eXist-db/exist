@@ -7,7 +7,7 @@ package org.exist.management;
  * Time: 10:33:21 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface CacheManagerMBean {
+public interface CacheManagerMXBean {
 
     long getMaxTotal();
 

@@ -23,7 +23,7 @@ package org.exist.management.impl;
 
 import javax.management.openmbean.TabularData;
 
-public interface ProcessReportMBean {
+public interface ProcessReportMXBean {
 
     TabularData getScheduledJobs();
 
