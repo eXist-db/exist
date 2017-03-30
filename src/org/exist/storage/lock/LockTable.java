@@ -71,14 +71,12 @@ public class LockTable {
     private volatile int traceStackDepth = Optional.ofNullable(Integer.getInteger(PROP_TRACE_STACK_DEPTH))
             .orElse(0);
 
-    //TODO(AR) {@link #attempting) and {@link #acquired} are at class member level so that they can later be exposed via XQuery methods etc for reporting
-
     /**
      * List of threads attempting to acquire a lock
      *
-     * Map<Id, Map<Lock Type, List<Map<Lock Mode, Thread Name>>>>
+     * Map<Id, Map<Lock Type, List<LockModeOwner>>>
      */
-    private final ConcurrentMap<String, Map<LockType, List<Tuple2<LockMode, String>>>> attempting = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Map<LockType, List<LockModeOwner>>> attempting = new ConcurrentHashMap<>();
 
     /**
      * Reference count of acquired locks by id and type
@@ -190,10 +188,6 @@ public class LockTable {
 //                || id.equals("CollectionCache");
     }
 
-    public boolean hasPendingEvents() {
-        return !queue.isEmpty();
-    }
-
     @Nullable
     private StackTraceElement[] getStackTrace(final Thread thread) {
         if(traceStackDepth == 0) {
@@ -241,14 +235,54 @@ public class LockTable {
         queue.add(Either.Left(listenerAction));
     }
 
+    public boolean hasPendingEvents() {
+        return !queue.isEmpty();
+    }
+
+    /**
+     * Get's a copy of the current lock attempt information
+     *
+     * @return lock attempt information
+     */
+    public Map<String, Map<LockType, List<LockModeOwner>>> getAttempting() {
+        return new HashMap<>(attempting);
+    }
+
+    /**
+     * Get's a copy of the current acquired lock information
+     *
+     * @return acquired lock information
+     */
+    public Map<String, Map<LockType, Map<LockMode, Integer>>> getAcquired() {
+        return new HashMap<>(acquired);
+    }
+
+    public static class LockModeOwner {
+        final LockMode lockMode;
+        final String ownerThread;
+
+        public LockModeOwner(final LockMode lockMode, final String ownerThread) {
+            this.lockMode = lockMode;
+            this.ownerThread = ownerThread;
+        }
+
+        public LockMode getLockMode() {
+            return lockMode;
+        }
+
+        public String getOwnerThread() {
+            return ownerThread;
+        }
+    }
+
     private static class QueueConsumer implements Runnable {
         private final TransferQueue<Either<ListenerAction, LockAction>> queue;
-        private final ConcurrentMap<String, Map<LockType, List<Tuple2<LockMode, String>>>> attempting;
+        private final ConcurrentMap<String, Map<LockType, List<LockModeOwner>>> attempting;
         private final ConcurrentMap<String, Map<LockType, Map<LockMode, Integer>>> acquired;
         private final List<LockEventListener> listeners = new ArrayList<>();
 
         QueueConsumer(final TransferQueue<Either<ListenerAction, LockAction>> queue,
-                      final ConcurrentMap<String, Map<LockType, List<Tuple2<LockMode, String>>>> attempting,
+                      final ConcurrentMap<String, Map<LockType, List<LockModeOwner>>> attempting,
                       final ConcurrentMap<String, Map<LockType, Map<LockMode, Integer>>> acquired) {
             this.queue = queue;
             this.attempting = attempting;
@@ -354,7 +388,7 @@ public class LockTable {
                         v = new ArrayList<>();
                     }
 
-                    v.add(new Tuple2<>(lockAction.mode, lockAction.threadName));
+                    v.add(new LockModeOwner(lockAction.mode, lockAction.threadName));
                     return v;
                 });
 
@@ -372,7 +406,7 @@ public class LockTable {
                             return null;
                         }
 
-                        v.removeIf(val -> val._1 == lockAction.mode && val._2.equals(lockAction.threadName));
+                        v.removeIf(val -> val.getLockMode() == lockAction.mode && val.getOwnerThread().equals(lockAction.threadName));
                         if (v.isEmpty()) {
                             return null;
                         } else {

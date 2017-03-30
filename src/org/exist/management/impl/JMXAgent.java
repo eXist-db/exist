@@ -87,6 +87,9 @@ public class JMXAgent implements Agent {
             ObjectName name = new ObjectName("org.exist.management:type=LockManager");
             addMBean(name, new org.exist.management.impl.LockManager());
 
+            name = new ObjectName("org.exist.management:type=LockTable");
+            addMBean(name, new org.exist.management.impl.LockTable());
+
             name = new ObjectName("org.exist.management:type=SystemInfo");
             addMBean(name, new org.exist.management.impl.SystemInfo());
 
