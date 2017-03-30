@@ -81,9 +81,9 @@ public class LockTable {
     /**
      * Reference count of acquired locks by id and type
      *
-     * Map<Id, Map<Lock Type, List<Map<Lock Mode, Reference Count>>>>
+     * Map<Id, Map<Lock Type, Map<Lock Mode, Set<Owner>>>>
      */
-    private final ConcurrentMap<String, Map<LockType, Map<LockMode, Integer>>> acquired = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Map<LockType, Map<LockMode, Set<String>>>> acquired = new ConcurrentHashMap<>();
 
     /**
      * The {@link #queue} holds lock events and lock listener events
@@ -253,7 +253,7 @@ public class LockTable {
      *
      * @return acquired lock information
      */
-    public Map<String, Map<LockType, Map<LockMode, Integer>>> getAcquired() {
+    public Map<String, Map<LockType, Map<LockMode, Set<String>>>> getAcquired() {
         return new HashMap<>(acquired);
     }
 
@@ -278,12 +278,12 @@ public class LockTable {
     private static class QueueConsumer implements Runnable {
         private final TransferQueue<Either<ListenerAction, LockAction>> queue;
         private final ConcurrentMap<String, Map<LockType, List<LockModeOwner>>> attempting;
-        private final ConcurrentMap<String, Map<LockType, Map<LockMode, Integer>>> acquired;
+        private final ConcurrentMap<String, Map<LockType, Map<LockMode, Set<String>>>> acquired;
         private final List<LockEventListener> listeners = new ArrayList<>();
 
         QueueConsumer(final TransferQueue<Either<ListenerAction, LockAction>> queue,
                       final ConcurrentMap<String, Map<LockType, List<LockModeOwner>>> attempting,
-                      final ConcurrentMap<String, Map<LockType, Map<LockMode, Integer>>> acquired) {
+                      final ConcurrentMap<String, Map<LockType, Map<LockMode, Set<String>>>> acquired) {
             this.queue = queue;
             this.attempting = attempting;
             this.acquired = acquired;
@@ -434,16 +434,16 @@ public class LockTable {
                         v = new HashMap<>();
                     }
 
-                    v.compute(lockAction.mode, (mode, referenceCount) -> {
-                        if (referenceCount == null) {
-                            referenceCount = 1;
-                        } else {
-                            referenceCount++;
+                    v.compute(lockAction.mode, (mode, owners) -> {
+                        if (owners == null) {
+                            owners = new HashSet<>();
                         }
 
-                        notifyListenersOfAcquire(lockAction, referenceCount);
+                        owners.add(lockAction.threadName);
 
-                        return referenceCount;
+                        notifyListenersOfAcquire(lockAction, owners.size());
+
+                        return owners;
                     });
 
                     return v;
@@ -464,18 +464,18 @@ public class LockTable {
                         return null;
                     }
 
-                    v.compute(lockAction.mode, (mode, referenceCount) -> {
-                        if (referenceCount == null) {
+                    v.compute(lockAction.mode, (mode, owners) -> {
+                        if (owners == null) {
                             return null;
                         } else {
-                            referenceCount--;
+                            owners.remove(lockAction.threadName);
 
-                            notifyListenersOfRelease(lockAction, referenceCount);
+                            notifyListenersOfRelease(lockAction, owners.size());
 
-                            if (referenceCount <= 0) {
+                            if (owners.size() <= 0) {
                                 return null;
                             } else {
-                                return referenceCount;
+                                return owners;
                             }
                         }
                     });

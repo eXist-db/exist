@@ -26,6 +26,7 @@ import org.exist.storage.lock.LockTable.LockModeOwner;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * JMX MXBean interface for examining the LockTable
@@ -39,7 +40,7 @@ public interface LockTableMXBean {
      *
      * @return information about acquired locks
      */
-    Map<String, Map<LockTable.LockType, Map<Lock.LockMode, Integer>>> getAcquired();
+    Map<String, Map<LockTable.LockType, Map<Lock.LockMode, Set<String>>>> getAcquired();
 
     /**
      * Get information about outstanding attempts to acquire locks

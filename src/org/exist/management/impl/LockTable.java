@@ -25,6 +25,7 @@ import org.exist.storage.lock.LockTable.LockModeOwner;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * JMX MXBean for examining the LockTable
@@ -34,7 +35,7 @@ import java.util.Map;
 public class LockTable implements LockTableMXBean {
 
     @Override
-    public Map<String, Map<org.exist.storage.lock.LockTable.LockType, Map<Lock.LockMode, Integer>>> getAcquired() {
+    public Map<String, Map<org.exist.storage.lock.LockTable.LockType, Map<Lock.LockMode, Set<String>>>> getAcquired() {
         return org.exist.storage.lock.LockTable.getInstance().getAcquired();
     }
 
