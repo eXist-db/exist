@@ -48,4 +48,8 @@ public interface LockTableMXBean {
      * @return information about outstanding attempts to acquire locks
      */
     Map<String, Map<LockTable.LockType, List<LockModeOwner>>> getAttempting();
+
+    void dumpToConsole();
+
+    void dumpToLog();
 }
