@@ -602,7 +602,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 
                             if (m >= 60 || m < 0)
                                 throw new IllegalArgumentException(
-                                        DatatypeMessageFormatter.formatMessage(null, "InvalidFieldValue", new Object[]{ Integer.valueOf(m), "timezone minutes"})
+                                        DatatypeMessageFormatter.formatMessage(null, "InvalidFieldValue", new Object[]{m, "timezone minutes"})
                                 );
                             
                             timezone = (h * 60 + m) * (vch == '+' ? 1 : -1);
@@ -623,7 +623,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 
                             if (m >= 60 || m < 0)
                                 throw new IllegalArgumentException(
-                                        DatatypeMessageFormatter.formatMessage(null, "InvalidFieldValue", new Object[]{ Integer.valueOf(m), "timezone minutes"})
+                                        DatatypeMessageFormatter.formatMessage(null, "InvalidFieldValue", new Object[]{m, "timezone minutes"})
                                 );
                             
                             timezone = (h * 60 + m) * (vch == '+' ? 1 : -1);

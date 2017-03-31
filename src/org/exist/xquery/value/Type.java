@@ -192,9 +192,9 @@ public class Type {
         defineSubType(FUNCTION_REFERENCE, ARRAY);
     }
 
-    private final static Int2ObjectHashMap<String[]> typeNames = new Int2ObjectHashMap<String[]>(100);
+    private final static Int2ObjectHashMap<String[]> typeNames = new Int2ObjectHashMap<>(100);
     //private final static Map<Integer, String[]> typeNames= new HashMap<Integer, String[]>(100);
-    private final static Object2IntHashMap<String> typeCodes = new Object2IntHashMap<String>(100);
+    private final static Object2IntHashMap<String> typeCodes = new Object2IntHashMap<>(100);
 
     static {
         //TODO : use NODETYPES above ?
@@ -425,7 +425,7 @@ public class Type {
 		//TODO : optimize by swapping the arguments based on their numeric values ?
 		//Processing lower value first *should* reduce the size of the Set
 		//Collect type1's super-types
-		final HashSet<Integer> t1 = new HashSet<Integer>();
+		final HashSet<Integer> t1 = new HashSet<>();
 		//Don't introduce a shortcut (starting at getSuperType(type1) here
 		//type2 might be a super-type of type1
 		int t;
@@ -433,11 +433,11 @@ public class Type {
 			//Shortcut
 			if (t == type2)
 				{return t;}
-			t1.add(Integer.valueOf(t));
+			t1.add(t);
 		}
 		//Starting from type2's super type : the shortcut should have done its job
 		for(t = getSuperType(type2); t != ITEM ; t = getSuperType(t)) {
-			if (t1.contains(Integer.valueOf(t)))
+			if (t1.contains(t))
 				{return t;}
 		}
 		return ITEM;

@@ -545,18 +545,12 @@ public class DecimalValue extends NumericValue {
 	            }
 	            final Object result = stripTrailingZerosMethod.invoke(value, EMPTY_OBJECT_ARRAY);
 	            return (BigDecimal)result;
-	        } catch (final NoSuchMethodException e) {
-	            stripTrailingZerosMethodUnavailable = true;
-	            return stripTrailingZerosFallback(value);
-	        } catch (final IllegalAccessException e) {
-	            stripTrailingZerosMethodUnavailable = true;
-	            return stripTrailingZerosFallback(value);
-	        } catch (final InvocationTargetException e) {
+	        } catch (final NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
 	            stripTrailingZerosMethodUnavailable = true;
 	            return stripTrailingZerosFallback(value);
 	        }
 
-	    }
+        }
 	    
 	    private static BigDecimal stripTrailingZerosFallback(BigDecimal value) {
 

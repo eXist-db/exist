@@ -348,7 +348,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
      * Expand those references to get a pure in-memory DOM tree.
      */
     private void expand() {
-        final Set<DocumentImpl> docs = new HashSet<DocumentImpl>();
+        final Set<DocumentImpl> docs = new HashSet<>();
         for (int i = 0; i <= size; i++) {
             final NodeImpl node = (NodeImpl) values[i];
             if (node.getOwnerDocument().hasReferenceNodes())

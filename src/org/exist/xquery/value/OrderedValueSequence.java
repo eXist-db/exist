@@ -35,6 +35,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.w3c.dom.Node;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -132,7 +133,7 @@ public class OrderedValueSequence extends AbstractSequence {
 	public void sort() {
 //		FastQSort.sort(items, 0, count - 1);
 		items =
-			Stream.of(items).filter(entry -> entry != null)
+			Stream.of(items).filter(Objects::nonNull)
 					.parallel()
 					.sorted()
 					.map(entry -> { entry.clear(); return entry; })

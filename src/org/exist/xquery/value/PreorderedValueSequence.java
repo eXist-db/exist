@@ -64,24 +64,23 @@ public class PreorderedValueSequence extends AbstractSequence {
 		for(int i = 0; i < orderSpecs.length; i++) {
 			final Expression expr = orderSpecs[i].getSortExpression();
 			final NodeSet result = expr.eval(null).toNodeSet();
-			for(final Iterator j = result.iterator(); j.hasNext(); ) {
-				final NodeProxy p = (NodeProxy)j.next();
-				ContextItem context = p.getContext();
-				//TODO : review to consider transverse context
-				while(context != null) {
-					if(context.getNode() instanceof OrderedNodeProxy) {
-						final OrderedNodeProxy cp = (OrderedNodeProxy)context.getNode();
-						cp.values[i] = p.atomize();
-					}
-					context = context.getNextDirect();
-				}
-			}
+            for (final NodeProxy p : result) {
+                ContextItem context = p.getContext();
+                //TODO : review to consider transverse context
+                while (context != null) {
+                    if (context.getNode() instanceof OrderedNodeProxy) {
+                        final OrderedNodeProxy cp = (OrderedNodeProxy) context.getNode();
+                        cp.values[i] = p.atomize();
+                    }
+                    context = context.getNextDirect();
+                }
+            }
 		}
 	}
 
     public void clearContext(int contextId) throws XPathException {
-        for (int i = 0; i < nodes.length; i++) {
-            nodes[i].clearContext(contextId);
+        for (OrderedNodeProxy node : nodes) {
+            node.clearContext(contextId);
         }
     }
     
