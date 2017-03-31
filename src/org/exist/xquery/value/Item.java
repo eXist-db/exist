@@ -45,19 +45,19 @@ public interface Item {
 	 * {@link Type}.
 	 * 
 	 */
-	public int getType();
+    int getType();
 	
 	/**
 	 * Return the string value of this item (see the definition of string value in XPath).
 	 * 
 	 */
-	public String getStringValue() throws XPathException;
+    String getStringValue() throws XPathException;
 	
 	/**
 	 * Convert this item into a sequence, containing only the item.
 	 *  
 	 */
-	public Sequence toSequence();
+    Sequence toSequence();
 
     /**
      * Clean up any resources used by the items in this sequence.
@@ -73,17 +73,17 @@ public interface Item {
 	 * @param requiredType
 	 * @throws XPathException
 	 */
-	public AtomicValue convertTo(int requiredType) throws XPathException;
+    AtomicValue convertTo(int requiredType) throws XPathException;
 	
-	public AtomicValue atomize() throws XPathException;
+	AtomicValue atomize() throws XPathException;
 	
-	public void toSAX(DBBroker broker, ContentHandler handler, Properties properties) throws SAXException;
+	void toSAX(DBBroker broker, ContentHandler handler, Properties properties) throws SAXException;
 
-	public void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException;
+	void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException;
 	
-	public int conversionPreference(Class<?> javaClass);
+	int conversionPreference(Class<?> javaClass);
 	
-	public <T> T toJavaObject(Class<T> target) throws XPathException;
+	<T> T toJavaObject(Class<T> target) throws XPathException;
 
         /**
          * Nodes may implement this method to be informed of storage address

@@ -37,10 +37,10 @@ import org.w3c.dom.Node;
 public interface NodeValue extends Item, Sequence {
 	
 	/** Node is a constructed in-memory node */
-	public final static int IN_MEMORY_NODE = 0;
+    int IN_MEMORY_NODE = 0;
 	
 	/** Node is a persistent, i.e. stored in the database */
-	public final static int PERSISTENT_NODE = 1;
+    int PERSISTENT_NODE = 1;
 	
 	/**
 	 * Returns true if this node has the same identity as another
@@ -49,7 +49,7 @@ public interface NodeValue extends Item, Sequence {
 	 * @param other
 	 * @throws XPathException
 	 */
-	public boolean equals(NodeValue other) throws XPathException;
+    boolean equals(NodeValue other) throws XPathException;
 	
 	/**
 	 * Returns true if this node comes before another node in
@@ -58,7 +58,7 @@ public interface NodeValue extends Item, Sequence {
 	 * @param other
 	 * @throws XPathException
 	 */
-	public boolean before(NodeValue other, boolean isPreceding) throws XPathException;
+    boolean before(NodeValue other, boolean isPreceding) throws XPathException;
 	
 	/**
 	 * Returns true if this node comes after another node in
@@ -67,25 +67,25 @@ public interface NodeValue extends Item, Sequence {
 	 * @param other
 	 * @throws XPathException
 	 */
-	public boolean after(NodeValue other, boolean isFollowing) throws XPathException;
+    boolean after(NodeValue other, boolean isFollowing) throws XPathException;
 	
 	/**
 	 * Returns the implementation-type of this node, i.e. either
 	 * {@link #IN_MEMORY_NODE} or {@link #PERSISTENT_NODE}.
 	 * 
 	 */
-	public int getImplementationType();
+    int getImplementationType();
 	
-    public void addContextNode(int contextId, NodeValue node);
+    void addContextNode(int contextId, NodeValue node);
     
-    public QName getQName();
+    QName getQName();
 
 	/** Retrieve the actual node. This operation is <strong>expensive</strong>.
 	 * @return The actual node.
 	 */
-	public Node getNode();
+    Node getNode();
 	
-	public Document getOwnerDocument();
+	Document getOwnerDocument();
 
-    public NodeId getNodeId();
+    NodeId getNodeId();
 }

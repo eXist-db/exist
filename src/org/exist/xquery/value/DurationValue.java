@@ -332,7 +332,7 @@ public class DurationValue extends ComputableValue {
             case LTEQ:
             case GT:
             case GTEQ:
-                throw new XPathException(ErrorCodes.XPTY0004, "" + Type.getTypeName(other.getType()) + " type can not be ordered");
+                throw new XPathException(ErrorCodes.XPTY0004, Type.getTypeName(other.getType()) + " type can not be ordered");
             default:
                 throw new IllegalArgumentException("Unknown comparison operator");
         }

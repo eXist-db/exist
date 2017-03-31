@@ -46,7 +46,7 @@ public interface Sequence {
 	/**
 	 * Constant representing an empty sequence, i.e. a sequence with no item.
 	 */
-	public final static Sequence EMPTY_SEQUENCE = new EmptySequence();
+    Sequence EMPTY_SEQUENCE = new EmptySequence();
 	
 	/**
 	 * The purpose of ordered and unordered flag is to set the ordering mode 
@@ -66,7 +66,7 @@ public interface Sequence {
 	 * @param item
 	 * @throws XPathException
 	 */
-	public void add(Item item) throws XPathException;
+    void add(Item item) throws XPathException;
 	
 	/**
 	 * Add all items of the other sequence to this item. An {@link XPathException} may
@@ -76,7 +76,7 @@ public interface Sequence {
 	 * @param other
 	 * @throws XPathException
 	 */
-	public void addAll(Sequence other) throws XPathException;
+    void addAll(Sequence other) throws XPathException;
 	
 	/**
 	 * Return the primary type to which all items in this sequence belong. This is
@@ -85,7 +85,7 @@ public interface Sequence {
 	 * 
 	 * @return the primary type of the items in this sequence.
 	 */
-	public int getItemType();
+    int getItemType();
 	
 	/**
 	 * Returns an iterator over all items in the sequence. The
@@ -93,14 +93,14 @@ public interface Sequence {
 	 * 
 	 * @throws XPathException TODO
 	 */
-	public SequenceIterator iterate() throws XPathException;
+    SequenceIterator iterate() throws XPathException;
 	
 	/**
 	 * Returns an iterator over all items in the sequence. The returned
 	 * items may - but need not - to be in document order.
 	 * 
 	 */
-	public SequenceIterator unorderedIterator() throws XPathException;
+    SequenceIterator unorderedIterator() throws XPathException;
 	
 	/**
 	 * Returns the number of items contained in the sequence.
@@ -109,33 +109,33 @@ public interface Sequence {
 	 * 
 	 * @return The number of items in the sequence
 	 */
-	public int getItemCount();
+    int getItemCount();
 
 	/**
 	 * Returns whether the sequence is empty or not.
 	 * 
 	 * @return <code>true</code> is the sequence is empty
 	 */
-	public boolean isEmpty();
+    boolean isEmpty();
 	
     /**
      * Returns whether the sequence has just one item or not.
      * 
      * @return <code>true</code> is the sequence has just one item
-     */    
-	public boolean hasOne();
+     */
+    boolean hasOne();
 	
     /**
      * Returns whether the sequence more than one item or not.
      * 
      * @return <code>true</code> is the sequence more than one item
-     */    
-	public boolean hasMany();
+     */
+    boolean hasMany();
 	
 	/**
 	 * Explicitely remove all duplicate nodes from this sequence.
 	 */
-	public void removeDuplicates();
+    void removeDuplicates();
 	
 	/**
 	 * Returns the cardinality of this sequence. The returned
@@ -145,7 +145,7 @@ public interface Sequence {
 	 * @see org.exist.xquery.Cardinality
 	 * 
 	 */
-	public int getCardinality();
+    int getCardinality();
 	
 	/**
 	 * Returns the item located at the specified position within
@@ -153,9 +153,9 @@ public interface Sequence {
 	 * 
 	 * @param pos
 	 */
-	public Item itemAt(int pos);
+    Item itemAt(int pos);
 	
-	public Sequence tail() throws XPathException;
+	Sequence tail() throws XPathException;
 	
 	/**
 	 * Try to convert the sequence into an atomic value. The target type should be specified by
@@ -165,13 +165,13 @@ public interface Sequence {
 	 * @param requiredType one of the type constants defined in class {@link Type}
 	 * @throws XPathException
 	 */
-	public AtomicValue convertTo(int requiredType) throws XPathException;
+    AtomicValue convertTo(int requiredType) throws XPathException;
 	
 	/**
 	 * Convert the sequence to a string.
 	 * 
 	 */
-	public String getStringValue() throws XPathException;
+    String getStringValue() throws XPathException;
 	
 	/**
 	 * Get the effective boolean value of this sequence. Will be false if the sequence is empty,
@@ -179,14 +179,14 @@ public interface Sequence {
 	 * 
 	 * @throws XPathException
 	 */
-	public boolean effectiveBooleanValue() throws XPathException;
+    boolean effectiveBooleanValue() throws XPathException;
 	
 	/**
 	 * Convert the sequence into a NodeSet. If the sequence contains items
 	 * which are not nodes, an XPathException is thrown.
 	 * @throws XPathException if the sequence contains items which are not nodes.
 	 */
-	public NodeSet toNodeSet() throws XPathException;
+    NodeSet toNodeSet() throws XPathException;
 
     /**
      * Convert the sequence into an in-memory node set. If the sequence contains
@@ -197,20 +197,20 @@ public interface Sequence {
      * @throws XPathException if the sequence contains items which are not nodes or is
      * a persistent node set
      */
-    public MemoryNodeSet toMemNodeSet() throws XPathException;
+    MemoryNodeSet toMemNodeSet() throws XPathException;
 
     /**
 	 * Returns the set of documents from which the node items in this sequence
 	 * have been selected. This is for internal use only.
 	 * 
 	 */
-	public DocumentSet getDocumentSet();
+    DocumentSet getDocumentSet();
 
     /**
      * Return an iterator on all collections referenced by documents
      * contained in this sequence..
      */
-    public Iterator<Collection> getCollectionIterator();
+    Iterator<Collection> getCollectionIterator();
 
     /**
 	 * Returns a preference indicator, indicating the preference of
@@ -219,7 +219,7 @@ public interface Sequence {
 	 * 
 	 * @param javaClass
 	 */
-	public int conversionPreference(Class<?> javaClass);
+    int conversionPreference(Class<?> javaClass);
 	
 	/**
 	 * Convert the value into an instance of the specified
@@ -228,14 +228,14 @@ public interface Sequence {
 	 * @param target
 	 * @throws XPathException
 	 */
-	public <T> T toJavaObject(Class<T> target) throws XPathException;
+    <T> T toJavaObject(Class<T> target) throws XPathException;
 	
 	/**
 	 * Returns true if the sequence is the result of a previous operation
 	 * and has been cached.
 	 * 
 	 */
-	public boolean isCached();
+    boolean isCached();
 	
 	/**
 	 * Indicates that the sequence is the result of a previous operation
@@ -243,7 +243,7 @@ public interface Sequence {
 	 *  
 	 * @param cached
 	 */
-	public void setIsCached(boolean cached);
+    void setIsCached(boolean cached);
 	
 	/**
 	 * For every item in the sequence, clear any context-dependant
@@ -251,11 +251,11 @@ public interface Sequence {
 	 * feature is used for node sets, which may store information
 	 * about their context node.
 	 */
-    public void clearContext(int contextId) throws XPathException;
+    void clearContext(int contextId) throws XPathException;
     
-	public void setSelfAsContext(int contextId) throws XPathException;
+	void setSelfAsContext(int contextId) throws XPathException;
     
-    public boolean isPersistentSet();
+    boolean isPersistentSet();
 
     /**
      * Node sets may implement this method to be informed of storage address
@@ -268,11 +268,11 @@ public interface Sequence {
      */
     void nodeMoved(NodeId oldNodeId, NodeHandle newNode);  //TODO why is this here, it only pertains to Peristent nodes and NOT also in-memory nodes
 
-    public boolean isCacheable();
+    boolean isCacheable();
     
-    public int getState();
+    int getState();
 
-    public boolean hasChanged(int previousState);
+    boolean hasChanged(int previousState);
 
     /**
      * Clean up any resources used by the items in this sequence.
