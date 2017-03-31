@@ -50,7 +50,7 @@ import java.util.stream.Stream;
  */
 public class OrderedValueSequence extends AbstractSequence {
 
-    private OrderSpec orderSpecs[];
+    private final OrderSpec[] orderSpecs;
 	private Entry[] items = null;
 	private int count = 0;
 	private int state = 0;

@@ -23,7 +23,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
     private final static Logger LOG = LogManager.getLogger(BinaryValueFromInputStream.class);
 
     private final CachingFilterInputStream is;
-    private FilterInputStreamCache cache;
+    private final FilterInputStreamCache cache;
 
     protected BinaryValueFromInputStream(final BinaryValueManager manager, final BinaryValueType binaryValueType, final InputStream is) throws XPathException {
         super(manager, binaryValueType);

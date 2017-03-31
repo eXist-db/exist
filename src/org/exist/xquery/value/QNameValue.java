@@ -37,8 +37,8 @@ import org.exist.xquery.XQueryContext;
  */
 public class QNameValue extends AtomicValue {
 
-	private QName qname;
-	private String stringValue;
+	private final QName qname;
+	private final String stringValue;
 
     /**
      * Constructs a new QNameValue by parsing the given name using

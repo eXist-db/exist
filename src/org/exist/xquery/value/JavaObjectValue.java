@@ -35,7 +35,7 @@ import org.exist.xquery.XPathException;
  */
 public class JavaObjectValue extends AtomicValue {
 
-	private Object object;
+	private final Object object;
 
 	public JavaObjectValue(Object object) {
 		this.object = object;

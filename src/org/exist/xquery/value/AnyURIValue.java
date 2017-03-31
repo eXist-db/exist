@@ -89,7 +89,7 @@ public class AnyURIValue extends AtomicValue {
 	 * See Section 5.4 of XML Linking:
 	 * http://www.w3.org/TR/2000/PR-xlink-20001220/#link-locators
 	 */
-	private String uri;
+	private final String uri;
 	//TODO: save escaped(URI) version?
 	
 	AnyURIValue() {

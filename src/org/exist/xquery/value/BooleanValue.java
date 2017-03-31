@@ -32,7 +32,7 @@ public class BooleanValue extends AtomicValue {
 	public final static BooleanValue TRUE = new BooleanValue(true);
 	public final static BooleanValue FALSE = new BooleanValue(false);
 
-	private boolean value;
+	private final boolean value;
 
 	/**
 	 * Returns one of the static fields TRUE or FALSE depending on

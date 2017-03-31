@@ -45,8 +45,8 @@ import java.util.Iterator;
  */
 public class PreorderedValueSequence extends AbstractSequence {
 	
-	private OrderSpec orderSpecs[];
-	private OrderedNodeProxy[] nodes;
+	private final OrderSpec[] orderSpecs;
+	private final OrderedNodeProxy[] nodes;
 	
 	public PreorderedValueSequence(OrderSpec specs[], Sequence input, int contextId) throws XPathException {
 		this.orderSpecs = specs;

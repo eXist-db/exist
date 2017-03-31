@@ -35,7 +35,7 @@ import org.exist.xquery.XPathException;
  */
 public class UntypedAtomicValue extends AtomicValue {
 
-    private String value;
+    private final String value;
 
     public UntypedAtomicValue(String value) {
         this.value = value;
