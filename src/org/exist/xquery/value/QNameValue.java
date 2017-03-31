@@ -49,7 +49,7 @@ public class QNameValue extends AtomicValue {
      * @throws XPathException
      */
 	public QNameValue(XQueryContext context, String name) throws XPathException {
-        if (name.length() == 0)
+        if (name.isEmpty())
             {throw new XPathException(ErrorCodes.FORG0001, "An empty string is not a valid lexical representation of xs:QName.");}
 
     	qname = QName.parse(context, name, context.getURIForPrefix(""));
@@ -99,7 +99,7 @@ public class QNameValue extends AtomicValue {
 //
 //	    }
 	    //TODO : check that the prefix matches the URI in the current context ?
-		if (prefix != null && prefix.length() > 0)
+		if (prefix != null && !prefix.isEmpty())
 			{return prefix + ':' + qname.getLocalPart();}
 		else 
 			{return qname.getLocalPart();}

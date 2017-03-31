@@ -246,7 +246,7 @@ public class UntypedAtomicValue extends AtomicValue {
     public boolean effectiveBooleanValue() throws XPathException {
         // If its operand is a singleton value of type xs:string, xs:anyURI, xs:untypedAtomic, 
         //or a type derived from one of these, fn:boolean returns false if the operand value has zero length; otherwise it returns true.
-        return value.length() > 0;
+        return !value.isEmpty();
     }
 
     /* (non-Javadoc)
@@ -309,7 +309,7 @@ public class UntypedAtomicValue extends AtomicValue {
         } else if(target == boolean.class || target == Boolean.class) {
             return (T)Boolean.valueOf(effectiveBooleanValue());
         } else if(target == char.class || target == Character.class) {
-            if(value.length() > 1 || value.length() == 0) {
+            if(value.length() > 1 || value.isEmpty()) {
                 throw new XPathException("cannot convert string with length = 0 or length > 1 to Java character");
             }
             return (T)Character.valueOf(value.charAt(0));
