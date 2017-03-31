@@ -31,7 +31,6 @@ import org.exist.xquery.XPathException;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Iterator;
 
 /**
  * A sequence that sorts its items in the order specified by the order specs

@@ -1,18 +1,15 @@
 package org.exist.xquery.value;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
 import org.exist.util.io.ByteBufferAccessor;
 import org.exist.util.io.ByteBufferInputStream;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
 
 /**
  * Representation of an XSD binary value e.g. (xs:base64Binary or xs:hexBinary)

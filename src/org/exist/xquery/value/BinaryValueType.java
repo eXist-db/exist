@@ -1,11 +1,12 @@
 package org.exist.xquery.value;
 
+import org.exist.xquery.XPathException;
+
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import org.exist.xquery.XPathException;
 
 /**
  *

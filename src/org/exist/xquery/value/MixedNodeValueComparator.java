@@ -21,8 +21,8 @@
  */
 package org.exist.xquery.value;
 
-import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.persistent.NodeProxy;
 
 import java.util.Comparator;
 

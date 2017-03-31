@@ -1,16 +1,15 @@
 package org.exist.xquery.value;
 
-import java.math.BigDecimal;
-import java.text.Collator;
-
-import javax.xml.datatype.DatatypeConstants;
-import javax.xml.datatype.Duration;
-import javax.xml.datatype.XMLGregorianCalendar;
-
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
+
+import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.math.BigDecimal;
+import java.text.Collator;
 
 /**
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>

@@ -23,15 +23,14 @@
 
 package org.exist.xquery.value;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-
-import javax.xml.datatype.DatatypeConstants;
-import javax.xml.datatype.Duration;
-
 import org.exist.util.FastStringBuffer;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
+
+import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.Duration;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>

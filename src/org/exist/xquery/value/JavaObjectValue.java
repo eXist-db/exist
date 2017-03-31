@@ -22,10 +22,10 @@
  */
 package org.exist.xquery.value;
 
-import java.text.Collator;
-
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
+
+import java.text.Collator;
 
 /**
  * Represents a reference to an arbitrary Java object which is treated as an

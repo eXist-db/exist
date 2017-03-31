@@ -21,20 +21,18 @@
  */
 package org.exist.xquery.value;
 
+import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.persistent.AVLTreeNodeSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.memtree.DocumentImpl;
-import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
-import org.exist.util.FastQSort;
 import org.exist.xquery.Constants;
 import org.exist.xquery.OrderSpec;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.w3c.dom.Node;
 
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Stream;
 

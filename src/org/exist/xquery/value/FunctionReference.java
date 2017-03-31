@@ -21,13 +21,13 @@
  */
 package org.exist.xquery.value;
 
-import java.text.Collator;
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.*;
 import org.exist.xquery.Constants.Comparison;
+
+import java.text.Collator;
+import java.util.List;
 
 /**
  * Represents a function item, i.e. a reference to a function that can be called dynamically.

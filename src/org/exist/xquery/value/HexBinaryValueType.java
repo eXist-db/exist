@@ -21,12 +21,13 @@
  */
 package org.exist.xquery.value;
 
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.exist.util.io.HexOutputStream;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
+
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Adam Retter <adam@existsolutions.com>

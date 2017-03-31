@@ -22,9 +22,9 @@
  */
 package org.exist.xquery.value;
 
-import java.text.Collator;
-
 import org.exist.xquery.XPathException;
+
+import java.text.Collator;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)

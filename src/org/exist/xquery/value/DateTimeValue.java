@@ -22,14 +22,13 @@
  */
 package org.exist.xquery.value;
 
-import java.util.Date;
-import java.util.GregorianCalendar;
+import org.exist.xquery.XPathException;
 
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-
-import org.exist.xquery.XPathException;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
  * Represents a value of type xs:dateTime.

@@ -23,27 +23,15 @@ package org.exist.xquery.value;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.DefaultDocumentSet;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.NewArrayNodeSet;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.persistent.*;
 import org.exist.numbering.NodeId;
 import org.exist.util.FastQSort;
 import org.exist.xquery.*;
 import org.w3c.dom.Node;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * A sequence that may contain a mixture of atomic values and nodes.

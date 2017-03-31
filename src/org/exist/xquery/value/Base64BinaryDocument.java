@@ -21,8 +21,9 @@
  */
 package org.exist.xquery.value;
 
-import java.io.InputStream;
 import org.exist.xquery.XPathException;
+
+import java.io.InputStream;
 
 /**
  * Wrapper around Base64Binary.

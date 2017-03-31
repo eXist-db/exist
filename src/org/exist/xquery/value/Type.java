@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.value;
 
-import java.util.HashSet;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
@@ -30,6 +28,8 @@ import org.exist.dom.QName;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.util.hashtable.Object2IntHashMap;
 import org.exist.xquery.XPathException;
+
+import java.util.HashSet;
 
 /**
  * Defines all built-in types and their relations.

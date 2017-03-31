@@ -21,18 +21,18 @@
  */
 package org.exist.xquery.value;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.CloseShieldOutputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.XPathException;
+
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.Collator;
-import org.apache.commons.io.output.CloseShieldOutputStream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.commons.io.output.ByteArrayOutputStream;
-
-import org.exist.xquery.Constants.Comparison;
-import org.exist.xquery.XPathException;
 
 /**
  * @author Adam Retter <adam@existsolutions.com>

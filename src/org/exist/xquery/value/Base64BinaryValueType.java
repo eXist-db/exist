@@ -1,9 +1,10 @@
 package org.exist.xquery.value;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.exist.util.io.Base64OutputStream;
 import org.exist.xquery.XPathException;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
