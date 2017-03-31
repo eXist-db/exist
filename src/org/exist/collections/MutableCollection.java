@@ -104,10 +104,6 @@ public class MutableCollection implements Collection {
     private final CollectionMetadata collectionMetadata;
     private final ObservaleMutableCollection observable = new ObservaleMutableCollection();
 
-    // fields required by the collections cache
-    private int refCount;
-    private int timestamp;
-
     /**
      * Constructs a Collection Object (not yet persisted)
      *
@@ -516,25 +512,6 @@ public class MutableCollection implements Collection {
             }
         } catch(final LockException e) {
             LOG.error(e);
-        }
-    }
-
-    @Override
-    public boolean allowUnload() {
-        if (getURI().startsWith(CollectionConfigurationManager.ROOT_COLLECTION_CONFIG_URI)) {
-            return false;
-        }
-
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
-            for (final DocumentImpl doc : documents.values()) {
-                if (doc.isLockedForWrite()) {
-                    return false;
-                }
-            }
-            return true;
-        } catch(final LockException e) {
-            LOG.error(e);
-            return false;
         }
     }
 
@@ -1774,51 +1751,6 @@ public class MutableCollection implements Collection {
     @Override
     public Observable getObservable() {
         return observable;
-    }
-
-    @Override
-    public long getKey() {
-        return collectionId;
-    }
-
-    @Override
-    public int getReferenceCount() {
-        return refCount;
-    }
-
-    @Override
-    public int incReferenceCount() {
-        return ++refCount;
-    }
-
-    @Override
-    public int decReferenceCount() {
-        return refCount > 0 ? --refCount : 0;
-    }
-
-    @Override
-    public void setReferenceCount(final int count) {
-        refCount = count;
-    }
-
-    @Override
-    public void setTimestamp(final int timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    @Override
-    public int getTimestamp() {
-        return timestamp;
-    }
-
-    @Override
-    public boolean sync(final boolean syncJournal) {
-        return false;
-    }
-
-    @Override
-    public boolean isDirty() {
-        return false;
     }
 
     @Override

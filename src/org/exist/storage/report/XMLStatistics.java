@@ -20,12 +20,11 @@
 package org.exist.storage.report;
 
 import java.nio.file.Path;
-import java.util.Iterator;
 import java.util.Optional;
 
+import org.exist.collections.CollectionCache;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
-import org.exist.storage.CollectionCacheManager;
 import org.exist.storage.NativeValueIndex;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.index.BFile;
@@ -77,7 +76,7 @@ public class XMLStatistics {
         addValue("data-directory", ((Path)instance.getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR)).toAbsolutePath().toString());
         addValue("cache-size", String.valueOf(instance.getConfiguration().getInteger("db-connection.cache-size")));
         addValue("page-size", String.valueOf(instance.getConfiguration().getInteger("db-connection.page-size")));
-        addValue("collection-cache-mem", String.valueOf(instance.getConfiguration().getInteger(CollectionCacheManager.PROPERTY_CACHE_SIZE_BYTES)));
+        addValue("collection-cache-mem", String.valueOf(instance.getConfiguration().getInteger(CollectionCache.PROPERTY_CACHE_SIZE_BYTES)));
         this.contentHandler.startElement(NAMESPACE, "pool", PREFIX + ":pool", atts);
         addValue("max", String.valueOf(instance.getMax()));
         addValue("active", String.valueOf(instance.countActiveBrokers()));

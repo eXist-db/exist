@@ -303,8 +303,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
     private DefaultCacheManager cacheManager;
 
-    private CollectionCacheManager collectionCacheMgr;
-
     private long reservedMem;
 
     /**
@@ -461,8 +459,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         final int bufferSize = Optional.of(conf.getInteger(PROPERTY_COLLECTION_CACHE_SIZE))
                 .filter(size -> size != -1)
                 .orElse(DEFAULT_COLLECTION_BUFFER_SIZE);
-        this.collectionCache = servicesManager.register(new CollectionCache(this, bufferSize, 0.000001));
-        this.collectionCacheMgr = servicesManager.register(new CollectionCacheManager(this, collectionCache));
+        this.collectionCache = servicesManager.register(new CollectionCache());
         this.notificationService = servicesManager.register(new NotificationService());
 
         this.journalManager = recoveryEnabled ? Optional.of(new JournalManager()) : Optional.empty();
@@ -502,7 +499,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         final Runtime rt = Runtime.getRuntime();
         final long maxMem = rt.maxMemory();
         final long minFree = maxMem / 5;
-        reservedMem = cacheManager.getTotalMem() + collectionCacheMgr.getMaxTotal() + minFree;
+        reservedMem = cacheManager.getTotalMem() + collectionCache.getMaxCacheSize() + minFree;
         LOG.debug("Reserved memory: " + reservedMem + "; max: " + maxMem + "; min: " + minFree);
 
         //prepare the registered services, before entering system (single-user) mode
@@ -980,10 +977,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     @Override
     public DefaultCacheManager getCacheManager() {
         return cacheManager;
-    }
-
-    public CollectionCacheManager getCollectionCacheMgr() {
-        return collectionCacheMgr;
     }
 
     /**
@@ -1640,6 +1633,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                         }
                     }
 
+                    collectionCache.invalidateAll();
+
                     // final notification to database services to shutdown
                     servicesManager.shutdown();
 
@@ -1671,7 +1666,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 Configurator.clear(this);
                 transactionManager = null;
                 collectionCache = null;
-                collectionCacheMgr = null;
                 xQueryPool = null;
                 processMonitor = null;
                 collectionConfigurationManager = null;

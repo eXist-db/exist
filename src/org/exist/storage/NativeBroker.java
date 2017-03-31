@@ -698,7 +698,7 @@ public class NativeBroker extends DBBroker {
             // 1) optimize for the existence of the Collection in the cache
             try (final ManagedCollectionLock collectionLock = readLockCollection(collectionUri)) {
                 try (final ManagedLock collectionsCacheLock = lockCollectionCache()) {
-                    final Collection collection = collectionsCache.get(collectionUri);
+                    final Collection collection = collectionsCache.getIfPresent(collectionUri);
                     if (collection != null) {
                         return new Tuple2<>(false, collection);
                     }
@@ -710,7 +710,7 @@ public class NativeBroker extends DBBroker {
 
                 // check for preemption between READ -> WRITE lock, is the Collection now in the cache?
                 try (final ManagedLock collectionsCacheLock = lockCollectionCache()) {
-                    final Collection collection = collectionsCache.get(collectionUri);
+                    final Collection collection = collectionsCache.getIfPresent(collectionUri);
                     if (collection != null) {
                         return new Tuple2<>(false, collection);
                     }
@@ -720,7 +720,7 @@ public class NativeBroker extends DBBroker {
                         // no parent... so, this is the root collection!
                         return getOrCreateCollectionExplicit_rootCollection(transaction, collectionUri, collectionsCache);
                     } else {
-                        final Collection parentCollection = collectionsCache.get(parentCollectionUri);
+                        final Collection parentCollection = collectionsCache.getIfPresent(parentCollectionUri);
                         if (parentCollection != null) {
                             // parent collection is in cache, is our Collection present on disk?
                             final Collection loadedCollection = loadCollection(collectionUri, BFile.UNKNOWN_ADDRESS);
@@ -729,7 +729,7 @@ public class NativeBroker extends DBBroker {
                                 // loaded it from disk
 
                                 // add it to the cache and return it
-                                collectionsCache.add(loadedCollection);
+                                collectionsCache.put(loadedCollection);
                                 return new Tuple2<>(false, loadedCollection);
 
                             } else {
@@ -771,7 +771,7 @@ public class NativeBroker extends DBBroker {
             // loaded it from disk
 
             // add it to the cache and return it
-            collectionsCache.add(loadedRootCollection);
+            collectionsCache.put(loadedRootCollection);
             return new Tuple2<>(false, loadedRootCollection);
         } else {
             // not on disk, create the root collection
@@ -828,7 +828,7 @@ public class NativeBroker extends DBBroker {
             saveCollection(transaction, parentCollection);
         }
 
-        collectionCache.add(collectionObj);
+        collectionCache.put(collectionObj);
 
         trigger.afterCreateCollection(this, transaction, collectionObj);
 
@@ -939,7 +939,7 @@ public class NativeBroker extends DBBroker {
         Collection collection;
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         try(final ManagedLock collectionsCacheLock = lockCollectionCache()) {
-            collection = collectionsCache.get(uri);
+            collection = collectionsCache.getIfPresent(uri);
             if(collection == null) {
                 try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK)) {
 
@@ -964,12 +964,10 @@ public class NativeBroker extends DBBroker {
 
                 if(!collection.getURI().equalsInternal(uri)) {
                     LOG.error("readCollectionEntry: The Collection received from the cache: {} is not the requested: {}", collection.getURI(), uri);
-                    return;
+                    throw new IllegalStateException();
                 }
 
                 entry.read(collection);
-
-                collectionsCache.add(collection);
             }
         } catch(final LockException e) {
             throw new IllegalStateException(e);
@@ -1013,17 +1011,14 @@ public class NativeBroker extends DBBroker {
         // 1) optimize for reading from the Collection from the cache
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         try(final ManagedLock collectionsCacheLock = lockCollectionCache()) {
-            final Collection collection = collectionsCache.get(collectionUri);
+            final Collection collection = collectionsCache.getIfPresent(collectionUri);
             if (collection != null) {
 
-            if(!collection.getURI().equalsInternal(collectionUri)) {
-                LOG.error("openCollection: The Collection received from the cache: {} is not the requested: {}", collection.getURI(), collectionUri);
-                unlockFn.run();
-                throw new IllegalStateException();
-            }
-
-                // update the LRU
-                collectionsCache.add(collection);
+                if(!collection.getURI().equalsInternal(collectionUri)) {
+                    LOG.error("openCollection: The Collection received from the cache: {} is not the requested: {}", collection.getURI(), collectionUri);
+                    unlockFn.run();
+                    throw new IllegalStateException();
+                }
 
                 if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE)) {
                     unlockFn.run();
@@ -1065,25 +1060,11 @@ public class NativeBroker extends DBBroker {
 
         // if we loaded a Collection add it to the cache (if it isn't already there)
         if(loadedCollection != null) {
-            try(final ManagedLock collectionsCacheLock = lockCollectionCache()) {
-                final Collection collection = collectionsCache.get(collectionUri);
-                if(collection != null) {
-                    return new LockedCollection(collectionLock, collection);
-                }
-
-                // not present
-                collectionsCache.add(loadedCollection);
-            } catch(final LockException e) {
-                unlockFn.run();
-                throw new IllegalStateException(e);
-            }
-        }
-
-        if(loadedCollection == null) {
+            final Collection collection = collectionsCache.getOrCreate(collectionUri, uri -> loadedCollection);
+            return new LockedCollection(collectionLock, collection);
+        } else {
             unlockFn.run();
             return null;
-        } else {
-            return new LockedCollection(collectionLock, loadedCollection);
         }
     }
 
@@ -1360,6 +1341,8 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException("New collection name must have one segment!");
         }
 
+
+
         if(collection.getId() == destination.getId()) {
             throw new PermissionDeniedException("Cannot move collection to itself '" + collection.getURI() + "'.");
         }
@@ -1502,7 +1485,7 @@ public class NativeBroker extends DBBroker {
                 }
 
                 try (final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
-                    collectionsCache.remove(collection);
+                    collectionsCache.invalidate(collection.getURI());
                     final Value key = new CollectionStore.CollectionKey(uri.toString());
                     collectionsDb.remove(transaction, key);
                     //TODO : resolve URIs destination.getURI().resolve(newName)
@@ -1605,7 +1588,7 @@ public class NativeBroker extends DBBroker {
                     // invalidate the cache entry
                     final CollectionCache collectionsCache = pool.getCollectionsCache();
                     try(final ManagedLock collectionsCacheLock = lockCollectionCache()) {
-                        collectionsCache.remove(collection);
+                        collectionsCache.invalidate(collection.getURI());
                     }
                 }
             } else {
@@ -1830,7 +1813,7 @@ public class NativeBroker extends DBBroker {
 
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         try(final ManagedLock collectionsCacheLock = lockCollectionCache()) {
-            collectionsCache.add(collection);
+            collectionsCache.put(collection);
         } catch(final LockException e) {
             throw new IOException(e);
         }

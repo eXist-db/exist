@@ -11,7 +11,6 @@ import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.storage.*;
-import org.exist.storage.cache.Cacheable;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
@@ -43,7 +42,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * is responsible to lock/unlock the collection. Call {@link DBBroker#openCollection(XmldbURI, LockMode)}
  * to get a collection with a read or write lock and {@link #close()} to release the lock.
  */
-public interface Collection extends Resource, Comparable<Collection>, AutoCloseable, Cacheable {
+public interface Collection extends Resource, Comparable<Collection>, AutoCloseable {
 
     /**
      * The length in bytes of the Collection ID

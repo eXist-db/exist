@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2016 The eXist Project
+ * Copyright (C) 2001-2017 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -19,174 +19,131 @@
  */
 package org.exist.collections;
 
-import java.util.Iterator;
+import java.util.Optional;
+import java.util.function.Function;
 
-import net.jcip.annotations.NotThreadSafe;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Weigher;
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.BrokerPoolService;
-import org.exist.storage.CacheManager;
-import org.exist.storage.cache.LRUCache;
-import org.exist.storage.lock.*;
-import org.exist.util.LockException;
-import org.exist.util.hashtable.Object2LongHashMap;
-import org.exist.util.hashtable.SequencedLongHashMap;
+import org.exist.storage.*;
+import org.exist.util.Configuration;
 import org.exist.xmldb.XmldbURI;
 
+import javax.annotation.Nullable;
+
 /**
- * Global cache for {@link org.exist.collections.Collection} objects. The
- * cache is owned by {@link org.exist.storage.index.CollectionStore}.
+ * Global cache for {@link org.exist.collections.Collection} objects.
  *
- * It is not synchronized. Thus a lock should be obtained on the collection store before
- * accessing the cache. For the synchronization purposes of this object,
- * {@link LockManager#acquireCollectionCacheLock()} or {@link LockManager#tryCollectionCacheLock()} may be used
- * 
- * @author wolf
+ * The CollectionCache safely permits concurrent access
+ * however appropriate Collection locks should be held
+ * on the actual collections when manipulating the
+ * CollectionCache
+ *
+ * @author Adam Retter <adam@evolvedbinary.com>
  */
-@NotThreadSafe
-public class CollectionCache extends LRUCache<Collection> implements BrokerPoolService {
+@ThreadSafe
+public class CollectionCache implements BrokerPoolService {
     private final static Logger LOG = LogManager.getLogger(CollectionCache.class);
 
-    private final BrokerPool pool;
-    private Object2LongHashMap<String> names;
+    public static final int DEFAULT_CACHE_SIZE_BYTES = 64 * 1024 * 1024;   // 64 MB
+    public static final String CACHE_SIZE_ATTRIBUTE = "collectionCache";
+    public static final String PROPERTY_CACHE_SIZE_BYTES = "db-connection.collection-cache-mem";
 
-    public CollectionCache(final BrokerPool pool, final int blockBuffers, final double growthThreshold) {
-        super("collection cache", blockBuffers, 2.0, growthThreshold, CacheType.DATA);
-        this.pool = pool;
-        this.names = new Object2LongHashMap<>(blockBuffers);
-    }
+    private int maxCacheSize = -1;
+    private Cache<String, Collection> cache;
 
     @Override
-    public void add(final Collection collection) {
-        add(collection, 1);
-    }
+    public void configure(final Configuration configuration) throws BrokerPoolServiceException {
+        this.maxCacheSize = Optional.of(configuration.getInteger(PROPERTY_CACHE_SIZE_BYTES))
+                .filter(size -> size > 0)
+                .orElse(DEFAULT_CACHE_SIZE_BYTES);
 
-    @Override
-    public void add(final Collection c, final int initialRefCount) {
-        // commented out as required by NativeBroker#getOrCreateCollectionExplicit during DB Startup
-//        //don't cache the collection during initialization: SecurityManager is not yet online
-//        if(!pool.isOperational()) {
-//            return;
-//        }
-
-        //NOTE: We must not store LockedCollections in the CollectionCache! So we call LockedCollection#unwrapLocked
-        final Collection collection = LockedCollection.unwrapLocked(c);
-
-        super.add(collection, initialRefCount);
-        final String name = collection.getURI().getRawCollectionPath();
-        names.put(name, collection.getKey());
-    }
-
-    @Override
-    public Collection get(final Collection collection) {
-        return get(collection.getKey());
-    }
-
-    public Collection get(final XmldbURI name) {
-        final long key = names.get(name.getRawCollectionPath());
-        if (key < 0) {
-            return null;
-        }
-        return get(key);
-    }
-
-    // TODO(AR) we have a mix of concerns here, we should not involve collection locking in the operation of the cache or invalidating the collectionConfiguration
-    /**
-     * Overwritten to lock collections before they are removed.
-     */
-    @Override
-    protected void removeOne(final Collection item) {
-        boolean removed = false;
-        SequencedLongHashMap.Entry<Collection> next = map.getFirstEntry();
-        int tries = 0;
-        do {
-            final Collection cached = next.getValue();
-            if(cached.getKey() != item.getKey()) {
-                final LockManager lockManager = pool.getLockManager();
-                try(final ManagedCollectionLock cachedReadLock = lockManager.tryCollectionReadLock(cached.getURI())) {
-                    if (cached.allowUnload()) {
-                        if(pool.getConfigurationManager() != null) { // might be null during db initialization
-                            pool.getConfigurationManager().invalidate(cached.getURI(), null);
-                        }
-                        names.remove(cached.getURI().getRawCollectionPath());
-                        cached.sync(true);
-                        map.remove(cached.getKey());
-                        removed = true;
-                    }
-                } catch(final LockException e) {
-                    // not a problem, we only attempted the lock with `tryCollectionReadLock`!
-                }
-            }
-            if (!removed) {
-                next = next.getNext();
-                if (next == null && tries < 2) {
-                    next = map.getFirstEntry();
-                    tries++;
-                } else {
-                    LOG.info("Unable to remove entry");
-                    removed = true;
-                }
-            }
-        } while(!removed);
-        cacheManager.requestMem(this);
-    }
-
-    @Override
-    public void remove(final Collection item) {
-        super.remove(item);
-        names.remove(item.getURI().getRawCollectionPath());
-
-        // might be null during db initialization
-        if(pool.getConfigurationManager() != null) {
-            pool.getConfigurationManager().invalidate(item.getURI(), null);
+        if(LOG.isDebugEnabled()){
+            LOG.debug("CollectionsCache will use {} bytes max.", this.maxCacheSize);
         }
     }
 
+    @Override
+    public void prepare(final BrokerPool brokerPool) throws BrokerPoolServiceException {
+        final Weigher<String, Collection> collectionWeigher = (uri, collection) -> collection.getMemorySizeNoLock();
+        this.cache = Caffeine.<XmldbURI, Collection>newBuilder()
+                .maximumWeight(maxCacheSize)
+                .weigher(collectionWeigher)
+                .build();
+    }
+
     /**
-     * Compute and return the in-memory size of all collections
-     * currently contained in this cache.
+     * Returns the maximum size of the cache in bytes
      *
-     * @see org.exist.storage.CollectionCacheManager
-     * @return in-memory size in bytes.
+     * @return maximum size of the cache in bytes
      */
-    public int getRealSize() {
-        int size = 0;
-        for (final Iterator<Long> i = names.valueIterator(); i.hasNext(); ) {
-            final Collection collection = get(i.next());
-            if (collection != null) {
-                size += collection.getMemorySizeNoLock();
-            }
-        }
-        return size;
+    public int getMaxCacheSize() {
+        return maxCacheSize;
     }
 
-    @Override
-    public void resize(final int newSize) {
-        if (newSize < max) {
-            shrink(newSize);
-        } else {
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Growing collection cache to " + newSize);
-            }
-            final SequencedLongHashMap<Collection> newMap = new SequencedLongHashMap<>(newSize * 2);
-            final Object2LongHashMap<String> newNames = new Object2LongHashMap<>(newSize);
-            for(SequencedLongHashMap.Entry<Collection> next = map.getFirstEntry(); next != null; next = next.getNext()) {
-                final Collection cacheable = next.getValue();
-                newMap.put(cacheable.getKey(), cacheable);
-                newNames.put(cacheable.getURI().getRawCollectionPath(), cacheable.getKey());
-            }
-            max = newSize;
-            map = newMap;
-            names = newNames;
-            accounting.reset();
-            accounting.setTotalSize(max);
-        }
+    /**
+     * Returns the Collection from the cache or creates the entry if it is not present
+     *
+     * @param collectionUri The URI of the Collection
+     * @param creator A function that creates (or supplies) the Collection for the URI
+     *
+     * @return The collection indicated by the URI
+     */
+    public Collection getOrCreate(final XmldbURI collectionUri, final Function<XmldbURI, Collection> creator) {
+        //NOTE: We must not store LockedCollections in the CollectionCache! So we call LockedCollection#unwrapLocked
+        return cache.get(key(collectionUri), uri -> LockedCollection.unwrapLocked(creator.apply(XmldbURI.create(uri))));
     }
 
-    @Override
-    protected void shrink(final int newSize) {
-        super.shrink(newSize);
-        names = new Object2LongHashMap<>(newSize);
+    /**
+     * Returns the Collection from the cache or null if the Collection
+     * is not in the cache
+     *
+     * @param collectionUri The URI of the Collection
+     * @return The collection indicated by the URI or null otherwise
+     */
+    @Nullable public Collection getIfPresent(final XmldbURI collectionUri) {
+        return cache.getIfPresent(key(collectionUri));
+    }
+
+    /**
+     * Put's the Collection into the cache
+     *
+     * If an existing Collection object for the same URI exists
+     * in the Cache it will be overwritten
+     *
+     * @param collection
+     */
+    public void put(final Collection collection) {
+        //NOTE: We must not store LockedCollections in the CollectionCache! So we call LockedCollection#unwrapLocked
+        cache.put(key(collection.getURI()), LockedCollection.unwrapLocked(collection));
+    }
+
+    /**
+     * Removes an entry from the cache
+     *
+     * @param collectionUri The URI of the Collection to remove from the Cache
+     */
+    public void invalidate(final XmldbURI collectionUri) {
+        cache.invalidate(collectionUri);
+    }
+
+    /**
+     * Removes all entries from the Cache
+     */
+    public void invalidateAll() {
+        cache.invalidateAll();
+    }
+
+    /**
+     * Calculates the key for the Cache
+     *
+     * @param collectionUri The URI of the Collection
+     * @return the key for the Collection in the Cache
+     */
+    private String key(final XmldbURI collectionUri) {
+        return collectionUri.getRawCollectionPath();
     }
 }
