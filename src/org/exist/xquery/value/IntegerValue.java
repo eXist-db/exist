@@ -464,14 +464,14 @@ public class IntegerValue extends NumericValue {
 		if(Type.subTypeOf(other.getType(), Type.INTEGER))
 			{return new IntegerValue( value.max( ((IntegerValue) other).value) );}
 		else
-			{return ((NumericValue) convertTo(other.getType())).max(collator, other);}
+			{return convertTo(other.getType()).max(collator, other);}
 	}
 
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 		if(Type.subTypeOf(other.getType(), Type.INTEGER))
 			{return new IntegerValue( value.min( ((IntegerValue) other).value) );}
 		else
-			{return ((NumericValue) convertTo(other.getType())).min(collator, other);}
+			{return convertTo(other.getType()).min(collator, other);}
 	}
 
 	/* (non-Javadoc)
@@ -504,13 +504,13 @@ public class IntegerValue extends NumericValue {
 			return (T)Long.valueOf(value.longValue());
                 } else if(target == Integer.class || target == int.class) {
 			final IntegerValue v = (IntegerValue)convertTo(Type.INT);
-			return (T)Integer.valueOf((int)v.value.intValue());
+			return (T)Integer.valueOf(v.value.intValue());
 		} else if(target == Short.class || target == short.class) {
 			final IntegerValue v = (IntegerValue)convertTo(Type.SHORT);
-			return (T)Short.valueOf((short)v.value.shortValue());
+			return (T)Short.valueOf(v.value.shortValue());
 		} else if(target == Byte.class || target == byte.class) {
 			final IntegerValue v = (IntegerValue)convertTo(Type.BYTE);
-			return (T)Byte.valueOf((byte)v.value.byteValue());
+			return (T)Byte.valueOf(v.value.byteValue());
 		} else if(target == Double.class || target == double.class) {
 			final DoubleValue v = (DoubleValue)convertTo(Type.DOUBLE);
 			return (T)Double.valueOf(v.getValue());

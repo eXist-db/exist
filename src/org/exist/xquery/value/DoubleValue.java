@@ -211,7 +211,7 @@ public class DoubleValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#getLong()
 	 */
 	public long getLong() throws XPathException {
-		return (long) Math.round(value);
+		return Math.round(value);
 	}
 
 	public void setValue(double val) {

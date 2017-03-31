@@ -59,7 +59,7 @@ public abstract class AbstractSequence implements Sequence {
     public AtomicValue convertTo(int requiredType) throws XPathException {
         final Item first = itemAt(0);
         if(Type.subTypeOf(first.getType(), Type.ATOMIC))
-            {return ((AtomicValue)first).convertTo(requiredType);}
+            {return first.convertTo(requiredType);}
         else
             //TODO : clean atomization
             {return new StringValue(first.getStringValue()).convertTo(requiredType);}
@@ -200,7 +200,7 @@ public abstract class AbstractSequence implements Sequence {
             return (T)l;
         }
         if(!isEmpty()) {
-            return (T)itemAt(0).toJavaObject(target);
+            return itemAt(0).toJavaObject(target);
         }
         return null;
     }

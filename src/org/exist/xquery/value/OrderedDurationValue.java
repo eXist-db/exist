@@ -66,8 +66,8 @@ abstract class OrderedDurationValue extends DurationValue {
 			final int r = duration.compare(((DurationValue) other).duration);
 			//compare fractional seconds to work around the JDK standard behaviour
 			if (r == DatatypeConstants.EQUAL &&
-					((BigDecimal)duration.getField(DatatypeConstants.SECONDS)) != null &&
-					((BigDecimal)(((DurationValue) other).duration).getField(DatatypeConstants.SECONDS)) != null) {
+					duration.getField(DatatypeConstants.SECONDS) != null &&
+					(((DurationValue) other).duration).getField(DatatypeConstants.SECONDS) != null) {
 				if (((BigDecimal)duration.getField(DatatypeConstants.SECONDS)).compareTo(
 						((BigDecimal)(((DurationValue) other).duration).getField(DatatypeConstants.SECONDS))) == DatatypeConstants.EQUAL)
 						{return Constants.EQUAL;}
@@ -189,7 +189,7 @@ abstract class OrderedDurationValue extends DurationValue {
                     throw new XPathException(exceptionMessagePrefix + Type.getTypeName(x.getType()));
 		}	
 		if (((NumericValue) x).isInfinite() || ((NumericValue) x).isNaN()) {
-                    throw new XPathException(ErrorCodes.XPTY0004, "Tried to convert '" + (NumericValue) x + "' to BigDecimal");	
+                    throw new XPathException(ErrorCodes.XPTY0004, "Tried to convert '" + x + "' to BigDecimal");
                 }
                 
 		if (x.conversionPreference(BigDecimal.class) < Integer.MAX_VALUE) {

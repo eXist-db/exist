@@ -337,7 +337,7 @@ public class DecimalValue extends NumericValue {
 			default: 
 				if (!(other instanceof DecimalValue)) {
 	            	final ComputableValue n = (ComputableValue)this.convertTo(other.getType());
-	            	return ((ComputableValue)n).div(other);
+	            	return n.div(other);
 				}
 				if (((DecimalValue)other).isZero())
 					{throw new XPathException(ErrorCodes.FOAR0001, "division by zero");}
