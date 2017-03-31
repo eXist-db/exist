@@ -1839,14 +1839,11 @@ public class NativeBroker extends DBBroker {
         }
 
         final CollectionCache collectionsCache = pool.getCollectionsCache();
-//        try(final ManagedLock collectionsCacheLock = lockCollection(collectionsCache)) {
-
-        // TODO(AR) this should likely be locked
-        collectionsCache.add(collection);
-
-//        } catch(final LockException e) {
-//            throw new IOException(e);
-//        }
+        try(final ManagedLock collectionsCacheLock = lockCollectionCache()) {
+            collectionsCache.add(collection);
+        } catch(final LockException e) {
+            throw new IOException(e);
+        }
 
         try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
 
