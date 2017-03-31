@@ -56,7 +56,7 @@ public class ConcurrencyTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
-    private static int CONCURRENT_THREADS = 10;
+    private static int CONCURRENT_THREADS = Runtime.getRuntime().availableProcessors() * 3;
 
     private static Collection test;
 
