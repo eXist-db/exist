@@ -33,9 +33,9 @@ import java.util.Optional;
 public class CollectionCacheManager implements CacheManager, BrokerPoolService {
 
     private static final Logger LOG = LogManager.getLogger(CollectionCacheManager.class);
-    private static final int DEFAULT_CACHE_SIZE = 8;
+    private static final int DEFAULT_CACHE_SIZE_BYTES = 64 * 1024 * 1024;   // 64 MB
     public static final String CACHE_SIZE_ATTRIBUTE = "collectionCache";
-    public static final String PROPERTY_CACHE_SIZE = "db-connection.collection-cache-mem";
+    public static final String PROPERTY_CACHE_SIZE_BYTES = "db-connection.collection-cache-mem";
 
     private final String brokerPoolId;
     private CollectionCache collectionCache;
@@ -49,8 +49,9 @@ public class CollectionCacheManager implements CacheManager, BrokerPoolService {
 
     @Override
     public void configure(final Configuration configuration) throws BrokerPoolServiceException {
-        final int cacheSize = Optional.of(configuration.getInteger(PROPERTY_CACHE_SIZE)).filter(size -> size > 0).orElse(DEFAULT_CACHE_SIZE);
-        this.maxCacheSize = cacheSize * 1024 * 1024;
+        final int cacheSize = Optional.of(configuration.getInteger(PROPERTY_CACHE_SIZE_BYTES)).filter(size -> size > 0)
+                .orElse(DEFAULT_CACHE_SIZE_BYTES);
+        this.maxCacheSize = cacheSize;
 
         if(LOG.isDebugEnabled()){
             LOG.debug("collection collectionCache will be using " + this.maxCacheSize + " bytes max.");
@@ -76,8 +77,9 @@ public class CollectionCacheManager implements CacheManager, BrokerPoolService {
             synchronized (this) {
                 final int newCacheSize = (int)(collectionCache.getBuffers() * collectionCache.getGrowthFactor());
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Growing cache " + collectionCache.getName() + " (a " + collectionCache.getClass().getName() +
-                        ") from " + collectionCache.getBuffers() + " to " + newCacheSize + ". Current memory usage = " + realSize);
+                    LOG.debug("Growing cache {} (a {}) from {} to {} bytes. Current memory usage = {}",
+                            collectionCache.getName(), collectionCache.getClass().getName(),
+                            collectionCache.getBuffers(), newCacheSize, realSize);
                 }
                 collectionCache.resize(newCacheSize);
                 return newCacheSize;
@@ -123,7 +125,7 @@ public class CollectionCacheManager implements CacheManager, BrokerPoolService {
 
     @Override
     public int getDefaultInitialSize() {
-        return DEFAULT_CACHE_SIZE;
+        return DEFAULT_CACHE_SIZE_BYTES;
     }
 
     private void registerMBean(final String instanceName) {
