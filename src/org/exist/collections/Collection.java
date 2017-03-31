@@ -210,6 +210,16 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
     int getMemorySize();
 
     /**
+     * Returns the estimated amount of memory used by this collection
+     * and its documents. This information is required by the
+     * {@link org.exist.storage.CollectionCacheManager} to be able
+     * to resize the caches.
+     *
+     * @return estimated amount of memory in bytes
+     */
+    int getMemorySizeNoLock();
+
+    /**
      * Get the parent Collection.
      *
      * @return The parent Collection of this Collection

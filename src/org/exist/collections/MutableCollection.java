@@ -571,6 +571,11 @@ public class MutableCollection implements Collection {
     }
 
     @Override
+    public int getMemorySizeNoLock() {
+        return SHALLOW_SIZE + documents.size() * DOCUMENT_SIZE;
+    }
+
+    @Override
     public int getChildCollectionCount(final DBBroker broker) throws PermissionDeniedException {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);

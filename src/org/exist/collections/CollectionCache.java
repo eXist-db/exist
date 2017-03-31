@@ -154,7 +154,7 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
         for (final Iterator<Long> i = names.valueIterator(); i.hasNext(); ) {
             final Collection collection = get(i.next());
             if (collection != null) {
-                size += collection.getMemorySize();
+                size += collection.getMemorySizeNoLock();
             }
         }
         return size;

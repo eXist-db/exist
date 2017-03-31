@@ -195,6 +195,11 @@ public class LockedCollection implements Collection {
     }
 
     @Override
+    public int getMemorySizeNoLock() {
+        return collection.getMemorySizeNoLock();
+    }
+
+    @Override
     public XmldbURI getParentURI() {
         return collection.getParentURI();
     }
