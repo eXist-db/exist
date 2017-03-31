@@ -25,14 +25,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.lock.LockTable.LockType;
 import org.exist.util.LockException;
+import org.exist.util.WeakLazyStripes;
 import org.exist.xmldb.XmldbURI;
 
-import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -40,7 +36,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * A Lock Manager for Locks that are used across
  * database instance functions
  *
- * Maintains Maps of {@link WeakReference<Lock>} by ID.
  * There is a unique lock for each ID, and calls with the same
  * ID will always return the same lock. Different IDs will always
  * receive different locks.
@@ -53,26 +48,25 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author Adam Retter <adam@evolvedbinary.com>
  */
 public class LockManager {
-
     private static final Logger LOG = LogManager.getLogger(LockManager.class);
-    private static final int INITIAL_COLLECTION_LOCK_CAPACITY = 1000;
-    private static final float COLLECTION_LOCK_LOAD_FACTOR = 0.75f;
-
     private static final boolean USE_FAIR_SCHEDULER = true;  //Java's ReentrantReadWriteLock must use the Fair Scheduler to get FIFO like ordering
+    private static final LockTable lockTable = LockTable.getInstance();
 
-    private final ReferenceQueue<ReentrantReadWriteLock> collectionLockReferences;
-    private final ConcurrentMap<String, WeakReference<ReentrantReadWriteLock>> collectionLocks;
+    private final WeakLazyStripes<String, ReentrantReadWriteLock> collectionLocks;
 
-    private final static LockTable lockTable = LockTable.getInstance();
 
     public LockManager(final int concurrencyLevel) {
-        this.collectionLocks = new ConcurrentHashMap<>(INITIAL_COLLECTION_LOCK_CAPACITY, COLLECTION_LOCK_LOAD_FACTOR, concurrencyLevel);
-        this.collectionLockReferences = new ReferenceQueue<>();
-
+        this.collectionLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createCollectionLock);
         LOG.info("Configured LockManager with concurrencyLevel={}", concurrencyLevel);
     }
 
-    //TODO(AR) abstract getCollectionLock out as a StripedLock<T> where T is a String or other thing
+    /**
+     * Creates a new lock for a Collection
+     * will be Striped by the collectionPath
+     */
+    private static ReentrantReadWriteLock createCollectionLock(final String collectionPath) {
+        return new ReentrantReadWriteLock(USE_FAIR_SCHEDULER);
+    }
 
     /**
      * Retrieves a lock for a Collection
@@ -87,25 +81,7 @@ public class LockManager {
      * @return A lock for the Collection
      */
     ReentrantReadWriteLock getCollectionLock(final String collectionPath) {
-        // calculate a value if not present or if the weak reference has expired
-        final WeakReference<ReentrantReadWriteLock> collectionLockRef =
-                collectionLocks.compute(collectionPath, (key, value) -> {
-                    if(value == null || value.get() == null) {
-                        drainClearedReferences(collectionLockReferences, collectionLocks);
-                        return new WeakReference<>(new ReentrantReadWriteLock(USE_FAIR_SCHEDULER), collectionLockReferences);
-                    } else {
-                        return value;
-                    }
-                });
-
-        // check the weak reference before returning!
-        final ReentrantReadWriteLock collectionLock = collectionLockRef.get();
-        if(collectionLock != null) {
-            return collectionLock;
-        }
-
-        // weak reference has expired in the mean time, regenerate
-        return getCollectionLock(collectionPath);
+        return collectionLocks.get(collectionPath);
     }
 
     //See Concurrency of Operations on B-Trees - Bayer and Schkolnick 1977 - Solution 2
@@ -424,23 +400,6 @@ public class LockManager {
         } else {
             lockTable.attemptFailed(groupId, COLLECTION_CACHE_LOCK_NAME, LockType.COLLECTION_CACHE, Lock.LockMode.WRITE_LOCK);
             throw new LockException("Unable to acquire CollectionCache LOCK");
-        }
-    }
-
-    /**
-     * Removes any cleared references from a map of weak references
-     *
-     * @param referenceQueue The queue that holds notification of cleared references
-     * @param map The map from which to remove the cleared references
-     *
-     * @param <K> The key type of the map
-     * @param <V> The value type inside the {@link WeakReference<V>}
-     */
-    private <K, V> void drainClearedReferences(final ReferenceQueue<V> referenceQueue, final ConcurrentMap<K, WeakReference<V>> map) {
-        Reference<? extends V> ref = null;
-        while ((ref = referenceQueue.poll()) != null) {
-            final WeakReference<? extends V> lockRef = (WeakReference<? extends V>)ref;
-            map.values().remove(lockRef);
         }
     }
 }
