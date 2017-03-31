@@ -815,6 +815,10 @@ public class NativeBroker extends DBBroker {
         }
     }
 
+    /**
+     * NOTE - When this is called there must be a WRITE_LOCK on collectionUri
+     * and a WRITE_LOCK on parentCollection (if it is not null)
+     */
     private Collection createCollection(final Txn transaction, @Nullable final Collection parentCollection,
             final XmldbURI collectionUri, final CollectionCache collectionCache,
             final Optional<Tuple2<Permission, Long>> creationAttributes)
@@ -843,16 +847,24 @@ public class NativeBroker extends DBBroker {
         return collectionObj;
     }
 
+    /**
+     * NOTE - When this is called there must be a WRITE_LOCK on collectionUri
+     * and at least a READ_LOCK on parentCollection (if it is not null)
+     */
     private Collection createCollectionObject(final Txn transaction, @Nullable final Collection parentCollection,
             final XmldbURI collectionUri, final Optional<Tuple2<Permission, Long>> creationAttributes) throws ReadOnlyException, PermissionDeniedException {
 
         final Collection collection = creationAttributes.map(attrs -> new MutableCollection(this, collectionUri, attrs._1, attrs._2)).orElseGet(() -> new MutableCollection(this, collectionUri));
         collection.setId(getNextCollectionId(transaction));
 
-        //inherit the group to the sub-collection if current collection is setGid
-        if (parentCollection != null && parentCollection.getPermissions().isSetGid()) {
-            collection.getPermissions().setGroupFrom(parentCollection.getPermissions()); //inherit group
-            collection.getPermissions().setSetGid(true); //inherit setGid bit
+        //inherit the group to collection if parent-collection is setGid
+        if(parentCollection != null) {
+            final Permission parentPermissions = parentCollection.getPermissionsNoLock();
+            if(parentPermissions.isSetGid()) {
+                final Permission collectionPermissions = collection.getPermissionsNoLock();
+                collectionPermissions.setGroupFrom(parentPermissions); //inherit group
+                collectionPermissions.setSetGid(true); //inherit setGid bit
+            }
         }
 
         return collection;
