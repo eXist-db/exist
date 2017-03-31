@@ -154,7 +154,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 			{return;}
         final SequenceIterator iterator = otherSequence.iterate();
 		if (iterator == null) {
-			LOG.warn("Iterator == null: " + otherSequence.getClass().getName());
+            LOG.warn("Iterator == null: {}", otherSequence.getClass().getName());
 		}
 		for(; iterator.hasNext(); )
 			add(iterator.nextItem());

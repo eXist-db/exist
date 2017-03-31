@@ -348,7 +348,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         		//TODO : find something that will consume less resources
         		return calendar.compare(TimeUtils.getInstance().newXMLGregorianCalendar(other.getStringValue()));
             } catch (final XPathException e) {
-        		LOG.error("Failed to get string value of '" + other + "'", e);
+				LOG.error("Failed to get string value of '{}'", other, e);
         		//Why not ?
         		return Constants.SUPERIOR;
         	}

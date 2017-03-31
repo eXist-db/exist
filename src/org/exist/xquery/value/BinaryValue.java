@@ -142,7 +142,7 @@ public abstract class BinaryValue extends AtomicValue {
                 streamBinaryTo(baos);
                 return (T)baos.toByteArray();
             } catch(final IOException ioe) {
-                LOG.error("Unable to Stream BinaryValue to byte[]: " + ioe.getMessage(), ioe);
+                LOG.error("Unable to Stream BinaryValue to byte[]: {}", ioe.getMessage(), ioe);
             }
 
         }
@@ -227,7 +227,7 @@ public abstract class BinaryValue extends AtomicValue {
             try {
                 baos.close();   //close the stream to ensure all data is flushed
             } catch(final IOException ioe) {
-                LOG.error("Unable to close stream: " + ioe.getMessage(), ioe);
+                LOG.error("Unable to close stream: {}", ioe.getMessage(), ioe);
             }
         }
 
@@ -259,7 +259,7 @@ public abstract class BinaryValue extends AtomicValue {
         try {
             fos.close();
         } catch(final IOException ioe) {
-            LOG.error("Unable to close stream: " + ioe.getMessage(), ioe);
+            LOG.error("Unable to close stream: {}", ioe.getMessage(), ioe);
         }
     }
 

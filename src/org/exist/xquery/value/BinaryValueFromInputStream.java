@@ -72,7 +72,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
             try {
                 is.reset();
             } catch (final IOException ioe) {
-                LOG.error("Unable to reset stream: " + ioe.getMessage(), ioe);
+                LOG.error("Unable to reset stream: {}", ioe.getMessage(), ioe);
             }
         }
     }
@@ -103,7 +103,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
         try {
             this.close();
         } catch (final IOException e) {
-            LOG.warn("Error during cleanup of binary value: " + e.getMessage(), e);
+            LOG.warn("Error during cleanup of binary value: {}", e.getMessage(), e);
         }
         context.destroyBinaryValue(this);
     }

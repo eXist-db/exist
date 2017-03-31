@@ -48,14 +48,14 @@ public class BinaryValueFromBinaryString extends BinaryValue {
                 try {
                     fos.close();
                 } catch(final IOException ioe) {
-                    LOG.error("Unable to close stream: " + ioe.getMessage(), ioe);
+                    LOG.error("Unable to close stream: {}", ioe.getMessage(), ioe);
                 }
             }
 
             try {
                 baos.close();
             } catch(final IOException ioe) {
-                LOG.error("Unable to close stream: " + ioe.getMessage(), ioe);
+                LOG.error("Unable to close stream: {}", ioe.getMessage(), ioe);
             }
         }
 
@@ -81,7 +81,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
         try {
             fos.close();
         } catch(final IOException ioe) {
-            LOG.error("Unable to close stream: " + ioe.getMessage(), ioe);
+            LOG.error("Unable to close stream: {}", ioe.getMessage(), ioe);
         }
     }
 
@@ -101,7 +101,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
         try {
             streamBinaryTo(baos);
         } catch(final IOException ioe) {
-            LOG.error("Unable to get read only buffer: " + ioe.getMessage(), ioe);
+            LOG.error("Unable to get read only buffer: {}", ioe.getMessage(), ioe);
         }
 
         return new ByteArrayInputStream(baos.toByteArray());

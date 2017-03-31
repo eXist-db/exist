@@ -395,7 +395,7 @@ public class Type {
             
             final int supertype = superTypes[subtype];
             if(supertype == 0) {
-                LOG.warn("eXist does not define a super-type for the sub-type " + getTypeName(subtype), new Throwable());
+                LOG.warn("eXist does not define a super-type for the sub-type {}", getTypeName(subtype), new Throwable());
                 return ITEM;
             }
             
