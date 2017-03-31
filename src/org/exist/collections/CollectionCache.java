@@ -64,10 +64,11 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
 
     @Override
     public void add(final Collection c, final int initialRefCount) {
-        // don't cache the collection during initialization: SecurityManager is not yet online
-        if(!pool.isOperational()) {
-            return;
-        }
+        // commented out as required by NativeBroker#getOrCreateCollectionExplicit during DB Startup
+//        //don't cache the collection during initialization: SecurityManager is not yet online
+//        if(!pool.isOperational()) {
+//            return;
+//        }
 
         //NOTE: We must not store LockedCollections in the CollectionCache! So we call LockedCollection#unwrapLocked
         final Collection collection = LockedCollection.unwrapLocked(c);
