@@ -148,7 +148,7 @@ public class BFile extends BTree {
             final double cacheGrowth, final double thresholdData) throws DBException {
         super(pool, fileId, recoveryEnabled, cacheManager, file);
         fileHeader = (BFileHeader) getFileHeader();
-        dataCache = new LRUCache<>(FileUtils.fileName(file), 64, cacheGrowth, thresholdData, CacheManager.DATA_CACHE);
+        dataCache = new LRUCache<>(FileUtils.fileName(file), 64, cacheGrowth, thresholdData, Cache.CacheType.DATA);
         cacheManager.registerCache(dataCache);
         minFree = PAGE_MIN_FREE;
         lock = new ReentrantReadWriteLock(FileUtils.fileName(file));

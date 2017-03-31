@@ -19,13 +19,15 @@
  */
 package org.exist.management;
 
+import org.exist.storage.cache.Cache;
+
 /**
  * Provides access to some properties of the internal page caches
  * ({@link org.exist.storage.cache.Cache}).
  */
 public interface CacheMXBean {
 
-    String getType();
+    Cache.CacheType getType();
     
     int getSize();
 

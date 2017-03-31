@@ -241,7 +241,7 @@ public class BTree extends Paged implements Lockable {
 
     protected void initCache() {
         this.cache = new BTreeCache<>(FileUtils.fileName(getFile()), cacheManager.getDefaultInitialSize(), 1.5,
-            0, CacheManager.BTREE_CACHE);
+            0, Cache.CacheType.BTREE);
         cacheManager.registerCache(cache);
     }
 

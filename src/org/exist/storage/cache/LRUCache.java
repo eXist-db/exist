@@ -43,11 +43,11 @@ public class LRUCache<T extends Cacheable> implements Cache<T> {
     protected final double growthFactor;
     protected final Accounting accounting;
 	protected SequencedLongHashMap<T> map;
-    private final String type;
+    private final CacheType type;
     private int hitsOld = -1;
     protected CacheManager cacheManager = null;
 
-    public LRUCache(final String name, final int size, final double growthFactor, final double growthThreshold, final String type) {
+    public LRUCache(final String name, final int size, final double growthFactor, final double growthThreshold, final CacheType type) {
     	this.name = name;
 		this.max = size;
         this.growthFactor = growthFactor;
@@ -68,7 +68,7 @@ public class LRUCache<T extends Cacheable> implements Cache<T> {
 	}
 
 	@Override
-    public String getType() {
+    public CacheType getType() {
         return type;
     }
 

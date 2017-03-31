@@ -48,7 +48,7 @@ public class LRDCache<T extends Cacheable> extends GClockCache<T> {
     private int totalReferences = 0;
     private int nextCleanup;
 	
-	public LRDCache(final String name, final Class<T> cacheableClazz, final int size, final double growthFactor, final double growthThreshold, final String type) {
+	public LRDCache(final String name, final Class<T> cacheableClazz, final int size, final double growthFactor, final double growthThreshold, final CacheType type) {
 		super(name, cacheableClazz, size, growthFactor, growthThreshold, type);
 		maxReferences = size * 10000;
 		ageingPeriod = size * 5000;

@@ -192,7 +192,7 @@ public class DOMFile extends BTree implements Lockable {
         fileHeader = (BTreeFileHeader)getFileHeader();
         fileHeader.setPageCount(0);
         fileHeader.setTotalCount(0);
-        dataCache = new LRUCache<>(getFileName(), 256, 0.0, 1.0, CacheManager.DATA_CACHE);
+        dataCache = new LRUCache<>(getFileName(), 256, 0.0, 1.0, Cache.CacheType.DATA);
         cacheManager.registerCache(dataCache);
         final Path file = dataDir.resolve(getFileName());
         setFile(file);

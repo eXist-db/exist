@@ -30,7 +30,7 @@ public class Cache implements CacheMXBean {
     }
 
     @Override
-    public String getType() {
+    public org.exist.storage.cache.Cache.CacheType getType() {
         return cache.getType();
     }
 

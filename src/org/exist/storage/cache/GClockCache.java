@@ -51,7 +51,7 @@ public class GClockCache<T extends Cacheable> implements Cache<T> {
     protected int size;
     private final double growthFactor;
     Accounting accounting;
-    private final String type;
+    private final CacheType type;
 	protected T[] items;
     protected Long2ObjectHashMap<T> map;
 	protected int count = 0;
@@ -59,7 +59,7 @@ public class GClockCache<T extends Cacheable> implements Cache<T> {
     private int hitsOld = 0;
 	protected CacheManager cacheManager = null;
 
-    public GClockCache(final String name, final Class<T> cacheableClazz, final int size, final double growthFactor, final double growthThreshold, final String type) {
+    public GClockCache(final String name, final Class<T> cacheableClazz, final int size, final double growthFactor, final double growthThreshold, final CacheType type) {
 		this.name = name;
 		this.cacheableClazz = cacheableClazz;
     	this.size = size;
@@ -82,7 +82,7 @@ public class GClockCache<T extends Cacheable> implements Cache<T> {
     }
 
     @Override
-    public String getType() {
+    public CacheType getType() {
         return type;
     }
 

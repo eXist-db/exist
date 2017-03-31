@@ -52,7 +52,7 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
     private Object2LongHashMap<String> names;
 
     public CollectionCache(final BrokerPool pool, final int blockBuffers, final double growthThreshold) {
-        super("collection cache", blockBuffers, 2.0, growthThreshold, CacheManager.DATA_CACHE);
+        super("collection cache", blockBuffers, 2.0, growthThreshold, CacheType.DATA);
         this.pool = pool;
         this.names = new Object2LongHashMap<>(blockBuffers);
     }
