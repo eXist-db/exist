@@ -7,7 +7,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
  * @author Adam Retter <adam@existsolutions.com>
  */
 public class Base64BinaryValueType extends BinaryValueType<Base64OutputStream> {
@@ -28,7 +27,7 @@ public class Base64BinaryValueType extends BinaryValueType<Base64OutputStream> {
 
     @Override
     public void verifyString(String str) throws XPathException {
-        if(!getMatcher(str).matches()) {
+        if (!getMatcher(str).matches()) {
             throw new XPathException("FORG0001: Invalid base64 data");
         }
     }

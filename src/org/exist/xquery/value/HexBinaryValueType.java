@@ -47,11 +47,11 @@ public class HexBinaryValueType extends BinaryValueType<HexOutputStream> {
     @Override
     protected void verifyString(String str) throws XPathException {
 
-        if((str.length() & 1) != 0) {
+        if ((str.length() & 1) != 0) {
             throw new XPathException(ErrorCodes.FORG0001, "A hexBinary value must contain an even number of characters");
         }
 
-        if(!getMatcher(str).matches()) {
+        if (!getMatcher(str).matches()) {
             throw new XPathException(ErrorCodes.FORG0001, "Invalid hexadecimal digit");
         }
     }

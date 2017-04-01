@@ -22,18 +22,18 @@ package org.exist.xquery.value;
 
 public class EmptySequenceIterator implements SequenceIterator {
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.SequenceIterator#hasNext()
-	 */
-	public boolean hasNext() {
-		return false;
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.SequenceIterator#hasNext()
+     */
+    public boolean hasNext() {
+        return false;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.SequenceIterator#nextItem()
-	 */
-	public Item nextItem() {
-		return null;
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.SequenceIterator#nextItem()
+     */
+    public Item nextItem() {
+        return null;
+    }
 
 }

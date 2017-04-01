@@ -35,28 +35,25 @@ import java.util.Properties;
  * This class represents an item in a sequence as defined by the XPath 2.0 specification.
  * Every item is either an {@link org.exist.xquery.value.AtomicValue atomic value} or
  * a {@link org.exist.dom.persistent.NodeProxy node}.
- * 
+ *
  * @author wolf
  */
 public interface Item {
 
-	/**
-	 * Return the type of this item according to the type constants defined in class
-	 * {@link Type}.
-	 * 
-	 */
+    /**
+     * Return the type of this item according to the type constants defined in class
+     * {@link Type}.
+     */
     int getType();
-	
-	/**
-	 * Return the string value of this item (see the definition of string value in XPath).
-	 * 
-	 */
+
+    /**
+     * Return the string value of this item (see the definition of string value in XPath).
+     */
     String getStringValue() throws XPathException;
-	
-	/**
-	 * Convert this item into a sequence, containing only the item.
-	 *  
-	 */
+
+    /**
+     * Convert this item into a sequence, containing only the item.
+     */
     Sequence toSequence();
 
     /**
@@ -64,35 +61,34 @@ public interface Item {
      */
     void destroy(XQueryContext context, Sequence contextSequence);
 
-	/**
-	 * Convert this item into an atomic value, whose type corresponds to
-	 * the specified target type. requiredType should be one of the type
-	 * constants defined in {@link Type}. An {@link XPathException} is thrown
-	 * if the conversion is impossible.
-	 * 
-	 * @param requiredType
-	 * @throws XPathException
-	 */
+    /**
+     * Convert this item into an atomic value, whose type corresponds to
+     * the specified target type. requiredType should be one of the type
+     * constants defined in {@link Type}. An {@link XPathException} is thrown
+     * if the conversion is impossible.
+     *
+     * @param requiredType
+     * @throws XPathException
+     */
     AtomicValue convertTo(int requiredType) throws XPathException;
-	
-	AtomicValue atomize() throws XPathException;
-	
-	void toSAX(DBBroker broker, ContentHandler handler, Properties properties) throws SAXException;
 
-	void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException;
-	
-	int conversionPreference(Class<?> javaClass);
-	
-	<T> T toJavaObject(Class<T> target) throws XPathException;
+    AtomicValue atomize() throws XPathException;
 
-        /**
-         * Nodes may implement this method to be informed of storage address
-         * and node id changes after updates.
-         *
-         * @see org.exist.storage.UpdateListener
-         *
-         * @param oldNodeId
-         * @param newNode
-         */
-        void nodeMoved(NodeId oldNodeId, NodeHandle newNode);  //TODO why is this here, it only pertains to Peristent nodes and NOT also in-memory nodes
+    void toSAX(DBBroker broker, ContentHandler handler, Properties properties) throws SAXException;
+
+    void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException;
+
+    int conversionPreference(Class<?> javaClass);
+
+    <T> T toJavaObject(Class<T> target) throws XPathException;
+
+    /**
+     * Nodes may implement this method to be informed of storage address
+     * and node id changes after updates.
+     *
+     * @param oldNodeId
+     * @param newNode
+     * @see org.exist.storage.UpdateListener
+     */
+    void nodeMoved(NodeId oldNodeId, NodeHandle newNode);  //TODO why is this here, it only pertains to Peristent nodes and NOT also in-memory nodes
 }

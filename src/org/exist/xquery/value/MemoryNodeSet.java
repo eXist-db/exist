@@ -8,7 +8,7 @@ import org.exist.xquery.XPathException;
 public interface MemoryNodeSet extends Sequence {
 
     MemoryNodeSet EMPTY = new ValueSequence(1);
-    
+
     Sequence getAttributes(NodeTest test) throws XPathException;
 
     Sequence getDescendantAttributes(NodeTest test) throws XPathException;
@@ -28,7 +28,7 @@ public interface MemoryNodeSet extends Sequence {
     Sequence getPreceding(NodeTest test, int position) throws XPathException;
 
     Sequence getFollowingSiblings(NodeTest test) throws XPathException;
-    
+
     Sequence getFollowing(NodeTest test, int position) throws XPathException;
 
     Sequence getChildrenForParent(NodeImpl parent);
@@ -36,7 +36,7 @@ public interface MemoryNodeSet extends Sequence {
     Sequence selectDescendants(MemoryNodeSet descendants);
 
     Sequence selectChildren(MemoryNodeSet children);
-    
+
     int size();
 
     NodeImpl get(int which);

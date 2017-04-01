@@ -32,178 +32,175 @@ import java.util.Iterator;
 
 /**
  * This interface represents a sequence as defined in the XPath 2.0 specification.
- * 
+ * <p>
  * A sequence is a sequence of items. Each item is either an atomic value or a
- * node. A single item is also a sequence, containing only the item. The base classes for 
+ * node. A single item is also a sequence, containing only the item. The base classes for
  * {@link org.exist.xquery.value.AtomicValue atomic values} and {@link org.exist.dom.persistent.NodeProxy
  * nodes} thus implement the Sequence interface.
- * 
- * Also, a {@link org.exist.dom.persistent.NodeSet node set} is a special type of sequence, where all 
- * items are of type node.  
+ * <p>
+ * Also, a {@link org.exist.dom.persistent.NodeSet node set} is a special type of sequence, where all
+ * items are of type node.
  */
 public interface Sequence {
-	
-	/**
-	 * Constant representing an empty sequence, i.e. a sequence with no item.
-	 */
+
+    /**
+     * Constant representing an empty sequence, i.e. a sequence with no item.
+     */
     Sequence EMPTY_SEQUENCE = new EmptySequence();
-	
-	/**
-	 * The purpose of ordered and unordered flag is to set the ordering mode 
-	 * in the static context to ordered or unordered for a certain region in a query. 
-	 * 
-	 * @param flag
-	 */
+
+    /**
+     * The purpose of ordered and unordered flag is to set the ordering mode
+     * in the static context to ordered or unordered for a certain region in a query.
+     *
+     * @param flag
+     */
 //	public void keepUnOrdered(boolean flag);
-	
-	/**
-	 * Add an item to the current sequence. An {@link XPathException} may be thrown
-	 * if the item's type is incompatible with this type of sequence (e.g. if the sequence
-	 * is a node set).
-	 * 
-	 * The sequence may or may not allow duplicate values.
-	 * 
-	 * @param item
-	 * @throws XPathException
-	 */
+
+    /**
+     * Add an item to the current sequence. An {@link XPathException} may be thrown
+     * if the item's type is incompatible with this type of sequence (e.g. if the sequence
+     * is a node set).
+     * <p>
+     * The sequence may or may not allow duplicate values.
+     *
+     * @param item
+     * @throws XPathException
+     */
     void add(Item item) throws XPathException;
-	
-	/**
-	 * Add all items of the other sequence to this item. An {@link XPathException} may
-	 * be thrown if the type of the items in the other sequence is incompatible with
-	 * the primary type of this sequence.
-	 * 
-	 * @param other
-	 * @throws XPathException
-	 */
+
+    /**
+     * Add all items of the other sequence to this item. An {@link XPathException} may
+     * be thrown if the type of the items in the other sequence is incompatible with
+     * the primary type of this sequence.
+     *
+     * @param other
+     * @throws XPathException
+     */
     void addAll(Sequence other) throws XPathException;
-	
-	/**
-	 * Return the primary type to which all items in this sequence belong. This is
-	 * {@link org.exist.xquery.value.Type#NODE} for node sets, {@link Type#ITEM}
-	 * for other sequences with mixed items.
-	 * 
-	 * @return the primary type of the items in this sequence.
-	 */
+
+    /**
+     * Return the primary type to which all items in this sequence belong. This is
+     * {@link org.exist.xquery.value.Type#NODE} for node sets, {@link Type#ITEM}
+     * for other sequences with mixed items.
+     *
+     * @return the primary type of the items in this sequence.
+     */
     int getItemType();
-	
-	/**
-	 * Returns an iterator over all items in the sequence. The
-	 * items are returned in document order where applicable.
-	 * 
-	 * @throws XPathException TODO
-	 */
+
+    /**
+     * Returns an iterator over all items in the sequence. The
+     * items are returned in document order where applicable.
+     *
+     * @throws XPathException TODO
+     */
     SequenceIterator iterate() throws XPathException;
-	
-	/**
-	 * Returns an iterator over all items in the sequence. The returned
-	 * items may - but need not - to be in document order.
-	 * 
-	 */
+
+    /**
+     * Returns an iterator over all items in the sequence. The returned
+     * items may - but need not - to be in document order.
+     */
     SequenceIterator unorderedIterator() throws XPathException;
-	
-	/**
-	 * Returns the number of items contained in the sequence.
-     * Call this method <strong>only</strong> when necessary, 
-     * since it can be resource consuming. 
-	 * 
-	 * @return The number of items in the sequence
-	 */
+
+    /**
+     * Returns the number of items contained in the sequence.
+     * Call this method <strong>only</strong> when necessary,
+     * since it can be resource consuming.
+     *
+     * @return The number of items in the sequence
+     */
     int getItemCount();
 
-	/**
-	 * Returns whether the sequence is empty or not.
-	 * 
-	 * @return <code>true</code> is the sequence is empty
-	 */
+    /**
+     * Returns whether the sequence is empty or not.
+     *
+     * @return <code>true</code> is the sequence is empty
+     */
     boolean isEmpty();
-	
+
     /**
      * Returns whether the sequence has just one item or not.
-     * 
+     *
      * @return <code>true</code> is the sequence has just one item
      */
     boolean hasOne();
-	
+
     /**
      * Returns whether the sequence more than one item or not.
-     * 
+     *
      * @return <code>true</code> is the sequence more than one item
      */
     boolean hasMany();
-	
-	/**
-	 * Explicitely remove all duplicate nodes from this sequence.
-	 */
+
+    /**
+     * Explicitely remove all duplicate nodes from this sequence.
+     */
     void removeDuplicates();
-	
-	/**
-	 * Returns the cardinality of this sequence. The returned
-	 * value is a combination of flags as defined in
-	 * {@link org.exist.xquery.Cardinality}.
-	 * 
-	 * @see org.exist.xquery.Cardinality
-	 * 
-	 */
+
+    /**
+     * Returns the cardinality of this sequence. The returned
+     * value is a combination of flags as defined in
+     * {@link org.exist.xquery.Cardinality}.
+     *
+     * @see org.exist.xquery.Cardinality
+     */
     int getCardinality();
-	
-	/**
-	 * Returns the item located at the specified position within
-	 * this sequence. Items are counted beginning at 0.
-	 * 
-	 * @param pos
-	 */
+
+    /**
+     * Returns the item located at the specified position within
+     * this sequence. Items are counted beginning at 0.
+     *
+     * @param pos
+     */
     Item itemAt(int pos);
-	
-	Sequence tail() throws XPathException;
-	
-	/**
-	 * Try to convert the sequence into an atomic value. The target type should be specified by
-	 * using one of the constants defined in class {@link Type}. An {@link XPathException}
-	 * is thrown if the conversion is impossible.
-	 * 
-	 * @param requiredType one of the type constants defined in class {@link Type}
-	 * @throws XPathException
-	 */
+
+    Sequence tail() throws XPathException;
+
+    /**
+     * Try to convert the sequence into an atomic value. The target type should be specified by
+     * using one of the constants defined in class {@link Type}. An {@link XPathException}
+     * is thrown if the conversion is impossible.
+     *
+     * @param requiredType one of the type constants defined in class {@link Type}
+     * @throws XPathException
+     */
     AtomicValue convertTo(int requiredType) throws XPathException;
-	
-	/**
-	 * Convert the sequence to a string.
-	 * 
-	 */
+
+    /**
+     * Convert the sequence to a string.
+     */
     String getStringValue() throws XPathException;
-	
-	/**
-	 * Get the effective boolean value of this sequence. Will be false if the sequence is empty,
-	 * true otherwise.
-	 * 
-	 * @throws XPathException
-	 */
+
+    /**
+     * Get the effective boolean value of this sequence. Will be false if the sequence is empty,
+     * true otherwise.
+     *
+     * @throws XPathException
+     */
     boolean effectiveBooleanValue() throws XPathException;
-	
-	/**
-	 * Convert the sequence into a NodeSet. If the sequence contains items
-	 * which are not nodes, an XPathException is thrown.
-	 * @throws XPathException if the sequence contains items which are not nodes.
-	 */
+
+    /**
+     * Convert the sequence into a NodeSet. If the sequence contains items
+     * which are not nodes, an XPathException is thrown.
+     *
+     * @throws XPathException if the sequence contains items which are not nodes.
+     */
     NodeSet toNodeSet() throws XPathException;
 
     /**
      * Convert the sequence into an in-memory node set. If the sequence contains
      * items which are not nodes, an XPathException is thrown. For persistent
      * node sets, this method will return null. Call {@link #isPersistentSet()} to check
-     * if the sequence is a persistent node set. 
+     * if the sequence is a persistent node set.
      *
      * @throws XPathException if the sequence contains items which are not nodes or is
-     * a persistent node set
+     *                        a persistent node set
      */
     MemoryNodeSet toMemNodeSet() throws XPathException;
 
     /**
-	 * Returns the set of documents from which the node items in this sequence
-	 * have been selected. This is for internal use only.
-	 * 
-	 */
+     * Returns the set of documents from which the node items in this sequence
+     * have been selected. This is for internal use only.
+     */
     DocumentSet getDocumentSet();
 
     /**
@@ -213,63 +210,61 @@ public interface Sequence {
     Iterator<Collection> getCollectionIterator();
 
     /**
-	 * Returns a preference indicator, indicating the preference of
-	 * a value to be converted into the given Java class. Low numbers mean
-	 * that the value can be easily converted into the given class.
-	 * 
-	 * @param javaClass
-	 */
+     * Returns a preference indicator, indicating the preference of
+     * a value to be converted into the given Java class. Low numbers mean
+     * that the value can be easily converted into the given class.
+     *
+     * @param javaClass
+     */
     int conversionPreference(Class<?> javaClass);
-	
-	/**
-	 * Convert the value into an instance of the specified
-	 * Java class.
-	 * 
-	 * @param target
-	 * @throws XPathException
-	 */
+
+    /**
+     * Convert the value into an instance of the specified
+     * Java class.
+     *
+     * @param target
+     * @throws XPathException
+     */
     <T> T toJavaObject(Class<T> target) throws XPathException;
-	
-	/**
-	 * Returns true if the sequence is the result of a previous operation
-	 * and has been cached.
-	 * 
-	 */
+
+    /**
+     * Returns true if the sequence is the result of a previous operation
+     * and has been cached.
+     */
     boolean isCached();
-	
-	/**
-	 * Indicates that the sequence is the result of a previous operation
-	 * and has not been recomputed.
-	 *  
-	 * @param cached
-	 */
+
+    /**
+     * Indicates that the sequence is the result of a previous operation
+     * and has not been recomputed.
+     *
+     * @param cached
+     */
     void setIsCached(boolean cached);
-	
-	/**
-	 * For every item in the sequence, clear any context-dependant
-	 * information that is stored during query processing. This
-	 * feature is used for node sets, which may store information
-	 * about their context node.
-	 */
+
+    /**
+     * For every item in the sequence, clear any context-dependant
+     * information that is stored during query processing. This
+     * feature is used for node sets, which may store information
+     * about their context node.
+     */
     void clearContext(int contextId) throws XPathException;
-    
-	void setSelfAsContext(int contextId) throws XPathException;
-    
+
+    void setSelfAsContext(int contextId) throws XPathException;
+
     boolean isPersistentSet();
 
     /**
      * Node sets may implement this method to be informed of storage address
      * and node id changes after updates.
      *
-     * @see org.exist.storage.UpdateListener
-     * 
      * @param oldNodeId
      * @param newNode
+     * @see org.exist.storage.UpdateListener
      */
     void nodeMoved(NodeId oldNodeId, NodeHandle newNode);  //TODO why is this here, it only pertains to Peristent nodes and NOT also in-memory nodes
 
     boolean isCacheable();
-    
+
     int getState();
 
     boolean hasChanged(int previousState);

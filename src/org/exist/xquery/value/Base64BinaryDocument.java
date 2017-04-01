@@ -27,19 +27,12 @@ import java.io.InputStream;
 
 /**
  * Wrapper around Base64Binary.
+ *
  * @author dizzzzz
  */
 public class Base64BinaryDocument extends BinaryValueFromInputStream {
 
     private String url = null;
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
 
     private Base64BinaryDocument(BinaryValueManager manager, InputStream is) throws XPathException {
         super(manager, new Base64BinaryValueType(), is);
@@ -49,5 +42,13 @@ public class Base64BinaryDocument extends BinaryValueFromInputStream {
         final Base64BinaryDocument b64BinaryDocument = new Base64BinaryDocument(manager, is);
         manager.registerBinaryValueInstance(b64BinaryDocument);
         return b64BinaryDocument;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }
