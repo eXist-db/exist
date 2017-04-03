@@ -24,7 +24,7 @@
         <exclude module="geronimo-stax-api_1.0_spec"/>
         <exclude module="jackson-core"/>
         <exclude module="jdom"/>
-        <exclude module="junrar"/>
+        <!-- <exclude module="junrar"/> -->
         <exclude module="log4j"/>
         <exclude module="quartz"/>
         <exclude module="servlet-api"/>
