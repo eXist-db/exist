@@ -20,6 +20,7 @@
  */
 package org.exist.management.impl;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Locale;
 
@@ -63,7 +64,12 @@ public class SystemInfo implements SystemInfoMXBean {
 
     @Override
     public String getDefaultEncoding() {
-        return new InputStreamReader(System.in).getEncoding();
+        try(final InputStreamReader isr = new InputStreamReader(System.in)) {
+            return isr.getEncoding();
+        } catch(final IOException ioe) {
+            ioe.printStackTrace();
+            return null;
+        }
     }
 
     @Override
