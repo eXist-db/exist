@@ -40,14 +40,14 @@ public interface LockTableMXBean {
      *
      * @return information about acquired locks
      */
-    Map<String, Map<LockTable.LockType, Map<Lock.LockMode, Set<String>>>> getAcquired();
+    Map<String, Map<Lock.LockType, Map<Lock.LockMode, Set<String>>>> getAcquired();
 
     /**
      * Get information about outstanding attempts to acquire locks
      *
      * @return information about outstanding attempts to acquire locks
      */
-    Map<String, Map<LockTable.LockType, List<LockModeOwner>>> getAttempting();
+    Map<String, Map<Lock.LockType, List<LockModeOwner>>> getAttempting();
 
     void dumpToConsole();
 

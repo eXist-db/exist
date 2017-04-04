@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.Lock.LockType;
 import org.exist.storage.txn.Txn;
 
 import javax.annotation.Nullable;
@@ -619,14 +620,6 @@ public class LockTable {
 
             return null;
         }
-    }
-
-    public enum LockType {
-        @Deprecated LEGACY_COLLECTION,
-        @Deprecated LEGACY_DOCUMENT,
-
-        COLLECTION,
-        DOCUMENT
     }
 
     /** debugging tools below **/

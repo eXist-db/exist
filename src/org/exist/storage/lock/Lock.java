@@ -34,6 +34,19 @@ public interface Lock extends Debuggable {
     }
 
     /**
+     * The type of a {@link Lock}
+     */
+    enum LockType {
+        @Deprecated LEGACY_COLLECTION,
+        @Deprecated LEGACY_DOCUMENT,
+
+        COLLECTION,
+        DOCUMENT,
+
+        COLLECTIONS_DBX
+    }
+
+    /**
      * Get the id of the lock
      */
     String getId();

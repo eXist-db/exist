@@ -23,7 +23,7 @@ import com.evolvedbinary.j8fu.Either;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.storage.lock.LockTable.LockType;
+import org.exist.storage.lock.Lock.LockType;
 import org.exist.util.LockException;
 import org.exist.util.WeakLazyStripes;
 import org.exist.xmldb.XmldbURI;

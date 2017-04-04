@@ -22,7 +22,7 @@ package org.exist.management.impl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.LockTable.LockType;
+import org.exist.storage.lock.Lock.LockType;
 import org.exist.storage.lock.LockTable.LockModeOwner;
 
 import java.util.List;
@@ -39,7 +39,7 @@ public class LockTable implements LockTableMXBean {
     private static final String EOL = System.getProperty("line.separator");
 
     @Override
-    public Map<String, Map<org.exist.storage.lock.LockTable.LockType, Map<Lock.LockMode, Set<String>>>> getAcquired() {
+    public Map<String, Map<LockType, Map<Lock.LockMode, Set<String>>>> getAcquired() {
         return org.exist.storage.lock.LockTable.getInstance().getAcquired();
     }
 

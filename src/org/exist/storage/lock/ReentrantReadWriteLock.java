@@ -36,7 +36,7 @@ import java.util.Deque;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.storage.lock.LockTable.LockType;
+import org.exist.storage.lock.Lock.LockType;
 import org.exist.util.LockException;
 
 /**
