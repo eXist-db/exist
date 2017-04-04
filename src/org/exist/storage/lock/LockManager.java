@@ -29,7 +29,6 @@ import org.exist.util.WeakLazyStripes;
 import org.exist.xmldb.XmldbURI;
 
 import java.util.Objects;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -359,47 +358,5 @@ public class LockManager {
             subCollectionWriteLock.unlock();
             lockTable.released(groupId, collectionPathStr, LockType.COLLECTION, Lock.LockMode.WRITE_LOCK);
         });
-    }
-
-
-    //TODO(AR) at the moment we always exclusively lock the CollectionCache, this can be relaxed once hierarchical Collection locking is in place
-    //TODO(AR) once hierarchical locking is in place we don't need to lock the collection cache explicitly i.e. externally, it can become a ConcurrentHashMap or Caffeine
-    private final ReentrantLock collectionCacheLock = new ReentrantLock();
-    private static final String COLLECTION_CACHE_LOCK_NAME = "CollectionCache";
-
-    public ManagedLock acquireCollectionCacheLock() throws LockException {
-        final long groupId = System.nanoTime();
-        try {
-            lockTable.attempt(groupId, COLLECTION_CACHE_LOCK_NAME, LockType.COLLECTION_CACHE, Lock.LockMode.WRITE_LOCK);
-
-            collectionCacheLock.lockInterruptibly();
-
-            lockTable.acquired(groupId, COLLECTION_CACHE_LOCK_NAME, LockType.COLLECTION_CACHE, Lock.LockMode.WRITE_LOCK);
-
-            return new ManagedLock<>(collectionCacheLock, () -> {
-                collectionCacheLock.unlock();
-                lockTable.released(groupId, COLLECTION_CACHE_LOCK_NAME, LockType.COLLECTION_CACHE, Lock.LockMode.WRITE_LOCK);
-            });
-
-        } catch(final InterruptedException e) {
-            lockTable.attemptFailed(groupId, COLLECTION_CACHE_LOCK_NAME, LockType.COLLECTION_CACHE, Lock.LockMode.WRITE_LOCK);
-            throw new LockException("Unable to acquire CollectionCache LOCK", e);
-        }
-    }
-
-    public ManagedLock tryCollectionCacheLock() throws LockException {
-        final long groupId = System.nanoTime();
-        lockTable.attempt(groupId, COLLECTION_CACHE_LOCK_NAME, LockType.COLLECTION_CACHE, Lock.LockMode.WRITE_LOCK);
-        final boolean hasLock = collectionCacheLock.tryLock();
-        if(!hasLock) {
-            lockTable.acquired(groupId, COLLECTION_CACHE_LOCK_NAME, LockType.COLLECTION_CACHE, Lock.LockMode.WRITE_LOCK);
-            return new ManagedLock<>(collectionCacheLock, () -> {
-                collectionCacheLock.unlock();
-                lockTable.released(groupId, COLLECTION_CACHE_LOCK_NAME, LockType.COLLECTION_CACHE, Lock.LockMode.WRITE_LOCK);
-            });
-        } else {
-            lockTable.attemptFailed(groupId, COLLECTION_CACHE_LOCK_NAME, LockType.COLLECTION_CACHE, Lock.LockMode.WRITE_LOCK);
-            throw new LockException("Unable to acquire CollectionCache LOCK");
-        }
     }
 }

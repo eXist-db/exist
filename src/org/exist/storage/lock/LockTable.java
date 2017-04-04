@@ -626,9 +626,7 @@ public class LockTable {
         @Deprecated LEGACY_DOCUMENT,
 
         COLLECTION,
-        DOCUMENT,
-
-        COLLECTION_CACHE
+        DOCUMENT
     }
 
     /** debugging tools below **/
