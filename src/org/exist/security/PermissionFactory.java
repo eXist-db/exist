@@ -162,7 +162,7 @@ public class PermissionFactory {
                 transact.commit(transaction);
                 broker.flush();
             }
-        } catch(final XPathException | PermissionDeniedException | IOException | TriggerException | TransactionException | LockException e) {
+        } catch(final XPathException | PermissionDeniedException | IOException | TransactionException | LockException e) {
             throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getCurrentSubject().getName() + "' on '" + pathUri.toString() + "': " + e.getMessage(), e);
         }
     }

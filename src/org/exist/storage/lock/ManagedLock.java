@@ -56,6 +56,22 @@ public class ManagedLock<T> implements AutoCloseable {
     }
 
     /**
+     * Acquires and manages a lock with a specific mode
+     *
+     * @param lock The lock to call {@link Lock#acquire(Lock.LockMode)} on
+     * @param mode the mode of the lock
+     * @param type the type of the lock
+     *
+     * @return A managed lock which will be released with {@link #close()}
+     */
+    public static ManagedLock<Lock> acquire(final Lock lock, final Lock.LockMode mode, final Lock.LockType type) throws LockException {
+        if(!lock.acquire(mode)) {
+            throw new LockException("Unable to acquire lock: " + type);
+        }
+        return new ManagedLock<>(lock, () -> lock.release(mode));
+    }
+
+    /**
      * Attempts to acquire and manage a lock with a specific mode
      *
      * @param lock The lock to call {@link Lock#attempt(Lock.LockMode)} on

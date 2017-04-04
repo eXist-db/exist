@@ -513,19 +513,22 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     public abstract void repairPrimary();
 
     /**
-     * Saves the specified collection to storage. Collections are usually cached
-     * in memory. If a collection is modified, this method needs to be called to
-     * make the changes persistent. Note: appending a new document to a
-     * collection does not require a save. 
-     * 
-     * @param transaction 
-     * @param collection Collection to store
-     * @throws org.exist.security.PermissionDeniedException 
-     * @throws IOException 
-     * @throws TriggerException 
+     * Saves the specified Collection to disk. Collections are usually cached in
+     * memory. If a Collection is modified, this method needs to be called to make
+     * the changes persistent.
+     *
+     * Note: adding or removing a document to a Collection does not require a save. However,
+     * modifying a Collection's metadata or adding or removing a sub-Collection does require
+     * a save.
+     *
+     * NOTE: It is assumed that the caller holds a {@link LockMode#WRITE_LOCK} on the Collection
+     *
+     * @param transaction The current transaction
+     * @param collection The Collection to persist
+     *
+     * @throws IOException If an error occurs whilst writing the Collection to disk
      */
-    public abstract void saveCollection(Txn transaction, Collection collection)
-        throws PermissionDeniedException, IOException, TriggerException;
+    public abstract void saveCollection(Txn transaction, Collection collection) throws IOException;
 
     public void closeDocument() {
         //Nothing to do
