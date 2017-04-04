@@ -857,9 +857,13 @@ public class NativeBroker extends DBBroker {
     /**
      * Loads a Collection from disk
      *
+     * @param collectionUri The URI of the Collection to load
+     * @param address The virtual address in the storage of the Collection if known, else {@link BFile#UNKNOWN_ADDRESS}
+     *
      * @return The Collection object loaded from disk, or null if the record does not exist on disk
      */
-    private @Nullable Collection loadCollection(final XmldbURI collectionUri, final long address) throws PermissionDeniedException, LockException, IOException {
+    private @Nullable Collection loadCollection(final XmldbURI collectionUri, final long address)
+            throws PermissionDeniedException, LockException, IOException {
         try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK)) {
             VariableByteInput is;
             if (address == BFile.UNKNOWN_ADDRESS) {
@@ -884,6 +888,94 @@ public class NativeBroker extends DBBroker {
     @Override
     public Collection openCollection(final XmldbURI uri, final LockMode lockMode) throws PermissionDeniedException {
         return openCollection(uri, BFile.UNKNOWN_ADDRESS, lockMode);
+    }
+
+    /**
+     * Open a Collection for reading or writing.
+     *
+     * The Collection is identified by its absolute path, e.g. /db/shakespeare.
+     * It will be loaded and locked according to the lockMode argument.
+     *
+     * The caller should take care to release the Collection lock properly by
+     * calling {@link Collection#close()}
+     *
+     * @param path The Collection's path
+     * @param address
+     * @param lockMode the mode for locking the Collection, as specified in {@link LockMode}
+     *
+     * @return the Collection, or null if no Collection matches the path
+     */
+    private @Nullable Collection openCollection(final XmldbURI path, final long address, final LockMode lockMode)
+            throws PermissionDeniedException {
+        final XmldbURI collectionUri = prepend(path.normalizeCollectionPath());
+
+        final ManagedCollectionLock collectionLock;
+        final Runnable unlockFn;    // we unlock on error, or if there is no Collection
+        try {
+            switch (lockMode) {
+                case WRITE_LOCK:
+                    collectionLock = writeLockCollection(null, collectionUri, false);
+                    unlockFn = collectionLock::close;
+                    break;
+
+                case READ_LOCK:
+                    collectionLock = readLockCollection(collectionUri);
+                    unlockFn = collectionLock::close;
+                    break;
+
+                case NO_LOCK:
+                default:
+                    collectionLock = ManagedCollectionLock.notLocked(collectionUri);
+                    unlockFn = () -> {};
+            }
+        } catch(final LockException e) {
+            LOG.error("Failed to acquire lock on Collection: {}", collectionUri);
+            return null;
+        }
+
+        // 1) optimize for reading from the Collection from the cache
+        final CollectionCache collectionsCache = pool.getCollectionsCache();
+        final Collection collection = collectionsCache.getIfPresent(collectionUri);
+        if (collection != null) {
+
+            // sanity check
+            if(!collection.getURI().equalsInternal(collectionUri)) {
+                LOG.error("openCollection: The Collection received from the cache: {} is not the requested: {}", collection.getURI(), collectionUri);
+                unlockFn.run();
+                throw new IllegalStateException();
+            }
+
+            // does the user have permission to access the Collection
+            if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE)) {
+                unlockFn.run();
+                throw new PermissionDeniedException("Permission denied to open collection: " + collection.getURI().toString() + " by " + getCurrentSubject().getName());
+            }
+
+            return new LockedCollection(collectionLock, collection);
+        }
+
+        // 2) if not in the cache, load from disk
+        final Collection loadedCollection;
+        try {
+            loadedCollection = loadCollection(collectionUri, address);
+        } catch(final IOException e) {
+            LOG.error(e.getMessage(), e);
+            unlockFn.run();
+            return null;
+        } catch(final LockException e) {
+            LOG.error("Failed to acquire lock on: {}", FileUtils.fileName(collectionsDb.getFile()));
+            unlockFn.run();
+            return null;
+        }
+
+        // if we loaded a Collection add it to the cache (if it isn't already there)
+        if(loadedCollection != null) {
+            final Collection cachedCollection = collectionsCache.getOrCreate(collectionUri, uri -> loadedCollection);
+            return new LockedCollection(collectionLock, cachedCollection);
+        } else {
+            unlockFn.run();
+            return null;
+        }
     }
 
 
@@ -961,95 +1053,6 @@ public class NativeBroker extends DBBroker {
             }
 
             entry.read(collection);
-        }
-    }
-
-    /**
-     * Get collection object. If the collection does not exist, null is
-     * returned.
-     *
-     * @param path collection URI
-     * @return The Collection or null if the Collection does not exist
-     */
-    private @Nullable Collection openCollection(final XmldbURI path, final long address, final LockMode lockMode) throws PermissionDeniedException {
-        final XmldbURI collectionUri = prepend(path.normalizeCollectionPath());
-
-        final ManagedCollectionLock collectionLock;
-        final Runnable unlockFn;    // we unlock on error, or if there is no Collection
-        try {
-            switch (lockMode) {
-                case WRITE_LOCK:
-                    collectionLock = writeLockCollection(null, collectionUri, false);
-                    unlockFn = collectionLock::close;
-                    break;
-
-                case READ_LOCK:
-                    collectionLock = readLockCollection(collectionUri);
-                    unlockFn = collectionLock::close;
-                    break;
-
-                case NO_LOCK:
-                default:
-                    collectionLock = ManagedCollectionLock.notLocked(collectionUri);
-                    unlockFn = () -> {};
-            }
-        } catch(final LockException e) {
-            LOG.error("Failed to acquire lock on Collection: {}", collectionUri);
-            return null;
-        }
-
-        // 1) optimize for reading from the Collection from the cache
-        final CollectionCache collectionsCache = pool.getCollectionsCache();
-        final Collection collection = collectionsCache.getIfPresent(collectionUri);
-        if (collection != null) {
-
-            if(!collection.getURI().equalsInternal(collectionUri)) {
-                LOG.error("openCollection: The Collection received from the cache: {} is not the requested: {}", collection.getURI(), collectionUri);
-                unlockFn.run();
-                throw new IllegalStateException();
-            }
-
-            if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE)) {
-                unlockFn.run();
-                throw new PermissionDeniedException("Permission denied to open collection: " + collection.getURI().toString() + " by " + getCurrentSubject().getName());
-            }
-
-            return new LockedCollection(collectionLock, collection);
-        }
-
-        // 2) if not in the cache, read from disk
-        final Collection loadedCollection;
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK)) {
-            VariableByteInput is;
-            if (address == BFile.UNKNOWN_ADDRESS) {
-                final Value key = new CollectionStore.CollectionKey(collectionUri.toString());
-                is = collectionsDb.getAsStream(key);
-            } else {
-                is = collectionsDb.getAsStream(address);
-            }
-
-            if (is == null) {
-                loadedCollection = null;
-            } else {
-                loadedCollection = MutableCollection.load(this, collectionUri, is);
-            }
-        } catch(final IOException e) {
-            LOG.error(e.getMessage(), e);
-            unlockFn.run();
-            return null;
-        } catch(final LockException e) {
-            LOG.error("Failed to acquire lock on: {}", FileUtils.fileName(collectionsDb.getFile()));
-            unlockFn.run();
-            return null;
-        }
-
-        // if we loaded a Collection add it to the cache (if it isn't already there)
-        if(loadedCollection != null) {
-            final Collection cachedCollection = collectionsCache.getOrCreate(collectionUri, uri -> loadedCollection);
-            return new LockedCollection(collectionLock, cachedCollection);
-        } else {
-            unlockFn.run();
-            return null;
         }
     }
 

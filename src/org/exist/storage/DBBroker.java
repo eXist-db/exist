@@ -54,6 +54,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Document;
 
+import javax.annotation.Nullable;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -267,79 +268,40 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     public abstract void getCollectionsFailsafe(BTreeCallback callback) throws TerminatedException;
 
     /**
-     * Returns the database collection identified by the specified path. The
-     * path should be absolute, e.g. /db/shakespeare.
+     * Gets a database Collection.
+     *
+     * The Collection is identified by its absolute path, e.g. /db/shakespeare.
+     * The returned Collection will NOT HAVE a lock.
+     *
+     * The caller should take care to release any associated resource by
+     * calling {@link Collection#close()}
+     *
+     * In general, accessing Collections without a lock provides no consistency guarantees.
+     * This function should only be used where estimated reads are needed, no writes should
+     * be performed on a Collection retrieved by this function.
+     * If you are uncertain whether this function is safe for you to use, you should always
+     * use {@link #openCollection(XmldbURI, LockMode)} instead.
      * 
-     * @return collection or null if no collection matches the path
-     * 
-     * deprecated Use XmldbURI instead!
-     * 
-     * public abstract Collection getCollection(String name);
+     * @return the Collection, or null if no Collection matches the path
      */
+    @Nullable public abstract Collection getCollection(XmldbURI uri) throws PermissionDeniedException;
 
     /**
-     * Returns the database collection identified by the specified path. The
-     * path should be absolute, e.g. /db/shakespeare.
+     * Open a Collection for reading or writing.
+     *
+     * The Collection is identified by its absolute path, e.g. /db/shakespeare.
+     * It will be loaded and locked according to the lockMode argument.
      * 
-     * @return collection or null if no collection matches the path
+     * The caller should take care to release the Collection lock properly by
+     * calling {@link Collection#close()}
+     * 
+     * @param uri The Collection's path
+     * @param lockMode the mode for locking the Collection, as specified in {@link LockMode}
+     *
+     * @return the Collection, or null if no Collection matches the path
      */
-    public abstract Collection getCollection(XmldbURI uri) throws PermissionDeniedException;
-
-    /**
-     * Returns the database collection identified by the specified path. The
-     * storage address is used to locate the collection without looking up the
-     * path in the btree.
-     * 
-     * @return deprecated Use XmldbURI instead!
-     * 
-     * public abstract Collection getCollection(String name, long address);
-     */
-
-    /**
-     * Returns the database collection identified by the specified path. The
-     * storage address is used to locate the collection without looking up the
-     * path in the btree.
-     * 
-     * @return Database collection
-     * 
-     * public abstract Collection getCollection(XmldbURI uri, long address);
-     */	
-
-    /**
-     * Open a collection for reading or writing. The collection is identified by
-     * its absolute path, e.g. /db/shakespeare. It will be loaded and locked
-     * according to the lockMode argument.
-     * 
-     * The caller should take care to release the collection lock properly.
-     * 
-     * @param name
-     *            the collection path
-     * @param lockMode
-     *            one of the modes specified in class
-     *            {@link org.exist.storage.lock.Lock}
-     * @return collection or null if no collection matches the path
-     * 
-     * deprecated Use XmldbURI instead!
-     * 
-     * public abstract Collection openCollection(String name, LockMode lockMode);
-     */
-
-    /**
-     * Open a collection for reading or writing. The collection is identified by
-     * its absolute path, e.g. /db/shakespeare. It will be loaded and locked
-     * according to the lockMode argument.
-     * 
-     * The caller should take care to release the collection lock properly.
-     * 
-     * @param uri
-     *            The collection path
-     * @param lockMode
-     *            one of the modes specified in class
-     *            {@link org.exist.storage.lock.Lock}
-     * @return collection or null if no collection matches the path
-     * 
-     */
-    public abstract Collection openCollection(XmldbURI uri, LockMode lockMode) throws PermissionDeniedException;
+    @Nullable public abstract Collection openCollection(XmldbURI uri, LockMode lockMode)
+            throws PermissionDeniedException;
 
     public abstract List<String> findCollectionsMatching(String regexp);
     
