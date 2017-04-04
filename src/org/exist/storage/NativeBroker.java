@@ -1582,19 +1582,18 @@ public class NativeBroker extends DBBroker {
                     if(manager != null) {
                         manager.invalidate(collectionUri, getBrokerPool());
                     }
-
-                    //TODO(AR) invalidating the cache entry and removing from collectionsDb must happen under the same lock... whichever that is
-                    // invalidate the cache entry
-                    final CollectionCache collectionsCache = pool.getCollectionsCache();
-                    collectionsCache.invalidate(collection.getURI());
                 }
+
+                // invalidate the cache entry
+                final CollectionCache collectionsCache = pool.getCollectionsCache();
+                collectionsCache.invalidate(collection.getURI());
             } else {
                 // if this is the root collection we just have to save
                 // it to persist the removal of any subCollections to collections.dbx
                 saveCollection(transaction, collection);
             }
 
-            //TODO(AR) this can be executed asynchronously as a task, we don't need to know when it completes
+            //TODO(AR) this could possibly be executed asynchronously as a task, we don't need to know when it completes (this is because access to documents is through a Collection, and the Collection was removed above), however we cannot recycle the collectionId until all docs are gone
             // 6) unlink all documents from the Collection
             try (final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
                 final Value docKey = new CollectionStore.DocumentKey(collection.getId());

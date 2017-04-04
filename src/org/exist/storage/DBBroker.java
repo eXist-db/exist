@@ -448,12 +448,16 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     public abstract IStoredNode objectWith(NodeProxy p);
 
     /**
-     * Remove the collection and all its subcollections from the database.
-     * 
-     * @throws PermissionDeniedException 
-     * @throws IOException 
-     * @throws TriggerException 
-     * 
+     * Remove the Collection and all of its sub-Collections from the database.
+     *
+     * @param transaction The current transaction
+     * @param collection The Collection to remove from the database
+     *
+     * @return true if the Collection was removed, false otherwise
+     *
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
+     * @throws IOException If an error occurs whilst removing the Collection from disk
+     * @throws TriggerException If a CollectionTrigger throws an exception
      */
     public abstract boolean removeCollection(Txn transaction,
         Collection collection) throws PermissionDeniedException, IOException, TriggerException;
