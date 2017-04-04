@@ -829,7 +829,7 @@ public class Resource extends File {
 
                     return list.toArray(new String[list.size()]);
                 }
-            } catch (final LockException | PermissionDeniedException | EXistException e) {
+            } catch (final LockException | PermissionDeniedException | IOException | EXistException e) {
                 LOG.error(e);
                 return new String[0];
             }

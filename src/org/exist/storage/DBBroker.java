@@ -883,7 +883,20 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     public abstract void backupToArchive(RawDataBackup backup) throws IOException, EXistException;
 
-    public abstract void readCollectionEntry(SubCollectionEntry entry);
+    /**
+     * Reads and populates the metadata for a sub-Collection
+     *
+     * The entry to read is determined by {@link SubCollectionEntry#uri}
+     *
+     * NOTE: It is assumed that the caller holds a {@link LockMode#READ_LOCK} (or better)
+     * on the Collection indicated in `entry`.
+     *
+     * @param entry The sub-Collection entry to populate
+     *
+     * @throws IOException If an error occurs whilst reading (get) or writing (create) a Collection to disk
+     * @throws LockException if we are unable to obtain a lock on the collections.dbx
+     */
+    public abstract void readCollectionEntry(SubCollectionEntry entry) throws IOException, LockException;
 
     /**
      * Determines if Collection or Document attributes be preserved on copy,

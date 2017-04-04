@@ -1038,7 +1038,7 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public void readCollectionEntry(final SubCollectionEntry entry) {
+    public void readCollectionEntry(final SubCollectionEntry entry) throws IOException, LockException {
         final XmldbURI uri = prepend(entry.getUri().toCollectionPathURI());
 
         final CollectionCache collectionsCache = pool.getCollectionsCache();
@@ -1049,25 +1049,16 @@ public class NativeBroker extends DBBroker {
                 final Value key = new CollectionStore.CollectionKey(uri.toString());
                 final VariableByteInput is = collectionsDb.getAsStream(key);
                 if(is == null) {
-                    LOG.error("Could not read collection entry for: " + uri);
-                    return;
+                    throw new IOException("Could not find collection entry for: " + uri);
                 }
 
                 //read the entry details
                 entry.read(is);
-
-            } catch(final UnsupportedEncodingException e) {
-                LOG.error("Unable to encode '" + uri + "' in UTF-8");
-            } catch(final LockException e) {
-                LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
-            } catch(final IOException e) {
-                LOG.error(e.getMessage(), e);
             }
         } else {
 
             if(!collection.getURI().equalsInternal(uri)) {
-                LOG.error("readCollectionEntry: The Collection received from the cache: {} is not the requested: {}", collection.getURI(), uri);
-                throw new IllegalStateException();
+                throw new IOException(String.format("readCollectionEntry: The Collection received from the cache: %s is not the requested: %s", collection.getURI(), uri));
             }
 
             entry.read(collection);

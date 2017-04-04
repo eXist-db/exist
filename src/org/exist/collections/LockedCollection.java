@@ -252,17 +252,17 @@ public class LockedCollection implements Collection {
     }
 
     @Override
-    public List<CollectionEntry> getEntries(final DBBroker broker) throws PermissionDeniedException, LockException {
+    public List<CollectionEntry> getEntries(final DBBroker broker) throws PermissionDeniedException, LockException, IOException {
         return collection.getEntries(broker);
     }
 
     @Override
-    public CollectionEntry getChildCollectionEntry(final DBBroker broker, final String name) throws PermissionDeniedException {
+    public CollectionEntry getChildCollectionEntry(final DBBroker broker, final String name) throws PermissionDeniedException, LockException, IOException {
         return collection.getChildCollectionEntry(broker, name);
     }
 
     @Override
-    public CollectionEntry getResourceEntry(final DBBroker broker, final String name) throws PermissionDeniedException, LockException {
+    public CollectionEntry getResourceEntry(final DBBroker broker, final String name) throws PermissionDeniedException, LockException, IOException {
         return collection.getResourceEntry(broker, name);
     }
 
