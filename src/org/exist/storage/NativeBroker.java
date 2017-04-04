@@ -882,7 +882,7 @@ public class NativeBroker extends DBBroker {
      */
     private @Nullable Collection loadCollection(final XmldbURI collectionUri, final long address)
             throws PermissionDeniedException, LockException, IOException {
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK)) {
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK, LockType.COLLECTIONS_DBX)) {
             VariableByteInput is;
             if (address == BFile.UNKNOWN_ADDRESS) {
                 final Value key = new CollectionStore.CollectionKey(collectionUri.toString());
@@ -1005,7 +1005,7 @@ public class NativeBroker extends DBBroker {
         final Pattern p = Pattern.compile(regexp);
         final Matcher m = p.matcher("");
 
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK)) {
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK, LockType.COLLECTIONS_DBX)) {
 
             //TODO write a regexp lookup for key data in BTree.query
             //final IndexQuery idxQuery = new IndexQuery(IndexQuery.REGEXP, regexp);
@@ -1044,7 +1044,7 @@ public class NativeBroker extends DBBroker {
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         final Collection collection = collectionsCache.getIfPresent(uri);
         if(collection == null) {
-            try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK)) {
+            try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK, LockType.COLLECTIONS_DBX)) {
 
                 final Value key = new CollectionStore.CollectionKey(uri.toString());
                 final VariableByteInput is = collectionsDb.getAsStream(key);
@@ -1164,7 +1164,7 @@ public class NativeBroker extends DBBroker {
 
         try {
             pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_COPY_COLLECTION, collection.getURI());
-            try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
+            try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
 
                 //recheck here because now under collectionsDbLock
                 if (isSubCollection(collection, destination)) {
@@ -1483,7 +1483,7 @@ public class NativeBroker extends DBBroker {
                 parent.removeCollection(this, uri.lastSegment());
             }
 
-            try (final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
+            try (final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
                 final CollectionCache collectionsCache = pool.getCollectionsCache();
                 collectionsCache.invalidate(collection.getURI());
                 final Value key = new CollectionStore.CollectionKey(uri.toString());
@@ -1572,7 +1572,7 @@ public class NativeBroker extends DBBroker {
 
             // 5) remove Collection from collections.dbx
             if(parentCollection != null) {
-                try (final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
+                try (final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
                     final Value key = new CollectionStore.CollectionKey(collectionUri.getRawCollectionPath());
                     collectionsDb.remove(transaction, key);
 
@@ -1596,7 +1596,7 @@ public class NativeBroker extends DBBroker {
 
             //TODO(AR) this can be executed asynchronously as a task, we don't need to know when it completes
             // 6) unlink all documents from the Collection
-            try (final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
+            try (final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
                 final Value docKey = new CollectionStore.DocumentKey(collection.getId());
                 final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, docKey);
                 collectionsDb.removeAll(transaction, query);
@@ -2061,7 +2061,7 @@ public class NativeBroker extends DBBroker {
     @Override
     public DocumentImpl getResourceById(final int collectionId, final byte resourceType, final int documentId) throws PermissionDeniedException {
         XmldbURI uri = null;
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK)) {
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK, LockType.COLLECTIONS_DBX)) {
             //final VariableByteOutputStream os = new VariableByteOutputStream(8);
             //doc.write(os);
             //Value key = new CollectionStore.DocumentKey(doc.getCollection().getId(), doc.getResourceType(), doc.getDocId());
@@ -2122,7 +2122,7 @@ public class NativeBroker extends DBBroker {
     @Override
     public void storeXMLResource(final Txn transaction, final DocumentImpl doc) {
         try(final VariableByteOutputStream os = new VariableByteOutputStream(8);
-				final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
+				final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
             doc.write(os);
             final Value key = new CollectionStore.DocumentKey(doc.getCollection().getId(), doc.getResourceType(), doc.getDocId());
             collectionsDb.put(transaction, key, os.data(), true);
@@ -2352,7 +2352,7 @@ public class NativeBroker extends DBBroker {
     //TODO : consider a better cooperation with Collection -pb
     @Override
     public void getCollectionResources(final Collection.InternalAccess collectionInternalAccess) {
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK)) {
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK, LockType.COLLECTIONS_DBX)) {
             final Value key = new CollectionStore.DocumentKey(collectionInternalAccess.getId());
             final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
 
@@ -2366,7 +2366,7 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public void getResourcesFailsafe(final BTreeCallback callback, final boolean fullScan) throws TerminatedException {
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK)) {
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK, LockType.COLLECTIONS_DBX)) {
             final Value key = new CollectionStore.DocumentKey();
             final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
             if(fullScan) {
@@ -2383,7 +2383,7 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public void getCollectionsFailsafe(final BTreeCallback callback) throws TerminatedException {
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK)) {
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK, LockType.COLLECTIONS_DBX)) {
             final Value key = new CollectionStore.CollectionKey();
             final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
             collectionsDb.query(query, callback);
@@ -2466,7 +2466,7 @@ public class NativeBroker extends DBBroker {
             newName = doc.getFileURI();
         }
 
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
             final DocumentImpl oldDoc = destination.getDocument(this, newName);
 
             if(!destination.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE)) {
@@ -2889,7 +2889,7 @@ public class NativeBroker extends DBBroker {
      */
     private void removeResourceMetadata(final Txn transaction, final DocumentImpl document) {
         // remove document metadata
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Removing resource metadata for " + document.getDocId());
             }
@@ -2920,7 +2920,7 @@ public class NativeBroker extends DBBroker {
             return nextDocId;
         }
         nextDocId = 1;
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
             final Value key = new CollectionStore.CollectionKey(CollectionStore.NEXT_DOC_ID_KEY);
             final Value data = collectionsDb.get(key);
             if(data != null) {
@@ -3722,7 +3722,7 @@ public class NativeBroker extends DBBroker {
                 }
             }.run();
             if(syncEvent == Sync.MAJOR) {
-                try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
+                try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
                     collectionsDb.flush();
                 } catch(final LockException e) {
                     LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
