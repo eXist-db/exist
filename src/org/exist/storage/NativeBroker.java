@@ -684,8 +684,24 @@ public class NativeBroker extends DBBroker {
     }
 
     /**
+     * Gets the database Collection identified by the specified path.
+     * If the Collection does not yet exist, it is created - including all ancestors.
+     * The Collection is identified by its absolute path, e.g. /db/shakespeare.
+     * The returned Collection will NOT HAVE a lock.
+     *
+     * The caller should take care to release any associated resource by
+     * calling {@link Collection#close()}
+     *
+     * @param transaction The current transaction
+     * @param path The Collection's URI
+     *
      * @return A tuple whose first boolean value is set to true if the
-     * collection was created, or false if the collection already existed
+     * collection was created, or false if the collection already existed. The
+     * second value is the existing or created Collection
+     *
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
+     * @throws IOException If an error occurs whilst reading (get) or writing (create) a Collection to disk
+     * @throws TriggerException If a CollectionTrigger throws an exception
      */
     private Tuple2<Boolean, Collection> getOrCreateCollectionExplicit(final Txn transaction, final XmldbURI path, final Optional<Tuple2<Permission, Long>> creationAttributes) throws PermissionDeniedException, IOException, TriggerException {
         final XmldbURI collectionUri = prepend(path.normalizeCollectionPath());

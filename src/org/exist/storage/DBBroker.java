@@ -304,31 +304,24 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
             throws PermissionDeniedException;
 
     public abstract List<String> findCollectionsMatching(String regexp);
-    
-    /**
-     * Returns the database collection identified by the specified path. If the
-     * collection does not yet exist, it is created - including all ancestors.
-     * The path should be absolute, e.g. /db/shakespeare.
-     * 
-     * @return collection or null if no collection matches the path
-     * 
-     * deprecated Use XmldbURI instead!
-     * 
-     * public Collection getOrCreateCollection(Txn transaction, String name)
-     * throws PermissionDeniedException { return null; }
-     */
 
     /**
-     * Returns the database collection identified by the specified path. If the
-     * collection does not yet exist, it is created - including all ancestors.
-     * The path should be absolute, e.g. /db/shakespeare.
+     * Gets the database Collection identified by the specified path.
+     * If the Collection does not yet exist, it is created - including all ancestors.
+     * The Collection is identified by its absolute path, e.g. /db/shakespeare.
+     * The returned Collection will NOT HAVE a lock.
+     *
+     * The caller should take care to release any associated resource by
+     * calling {@link Collection#close()}
      * 
-     * @param transaction The transaction, which registers the acquired write locks. The locks should be released on commit/abort.
-     * @param uri The collection's URI
-     * @return The collection or <code>null</code> if no collection matches the path
-     * @throws PermissionDeniedException
-     * @throws IOException
-     * @throws TriggerException 
+     * @param transaction The current transaction
+     * @param uri The Collection's URI
+     *
+     * @return The existing or created Collection
+     *
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
+     * @throws IOException If an error occurs whilst reading (get) or writing (create) a Collection to disk
+     * @throws TriggerException If a CollectionTrigger throws an exception
      */
     public abstract Collection getOrCreateCollection(Txn transaction, XmldbURI uri)
         throws PermissionDeniedException, IOException, TriggerException;
