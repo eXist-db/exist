@@ -141,6 +141,7 @@ public class IndexStatistics extends AbstractIndex implements RawBackupSupport {
 
 	@Override
 	public void backupToArchive(RawDataBackup backup) throws IOException {
+
         try(final OutputStream os = backup.newEntry(FileUtils.fileName(dataFile))) {
             Files.copy(dataFile, os);
         } finally {

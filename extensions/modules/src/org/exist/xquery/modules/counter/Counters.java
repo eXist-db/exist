@@ -194,7 +194,10 @@ public class Counters implements RawBackupSupport {
             return;
         }
 
-        try(final OutputStream os = backup.newEntry(FileUtils.fileName(store))) {
+        // do not use try-with-resources here, closing the OutputStream will close the entire backup
+        //try(final OutputStream os = backup.newEntry(FileUtils.fileName(store))) {
+        try {
+            final OutputStream os = backup.newEntry(FileUtils.fileName(store));
             Files.copy(store, os);
         } finally {
             backup.closeEntry();
