@@ -34,6 +34,8 @@ import org.junit.runners.Suite;
         CopyResourceTest.class,
         MoveResourceTest.class,
         CopyCollectionTest.class,
+        MoveCollectionTest.class,
+        MoveOverwriteCollectionTest.class,
         RecoverBinaryTest.class,
         RecoverBinaryTest2.class,
         RecoveryTest.class,

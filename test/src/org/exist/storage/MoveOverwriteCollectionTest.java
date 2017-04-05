@@ -19,9 +19,7 @@
  */
 package org.exist.storage;
 
-import org.exist.Database;
 import org.exist.EXistException;
-import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
@@ -30,12 +28,11 @@ import org.exist.dom.persistent.*;
 import org.exist.indexing.StructuralIndex;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.NodeSelector;
-import org.junit.After;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -48,6 +45,9 @@ import static org.junit.Assert.assertTrue;
 import static org.exist.storage.ElementValue.ELEMENT;
 
 public class MoveOverwriteCollectionTest {
+
+    @ClassRule
+    public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true);
 
     private final static String XML1 =
             "<?xml version=\"1.0\"?>" +
@@ -87,9 +87,8 @@ public class MoveOverwriteCollectionTest {
      */
     @Test
     public void moveAndOverwriteCollection() throws Exception  {
-        final Database db = startDB();
-
-        try (final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             store(broker);
 
             final DefaultDocumentSet docs = new DefaultDocumentSet();
@@ -155,17 +154,5 @@ public class MoveOverwriteCollectionTest {
 
         nodes = index.findElementsByTagName(ELEMENT, docs, new QName("test3"), selector);
         assertFalse(nodes.isEmpty());
-    }
-
-    protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
-        Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        return BrokerPool.getInstance();
-    }
-
-    @After
-    public void tearDown() {
-        TestUtils.cleanupDB();
-        BrokerPool.stopAll(false);
     }
 }
