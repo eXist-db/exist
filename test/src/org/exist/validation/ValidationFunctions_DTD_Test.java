@@ -249,7 +249,6 @@ public class ValidationFunctions_DTD_Test {
             final String prevValidationMode = (String)config.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE);
             config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
 
-
             final Path dtd = TestUtils.resolveSample("validation/dtd");
 
             final Collection dtdCol = broker.getCollection(VALIDATION_DTD_COLLECTION_URI);

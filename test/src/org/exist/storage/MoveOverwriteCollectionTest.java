@@ -87,18 +87,24 @@ public class MoveOverwriteCollectionTest {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Tuple3<Collection, Collection, Collection> collections = store(broker);
+            try {
 
-            final DefaultDocumentSet docs = new DefaultDocumentSet();
-            docs.add(collections._1.getDocument(broker, doc1Name));
-            docs.add(collections._2.getDocument(broker, doc2Name));
-            docs.add(collections._3.getDocument(broker, doc3Name));
+                final DefaultDocumentSet docs = new DefaultDocumentSet();
+                docs.add(collections._1.getDocument(broker, doc1Name));
+                docs.add(collections._2.getDocument(broker, doc2Name));
+                docs.add(collections._3.getDocument(broker, doc3Name));
 
-            moveToRoot(broker, collections._3);
+                moveToRoot(broker, collections._3);
 
-            final Collection col = broker.getCollection(TEST_COLLECTION_URI);
-            docs.add(col.getDocument(broker, doc3Name));
+                final Collection col = broker.getCollection(TEST_COLLECTION_URI);
+                docs.add(col.getDocument(broker, doc3Name));
 
-            checkIndex(broker, docs);
+                checkIndex(broker, docs);
+            } finally {
+                collections._3.close();
+                collections._2.close();
+                collections._1.close();
+            }
         }
     }
 
@@ -131,8 +137,8 @@ public class MoveOverwriteCollectionTest {
     }
 
     private void moveToRoot(final DBBroker broker, final Collection sourceCollection) throws Exception {
-        try(final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
-            final Collection root = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
+        try(final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction();
+                final Collection root = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI)) {
             broker.moveCollection(transaction, sourceCollection, root, XmldbURI.create("test"));
             transaction.commit();
         }
