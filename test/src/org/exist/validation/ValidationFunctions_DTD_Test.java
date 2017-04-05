@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import org.exist.EXistException;
+import org.exist.TestUtils;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistEmbeddedServer;
@@ -231,7 +232,7 @@ public class ValidationFunctions_DTD_Test {
             /** create necessary documents  */
 
             //hamlet
-            String sb = new String(TestTools.getHamlet());
+            String sb = new String(TestUtils.readHamletSampleXml());
             sb = sb.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
                 "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"play.dtd\">" );
 
@@ -242,13 +243,13 @@ public class ValidationFunctions_DTD_Test {
             config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
 
             org.exist.collections.Collection dtdCol = broker.getCollection(XmldbURI.create(VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_DTD_COLLECTION));
-            storeTextDocument(broker, txn, dtdCol, "hamlet.dtd", new String(TestTools.loadSample("validation/dtd/hamlet.dtd")));
-            storeDocument(broker, txn, dtdCol, "catalog.xml", new String(TestTools.loadSample("validation/dtd/catalog.xml")));
+            storeTextDocument(broker, txn, dtdCol, "hamlet.dtd", new String(TestUtils.readSample("validation/dtd/hamlet.dtd")));
+            storeDocument(broker, txn, dtdCol, "catalog.xml", new String(TestUtils.readSample("validation/dtd/catalog.xml")));
             broker.saveCollection(txn, dtdCol);
 
             org.exist.collections.Collection homeCol = broker.getCollection(XmldbURI.create(VALIDATION_HOME_COLLECTION_URI));
-            storeDocument(broker, txn, homeCol, "hamlet_valid.xml", new String(TestTools.loadSample("validation/dtd/hamlet_valid.xml")));
-            storeDocument(broker, txn, homeCol, "hamlet_invalid.xml", new String(TestTools.loadSample("validation/dtd/hamlet_invalid.xml")));
+            storeDocument(broker, txn, homeCol, "hamlet_valid.xml", new String(TestUtils.readSample("validation/dtd/hamlet_valid.xml")));
+            storeDocument(broker, txn, homeCol, "hamlet_invalid.xml", new String(TestUtils.readSample("validation/dtd/hamlet_invalid.xml")));
             broker.saveCollection(txn, homeCol);
 
             config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "yes");

@@ -23,7 +23,6 @@
 package org.exist.validation;
 
 import java.io.ByteArrayInputStream;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,10 +30,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
-
-import org.exist.util.ConfigurationHelper;
-import org.exist.util.FileUtils;
 
 /**
  *  A set of helper methods for the validation tests.
@@ -49,10 +44,10 @@ public class TestTools {
     public final static String VALIDATION_TMP_COLLECTION = "tmp";
     
     // Transfer bytes from in to out
-    public static void copyStream(InputStream is, OutputStream os) throws IOException {
-        byte[] buf = new byte[1024];
-        int len;
-        while ((len = is.read(buf)) > 0) {
+    public static void copyStream(final InputStream is, final OutputStream os) throws IOException {
+        final byte[] buf = new byte[4096];
+        int len = -1;
+        while ((len = is.read(buf)) > -1) {
             os.write(buf, 0, len);
         }
     }
@@ -68,22 +63,6 @@ public class TestTools {
         final URLConnection connection = url.openConnection();
         try(final OutputStream os = connection.getOutputStream()) {
             Files.copy(file, os);
-        }
-    }
-
-    public static Optional<Path> getEXistHome() {
-        return ConfigurationHelper.getExistHome().map(Path::toAbsolutePath);
-    }
-
-    public static byte[] getHamlet() throws IOException {
-        return loadSample("shakespeare/hamlet.xml");
-    }
-
-    public static byte[] loadSample(String sampleRelativePath) throws IOException {
-        final Path file = FileUtils.resolve(getEXistHome(), "samples/" + sampleRelativePath);
-        try(final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            Files.copy(file, baos);
-            return baos.toByteArray();
         }
     }
 

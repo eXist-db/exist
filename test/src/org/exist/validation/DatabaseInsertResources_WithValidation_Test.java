@@ -24,6 +24,7 @@ package org.exist.validation;
 import java.io.IOException;
 import java.util.Optional;
 
+import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -68,7 +69,7 @@ public class DatabaseInsertResources_WithValidation_Test {
     @Test
     public void testValidDocumentSystemCatalog() throws IOException{
 
-        String hamletWithValid = new String(TestTools.getHamlet());
+        String hamletWithValid = new String(TestUtils.readHamletSampleXml());
         hamletWithValid=hamletWithValid.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
             "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"play.dtd\">" );
 
@@ -92,7 +93,7 @@ public class DatabaseInsertResources_WithValidation_Test {
     @Test
     public void invalidDocumentSystemCatalog() throws IOException{
 
-        String hamletWithInvalid = new String(TestTools.getHamlet());
+        String hamletWithInvalid = new String(TestUtils.readHamletSampleXml());
         hamletWithInvalid = hamletWithInvalid.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
             "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"play.dtd\">" );
 

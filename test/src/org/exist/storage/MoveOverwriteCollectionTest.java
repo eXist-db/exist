@@ -19,6 +19,7 @@
  */
 package org.exist.storage;
 
+import com.evolvedbinary.j8fu.tuple.Tuple3;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -76,10 +77,6 @@ public class MoveOverwriteCollectionTest {
     private final static XmldbURI doc2Name = XmldbURI.create("doc2.xml");
     private final static XmldbURI doc3Name = XmldbURI.create("doc3.xml");
 
-    private static Collection test1;
-    private static Collection test2;
-    private static Collection test3;
-
     /**
      * This test ensures that when moving an Collection over the top of an existing Collection,
      * the overwritten resource is completely removed from the database;
@@ -89,53 +86,54 @@ public class MoveOverwriteCollectionTest {
     public void moveAndOverwriteCollection() throws Exception  {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            store(broker);
+            final Tuple3<Collection, Collection, Collection> collections = store(broker);
 
             final DefaultDocumentSet docs = new DefaultDocumentSet();
-            docs.add(test1.getDocument(broker, doc1Name));
-            docs.add(test2.getDocument(broker, doc2Name));
-            docs.add(test3.getDocument(broker, doc3Name));
+            docs.add(collections._1.getDocument(broker, doc1Name));
+            docs.add(collections._2.getDocument(broker, doc2Name));
+            docs.add(collections._3.getDocument(broker, doc3Name));
 
-            move(broker);
+            moveToRoot(broker, collections._3);
 
-            Collection col = broker.getCollection(TEST_COLLECTION_URI);
-
+            final Collection col = broker.getCollection(TEST_COLLECTION_URI);
             docs.add(col.getDocument(broker, doc3Name));
 
             checkIndex(broker, docs);
         }
     }
 
-    private void store(final DBBroker broker) throws Exception {
+    private Tuple3<Collection, Collection, Collection> store(final DBBroker broker) throws Exception {
         try(final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
 
-            test1 = createCollection(transaction, broker, TEST_COLLECTION_URI);
-            test2 = createCollection(transaction, broker, SUB_TEST_COLLECTION_URI);
-            test3 = createCollection(transaction, broker, TEST3_COLLECTION_URI);
+            final Collection test1 = createCollection(transaction, broker, TEST_COLLECTION_URI);
+            final Collection test2 = createCollection(transaction, broker, SUB_TEST_COLLECTION_URI);
+            final Collection test3 = createCollection(transaction, broker, TEST3_COLLECTION_URI);
 
             store(transaction, broker, test1, doc1Name, XML1);
             store(transaction, broker, test2, doc2Name, XML2);
             store(transaction, broker, test3, doc3Name, XML3);
 
             transaction.commit();
+
+            return new Tuple3<>(test1, test2, test3);
         }
     }
 
-    private Collection createCollection(Txn txn, DBBroker broker, XmldbURI uri) throws PermissionDeniedException, IOException, TriggerException {
-        Collection col = broker.getOrCreateCollection(txn, uri);
+    private Collection createCollection(final Txn txn, final DBBroker broker, final XmldbURI uri) throws PermissionDeniedException, IOException, TriggerException {
+        final Collection col = broker.getOrCreateCollection(txn, uri);
         broker.saveCollection(txn, col);
         return col;
     }
 
-    private void store(Txn txn, DBBroker broker, Collection col, XmldbURI name, String data) throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
-        IndexInfo info = col.validateXMLResource(txn, broker, name, data);
+    private void store(final Txn txn, final DBBroker broker, final Collection col, final XmldbURI name, final String data) throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
+        final IndexInfo info = col.validateXMLResource(txn, broker, name, data);
         col.store(txn, broker, info, data);
     }
 
-    private void move(final DBBroker broker) throws Exception {
+    private void moveToRoot(final DBBroker broker, final Collection sourceCollection) throws Exception {
         try(final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
-            Collection root = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
-            broker.moveCollection(transaction, test3, root, XmldbURI.create("test"));
+            final Collection root = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
+            broker.moveCollection(transaction, sourceCollection, root, XmldbURI.create("test"));
             transaction.commit();
         }
     }

@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -66,7 +67,7 @@ public class DatabaseInsertResources_NoValidation_Test {
     public void insertValidationResources_xsd() throws IOException {
         final Configuration config = existEmbeddedServer.getBrokerPool().getConfiguration();
         config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
-        final Path addressbook = FileUtils.resolve(TestTools.getEXistHome(), "samples/validation/addressbook");
+        final Path addressbook = FileUtils.resolve(TestUtils.getEXistHome(), "samples/validation/addressbook");
 
         TestTools.insertDocumentToURL(addressbook.resolve("addressbook.xsd"),
             "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_XSD_COLLECTION + "/addressbook.xsd");
@@ -86,7 +87,7 @@ public class DatabaseInsertResources_NoValidation_Test {
     public void insertValidationResources_dtd() throws IOException {
         final Configuration config = existEmbeddedServer.getBrokerPool().getConfiguration();
         config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
-        final Path hamlet = FileUtils.resolve(TestTools.getEXistHome(), "samples/validation/dtd");
+        final Path hamlet = FileUtils.resolve(TestUtils.getEXistHome(), "samples/validation/dtd");
 
         TestTools.insertDocumentToURL(hamlet.resolve("hamlet.dtd"),
             "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_DTD_COLLECTION + "/hamlet.dtd");
@@ -105,7 +106,7 @@ public class DatabaseInsertResources_NoValidation_Test {
     public void insertValidationResource_dtd_badDocType() throws IOException {
         final Configuration config = existEmbeddedServer.getBrokerPool().getConfiguration();
         config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
-        final Path hamlet = FileUtils.resolve(TestTools.getEXistHome(), "samples/validation/dtd");
+        final Path hamlet = FileUtils.resolve(TestUtils.getEXistHome(), "samples/validation/dtd");
 
         TestTools.insertDocumentToURL(hamlet.resolve("hamlet_nodoctype.xml"),
             "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI +"/hamlet_nodoctype.xml");
