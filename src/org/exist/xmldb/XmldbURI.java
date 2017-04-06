@@ -57,7 +57,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     public static final String DEFAULT_INSTANCE_NAME = "exist";
     public static final String EMBEDDED_SERVER_AUTHORITY = "embedded-eXist-server";
     public static final String EMBEDDED_SERVER_URI_PREFIX = XMLDB_URI_PREFIX + DEFAULT_INSTANCE_NAME + "://";
-    public static final String EMBEDDED_SHORT_URI_PREFIX = XMLDB_URI_PREFIX + "//";
+    public static final String EMBEDDED_SHORT_URI_PREFIX = XMLDB_URI_PREFIX + "/";
 
     /**
      * 'db' collection name

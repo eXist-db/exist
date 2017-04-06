@@ -42,6 +42,9 @@ public class XmldbURITest {
 
         XmldbURI.xmldbUriFor("xmldb:///db/");
         XmldbURI.xmldbUriFor("xmldb:///db/test");
+
+        XmldbURI.xmldbUriFor("xmldb:/db/");
+        XmldbURI.xmldbUriFor("xmldb:/db/test");
     }
 
     @Test
