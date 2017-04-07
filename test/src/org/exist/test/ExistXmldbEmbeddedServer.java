@@ -17,6 +17,7 @@ import org.xmldb.api.modules.XMLResource;
 import javax.xml.transform.OutputKeys;
 import java.util.Map;
 
+import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -30,21 +31,33 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
 
     private final static String GUEST_DB_USER = "guest";
     private final static String GUEST_DB_PWD = "guest";
-    private final boolean asGuest;
 
+    private final boolean asGuest;
+    private final boolean disableAutoDeploy;
+
+    private String prevAutoDeploy = "off";
     private Database database = null;
     private Collection root = null;
     private XQueryService xpathQueryService = null;
 
     public ExistXmldbEmbeddedServer() {
-        this(false);
+        this(false, false);
     }
 
     /**
      * @param asGuest Use the guest account, default is the admin account
      */
     public ExistXmldbEmbeddedServer(final boolean asGuest) {
+        this(asGuest, false);
+    }
+
+    /**
+     * @param asGuest Use the guest account, default is the admin account
+     * @param disableAutoDeploy Whether auto-deployment of XARs should be disabled
+     */
+    public ExistXmldbEmbeddedServer(final boolean asGuest, final boolean disableAutoDeploy) {
         this.asGuest = asGuest;
+        this.disableAutoDeploy = disableAutoDeploy;
     }
 
     @Override
@@ -55,6 +68,12 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
 
     private void startDb() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         if (database == null) {
+
+            if(disableAutoDeploy) {
+                this.prevAutoDeploy = System.getProperty(AUTODEPLOY_PROPERTY, "off");
+                System.setProperty(AUTODEPLOY_PROPERTY, "off");
+            }
+
             // initialize driver
             final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
             database = (Database) cl.newInstance();
@@ -162,6 +181,12 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
             xpathQueryService = null;
             root = null;
             database = null;
+
+            if(disableAutoDeploy) {
+                //set the autodeploy trigger enablement back to how it was before this test class
+                System.setProperty(AUTODEPLOY_PROPERTY, this.prevAutoDeploy);
+            }
+
         } else {
             throw new IllegalStateException("ExistXmldbEmbeddedServer already stopped");
         }

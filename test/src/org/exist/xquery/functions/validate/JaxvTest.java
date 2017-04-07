@@ -47,7 +47,7 @@ import org.xmldb.api.base.XMLDBException;
 public class JaxvTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     @BeforeClass
     public static void prepareResources() throws Exception {

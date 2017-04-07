@@ -172,7 +172,7 @@ public class RangeIndexUpdateTest {
     }
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     @BeforeClass
     public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {

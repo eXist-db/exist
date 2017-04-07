@@ -47,7 +47,7 @@ import org.xmldb.api.base.XMLDBException;
 public class JaxpXsdCatalogTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     private static final String noValidation = "<?xml version='1.0'?>" +
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +

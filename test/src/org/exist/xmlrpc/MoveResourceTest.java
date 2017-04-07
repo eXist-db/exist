@@ -59,7 +59,7 @@ import static org.junit.Assert.assertTrue;
 public class MoveResourceTest {
 
     @ClassRule
-    public static final ExistWebServer existWebServer = new ExistWebServer(true);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true);
 
     private static String getUri() {
         return "http://localhost:" + existWebServer.getPort() + "/xmlrpc";

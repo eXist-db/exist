@@ -115,8 +115,12 @@ public class DatabaseInsertResources_NoValidation_Test {
     }
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(propertiesBuilder()
-            .set(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto").build());
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(
+            propertiesBuilder()
+                .set(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto")
+                .build(),
+            true,
+            false);
 
     @BeforeClass
     public static void startup() throws Exception {

@@ -427,7 +427,7 @@ public class BasicNodeSetTest {
     }
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     @BeforeClass
     public static void setUp() throws Exception {

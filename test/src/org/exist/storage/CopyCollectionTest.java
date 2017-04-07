@@ -49,13 +49,14 @@ import static org.junit.Assert.fail;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
 public class CopyCollectionTest {
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     @Test
     public void storeAndRead() throws EXistException, InstantiationException, DatabaseConfigurationException, LockException, IllegalAccessException, PermissionDeniedException, SAXException, IOException, XMLDBException, ClassNotFoundException {

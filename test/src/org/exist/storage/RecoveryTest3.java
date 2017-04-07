@@ -62,7 +62,7 @@ import static org.junit.Assert.assertNotNull;
 public class RecoveryTest3 {
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     private final static int RESOURCE_COUNT = 5000;
     

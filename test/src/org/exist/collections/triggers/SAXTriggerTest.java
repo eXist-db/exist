@@ -36,7 +36,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 public class SAXTriggerTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     private final static String DOCUMENT1_CONTENT = 
         "<test>"

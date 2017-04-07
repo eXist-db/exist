@@ -1277,10 +1277,13 @@ public class LuceneIndexTest {
     }
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(propertiesBuilder()
-            .set(Indexer.PROPERTY_SUPPRESS_WHITESPACE, "none")
-            .put(Indexer.PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE, Boolean.TRUE)
-            .build());
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(
+            propertiesBuilder()
+                .set(Indexer.PROPERTY_SUPPRESS_WHITESPACE, "none")
+                .put(Indexer.PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE, Boolean.TRUE)
+                .build(),
+            true,
+            false);
 
     @AfterClass
     public static void cleanupDb() {

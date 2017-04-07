@@ -28,7 +28,7 @@ import org.xmldb.api.base.XMLDBException;
 public class SecurityManagerRoundtripTest {
 
     @Rule
-    public final ExistWebServer existWebServer = new ExistWebServer(true, true);
+    public final ExistWebServer existWebServer = new ExistWebServer(true, true, true);
 
     private static final String PORT_PLACEHOLDER = "${PORT}";
 

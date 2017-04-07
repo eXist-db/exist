@@ -53,7 +53,7 @@ import org.xml.sax.SAXException;
 public class CopyResourceTest {
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     @Test
     public void storeAndRead() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException {

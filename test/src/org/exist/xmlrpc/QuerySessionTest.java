@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 public class QuerySessionTest {
 
     @ClassRule
-    public final static ExistWebServer existWebServer = new ExistWebServer(true);
+    public final static ExistWebServer existWebServer = new ExistWebServer(true, false, true);
 
     private final static String generateXQ = "<book id=\"{$filename}\" n=\"{$count}\">"
 			+ "   <chapter xml:id=\"chapter{$count}\">"

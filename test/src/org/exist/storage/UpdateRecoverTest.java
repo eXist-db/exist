@@ -76,7 +76,7 @@ public class UpdateRecoverTest {
         "</products>";
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     @Test
     public void storeAndRead() throws IllegalAccessException, PermissionDeniedException, DatabaseConfigurationException, InstantiationException, SAXException, XMLDBException, EXistException, ClassNotFoundException, LockException, ParserConfigurationException, XPathException, IOException {

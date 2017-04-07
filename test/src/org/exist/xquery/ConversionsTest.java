@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
 public class ConversionsTest {
 
 	@ClassRule
-	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
 	/** test conversion from QName to string */
 	@Test

@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
 public class SwitchTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     @Test
     public void oneCaseCaseMatch() throws XMLDBException {

@@ -44,7 +44,7 @@ import java.nio.file.Paths;
 public class StorageStressTest {
 
 	@ClassRule
-	public static final ExistWebServer existWebServer = new ExistWebServer(true);
+	public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true);
 
 	//protected final static String getUri = "xmldb:exist://";
     public final static String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";

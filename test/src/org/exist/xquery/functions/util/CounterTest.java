@@ -16,7 +16,7 @@ import org.xmldb.api.base.XMLDBException;
 public class CounterTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     private final static String IMPORT = "import module namespace counter=\"" + CounterModule.NAMESPACE_URI + "\" " +
         "at \"java:org.exist.xquery.modules.counter.CounterModule\"; ";

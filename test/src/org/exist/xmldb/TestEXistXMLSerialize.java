@@ -66,7 +66,7 @@ import static org.exist.xmldb.XmldbLocalTests.*;
 public class TestEXistXMLSerialize {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
 	private final static String XML_DATA =
     	"<test>" +

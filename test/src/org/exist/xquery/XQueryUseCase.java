@@ -48,7 +48,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class XQueryUseCase {
 
 	@ClassRule
-	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
 	private final static Path baseDir = TestUtils.resolveSample("xquery/use-cases");
 

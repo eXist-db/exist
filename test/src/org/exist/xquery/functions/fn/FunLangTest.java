@@ -14,7 +14,7 @@ import org.xmldb.api.base.XMLDBException;
 public class FunLangTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     @Test
     public void testFnLangWithContext() throws XMLDBException {

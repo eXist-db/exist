@@ -50,7 +50,7 @@ import org.xmldb.api.modules.XMLResource;
 public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
 
     @ClassRule
-    public static final ExistWebServer existWebServer = new ExistWebServer(true);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true);
     private static final String PORT_PLACEHOLDER = "${PORT}";
 
     @Parameters(name = "{0}")

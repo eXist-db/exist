@@ -91,10 +91,10 @@ public class TwoDatabasesTest {
     }
 
     @Rule
-    public final ExistEmbeddedServer existEmbeddedServer1 = new ExistEmbeddedServer("db1", config1File);
+    public final ExistEmbeddedServer existEmbeddedServer1 = new ExistEmbeddedServer("db1", config1File, null, true);
 
     @Rule
-    public final ExistEmbeddedServer existEmbeddedServer2 = new ExistEmbeddedServer("db2", config2File);
+    public final ExistEmbeddedServer existEmbeddedServer2 = new ExistEmbeddedServer("db2", config2File, null, true);
 
     private Subject user1;
     private Subject user2;

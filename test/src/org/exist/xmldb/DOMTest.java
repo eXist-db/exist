@@ -36,7 +36,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class DOMTest {
 
 	@ClassRule
-	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
 	private static String name = "test.xml";
 	

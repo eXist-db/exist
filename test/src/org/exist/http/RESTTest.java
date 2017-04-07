@@ -8,7 +8,7 @@ import org.junit.ClassRule;
 public abstract class RESTTest {
 
     @ClassRule
-    public static final ExistWebServer existWebServer = new ExistWebServer(true);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true);
 
     protected static String getRestUrl() {
         return "http://localhost:" + existWebServer.getPort();

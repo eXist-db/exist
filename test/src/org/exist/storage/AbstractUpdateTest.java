@@ -56,7 +56,7 @@ public abstract class AbstractUpdateTest {
         "<products/>";
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     @Test
     public void read() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException, XPathException, IOException {

@@ -48,7 +48,7 @@ import static org.exist.storage.ElementValue.ELEMENT;
 public class MoveOverwriteCollectionTest {
 
     @ClassRule
-    public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true);
+    public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private final static String XML1 =
             "<?xml version=\"1.0\"?>" +

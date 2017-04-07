@@ -231,8 +231,12 @@ public class OptimizerTest {
     }
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(propertiesBuilder()
-            .put(FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS, Boolean.FALSE).build());    //Since we use the deprecated text:match-all() function, we have to be sure is is enabled
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(
+            propertiesBuilder()
+                    .put(FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS, Boolean.FALSE) //Since we use the deprecated text:match-all() function, we have to be sure is is enabled
+                    .build(),
+            true,
+            false);
 
     @BeforeClass
     public static void initDatabase() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, IOException {

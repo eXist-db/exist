@@ -50,6 +50,10 @@ public class ExistEmbeddedServer extends ExternalResource {
         this(null, null, configProperties, false, false);
     }
 
+    public ExistEmbeddedServer(final Properties configProperties, final boolean disableAutoDeploy, final boolean useTemporaryStorage) {
+        this(null, null, configProperties, disableAutoDeploy, useTemporaryStorage);
+    }
+
     public ExistEmbeddedServer(final String instanceName, final Path configFile) {
         this(instanceName, configFile, null, false, false);
     }

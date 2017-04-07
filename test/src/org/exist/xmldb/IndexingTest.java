@@ -43,7 +43,7 @@ import static org.junit.Assert.fail;
 public class IndexingTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     private int siblingCount;
     private int depth;

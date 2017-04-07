@@ -39,7 +39,7 @@ import java.nio.file.Paths;
 public class AntUnitTestRunner {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     @Test
     public void testAntUnit() throws BuildException {

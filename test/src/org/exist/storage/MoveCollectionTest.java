@@ -58,7 +58,7 @@ import static org.junit.Assert.*;
 public class MoveCollectionTest {
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     @Test(expected = PermissionDeniedException.class)
     public void moveToSelfSubCollection() throws EXistException, IOException, DatabaseConfigurationException, PermissionDeniedException, TriggerException, LockException, XMLDBException {
