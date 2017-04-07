@@ -332,8 +332,10 @@ public class LockManager {
         if(parentLock.isReleased()) {
             throw new LockException("Cannot acquire a sub-Collection lock without a lock on the parent");
         }
-        if(!parentLock.getPath().equals(collectionPath.removeLastSegment())) {
-            throw new LockException("Cannot acquire a lock on sub-Collection, as provided parent lock is not the parent");
+
+        final XmldbURI parentCollectionUri = collectionPath.removeLastSegment();
+        if(!parentLock.getPath().equals(parentCollectionUri)) {
+            throw new LockException("Cannot acquire a lock on sub-Collection '" + collectionPath + "' as provided parent lock '" + parentCollectionUri + "' is not the parent");
         }
 
         final long groupId = System.nanoTime();
