@@ -79,7 +79,7 @@ public class ParseXsdTestNOK {
         try {
             collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "addressbook");
 
-            final Path sources = Paths.get("samples/validation/addressbook");
+            final Path sources = TestUtils.resolveSample("validation/addressbook");
             for (final Path file : FileUtils.list(sources, filter)) {
                 final byte[] data = TestUtils.readFile(file);
                 ExistXmldbEmbeddedServer.storeResource(collection, FileUtils.fileName(file), data);

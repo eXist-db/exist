@@ -36,6 +36,7 @@ import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
@@ -63,17 +64,21 @@ public class CollectionTest {
         "  <para>Hello World!</para>" +
         "</test>";
 
+    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+
     @Test
     public void storeRead() throws EXistException, IOException, PermissionDeniedException, BTreeException, DatabaseConfigurationException, TriggerException, LockException {
         store();
-        BrokerPool.stopAll(false);
+
+        stopDb();
+
         read();
-        BrokerPool.stopAll(false);
     }
 
     private void store() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = startDB();
+        BrokerPool pool = startDb();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
@@ -90,7 +95,7 @@ public class CollectionTest {
     
     public void read() throws EXistException, IOException, PermissionDeniedException, BTreeException, DatabaseConfigurationException, LockException {
         BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDB();
+        BrokerPool pool = startDb();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             BTree btree = ((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
@@ -104,15 +109,14 @@ public class CollectionTest {
             }
         }
     }
-    
-    protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
-        Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        return BrokerPool.getInstance();
+
+    private BrokerPool startDb() throws EXistException, IOException, DatabaseConfigurationException {
+        existEmbeddedServer.startDb();
+        return existEmbeddedServer.getBrokerPool();
     }
 
     @After
-    public void tearDown() {
-        BrokerPool.stopAll(false);
+    public void stopDb() {
+        existEmbeddedServer.stopDb();
     }
 }

@@ -31,7 +31,6 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.function.Predicate;
 
 import org.xml.sax.SAXException;
@@ -74,7 +73,7 @@ public class JaxpDtdCatalogTest {
         Collection dtdsCollection = null;
         try {
             dtdsCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/dtds");
-            final Path schemas = Paths.get("samples/validation/parse/dtds");
+            final Path schemas = TestUtils.resolveSample("validation/parse/dtds");
             for (final Path file : FileUtils.list(schemas, filter)) {
                 final byte[] data = TestUtils.readFile(file);
                 ExistXmldbEmbeddedServer.storeResource(dtdsCollection, FileUtils.fileName(file), data);
@@ -85,7 +84,7 @@ public class JaxpDtdCatalogTest {
             }
         }
 
-        final Path catalog = Paths.get("samples/validation/parse");
+        final Path catalog = TestUtils.resolveSample("validation/parse");
         Collection parseCollection = null;
         try {
             parseCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse");
@@ -97,7 +96,7 @@ public class JaxpDtdCatalogTest {
             }
         }
 
-        final Path instance = Paths.get("samples/validation/parse/instance");
+        final Path instance = TestUtils.resolveSample("validation/parse/instance");
         Collection instanceCollection = null;
         try {
             instanceCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/instance");

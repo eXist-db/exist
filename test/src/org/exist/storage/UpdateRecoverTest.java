@@ -32,11 +32,12 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xupdate.Modification;
@@ -72,25 +73,38 @@ public class UpdateRecoverTest {
         "       <description>Milk</description>" +
         "       <price>22.50</price>" +
         "   </product>" +
-        "</products>";    
+        "</products>";
+
+    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
 
     @Test
     public void storeAndRead() throws IllegalAccessException, PermissionDeniedException, DatabaseConfigurationException, InstantiationException, SAXException, XMLDBException, EXistException, ClassNotFoundException, LockException, ParserConfigurationException, XPathException, IOException {
-        store();
-        tearDown();
-        read();
+        BrokerPool.FORCE_CORRUPTION = true;
+        BrokerPool pool = startDb();
+        store(pool);
+
+        stopDb();
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = startDb();
+        read(pool);
     }
 
     @Test
-    public void storeAndReadXmldb() throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, XMLDBException, EXistException, ClassNotFoundException {
-        xmldbStore();
-        tearDown();
-        xmldbRead();
+    public void storeAndReadXmldb() throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, XMLDBException, EXistException, ClassNotFoundException, IOException {
+        BrokerPool.FORCE_CORRUPTION = false;
+        BrokerPool pool = startDb();
+        xmldbStore(pool);
+
+        stopDb();
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = startDb();
+        xmldbRead(pool);
     }
 
-    private void store() throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, PermissionDeniedException, IOException, SAXException, LockException, ParserConfigurationException, XPathException {
-        BrokerPool.FORCE_CORRUPTION = true;
-        final BrokerPool pool = startDB();
+    private void store(final BrokerPool pool) throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, PermissionDeniedException, IOException, SAXException, LockException, ParserConfigurationException, XPathException {
         final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -272,12 +286,7 @@ public class UpdateRecoverTest {
         }
     }
 
-    private void read() throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, PermissionDeniedException, SAXException {
-
-        BrokerPool.FORCE_CORRUPTION = false;
-        final BrokerPool pool = startDB();
-        assertNotNull(pool);
-
+    private void read(final BrokerPool pool) throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, PermissionDeniedException, SAXException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final Serializer serializer = broker.getSerializer();
             assertNotNull(serializer);
@@ -297,10 +306,7 @@ public class UpdateRecoverTest {
         }
     }
 
-    private void xmldbStore() throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException {
-        BrokerPool.FORCE_CORRUPTION = false;
-        final BrokerPool pool = startDB();
-
+    private void xmldbStore(final BrokerPool pool) throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException {
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         assertNotNull(root);
         final CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl)
@@ -426,9 +432,7 @@ public class UpdateRecoverTest {
         }
     }
 
-    private void xmldbRead() throws XMLDBException {
-        BrokerPool.FORCE_CORRUPTION = false;
-
+    private void xmldbRead(final BrokerPool pool) throws XMLDBException {
         final org.xmldb.api.base.Collection test2 = DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI2, "admin", "");
         assertNotNull(test2);
         final Resource res = test2.getResource("test_xmldb.xml");
@@ -441,22 +445,20 @@ public class UpdateRecoverTest {
         assertNotNull(mgr);
         mgr.removeCollection("test");
     }
-    
-    protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-        final Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
 
-        // initialize driver
-        final Database database = (Database) Class.forName("org.exist.xmldb.DatabaseImpl").newInstance();
+    private BrokerPool startDb() throws EXistException, IOException, DatabaseConfigurationException, XMLDBException {
+        existEmbeddedServer.startDb();
+
+        final Database database = new DatabaseImpl();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
 
-        return BrokerPool.getInstance();
+        return existEmbeddedServer.getBrokerPool();
     }
 
     @After
-    public void tearDown() {
-        BrokerPool.stopAll(false);
+    public void stopDb() {
+        existEmbeddedServer.stopDb();
     }
 
 }

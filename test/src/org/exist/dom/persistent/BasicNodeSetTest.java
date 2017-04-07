@@ -20,6 +20,7 @@
  */
 package org.exist.dom.persistent;
 
+import org.exist.TestUtils;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
@@ -57,7 +58,6 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.junit.Test;
@@ -439,11 +439,7 @@ public class BasicNodeSetTest {
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
             broker.saveCollection(transaction, root);
 
-            final String existHome = System.getProperty("exist.home");
-            Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-            existDir = existDir.normalize();
-            final String directory = "samples/shakespeare";
-            final Path dir = existDir.resolve(directory);
+            final Path dir = TestUtils.shakespeareSamples();
 
             // store some documents.
             for(final Path f : FileUtils.list(dir, XMLFilenameFilter.asPredicate())) {

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.exist.EXistException;
+import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
@@ -38,15 +39,7 @@ public class ShutdownTest {
             "	</index>" +
             "</collection>";
 
-	private static String directory = "samples/shakespeare";
-    
-    private static Path dir = null;
-    static {
-        final String existHome = System.getProperty("exist.home");
-        Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-        existDir = existDir.normalize();
-        dir = existDir.resolve(directory);
-    }
+    private static Path dir = TestUtils.shakespeareSamples();
 
     @Test
 	public void shutdown() throws EXistException, DatabaseConfigurationException, LockException, TriggerException, PermissionDeniedException, XPathException, IOException, CollectionConfigurationException {

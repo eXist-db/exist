@@ -31,7 +31,6 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.function.Predicate;
 
 import org.xml.sax.SAXException;
@@ -78,7 +77,7 @@ public class JingSchematronTest {
         Collection col15 = null;
         try {
             col15 = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "tournament/1.5");
-            final Path sch15 = Paths.get("samples/validation/tournament/1.5");
+            final Path sch15 = TestUtils.resolveSample("validation/tournament/1.5");
 
             for (final Path file : FileUtils.list(sch15, filter)) {
                 final byte[] data = TestUtils.readFile(file);
@@ -94,7 +93,7 @@ public class JingSchematronTest {
         Collection colISO = null;
         try {
             colISO = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "tournament/iso");
-            final Path schISO = Paths.get("samples/validation/tournament/iso");
+            final Path schISO = TestUtils.resolveSample("validation/tournament/iso");
 
             for (final Path file : FileUtils.list(schISO, filter)) {
                 final byte[] data = TestUtils.readFile(file);

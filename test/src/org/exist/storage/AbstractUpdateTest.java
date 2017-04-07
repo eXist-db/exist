@@ -30,7 +30,7 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
@@ -55,10 +55,13 @@ public abstract class AbstractUpdateTest {
         "<?xml version=\"1.0\"?>" +
         "<products/>";
 
+    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+
     @Test
-    public void read() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException, XPathException {
+    public void read() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException, XPathException, IOException {
         BrokerPool.FORCE_CORRUPTION = false;
-        final BrokerPool pool = startDB();
+        final BrokerPool pool = startDb();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final Serializer serializer = broker.getSerializer();
@@ -103,14 +106,13 @@ public abstract class AbstractUpdateTest {
 	    return info;
     }
     
-    protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
-        Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        return BrokerPool.getInstance();
+    protected BrokerPool startDb() throws DatabaseConfigurationException, EXistException, IOException {
+        existEmbeddedServer.startDb();
+        return existEmbeddedServer.getBrokerPool();
     }
 
     @After
-    public void tearDown() {
-        BrokerPool.stopAll(false);
+    public void stopDb() {
+        existEmbeddedServer.stopDb();
     }    
 }

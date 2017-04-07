@@ -22,6 +22,7 @@ package org.exist.xmlrpc;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XmldbURI;
 
@@ -30,9 +31,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +46,6 @@ import org.junit.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -101,13 +98,7 @@ public class MoveResourceTest {
     }
 
     private String readData() throws IOException {
-        final String existHome = System.getProperty("exist.home");
-        Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-        existDir = existDir.normalize();
-        final Path f = existDir.resolve("samples/shakespeare/r_and_j.xml");
-        assertNotNull(f);
-
-        return new String(Files.readAllBytes(f), UTF_8);
+        return new String(TestUtils.readRomeoAndJulietSampleXml(), UTF_8);
     }
 
     private class MoveThread implements Callable<Void> {

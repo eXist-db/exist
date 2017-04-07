@@ -32,7 +32,6 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.function.Predicate;
 
 import org.xml.sax.SAXException;
@@ -75,7 +74,7 @@ public class JaxpXsdCatalogTest {
         Collection schemasCollection = null;
         try {
             schemasCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/schemas");
-            final Path schemas = Paths.get("samples/validation/parse/schemas");
+            final Path schemas = TestUtils.resolveSample("validation/parse/schemas");
 
             for (final Path file : FileUtils.list(schemas, filter)) {
                 final byte[] data = TestUtils.readFile(file);
@@ -87,7 +86,7 @@ public class JaxpXsdCatalogTest {
             }
         }
 
-        final Path catalog = Paths.get("samples/validation/parse");
+        final Path catalog = TestUtils.resolveSample("validation/parse");
         Collection parseCollection = null;
         try {
             parseCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse");
@@ -99,7 +98,7 @@ public class JaxpXsdCatalogTest {
             }
         }
 
-        final Path instance = Paths.get("samples/validation/parse/instance");
+        final Path instance = TestUtils.resolveSample("validation/parse/instance");
         Collection instanceCollection = null;
         try {
             instanceCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/instance");

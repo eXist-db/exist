@@ -26,11 +26,11 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
 import org.exist.EXistException;
+import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.BinaryDocument;
@@ -42,6 +42,7 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
@@ -68,16 +69,11 @@ import org.xml.sax.SAXException;
  *
  */
 public class RecoveryTest {
+
+    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
     
-    private static String directory = "samples/shakespeare";
-    
-    private static Path dir = null;
-    static {
-      final String existHome = System.getProperty("exist.home");
-        Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-        existDir = existDir.normalize();
-      dir = existDir.resolve(directory);
-    }
+    private static Path dir = TestUtils.shakespeareSamples();
     
     private static String TEST_XML =
         "<?xml version=\"1.0\"?>" +
@@ -88,16 +84,19 @@ public class RecoveryTest {
 
     @Test
     public void storeAndRead() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException, BTreeException, XPathException {
-        store();
-        tearDown();
-        read();
+        BrokerPool.FORCE_CORRUPTION = true;
+        BrokerPool pool = startDb();
+        store(pool);
+
+        stopDb();
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = startDb();
+        read(pool);
     }
 
-    private void store() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, LockException {
-        BrokerPool.FORCE_CORRUPTION = true;
-        final BrokerPool pool = startDB();
+    private void store(final BrokerPool pool) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, LockException {
         final TransactionManager transact = pool.getTransactionManager();
-
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
 
             Collection test2;
@@ -172,12 +171,7 @@ public class RecoveryTest {
 	    }
     }
 
-    private void read() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException, XPathException, IOException, BTreeException {
-
-        BrokerPool.FORCE_CORRUPTION = false;
-        final BrokerPool pool = startDB();
-
-
+    private void read(final BrokerPool pool) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException, XPathException, IOException, BTreeException, LockException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
@@ -248,15 +242,15 @@ public class RecoveryTest {
             }
 	    }
     }
-    
-    protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
-        Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        return BrokerPool.getInstance();
+
+    private BrokerPool startDb() throws EXistException, IOException, DatabaseConfigurationException {
+        existEmbeddedServer.startDb();
+        return existEmbeddedServer.getBrokerPool();
     }
 
     @After
-    public void tearDown() {
-        BrokerPool.stopAll(false);
+    public void stopDb() {
+        existEmbeddedServer.stopDb();
     }
+
 }

@@ -127,6 +127,15 @@ public class TestUtils {
     }
 
     /**
+     * Reads the content of the sample r_and_j.xml
+     *
+     * @return The content of the file
+     */
+    public static byte[] readRomeoAndJulietSampleXml() throws IOException {
+        return readSample("shakespeare/r_and_j.xml");
+    }
+
+    /**
      * Reads the content of the sample file
      *
      * @param sampleRelativePath The path of the sample file relative to the samples directory
@@ -141,12 +150,32 @@ public class TestUtils {
     /**
      * Resolve the path of a sample file
      *
-     * @param sampleRelativePath The path of the sample file relative to the samples directory
+     * @param relativePath The path of the sample file relative to the samples directory
      *
      * @return The absolute path to the sample file
      */
-    public static Path resolveSample(final String sampleRelativePath) {
+    public static Path resolveSample(final String relativePath) {
         final Path samples = FileUtils.resolve(getEXistHome(), "samples");
-        return samples.resolve(sampleRelativePath);
+        return samples.resolve(relativePath);
+    }
+
+    /**
+     * Gets the path of the Shakespeare samples
+     *
+     * @return The path to the Shakespeare samples
+     */
+    public static Path shakespeareSamples() {
+        return resolveSample("shakespeare");
+    }
+
+    /**
+     * Resolve the path of a Shakespeare sample file
+     *
+     * @param relativePath The path of the Shakespeare sample file relative to the Shakespeare samples directory
+     *
+     * @return The absolute path to the sample file
+     */
+    public static Path resolveShakespeareSample(final String relativePath) {
+        return shakespeareSamples().resolve(relativePath);
     }
 }

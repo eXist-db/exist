@@ -29,7 +29,6 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.function.Predicate;
 
 import org.custommonkey.xmlunit.XMLAssert;
@@ -74,7 +73,7 @@ public class JaxpParseTest {
         Collection schemasCollection = null;
         try {
             schemasCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse_validate");
-            final Path schemas = Paths.get("samples/validation/parse_validate");
+            final Path schemas = TestUtils.resolveSample("validation/parse_validate");
 
             for (final Path file : FileUtils.list(schemas, filter)) {
                 final byte[] data = TestUtils.readFile(file);

@@ -14,12 +14,12 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.Sequence;
-import org.exist.util.Configuration;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 
@@ -78,6 +78,9 @@ public class ConstructedNodesRecoveryTest {
 			"<dragonfruit colour=\"pink\"/>" +
 			"<grapefruit colour=\"yellow\"/>" +
 		"</fruit>";
+
+	// we don't use @ClassRule/@Rule as we want to force corruption in some tests
+	private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
 
 	/**
 	 * Issues a query against constructed nodes and then corrupts the database (intentionally)
@@ -180,7 +183,7 @@ public class ConstructedNodesRecoveryTest {
 	 */
 	private void constructedNodeQuery(boolean forceCorruption) throws EXistException, DatabaseConfigurationException, LockException, SAXException, PermissionDeniedException, IOException, XPathException {
 		BrokerPool.FORCE_CORRUPTION = forceCorruption;
-	    BrokerPool pool = startDB();
+	    BrokerPool pool = startDb();
 	    
 	    try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
@@ -231,15 +234,14 @@ public class ConstructedNodesRecoveryTest {
 			pool.getJournalManager().get().flush(true, false);
 	    }
 	}
-	
-	protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
-        Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        return BrokerPool.getInstance();
-    }
 
-    @After
-    public void tearDown() {
-        BrokerPool.stopAll(false);
-    }
+	private BrokerPool startDb() throws EXistException, IOException, DatabaseConfigurationException {
+		existEmbeddedServer.startDb();
+		return existEmbeddedServer.getBrokerPool();
+	}
+
+	@After
+	public void stopDb() {
+		existEmbeddedServer.stopDb();
+	}
 }

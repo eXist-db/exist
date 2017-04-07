@@ -26,7 +26,6 @@ import static org.junit.Assert.assertNotNull;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
@@ -684,7 +683,7 @@ public class LuceneIndexTest {
 
     @Test
     public void dropDocuments() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
-        configureAndStore(COLLECTION_CONFIG1, "samples/shakespeare");
+        configureAndStore(COLLECTION_CONFIG1, TestUtils.shakespeareSamples());
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -717,7 +716,7 @@ public class LuceneIndexTest {
 
     @Test
     public void removeCollection() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
-        final DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, "samples/shakespeare");
+        final DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, TestUtils.shakespeareSamples());
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -1185,7 +1184,7 @@ public class LuceneIndexTest {
         return docs;
     }
 
-    private DocumentSet configureAndStore(String configuration, String directory) throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException {
+    private DocumentSet configureAndStore(String configuration, Path directory) throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException {
 
         final MutableDocumentSet docs = new DefaultDocumentSet();
 
@@ -1199,8 +1198,7 @@ public class LuceneIndexTest {
                 mgr.addConfiguration(transaction, broker, root, configuration);
             }
 
-            final Path file = Paths.get(directory);
-            final List<Path> files = FileUtils.list(file);
+            final List<Path> files = FileUtils.list(directory);
             final MimeTable mimeTab = MimeTable.getInstance();
             for (final Path f : files) {
                 MimeType mime = mimeTab.getContentTypeFor(FileUtils.fileName(f));

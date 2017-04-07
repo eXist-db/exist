@@ -21,6 +21,7 @@
  */
 package org.exist.xmldb;
 
+import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.concurrent.DBUtils;
@@ -97,10 +98,7 @@ public class StorageStressTest {
 			this.collection = childCollection;
 		}
 
-		String existHome = System.getProperty("exist.home");
-		Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-		existDir = existDir.normalize();
-		Path f = existDir.resolve("samples/shakespeare/hamlet.xml");
+		final Path f = TestUtils.resolveShakespeareSample("hamlet.xml");
 		Resource res = collection.createResource("test1.xml", "XMLResource");
 		res.setContent(f);
 		collection.storeResource(res);

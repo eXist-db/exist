@@ -31,7 +31,6 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.function.Predicate;
 
 import org.xml.sax.SAXException;
@@ -72,7 +71,7 @@ public class JingRelaxNgTest {
         try {
             collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "personal");
 
-            final Path directory = Paths.get("samples/validation/personal");
+            final Path directory = TestUtils.resolveSample("validation/personal");
             final Predicate<Path> filter = path -> FileUtils.fileName(path).startsWith("personal");
             for (final Path file : FileUtils.list(directory, filter)) {
                 final byte[] data = TestUtils.readFile(file);

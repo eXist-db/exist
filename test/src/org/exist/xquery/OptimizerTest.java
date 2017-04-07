@@ -38,9 +38,7 @@ import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
@@ -257,13 +255,7 @@ public class OptimizerTest {
         resource.setContent(XML);
         testCollection.storeResource(resource);
 
-        String existHome = System.getProperty("exist.home");
-        Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-        existDir = existDir.normalize();
-        Path dir = existDir.resolve("samples/shakespeare");
-        if (!Files.isReadable(dir)) {
-            throw new IOException("Unable to read samples directory");
-        }
+        final Path dir = TestUtils.shakespeareSamples();
         final List<Path> files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
         for (Path file : files) {
             resource = (XMLResource) testCollection.createResource(FileUtils.fileName(file), XMLResource.RESOURCE_TYPE);

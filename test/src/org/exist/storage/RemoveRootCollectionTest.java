@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.nio.file.Paths;
 import java.util.Optional;
 
+import org.exist.TestUtils;
 import org.exist.collections.*;
 import org.exist.storage.txn.*;
 import org.exist.test.ExistEmbeddedServer;
@@ -78,7 +79,7 @@ public class RemoveRootCollectionTest {
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
         try (final Txn transaction = transact.beginTransaction()) {
-            final InputSource is = new InputSource(Paths.get("samples/shakespeare/hamlet.xml").toUri().toASCIIString());
+            final InputSource is = new InputSource(TestUtils.resolveShakespeareSample("hamlet.xml").toUri().toASCIIString());
             assertNotNull(is);
             final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), is);
             assertNotNull(info);

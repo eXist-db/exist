@@ -32,7 +32,6 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -72,7 +71,7 @@ public class ParseDtdTestNOK {
         Collection collection = null;
         try {
             collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "hamlet");
-            final Path sources = Paths.get("samples/validation/dtd");
+            final Path sources = TestUtils.resolveSample("validation/dtd");
 
             for (final Path file : FileUtils.list(sources, XMLFilenameFilter.asPredicate())) {
                 final byte[] data = TestUtils.readFile(file);
@@ -84,7 +83,7 @@ public class ParseDtdTestNOK {
             }
         }
 
-        final Path dtd = Paths.get("samples/validation/dtd");
+        final Path dtd = TestUtils.resolveSample("validation/dtd");
         Collection collection1 = null;
         try {
             collection1 = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "hamlet/dtd");

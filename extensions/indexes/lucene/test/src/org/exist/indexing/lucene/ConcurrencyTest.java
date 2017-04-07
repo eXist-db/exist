@@ -186,11 +186,7 @@ public class ConcurrencyTest {
             final IndexQueryService iqs = (IndexQueryService) collection.getService("IndexQueryService", "1.0");
             iqs.configureCollection(COLLECTION_CONFIG1);
 
-            final String existHome = System.getProperty("exist.home");
-            Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-            existDir = existDir.normalize();
-
-            final Path samples = existDir.resolve("samples/shakespeare");
+            final Path samples = TestUtils.shakespeareSamples();
             final List<Path> files = FileUtils.list(samples);
             final MimeTable mimeTab = MimeTable.getInstance();
             for (final Path file : files) {

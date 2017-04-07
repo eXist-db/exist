@@ -40,8 +40,8 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
@@ -60,7 +60,10 @@ import static org.junit.Assert.assertNotNull;
  *
  */
 public class RecoveryTest2 {
-    
+
+    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+
     private static String xmlDir = "/home/wolf/xml/Saami";
     
     @SuppressWarnings("unused")
@@ -74,7 +77,7 @@ public class RecoveryTest2 {
     @Test
     public void store() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, BTreeException, LockException {
         BrokerPool.FORCE_CORRUPTION = true;
-        final BrokerPool pool = startDB();
+        final BrokerPool pool = startDb();
         final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -108,9 +111,9 @@ public class RecoveryTest2 {
     }
 
     @Test
-    public void read() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException {
+    public void read() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException, IOException {
         BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDB();
+        BrokerPool pool = startDb();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             assertNotNull(broker);
@@ -124,15 +127,14 @@ public class RecoveryTest2 {
             doc.getUpdateLock().release(LockMode.READ_LOCK);
         }
     }
-    
-    protected BrokerPool startDB() throws EXistException, DatabaseConfigurationException {
-        Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        return BrokerPool.getInstance();
+
+    private BrokerPool startDb() throws EXistException, IOException, DatabaseConfigurationException {
+        existEmbeddedServer.startDb();
+        return existEmbeddedServer.getBrokerPool();
     }
 
     @After
-    public void tearDown() {
-        BrokerPool.stopAll(false);
+    public void stopDb() {
+        existEmbeddedServer.stopDb();
     }
 }
