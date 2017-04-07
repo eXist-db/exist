@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
+import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
+
 /**
  * Exist embedded Server Rule for JUnit
  */
@@ -26,34 +28,45 @@ public class ExistEmbeddedServer extends ExternalResource {
     private final Optional<Path> configFile;
     private final Optional<Properties> configProperties;
     private final boolean useTemporaryStorage;
+    private final boolean disableAutoDeploy;
     private Optional<Path> temporaryStorage = Optional.empty();
 
+    private String prevAutoDeploy = "off";
     private BrokerPool pool = null;
 
     public ExistEmbeddedServer() {
-        this(null, null, null, false);
+        this(null, null, null, false, false);
     }
 
     public ExistEmbeddedServer(final boolean useTemporaryStorage) {
-        this(null, null, null, useTemporaryStorage);
+        this(null, null, null, false, useTemporaryStorage);
+    }
+
+    public ExistEmbeddedServer(final boolean disableAutoDeploy, final boolean useTemporaryStorage) {
+        this(null, null, null, disableAutoDeploy, useTemporaryStorage);
     }
 
     public ExistEmbeddedServer(final Properties configProperties) {
-        this(null, null, configProperties, false);
+        this(null, null, configProperties, false, false);
     }
 
     public ExistEmbeddedServer(final String instanceName, final Path configFile) {
-        this(instanceName, configFile, null, false);
+        this(instanceName, configFile, null, false, false);
     }
 
     public ExistEmbeddedServer(final String instanceName, final Path configFile, final Properties configProperties) {
-        this(instanceName, configFile, configProperties, false);
+        this(instanceName, configFile, configProperties, false, false);
     }
 
-    public ExistEmbeddedServer(final String instanceName, final Path configFile, final Properties configProperties, final boolean useTemporaryStorage) {
+    public ExistEmbeddedServer(final String instanceName, final Path configFile, final Properties configProperties, final boolean disableAutoDeploy) {
+        this(instanceName, configFile, configProperties, false, false);
+    }
+
+    public ExistEmbeddedServer(final String instanceName, final Path configFile, final Properties configProperties, final boolean disableAutoDeploy, final boolean useTemporaryStorage) {
         this.instanceName = Optional.ofNullable(instanceName);
         this.configFile = Optional.ofNullable(configFile);
         this.configProperties = Optional.ofNullable(configProperties);
+        this.disableAutoDeploy = disableAutoDeploy;
         this.useTemporaryStorage = useTemporaryStorage;
     }
 
@@ -63,8 +76,13 @@ public class ExistEmbeddedServer extends ExternalResource {
         super.before();
     }
 
-    private void startDb() throws DatabaseConfigurationException, EXistException, IOException {
+    public void startDb() throws DatabaseConfigurationException, EXistException, IOException {
         if(pool == null) {
+
+            if(disableAutoDeploy) {
+                this.prevAutoDeploy = System.getProperty(AUTODEPLOY_PROPERTY, "off");
+                System.setProperty(AUTODEPLOY_PROPERTY, "off");
+            }
 
             final String name = instanceName.orElse(BrokerPool.DEFAULT_INSTANCE_NAME);
 
@@ -116,10 +134,11 @@ public class ExistEmbeddedServer extends ExternalResource {
     @Override
     protected void after() {
         stopDb();
+
         super.after();
     }
 
-    private void stopDb() {
+    public void stopDb() {
         if(pool != null) {
             pool.shutdown();
 
@@ -130,6 +149,12 @@ public class ExistEmbeddedServer extends ExternalResource {
                 FileUtils.deleteQuietly(temporaryStorage.get());
                 temporaryStorage = Optional.empty();
             }
+
+            if(disableAutoDeploy) {
+                //set the autodeploy trigger enablement back to how it was before this test class
+                System.setProperty(AUTODEPLOY_PROPERTY, this.prevAutoDeploy);
+            }
+
         } else {
             throw new IllegalStateException("ExistEmbeddedServer already stopped");
         }
