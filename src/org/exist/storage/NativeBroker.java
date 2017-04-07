@@ -91,8 +91,10 @@ import java.nio.file.StandardCopyOption;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.exist.dom.persistent.StoredNode;
 import org.exist.storage.dom.INodeIterator;
@@ -1321,97 +1323,230 @@ public class NativeBroker extends DBBroker {
     }
 
     private boolean isSubCollection(final Collection col, final Collection sub) {
-        return sub.getURI().startsWith(col.getURI());
+        return isSubCollection(col.getURI(), sub.getURI());
+    }
+
+    private boolean isSubCollection(final XmldbURI col, final XmldbURI sub) {
+        return sub.startsWith(col);
     }
 
     @Override
-    public void moveCollection(final Txn transaction, final Collection collection, final Collection destination, final XmldbURI newName) throws PermissionDeniedException, LockException, IOException, TriggerException {
+    public void moveCollection(final Txn transaction, final Collection sourceCollection, final Collection targetCollection, final XmldbURI newName) throws PermissionDeniedException, LockException, IOException, TriggerException {
+        assert(sourceCollection != null);
+        assert(targetCollection != null);
+        assert(newName != null);
 
         if(isReadOnly()) {
             throw new IOException(DATABASE_IS_READ_ONLY);
         }
 
-        if(newName != null && newName.numSegments() != 1) {
-            throw new PermissionDeniedException("New collection name must have one segment!");
+        if(newName.numSegments() != 1) {
+            throw new IOException("newName name must be just a name i.e. an XmldbURI with one segment!");
+        }
+
+        final XmldbURI sourceCollectionUri = sourceCollection.getURI();
+        final XmldbURI targetCollectionUri = targetCollection.getURI();
+        final XmldbURI destinationCollectionUri = targetCollectionUri.append(newName);
+
+        if(sourceCollection.getId() == targetCollection.getId()) {
+            throw new PermissionDeniedException("Cannot move collection to itself '" + sourceCollectionUri + "'.");
+        }
+        if(sourceCollectionUri.equals(destinationCollectionUri)) {
+            throw new PermissionDeniedException("Cannot move collection to itself '" + sourceCollectionUri + "'.");
+        }
+        if(sourceCollectionUri.equals(XmldbURI.ROOT_COLLECTION_URI)) {
+            throw new PermissionDeniedException("Cannot move the db root collection /db");
+        }
+        if(isSubCollection(sourceCollectionUri, targetCollectionUri)) {
+            throw new PermissionDeniedException("Cannot move collection '" + sourceCollectionUri + "' inside itself '" + targetCollectionUri + "'.");
+        }
+
+        if(!sourceCollection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
+            throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " has insufficient privileges on collection to move collection " + sourceCollectionUri);
+        }
+        if(!targetCollection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE | Permission.EXECUTE)) {
+            throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " has insufficient privileges on destination collection " + destinationCollectionUri + " to move collection " + sourceCollectionUri);
         }
 
 
 
-        if(collection.getId() == destination.getId()) {
-            throw new PermissionDeniedException("Cannot move collection to itself '" + collection.getURI() + "'.");
+        // WRITE LOCK the sourceCollection and its parent
+        try (final ManagedCollectionLock sourceCollectionLock = writeLockCollection(null, sourceCollectionUri, true)) {
+
+            final XmldbURI sourceCollectionParentUri = sourceCollectionUri.removeLastSegment();
+            final Collection sourceCollectionParent =  getCollection(sourceCollectionParentUri); // NOTE: we already have a WRITE lock on sourceCollectionParent (in sourceCollectionLock)
+            if(!sourceCollectionParent.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE | Permission.EXECUTE)) {
+                throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on collection " + sourceCollectionParentUri + " to move collection " + sourceCollectionUri);
+            }
+
+            // WRITE LOCK the destinationCollection
+            try(final ManagedCollectionLock destinationCollectionLock = writeLockCollection(null, destinationCollectionUri, false)) {
+
+                /*
+                 * If replacing another collection in the move
+                 * i.e. sourceCollection=/db/col1/A, targetCollection=/db/col2, newName=A
+                 * where /db/col2/A already exists we have to make sure the permissions to
+                 * remove /db/col2/A are okay!
+                 *
+                 * So we must call removeCollection on /db/col2/A
+                 * Which will ensure that collection can be removed and then remove it.
+                 */
+                try(final Collection existingDestinationCollection = getCollection(destinationCollectionUri)) { // NOTE: we already have a WRITE lock on destinationCollection (in destinationCollectionLock)
+                    if(existingDestinationCollection != null) {
+                        if (!removeCollection(transaction, existingDestinationCollection)) {
+                            throw new IOException("Destination collection '" + destinationCollectionUri + "' already exists and cannot be removed");
+                        }
+                    }
+                }
+
+                /*
+                 * At this point this thread should hold WRITE_LOCKs on:
+                 *   1) parent of sourceCollection
+                 *   2) sourceCollection
+                 *   3) targetCollection
+                 *   4) destinationCollection
+                 */
+
+                // we now pessimistically WRITE_LOCK the sourceCollection descendants
+                final List<ManagedCollectionLock> sourceCollectionDescendantLocks = writeLockDescendants(sourceCollection, sourceCollectionLock);
+                try {
+
+                    // we now pessimistically WRITE_LOCK the destinationCollection descendants that we are about to create
+                    final List<XmldbURI> destinationCollectionDescendentUris = sourceCollectionDescendantLocks.stream()
+                            .map(ManagedCollectionLock::getPath)
+                            .map(uri -> sourceCollectionUri.relativizeCollectionPath(uri.getURI()))
+                            .map(destinationCollectionUri::resolveCollectionPath)
+                            .map(XmldbURI::create)
+                            .collect(Collectors.toList());
+                    final List<ManagedCollectionLock> destinationCollectionDescendantLocks = writeLockCollections(destinationCollectionDescendentUris, destinationCollectionLock);
+                    try {
+
+                        pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_MOVE_COLLECTION, sourceCollection.getURI());
+                        try {
+                            final CollectionTrigger trigger = new CollectionTriggers(this, sourceCollectionParent);
+                            trigger.beforeMoveCollection(this, transaction, sourceCollection, destinationCollectionUri);
+
+                            // Need to move each collection in the source tree individually, so recurse.
+                            moveCollectionRecursive(transaction, trigger, sourceCollectionParent, sourceCollection, targetCollection, newName, false);
+
+                            // For binary resources, though, just move the top level directory and all descendants come with it.
+                            final Path fsSourceDir = getCollectionFile(getFsDir(), sourceCollectionUri, false);
+                            moveBinaryFork(transaction, fsSourceDir, targetCollection, newName);
+
+                            trigger.afterMoveCollection(this, transaction, sourceCollection, sourceCollectionUri);
+                        } finally {
+                            pool.getProcessMonitor().endJob();
+                        }
+
+                    } finally {
+                        // iterate over the list in reverse order (to ensure correct order of release)
+                        for(int i = destinationCollectionDescendantLocks.size() - 1; i >= 0; i--) {
+                            destinationCollectionDescendantLocks.get(i).close();  // release the lock
+                        }
+                    }
+
+                } finally {
+                    // iterate over the list in reverse order (to ensure correct order of release)
+                    for(int i = sourceCollectionDescendantLocks.size() - 1; i >= 0; i--) {
+                        sourceCollectionDescendantLocks.get(i).close();  // release the lock
+                    }
+                }
+            }
         }
-        if(collection.getURI().equals(destination.getURI().append(newName))) {
-            throw new PermissionDeniedException("Cannot move collection to itself '" + collection.getURI() + "'.");
-        }
-        if(collection.getURI().equals(XmldbURI.ROOT_COLLECTION_URI)) {
-            throw new PermissionDeniedException("Cannot move the db root collection");
-        }
-        if(isSubCollection(collection, destination)) {
-            throw new PermissionDeniedException("Cannot move collection '" + collection.getURI() + "' to it child collection '"+destination.getURI()+"'.");
-        }
-
-        final XmldbURI parentName = collection.getParentURI();
-        final Collection parent = parentName == null ? collection : getCollection(parentName);
-        if(!parent.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE | Permission.EXECUTE)) {
-            throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on collection " + parent.getURI() + " to move collection " + collection.getURI());
-        }
-
-        if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
-            throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on collection to move collection " + collection.getURI());
-        }
-
-        if(!destination.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE | Permission.EXECUTE)) {
-            throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on collection " + parent.getURI() + " to move collection " + collection.getURI());
-        }
-        
-        /*
-         * If replacing another collection in the move i.e. /db/col1/A -> /db/col2 (where /db/col2/A exists)
-         * we have to make sure the permissions to remove /db/col2/A are okay!
-         * 
-         * So we must call removeCollection on /db/col2/A
-         * Which will ensure that collection can be removed and then remove it.
-         */
-        final XmldbURI movedToCollectionUri = destination.getURI().append(newName);
-        final Collection existingMovedToCollection = getCollection(movedToCollectionUri);
-        if(existingMovedToCollection != null) {
-            removeCollection(transaction, existingMovedToCollection);
-        }
-
-        pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_MOVE_COLLECTION, collection.getURI());
-
-        try {
-
-            final XmldbURI srcURI = collection.getURI();
-            final XmldbURI dstURI = destination.getURI().append(newName);
-
-            final CollectionTrigger trigger = new CollectionTriggers(this, parent);
-            trigger.beforeMoveCollection(this, transaction, collection, dstURI);
-
-            // sourceDir must be known in advance, because once moveCollectionRecursive
-            // is called, both collection and destination can point to the same resource
-            final Path fsSourceDir = getCollectionFile(getFsDir(), collection.getURI(), false);
-
-            // Need to move each collection in the source tree individually, so recurse.
-            moveCollectionRecursive(transaction, trigger, collection, destination, newName, false);
-
-            // For binary resources, though, just move the top level directory and all descendants come with it.
-            moveBinaryFork(transaction, fsSourceDir, destination, newName);
-
-            trigger.afterMoveCollection(this, transaction, collection, srcURI);
-
-        } finally {
-            pool.getProcessMonitor().endJob();
-        }
-
     }
 
-    private void moveBinaryFork(final Txn transaction, final Path sourceDir, final Collection destination, final XmldbURI newName) throws IOException {
-        final Path targetDir = getCollectionFile(getFsDir(), destination.getURI().append(newName), false);
+    /**
+     * Acquires WRITE_LOCKs on multiple Collections
+     *
+     * Attempts to optimize the acquisition of locks by calling
+     * {@link LockManager#acquireCollectionWriteLock(ManagedCollectionLock, XmldbURI)} instead of
+     * {@link LockManager#acquireCollectionWriteLock(XmldbURI, boolean)}
+     *
+     * @param collectionUris A list of Collection URIs expected to be sorting top-down left-to-right
+     * @param parentCollectionLock An optional parentCollectionLock for the first collectionUri
+     *
+     * @return A list of WRITE_LOCKs in the same order as collectionUris
+     */
+    private List<ManagedCollectionLock> writeLockCollections(final List<XmldbURI> collectionUris, @Nullable ManagedCollectionLock parentCollectionLock) throws LockException {
+        final List<ManagedCollectionLock> locks = new ArrayList<>();
+
+        try {
+            for (final XmldbURI collectionUri : collectionUris) {
+                final XmldbURI parentCollectionUri = collectionUri.removeLastSegment();
+                parentCollectionLock = parentCollectionLock.getPath().equals(parentCollectionUri) ? parentCollectionLock : null;
+
+                final ManagedCollectionLock collectionLock = writeLockCollection(parentCollectionLock, collectionUri, false);
+                locks.add(collectionLock);
+
+                parentCollectionLock = collectionLock;
+            }
+        } catch(final LockException e) {
+            locks.forEach(ManagedCollectionLock::close);
+            throw e;
+        }
+
+        return locks;
+    }
+
+    /**
+     * Acquires WRITE_LOCKs on all descendant Collections of a specific Collection
+     *
+     * Locks are acquired in a top-down, left-to-right order
+     *
+     * Attempts to optimize the acquisition of locks by calling
+     * {@link LockManager#acquireCollectionWriteLock(ManagedCollectionLock, XmldbURI)} instead of
+     * {@link LockManager#acquireCollectionWriteLock(XmldbURI, boolean)}
+     *
+     * NOTE: It is assumed that the caller holds a {@link LockMode#WRITE_LOCK} on the
+     *     `collection`
+     *
+     * @param collection The Collection whose descendant WRITE_LOCKs should be acquired
+     * @param collectionLock An existing WRITE_LOCK acquired on `collection`
+     *
+     * @return A list of WRITE_LOCKs in the same order as collectionUris
+     */
+    private List<ManagedCollectionLock> writeLockDescendants(final Collection collection, final ManagedCollectionLock collectionLock) throws LockException, PermissionDeniedException {
+        final List<ManagedCollectionLock> locks = new ArrayList<>();
+
+        try {
+            final XmldbURI collectionUri = collection.getURI();
+            final Iterator<XmldbURI> it = collection.collectionIteratorNoLock(this);
+            while (it.hasNext()) {
+                final XmldbURI childCollectionName = it.next();
+                final XmldbURI childCollectionUri = collectionUri.append(childCollectionName);
+                final ManagedCollectionLock childCollectionLock = writeLockCollection(collectionLock, childCollectionUri, false);
+                locks.add(childCollectionLock);
+
+                final Collection childCollection = getCollection(childCollectionUri);  // NOTE: we already have a WRITE lock on childCollection
+                final List<ManagedCollectionLock> descendantLocks = writeLockDescendants(childCollection, childCollectionLock);
+                locks.addAll(descendantLocks);
+            }
+        } catch (final PermissionDeniedException | LockException e) {
+            locks.forEach(ManagedCollectionLock::close);
+            throw e;
+        }
+
+        return locks;
+    }
+
+    /**
+     * Moves the binary objects for a Collection Move operation, only meant to be
+     * called from {@link #moveCollection(Txn, Collection, Collection, XmldbURI)}
+     *
+     * @param transaction The current transaction
+     * @param sourceDir The source directory (containing the binary objects) which is to be moved
+     * @param targetCollection The target Collection which the source collection is to be moved to
+     * @param newName The name of the source collection in the target Collection
+     */
+    private void moveBinaryFork(final Txn transaction, final Path sourceDir, final Collection targetCollection, final XmldbURI newName) throws IOException {
+        final XmldbURI destinationCollectionUri = targetCollection.getURI().append(newName);
+
+        final Path targetDir = getCollectionFile(getFsDir(), destinationCollectionUri, false);
         if(Files.exists(sourceDir)) {
             if(Files.exists(targetDir)) {
 
                 if(fsJournalDir.isPresent()) {
-                    final Path targetDelDir = getCollectionFile(fsJournalDir.get(), transaction, destination.getURI().append(newName), true);
+                    final Path targetDelDir = getCollectionFile(fsJournalDir.get(), transaction, destinationCollectionUri, true);
                     Files.createDirectories(targetDelDir);
                     Files.move(targetDir, targetDelDir, StandardCopyOption.ATOMIC_MOVE);
 
@@ -1441,76 +1576,72 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    //TODO bug the trigger param is reused as this is a recursive method, but in the current design triggers
-    // are only meant to be called once for each action and then destroyed!
+    //TODO bug the trigger param is reused as this is a recursive method, but in the current design triggers are only meant to be called once for each action and then destroyed!
     /**
-     * @param transaction
-     * @param trigger
-     * @param collection
-     * @param destination
-     * @param newName
+     * Recursive-descent Collection move, only meant to be
+     * called from {@link #moveCollection(Txn, Collection, Collection, XmldbURI)}
+     *
+     * @param transaction The current transaction
+     * @param trigger The trigger to fire on Collection events
+     * @param sourceCollection The Collection to move
+     * @param targetCollection The target Collection to move the sourceCollection into
+     * @param newName The new name the sourceCollection should have in the targetCollection
      * @param fireTrigger Indicates whether the CollectionTrigger should be fired
-     *                    on the collection the first time this function is called.
-     *                    Triggers will always be fired for recursive calls of this
-     *                    function.
+     *     on the Collection the first time this function is called. Triggers will always
+     *     be fired for recursive calls of this function.
      */
-    private void moveCollectionRecursive(final Txn transaction, final CollectionTrigger trigger, final Collection collection, final Collection destination, final XmldbURI newName, final boolean fireTrigger) throws PermissionDeniedException, IOException, LockException, TriggerException {
-        final XmldbURI uri = collection.getURI();
-        final XmldbURI srcURI = collection.getURI();
-        final XmldbURI dstURI = destination.getURI().append(newName);
+    private void moveCollectionRecursive(final Txn transaction, final CollectionTrigger trigger, @Nullable final Collection sourceCollectionParent, final Collection sourceCollection, final Collection targetCollection, final XmldbURI newName, final boolean fireTrigger) throws PermissionDeniedException, IOException, LockException, TriggerException {
+        final XmldbURI sourceCollectionUri = sourceCollection.getURI();
+        final XmldbURI destinationCollectionUri = targetCollection.getURI().append(newName);
 
-        //recheck here because now under 'synchronized(collectionsCache)'
-        if(isSubCollection(collection, destination)) {
-            throw new PermissionDeniedException("Cannot move collection '" + srcURI + "' to it child collection '"+dstURI+"'.");
+        if(fireTrigger) {
+            trigger.beforeMoveCollection(this, transaction, sourceCollection, destinationCollectionUri);
+        }
+
+        // remove source from parent
+        if (sourceCollectionParent != null) {
+            final XmldbURI sourceCollectionName = sourceCollectionUri.lastSegment();
+            sourceCollectionParent.removeCollection(this, sourceCollectionName);
+            saveCollection(transaction, sourceCollectionParent);
+        }
+
+        // remove source from cache
+        final CollectionCache collectionsCache = pool.getCollectionsCache();
+        collectionsCache.invalidate(sourceCollection.getURI());
+
+        // remove source from disk
+        try (final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
+            final Value key = new CollectionStore.CollectionKey(sourceCollectionUri.toString());
+            collectionsDb.remove(transaction, key);
+        }
+
+        // set source path to destination... source is now the destination
+        sourceCollection.setPath(destinationCollectionUri);
+        saveCollection(transaction, sourceCollection);
+
+        // add destination to target
+        targetCollection.addCollection(this, sourceCollection, false);
+        if (sourceCollectionParent != targetCollection) {
+            saveCollection(transaction, targetCollection);
         }
 
         if(fireTrigger) {
-            trigger.beforeMoveCollection(this, transaction, collection, dstURI);
+            trigger.afterMoveCollection(this, transaction, sourceCollection, sourceCollectionUri);
         }
 
-        final XmldbURI parentName = collection.getParentURI();
-        try(final Collection parent = openCollection(parentName, LockMode.WRITE_LOCK)) {
-            if (parent != null) {
-                parent.removeCollection(this, uri.lastSegment());
-            }
-
-            try (final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
-                final CollectionCache collectionsCache = pool.getCollectionsCache();
-                collectionsCache.invalidate(collection.getURI());
-                final Value key = new CollectionStore.CollectionKey(uri.toString());
-                collectionsDb.remove(transaction, key);
-                //TODO : resolve URIs destination.getURI().resolve(newName)
-                collection.setPath(destination.getURI().append(newName));
-                destination.addCollection(this, collection);
-                if (parent != null) {
-                    saveCollection(transaction, parent);
-                }
-                if (parent != destination) {
-                    saveCollection(transaction, destination);
-                }
-                saveCollection(transaction, collection);
-                //} catch (ReadOnlyException e) {
-                //throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-            }
-        }
-
-        if(fireTrigger) {
-            trigger.afterMoveCollection(this, transaction, collection, srcURI);
-        }
-
-        for(final Iterator<XmldbURI> i = collection.collectionIterator(this); i.hasNext(); ) {
+        // move the descendants
+        for(final Iterator<XmldbURI> i = sourceCollection.collectionIteratorNoLock(this); i.hasNext(); ) {  // NOTE: we already have a WRITE lock on sourceCollection
             final XmldbURI childName = i.next();
-            //TODO : resolve URIs !!! name.resolve(childName)
-            try (final Collection child = openCollection(uri.append(childName), LockMode.WRITE_LOCK)) {
+            final XmldbURI childUri = sourceCollectionUri.append(childName);
+            try(final Collection child = getCollection(childUri)) {        // NOTE: we already have a WRITE lock on child
                 if (child == null) {
-                    LOG.error("Child collection " + childName + " not found");
+                    throw new IOException("Child collection " + childUri + " not found");
                 } else {
-                    moveCollectionRecursive(transaction, trigger, child, collection, childName, true);
+                    moveCollectionRecursive(transaction, trigger, null, child, sourceCollection, childName, true);
                 }
             }
         }
     }
-
 
     @Override
     public boolean removeCollection(final Txn transaction, final Collection collection) throws PermissionDeniedException, IOException, TriggerException {

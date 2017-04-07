@@ -624,25 +624,25 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
         BinaryDocument blob) throws PermissionDeniedException,IOException;
 
 	/**
-	 * Move a collection and all its subcollections to another collection and
+	 * Move a collection and all its sub-Collections to another Collection and
 	 * rename it. Moving a collection just modifies the collection path and all
 	 * resource paths. The data itself remains in place.
-	 * 
-	 * @param collection
-	 *            the collection to move
-	 * @param destination
-	 *            the destination collection
-	 * @param newName
-	 *            the new name the collection should have in the destination
-	 *            collection
-	 * 
-	 * @throws PermissionDeniedException 
-	 * @throws LockException 
-	 * @throws IOException 
-	 * @throws TriggerException 
+     *
+     * NOTE: It is assumed that the caller holds a {@link LockMode#WRITE_LOCK} on both the
+     *     `sourceCollection` and the `targetCollection`
+	 *
+     * @param transaction The current transaction
+	 * @param sourceCollection The Collection to move
+	 * @param targetCollection The target Collection to move the sourceCollection into
+	 * @param newName The new name the sourceCollection should have in the targetCollection
+	 *
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
+     * @throws LockException If an exception occurs whilst acquiring locks
+     * @throws IOException If an error occurs whilst moving the Collection on disk
+     * @throws TriggerException If a CollectionTrigger throws an exception
 	 */
-	public abstract void moveCollection(Txn transaction, Collection collection,
-			Collection destination, XmldbURI newName)
+	public abstract void moveCollection(Txn transaction, Collection sourceCollection,
+			Collection targetCollection, XmldbURI newName)
 			throws PermissionDeniedException, LockException, IOException, TriggerException;
 
 	/**
