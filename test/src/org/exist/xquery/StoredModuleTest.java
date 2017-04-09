@@ -221,7 +221,7 @@ public class StoredModuleTest {
         String collection3Name = "module2/module3";
 
         String query = "import module namespace mod2 = 'urn:module2' " +
-                "at  '/test/temp/" + collection2Name + "/module2.xqm'; " +
+                "at  'test/temp/" + collection2Name + "/module2.xqm'; " +
                 "mod2:showMe()";
         
         String c2 = "test/temp/" + collection2Name;
