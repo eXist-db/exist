@@ -57,6 +57,8 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     public static final String DEFAULT_INSTANCE_NAME = "exist";
     public static final String EMBEDDED_SERVER_AUTHORITY = "embedded-eXist-server";
     public static final String EMBEDDED_SERVER_URI_PREFIX = XMLDB_URI_PREFIX + DEFAULT_INSTANCE_NAME + "://";
+    public static final String EMBEDDED_SHORT_URI_PREFIX = XMLDB_URI_PREFIX + "/";
+
     /**
      * 'db' collection name
      */
@@ -151,7 +153,11 @@ public class XmldbURI implements Comparable<Object>, Serializable {
             if (!XMLDB_SCHEME.equals(xmldbURI.getScheme())) {
                 throw new URISyntaxException(xmldbURI.toString(), "xmldb URI scheme does not start with " + XMLDB_URI_PREFIX);
             }
-            xmldbURI = new URI(xmldbURI.toString().substring(XMLDB_URI_PREFIX.length()));
+
+            String uri = xmldbURI.toString();
+            if (!uri.startsWith(EMBEDDED_SHORT_URI_PREFIX)) {
+                xmldbURI = new URI(uri.substring(XMLDB_URI_PREFIX.length()));
+            }
             hadXmldbPrefix = true;
         }
 
