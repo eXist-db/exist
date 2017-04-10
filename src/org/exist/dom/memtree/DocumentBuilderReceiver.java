@@ -166,7 +166,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     }
 
     public void addNamespaceNode(final QName qname) throws SAXException {
-        builder.namespaceNode(qname);
+        builder.namespaceNode(qname, checkNS);
     }
 
     @Override

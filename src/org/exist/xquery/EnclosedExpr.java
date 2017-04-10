@@ -30,6 +30,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.DOMException;
 import org.xml.sax.SAXException;
 
 /**
@@ -123,10 +124,19 @@ public class EnclosedExpr extends PathExpr {
                         receiver.characters(buf);
                         buf.setLength(0);
                     }
-                    if (next.getType() == Type.ATTRIBUTE && !allowAttribs)
-                        {throw new XPathException(this, ErrorCodes.XQTY0024,
-                            "An attribute may not appear after another child node.");}
-                    next.copyTo(context.getBroker(), receiver);
+                    if (next.getType() == Type.ATTRIBUTE && !allowAttribs) {
+                        throw new XPathException(this, ErrorCodes.XQTY0024,
+                            "An attribute may not appear after another child node.");
+                    }
+                    try {
+                        next.copyTo(context.getBroker(), receiver);
+                    } catch (DOMException e) {
+                      if (e.code == DOMException.NAMESPACE_ERR) {
+                          throw new XPathException(this, ErrorCodes.XQDY0102, e.getMessage());
+                      } else {
+                          throw new XPathException(this, e.getMessage(), e);
+                      }
+                    }
                     allowAttribs = next.getType() == Type.ATTRIBUTE || next.getType() == Type.NAMESPACE;
                     next = i.nextItem();
                 }
