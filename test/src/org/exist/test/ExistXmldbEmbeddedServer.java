@@ -1,5 +1,6 @@
 package org.exist.test;
 
+import org.exist.TestUtils;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
@@ -25,12 +26,6 @@ import static org.junit.Assert.fail;
  * Exist embedded XML:DB Server Rule for JUnit
  */
 public class ExistXmldbEmbeddedServer extends ExternalResource {
-
-    private final static String ADMIN_DB_USER = "admin";
-    private final static String ADMIN_DB_PWD = "";
-
-    private final static String GUEST_DB_USER = "guest";
-    private final static String GUEST_DB_PWD = "guest";
 
     private final boolean asGuest;
     private final boolean disableAutoDeploy;
@@ -80,9 +75,9 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
             if (asGuest) {
-                root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, GUEST_DB_USER, GUEST_DB_PWD);
+                root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.GUEST_DB_USER, TestUtils.GUEST_DB_PWD);
             } else {
-                root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, ADMIN_DB_USER, ADMIN_DB_PWD);
+                root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
             }
             xpathQueryService = (XQueryService) root.getService("XQueryService", "1.0");
         } else {
@@ -123,9 +118,9 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
 
         final XmldbURI uri = XmldbURI.LOCAL_DB_URI.resolveCollectionPath(((CollectionImpl) collection).getPathURI().append(collectionName));
         if (asGuest) {
-            newCollection = DatabaseManager.getCollection(uri.toString(), GUEST_DB_USER, GUEST_DB_PWD);
+            newCollection = DatabaseManager.getCollection(uri.toString(), TestUtils.GUEST_DB_USER, TestUtils.GUEST_DB_PWD);
         } else {
-            newCollection = DatabaseManager.getCollection(uri.toString(), ADMIN_DB_USER, ADMIN_DB_PWD);
+            newCollection = DatabaseManager.getCollection(uri.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         }
 
         return newCollection;

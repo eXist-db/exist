@@ -28,6 +28,26 @@ import org.exist.util.ConfigurationHelper;
 public class TestUtils {
 
     /**
+     * Default Admin username used in tests
+     */
+    public static final String ADMIN_DB_USER = "admin";
+
+    /**
+     * Default Admin password used in tests
+     */
+    public static final String ADMIN_DB_PWD = "";
+
+    /**
+     * Default Guest username used in tests
+     */
+    public static final String GUEST_DB_USER = "guest";
+
+    /**
+     * Default Guest password used in tests
+     */
+    public static final String GUEST_DB_PWD = "guest";
+
+    /**
      * Removes all sub-collections of /db
      * except for /db/system
      */
