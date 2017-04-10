@@ -1,6 +1,7 @@
 package org.exist.xmlrpc;
 
 import org.exist.TestDataGenerator;
+import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.IndexQueryService;
 import org.junit.*;
@@ -10,7 +11,6 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XQueryService;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 public class QuerySessionTest {
 
     @ClassRule
-    public final static ExistWebServer existWebServer = new ExistWebServer(true);
+    public final static ExistWebServer existWebServer = new ExistWebServer(true, false, true);
 
     private final static String generateXQ = "<book id=\"{$filename}\" n=\"{$count}\">"
 			+ "   <chapter xml:id=\"chapter{$count}\">"
@@ -133,7 +133,7 @@ public class QuerySessionTest {
         idxs.configureCollection(COLLECTION_CONFIG);
 
         Resource resource = test.createResource("strings.xml", "XMLResource");
-        resource.setContent(Paths.get("samples/shakespeare/macbeth.xml"));
+        resource.setContent(TestUtils.resolveShakespeareSample("macbeth.xml"));
         test.storeResource(resource);
         
         TestDataGenerator generator = new TestDataGenerator("xdb", DOC_COUNT);

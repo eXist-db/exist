@@ -41,7 +41,7 @@ import static org.junit.Assert.assertEquals;
 public class ConstructedNodesTest {
 
 	@ClassRule
-	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
 	/**
 	 * Iteratively constructs some nodes

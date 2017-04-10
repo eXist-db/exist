@@ -21,6 +21,7 @@
  */
 package org.exist.xmldb;
 
+import org.exist.TestUtils;
 import org.exist.security.Account;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.ClassRule;
@@ -65,7 +66,7 @@ import static org.exist.xmldb.XmldbLocalTests.*;
 public class TestEXistXMLSerialize {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
 	private final static String XML_DATA =
     	"<test>" +
@@ -82,7 +83,7 @@ public class TestEXistXMLSerialize {
 		"<p><xsl:value-of select=\"$testparam\"/>: <xsl:apply-templates/></p></xsl:template>" +
 		"</xsl:stylesheet>";
     
-    private final static Path testFile = getExistDir().resolve("test/src/org/exist/xmldb/PerformanceTest.xml").normalize();
+    private final static Path testFile = TestUtils.getEXistHome().get().resolve("test/src/org/exist/xmldb/PerformanceTest.xml").normalize();
 
     private final static String TEST_COLLECTION = "testXmlSerialize";
 

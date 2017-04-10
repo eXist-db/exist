@@ -59,7 +59,7 @@ import static org.junit.Assert.assertArrayEquals;
 public abstract class TestRunner {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     protected abstract String getDirectory();
 

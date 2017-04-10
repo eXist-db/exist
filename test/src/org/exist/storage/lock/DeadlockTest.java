@@ -25,7 +25,6 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.exist.EXistException;
 import org.exist.TestDataGenerator;
+import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
@@ -170,8 +170,7 @@ public class DeadlockTest {
 			final CollectionConfigurationManager mgr = pool.getConfigurationManager();
 			mgr.addConfiguration(transaction, broker, test, COLLECTION_CONFIG);
 
-			final InputSource is = new InputSource(Paths.get(
-					"samples/shakespeare/hamlet.xml").toUri().toASCIIString());
+			final InputSource is = new InputSource(TestUtils.resolveShakespeareSample("hamlet.xml").toUri().toASCIIString());
 			assertNotNull(is);
 			final IndexInfo info = test.validateXMLResource(transaction, broker,
 					XmldbURI.create("hamlet.xml"), is);

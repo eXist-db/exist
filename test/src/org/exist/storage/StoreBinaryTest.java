@@ -51,7 +51,7 @@ public class StoreBinaryTest {
     }
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     @After
     public void removeTestResources() throws EXistException, PermissionDeniedException, IOException, TriggerException {

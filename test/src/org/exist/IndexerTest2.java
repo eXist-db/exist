@@ -144,10 +144,13 @@ public class IndexerTest2 {
     }
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(propertiesBuilder()
-            .put(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, true)
-            .set(Indexer.PROPERTY_SUPPRESS_WHITESPACE, "none")
-            .build());
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(
+            propertiesBuilder()
+                .put(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, true)
+                .set(Indexer.PROPERTY_SUPPRESS_WHITESPACE, "none")
+                .build(),
+            true,
+            false);
 
     @BeforeClass
     public static void setUp() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, LockException, AuthenticationException {

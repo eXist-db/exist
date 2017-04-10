@@ -23,7 +23,7 @@ package org.exist.management;
  * Provides access to some properties of the internal page caches
  * ({@link org.exist.storage.cache.Cache}).
  */
-public interface CacheMBean {
+public interface CacheMXBean {
 
     String getType();
     

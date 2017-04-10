@@ -73,7 +73,7 @@ public class CollectionRemovalTest {
     private final static String QUERY2 = "//chapter[title = 'Chapter 1']";
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     @Test
     public void failingRemoveCollection()

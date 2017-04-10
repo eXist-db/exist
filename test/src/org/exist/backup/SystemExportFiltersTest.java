@@ -94,7 +94,7 @@ public class SystemExportFiltersTest {
     private static String BINARY = "test";
 
     @Rule
-    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     @Before
     public void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {

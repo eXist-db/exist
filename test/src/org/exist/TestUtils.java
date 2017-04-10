@@ -2,7 +2,6 @@ package org.exist;
 
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.start.Main;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
@@ -17,23 +16,42 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Stream;
+
 import org.exist.util.ConfigurationHelper;
 
 /**
- * Created by IntelliJ IDEA.
- * User: wolf
- * Date: Oct 29, 2007
- * Time: 4:28:26 PM
- * To change this template use File | Settings | File Templates.
+ * Utility functions for working with tests
  */
 public class TestUtils {
-	
-    public static void cleanupDB() {
 
+    /**
+     * Default Admin username used in tests
+     */
+    public static final String ADMIN_DB_USER = "admin";
+
+    /**
+     * Default Admin password used in tests
+     */
+    public static final String ADMIN_DB_PWD = "";
+
+    /**
+     * Default Guest username used in tests
+     */
+    public static final String GUEST_DB_USER = "guest";
+
+    /**
+     * Default Guest password used in tests
+     */
+    public static final String GUEST_DB_PWD = "guest";
+
+    /**
+     * Removes all sub-collections of /db
+     * except for /db/system
+     */
+    public static void cleanupDB() {
         try {
             BrokerPool pool = BrokerPool.getInstance();
             assertNotNull(pool);
@@ -71,93 +89,113 @@ public class TestUtils {
         }
     }
 
+    /**
+     * Deletes all data files from the eXist data files directory
+     */
+    public static void cleanupDataDir() throws IOException, DatabaseConfigurationException {
+        final Configuration conf = new Configuration();
+        final Path data = (Path) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+
+        try(final Stream<Path> dataFiles  = Files.list(data)) {
+            dataFiles
+                    .filter(path -> !(FileUtils.fileName(path).equals("RECOVERY") || FileUtils.fileName(path).equals("README") || FileUtils.fileName(path).equals(".DO_NOT_DELETE")))
+                    .forEach(FileUtils::deleteQuietly);
+        }
+    }
+
+    /**
+     * Reads the content of a file
+     *
+     * @param directory The directory to read from
+     * @param filename the filename in the directory to read from
+     *
+     * @return The content of the file
+     */
     public static byte[] readFile(final Path directory, final String filename) throws IOException {
         return readFile(directory.resolve(filename));
     }
 
+    /**
+     * Reads the content of a file
+     *
+     * @param file the file to read from
+     *
+     * @return The content of the file
+     */
     public static byte[] readFile(final Path file) throws IOException {
         assertTrue(Files.isReadable(file));
         return Files.readAllBytes(file);
     }
 
-
-    public static Main startupDatabase() {
-        Main database = new org.exist.start.Main("jetty");
-        database.run(new String[]{"jetty"});
-        return database;
-    }
-
-    public static void stopDatabase(Main database) {
-       	database.shutdown();
-    }
-    
     /**
-     * Moves the current data directory to a backup location and places a 
-     * clean data directory in it's place. This way we don't loose data when 
-     * we run a unit test
-     * 
-     * @return the path to the data backup directory
-     * @throws IOException
-     * @author Patrick Bosek <patrick.bosek@jorsek.com>
-     * @throws DatabaseConfigurationException 
+     * Get the EXIST_HOME directory
+     *
+     * @return The absolute path to the EXIST_HOME folder
+     *   or {@link Optional#empty()}
      */
-    public static Path moveDataDirToTempAndCreateClean() throws IOException, DatabaseConfigurationException {
-    	
-		Configuration conf = new Configuration();
-		
-		Path dataDirPath = (Path) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR);
-		
-		if(dataDirPath == null || dataDirPath.toString().equals("")) {
-            throw new DatabaseConfigurationException("Could not find configuration for data directory");
-        }
-		
-//		java.util.GregorianCalendar cal = new java.util.GregorianCalendar();
-//		String dateString = cal.toString();
+    public static Optional<Path> getEXistHome() {
+        return ConfigurationHelper.getExistHome().map(Path::toAbsolutePath);
+    }
 
-		final Path dataBackup = dataDirPath.resolve(".temp-test-bak");
+    /**
+     * Reads the content of the sample hamlet.xml
+     *
+     * @return The content of the file
+     */
+    public static byte[] readHamletSampleXml() throws IOException {
+        return readSample("shakespeare/hamlet.xml");
+    }
 
-        Files.move(dataDirPath, dataBackup, StandardCopyOption.ATOMIC_MOVE);
+    /**
+     * Reads the content of the sample r_and_j.xml
+     *
+     * @return The content of the file
+     */
+    public static byte[] readRomeoAndJulietSampleXml() throws IOException {
+        return readSample("shakespeare/r_and_j.xml");
+    }
 
-        Files.createDirectory(dataDirPath);
-		
-		return dataBackup;
-	}
-	
-	/**
-	 * Restores the data directory from before the test run and moves
-	 * the data directory used durring the test to data.last-test-run
-	 * so it can be inspected if desired.
-	 * 
-	 * @param backupDataDirPath
-	 * @throws IOException
-	 * @author Patrick Bosek <patrick.bosek@jorsek.com>
-	 * @throws DatabaseConfigurationException 
-	 */
-	public static void moveDataDirBack(final Path backupDataDirPath) throws IOException, DatabaseConfigurationException {
+    /**
+     * Reads the content of the sample file
+     *
+     * @param sampleRelativePath The path of the sample file relative to the samples directory
+     *
+     * @return The content of the file
+     */
+    public static byte[] readSample(final String sampleRelativePath) throws IOException {
+        final Path file = resolveSample(sampleRelativePath);
+        return readFile(file);
+    }
 
-		Configuration conf = new Configuration();
-		
-		Path dataDirPath = (Path) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR);
-		
-		final Path lastTestRunDataDir = dataDirPath.resolve(".last-test-run");
-		
-		if(Files.exists(lastTestRunDataDir)) {
-            FileUtils.delete(lastTestRunDataDir);
-        }
+    /**
+     * Resolve the path of a sample file
+     *
+     * @param relativePath The path of the sample file relative to the samples directory
+     *
+     * @return The absolute path to the sample file
+     */
+    public static Path resolveSample(final String relativePath) {
+        final Path samples = FileUtils.resolve(getEXistHome(), "samples");
+        return samples.resolve(relativePath);
+    }
 
-        Files.move(dataDirPath, lastTestRunDataDir, StandardCopyOption.ATOMIC_MOVE);
-		Files.move(backupDataDirPath, dataDirPath, StandardCopyOption.ATOMIC_MOVE);
-	}
-        
-        
-        public static void cleanupDataDir() throws IOException, DatabaseConfigurationException {
-            Configuration conf = new Configuration();
-            final Path data = (Path) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+    /**
+     * Gets the path of the Shakespeare samples
+     *
+     * @return The path to the Shakespeare samples
+     */
+    public static Path shakespeareSamples() {
+        return resolveSample("shakespeare");
+    }
 
-            try(final Stream<Path> dataFiles  = Files.list(data)) {
-                dataFiles
-                        .filter(path -> !(FileUtils.fileName(path).equals("RECOVERY") || FileUtils.fileName(path).equals("README") || FileUtils.fileName(path).equals(".DO_NOT_DELETE")))
-                        .forEach(FileUtils::deleteQuietly);
-            }
-        }
+    /**
+     * Resolve the path of a Shakespeare sample file
+     *
+     * @param relativePath The path of the Shakespeare sample file relative to the Shakespeare samples directory
+     *
+     * @return The absolute path to the sample file
+     */
+    public static Path resolveShakespeareSample(final String relativePath) {
+        return shakespeareSamples().resolve(relativePath);
+    }
 }

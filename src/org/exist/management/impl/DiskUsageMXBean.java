@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-2014 The eXist-db Project
+ *  Copyright (C) 2001-08 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,29 +17,47 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *  $Id$
  */
+
 package org.exist.management.impl;
 
 /**
- * Interface SystemInfoMBean
+ * Interface DiskUsageMXBean.
  *
- * @author wessels
- * @author ljo
+ * @author dizzzz@exist-db.org
  */
-public interface SystemInfoMBean 
+public interface DiskUsageMXBean
 {
-    public String getExistVersion();
-    
-    public String getExistBuild();
 
-    @Deprecated
-    public String getSvnRevision();
-    
-    public String getGitCommit();
+    /**
+     * No disk space could be determined.
+     */
+    public static final long NO_VALUE = -1;
 
-    public String getOperatingSystem();
+    /**
+     * Directory is not defined.
+     */
+    public static final String NOT_CONFIGURED = "NOT_CONFIGURED";
+
+    public String getDataDirectory();
     
-    public String getDefaultLocale();
+    public long getDataDirectoryUsableSpace();
     
-    public String getDefaultEncoding();
+    public long getDataDirectoryTotalSpace();
+    
+    public long getDataDirectoryUsedSpace();
+    
+    public String getJournalDirectory();
+    
+    public long getJournalDirectoryUsableSpace();
+    
+    public long getJournalDirectoryTotalSpace();
+    
+    public long getJournalDirectoryUsedSpace();
+    
+    public long getJournalDirectoryNumberOfFiles();
+    
 }
+
+

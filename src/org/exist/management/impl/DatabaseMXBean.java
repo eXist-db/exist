@@ -23,7 +23,7 @@ import javax.management.openmbean.TabularData;
 *
 * $Id$
 */
-public interface DatabaseMBean {
+public interface DatabaseMXBean {
 
     String getInstanceId();
     

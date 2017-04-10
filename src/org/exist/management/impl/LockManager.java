@@ -34,7 +34,7 @@ import java.util.Map;
  * Time: 10:48:35 AM
  * To change this template use File | Settings | File Templates.
  */
-public class LockManager implements LockManagerMBean {
+public class LockManager implements LockManagerMXBean {
 
     @Override
     public TabularData getWaitingThreads() {

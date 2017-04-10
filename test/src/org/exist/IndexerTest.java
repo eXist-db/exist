@@ -58,9 +58,12 @@ import org.xml.sax.SAXException;
 public class IndexerTest {
 
 	@ClassRule
-	public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(propertiesBuilder()
-            .set(Indexer.PROPERTY_SUPPRESS_WHITESPACE, "none")
-            .build());
+	public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(
+			propertiesBuilder()
+            	.set(Indexer.PROPERTY_SUPPRESS_WHITESPACE, "none")
+            	.build(),
+			true,
+			false);
 
     private final static String XML =
         "<?xml version=\"1.0\"?>\n" +

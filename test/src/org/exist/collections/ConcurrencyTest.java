@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class ConcurrencyTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     private static final int N_THREADS = 10;
     private static final int DOC_COUNT = 200; 

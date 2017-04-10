@@ -1,5 +1,6 @@
 package org.exist.storage;
 
+import org.exist.TestUtils;
 import org.exist.util.Configuration;
 import org.exist.xquery.XQuery;
 import org.exist.xmldb.XmldbURI;
@@ -63,7 +64,7 @@ public class DirtyShutdownTest {
             for (int i = 0; i < 50; i++) {
                 try(final Txn transaction = transact.beginTransaction()) {
 
-                    Path f = Paths.get("samples/shakespeare/macbeth.xml");
+                    final Path f = TestUtils.resolveShakespeareSample("macbeth.xml");
                     IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
                             new InputSource(f.toUri().toASCIIString()));
                     assertNotNull(info);
@@ -86,7 +87,7 @@ public class DirtyShutdownTest {
                 assertNotNull(root);
                 broker.saveCollection(transaction, root);
 
-                Path f = Paths.get("samples/shakespeare/hamlet.xml");
+                final Path f = TestUtils.resolveShakespeareSample("hamlet.xml");
                 IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
                         new InputSource(f.toUri().toASCIIString()));
                 assertNotNull(info);

@@ -48,7 +48,7 @@ public class AppendTest extends AbstractUpdateTest {
     @Test
     public void update() throws EXistException, DatabaseConfigurationException, LockException, SAXException, PermissionDeniedException, IOException, ParserConfigurationException, XPathException {
         BrokerPool.FORCE_CORRUPTION = true;
-        final BrokerPool pool = startDB();
+        final BrokerPool pool = startDb();
         final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {

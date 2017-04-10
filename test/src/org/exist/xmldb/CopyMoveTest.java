@@ -19,7 +19,7 @@ import static org.exist.xmldb.XmldbLocalTests.*;
 public class CopyMoveTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     private final static String TEST_COLLECTION = "testCopyMove";
 

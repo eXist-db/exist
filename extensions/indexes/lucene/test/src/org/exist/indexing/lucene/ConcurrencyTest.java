@@ -29,7 +29,9 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
@@ -54,6 +56,8 @@ public class ConcurrencyTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
+    private static int CONCURRENT_THREADS = Runtime.getRuntime().availableProcessors() * 3;
+
     private static Collection test;
 
     private static final String COLLECTION_CONFIG1 =
@@ -68,10 +72,10 @@ public class ConcurrencyTest {
 
     @Test
 	public void store() {
-		final ExecutorService executor = Executors.newFixedThreadPool(10);
+        final ExecutorService executor = newFixedThreadPool(CONCURRENT_THREADS, "store");
 
-        for (int i = 0; i < 10; i++) {
-            final String name = "thread" + i;
+        for (int i = 0; i < CONCURRENT_THREADS; i++) {
+            final String name = "store-thread-" + i;
             final Runnable run = () -> {
                 try {
                     storeRemoveDocs(name);
@@ -95,10 +99,10 @@ public class ConcurrencyTest {
 
     @Test
 	public void update() {
-		final ExecutorService executor = Executors.newFixedThreadPool(10);
 
-        for (int i = 0; i < 5; i++) {
-            final String name = "thread" + i;
+		final ExecutorService executor = newFixedThreadPool(CONCURRENT_THREADS, "update");
+        for (int i = 0; i < CONCURRENT_THREADS; i++) {
+            final String name = "update-thread" + i;
             Runnable run = () -> {
                 try {
                     xupdateDocs(name);
@@ -118,6 +122,17 @@ public class ConcurrencyTest {
 		    //Nothing to do
 		}
 		assertTrue(terminated);
+    }
+
+    private ExecutorService newFixedThreadPool(final int nThreads, final String threadsBaseName) {
+        return Executors.newFixedThreadPool(nThreads, new ThreadFactory() {
+            private final AtomicInteger counter = new AtomicInteger();
+
+            @Override
+            public Thread newThread(final Runnable r) {
+                return new Thread(r, threadsBaseName + "-" + counter.getAndIncrement());
+            }
+        });
     }
 
     private void storeRemoveDocs(final String collectionName) throws XMLDBException, IOException {
@@ -171,11 +186,7 @@ public class ConcurrencyTest {
             final IndexQueryService iqs = (IndexQueryService) collection.getService("IndexQueryService", "1.0");
             iqs.configureCollection(COLLECTION_CONFIG1);
 
-            final String existHome = System.getProperty("exist.home");
-            Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-            existDir = existDir.normalize();
-
-            final Path samples = existDir.resolve("samples/shakespeare");
+            final Path samples = TestUtils.shakespeareSamples();
             final List<Path> files = FileUtils.list(samples);
             final MimeTable mimeTab = MimeTable.getInstance();
             for (final Path file : files) {

@@ -22,24 +22,27 @@
 package org.exist.storage;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.exist.EXistException;
+import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Test;
@@ -50,25 +53,26 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class MoveCollectionTest {
 
-    @Test(expected = PermissionDeniedException.class)
-    public void moveToSubCollection() throws Exception {
-        final BrokerPool pool = startDB();
-        final TransactionManager transact = pool.getTransactionManager();
+    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
+    @Test(expected = PermissionDeniedException.class)
+    public void moveToSelfSubCollection() throws EXistException, IOException, DatabaseConfigurationException, PermissionDeniedException, TriggerException, LockException, XMLDBException {
+        final BrokerPool pool = startDb();
+
+        final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
-            Collection src = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+            final Collection src = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(src);
             broker.saveCollection(transaction, src);
 
-            Collection dst = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
+            final Collection dst = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
             assertNotNull(dst);
             broker.saveCollection(transaction, dst);
 
@@ -81,32 +85,64 @@ public class MoveCollectionTest {
     }
 
     @Test
-    public void store() throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    public void storeAndRead() throws EXistException, InstantiationException, DatabaseConfigurationException, LockException, IllegalAccessException, PermissionDeniedException, SAXException, IOException, XMLDBException, ClassNotFoundException {
         BrokerPool.FORCE_CORRUPTION = true;
-        final BrokerPool pool = startDB();
-        final TransactionManager transact = pool.getTransactionManager();
+        BrokerPool pool = startDb();
+        store(pool);
 
+        stopDb();
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = startDb();
+        read(pool);
+    }
+
+    @Test
+    public void storeAndReadAborted() throws EXistException, InstantiationException, DatabaseConfigurationException, LockException, IllegalAccessException, PermissionDeniedException, SAXException, IOException, XMLDBException, ClassNotFoundException {
+        BrokerPool.FORCE_CORRUPTION = true;
+        BrokerPool pool = startDb();
+        storeAborted(pool);
+
+        stopDb();
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = startDb();
+        readAborted(pool);
+    }
+
+    @Test
+    public void storeAndReadXmldb() throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, IOException {
+        BrokerPool.FORCE_CORRUPTION = false;
+        BrokerPool pool = startDb();
+        xmldbStore(pool);
+
+        stopDb();
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = startDb();
+        xmldbRead(pool);
+    }
+
+    private void store(final BrokerPool pool) throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+        final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
 
-            Collection root = broker.getOrCreateCollection(transaction,	TestConstants.TEST_COLLECTION_URI);
+            final Collection root = broker.getOrCreateCollection(transaction,	TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
             broker.saveCollection(transaction, root);
 
-            Collection test = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
+            final Collection test = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
             assertNotNull(test);
             broker.saveCollection(transaction, test);
-    
-            String existHome = System.getProperty("exist.home");
-            Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-            existDir = existDir.normalize();
-            Path f = existDir.resolve("samples/biblio.rdf");
-            assertNotNull(f);
-            IndexInfo info = test.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toUri().toASCIIString()));
+
+            final Path f = TestUtils.resolveSample("biblio.rdf");
+            assertTrue(Files.exists(f));
+            final IndexInfo info = test.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toUri().toASCIIString()));
             assertNotNull(info);
             test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
             
-            Collection dest = broker.getOrCreateCollection(transaction, TestConstants.DESTINATION_COLLECTION_URI);
+            final Collection dest = broker.getOrCreateCollection(transaction, TestConstants.DESTINATION_COLLECTION_URI);
             assertNotNull(dest);
             broker.saveCollection(transaction, dest);            
             broker.moveCollection(transaction, test, dest, XmldbURI.create("test3"));
@@ -115,16 +151,12 @@ public class MoveCollectionTest {
         }
     }
 
-    @Test
-    public void read() throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, PermissionDeniedException, SAXException {
-        BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDB();
-
+    private void read(final BrokerPool pool) throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, PermissionDeniedException, SAXException, IOException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            Serializer serializer = broker.getSerializer();
+            final Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("/destination1/test3/test.xml"), LockMode.READ_LOCK);
+            final DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("/destination/test3/test.xml"), LockMode.READ_LOCK);
             assertNotNull("Document should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);
@@ -132,19 +164,15 @@ public class MoveCollectionTest {
         }
     }
 
-    @Test
-    public void storeAborted() throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, PermissionDeniedException, IOException, SAXException, LockException {
-        BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = startDB();
+    private void storeAborted(final BrokerPool pool) throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final TransactionManager transact = pool.getTransactionManager();
-
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection test2;
 
             try(final Txn transaction = transact.beginTransaction()) {
 
-                Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+                final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
                 assertNotNull(root);
                 broker.saveCollection(transaction, root);
 
@@ -152,12 +180,9 @@ public class MoveCollectionTest {
                 assertNotNull(test2);
                 broker.saveCollection(transaction, test2);
 
-                String existHome = System.getProperty("exist.home");
-                Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-                existDir = existDir.normalize();
-                Path f = existDir.resolve("samples/biblio.rdf");
-                assertNotNull(f);
-                IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toUri().toASCIIString()));
+                final Path f = TestUtils.resolveSample("biblio.rdf");
+                assertTrue(Files.exists(f));
+                final IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toUri().toASCIIString()));
                 assertNotNull(info);
                 test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
 
@@ -167,7 +192,7 @@ public class MoveCollectionTest {
             final Txn transaction = transact.beginTransaction();
             assertNotNull(transaction);
 
-            Collection dest = broker.getOrCreateCollection(transaction, TestConstants.DESTINATION_COLLECTION_URI2);
+            final Collection dest = broker.getOrCreateCollection(transaction, TestConstants.DESTINATION_COLLECTION_URI2);
             assertNotNull(dest);
             broker.saveCollection(transaction, dest);            
             broker.moveCollection(transaction, test2, dest, XmldbURI.create("test3"));
@@ -177,86 +202,71 @@ public class MoveCollectionTest {
 	    }
     }
 
-    @Test
-    public void readAborted() throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, PermissionDeniedException {
-        BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDB();
-
+    private void readAborted(final BrokerPool pool) throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, PermissionDeniedException, IOException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            Serializer serializer = broker.getSerializer();
+            final Serializer serializer = broker.getSerializer();
             serializer.reset();            
-            DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination2/test3/test.xml"), LockMode.READ_LOCK);
+            final DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination2/test3/test.xml"), LockMode.READ_LOCK);
             assertNull("Document should be null", doc);
         }
     }
 
-    @Test
-    public void xmldbStore() throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException {
-        BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDB();
-
+    private void xmldbStore(final BrokerPool pool) throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, IOException {
         assertNotNull(pool);
-        org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
+        final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         assertNotNull(root);
-        CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl)
-            root.getService("CollectionManagementService", "1.0");
-        assertNotNull(mgr);
+        final CollectionManagementServiceImpl rootMgr = (CollectionManagementServiceImpl) root.getService("CollectionManagementService", "1.0");
+        assertNotNull(rootMgr);
 
         org.xmldb.api.base.Collection test = root.getChildCollection("test");
-        if (test == null)
-            test = mgr.createCollection("test");
+        if (test == null) {
+            test = rootMgr.createCollection("test");
+        }
         assertNotNull(test);
 
         org.xmldb.api.base.Collection test2 = test.getChildCollection("test2");
-        if (test2 == null)
-            test2 = mgr.createCollection("test2");
+        if (test2 == null) {
+            CollectionManagementServiceImpl testMgr = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+            test2 = testMgr.createCollection("test2");
+        }
         assertNotNull(test2);
 
-        String existHome = System.getProperty("exist.home");
-        Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-        existDir = existDir.normalize();
-        Path f = existDir.resolve("samples/biblio.rdf");
-        assertNotNull(f);
-        Resource res = test2.createResource("test_xmldb.xml", "XMLResource");
+        final Path f = TestUtils.resolveSample("biblio.rdf");
+        assertTrue(Files.exists(f));
+        final Resource res = test2.createResource("test_xmldb.xml", "XMLResource");
         assertNotNull(res);
         res.setContent(f);
         test2.storeResource(res);
 
         org.xmldb.api.base.Collection dest = root.getChildCollection("destination3");
-        if (dest == null)
-            dest = mgr.createCollection("destination3");
+        if (dest == null) {
+            dest = rootMgr.createCollection("destination3");
+        }
         assertNotNull(dest);
 
-        mgr.move(TestConstants.TEST_COLLECTION_URI2, TestConstants.DESTINATION_COLLECTION_URI3, XmldbURI.create("test3"));
+        rootMgr.move(TestConstants.TEST_COLLECTION_URI2, TestConstants.DESTINATION_COLLECTION_URI3, XmldbURI.create("test3"));
     }
 
-    @Test
-    public void xmldbRead() throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException {
-        BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDB();
-
+    private void xmldbRead(final BrokerPool pool) throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, IOException {
         assertNotNull(pool);
-        org.xmldb.api.base.Collection test = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/destination3/test3", "admin", "");
+        final org.xmldb.api.base.Collection test = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/destination3/test3", "admin", "");
         assertNotNull(test);
-        Resource res = test.getResource("test_xmldb.xml");
-        assertNotNull(res);
+        final Resource res = test.getResource("test_xmldb.xml");
         assertNotNull("Document should not be null", res);
     }
-    
-    protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-        Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
 
-        // initialize driver
-        Database database = (Database) Class.forName("org.exist.xmldb.DatabaseImpl").newInstance();
+    private BrokerPool startDb() throws EXistException, IOException, DatabaseConfigurationException, XMLDBException {
+        existEmbeddedServer.startDb();
+
+        final Database database = new DatabaseImpl();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
 
-        return BrokerPool.getInstance();
+        return existEmbeddedServer.getBrokerPool();
     }
 
     @After
-    public void tearDown() {
-        BrokerPool.stopAll(false);
+    public void stopDb() {
+        existEmbeddedServer.stopDb();
     }
 }

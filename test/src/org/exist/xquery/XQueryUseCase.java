@@ -25,9 +25,9 @@ package org.exist.xquery;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
+import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.FileUtils;
 import org.exist.util.XMLFilenameFilter;
@@ -48,9 +48,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class XQueryUseCase {
 
 	@ClassRule
-	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
-	private final static String baseDir = "samples/xquery/use-cases";
+	private final static Path baseDir = TestUtils.resolveSample("xquery/use-cases");
 
 	private Collection root = null;
 
@@ -66,7 +66,7 @@ public class XQueryUseCase {
 				"1.0");
 		root = service.createCollection(useCase);
 
-		final Path file = Paths.get(baseDir).resolve(useCase);
+		final Path file = baseDir.resolve(useCase);
 		if (!(Files.isReadable(file) && Files.isDirectory(file))) {
 			throw new RuntimeException("Cannot read data for use-case " + useCase);
 		}
