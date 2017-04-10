@@ -66,8 +66,7 @@ public class TemplatesFactory {
 
     String uri = uri(stylesheet, baseUri);
 
-    cache.computeIfAbsent(uri, StylesheetResolverAndCompiler::new);
-    return cache.get(uri);
+    return cache.computeIfAbsent(uri, StylesheetResolverAndCompiler::new);
   }
 
   public static Stylesheet stylesheet(String stylesheet, String baseUri, boolean useCache) {
