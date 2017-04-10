@@ -11,16 +11,16 @@ import java.io.*;
 /**
  * Representation of an XSD binary value e.g. (xs:base64Binary or xs:hexBinary)
  * whose source is backed by a pre-encoded String.
- *
+ * <p>
  * Note - BinaryValueFromBinaryString is a special case of BinaryValue
  * where the value is already encoded.
- * 
+ *
  * @author Adam Retter <adam@existsolutions.com>
  */
 public class BinaryValueFromBinaryString extends BinaryValue {
 
     private final static Logger LOG = LogManager.getLogger(BinaryValueFromBinaryString.class);
-    
+
     private final String value;
 
     public BinaryValueFromBinaryString(BinaryValueType binaryValueType, String value) throws XPathException {
@@ -41,21 +41,21 @@ public class BinaryValueFromBinaryString extends BinaryValue {
             fos = binaryValueType.getEncoder(baos);
             streamBinaryTo(fos);
 
-        } catch(final IOException ioe) {
+        } catch (final IOException ioe) {
             throw new XPathException(ioe);
         } finally {
-            if(fos != null) {
+            if (fos != null) {
                 try {
                     fos.close();
-                } catch(final IOException ioe) {
-                    LOG.error("Unable to close stream: " + ioe.getMessage(), ioe);
+                } catch (final IOException ioe) {
+                    LOG.error("Unable to close stream: {}", ioe.getMessage(), ioe);
                 }
             }
 
             try {
                 baos.close();
-            } catch(final IOException ioe) {
-                LOG.error("Unable to close stream: " + ioe.getMessage(), ioe);
+            } catch (final IOException ioe) {
+                LOG.error("Unable to close stream: {}", ioe.getMessage(), ioe);
             }
         }
 
@@ -64,24 +64,24 @@ public class BinaryValueFromBinaryString extends BinaryValue {
 
     @Override
     public void streamBinaryTo(OutputStream os) throws IOException {
-        
+
         //we need to create a safe output stream that cannot be closed
         final OutputStream safeOutputStream = new CloseShieldOutputStream(os);
-        
+
         //get the decoder
         final FilterOutputStream fos = getBinaryValueType().getDecoder(safeOutputStream);
-        
+
         //write with the decoder
         final byte data[] = value.getBytes();
         fos.write(data);
-        
+
         //we do have to close the decoders output stream though
         //to ensure that all bytes have been written, this is
         //particularly nessecary for Apache Commons Codec stream encoders
         try {
             fos.close();
-        } catch(final IOException ioe) {
-            LOG.error("Unable to close stream: " + ioe.getMessage(), ioe);
+        } catch (final IOException ioe) {
+            LOG.error("Unable to close stream: {}", ioe.getMessage(), ioe);
         }
     }
 
@@ -100,8 +100,8 @@ public class BinaryValueFromBinaryString extends BinaryValue {
 
         try {
             streamBinaryTo(baos);
-        } catch(final IOException ioe) {
-            LOG.error("Unable to get read only buffer: " + ioe.getMessage(), ioe);
+        } catch (final IOException ioe) {
+            LOG.error("Unable to get read only buffer: {}", ioe.getMessage(), ioe);
         }
 
         return new ByteArrayInputStream(baos.toByteArray());

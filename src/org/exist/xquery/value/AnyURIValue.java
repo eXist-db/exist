@@ -21,6 +21,12 @@
  */
 package org.exist.xquery.value;
 
+import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.functions.fn.FunEscapeURI;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -28,93 +34,89 @@ import java.net.URL;
 import java.text.Collator;
 import java.util.BitSet;
 
-import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Constants;
-import org.exist.xquery.Constants.Comparison;
-import org.exist.xquery.ErrorCodes;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.functions.fn.FunEscapeURI;
-
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class AnyURIValue extends AtomicValue {
 
-	static BitSet needEncoding;
-    static final int caseDiff = ('a' - 'A'); 
+    public static final AnyURIValue EMPTY_URI = new AnyURIValue();
+    static final int caseDiff = ('a' - 'A');
+    static BitSet needEncoding;
+
     static {
 
-    needEncoding = new BitSet(128);
-	int i;
-	for (i = 0x00; i <= 0x1F; i++) {
-		needEncoding.set(i);
-	}
-	needEncoding.set(0x7F);
-	needEncoding.set(0x20);
-	needEncoding.set('<');
-	needEncoding.set('>');
-	needEncoding.set('"');
-	needEncoding.set('{');
-	needEncoding.set('}');
-	needEncoding.set('|');
-	needEncoding.set('\\');
-	needEncoding.set('^');
-	needEncoding.set('`');
+        needEncoding = new BitSet(128);
+        int i;
+        for (i = 0x00; i <= 0x1F; i++) {
+            needEncoding.set(i);
+        }
+        needEncoding.set(0x7F);
+        needEncoding.set(0x20);
+        needEncoding.set('<');
+        needEncoding.set('>');
+        needEncoding.set('"');
+        needEncoding.set('{');
+        needEncoding.set('}');
+        needEncoding.set('|');
+        needEncoding.set('\\');
+        needEncoding.set('^');
+        needEncoding.set('`');
     }
-    
-	public static final AnyURIValue EMPTY_URI = new AnyURIValue();
-	
-	/* Very important - this string does not need to be a valid uri.
-	 * 
-	 * From XML Linking (see below for link), with some wording changes:
-	 * The value of the [anyURI] must be a URI reference as defined in
-	 * [IETF RFC 2396], or must result in a URI reference after the escaping
-	 * procedure described below is applied. The procedure is applied when
-	 * passing the URI reference to a URI resolver.
-	 * 
-	 * Some characters are disallowed in URI references, even if they are
-	 * allowed in XML; the disallowed characters include all non-ASCII
-	 * characters, plus the excluded characters listed in Section 2.4 of
-	 * [IETF RFC 2396], except for the number sign (#) and percent sign (%)
-	 * and the square bracket characters re-allowed in [IETF RFC 2732].
-	 * Disallowed characters must be escaped as follows:
-	 * 1. Each disallowed character is converted to UTF-8 [IETF RFC 2279]
-	 *    as one or more bytes.
-	 * 2. Any bytes corresponding to a disallowed character are escaped
-	 *    with the URI escaping mechanism (that is, converted to %HH,
-	 *    where HH is the hexadecimal notation of the byte value).
-	 * 3. The original character is replaced by the resulting character
-	 *    sequence.
-	 * 
-	 * See Section 5.4 of XML Linking:
-	 * http://www.w3.org/TR/2000/PR-xlink-20001220/#link-locators
-	 */
-	private String uri;
-	//TODO: save escaped(URI) version?
-	
-	AnyURIValue() {
-		this.uri = "";
-	}
-	public AnyURIValue(URI uri) {
-		this.uri = uri.toString();
-	}
-	public AnyURIValue(XmldbURI uri) {
-		this.uri = uri.toString();
-	}
-	public AnyURIValue(String s) throws XPathException {
-		final String wsTrimString = normalizeEscaped(StringValue.trimWhitespace(s));
-		final String escapedString = escape(wsTrimString);
+
+    /* Very important - this string does not need to be a valid uri.
+     *
+     * From XML Linking (see below for link), with some wording changes:
+     * The value of the [anyURI] must be a URI reference as defined in
+     * [IETF RFC 2396], or must result in a URI reference after the escaping
+     * procedure described below is applied. The procedure is applied when
+     * passing the URI reference to a URI resolver.
+     *
+     * Some characters are disallowed in URI references, even if they are
+     * allowed in XML; the disallowed characters include all non-ASCII
+     * characters, plus the excluded characters listed in Section 2.4 of
+     * [IETF RFC 2396], except for the number sign (#) and percent sign (%)
+     * and the square bracket characters re-allowed in [IETF RFC 2732].
+     * Disallowed characters must be escaped as follows:
+     * 1. Each disallowed character is converted to UTF-8 [IETF RFC 2279]
+     *    as one or more bytes.
+     * 2. Any bytes corresponding to a disallowed character are escaped
+     *    with the URI escaping mechanism (that is, converted to %HH,
+     *    where HH is the hexadecimal notation of the byte value).
+     * 3. The original character is replaced by the resulting character
+     *    sequence.
+     *
+     * See Section 5.4 of XML Linking:
+     * http://www.w3.org/TR/2000/PR-xlink-20001220/#link-locators
+     */
+    private final String uri;
+    //TODO: save escaped(URI) version?
+
+    AnyURIValue() {
+        this.uri = "";
+    }
+
+    public AnyURIValue(URI uri) {
+        this.uri = uri.toString();
+    }
+
+    public AnyURIValue(XmldbURI uri) {
+        this.uri = uri.toString();
+    }
+
+    public AnyURIValue(String s) throws XPathException {
+        final String wsTrimString = normalizeEscaped(StringValue.trimWhitespace(s));
+        final String escapedString = escape(wsTrimString);
         try {
-			new URI(escapedString);
-		} catch (final URISyntaxException e) {
-			try {
-				XmldbURI.xmldbUriFor(escapedString);
-			} catch (final URISyntaxException ex) {
-				throw new XPathException(
-					"Type error: the given string '" + s + "' cannot be cast to " + Type.getTypeName(getType()));
-			}
-		}
-		/*
+            new URI(escapedString);
+        } catch (final URISyntaxException e) {
+            try {
+                XmldbURI.xmldbUriFor(escapedString);
+            } catch (final URISyntaxException ex) {
+                throw new XPathException(
+                        "Type error: the given string '" + s + "' cannot be cast to " + Type.getTypeName(getType()));
+            }
+        }
+        /*
 		The URI value is whitespace normalized according to the rules for the xs:anyURI type in [XML Schema]. 
 		<xs:simpleType name="anyURI" id="anyURI">
 			...
@@ -123,22 +125,22 @@ public class AnyURIValue extends AtomicValue {
 			</xs:restriction>
 		</xs:simpleType>
 		*/
-		//TODO : find a way to perform the 3 operations at the same time
-		//s = StringValue.expand(s); //Should we have character entities
-		s = StringValue.normalizeWhitespace(wsTrimString); //Should we have TABs, new lines...
-		this.uri = StringValue.collapseWhitespace(s);
-	}
+        //TODO : find a way to perform the 3 operations at the same time
+        //s = StringValue.expand(s); //Should we have character entities
+        s = StringValue.normalizeWhitespace(wsTrimString); //Should we have TABs, new lines...
+        this.uri = StringValue.collapseWhitespace(s);
+    }
 
-	/**
-	 * This function accepts a String representation of an xs:anyURI and applies
-	 * the escaping method described in Section 5.4 of XML Linking (http://www.w3.org/TR/2000/PR-xlink-20001220/#link-locators)
-	 * to turn it into a valid URI
-	 * 
-         * @see <a href="http://www.w3.org/TR/2000/PR-xlink-20001220/#link-locators">http://www.w3.org/TR/2000/PR-xlink-20001220/#link-locators</A>
-	 * @param uri The xs:anyURI to escape into a valid URI
-	 * @return An escaped string representation of the provided xs:anyURI
-	 */
-	 public static String escape(String uri) {
+    /**
+     * This function accepts a String representation of an xs:anyURI and applies
+     * the escaping method described in Section 5.4 of XML Linking (http://www.w3.org/TR/2000/PR-xlink-20001220/#link-locators)
+     * to turn it into a valid URI
+     *
+     * @param uri The xs:anyURI to escape into a valid URI
+     * @return An escaped string representation of the provided xs:anyURI
+     * @see <a href="http://www.w3.org/TR/2000/PR-xlink-20001220/#link-locators">http://www.w3.org/TR/2000/PR-xlink-20001220/#link-locators</A>
+     */
+    public static String escape(String uri) {
 
         return FunEscapeURI.escape(uri, false);
 
@@ -225,171 +227,179 @@ public class AnyURIValue extends AtomicValue {
 //		} catch(UnsupportedEncodingException e) {
 //			throw new RuntimeException(e);
 //		}
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#getType()
-	 */
-	public int getType() {
-		return Type.ANY_URI;
-	}
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Sequence#getStringValue()
-	 */
-	public String getStringValue() throws XPathException {
-		return uri;
-	}
-	
-	public boolean effectiveBooleanValue() throws XPathException {
-		// If its operand is a singleton value of type xs:string, xs:anyURI, xs:untypedAtomic, 
-		//or a type derived from one of these, fn:boolean returns false if the operand value has zero length; otherwise it returns true.
-		return uri.length() > 0;
-	}	
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Sequence#convertTo(int)
-	 */
-	public AtomicValue convertTo(int requiredType) throws XPathException {
-		switch (requiredType) {
-			case Type.ITEM :
-			case Type.ATOMIC :
-			case Type.ANY_URI :
-				return this;
-			case Type.STRING :
-				return new StringValue(uri);
-			case Type.UNTYPED_ATOMIC :
-				return new UntypedAtomicValue(getStringValue());
-			default :
-				throw new XPathException(
-					"Type error: cannot cast xs:anyURI to "
-						+ Type.getTypeName(requiredType));
-		}
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.AtomicValue#getType()
+     */
+    public int getType() {
+        return Type.ANY_URI;
+    }
 
-	@Override
-	public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
-		if (other.getType() == Type.ANY_URI) {
-			final String otherURI = other.getStringValue();
-			final int cmp = uri.compareTo(otherURI);
-			switch (operator) {
-				case EQ:
-					return cmp == 0;
-				case NEQ:
-					return cmp != 0;
-				case GT :
-					return cmp > 0;
-				case GTEQ :
-					return cmp >= 0;
-				case LT :
-					return cmp < 0;
-				case LTEQ :
-					return cmp <= 0;					
-				default :
-					throw new XPathException(
-						"XPTY0004: cannot apply operator "
-							+ operator.generalComparisonSymbol
-							+ " to xs:anyURI");
-			}
-		} else
-			{return compareTo(collator, operator, other.convertTo(Type.ANY_URI));}
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#getStringValue()
+     */
+    public String getStringValue() throws XPathException {
+        return uri;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
-	 */
-	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-		if (other.getType() == Type.ANY_URI) {
-			final String otherURI = other.getStringValue();
-			return uri.compareTo(otherURI);
-		} else {
-			return compareTo(collator, other.convertTo(Type.ANY_URI));
-		}
-	}
+    public boolean effectiveBooleanValue() throws XPathException {
+        // If its operand is a singleton value of type xs:string, xs:anyURI, xs:untypedAtomic,
+        //or a type derived from one of these, fn:boolean returns false if the operand value has zero length; otherwise it returns true.
+        return !uri.isEmpty();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
-	 */
-	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
-		throw new XPathException("max is not supported for values of type xs:anyURI");
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#convertTo(int)
+     */
+    public AtomicValue convertTo(int requiredType) throws XPathException {
+        switch (requiredType) {
+            case Type.ITEM:
+            case Type.ATOMIC:
+            case Type.ANY_URI:
+                return this;
+            case Type.STRING:
+                return new StringValue(uri);
+            case Type.UNTYPED_ATOMIC:
+                return new UntypedAtomicValue(getStringValue());
+            default:
+                throw new XPathException(
+                        "Type error: cannot cast xs:anyURI to "
+                                + Type.getTypeName(requiredType));
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#min(org.exist.xquery.value.AtomicValue)
-	 */
-	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
-		throw new XPathException("min is not supported for values of type xs:anyURI");
-	}
+    @Override
+    public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
+        if (other.getType() == Type.ANY_URI) {
+            final String otherURI = other.getStringValue();
+            final int cmp = uri.compareTo(otherURI);
+            switch (operator) {
+                case EQ:
+                    return cmp == 0;
+                case NEQ:
+                    return cmp != 0;
+                case GT:
+                    return cmp > 0;
+                case GTEQ:
+                    return cmp >= 0;
+                case LT:
+                    return cmp < 0;
+                case LTEQ:
+                    return cmp <= 0;
+                default:
+                    throw new XPathException(
+                            "XPTY0004: cannot apply operator "
+                                    + operator.generalComparisonSymbol
+                                    + " to xs:anyURI");
+            }
+        } else {
+            return compareTo(collator, operator, other.convertTo(Type.ANY_URI));
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
-	 */
-	public int conversionPreference(Class<?> javaClass) {
-		if (javaClass.isAssignableFrom(AnyURIValue.class))
-			{return 0;}
-		if (javaClass == XmldbURI.class)
-			{return 1;}
-		if (javaClass == URI.class)
-			{return 2;}
-		if (javaClass == URL.class)
-			{return 3;}
-		if (javaClass == String.class || javaClass == CharSequence.class)
-			{return 4;}
-		if (javaClass == Object.class)
-			{return 20;}
-		return Integer.MAX_VALUE;
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
+     */
+    public int compareTo(Collator collator, AtomicValue other) throws XPathException {
+        if (other.getType() == Type.ANY_URI) {
+            final String otherURI = other.getStringValue();
+            return uri.compareTo(otherURI);
+        } else {
+            return compareTo(collator, other.convertTo(Type.ANY_URI));
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
-	 */
-	@Override
-        public <T> T toJavaObject(final Class<T> target) throws XPathException {
-		if (target.isAssignableFrom(AnyURIValue.class)) {
-			return (T)this;
-		} else if (target == XmldbURI.class) {
-			return (T)toXmldbURI();
-		} else if (target == URI.class) {
-			return (T)toURI();
-		} else if (target == URL.class) {
-			try {
-				return (T)new URL(uri);
-			} catch (final MalformedURLException e) {
-				throw new XPathException(ErrorCodes.FORG0001,
-					"failed to convert " + uri + " into a Java URL: " + e.getMessage(),
-					e);
-			}
-		} else if (target == String.class || target == CharSequence.class)
-			{return (T)uri;}
-		else if (target == Object.class) {
-			return (T)uri;
-                }
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
+     */
+    public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
+        throw new XPathException("max is not supported for values of type xs:anyURI");
+    }
 
-		throw new XPathException(
-			"cannot convert value of type "
-				+ Type.getTypeName(getType())
-				+ " to Java object of type "
-				+ target.getName());
-	}
-	
-	public XmldbURI toXmldbURI() throws XPathException {
-		try {
-			return XmldbURI.xmldbUriFor(uri, false);
-		} catch (final URISyntaxException e) {
-			throw new XPathException(ErrorCodes.FORG0001,
-				"failed to convert " + uri + " into an XmldbURI: " + e.getMessage(),
-				e);
-		}
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.AtomicValue#min(org.exist.xquery.value.AtomicValue)
+     */
+    public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
+        throw new XPathException("min is not supported for values of type xs:anyURI");
+    }
 
-	public URI toURI() throws XPathException {
-		try {
-			return new URI(escape(uri));
-		} catch (final URISyntaxException e) {
-			throw new XPathException(ErrorCodes.FORG0001,
-				"failed to convert " + uri + " into an URI: " + e.getMessage(),
-				e);
-		}
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
+     */
+    public int conversionPreference(Class<?> javaClass) {
+        if (javaClass.isAssignableFrom(AnyURIValue.class)) {
+            return 0;
+        }
+        if (javaClass == XmldbURI.class) {
+            return 1;
+        }
+        if (javaClass == URI.class) {
+            return 2;
+        }
+        if (javaClass == URL.class) {
+            return 3;
+        }
+        if (javaClass == String.class || javaClass == CharSequence.class) {
+            return 4;
+        }
+        if (javaClass == Object.class) {
+            return 20;
+        }
+        return Integer.MAX_VALUE;
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
+     */
+    @Override
+    public <T> T toJavaObject(final Class<T> target) throws XPathException {
+        if (target.isAssignableFrom(AnyURIValue.class)) {
+            return (T) this;
+        } else if (target == XmldbURI.class) {
+            return (T) toXmldbURI();
+        } else if (target == URI.class) {
+            return (T) toURI();
+        } else if (target == URL.class) {
+            try {
+                return (T) new URL(uri);
+            } catch (final MalformedURLException e) {
+                throw new XPathException(ErrorCodes.FORG0001,
+                        "failed to convert " + uri + " into a Java URL: " + e.getMessage(),
+                        e);
+            }
+        } else if (target == String.class || target == CharSequence.class) {
+            return (T) uri;
+        } else if (target == Object.class) {
+            return (T) uri;
+        }
+
+        throw new XPathException(
+                "cannot convert value of type "
+                        + Type.getTypeName(getType())
+                        + " to Java object of type "
+                        + target.getName());
+    }
+
+    public XmldbURI toXmldbURI() throws XPathException {
+        try {
+            return XmldbURI.xmldbUriFor(uri, false);
+        } catch (final URISyntaxException e) {
+            throw new XPathException(ErrorCodes.FORG0001,
+                    "failed to convert " + uri + " into an XmldbURI: " + e.getMessage(),
+                    e);
+        }
+    }
+
+    public URI toURI() throws XPathException {
+        try {
+            return new URI(escape(uri));
+        } catch (final URISyntaxException e) {
+            throw new XPathException(ErrorCodes.FORG0001,
+                    "failed to convert " + uri + " into an URI: " + e.getMessage(),
+                    e);
+        }
+    }
 
     @Override
     public int hashCode() {
@@ -398,10 +408,12 @@ public class AnyURIValue extends AtomicValue {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            {return true;}
-        if (obj instanceof AnyURIValue)
-            {return ((AnyURIValue)obj).uri.equals(uri);}
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof AnyURIValue) {
+            return ((AnyURIValue) obj).uri.equals(uri);
+        }
         return false;
     }
 

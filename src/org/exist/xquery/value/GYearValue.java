@@ -21,13 +21,12 @@
  */
 package org.exist.xquery.value;
 
-import java.util.GregorianCalendar;
+import org.exist.xquery.XPathException;
 
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-
-import org.exist.xquery.XPathException;
+import java.util.GregorianCalendar;
 
 public class GYearValue extends AbstractDateTimeValue {
 
@@ -42,7 +41,9 @@ public class GYearValue extends AbstractDateTimeValue {
     public GYearValue(String timeValue) throws XPathException {
         super(timeValue);
         try {
-            if (calendar.getXMLSchemaType() != DatatypeConstants.GYEAR) {throw new IllegalStateException();}
+            if (calendar.getXMLSchemaType() != DatatypeConstants.GYEAR) {
+                throw new IllegalStateException();
+            }
         } catch (final IllegalStateException e) {
             throw new XPathException("xs:time instance must not have year, month or day fields set");
         }
@@ -58,21 +59,21 @@ public class GYearValue extends AbstractDateTimeValue {
         calendar.setMillisecond(DatatypeConstants.FIELD_UNDEFINED);
         return calendar;
     }
-    
+
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
-            case Type.GYEAR :
-            case Type.ATOMIC :
-            case Type.ITEM :
+            case Type.GYEAR:
+            case Type.ATOMIC:
+            case Type.ITEM:
                 return this;
-            case Type.STRING :
+            case Type.STRING:
                 return new StringValue(getStringValue());
-            case Type.UNTYPED_ATOMIC :
+            case Type.UNTYPED_ATOMIC:
                 return new UntypedAtomicValue(getStringValue());
-            default :
+            default:
                 throw new XPathException(
-                    "Type error: cannot cast xs:time to "
-                        + Type.getTypeName(requiredType));
+                        "Type error: cannot cast xs:time to "
+                                + Type.getTypeName(requiredType));
         }
     }
 
@@ -84,7 +85,7 @@ public class GYearValue extends AbstractDateTimeValue {
     public int getType() {
         return Type.GYEAR;
     }
-    
+
     protected QName getXMLSchemaType() {
         return DatatypeConstants.GYEAR;
     }

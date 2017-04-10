@@ -22,42 +22,45 @@
  */
 package org.exist.xquery.value;
 
-import java.text.Collator;
-
 import org.exist.xquery.XPathException;
+
+import java.text.Collator;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public abstract class ComputableValue extends AtomicValue {
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Sequence#getStringValue()
-	 */
-	public abstract String getStringValue() throws XPathException;
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#getStringValue()
+     */
+    public abstract String getStringValue() throws XPathException;
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Sequence#convertTo(int)
-	 */
-	public abstract AtomicValue convertTo(int requiredType) throws XPathException;
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#convertTo(int)
+     */
+    public abstract AtomicValue convertTo(int requiredType) throws XPathException;
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
-	 */
-	public abstract int compareTo(Collator collator, AtomicValue other) throws XPathException;
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
+     */
+    public abstract int compareTo(Collator collator, AtomicValue other) throws XPathException;
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
-	 */
-	public abstract AtomicValue max(Collator collator, AtomicValue other) throws XPathException;
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
+     */
+    public abstract AtomicValue max(Collator collator, AtomicValue other) throws XPathException;
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#min(org.exist.xquery.value.AtomicValue)
-	 */
-	public abstract AtomicValue min(Collator collator, AtomicValue other) throws XPathException;
-	
-	public abstract ComputableValue minus(ComputableValue other) throws XPathException;
-	public abstract ComputableValue plus(ComputableValue other) throws XPathException;
-	public abstract ComputableValue mult(ComputableValue other) throws XPathException;
-	public abstract ComputableValue div(ComputableValue other) throws XPathException;
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.AtomicValue#min(org.exist.xquery.value.AtomicValue)
+     */
+    public abstract AtomicValue min(Collator collator, AtomicValue other) throws XPathException;
+
+    public abstract ComputableValue minus(ComputableValue other) throws XPathException;
+
+    public abstract ComputableValue plus(ComputableValue other) throws XPathException;
+
+    public abstract ComputableValue mult(ComputableValue other) throws XPathException;
+
+    public abstract ComputableValue div(ComputableValue other) throws XPathException;
 }

@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.value;
 
-import java.util.HashSet;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
@@ -31,17 +29,16 @@ import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.util.hashtable.Object2IntHashMap;
 import org.exist.xquery.XPathException;
 
+import java.util.HashSet;
+
 /**
  * Defines all built-in types and their relations.
- * 
+ *
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class Type {
 
-    private final static Logger LOG = LogManager.getLogger(Type.class);
-
     public static final int NODE = -1;
-
     public final static int ELEMENT = 1;
     public final static int ATTRIBUTE = 2;
     public final static int TEXT = 3;
@@ -50,16 +47,13 @@ public class Type {
     public final static int DOCUMENT = 6;
     public final static int NAMESPACE = 500;
     public final static int CDATA_SECTION = 501;
-
     public final static int EMPTY = 10;
     public final static int ITEM = 11;
     public final static int ANY_TYPE = 12;
     public final static int ANY_SIMPLE_TYPE = 13;
     public final static int UNTYPED = 14;
-
     public final static int ATOMIC = 20;
     public final static int UNTYPED_ATOMIC = 21;
-
     public final static int STRING = 22;
     public final static int BOOLEAN = 23;
     public final static int QNAME = 24;
@@ -67,13 +61,11 @@ public class Type {
     public final static int BASE64_BINARY = 26;
     public final static int HEX_BINARY = 27;
     public final static int NOTATION = 28;
-
     public final static int NUMBER = 30;
     public final static int INTEGER = 31;
     public final static int DECIMAL = 32;
     public final static int FLOAT = 33;
     public final static int DOUBLE = 34;
-
     public final static int NON_POSITIVE_INTEGER = 35;
     public final static int NEGATIVE_INTEGER = 36;
     public final static int LONG = 37;
@@ -86,7 +78,6 @@ public class Type {
     public final static int UNSIGNED_SHORT = 44;
     public final static int UNSIGNED_BYTE = 45;
     public final static int POSITIVE_INTEGER = 46;
-
     public final static int DATE_TIME = 50;
     public final static int DATE = 51;
     public final static int TIME = 52;
@@ -98,7 +89,6 @@ public class Type {
     public final static int GDAY = 58;
     public final static int GYEARMONTH = 59;
     public final static int GMONTHDAY = 71;
-
     public final static int TOKEN = 60;
     public final static int NORMALIZED_STRING = 61;
     public final static int LANGUAGE = 62;
@@ -108,13 +98,15 @@ public class Type {
     public final static int ID = 66;
     public final static int IDREF = 67;
     public final static int ENTITY = 68;
-
     public final static int JAVA_OBJECT = 100;
     public final static int FUNCTION_REFERENCE = 101;
     public final static int MAP = 102;
     public final static int ARRAY = 103;
-
+    private final static Logger LOG = LogManager.getLogger(Type.class);
     private final static int[] superTypes = new int[512];
+    private final static Int2ObjectHashMap<String[]> typeNames = new Int2ObjectHashMap<>(100);
+    //private final static Map<Integer, String[]> typeNames= new HashMap<Integer, String[]>(100);
+    private final static Object2IntHashMap<String> typeCodes = new Object2IntHashMap<>(100);
 
     static {
         defineSubType(ANY_TYPE, ANY_SIMPLE_TYPE);
@@ -192,10 +184,6 @@ public class Type {
         defineSubType(FUNCTION_REFERENCE, ARRAY);
     }
 
-    private final static Int2ObjectHashMap<String[]> typeNames = new Int2ObjectHashMap<String[]>(100);
-    //private final static Map<Integer, String[]> typeNames= new HashMap<Integer, String[]>(100);
-    private final static Object2IntHashMap<String> typeCodes = new Object2IntHashMap<String>(100);
-
     static {
         //TODO : use NODETYPES above ?
         //TODO use parentheses after the nodes name  ?
@@ -211,28 +199,28 @@ public class Type {
         defineBuiltInType(COMMENT, "comment()");
         defineBuiltInType(NAMESPACE, "namespace()");
         defineBuiltInType(CDATA_SECTION, "cdata-section()");
-        
+
         defineBuiltInType(JAVA_OBJECT, "object");
         defineBuiltInType(FUNCTION_REFERENCE, "function");
         defineBuiltInType(MAP, "map");
         defineBuiltInType(ARRAY, "array");
         defineBuiltInType(NUMBER, "numeric");
-        
+
         defineBuiltInType(ANY_TYPE, "xs:anyType");
         defineBuiltInType(ANY_SIMPLE_TYPE, "xs:anySimpleType");
         defineBuiltInType(UNTYPED, "xs:untyped");
-        
+
         //Duplicate definition : new one first
         defineBuiltInType(ATOMIC, "xs:anyAtomicType", "xdt:anyAtomicType");
 
         //Duplicate definition : new one first
         defineBuiltInType(UNTYPED_ATOMIC, "xs:untypedAtomic", "xdt:untypedAtomic");
-        
+
         defineBuiltInType(BOOLEAN, "xs:boolean");
         defineBuiltInType(DECIMAL, "xs:decimal");
         defineBuiltInType(FLOAT, "xs:float");
         defineBuiltInType(DOUBLE, "xs:double");
-        
+
         defineBuiltInType(INTEGER, "xs:integer");
         defineBuiltInType(NON_POSITIVE_INTEGER, "xs:nonPositiveInteger");
         defineBuiltInType(NEGATIVE_INTEGER, "xs:negativeInteger");
@@ -246,14 +234,14 @@ public class Type {
         defineBuiltInType(UNSIGNED_SHORT, "xs:unsignedShort");
         defineBuiltInType(UNSIGNED_BYTE, "xs:unsignedByte");
         defineBuiltInType(POSITIVE_INTEGER, "xs:positiveInteger");
-        
+
         defineBuiltInType(STRING, "xs:string");
         defineBuiltInType(QNAME, "xs:QName");
         defineBuiltInType(ANY_URI, "xs:anyURI");
         defineBuiltInType(BASE64_BINARY, "xs:base64Binary");
         defineBuiltInType(HEX_BINARY, "xs:hexBinary");
         defineBuiltInType(NOTATION, "xs:NOTATION");
-        
+
         defineBuiltInType(DATE_TIME, "xs:dateTime");
         defineBuiltInType(DATE, "xs:date");
         defineBuiltInType(TIME, "xs:time");
@@ -263,12 +251,12 @@ public class Type {
         defineBuiltInType(GDAY, "xs:gDay");
         defineBuiltInType(GYEARMONTH, "xs:gYearMonth");
         defineBuiltInType(GMONTHDAY, "xs:gMonthDay");
-        
+
         //Duplicate definition : new one first
-        defineBuiltInType(YEAR_MONTH_DURATION, "xs:yearMonthDuration", "xdt:yearMonthDuration");		
+        defineBuiltInType(YEAR_MONTH_DURATION, "xs:yearMonthDuration", "xdt:yearMonthDuration");
         //Duplicate definition : new one first
         defineBuiltInType(DAY_TIME_DURATION, "xs:dayTimeDuration", "xdt:dayTimeDuration");
-        
+
         defineBuiltInType(NORMALIZED_STRING, "xs:normalizedString");
         defineBuiltInType(TOKEN, "xs:token");
         defineBuiltInType(LANGUAGE, "xs:language");
@@ -285,28 +273,28 @@ public class Type {
      */
     public static void defineBuiltInType(int type, String... name) {
         typeNames.put(type, name);
-        for(final String n : name) {
+        for (final String n : name) {
             typeCodes.put(n, type);
         }
     }
 
     /**
      * Get the internal default name for the built-in type.
-     * 
+     *
      * @param type
      */
     public static String getTypeName(int type) {
         return typeNames.get(type)[0];
     }
-    
+
     /**
      * Get the internal aliases for the built-in type.
-     * 
+     *
      * @param type
      */
     public static String[] getTypeAliases(int type) {
         final String names[] = typeNames.get(type);
-        if(names != null && names.length > 1) {
+        if (names != null && names.length > 1) {
             final String aliases[] = new String[names.length - 1];
             System.arraycopy(names, 1, aliases, 0, names.length - 1);
             return aliases;
@@ -314,29 +302,30 @@ public class Type {
         return null;
     }
 
-	/**
-	 * Get the type code for a type identified by its internal name.
-	 * 
-	 * @param name
-	 * @throws XPathException
-	 */
-	public static int getType(String name) throws XPathException {
-		//if (name.equals("node"))
-		//	return NODE;
-		final int code = typeCodes.get(name);
-		if (code == Object2IntHashMap.UNKNOWN_KEY)
-			{throw new XPathException("Type: " + name + " is not defined");}
-		return code;
-	}
+    /**
+     * Get the type code for a type identified by its internal name.
+     *
+     * @param name
+     * @throws XPathException
+     */
+    public static int getType(String name) throws XPathException {
+        //if (name.equals("node"))
+        //	return NODE;
+        final int code = typeCodes.get(name);
+        if (code == Object2IntHashMap.UNKNOWN_KEY) {
+            throw new XPathException("Type: " + name + " is not defined");
+        }
+        return code;
+    }
 
-	/**
-	 * Get the type code for a type identified by its QName.
-	 * 
-	 * @param qname
-	 * @throws XPathException
-	 */
-	public static int getType(QName qname) throws XPathException {
-		final String uri = qname.getNamespaceURI();
+    /**
+     * Get the type code for a type identified by its QName.
+     *
+     * @param qname
+     * @throws XPathException
+     */
+    public static int getType(QName qname) throws XPathException {
+        final String uri = qname.getNamespaceURI();
         switch (uri) {
             case Namespaces.SCHEMA_NS:
                 return getType("xs:" + qname.getLocalPart());
@@ -345,101 +334,109 @@ public class Type {
             default:
                 return getType(qname.getLocalPart());
         }
-	}
+    }
 
-	/**
-	 * Define supertype/subtype relation.
-	 * 
-	 * @param supertype
-	 * @param subtype
-	 */
-	public static void defineSubType(int supertype, int subtype) {
+    /**
+     * Define supertype/subtype relation.
+     *
+     * @param supertype
+     * @param subtype
+     */
+    public static void defineSubType(int supertype, int subtype) {
         superTypes[subtype] = supertype;
-	}
+    }
 
-	/**
-	 * Check if the given type code is a subtype of the specified supertype.
-	 * 
-	 * @param subtype
-	 * @param supertype
-         *
-         * @throws IllegalArgumentException When the type is invalid
-	 */
-	public static boolean subTypeOf(int subtype, int supertype) {
-		if (subtype == supertype)
-			{return true;}
-		//Note that it will return true even if subtype == EMPTY
-		if (supertype == ITEM || supertype == ANY_TYPE)
-			//maybe return subtype != EMPTY ?
-			{return true;}
-		//Note that EMPTY is *not* a sub-type of anything else than itself
-		//EmptySequence has to take care of this when it checks its type
-		if (subtype == ITEM || subtype == EMPTY || subtype == ANY_TYPE || subtype == NODE)
-			{return false;}
+    /**
+     * Check if the given type code is a subtype of the specified supertype.
+     *
+     * @param subtype
+     * @param supertype
+     * @throws IllegalArgumentException When the type is invalid
+     */
+    public static boolean subTypeOf(int subtype, int supertype) {
+        if (subtype == supertype) {
+            return true;
+        }
+        //Note that it will return true even if subtype == EMPTY
+        if (supertype == ITEM || supertype == ANY_TYPE)
+        //maybe return subtype != EMPTY ?
+        {
+            return true;
+        }
+        //Note that EMPTY is *not* a sub-type of anything else than itself
+        //EmptySequence has to take care of this when it checks its type
+        if (subtype == ITEM || subtype == EMPTY || subtype == ANY_TYPE || subtype == NODE) {
+            return false;
+        }
         subtype = superTypes[subtype];
-		if (subtype == 0)
-			{throw new IllegalArgumentException(
-				"type " + subtype + " is not a valid type");}
-		return subTypeOf(subtype, supertype);
-	}
+        if (subtype == 0) {
+            throw new IllegalArgumentException(
+                    "type " + subtype + " is not a valid type");
+        }
+        return subTypeOf(subtype, supertype);
+    }
 
-	/**
-	 * Get the type code of the supertype of the specified subtype.
-	 * 
-	 * @param subtype
-	 */
-	public static int getSuperType(final int subtype) {
-            if(subtype == ITEM || subtype == NODE) {
-                return ITEM;
-            }
-            
-            final int supertype = superTypes[subtype];
-            if(supertype == 0) {
-                LOG.warn("eXist does not define a super-type for the sub-type " + getTypeName(subtype), new Throwable());
-                return ITEM;
-            }
-            
-            return supertype;
-	}
+    /**
+     * Get the type code of the supertype of the specified subtype.
+     *
+     * @param subtype
+     */
+    public static int getSuperType(final int subtype) {
+        if (subtype == ITEM || subtype == NODE) {
+            return ITEM;
+        }
 
-	/**
-	 * Find a common supertype for two given type codes.
-	 * 
-	 * Type.ITEM is returned if no other common supertype
-	 * is found.
-	 *  
-	 * @param type1
-	 * @param type2
-	 */
-	public static int getCommonSuperType(int type1, int type2) {
-		//Super shortcut
-		if(type1 == type2)
-			{return type1;}
+        final int supertype = superTypes[subtype];
+        if (supertype == 0) {
+            LOG.warn("eXist does not define a super-type for the sub-type {}", getTypeName(subtype), new Throwable());
+            return ITEM;
+        }
+
+        return supertype;
+    }
+
+    /**
+     * Find a common supertype for two given type codes.
+     * <p>
+     * Type.ITEM is returned if no other common supertype
+     * is found.
+     *
+     * @param type1
+     * @param type2
+     */
+    public static int getCommonSuperType(int type1, int type2) {
+        //Super shortcut
+        if (type1 == type2) {
+            return type1;
+        }
         // if one of the types is empty(), return the other type: optimizer is free to choose
         // an optimization based on the more specific type.
-        if (type1 == Type.EMPTY)
-            {return type2;}
-        else if (type2 == Type.EMPTY)
-            {return type1;}
+        if (type1 == Type.EMPTY) {
+            return type2;
+        } else if (type2 == Type.EMPTY) {
+            return type1;
+        }
 
-		//TODO : optimize by swapping the arguments based on their numeric values ?
-		//Processing lower value first *should* reduce the size of the Set
-		//Collect type1's super-types
-		final HashSet<Integer> t1 = new HashSet<Integer>();
-		//Don't introduce a shortcut (starting at getSuperType(type1) here
-		//type2 might be a super-type of type1
-		int t;
-		for(t = type1; t != ITEM; t = getSuperType(t)) {
-			//Shortcut
-			if (t == type2)
-				{return t;}
-			t1.add(Integer.valueOf(t));
-		}
-		//Starting from type2's super type : the shortcut should have done its job
-		for(t = getSuperType(type2); t != ITEM ; t = getSuperType(t)) {
-			if (t1.contains(Integer.valueOf(t)))
-				{return t;}
-		}
-		return ITEM;
-	} 
+        //TODO : optimize by swapping the arguments based on their numeric values ?
+        //Processing lower value first *should* reduce the size of the Set
+        //Collect type1's super-types
+        final HashSet<Integer> t1 = new HashSet<>();
+        //Don't introduce a shortcut (starting at getSuperType(type1) here
+        //type2 might be a super-type of type1
+        int t;
+        for (t = type1; t != ITEM; t = getSuperType(t)) {
+            //Shortcut
+            if (t == type2) {
+                return t;
+            }
+            t1.add(t);
+        }
+        //Starting from type2's super type : the shortcut should have done its job
+        for (t = getSuperType(type2); t != ITEM; t = getSuperType(t)) {
+            if (t1.contains(t)) {
+                return t;
+            }
+        }
+        return ITEM;
+    }
 }

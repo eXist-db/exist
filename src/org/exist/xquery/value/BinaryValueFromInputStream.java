@@ -1,16 +1,16 @@
 package org.exist.xquery.value;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.util.io.CachingFilterInputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
-import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Representation of an XSD binary value e.g. (xs:base64Binary or xs:hexBinary)
@@ -23,14 +23,14 @@ public class BinaryValueFromInputStream extends BinaryValue {
     private final static Logger LOG = LogManager.getLogger(BinaryValueFromInputStream.class);
 
     private final CachingFilterInputStream is;
-    private FilterInputStreamCache cache;
+    private final FilterInputStreamCache cache;
 
     protected BinaryValueFromInputStream(final BinaryValueManager manager, final BinaryValueType binaryValueType, final InputStream is) throws XPathException {
         super(manager, binaryValueType);
 
         try {
 
-            this.cache = FilterInputStreamCacheFactory.getCacheInstance(() -> manager.getCacheClass(), is);
+            this.cache = FilterInputStreamCacheFactory.getCacheInstance(manager::getCacheClass, is);
             this.is = new CachingFilterInputStream(cache);
 
         } catch (final IOException ioe) {
@@ -72,7 +72,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
             try {
                 is.reset();
             } catch (final IOException ioe) {
-                LOG.error("Unable to reset stream: " + ioe.getMessage(), ioe);
+                LOG.error("Unable to reset stream: {}", ioe.getMessage(), ioe);
             }
         }
     }
@@ -103,7 +103,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
         try {
             this.close();
         } catch (final IOException e) {
-            LOG.warn("Error during cleanup of binary value: " + e.getMessage(), e);
+            LOG.warn("Error during cleanup of binary value: {}", e.getMessage(), e);
         }
         context.destroyBinaryValue(this);
     }

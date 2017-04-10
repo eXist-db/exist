@@ -21,12 +21,13 @@
  */
 package org.exist.xquery.value;
 
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.exist.util.io.HexOutputStream;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
+
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Adam Retter <adam@existsolutions.com>
@@ -46,11 +47,11 @@ public class HexBinaryValueType extends BinaryValueType<HexOutputStream> {
     @Override
     protected void verifyString(String str) throws XPathException {
 
-        if((str.length() & 1) != 0) {
+        if ((str.length() & 1) != 0) {
             throw new XPathException(ErrorCodes.FORG0001, "A hexBinary value must contain an even number of characters");
         }
 
-        if(!getMatcher(str).matches()) {
+        if (!getMatcher(str).matches()) {
             throw new XPathException(ErrorCodes.FORG0001, "Invalid hexadecimal digit");
         }
     }

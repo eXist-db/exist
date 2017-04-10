@@ -21,7 +21,10 @@
 package org.exist.xquery.value;
 
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.*;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.EmptyNodeSet;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
@@ -38,31 +41,39 @@ import java.util.List;
  */
 public abstract class AbstractSequence implements Sequence {
 
-    /** To retain compatibility with eXist versions before september 20th 2005 ,
+    /**
+     * To retain compatibility with eXist versions before september 20th 2005 ,
      * for conversion to boolean;
-     * @see http://cvs.sourceforge.net/viewcvs.py/exist/eXist-1.0/src/org/exist/xquery/value/AbstractSequence.java?r1=1.11&r2=1.12 */
+     *
+     * @see http://cvs.sourceforge.net/viewcvs.py/exist/eXist-1.0/src/org/exist/xquery/value/AbstractSequence.java?r1=1.11&r2=1.12
+     */
     private static final boolean OLD_EXIST_VERSION_COMPATIBILITY = false;
 
     protected boolean isEmpty = true;
     protected boolean hasOne = false;
 
     public int getCardinality() {
-        if (isEmpty())
-            {return Cardinality.EMPTY;}
-        if (hasOne())
-            {return Cardinality.EXACTLY_ONE;}
-        if (hasMany())
-            {return Cardinality.ONE_OR_MORE;}
+        if (isEmpty()) {
+            return Cardinality.EMPTY;
+        }
+        if (hasOne()) {
+            return Cardinality.EXACTLY_ONE;
+        }
+        if (hasMany()) {
+            return Cardinality.ONE_OR_MORE;
+        }
         throw new IllegalArgumentException("Illegal argument");
     }
 
     public AtomicValue convertTo(int requiredType) throws XPathException {
         final Item first = itemAt(0);
-        if(Type.subTypeOf(first.getType(), Type.ATOMIC))
-            {return ((AtomicValue)first).convertTo(requiredType);}
-        else
-            //TODO : clean atomization
-            {return new StringValue(first.getStringValue()).convertTo(requiredType);}
+        if (Type.subTypeOf(first.getType(), Type.ATOMIC)) {
+            return first.convertTo(requiredType);
+        } else
+        //TODO : clean atomization
+        {
+            return new StringValue(first.getStringValue()).convertTo(requiredType);
+        }
     }
 
     public boolean hasMany() {
@@ -71,8 +82,8 @@ public abstract class AbstractSequence implements Sequence {
 
     @Override
     public Sequence tail() throws XPathException {
-    	final ValueSequence tmp = new ValueSequence(getItemCount() - 1);
-    	Item item;
+        final ValueSequence tmp = new ValueSequence(getItemCount() - 1);
+        Item item;
         final SequenceIterator iterator = iterate();
         iterator.nextItem();
         while (iterator.hasNext()) {
@@ -81,10 +92,11 @@ public abstract class AbstractSequence implements Sequence {
         }
         return tmp;
     }
-    
+
     public String getStringValue() throws XPathException {
-        if(isEmpty())
-            {return "";}
+        if (isEmpty()) {
+            return "";
+        }
         final Item first = iterate().nextItem();
         return first.getStringValue();
     }
@@ -95,8 +107,9 @@ public abstract class AbstractSequence implements Sequence {
             buf.append("(");
             boolean gotOne = false;
             for (final SequenceIterator i = iterate(); i.hasNext(); ) {
-                if (gotOne)
-                    {buf.append(", ");}
+                if (gotOne) {
+                    buf.append(", ");
+                }
                 buf.append(i.nextItem());
                 gotOne = true;
             }
@@ -128,46 +141,54 @@ public abstract class AbstractSequence implements Sequence {
         //Nothing to do
     }
 
-    /** See
+    /**
+     * See
      * <a <href="http://www.w3.org/TR/xquery/#id-ebv">2.4.3 Effective Boolean Value</a>
+     *
      * @see org.exist.xquery.value.Sequence#effectiveBooleanValue()
      */
-    public boolean effectiveBooleanValue() throws XPathException {		
-        if (isEmpty())
-            {return false;}
+    public boolean effectiveBooleanValue() throws XPathException {
+        if (isEmpty()) {
+            return false;
+        }
         final Item first = itemAt(0);
         //If its operand is a sequence whose first item is a node, fn:boolean returns true.		
-        if (Type.subTypeOf(first.getType(), Type.NODE))
-            {return true;}
+        if (Type.subTypeOf(first.getType(), Type.NODE)) {
+            return true;
+        }
         if (hasMany()) {
-            if (OLD_EXIST_VERSION_COMPATIBILITY)		
-                {return true;}
-            else
-                {throw new XPathException(
-                    "err:FORG0006: effectiveBooleanValue: first item of '" + 
-                    (toString().length() < 20 ? toString() : toString().substring(0, 20)+ "...") + 
-                    "' is not a node, and sequence length > 1");}
+            if (OLD_EXIST_VERSION_COMPATIBILITY) {
+                return true;
+            } else {
+                throw new XPathException(
+                        "err:FORG0006: effectiveBooleanValue: first item of '" +
+                                (toString().length() < 20 ? toString() : toString().substring(0, 20) + "...") +
+                                "' is not a node, and sequence length > 1");
+            }
         }
         //From now, we'll work with singletons...
         //Not sure about this one : does it mean than any singleton, including false() and 0 will return true ?
-        if (OLD_EXIST_VERSION_COMPATIBILITY)
-            {return true;}
-        else
-            {return ((AtomicValue)first).effectiveBooleanValue();}
+        if (OLD_EXIST_VERSION_COMPATIBILITY) {
+            return true;
+        } else {
+            return ((AtomicValue) first).effectiveBooleanValue();
+        }
     }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#conversionPreference(java.lang.Class)
      */
     public int conversionPreference(Class<?> javaClass) {
-        if (javaClass.isAssignableFrom(Sequence.class))
-            {return 0;}
-        else if (javaClass.isAssignableFrom(List.class) || javaClass.isArray())
-            {return 1;}
-        else if (javaClass == Object.class)
-            {return 20;}
-        if(!isEmpty())
-            {return itemAt(0).conversionPreference(javaClass);}
+        if (javaClass.isAssignableFrom(Sequence.class)) {
+            return 0;
+        } else if (javaClass.isAssignableFrom(List.class) || javaClass.isArray()) {
+            return 1;
+        } else if (javaClass == Object.class) {
+            return 20;
+        }
+        if (!isEmpty()) {
+            return itemAt(0).conversionPreference(javaClass);
+        }
         return Integer.MAX_VALUE;
     }
 
@@ -176,48 +197,49 @@ public abstract class AbstractSequence implements Sequence {
      */
     @Override
     public <T> T toJavaObject(final Class<T> target) throws XPathException {
-        if(Sequence.class.isAssignableFrom(target)) {
-            return (T)this;
-        } else if(target.isArray()) {
+        if (Sequence.class.isAssignableFrom(target)) {
+            return (T) this;
+        } else if (target.isArray()) {
             final Class<?> componentType = target.getComponentType();
             // assume single-dimensional, then double-check that instance really matches desired type
             final Object array = Array.newInstance(componentType, getItemCount());
-            if(!target.isInstance(array)) {
+            if (!target.isInstance(array)) {
                 return null;
             }
             int index = 0;
-            for(final SequenceIterator i = iterate(); i.hasNext(); index++) {
+            for (final SequenceIterator i = iterate(); i.hasNext(); index++) {
                 final Item item = i.nextItem();
                 final Object obj = item.toJavaObject(componentType);
                 Array.set(array, index, obj);
             }
-            return (T)array;
-        } else if(target.isAssignableFrom(List.class)) {
-            final List<Item> l = new ArrayList<Item>(getItemCount());
-            for(final SequenceIterator i = iterate(); i.hasNext(); ) {
+            return (T) array;
+        } else if (target.isAssignableFrom(List.class)) {
+            final List<Item> l = new ArrayList<>(getItemCount());
+            for (final SequenceIterator i = iterate(); i.hasNext(); ) {
                 l.add(i.nextItem());
             }
-            return (T)l;
+            return (T) l;
         }
-        if(!isEmpty()) {
-            return (T)itemAt(0).toJavaObject(target);
+        if (!isEmpty()) {
+            return itemAt(0).toJavaObject(target);
         }
         return null;
     }
 
-    public void clearContext(int contextId)  throws XPathException {
+    public void clearContext(int contextId) throws XPathException {
         Item next;
         for (final SequenceIterator i = unorderedIterator(); i.hasNext(); ) {
             next = i.nextItem();
-            if (next instanceof NodeProxy)
-                {((NodeProxy)next).clearContext(contextId);}
+            if (next instanceof NodeProxy) {
+                ((NodeProxy) next).clearContext(contextId);
+            }
         }
     }
 
     public void setSelfAsContext(int contextId) throws XPathException {
         Item next;
         NodeValue node;
-        for (final SequenceIterator i = unorderedIterator(); i.hasNext();) {
+        for (final SequenceIterator i = unorderedIterator(); i.hasNext(); ) {
             next = i.nextItem();
             if (Type.subTypeOf(next.getType(), Type.NODE)) {
                 node = (NodeValue) next;

@@ -21,15 +21,14 @@
  */
 package org.exist.xquery.value;
 
-import java.text.Collator;
-import java.util.GregorianCalendar;
+import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.XPathException;
 
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-
-import org.exist.xquery.Constants.Comparison;
-import org.exist.xquery.XPathException;
+import java.text.Collator;
+import java.util.GregorianCalendar;
 
 public class GDayValue extends AbstractDateTimeValue {
 
@@ -44,7 +43,9 @@ public class GDayValue extends AbstractDateTimeValue {
     public GDayValue(String timeValue) throws XPathException {
         super(timeValue);
         try {
-            if (calendar.getXMLSchemaType() != DatatypeConstants.GDAY) {throw new IllegalStateException();}
+            if (calendar.getXMLSchemaType() != DatatypeConstants.GDAY) {
+                throw new IllegalStateException();
+            }
         } catch (final IllegalStateException e) {
             throw new XPathException("xs:gDay instance must not have year, month or day fields set");
         }
@@ -60,21 +61,21 @@ public class GDayValue extends AbstractDateTimeValue {
         calendar.setMillisecond(DatatypeConstants.FIELD_UNDEFINED);
         return calendar;
     }
-    
+
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
-            case Type.GDAY :
-            case Type.ATOMIC :
-            case Type.ITEM :
+            case Type.GDAY:
+            case Type.ATOMIC:
+            case Type.ITEM:
                 return this;
-            case Type.STRING :
+            case Type.STRING:
                 return new StringValue(getStringValue());
-            case Type.UNTYPED_ATOMIC :
+            case Type.UNTYPED_ATOMIC:
                 return new UntypedAtomicValue(getStringValue());
-            default :
+            default:
                 throw new XPathException(
-                    "Type error: cannot cast xs:time to "
-                        + Type.getTypeName(requiredType));
+                        "Type error: cannot cast xs:time to "
+                                + Type.getTypeName(requiredType));
         }
     }
 
@@ -86,7 +87,7 @@ public class GDayValue extends AbstractDateTimeValue {
     public int getType() {
         return Type.GDAY;
     }
-    
+
     protected QName getXMLSchemaType() {
         return DatatypeConstants.GDAY;
     }
@@ -96,31 +97,36 @@ public class GDayValue extends AbstractDateTimeValue {
                 Type.getTypeName(getType()));
     }
 
-	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-		if (other.getType() == getType()) {
-			if (!getTimezone().isEmpty()) {
-				if (!((AbstractDateTimeValue) other).getTimezone().isEmpty()) {
-					if (!((DayTimeDurationValue)getTimezone().itemAt(0)).compareTo(null, Comparison.EQ, (DayTimeDurationValue)((AbstractDateTimeValue)other).getTimezone().itemAt(0)))
-						{return DatatypeConstants.LESSER;}
-    			} else {
-    				if (!"PT0S".equals(((DayTimeDurationValue)getTimezone().itemAt(0)).getStringValue()))
-    					{return DatatypeConstants.LESSER;}
-    			}
-    		} else {
-    			if (!((AbstractDateTimeValue)other).getTimezone().isEmpty()) {
-    				if (!"PT0S".equals(((DayTimeDurationValue)((AbstractDateTimeValue)other).getTimezone().itemAt(0)).getStringValue()))
-    					{return DatatypeConstants.LESSER;}
-    			}
-			}
-			// filling in missing timezones with local timezone, should be total order as per XPath 2.0 10.4
-			final int r =	this.getImplicitCalendar().compare(((AbstractDateTimeValue) other).getImplicitCalendar());
-				//getImplicitCalendar().compare(((AbstractDateTimeValue) other).getImplicitCalendar());
-			if (r == DatatypeConstants.INDETERMINATE) {throw new RuntimeException("indeterminate order between " + this + " and " + other);}
-			return r;
-		} 
-		throw new XPathException(
-			"Type error: cannot compare " + Type.getTypeName(getType()) + " to "
-				+ Type.getTypeName(other.getType()));
-	}
+    public int compareTo(Collator collator, AtomicValue other) throws XPathException {
+        if (other.getType() == getType()) {
+            if (!getTimezone().isEmpty()) {
+                if (!((AbstractDateTimeValue) other).getTimezone().isEmpty()) {
+                    if (!((DayTimeDurationValue) getTimezone().itemAt(0)).compareTo(null, Comparison.EQ, (DayTimeDurationValue) ((AbstractDateTimeValue) other).getTimezone().itemAt(0))) {
+                        return DatatypeConstants.LESSER;
+                    }
+                } else {
+                    if (!"PT0S".equals(((DayTimeDurationValue) getTimezone().itemAt(0)).getStringValue())) {
+                        return DatatypeConstants.LESSER;
+                    }
+                }
+            } else {
+                if (!((AbstractDateTimeValue) other).getTimezone().isEmpty()) {
+                    if (!"PT0S".equals(((DayTimeDurationValue) ((AbstractDateTimeValue) other).getTimezone().itemAt(0)).getStringValue())) {
+                        return DatatypeConstants.LESSER;
+                    }
+                }
+            }
+            // filling in missing timezones with local timezone, should be total order as per XPath 2.0 10.4
+            final int r = this.getImplicitCalendar().compare(((AbstractDateTimeValue) other).getImplicitCalendar());
+            //getImplicitCalendar().compare(((AbstractDateTimeValue) other).getImplicitCalendar());
+            if (r == DatatypeConstants.INDETERMINATE) {
+                throw new RuntimeException("indeterminate order between " + this + " and " + other);
+            }
+            return r;
+        }
+        throw new XPathException(
+                "Type error: cannot compare " + Type.getTypeName(getType()) + " to "
+                        + Type.getTypeName(other.getType()));
+    }
 
 }

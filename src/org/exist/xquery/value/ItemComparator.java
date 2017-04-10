@@ -40,14 +40,15 @@ public class ItemComparator implements Comparator<Item> {
 
     public final static ItemComparator INSTANCE = new ItemComparator();
 
-    private ItemComparator() {}
+    private ItemComparator() {
+    }
 
     @Override
     public int compare(final Item n1, final Item n2) {
-        if(n1 instanceof org.exist.dom.memtree.NodeImpl && (!(n2 instanceof org.exist.dom.memtree.NodeImpl))) {
+        if (n1 instanceof org.exist.dom.memtree.NodeImpl && (!(n2 instanceof org.exist.dom.memtree.NodeImpl))) {
             return Constants.INFERIOR;
-        } else if(n1 instanceof Comparable) {
-            return ((Comparable)n1).compareTo(n2);
+        } else if (n1 instanceof Comparable) {
+            return ((Comparable) n1).compareTo(n2);
         } else {
             return Constants.INFERIOR;
         }

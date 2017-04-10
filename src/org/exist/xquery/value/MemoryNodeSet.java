@@ -1,51 +1,51 @@
 package org.exist.xquery.value;
 
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
-import org.exist.dom.memtree.NodeImpl;
 
 
 public interface MemoryNodeSet extends Sequence {
 
-    public final static MemoryNodeSet EMPTY = new ValueSequence(1);
-    
-    public Sequence getAttributes(NodeTest test) throws XPathException;
+    MemoryNodeSet EMPTY = new ValueSequence(1);
 
-    public Sequence getDescendantAttributes(NodeTest test) throws XPathException;
+    Sequence getAttributes(NodeTest test) throws XPathException;
 
-    public Sequence getChildren(NodeTest test) throws XPathException;
+    Sequence getDescendantAttributes(NodeTest test) throws XPathException;
 
-    public Sequence getDescendants(boolean includeSelf, NodeTest test) throws XPathException;
+    Sequence getChildren(NodeTest test) throws XPathException;
 
-    public Sequence getAncestors(boolean includeSelf, NodeTest test) throws XPathException;
+    Sequence getDescendants(boolean includeSelf, NodeTest test) throws XPathException;
 
-    public Sequence getParents(NodeTest test) throws XPathException;
+    Sequence getAncestors(boolean includeSelf, NodeTest test) throws XPathException;
 
-    public Sequence getSelf(NodeTest test) throws XPathException;
+    Sequence getParents(NodeTest test) throws XPathException;
 
-    public Sequence getPrecedingSiblings(NodeTest test) throws XPathException;
+    Sequence getSelf(NodeTest test) throws XPathException;
 
-    public Sequence getPreceding(NodeTest test, int position) throws XPathException;
+    Sequence getPrecedingSiblings(NodeTest test) throws XPathException;
 
-    public Sequence getFollowingSiblings(NodeTest test) throws XPathException;
-    
-    public Sequence getFollowing(NodeTest test, int position) throws XPathException;
+    Sequence getPreceding(NodeTest test, int position) throws XPathException;
 
-    public Sequence getChildrenForParent(NodeImpl parent);
+    Sequence getFollowingSiblings(NodeTest test) throws XPathException;
 
-    public Sequence selectDescendants(MemoryNodeSet descendants);
+    Sequence getFollowing(NodeTest test, int position) throws XPathException;
 
-    public Sequence selectChildren(MemoryNodeSet children);
-    
-    public int size();
+    Sequence getChildrenForParent(NodeImpl parent);
 
-    public NodeImpl get(int which);
+    Sequence selectDescendants(MemoryNodeSet descendants);
 
-    public boolean matchAttributes(NodeTest test) throws XPathException;
+    Sequence selectChildren(MemoryNodeSet children);
 
-    public boolean matchDescendantAttributes(NodeTest test) throws XPathException;
+    int size();
 
-    public boolean matchChildren(NodeTest test) throws XPathException;
+    NodeImpl get(int which);
+
+    boolean matchAttributes(NodeTest test) throws XPathException;
+
+    boolean matchDescendantAttributes(NodeTest test) throws XPathException;
+
+    boolean matchChildren(NodeTest test) throws XPathException;
 
 //    public Sequence matchDescendants(boolean includeSelf, NodeTest test) throws XPathException;
 //
@@ -53,7 +53,7 @@ public interface MemoryNodeSet extends Sequence {
 //
 //    public Sequence matchParents(NodeTest test) throws XPathException;
 
-    public boolean matchSelf(NodeTest test) throws XPathException;
+    boolean matchSelf(NodeTest test) throws XPathException;
 
 //    public Sequence matchPrecedingSiblings(NodeTest test) throws XPathException;
 //
