@@ -728,7 +728,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 	@Deprecated
 	public abstract void copyResource(Txn transaction, DocumentImpl doc,
 			Collection destination, XmldbURI newName)
-            throws PermissionDeniedException, LockException, EXistException, IOException;
+            throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException;
 
     /**
      * Copy a resource to the destination collection and rename it.
@@ -746,7 +746,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      */
     public abstract void copyResource(Txn transaction, DocumentImpl doc,
             Collection destination, XmldbURI newName, final PreserveType preserve)
-            throws PermissionDeniedException, LockException, EXistException, IOException;
+            throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException;
 
 	/**
 	 * Defragment pages of this document. This will minimize the number of split

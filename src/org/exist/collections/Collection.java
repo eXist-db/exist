@@ -509,7 +509,8 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker The database broker
      * @param name   The name of the document (without collection path)
      * @return The locked document or null if it doesn't exist
-     * @deprecated Use getDocumentWithLock(DBBroker broker, XmldbURI uri, int lockMode)
+     *
+     * @deprecated Use {@link #getDocumentWithLock(DBBroker, XmldbURI, LockMode)}
      */
     @Deprecated
     DocumentImpl getDocumentWithLock(DBBroker broker, XmldbURI name)
