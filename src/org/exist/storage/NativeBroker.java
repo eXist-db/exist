@@ -362,7 +362,7 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    private void notifyDropIndex(final DocumentImpl doc) throws ReadOnlyException {
+    private void notifyDropIndex(final DocumentImpl doc) {
         for(final ContentLoadingObserver observer : contentLoadingObservers) {
             observer.dropIndex(doc);
         }
@@ -2878,23 +2878,28 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public void moveResource(final Txn transaction, final DocumentImpl doc, final Collection destination, XmldbURI newName) throws PermissionDeniedException, LockException, IOException, TriggerException {
+    public void moveResource(final Txn transaction, final DocumentImpl sourceDocument, final Collection targetCollection, final XmldbURI newName) throws PermissionDeniedException, LockException, IOException, TriggerException {
+        assert(sourceDocument != null);
+        assert(targetCollection != null);
+        assert(newName != null);
 
         if(isReadOnly()) {
             throw new IOException(DATABASE_IS_READ_ONLY);
         }
 
-        final Account docUser = doc.getUserLock();
-        if(docUser != null) {
-            if(!(getCurrentSubject().getName()).equals(docUser.getName())) {
-                throw new PermissionDeniedException("Cannot move '" + doc.getFileURI() + " because is locked by getUser() '" + docUser.getName() + "'");
-            }
+        if(newName.numSegments() != 1) {
+            throw new IOException("newName name must be just a name i.e. an XmldbURI with one segment!");
         }
 
-        final Collection collection = doc.getCollection();
+        final XmldbURI sourceDocumentUri = sourceDocument.getURI();
+        final XmldbURI targetCollectionUri = targetCollection.getURI();
+        final XmldbURI destinationDocumentUri = targetCollectionUri.append(newName);
 
-        if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE | Permission.EXECUTE)) {
-            throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on source Collection to move resource " + doc.getFileURI());
+        final Account docUser = sourceDocument.getUserLock();
+        if(docUser != null) {
+            if(!getCurrentSubject().getName().equals(docUser.getName())) {
+                throw new PermissionDeniedException("Cannot move '" + sourceDocumentUri + " because is locked by getUser() '" + docUser.getName() + "'");
+            }
         }
 
         /**
@@ -2907,111 +2912,94 @@ public class NativeBroker extends DBBroker {
          *
          * - Adam 2013-03-26
          */
-        //must be owner of have execute access for the rename
-//        if(!((doc.getPermissions().getOwner().getId() != getCurrentSubject().getId()) | (doc.getPermissions().validate(getCurrentSubject(), Permission.EXECUTE)))) {
-//            throw new PermissionDeniedException("Account "+getCurrentSubject().getName()+" have insufficient privileges on destination Collection to move resource " + doc.getFileURI());
-//        }
 
-        if(!destination.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE | Permission.EXECUTE)) {
-            throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on destination Collection to move resource " + doc.getFileURI());
-        }
-        
-        
-        /* Copy reference to original document */
-        final Path fsOriginalDocument = getCollectionFile(getFsDir(), doc.getURI(), true);
-
-
-        final XmldbURI oldName = doc.getFileURI();
-        if(newName == null) {
-            newName = oldName;
+        // we assume the caller holds a WRITE_LOCK on sourceDocument#getCollection()
+        final Collection sourceCollection = sourceDocument.getCollection();
+        if(!sourceCollection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE | Permission.EXECUTE)) {
+            throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on source Collection to move resource: " + sourceDocumentUri);
         }
 
-        try {
-            if(destination.hasChildCollection(this, newName.lastSegment())) {
-                throw new PermissionDeniedException(
-                    "The collection '" + destination.getURI() + "' have collection '" + newName.lastSegment() + "'. " +
-                        "Document with same name can't be created."
-                );
+        if(!targetCollection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE | Permission.EXECUTE)) {
+            throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on destination Collection '" + targetCollectionUri + "' to move resource: " + sourceDocumentUri);
+        }
+
+        if(targetCollection.hasChildCollection(this, newName.lastSegment())) {
+            throw new PermissionDeniedException(
+                "The Collection '" + targetCollectionUri + "' has a sub-collection '" + newName + "'; cannot create a Document with the same name!"
+            );
+        }
+
+        final DocumentTrigger trigger = new DocumentTriggers(this, sourceCollection);
+
+        // check if the move would overwrite a collection
+        final DocumentImpl oldDoc = targetCollection.getDocument(this, newName);
+        if(oldDoc != null) {
+
+            if(sourceDocument.getDocId() == oldDoc.getDocId()) {
+                throw new PermissionDeniedException("Cannot move resource to itself '" + sourceDocumentUri + "'.");
             }
 
-            final DocumentTrigger trigger = new DocumentTriggers(this, collection);
-
-            // check if the move would overwrite a collection
-            //TODO : resolve URIs : destination.getURI().resolve(newName)
-            final DocumentImpl oldDoc = destination.getDocument(this, newName);
-            if(oldDoc != null) {
-
-                if(doc.getDocId() == oldDoc.getDocId()) {
-                    throw new PermissionDeniedException("Cannot move resource to itself '" + doc.getURI() + "'.");
-                }
-
-                // GNU mv command would prompt for Confirmation here, you can say yes or pass the '-f' flag. As we cant prompt for confirmation we assume OK
-                /* if(!oldDoc.getPermissions().validate(getCurrentSubject(), Permission.WRITE)) {
-                    throw new PermissionDeniedException("Resource with same name exists in target collection and write is denied");
-                }
-                */
-
-                removeResource(transaction, oldDoc);
+            // GNU mv command would prompt for Confirmation here, you can say yes or pass the '-f' flag. As we cant prompt for confirmation we assume OK
+            /* if(!oldDoc.getPermissions().validate(getCurrentSubject(), Permission.WRITE)) {
+                throw new PermissionDeniedException("Resource with same name exists in target collection and write is denied");
             }
+            */
 
-            boolean renameOnly = collection.getId() == destination.getId();
+            // remove the old resource
+            removeResource(transaction, oldDoc);
+        }
 
-            final XmldbURI oldURI = doc.getURI();
-            final XmldbURI newURI = destination.getURI().append(newName);
+        final boolean renameOnly = sourceCollection.getId() == targetCollection.getId();
 
-            trigger.beforeMoveDocument(this, transaction, doc, newURI);
+        trigger.beforeMoveDocument(this, transaction, sourceDocument, destinationDocumentUri);
 
-            if(doc.getResourceType() == DocumentImpl.XML_FILE) {
-                if (!renameOnly) {
-                    dropIndex(transaction, doc);
-                }
+        if(sourceDocument.getResourceType() == DocumentImpl.XML_FILE) {
+            if (!renameOnly) {
+                dropIndex(transaction, sourceDocument);
             }
+        }
 
-            collection.unlinkDocument(this, doc);
+        sourceCollection.unlinkDocument(this, sourceDocument);
+        if(!renameOnly) {
+            saveCollection(transaction, sourceCollection);
+        }
+
+        removeResourceMetadata(transaction, sourceDocument);
+
+        sourceDocument.setFileURI(newName);
+        sourceDocument.setCollection(targetCollection);
+        targetCollection.addDocument(transaction, this, sourceDocument);
+
+        if(sourceDocument.getResourceType() == DocumentImpl.XML_FILE) {
             if(!renameOnly) {
-                saveCollection(transaction, collection);
+                // reindexing
+                reindexXMLResource(transaction, sourceDocument, IndexMode.REPAIR);
             }
+        } else {
+            // binary resource
+            final Path fsSourceDocument = getCollectionFile(getFsDir(), sourceDocumentUri, false);
+            final Path fsTargetCollection = getCollectionFile(getFsDir(), targetCollectionUri, true);
+            final Path fsDestinationDocument = fsTargetCollection.resolve(newName.lastSegment().toString());
 
-            removeResourceMetadata(transaction, doc);
+            /* Create required directories */
+            Files.createDirectories(fsTargetCollection);
 
-            doc.setFileURI(newName);
-            doc.setCollection(destination);
-            destination.addDocument(transaction, this, doc);
+            /* Rename original file to new location */
+            Files.move(fsSourceDocument, fsDestinationDocument, StandardCopyOption.ATOMIC_MOVE);
 
-            if(doc.getResourceType() == DocumentImpl.XML_FILE) {
-                if(!renameOnly) {
-                    // reindexing
-                    reindexXMLResource(transaction, doc, IndexMode.REPAIR);
-                }
-            } else {
-                // binary resource
-                final Path colDir = getCollectionFile(getFsDir(), destination.getURI(), true);
-                final Path binFile = colDir.resolve(newName.lastSegment().toString());
-                final Path sourceFile = getCollectionFile(getFsDir(), doc.getURI(), false);
-
-                /* Create required directories */
-                Files.createDirectories(binFile.getParent());
-
-                /* Rename original file to new location */
-                Files.move(fsOriginalDocument, binFile, StandardCopyOption.ATOMIC_MOVE);
-
-                if(logManager.isPresent()) {
-                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceFile, binFile);
-                    try {
-                        logManager.get().journal(loggable);
-                    } catch (final JournalException e) {
-                        LOG.error(e.getMessage(), e);
-                    }
+            if(logManager.isPresent()) {
+                final Loggable loggable = new RenameBinaryLoggable(this, transaction, fsSourceDocument, fsDestinationDocument);
+                try {
+                    logManager.get().journal(loggable);
+                } catch (final JournalException e) {
+                    LOG.error(e.getMessage(), e);
                 }
             }
-            storeXMLResource(transaction, doc);
-            saveCollection(transaction, destination);
-
-            trigger.afterMoveDocument(this, transaction, doc, oldURI);
-
-        } catch(final ReadOnlyException e) {
-            throw new PermissionDeniedException(e.getMessage(), e);
         }
+        storeXMLResource(transaction, sourceDocument);
+        saveCollection(transaction, targetCollection);
+
+        trigger.afterMoveDocument(this, transaction, sourceDocument, sourceDocumentUri);
     }
 
     @Override
@@ -3071,15 +3059,12 @@ public class NativeBroker extends DBBroker {
 
                 trigger.afterDeleteDocument(this, transaction, document.getURI());
             }
-
-        } catch(final ReadOnlyException e) {
-            LOG.error("removeDocument(String) - " + DATABASE_IS_READ_ONLY);
         } catch(final TriggerException e) {
             LOG.error(e);
         }
     }
 
-    private void dropIndex(final Txn transaction, final DocumentImpl document) throws ReadOnlyException {
+    private void dropIndex(final Txn transaction, final DocumentImpl document) {
         final StreamListener listener = getIndexController().getStreamListener(document, ReindexMode.REMOVE_ALL_NODES);
         listener.startIndexDocument(transaction);
         final NodeList nodes = document.getChildNodes();
@@ -3283,10 +3268,9 @@ public class NativeBroker extends DBBroker {
             doc.getMetadata().setPageCount(tempDoc.getMetadata().getPageCount());
             storeXMLResource(transaction, doc);
             closeDocument();
-            if (LOG.isDebugEnabled())
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("Defragmentation took " + (System.currentTimeMillis() - start) + "ms.");
-        } catch(final ReadOnlyException e) {
-            LOG.warn(DATABASE_IS_READ_ONLY, e);
+            }
         } catch(final PermissionDeniedException | IOException e) {
             LOG.error(e);
         }
