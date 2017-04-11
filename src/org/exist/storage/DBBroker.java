@@ -410,7 +410,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * Get a new document id that does not yet exist within the collection.
      * @throws EXistException 
      */
-    public abstract int getNextResourceId(Txn transaction, Collection collection) throws EXistException;
+    public abstract int getNextResourceId(Txn transaction) throws EXistException, LockException;
 
     /**
      * Get the string value of the specified node.

@@ -322,10 +322,26 @@ public class LockManager {
     }
 
     /**
-     * Optimized locking method for acquiring a lock on a Collection, when we already hold a lock on the
+     * Optimized locking method for acquiring a WRITE_LOCK lock on a Collection, when we already hold a WRITE_LOCK lock on the
      * parent collection. In that instance we can avoid descending the locking tree again
      */
     public ManagedCollectionLock acquireCollectionWriteLock(final ManagedCollectionLock parentLock, final XmldbURI collectionPath) throws LockException {
+        return acquireCollectionLock(parentLock, collectionPath, Lock.LockMode.WRITE_LOCK);
+    }
+
+    /**
+     * Optimized locking method for acquiring a READ_LOCK lock on a Collection, when we already hold a READ_LOCK lock on the
+     * parent collection. In that instance we can avoid descending the locking tree again
+     */
+    public ManagedCollectionLock acquireCollectionReadLock(final ManagedCollectionLock parentLock, final XmldbURI collectionPath) throws LockException {
+        return acquireCollectionLock(parentLock, collectionPath, Lock.LockMode.READ_LOCK);
+    }
+
+    /**
+     * Optimized locking method for acquiring a lock on a Collection, when we already hold a lock on the
+     * parent collection. In that instance we can avoid descending the locking tree again
+     */
+    private ManagedCollectionLock acquireCollectionLock(final ManagedCollectionLock parentLock, final XmldbURI collectionPath, final Lock.LockMode lockMode) throws LockException {
         if(Objects.isNull(parentLock)) {
             throw new LockException("Cannot acquire a sub-Collection lock without a lock for the parent");
         }
@@ -343,22 +359,35 @@ public class LockManager {
 
         //TODO(AR) is this correct do we need to unlock the parentLock's parent, and what about on LockException? -- need tests
         final ReentrantReadWriteLock subCollectionLock = getCollectionLock(collectionPath.getCollectionPath());
-        final java.util.concurrent.locks.Lock subCollectionWriteLock = subCollectionLock.writeLock();
-        try {
-            lockTable.attempt(groupId, collectionPathStr, LockType.COLLECTION, Lock.LockMode.WRITE_LOCK);
+        final java.util.concurrent.locks.Lock lock;
+        switch(lockMode) {
+            case WRITE_LOCK:
+                lock = subCollectionLock.writeLock();
+                break;
 
-            subCollectionWriteLock.lockInterruptibly();
+            case READ_LOCK:
+                lock = subCollectionLock.readLock();
+                break;
 
-            lockTable.acquired(groupId, collectionPathStr, LockType.COLLECTION, Lock.LockMode.WRITE_LOCK);
-
-        } catch(final InterruptedException e) {
-            lockTable.attemptFailed(groupId, collectionPathStr, LockType.COLLECTION, Lock.LockMode.WRITE_LOCK);
-            throw new LockException("Unable to acquire WRITE_LOCK for: " + collectionPath, e);
+            default:
+                throw new IllegalArgumentException("Unsupported lock mode: " + lockMode);
         }
 
-        return new ManagedCollectionLock(collectionPath, Either.Left(subCollectionWriteLock), () -> {
-            subCollectionWriteLock.unlock();
-            lockTable.released(groupId, collectionPathStr, LockType.COLLECTION, Lock.LockMode.WRITE_LOCK);
+        try {
+            lockTable.attempt(groupId, collectionPathStr, LockType.COLLECTION, lockMode);
+
+            lock.lockInterruptibly();
+
+            lockTable.acquired(groupId, collectionPathStr, LockType.COLLECTION, lockMode);
+
+        } catch(final InterruptedException e) {
+            lockTable.attemptFailed(groupId, collectionPathStr, LockType.COLLECTION, lockMode);
+            throw new LockException("Unable to acquire " + lockMode + " for: " + collectionPath, e);
+        }
+
+        return new ManagedCollectionLock(collectionPath, Either.Left(lock), () -> {
+            lock.unlock();
+            lockTable.released(groupId, collectionPathStr, LockType.COLLECTION, lockMode);
         });
     }
 }

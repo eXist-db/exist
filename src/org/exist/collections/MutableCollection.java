@@ -275,7 +275,7 @@ public class MutableCollection implements Collection {
         
         if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID) {
             try {
-                doc.setDocId(broker.getNextResourceId(transaction, this));
+                doc.setDocId(broker.getNextResourceId(transaction));
             } catch(final EXistException e) {
                 LOG.error("Collection error " + e.getMessage(), e);
                 // TODO : re-raise the exception ? -pb
@@ -1341,7 +1341,7 @@ public class MutableCollection implements Collection {
 //                	else
                         document.getUpdateLock().acquire(LockMode.WRITE_LOCK);
 
-                        document.setDocId(broker.getNextResourceId(transaction, this));
+                        document.setDocId(broker.getNextResourceId(transaction));
                         addDocument(transaction, broker, document);
                     } else {
                         //TODO : use a more elaborated method ? No triggers...
@@ -1363,7 +1363,7 @@ public class MutableCollection implements Collection {
 //            	else
                     document.getUpdateLock().acquire(LockMode.WRITE_LOCK);
 
-                    document.setDocId(broker.getNextResourceId(transaction, this));
+                    document.setDocId(broker.getNextResourceId(transaction));
                     addDocument(transaction, broker, document);
                 }
 

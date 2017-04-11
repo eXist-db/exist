@@ -19,6 +19,7 @@
  */
 package org.exist.storage;
 
+import com.evolvedbinary.j8fu.function.BiFunctionE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.*;
@@ -90,6 +91,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -715,7 +717,7 @@ public class NativeBroker extends DBBroker {
         try {
 
             // 1) optimize for the existence of the Collection in the cache
-            try (final ManagedCollectionLock collectionLock = readLockCollection(collectionUri)) {
+            try (final ManagedCollectionLock collectionLock = readLockCollection(null, collectionUri)) {
                 final Collection collection = collectionsCache.getIfPresent(collectionUri);
                 if (collection != null) {
                     return new Tuple2<>(false, collection);
@@ -939,7 +941,7 @@ public class NativeBroker extends DBBroker {
                     break;
 
                 case READ_LOCK:
-                    collectionLock = readLockCollection(collectionUri);
+                    collectionLock = readLockCollection(null, collectionUri);
                     unlockFn = collectionLock::close;
                     break;
 
@@ -1067,193 +1069,290 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    /**
-     * Checks all permissions in the tree to ensure that a copy operation will succeed
-     */
-    protected void checkPermissionsForCopy(final Collection src, final XmldbURI destUri, final XmldbURI newName) throws PermissionDeniedException, LockException {
-
-        if(!src.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.READ)) {
-            throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " by " + getCurrentSubject().getName());
-        }
-
-        final Collection dest = getCollection(destUri);
-        final XmldbURI newDestUri = destUri.append(newName);
-        final Collection newDest = getCollection(newDestUri);
-
-        if(dest != null) {
-            //if(!dest.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.WRITE | Permission.READ)) {
-            //TODO do we really need WRITE permission on the dest?
-            if(!dest.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.WRITE)) {
-                throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " to " + dest.getURI() + " by " + getCurrentSubject().getName());
-            }
-
-            if(newDest != null) {
-                //TODO why do we need READ access on the dest collection?
-                /*if(!dest.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.READ)) {
-                    throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " to " + dest.getURI() + " by " + getCurrentSubject().getName());
-                }*/
-
-                //if(newDest.isEmpty(this)) {
-                if(!newDest.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.WRITE)) {
-                    throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " to " + newDest.getURI() + " by " + getCurrentSubject().getName());
-                }
-                //}
-            }
-        }
-
-        for(final Iterator<DocumentImpl> itSrcSubDoc = src.iterator(this); itSrcSubDoc.hasNext(); ) {
-            final DocumentImpl srcSubDoc = itSrcSubDoc.next();
-            if(!srcSubDoc.getPermissions().validate(getCurrentSubject(), Permission.READ)) {
-                throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " for resource " + srcSubDoc.getURI() + " by " + getCurrentSubject().getName());
-            }
-
-            //if the destination resource exists, we must have write access to replace it's metadata etc. (this follows the Linux convention)
-            if(newDest != null && !newDest.isEmpty(this)) {
-                final DocumentImpl newDestSubDoc = newDest.getDocument(this, srcSubDoc.getFileURI()); //TODO check this uri is just the filename!
-                if(newDestSubDoc != null) {
-                    if(!newDestSubDoc.getPermissions().validate(getCurrentSubject(), Permission.WRITE)) {
-                        throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " for resource " + newDestSubDoc.getURI() + " by " + getCurrentSubject().getName());
-                    }
-                }
-            }
-        }
-
-        for(final Iterator<XmldbURI> itSrcSubColUri = src.collectionIterator(this); itSrcSubColUri.hasNext(); ) {
-            final XmldbURI srcSubColUri = itSrcSubColUri.next();
-            final Collection srcSubCol = getCollection(src.getURI().append(srcSubColUri));
-
-            checkPermissionsForCopy(srcSubCol, newDestUri, srcSubColUri);
-        }
-    }
-
     @Override
     public void copyCollection(final Txn transaction, final Collection collection, final Collection destination, final XmldbURI newName) throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException {
         copyCollection(transaction, collection, destination, newName, PreserveType.DEFAULT);
     }
 
     @Override
-    public void copyCollection(final Txn transaction, final Collection collection, final Collection destination, final XmldbURI newName, final PreserveType preserve) throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException {
+    public void copyCollection(final Txn transaction, final Collection sourceCollection, final Collection targetCollection, final XmldbURI newName, final PreserveType preserve) throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException {
+        assert(sourceCollection != null);
+        assert(targetCollection != null);
+        assert(newName != null);
+
         if(isReadOnly()) {
             throw new IOException(DATABASE_IS_READ_ONLY);
         }
 
-        //TODO : resolve URIs !!!
-        if(newName != null && newName.numSegments() != 1) {
-            throw new PermissionDeniedException("New collection name must have one segment!");
+        if(newName.numSegments() != 1) {
+            throw new IOException("newName name must be just a name i.e. an XmldbURI with one segment!");
         }
 
-        final XmldbURI srcURI = collection.getURI();
-        final XmldbURI dstURI = destination.getURI().append(newName);
+        final XmldbURI sourceCollectionUri = sourceCollection.getURI();
+        final XmldbURI targetCollectionUri = targetCollection.getURI();
+        final XmldbURI destinationCollectionUri = targetCollectionUri.append(newName);
 
-        if(collection.getURI().equals(dstURI)) {
-            throw new PermissionDeniedException("Cannot copy collection to itself '" + collection.getURI() + "'.");
+        if(sourceCollection.getId() == targetCollection.getId()) {
+            throw new PermissionDeniedException("Cannot copy collection to itself '" + sourceCollectionUri + "'.");
         }
-        if(collection.getId() == destination.getId()) {
-            throw new PermissionDeniedException("Cannot copy collection to itself '" + collection.getURI() + "'.");
+        if(sourceCollectionUri.equals(destinationCollectionUri)) {
+            throw new PermissionDeniedException("Cannot copy collection to itself '" + sourceCollectionUri + "'.");
         }
-        if(isSubCollection(collection, destination)) {
-            throw new PermissionDeniedException("Cannot copy collection '" + collection.getURI() + "' to it child collection '"+destination.getURI()+"'.");
+        if(isSubCollection(sourceCollectionUri, targetCollectionUri)) {
+            throw new PermissionDeniedException("Cannot copy collection '" + sourceCollectionUri + "' inside itself  '" + targetCollectionUri + "'.");
         }
 
-        try {
-            pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_COPY_COLLECTION, collection.getURI());
-            try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
+        if(!sourceCollection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.READ)) {
+            throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " has insufficient privileges on collection to copy collection " + sourceCollectionUri);
+        }
+        if(!targetCollection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE | Permission.EXECUTE)) {
+            throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " has insufficient privileges on target collection " + targetCollectionUri + " to copy collection " + sourceCollectionUri);
+        }
 
-                //recheck here because now under collectionsDbLock
-                if (isSubCollection(collection, destination)) {
-                    throw new PermissionDeniedException("Cannot copy collection '" + collection.getURI() + "' to it child collection '" + destination.getURI() + "'.");
+        // READ_LOCK the sourceCollection
+        try (final ManagedCollectionLock sourceCollectionLock = readLockCollection(null, sourceCollectionUri)) {
+
+            // WRITE LOCK the destinationCollection and its parent (targetCollection)
+            try (final ManagedCollectionLock destinationCollectionLock = writeLockCollection(null, destinationCollectionUri, true)) {
+                /*
+                 * At this point this thread should hold:
+                 *   READ_LOCKS on:
+                 *     1) sourceCollection
+                 *
+                 *   WRITE_LOCKs on:
+                 *     2) targetCollection
+                 *     3) destinationCollection
+                 */
+
+                // we now pessimistically READ_LOCK the sourceCollection descendants
+                final List<ManagedCollectionLock> sourceCollectionDescendantLocks = readLockDescendants(sourceCollection, sourceCollectionLock);
+                try {
+
+                    // we now pessimistically WRITE_LOCK the destinationCollection descendants that we are about to create
+                    final List<XmldbURI> destinationCollectionDescendentUris = sourceCollectionDescendantLocks.stream()
+                            .map(ManagedCollectionLock::getPath)
+                            .map(uri -> sourceCollectionUri.relativizeCollectionPath(uri.getURI()))
+                            .map(destinationCollectionUri::resolveCollectionPath)
+                            .map(XmldbURI::create)
+                            .collect(Collectors.toList());
+                    final List<ManagedCollectionLock> destinationCollectionDescendantLocks = writeLockCollections(destinationCollectionDescendentUris, destinationCollectionLock);
+                    try {
+                        pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_COPY_COLLECTION, sourceCollection.getURI());
+                        try {
+
+                            final XmldbURI sourceCollectionParentUri = sourceCollection.getParentURI();
+                            // READ_LOCK the parent of the source Collection for the triggers
+                            try(final Collection sourceCollectionParent = sourceCollectionParentUri == null ? sourceCollection : openCollection(sourceCollectionParentUri, LockMode.READ_LOCK)) {
+                                // fire before copy collection triggers
+                                final CollectionTrigger trigger = new CollectionTriggers(this, sourceCollectionParent);
+                                trigger.beforeCopyCollection(this, transaction, sourceCollection, destinationCollectionUri);
+
+                                // check all permissions in the tree to ensure a copy operation will succeed before starting copying
+                                checkPermissionsForCopy(sourceCollection, targetCollection, newName);
+
+                                final DocumentTrigger docTrigger = new DocumentTriggers(this);
+
+                                final Collection newCollection = doCopyCollection(transaction, docTrigger, sourceCollection, targetCollection, destinationCollectionUri, true, preserve);
+
+                                // fire after copy collection triggers
+                                trigger.afterCopyCollection(this, transaction, newCollection, sourceCollectionUri);
+                            }
+
+                        } finally {
+                            pool.getProcessMonitor().endJob();
+                        }
+                    } finally {
+                        // iterate over the list in reverse order (to ensure correct order of release)
+                        for(int i = destinationCollectionDescendantLocks.size() - 1; i >= 0; i--) {
+                            destinationCollectionDescendantLocks.get(i).close();  // release the lock
+                        }
+                    }
+
+                } finally {
+                    // iterate over the list in reverse order (to ensure correct order of release)
+                    for(int i = sourceCollectionDescendantLocks.size() - 1; i >= 0; i--) {
+                        sourceCollectionDescendantLocks.get(i).close();  // release the lock
+                    }
                 }
-
-                final XmldbURI parentName = collection.getParentURI();
-                final Collection parent = parentName == null ? collection : getCollection(parentName);
-
-                final CollectionTrigger trigger = new CollectionTriggers(this, parent);
-                trigger.beforeCopyCollection(this, transaction, collection, dstURI);
-
-                //atomically check all permissions in the tree to ensure a copy operation will succeed before starting copying
-                checkPermissionsForCopy(collection, destination.getURI(), newName);
-
-                final DocumentTrigger docTrigger = new DocumentTriggers(this);
-
-                final Collection newCollection = doCopyCollection(transaction, docTrigger, collection, destination, newName, true, preserve);
-
-                trigger.afterCopyCollection(this, transaction, newCollection, srcURI);
             }
-        } finally {
-            pool.getProcessMonitor().endJob();
         }
     }
 
-    private Collection doCopyCollection(final Txn transaction, final DocumentTrigger trigger, final Collection collection, final Collection destination, XmldbURI newName, final boolean copyCollectionMode, final PreserveType preserve) throws PermissionDeniedException, IOException, EXistException, TriggerException, LockException {
+    /**
+     * Checks all permissions in the tree to ensure that a copy operation
+     * will not fail due to a lack of rights
+     *
+     * @param sourceCollection The Collection to copy
+     * @param targetCollection The target Collection to copy the sourceCollection into
+     * @param newName The new name the sourceCollection should have in the targetCollection
+     *
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
+     * @throws LockException If an exception occurs whilst acquiring locks
+     */
+    protected void checkPermissionsForCopy(final Collection sourceCollection, final Collection targetCollection, final XmldbURI newName) throws PermissionDeniedException, LockException {
 
-        if(newName == null) {
-            newName = collection.getURI().lastSegment();
+        if(!sourceCollection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.READ)) {
+            throw new PermissionDeniedException("Permission denied to copy collection " + sourceCollection.getURI() + " by " + getCurrentSubject().getName());
         }
-        newName = destination.getURI().append(newName);
 
+        final XmldbURI destinationCollectionUri = targetCollection == null ? null : targetCollection.getURI().append(newName);
+        final Collection destinationCollection = destinationCollectionUri == null ? null : getCollection(destinationCollectionUri);  // NOTE: we already have a WRITE_LOCK on destinationCollectionUri
+
+        if(targetCollection != null) {
+            if(!targetCollection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.WRITE)) {
+                throw new PermissionDeniedException("Permission denied to copy collection " + sourceCollection.getURI() + " to " + targetCollection.getURI() + " by " + getCurrentSubject().getName());
+            }
+
+            if(destinationCollection != null) {
+                if(!destinationCollection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.WRITE)) {
+                    throw new PermissionDeniedException("Permission denied to copy collection " + sourceCollection.getURI() + " to " + destinationCollection.getURI() + " by " + getCurrentSubject().getName());
+                }
+            }
+        }
+
+        // check document permissions
+        for(final Iterator<DocumentImpl> itSrcSubDoc = sourceCollection.iterator(this); itSrcSubDoc.hasNext(); ) {
+            final DocumentImpl srcSubDoc = itSrcSubDoc.next();
+            if(!srcSubDoc.getPermissions().validate(getCurrentSubject(), Permission.READ)) {
+                throw new PermissionDeniedException("Permission denied to copy collection " + sourceCollection.getURI() + " for resource " + srcSubDoc.getURI() + " by " + getCurrentSubject().getName());
+            }
+
+            //if the destination resource exists, we must have write access to replace it's metadata etc. (this follows the Linux convention)
+            if(destinationCollection != null && !destinationCollection.isEmpty(this)) {
+                final DocumentImpl newDestSubDoc = destinationCollection.getDocument(this, srcSubDoc.getFileURI()); //TODO check this uri is just the filename!
+                if(newDestSubDoc != null) {
+                    if(!newDestSubDoc.getPermissions().validate(getCurrentSubject(), Permission.WRITE)) {
+                        throw new PermissionDeniedException("Permission denied to copy collection " + sourceCollection.getURI() + " for resource " + newDestSubDoc.getURI() + " by " + getCurrentSubject().getName());
+                    }
+                }
+            }
+        }
+
+        // descend into sub-collections
+        for(final Iterator<XmldbURI> itSrcSubColUri = sourceCollection.collectionIterator(this); itSrcSubColUri.hasNext(); ) {
+            final XmldbURI srcSubColUri = itSrcSubColUri.next();
+            final Collection srcSubCol = getCollection(sourceCollection.getURI().append(srcSubColUri));  // NOTE: we already have a READ_LOCK on destinationCollectionUri
+
+            checkPermissionsForCopy(srcSubCol, destinationCollection, srcSubColUri);
+        }
+    }
+
+
+    /**
+     * Copy a collection and all its sub-Collections
+     *
+     * @param transaction The current transaction
+     * @param documentTrigger The trigger to use for document events
+     * @param sourceCollection The Collection to copy
+     * @param destinationCollectionUri The destination Collection URI for the sourceCollection copy
+     * @param copyCollectionMode false on the first call, true on recursive calls
+     *
+     * @return A reference to the Collection, no additional locks are held on the Collection
+     *
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
+     * @throws LockException If an exception occurs whilst acquiring locks
+     * @throws IOException If an error occurs whilst copying the Collection on disk
+     * @throws TriggerException If a CollectionTrigger throws an exception
+     * @throws EXistException If no more Document IDs are available
+     */
+    private Collection doCopyCollection(final Txn transaction, final DocumentTrigger documentTrigger, final Collection sourceCollection, final Collection destinationParentCollection, final XmldbURI destinationCollectionUri, final boolean copyCollectionMode, final PreserveType preserve) throws PermissionDeniedException, IOException, EXistException, TriggerException, LockException {
         if(LOG.isDebugEnabled()) {
-            LOG.debug("Copying collection to '" + newName + "'");
+            LOG.debug("Copying collection to '{}'", destinationCollectionUri);
         }
 
         // permissions and attributes for the destCollection (if we have to create it)
         final Permission createCollectionPerms = PermissionFactory.getDefaultCollectionPermission(getBrokerPool().getSecurityManager());
-        copyModeAndAcl(collection.getPermissions(), createCollectionPerms);
+        copyModeAndAcl(sourceCollection.getPermissions(), createCollectionPerms);
         final long created;
         if (preserveOnCopy(preserve)) {
             // only copy the owner and group from the source if we are creating a new collection and we are the DBA
             if (getCurrentSubject().hasDbaRole()) {
-                PermissionFactory.chown(this, createCollectionPerms, Optional.of(collection.getPermissions().getOwner().getName()), Optional.of(collection.getPermissions().getGroup().getName()));
+                PermissionFactory.chown(this, createCollectionPerms, Optional.of(sourceCollection.getPermissions().getOwner().getName()), Optional.of(sourceCollection.getPermissions().getGroup().getName()));
             }
 
-            created = collection.getMetadata().getCreated();
+            created = sourceCollection.getMetadata().getCreated();
         } else {
             created = 0;
         }
 
-        final Tuple2<Boolean, Collection> destCollection = getOrCreateCollectionExplicit(transaction, newName, Optional.of(new Tuple2<>(createCollectionPerms, created)));
+        final Tuple2<Boolean, Collection> destinationCollection = getOrCreateCollectionExplicit(transaction, destinationCollectionUri, Optional.of(new Tuple2<>(createCollectionPerms, created)));
 
         // if we didn't create destCollection but we need to preserve the attributes
-        if((!destCollection._1) && preserveOnCopy(preserve)) {
-            copyModeAndAcl(collection.getPermissions(), destCollection._2.getPermissions());
+        if((!destinationCollection._1) && preserveOnCopy(preserve)) {
+            copyModeAndAcl(sourceCollection.getPermissions(), destinationCollection._2.getPermissions());
         }
 
-        // inherit the group to the destCollection if destination is setGid
-        if (destination.getPermissions().isSetGid()) {
-            destCollection._2.getPermissions().setGroupFrom(destination.getPermissions()); //inherit group
-            destCollection._2.getPermissions().setSetGid(true); //inherit setGid bit
+        // inherit the group to the destinationCollection if parent is setGid
+        if (destinationParentCollection != null && destinationParentCollection.getPermissions().isSetGid()) {
+            destinationCollection._2.getPermissions().setGroupFrom(destinationParentCollection.getPermissions()); //inherit group
+            destinationCollection._2.getPermissions().setSetGid(true); //inherit setGid bit
         }
 
-        for(final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
+        doCopyCollectionDocuments(transaction, documentTrigger, sourceCollection, destinationCollection._2, preserve);
+
+        final XmldbURI sourceCollectionUri = sourceCollection.getURI();
+        for(final Iterator<XmldbURI> i = sourceCollection.collectionIterator(this); i.hasNext(); ) {
+            final XmldbURI childName = i.next();
+            final XmldbURI childUri = sourceCollectionUri.append(childName);
+            try (final Collection child = getCollection(childUri)) {        // NOTE: we already have a READ lock on child
+                if (child == null) {
+                    throw new IOException("Child collection " + childUri + " not found");
+                } else {
+                    doCopyCollection(transaction, documentTrigger, child, destinationCollection._2, destinationCollection._2.getURI().append(childName), true, preserve);
+                }
+            }
+        }
+
+        return destinationCollection._2;
+    }
+
+    /**
+     * Copy the documents in one Collection to another (non-recursive)
+     *
+     * @param transaction The current transaction
+     * @param documentTrigger The trigger to use for document events
+     * @param sourceCollection The Collection to copy documents from
+     * @param destinationCollection The Collection to copy documents to
+     *
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
+     * @throws LockException If an exception occurs whilst acquiring locks
+     * @throws IOException If an error occurs whilst copying the Collection on disk
+     * @throws TriggerException If a CollectionTrigger throws an exception
+     * @throws EXistException If no more Document IDs are available
+     */
+    private void doCopyCollectionDocuments(final Txn transaction, final DocumentTrigger documentTrigger, final Collection sourceCollection, final Collection destinationCollection, final PreserveType preserve) throws LockException, PermissionDeniedException, IOException, TriggerException, EXistException {
+        for(final Iterator<DocumentImpl> i = sourceCollection.iterator(this); i.hasNext(); ) {
             final DocumentImpl child = i.next();
 
             if(LOG.isDebugEnabled()) {
-                LOG.debug("Copying resource: '" + child.getURI() + "'");
+                LOG.debug("Copying resource: '{}'", child.getURI());
             }
 
             // TODO(AR) The code below seems quite different to that in NativeBroker#copyResource presumably should be the same?
 
-            final XmldbURI newUri = destCollection._2.getURI().append(child.getFileURI());
-            trigger.beforeCopyDocument(this, transaction, child, newUri);
+            final XmldbURI newDocName = child.getFileURI();
+            final XmldbURI newDocUri = destinationCollection.getURI().append(newDocName);
+            documentTrigger.beforeCopyDocument(this, transaction, child, newDocUri);
 
             //are we overwriting an existing document?
             final CollectionEntry oldDoc;
-            if(destCollection._2.hasDocument(this, child.getFileURI())) {
-                oldDoc = destCollection._2.getResourceEntry(this, child.getFileURI().toString());
+            if(destinationCollection.hasDocument(this, child.getFileURI())) {
+                oldDoc = destinationCollection.getResourceEntry(this, newDocName.toString());
             } else {
                 oldDoc = null;
             }
 
-            DocumentImpl createdDoc;
+            final DocumentImpl createdDoc;
             if(child.getResourceType() == DocumentImpl.BINARY_FILE) {
                 final BinaryDocument newDoc;
                 if (oldDoc != null) {
-                    newDoc = new BinaryDocument(pool, destCollection._2, oldDoc);
+                    newDoc = new BinaryDocument(pool, destinationCollection, oldDoc);
                 } else {
-                    newDoc = new BinaryDocument(pool, destCollection._2, child.getFileURI());
+                    newDoc = new BinaryDocument(pool, destinationCollection, child.getFileURI());
                 }
 
                 newDoc.copyOf(this, child, oldDoc);
-                newDoc.setDocId(getNextResourceId(transaction, destination));
+                newDoc.setDocId(getNextResourceId(transaction));
 
                 if(preserveOnCopy(preserve)) {
                     copyResource_preserve(this, child, newDoc, oldDoc != null);
@@ -1263,53 +1362,38 @@ public class NativeBroker extends DBBroker {
                     storeBinaryResource(transaction, newDoc, is);
                 }
                 storeXMLResource(transaction, newDoc);
-                destCollection._2.addDocument(transaction, this, newDoc);
+                destinationCollection.addDocument(transaction, this, newDoc);
 
                 createdDoc = newDoc;
             } else {
                 //TODO : put a lock on newDoc ?
                 final DocumentImpl newDoc;
                 if (oldDoc != null) {
-                    newDoc = new DocumentImpl(pool, destCollection._2, oldDoc);
+                    newDoc = new DocumentImpl(pool, destinationCollection, oldDoc);
                 } else {
-                    newDoc = new DocumentImpl(pool, destCollection._2, child.getFileURI());
+                    newDoc = new DocumentImpl(pool, destinationCollection, child.getFileURI());
                 }
                 newDoc.copyOf(this, child, oldDoc);
-                newDoc.setDocId(getNextResourceId(transaction, destination));
+                newDoc.setDocId(getNextResourceId(transaction));
                 copyXMLResource(transaction, child, newDoc);
                 if (preserveOnCopy(preserve)) {
                     copyResource_preserve(this, child, newDoc, oldDoc != null);
                 }
                 storeXMLResource(transaction, newDoc);
-                destCollection._2.addDocument(transaction, this, newDoc);
+                destinationCollection.addDocument(transaction, this, newDoc);
 
                 createdDoc = newDoc;
             }
 
-            trigger.afterCopyDocument(this, transaction, createdDoc, child.getURI());
+            documentTrigger.afterCopyDocument(this, transaction, createdDoc, child.getURI());
         }
-        saveCollection(transaction, destCollection._2);
-
-        final XmldbURI name = collection.getURI();
-        for(final Iterator<XmldbURI> i = collection.collectionIterator(this); i.hasNext(); ) {
-            final XmldbURI childName = i.next();
-            //TODO : resolve URIs ! collection.getURI().resolve(childName)
-            try (final Collection child = openCollection(name.append(childName), LockMode.READ_LOCK)) {
-                if (child == null) {
-                    LOG.error("Child collection '" + childName + "' not found");
-                } else {
-                    doCopyCollection(transaction, trigger, child, destCollection._2, childName, true, preserve);
-                }
-            }
-        }
-        saveCollection(transaction, destCollection._2);
-        saveCollection(transaction, destination);
-
-        return destCollection._2;
     }
 
     /**
      * Copies just the mode and ACL from the src to the dest
+     *
+     * @param srcPermission The source to copy from
+     * @param destPermission The destination to copy to
      */
     private void copyModeAndAcl(final Permission srcPermission, final Permission destPermission) throws PermissionDeniedException {
         final List<ACEAider> aces = new ArrayList<>();
@@ -1503,22 +1587,63 @@ public class NativeBroker extends DBBroker {
      * @param collection The Collection whose descendant WRITE_LOCKs should be acquired
      * @param collectionLock An existing WRITE_LOCK acquired on `collection`
      *
-     * @return A list of WRITE_LOCKs in the same order as collectionUris
+     * @return A list of WRITE_LOCKs in the same order as collectionUris. Note that these should be released in reverse
+     *     order
      */
     private List<ManagedCollectionLock> writeLockDescendants(final Collection collection, final ManagedCollectionLock collectionLock) throws LockException, PermissionDeniedException {
+        return lockDescendants(collection, collectionLock, (parentCollectionLock, collectionUri) -> writeLockCollection(parentCollectionLock, collectionUri, false));
+    }
+
+    /**
+     * Acquires READ_LOCKs on all descendant Collections of a specific Collection
+     *
+     * Locks are acquired in a top-down, left-to-right order
+     *
+     * Attempts to optimize the acquisition of locks by calling
+     * {@link LockManager#acquireCollectionReadLock(ManagedCollectionLock, XmldbURI)} instead of
+     * {@link LockManager#acquireCollectionReadLock(XmldbURI)}
+     *
+     * NOTE: It is assumed that the caller holds a {@link LockMode#READ_LOCK} on the
+     *     `collection`
+     *
+     * @param collection The Collection whose descendant READ_LOCKs should be acquired
+     * @param collectionLock An existing READ_LOCK acquired on `collection`
+     *
+     * @return A list of READ_LOCKs in the same order as collectionUris. Note that these should be released in reverse
+     *     order
+     */
+    private List<ManagedCollectionLock> readLockDescendants(final Collection collection, final ManagedCollectionLock collectionLock) throws LockException, PermissionDeniedException {
+        return lockDescendants(collection, collectionLock, (parentCollectionLock, collectionUri) -> readLockCollection(parentCollectionLock, collectionUri));
+    }
+
+    /**
+     * Acquires locks on all descendant Collections of a specific Collection
+     *
+     * Locks are acquired in a top-down, left-to-right order
+     *
+     * NOTE: It is assumed that the caller holds a lock on the
+     *     `collection` of the same mode as those that we should acquire on the descendants
+     *
+     * @param collection The Collection whose descendant locks should be acquired
+     * @param collectionLock An existing lock acquired on `collection`
+     * @param lockFn A function for acquiring a lock
+     *
+     * @return A list of locks in the same order as collectionUris. Note that these should be released in reverse order
+     */
+    private List<ManagedCollectionLock> lockDescendants(final Collection collection, final ManagedCollectionLock collectionLock, final BiFunctionE<ManagedCollectionLock, XmldbURI, ManagedCollectionLock, LockException> lockFn) throws LockException, PermissionDeniedException {
         final List<ManagedCollectionLock> locks = new ArrayList<>();
 
         try {
             final XmldbURI collectionUri = collection.getURI();
-            final Iterator<XmldbURI> it = collection.collectionIteratorNoLock(this);
+            final Iterator<XmldbURI> it = collection.collectionIteratorNoLock(this);    // NOTE: we already have a lock on collection
             while (it.hasNext()) {
                 final XmldbURI childCollectionName = it.next();
                 final XmldbURI childCollectionUri = collectionUri.append(childCollectionName);
-                final ManagedCollectionLock childCollectionLock = writeLockCollection(collectionLock, childCollectionUri, false);
+                final ManagedCollectionLock childCollectionLock = lockFn.apply(collectionLock, childCollectionUri);
                 locks.add(childCollectionLock);
 
-                final Collection childCollection = getCollection(childCollectionUri);  // NOTE: we already have a WRITE lock on childCollection
-                final List<ManagedCollectionLock> descendantLocks = writeLockDescendants(childCollection, childCollectionLock);
+                final Collection childCollection = getCollection(childCollectionUri);  // NOTE: we already have a lock on childCollection
+                final List<ManagedCollectionLock> descendantLocks = lockDescendants(childCollection, childCollectionLock, lockFn);
                 locks.addAll(descendantLocks);
             }
         } catch (final PermissionDeniedException | LockException e) {
@@ -1620,7 +1745,7 @@ public class NativeBroker extends DBBroker {
         saveCollection(transaction, sourceCollection);
 
         // add destination to target
-        targetCollection.addCollection(this, sourceCollection, false);
+        targetCollection.addCollection(this, sourceCollection);
         if (sourceCollectionParent != targetCollection) {
             saveCollection(transaction, targetCollection);
         }
@@ -1725,7 +1850,7 @@ public class NativeBroker extends DBBroker {
                     collectionsDb.freeCollectionId(collection.getId());
                 }
             } catch(final BTreeException | IOException e) {
-                LOG.warn("Unable to unlink documents from the Collection: {}", collectionUri, e);
+                LOG.error("Unable to unlink documents from the Collection: {}", collectionUri, e);
             }
 
             //TODO(AR) this can be executed asynchronously as a task, we need to await the completion before unlocking the collection
@@ -1890,14 +2015,18 @@ public class NativeBroker extends DBBroker {
     /**
      * Acquires a READ lock on a Collection
      *
+     * @param parentCollectionLock lock that is already held on the parent Collection or null
      * @param collectionUri The uri of the collection to lock
      *
      * @return A managed lock for the Collection
      */
-    private ManagedCollectionLock readLockCollection(final XmldbURI collectionUri) throws LockException {
+    private ManagedCollectionLock readLockCollection(@Nullable final ManagedCollectionLock parentCollectionLock, final XmldbURI collectionUri) throws LockException {
         final LockManager lockManager = getBrokerPool().getLockManager();
-        return lockManager.acquireCollectionReadLock(collectionUri);
-
+        if(parentCollectionLock != null) {
+            return lockManager.acquireCollectionReadLock(parentCollectionLock, collectionUri);
+        } else {
+            return lockManager.acquireCollectionReadLock(collectionUri);
+        }
     }
 
     @Override
@@ -2126,7 +2255,7 @@ public class NativeBroker extends DBBroker {
                 metadata.setLastModified(now);
                 metadata.setCreated(now);
                 targetDoc.setMetadata(metadata);
-                targetDoc.setDocId(getNextResourceId(transaction, temp));
+                targetDoc.setDocId(getNextResourceId(transaction));
                 //index the temporary document
                 final DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc);
                 indexer.scan();
@@ -2636,7 +2765,7 @@ public class NativeBroker extends DBBroker {
                         newDoc = new BinaryDocument(getBrokerPool(), destination, newName);
                     }
                     newDoc.copyOf(this, doc, oldDoc);
-                    newDoc.setDocId(getNextResourceId(transaction, destination));
+                    newDoc.setDocId(getNextResourceId(transaction));
                     newDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
                     try {
                         final Date created;
@@ -2666,7 +2795,7 @@ public class NativeBroker extends DBBroker {
                     newDoc = new DocumentImpl(pool, destination, newName);
                 }
                 newDoc.copyOf(this, doc, oldDoc);
-                newDoc.setDocId(getNextResourceId(transaction, destination));
+                newDoc.setDocId(getNextResourceId(transaction));
                 try(final ManagedLock<Lock> newDocLock = ManagedLock.acquire(newDoc.getUpdateLock(), LockMode.WRITE_LOCK)) {
                     copyXMLResource(transaction, doc, newDoc);
                     if (preserveOnCopy(preserve)) {
@@ -3035,7 +3164,7 @@ public class NativeBroker extends DBBroker {
      * @throws EXistException If there's no free document id
      */
     @Override
-    public int getNextResourceId(final Txn transaction, final Collection collection) throws EXistException {
+    public int getNextResourceId(final Txn transaction) throws EXistException, LockException {
         int nextDocId = collectionsDb.getFreeResourceId();
         if(nextDocId != DocumentImpl.UNKNOWN_DOCUMENT_ID) {
             return nextDocId;
@@ -3060,9 +3189,6 @@ public class NativeBroker extends DBBroker {
             //} catch (ReadOnlyException e) {
             //LOG.warn("Database is read-only");
             //return DocumentImpl.UNKNOWN_DOCUMENT_ID;
-            //TODO : rethrow ? -pb
-        } catch(final LockException e) {
-            LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
             //TODO : rethrow ? -pb
         }
         return nextDocId;
