@@ -487,16 +487,19 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     }
 
     /**
-     * Reindex a collection.
-     * 
-     * @param collectionName
-     * @throws PermissionDeniedException
-     * 
-     * public abstract void reindexCollection(String collectionName) throws
-     * PermissionDeniedException;
+     * Reindex a Collection and its descendants
+     *
+     * NOTE: Read locks will be taken in a top-down, left-right manner
+     *     on Collections as they are indexed
+     *
+     * @param collectionUri The URI of the Collection to reindex
+     *
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
+     * @throws LockException If an exception occurs whilst acquiring locks
+     * @throws IOException If an error occurs whilst reindexing the Collection on disk
      */
-    public abstract void reindexCollection(XmldbURI collectionName)
-            throws PermissionDeniedException, IOException;
+    public abstract void reindexCollection(XmldbURI collectionUri)
+            throws PermissionDeniedException, IOException, LockException;
 
     public abstract void reindexXMLResource(Txn txn, DocumentImpl doc);
 
@@ -506,9 +509,11 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * Repair indexes. Should delete all secondary indexes and rebuild them.
      * This method will be called after the recovery run has completed.
      *
-     * @throws PermissionDeniedException
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
+     * @throws LockException If an exception occurs whilst acquiring locks
+     * @throws IOException If an error occurs whilst repairing indexes the database
      */
-    public abstract void repair() throws PermissionDeniedException, IOException;
+    public abstract void repair() throws PermissionDeniedException, IOException, LockException;
 
     /**
      * Repair core indexes (dom, collections ...). This method is called immediately

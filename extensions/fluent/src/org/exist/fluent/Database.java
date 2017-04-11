@@ -115,7 +115,7 @@ public class Database {
 			} finally {
 				db.releaseBroker(broker);
 			}
-		} catch (final PermissionDeniedException | IOException | CollectionConfigurationException e) {
+		} catch (final PermissionDeniedException | IOException | LockException | CollectionConfigurationException e) {
 			throw new DatabaseException(e);
 		} finally {
 			tx.abortIfIncomplete();

@@ -450,7 +450,7 @@ public class CustomIndexTest {
     }
  
     @Test
-    public void reindex() throws PermissionDeniedException, XPathException, URISyntaxException, EXistException, IOException {
+    public void reindex() throws PermissionDeniedException, XPathException, URISyntaxException, EXistException, IOException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));

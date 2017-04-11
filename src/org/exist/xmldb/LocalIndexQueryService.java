@@ -27,6 +27,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.sync.Sync;
+import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
@@ -67,9 +68,13 @@ public class LocalIndexQueryService extends AbstractLocalService implements Inde
     public void reindexCollection(final XmldbURI col) throws XMLDBException {
         final XmldbURI collectionPath = resolve(col);
         withDb((broker, transaction) -> {
-            broker.reindexCollection(collectionPath);
-            broker.sync(Sync.MAJOR);
-            return null;
+            try {
+                broker.reindexCollection(collectionPath);
+                broker.sync(Sync.MAJOR);
+                return null;
+            } catch(final LockException e) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e);
+            }
         });
     }
 

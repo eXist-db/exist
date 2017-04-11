@@ -69,6 +69,7 @@ import org.exist.storage.lock.Lock.LockType;
 import org.exist.storage.serializers.NativeSerializer;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
+import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
@@ -2091,33 +2092,34 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public void reindexCollection(XmldbURI collectionName) throws PermissionDeniedException, IOException {
+    public void reindexCollection(final XmldbURI collectionUri) throws PermissionDeniedException, IOException, LockException {
         if(isReadOnly()) {
             throw new IOException(DATABASE_IS_READ_ONLY);
         }
-        collectionName = prepend(collectionName.toCollectionPathURI());
-        final Collection collection = getCollection(collectionName);
-        if(collection == null) {
-            LOG.debug("collection " + collectionName + " not found!");
-            return;
+
+        final XmldbURI fqUri = prepend(collectionUri.toCollectionPathURI());
+        try(final Collection collection = openCollection(fqUri, LockMode.READ_LOCK)) {
+            if (collection == null) {
+                LOG.warn("Collection {} not found!", fqUri);
+                return;
+            }
+            reindexCollection(collection, IndexMode.STORE);
         }
-        reindexCollection(collection, IndexMode.STORE);
     }
 
-    public void reindexCollection(final Collection collection, final IndexMode mode) throws PermissionDeniedException {
+    private void reindexCollection(final Collection collection, final IndexMode mode) throws PermissionDeniedException, LockException {
         final TransactionManager transact = pool.getTransactionManager();
 
         final long start = System.currentTimeMillis();
 
         try(final Txn transaction = transact.beginTransaction()) {
-            LOG.info(String.format("Start indexing collection %s", collection.getURI().toString()));
+            LOG.info("Start indexing collection {}", collection.getURI().toString());
             pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_REINDEX_COLLECTION, collection.getURI());
             reindexCollection(transaction, collection, mode);
-            transact.commit(transaction);
+            transaction.commit();
 
-        } catch(final Exception e) {
+        } catch(final PermissionDeniedException | IOException | TransactionException e) {
             LOG.error("An error occurred during reindex: " + e.getMessage(), e);
-
         } finally {
             pool.getProcessMonitor().endJob();
             LOG.info(String.format("Finished indexing collection %s in %s ms.",
@@ -2125,33 +2127,37 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    public void reindexCollection(final Txn transaction, final Collection collection, final IndexMode mode) throws PermissionDeniedException, IOException {
-        final CollectionCache collectionsCache = pool.getCollectionsCache();
+    private void reindexCollection(final Txn transaction, final Collection collection, final IndexMode mode) throws PermissionDeniedException, IOException, LockException {
         if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
             throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on collection " + collection.getURI());
         }
+
         LOG.debug("Reindexing collection " + collection.getURI());
         if(mode == IndexMode.STORE) {
             dropCollectionIndex(transaction, collection, true);
         }
+
+        // reindex documents
         try {
             for (final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
                 final DocumentImpl next = i.next();
                 reindexXMLResource(transaction, next, mode);
             }
         } catch(final LockException e) {
-            LOG.error("LockException while reindexing documents of collection '" + collection.getURI() + ". Skipping...", e);
+            LOG.error("LockException while reindexing documents of collection '{}'. Skipping...", collection.getURI(), e);
         }
 
+        // descend into child collections
         try {
             for (final Iterator<XmldbURI> i = collection.collectionIterator(this); i.hasNext(); ) {
-                final XmldbURI next = i.next();
-                //TODO : resolve URIs !!! (collection.getURI().resolve(next))
-                final Collection child = getCollection(collection.getURI().append(next));
-                if (child == null) {
-                    LOG.error("Collection '" + next + "' not found");
-                } else {
-                    reindexCollection(transaction, child, mode);
+                final XmldbURI childName = i.next();
+                final XmldbURI childUri = collection.getURI().append(childName);
+                try(final Collection child = openCollection(childUri, LockMode.READ_LOCK)) {
+                    if (child == null) {
+                        throw new IOException("Collection '" + childUri + "' not found");
+                    } else {
+                        reindexCollection(transaction, child, mode);
+                    }
                 }
             }
         } catch(final LockException e) {
@@ -2159,11 +2165,11 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    public void dropCollectionIndex(final Txn transaction, final Collection collection) throws PermissionDeniedException, IOException {
+    private void dropCollectionIndex(final Txn transaction, final Collection collection) throws PermissionDeniedException, IOException, LockException {
         dropCollectionIndex(transaction, collection, false);
     }
 
-    public void dropCollectionIndex(final Txn transaction, final Collection collection, final boolean reindex) throws PermissionDeniedException, IOException {
+    private void dropCollectionIndex(final Txn transaction, final Collection collection, final boolean reindex) throws PermissionDeniedException, IOException, LockException {
         if(isReadOnly()) {
             throw new IOException(DATABASE_IS_READ_ONLY);
         }
@@ -2172,34 +2178,24 @@ public class NativeBroker extends DBBroker {
         }
         notifyDropIndex(collection);
         getIndexController().removeCollection(collection, this, reindex);
-        try {
-            for (final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
-                final DocumentImpl doc = i.next();
-                LOG.debug("Dropping index for document " + doc.getFileURI());
-                new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
-                    @Override
-                    public Object start() {
-                        try {
-                            final Value ref = new NodeRef(doc.getDocId());
-                            final IndexQuery query =
-                                    new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-                            domDb.remove(transaction, query, null);
-                            domDb.flush();
-                        } catch (final BTreeException e) {
-                            LOG.error("btree error while removing document", e);
-                        } catch (final DBException e) {
-                            LOG.error("db error while removing document", e);
-                        } catch (final IOException e) {
-                            LOG.error("io error while removing document", e);
-                        } catch (final TerminatedException e) {
-                            LOG.error("method terminated", e);
-                        }
-                        return null;
+        for (final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
+            final DocumentImpl doc = i.next();
+            LOG.debug("Dropping index for document " + doc.getFileURI());
+            new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
+                @Override
+                public Object start() {
+                    try {
+                        final Value ref = new NodeRef(doc.getDocId());
+                        final IndexQuery query =
+                                new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+                        domDb.remove(transaction, query, null);
+                        domDb.flush();
+                    } catch (final TerminatedException | IOException | DBException e) {
+                        LOG.error("Error while removing Document '{}' from Collection index: {}", doc.getURI().lastSegment(), collection.getURI(), e);
                     }
-                }.run();
-            }
-        } catch(final LockException e) {
-            LOG.error("LockException while removing index of collection '" + collection.getURI(), e);
+                    return null;
+                }
+            }.run();
         }
     }
 
@@ -3886,7 +3882,7 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public void repair() throws PermissionDeniedException, IOException {
+    public void repair() throws PermissionDeniedException, IOException, LockException {
         if(isReadOnly()) {
             throw new IOException(DATABASE_IS_READ_ONLY);
         }
