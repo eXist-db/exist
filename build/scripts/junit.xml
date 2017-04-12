@@ -291,6 +291,7 @@
             <formatter type="plain"/>
             <formatter type="xml"/>
             <test name="org.exist.xmldb.concurrent.AllConcurrentTests" todir="${junit.reports.dat}"/>
+            <test name="org.exist.collections.ConcurrencyTest" todir="${junit.reports.dat}"/>
         </junit>
     </target>
 
