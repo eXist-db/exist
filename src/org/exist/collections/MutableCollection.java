@@ -31,8 +31,6 @@ import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.locks.*;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.input.CloseShieldInputStream;
@@ -64,7 +62,6 @@ import org.exist.util.MimeType;
 import org.exist.util.SyntaxException;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.XMLReaderObjectFactory.VALIDATION_SETTING;
-import org.exist.util.hashtable.ObjectHashSet;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.xmldb.XmldbURI;
@@ -94,7 +91,17 @@ public class MutableCollection implements Collection {
     private XmldbURI path;
     private final LockManager lockManager;
     @GuardedBy("LockManager") private final Map<String, DocumentImpl> documents = new TreeMap<>();
-    @GuardedBy("LockManager") private ObjectHashSet<XmldbURI> subCollections = new ObjectHashSet<>(19);
+
+    /*
+     * LinkedHashSet is used to ensure a consistent iteration order of sub-Collections.
+     * The `insertion-order` of a LinkedHashSet means we effectively order by sub-Collection creation
+     * time, i.e. oldest first.
+     * This ordering ensures that adding new sub-Collections does not affect the existing order of sub-Collections,
+     * in this manner locks acquired when iterating are always acquired and released in the same order
+     * which gives us deadlock avoidance for sub-Collection iteration.
+     */
+    @GuardedBy("LockManager") private LinkedHashSet<XmldbURI> subCollections = new LinkedHashSet<>();
+
     private long address = BFile.UNKNOWN_ADDRESS;  // Storage address of the collection in the BFile
     private long created = 0;
     private boolean triggersEnabled = true;
@@ -177,6 +184,10 @@ public class MutableCollection implements Collection {
         }
     }
 
+    private static <T> Iterator<T> stableIterator(final LinkedHashSet<T> set) {
+        return new LinkedHashSet<>(set).iterator();
+    }
+
     @Override
     public List<CollectionEntry> getEntries(final DBBroker broker) throws PermissionDeniedException, LockException, IOException {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
@@ -186,8 +197,9 @@ public class MutableCollection implements Collection {
 
         final Iterator<XmldbURI> subCollectionIterator;
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
-            subCollectionIterator = subCollections.stableIterator();
+            subCollectionIterator = stableIterator(subCollections);
         }
+
         while(subCollectionIterator.hasNext()) {
             final XmldbURI subCollectionURI = subCollectionIterator.next();
             final CollectionEntry entry = new SubCollectionEntry(broker.getBrokerPool().getSecurityManager(),
@@ -305,9 +317,8 @@ public class MutableCollection implements Collection {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission to list sub-collections denied on " + this.getURI());
         }
-
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
-            return subCollections.stableIterator();
+            return stableIterator(subCollections);
         }
     }
 
@@ -316,7 +327,7 @@ public class MutableCollection implements Collection {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission to list sub-collections denied on " + this.getURI());
         }
-        return subCollections.stableIterator();
+        return stableIterator(subCollections);
     }
 
     @Override
@@ -325,11 +336,11 @@ public class MutableCollection implements Collection {
             throw new PermissionDeniedException("Permission to list sub-collections denied on " + this.getURI());
         }
 
-        final ArrayList<Collection> collectionList;
+        final ArrayList<Collection> collectionList = new ArrayList<>();
         final Iterator<XmldbURI> i;
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
-            collectionList = new ArrayList<>(subCollections.size());
-            i = subCollections.stableIterator();
+            collectionList.ensureCapacity(subCollections.size());
+            i = stableIterator(subCollections);
         } catch(final LockException e) {
             LOG.error(e.getMessage(), e);
             return Collections.emptyList();
@@ -353,31 +364,30 @@ public class MutableCollection implements Collection {
 
     @Override
     public MutableDocumentSet allDocs(final DBBroker broker, final MutableDocumentSet docs, final boolean recursive)
-            throws PermissionDeniedException {
+            throws PermissionDeniedException, LockException {
         return allDocs(broker, docs, recursive, null);
     }
 
     @Override
     public MutableDocumentSet allDocs(final DBBroker broker, final MutableDocumentSet docs, final boolean recursive,
-            final LockedDocumentMap lockMap) throws PermissionDeniedException {
-        List<XmldbURI> subColls = null;
+            final LockedDocumentMap lockMap) throws PermissionDeniedException, LockException {
+        XmldbURI[] subColls = null;
         if(getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
-                    //Add all docs in this collection to the returned set
-                    getDocuments(broker, docs);
-                    //Get a list of sub-collection URIs. We will process them
-                    //after unlocking this collection. otherwise we may deadlock ourselves
-                    subColls = subCollections.keys();
-            } catch(final LockException e) {
-                LOG.error(e.getMessage(), e);
+                //Add all docs in this collection to the returned set
+                getDocuments(broker, docs);
+                //Get a list of sub-collection URIs. We will process them
+                //after unlocking this collection. otherwise we may deadlock ourselves
+                subColls = subCollections.stream()
+                        .map(path::appendInternal)
+                        .toArray(XmldbURI[]::new);
             }
         }
 
         if(recursive && subColls != null) {
             // process the child collections
-            for(final XmldbURI childName : subColls) {
-                //TODO : resolve URI !
-                try(final Collection child = broker.openCollection(path.appendInternal(childName), LockMode.NO_LOCK)) {
+            for(final XmldbURI subCol : subColls) {
+                try(final Collection child = broker.openCollection(subCol, LockMode.NO_LOCK)) {
                     //A collection may have been removed in the meantime, so check first
                     if(child != null) {
                         child.allDocs(broker, docs, recursive, lockMap);
@@ -393,8 +403,7 @@ public class MutableCollection implements Collection {
 
     @Override
     public DocumentSet allDocs(final DBBroker broker, final MutableDocumentSet docs, final boolean recursive,
-            final LockedDocumentMap lockMap, LockMode lockType) throws LockException, PermissionDeniedException {
-        
+            final LockedDocumentMap lockMap, final LockMode lockType) throws LockException, PermissionDeniedException {
         XmldbURI uris[] = null;
         if(getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
@@ -403,20 +412,15 @@ public class MutableCollection implements Collection {
                 //Get a list of sub-collection URIs. We will process them
                 //after unlocking this collection.
                 //otherwise we may deadlock ourselves
-                final List<XmldbURI> subColls = subCollections.keys();
-                if (subColls != null) {
-                    uris = new XmldbURI[subColls.size()];
-                    for(int i = 0; i < subColls.size(); i++) {
-                        uris[i] = path.appendInternal(subColls.get(i));
-                    }
-                }
+                uris = subCollections.stream()
+                        .map(path::appendInternal)
+                        .toArray(XmldbURI[]::new);
             }
         }
 
         if(recursive && uris != null) {
             //Process the child collections
-            for (XmldbURI uri : uris) {
-                //TODO : resolve URI !
+            for (final XmldbURI uri : uris) {
                 try(final Collection child = broker.openCollection(uri, LockMode.NO_LOCK)) {
                     // a collection may have been removed in the meantime, so check first
                     if (child != null) {
@@ -779,7 +783,8 @@ public class MutableCollection implements Collection {
         //TODO(AR) should we READ_LOCK the Collection to stop it being modified concurrently? see NativeBroker#saveCollection line 1801 - already has WRITE_LOCK ;-)
 //        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
             size = subCollections.size();
-            i = subCollections.stableIterator();
+//            i = subCollections.stableIterator();
+              i = subCollections.iterator();
 //        }
 
         outputStream.writeInt(size);
@@ -815,7 +820,7 @@ public class MutableCollection implements Collection {
 
         //TODO(AR) should we WRITE_LOCK the Collection to stop it being loaded from disk concurrently? see NativeBroker#openCollection line 1030 - already has READ_LOCK ;-)
 //        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
-            subCollections = new ObjectHashSet<>(collLen == 0 ? 19 : collLen); //TODO(AR) why is this number 19?
+            subCollections = new LinkedHashSet<>(collLen == 0 ? 16 : collLen);
             for (int i = 0; i < collLen; i++) {
                 subCollections.add(XmldbURI.create(istream.readUTF()));
             }

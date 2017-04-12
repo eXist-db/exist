@@ -429,7 +429,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @return The mutable document set provided in {@param docs}
      */
     MutableDocumentSet allDocs(DBBroker broker, MutableDocumentSet docs, boolean recursive)
-            throws PermissionDeniedException;
+            throws PermissionDeniedException, LockException;
 
     /**
      * Gets all of the documents from the Collection
@@ -441,7 +441,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @return The mutable document set provided in {@param docs}
      */
     MutableDocumentSet allDocs(DBBroker broker, MutableDocumentSet docs, boolean recursive,
-                               LockedDocumentMap lockMap) throws PermissionDeniedException;
+                               LockedDocumentMap lockMap) throws PermissionDeniedException, LockException;
 
     /**
      * Gets all of the documents from the Collection

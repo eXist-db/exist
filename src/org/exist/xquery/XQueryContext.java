@@ -1172,10 +1172,10 @@ public class XQueryContext implements BinaryValueManager, Context
 
             // no path defined: return all documents in the db
             try {
-                getBroker().getAllXMLResources( ndocs );
-            } catch(final PermissionDeniedException pde) {
-                LOG.warn("Permission denied to read resource all resources" + pde.getMessage(), pde);
-                throw new XPathException("Permission denied to read resource all resources" + pde.getMessage(), pde);
+                getBroker().getAllXMLResources(ndocs);
+            } catch(final PermissionDeniedException | LockException e) {
+                LOG.warn(e);
+                throw new XPathException("Permission denied to read resource all resources: " + e.getMessage(), e);
             }
         } else {
             DocumentImpl doc;
@@ -1202,8 +1202,8 @@ public class XQueryContext implements BinaryValueManager, Context
                         }
                     }
                 }
-                catch( final PermissionDeniedException e ) {
-                    LOG.warn( "Permission denied to read resource " + staticDocumentPaths[i] + ". Skipping it." );
+                catch(final PermissionDeniedException | LockException e) {
+                    LOG.warn("Permission denied to read resource " + staticDocumentPaths[i] + ". Skipping it.");
                 }
             }
         }

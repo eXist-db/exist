@@ -121,9 +121,9 @@ public class XMLDBDocument extends Function {
 	    MutableDocumentSet mdocs = new DefaultDocumentSet();
             try {
                 context.getBroker().getAllXMLResources(mdocs);
-            } catch(final PermissionDeniedException pde) {
-                LOG.error(pde.getMessage(), pde);
-                throw new XPathException(this, pde);
+            } catch(final PermissionDeniedException | LockException e) {
+                LOG.error(e.getMessage(), e);
+                throw new XPathException(this, e);
             }
 	    docs = mdocs;
 	    //	        }

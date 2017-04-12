@@ -368,7 +368,7 @@ public class BasicNodeSetTest {
     }
 
     @Test
-    public void testOptimizations() throws XPathException, SAXException, PermissionDeniedException, EXistException {
+    public void testOptimizations() throws XPathException, SAXException, PermissionDeniedException, EXistException, LockException {
         try(final DBBroker broker = existEmbeddedServer.getBrokerPool().get(Optional.of(existEmbeddedServer.getBrokerPool().getSecurityManager().getSystemSubject()))) {
             Serializer serializer = broker.getSerializer();
             serializer.reset();

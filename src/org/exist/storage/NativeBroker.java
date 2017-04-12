@@ -2647,7 +2647,7 @@ public class NativeBroker extends DBBroker {
      * @return The documentsByDoctype value
      */
     @Override
-    public MutableDocumentSet getXMLResourcesByDoctype(final String doctypeName, final MutableDocumentSet result) throws PermissionDeniedException {
+    public MutableDocumentSet getXMLResourcesByDoctype(final String doctypeName, final MutableDocumentSet result) throws PermissionDeniedException, LockException {
         final MutableDocumentSet docs = getAllXMLResources(new DefaultDocumentSet());
         for(final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
             final DocumentImpl doc = i.next();
@@ -2671,7 +2671,7 @@ public class NativeBroker extends DBBroker {
      *             documents are added.
      */
     @Override
-    public MutableDocumentSet getAllXMLResources(final MutableDocumentSet docs) throws PermissionDeniedException {
+    public MutableDocumentSet getAllXMLResources(final MutableDocumentSet docs) throws PermissionDeniedException, LockException {
         final long start = System.currentTimeMillis();
         try(final Collection rootCollection = openCollection(XmldbURI.ROOT_COLLECTION_URI, LockMode.READ_LOCK)) {
             rootCollection.allDocs(this, docs, true);

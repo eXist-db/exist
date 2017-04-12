@@ -558,8 +558,8 @@ public class Folder extends NamedResource implements Cloneable {
 					try {
 						docs = handle.allDocs(broker_, new DefaultDocumentSet(), false);
 						baseUri = new AnyURIValue(handle.getURI());
-                                        }catch (PermissionDeniedException pde) {
-                                            throw new DatabaseException(pde.getMessage(), pde);
+					} catch (final PermissionDeniedException | LockException e) {
+						throw new DatabaseException(e.getMessage(), e);
 					} finally {
 						release();
 					}
@@ -1119,9 +1119,9 @@ public class Folder extends NamedResource implements Cloneable {
 			acquire(LockMode.READ_LOCK);
 			try {
 				docs = handle.allDocs(broker, new DefaultDocumentSet(), recursive);
-                        } catch(PermissionDeniedException pde) {
-                            throw new DatabaseException(pde.getMessage(), pde);
-                        } finally {
+			} catch (final PermissionDeniedException | LockException e) {
+				throw new DatabaseException(e.getMessage(), e);
+			} finally {
 				release();
 			}
 			Sequence result = new ExtArrayNodeSet(docs.getDocumentCount(), 1);
@@ -1153,8 +1153,8 @@ public class Folder extends NamedResource implements Cloneable {
 				try {
 					docs = handle.allDocs(broker_, new DefaultDocumentSet(), true);
 					baseUri = new AnyURIValue(handle.getURI());
-                                } catch(PermissionDeniedException pde) {
-                                    throw new DatabaseException(pde.getMessage(), pde);
+				} catch (final PermissionDeniedException | LockException e) {
+					throw new DatabaseException(e.getMessage(), e);
 				} finally {
 					release();
 				}

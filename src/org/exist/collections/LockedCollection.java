@@ -309,12 +309,12 @@ public class LockedCollection implements Collection {
     }
 
     @Override
-    public MutableDocumentSet allDocs(final DBBroker broker, final MutableDocumentSet docs, final boolean recursive) throws PermissionDeniedException {
+    public MutableDocumentSet allDocs(final DBBroker broker, final MutableDocumentSet docs, final boolean recursive) throws PermissionDeniedException, LockException {
         return collection.allDocs(broker, docs, recursive);
     }
 
     @Override
-    public MutableDocumentSet allDocs(final DBBroker broker, final MutableDocumentSet docs, final boolean recursive, final LockedDocumentMap lockMap) throws PermissionDeniedException {
+    public MutableDocumentSet allDocs(final DBBroker broker, final MutableDocumentSet docs, final boolean recursive, final LockedDocumentMap lockMap) throws PermissionDeniedException, LockException {
         return collection.allDocs(broker, docs, recursive, lockMap);
     }
 

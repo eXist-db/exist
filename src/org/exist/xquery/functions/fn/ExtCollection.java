@@ -153,8 +153,8 @@ public class ExtCollection extends Function {
         } catch (final XPathException e) { //From AnyURIValue constructor
             e.setLocation(line, column);
             throw new XPathException("FODC0002: " + e.getMessage());
-        } catch(final PermissionDeniedException pde) {
-            throw new XPathException("FODC0002: can not access collection '" + pde.getMessage() + "'");
+        } catch(final PermissionDeniedException | LockException e) {
+            throw new XPathException("FODC0002: can not access collection '" + e.getMessage() + "'");
             
         }
         // iterate through all docs and create the node set
