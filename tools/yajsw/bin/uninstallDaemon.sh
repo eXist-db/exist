@@ -4,6 +4,8 @@
 #
 # -----------------------------------------------------------------------------
 
+set -e
+
 # resolve links - $0 may be a softlink
 PRG="$0"
 
@@ -37,12 +39,17 @@ if [ `pgrep -P 1 systemd | head -n 1` ]; then
     case $systemd_response in
 	[Yy][Ee][Ss]|[YyJj])
 	    echo "Stopping service ...";
-	    systemctl --user stop eXist-db;
+	    sudo systemctl stop eXist-db;
 	    echo "Disabling service ...";
-	    systemctl --user disable eXist-db;
-	    if [ -e "$HOME/.local/share/systemd/user/eXist-db.service" ]; then 
-		rm -f "$HOME/.local/share/systemd/user/eXist-db.service";
+	    sudo systemctl disable eXist-db;
+
+            systemd_sys_dir="/etc/systemd/system"
+            systemd_service="${systemd_sys_dir}/eXist-db.service"
+	    if [ -e "$systemd_service" ]; then
+		sudo rm -f "$systemd_service";
 	    fi
+            sudo systemctl daemon-reload
+
 	    ;;
 	[Nn][Oo]|[Nn])
 	    sudo "$PRGDIR"/"$EXECUTABLE"
