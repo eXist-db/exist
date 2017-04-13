@@ -31,7 +31,7 @@ import org.exist.storage.DBBroker;
  */
 public interface TriggerProxy<T extends Trigger> {
     
-    public void setParameters(Map<String, List<? extends Object>> parameters);
+    void setParameters(Map<String, List<? extends Object>> parameters);
     
-    public T newInstance(DBBroker broker, Collection collection) throws TriggerException;
+    T newInstance(DBBroker broker, Collection collection) throws TriggerException;
 }

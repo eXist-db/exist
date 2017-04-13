@@ -26,18 +26,18 @@ public class CustomMatchListenerFactory {
     private CustomMatchListener first = null;
     private CustomMatchListener last = null;
 
-    public CustomMatchListenerFactory(DBBroker broker, Configuration config) {
+    public CustomMatchListenerFactory(final DBBroker broker, final Configuration config) {
         this(broker, config, null);
     }
 
-    public CustomMatchListenerFactory(DBBroker broker, Configuration config, List<String> customClasses) {
+    public CustomMatchListenerFactory(final DBBroker broker, final Configuration config, final List<String> customClasses) {
+        final List<String> classesAtConfig = (List<String>) config.getProperty(CONFIG_MATCH_LISTENERS);
 
-        List<String> classesAtConfig = (List<String>) config.getProperty(CONFIG_MATCH_LISTENERS);
-
-        Collection<String> classes;
+        final Collection<String> classes;
         if (customClasses == null) {
-            if (classesAtConfig == null) return;
-
+            if (classesAtConfig == null) {
+                return;
+            }
             classes = classesAtConfig;
         } else {
             if (classesAtConfig == null) {
@@ -50,12 +50,11 @@ public class CustomMatchListenerFactory {
             }
         }
 
-        CustomMatchListener listener;
         for (final String className : classes) {
             try {
                 final Class<?> listenerClass = Class.forName(className);
                 if (CustomMatchListener.class.isAssignableFrom(listenerClass)) {
-                    listener = (CustomMatchListener) listenerClass.newInstance();
+                    final CustomMatchListener listener = (CustomMatchListener) listenerClass.newInstance();
                     listener.setBroker(broker);
                     if (first == null) {
                         first = listener;
@@ -64,19 +63,19 @@ public class CustomMatchListenerFactory {
                         last.setNextInChain(listener);
                         last = listener;
                     }
-                } else
-                    {LOG.error("Failed to instantiate class " + listenerClass.getName() +
-                            ": it is not a subclass of CustomMatchListener");}
+                } else {
+                    LOG.error("Failed to instantiate class {}: it is not a subclass of CustomMatchListener", listenerClass.getName());
+                }
             } catch (final Exception e) {
-                LOG.error("An exception was caught while trying to instantiate a custom MatchListener: " +
-                    e.getMessage(), e);
+                LOG.error("An exception was caught while trying to instantiate a custom MatchListener: " + e.getMessage(), e);
             }
         }
     }
 
     public MatchListener getFirst() {
-        if (first != null)
-            {first.reset();}
+        if (first != null) {
+            first.reset();
+        }
         return first;
     }
 

@@ -33,21 +33,13 @@ public abstract class AbstractTriggerProxy<T extends Trigger> implements Trigger
 
     private final Class<? extends T> clazz;
     private Map<String, List<? extends Object>> parameters;
-    
-//    /**
-//     * The database Collection URI of where the configuration for this Trigger came from
-//     * typically somewhere under /db/system/config/db/
-//     */
-//    private final XmldbURI collectionConfigurationURI;
 
-    public AbstractTriggerProxy(Class<? extends T> clazz) {
+    public AbstractTriggerProxy(final Class<? extends T> clazz) {
         this.clazz = clazz;
-//        this.collectionConfigurationURI = collectionConfigurationURI;
     }
     
-    public AbstractTriggerProxy(Class<? extends T> clazz, Map<String, List<? extends Object>> parameters) {
+    public AbstractTriggerProxy(final Class<? extends T> clazz, final Map<String, List<? extends Object>> parameters) {
         this.clazz = clazz;
-//        this.collectionConfigurationURI = collectionConfigurationURI;
         this.parameters = parameters;
     }
 
@@ -55,30 +47,23 @@ public abstract class AbstractTriggerProxy<T extends Trigger> implements Trigger
         return clazz;
     }
     
-//    protected XmldbURI getCollectionConfigurationURI() {
-//        return collectionConfigurationURI;
-//    }
-    
     @Override
-    public void setParameters(Map<String, List<? extends Object>> parameters) {
+    public void setParameters(final Map<String, List<? extends Object>> parameters) {
         this.parameters = parameters;
     }
     
     protected Map<String, List<? extends Object>> getParameters() {
         return parameters;
     }
-    
-    public T newInstance(DBBroker broker, Collection collection) throws TriggerException {
+
+    @Override
+    public T newInstance(final DBBroker broker, final Collection collection) throws TriggerException {
         try {
             final T trigger = getClazz().newInstance();
-
             trigger.configure(broker, collection, getParameters());
-
             return trigger;
-        } catch (final InstantiationException ie) {
+        } catch (final InstantiationException | IllegalAccessException ie) {
             throw new TriggerException("Unable to instantiate Trigger '"  + getClazz().getName() + "': " + ie.getMessage(), ie);
-        } catch (final IllegalAccessException iae) {
-            throw new TriggerException("Unable to instantiate Trigger '"  + getClazz().getName() + "': " + iae.getMessage(), iae);
         }
     }
 }
