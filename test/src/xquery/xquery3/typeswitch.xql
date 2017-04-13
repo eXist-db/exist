@@ -188,21 +188,3 @@ function tsw:atomic-default() {
             case xs:string return "string"
             default return "unknown"
 };
-
-declare 
-    %test:assertEquals("empty() is not a valid itemType as defined at https://www.w3.org/TR/xquery-31/#doc-xquery31-ItemType")
-    %test:pending
-function tsw:item-type() {
-    let $value := <node/>
-    return
-        try 
-            { 
-                typeswitch ($value)
-                    case empty() return "empty?!"
-                    default return "default"
-            }
-        catch *
-            {
-                "empty() is not a valid itemType as defined at https://www.w3.org/TR/xquery-31/#doc-xquery31-ItemType"
-            }
-};
