@@ -43,7 +43,8 @@ public abstract class AbstractTriggerProxy<T extends Trigger> implements Trigger
         this.parameters = parameters;
     }
 
-    protected Class<? extends T> getClazz() {
+    @Override
+    public Class<? extends T> getClazz() {
         return clazz;
     }
     

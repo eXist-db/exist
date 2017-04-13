@@ -346,8 +346,28 @@ public class CollectionConfiguration {
         return docTriggers;
     }
 
-    //TODO: code
     public boolean triggerRegistered(final Class<?> triggerClass) {
+        if(DocumentTrigger.class.isAssignableFrom(triggerClass)) {
+            if(hasTriggerProxy(docTriggers, (Class<? extends DocumentTrigger>)triggerClass)) {
+                return true;
+            }
+        }
+
+        if(CollectionTrigger.class.isAssignableFrom(triggerClass)) {
+            if(hasTriggerProxy(colTriggers, (Class<? extends CollectionTrigger>)triggerClass)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private <T> boolean hasTriggerProxy(final List<TriggerProxy<? extends T>> triggerProxies, final Class<? extends T> triggerProxyClazz) {
+        for(final TriggerProxy<? extends T> triggerProxy : triggerProxies) {
+            if(triggerProxy.getClazz() == triggerProxyClazz) {
+                return true;
+            }
+        }
         return false;
     }
 
