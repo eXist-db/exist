@@ -334,9 +334,9 @@ public class Optimizer extends DefaultExpressionVisitor {
             if (module != null && !module.isInternalModule()) {
                 final Collection<VariableDeclaration> vars = ((ExternalModule) module).getVariableDeclarations();
                 for (VariableDeclaration var: vars) {
-                    if (var.getName().equals(ref.getName())) {
-                        var.getExpression().accept(this);
-                        final Expression expression = simplifyPath(var.getExpression());
+                    if (var.getName().equals(ref.getName()) && var.getExpression().isPresent()) {
+                        var.getExpression().get().accept(this);
+                        final Expression expression = simplifyPath(var.getExpression().get());
                         final InlineableVisitor visitor = new InlineableVisitor();
                         expression.accept(visitor);
                         if (visitor.isInlineable()) {

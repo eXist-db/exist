@@ -256,6 +256,9 @@ public class XQueryContext implements BinaryValueManager, Context
     /** Should empty order greatest or least? */
     private boolean                                    orderEmptyGreatest            = true;
 
+    /** The context item set in the query prolog or externally */
+    private Sequence                                   contextItem                   = Sequence.EMPTY_SEQUENCE;
+
     /**
      * The position of the currently processed item in the context sequence. This field has to be set on demand, for example, before calling the
      * fn:position() function.
@@ -539,6 +542,14 @@ public class XQueryContext implements BinaryValueManager, Context
         //Reset current context position
         setContextSequencePosition( 0, null );
         //Note that, for some reasons, an XQueryContext might be used without calling this method
+    }
+
+    public void setContextItem(Sequence contextItem) {
+        this.contextItem = contextItem;
+    }
+
+    public Sequence getContextItem() {
+        return contextItem;
     }
 
     /**
@@ -1369,6 +1380,7 @@ public class XQueryContext implements BinaryValueManager, Context
         resetDocumentBuilder();
 
         contextSequence = null;
+        contextItem = Sequence.EMPTY_SEQUENCE;
 
         if( !keepGlobals ) {
 
@@ -1920,7 +1932,6 @@ public class XQueryContext implements BinaryValueManager, Context
         return( resolveVariable( qn ) );
     }
 
-
     /**
      * Try to resolve a variable.
      *
@@ -1948,7 +1959,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
         // check if the variable is declared global
         if( var == null ) {
-            var = (Variable)globalVariables.get( qname );
+            var = globalVariables.get( qname );
         }
 
         //if (var == null)
@@ -1956,6 +1967,9 @@ public class XQueryContext implements BinaryValueManager, Context
         return( var );
     }
 
+    protected Variable resolveGlobalVariable(QName qname) {
+        return globalVariables.get(qname);
+    }
 
     protected Variable resolveLocalVariable( QName qname ) throws XPathException
     {
@@ -1973,7 +1987,6 @@ public class XQueryContext implements BinaryValueManager, Context
         }
         return( null );
     }
-
 
     public boolean isVarDeclared( QName qname )
     {
@@ -2853,7 +2866,8 @@ public class XQueryContext implements BinaryValueManager, Context
             reader = source.getReader();
 
             if( reader == null ) {
-                throw( new XPathException( "failed to load module: '" + namespaceURI + "' from: '" + source + "', location: '" + location + "'. Source not found. " ) );
+                throw(moduleLoadException("failed to load module: '" + namespaceURI + "' from: " +
+                        "'" + source + "', location: '" + location + "'. Source not found. ", location));
             }
 
             if (namespaceURI == null) {
@@ -2864,7 +2878,8 @@ public class XQueryContext implements BinaryValueManager, Context
             }
         }
         catch( final IOException e ) {
-            throw( new XPathException( "IO exception while loading module '" + namespaceURI + "' from '" + source + "'", e ) );
+            throw(moduleLoadException("IO exception while loading module '" + namespaceURI + "'" +
+                    " from '" + source + "'", location, e));
         }
         final ExternalModuleImpl modExternal = new ExternalModuleImpl(namespaceURI, prefix);
         setModule(namespaceURI, modExternal);
@@ -2879,7 +2894,8 @@ public class XQueryContext implements BinaryValueManager, Context
 
             if( parser.foundErrors() ) {
                 LOG.debug( parser.getErrorMessage() );
-                throw( new XPathException( "error found while loading module from " + location + ": " + parser.getErrorMessage() ) );
+                throw( new XPathException( "error found while loading module from " + location +
+                        ": " + parser.getErrorMessage() ) );
             }
             final AST      ast  = parser.getAST();
 
