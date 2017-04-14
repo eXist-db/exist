@@ -171,10 +171,13 @@
 		-->
 		<trigger class="org.exist.security.GnuCryptoJceProviderStartupTrigger"/>
 
-		<!--
-		    Trigger for registering eXists XML:DB URL handler with Java
-		-->
-		<trigger class="org.exist.protocolhandler.URLStreamHandlerStartupTrigger"/>
+                <!--
+                    Trigger for registering eXists XML:DB URL handler with Java
+                -->
+                <trigger class="org.exist.protocolhandler.URLStreamHandlerStartupTrigger">
+                    <parameter name="mode" value="memory"/>
+                    <!--<parameter name="mode" value="threads"/>-->
+                </trigger>
 
                 <!-- 
                     EXQuery RESTXQ trigger to load the RESTXQ Registry at startup time 
