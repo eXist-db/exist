@@ -70,9 +70,7 @@ public class InMemoryOutputStream extends ByteArrayOutputStream {
       throw new IOException(e);
     }
 
-    DBBroker broker = db.getActiveBroker();
-
-    try {
+    try (DBBroker broker = db.getBroker()) {
       final XmldbURI collectionUri = XmldbURI.create(xmldbURL.getCollection());
       final XmldbURI documentUri = XmldbURI.create(xmldbURL.getDocumentName());
 

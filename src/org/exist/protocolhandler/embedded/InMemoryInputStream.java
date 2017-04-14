@@ -55,12 +55,9 @@ public class InMemoryInputStream {
       throw new IOException(e);
     }
 
-    DBBroker broker = db.getActiveBroker();
-
-
     ByteArrayOutputStream os = new ByteArrayOutputStream();
 
-    try {
+    try (DBBroker broker = db.getBroker()) {
       final XmldbURI path = XmldbURI.create(xmldbURL.getPath());
 
       DocumentImpl resource = null;
