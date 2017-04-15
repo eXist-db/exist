@@ -46,6 +46,7 @@ import java.util.TreeSet;
  * belong to.
  *
  * @author wolf
+ * @author aretter
  */
 @NotThreadSafe
 public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocumentSet {
@@ -257,19 +258,25 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
             return true;
         }
 
-        if (size() != other.getDocumentCount()) {
+        if (getDocumentCount() != other.getDocumentCount()) {
             return false;
         }
 
-        for (int idx = 0; idx < tabSize; idx++) {
-            if (values[idx] == null || values[idx] == REMOVED) {
-                continue;
+        if(other instanceof DefaultDocumentSet) {
+            // optimization for fast comparison when other is also a DefaultDocumentSet
+            final DefaultDocumentSet otherDDS = (DefaultDocumentSet)other;
+            return docIds.equals(otherDDS.docIds);
+        } else {
+            // otherwise, fallback to general comparison
+            final Iterator<DocumentImpl> otherDocumentIterator = other.getDocumentIterator();
+            while (otherDocumentIterator.hasNext()) {
+                final DocumentImpl otherDocument = otherDocumentIterator.next();
+                if (!contains(otherDocument.getDocId())) {
+                    return false;
+                }
             }
-            if (!other.contains(keys[idx])) {
-                return false;
-            }
+            return true;
         }
-        return true;
     }
 
     @Override
