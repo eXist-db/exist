@@ -189,14 +189,24 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
             return false;
         }
 
-        final Iterator<DocumentImpl> otherDocumentIterator = other.getDocumentIterator();
-        while (otherDocumentIterator.hasNext()) {
-            final DocumentImpl otherDocument = otherDocumentIterator.next();
-            if (!contains(otherDocument.getDocId())) {
-                return false;
+        if(other instanceof DefaultDocumentSet) {
+            // optimization for fast comparison when other is also a DefaultDocumentSet
+            final DefaultDocumentSet otherDDS = (DefaultDocumentSet)other;
+            final BitSet compare = new BitSet();
+            compare.or(docIds);
+            compare.and(otherDDS.docIds);
+            return compare.equals(otherDDS.docIds);
+        } else {
+            // otherwise, fallback to general comparison
+            final Iterator<DocumentImpl> otherDocumentIterator = other.getDocumentIterator();
+            while (otherDocumentIterator.hasNext()) {
+                final DocumentImpl otherDocument = otherDocumentIterator.next();
+                if (!contains(otherDocument.getDocId())) {
+                    return false;
+                }
             }
+            return true;
         }
-        return true;
     }
 
     @Override

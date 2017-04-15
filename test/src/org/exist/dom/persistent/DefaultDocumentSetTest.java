@@ -69,6 +69,60 @@ public class DefaultDocumentSetTest {
     }
 
     @Test
+    public void contains_nonOptimized_leftRight() {
+        final Collection col = mockCollection(1);
+
+        final DocumentImpl doc1 = mockDoc(col, 1);
+        final DocumentImpl doc6 = mockDoc(col, 6);
+        final DocumentImpl doc9 = mockDoc(col, 9);
+        final DocumentImpl doc15 = mockDoc(col, 15);
+        final DocumentImpl doc34 = mockDoc(col, 34);
+
+        final DefaultDocumentSet set1 = new DefaultDocumentSet();
+
+        final DocumentSet set2 = testableDocumentSet(doc1, doc6, doc9, doc15, doc34);
+
+        replay(col, set2, doc1, doc6, doc9, doc15, doc34);
+
+        set1.add(doc1);
+        set1.add(doc6);
+        set1.add(doc9);
+
+        // functions under test
+        assertFalse(set1.contains(set2));
+
+        verify(col, set2, doc1, doc6, doc9, doc15, doc34);
+    }
+
+    @Test
+    public void contains_nonOptimized_rightLeft() {
+        final Collection col = mockCollection(1);
+
+        final DocumentImpl doc1 = mockDoc(col, 1);
+        final DocumentImpl doc6 = mockDoc(col, 6);
+        final DocumentImpl doc9 = mockDoc(col, 9);
+        final DocumentImpl doc15 = mockDoc(col, 15);
+        final DocumentImpl doc34 = mockDoc(col, 34);
+
+        final DefaultDocumentSet set1 = new DefaultDocumentSet();
+
+        final DocumentSet set2 = testableDocumentSet(doc1, doc6, doc9);
+
+        replay(col, set2, doc1, doc6, doc9, doc15, doc34);
+
+        set1.add(doc1);
+        set1.add(doc6);
+        set1.add(doc9);
+        set1.add(doc15);
+        set1.add(doc34);
+
+        // functions under test
+        assertTrue(set1.contains(set2));
+
+        verify(col, set2, doc1, doc6, doc9, doc15, doc34);
+    }
+
+    @Test
     public void contains_noMatch() {
         final Collection col = mockCollection(1);
 
@@ -94,6 +148,55 @@ public class DefaultDocumentSetTest {
         assertFalse(set1.contains(set2));
 
         verify(col, doc1, doc6, doc9, doc15, doc34);
+    }
+
+    @Test
+    public void contains_nonOptimized_noMatch_leftRight() {
+        final Collection col = mockCollection(1);
+
+        final DocumentImpl doc1 = mockDoc(col, 1);
+        final DocumentImpl doc6 = mockDoc(col, 6);
+        final DocumentImpl doc9 = mockDoc(col, 9);
+        final DocumentImpl doc15 = mockDoc(col, 15);
+        final DocumentImpl doc34 = mockDoc(col, 34);
+
+        final DefaultDocumentSet set1 = new DefaultDocumentSet();
+        final DocumentSet set2 = testableDocumentSet(doc15, doc34);
+
+        replay(col, set2, doc1, doc6, doc9, doc15, doc34);
+
+        set1.add(doc1);
+        set1.add(doc6);
+        set1.add(doc9);
+
+        // functions under test
+        assertFalse(set1.contains(set2));
+
+        verify(col, set2, doc1, doc6, doc9, doc15, doc34);
+    }
+
+    @Test
+    public void contains_nonOptimized_noMatch_rightLeft() {
+        final Collection col = mockCollection(1);
+
+        final DocumentImpl doc1 = mockDoc(col, 1);
+        final DocumentImpl doc6 = mockDoc(col, 6);
+        final DocumentImpl doc9 = mockDoc(col, 9);
+        final DocumentImpl doc15 = mockDoc(col, 15);
+        final DocumentImpl doc34 = mockDoc(col, 34);
+
+        final DefaultDocumentSet set1 = new DefaultDocumentSet();
+        final DocumentSet set2 = testableDocumentSet(doc1, doc6, doc9);
+
+        replay(col, set2, doc1, doc6, doc9, doc15, doc34);
+
+        set1.add(doc15);
+        set1.add(doc34);
+
+        // functions under test
+        assertFalse(set1.contains(set2));
+
+        verify(col, set2, doc1, doc6, doc9, doc15, doc34);
     }
 
     @Test
