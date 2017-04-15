@@ -38,20 +38,20 @@ import org.xml.sax.ext.LexicalHandler;
 /**
  * Internal class used to track required fields between calls to
  * {@link org.exist.collections.Collection#validateXMLResource(Txn, DBBroker, XmldbURI, InputSource)} and
- * {@link org.exist.collections.Collection#store(Txn, DBBroker, IndexInfo, InputSource, boolean)}.
+ * {@link org.exist.collections.Collection#store(Txn, DBBroker, IndexInfo, InputSource)}.
  * 
  * @author wolf
  */
 public class IndexInfo {
 
-    private Indexer indexer;
+    private final Indexer indexer;
+    private final CollectionConfiguration collectionConfig;
     private DOMStreamer streamer;
     private DocumentTriggers docTriggers;
     private boolean creating = false;
     private Permission oldDocPermissions = null;
-    private CollectionConfiguration collectionConfig;
 
-    IndexInfo(Indexer indexer, CollectionConfiguration collectionConfig) {
+    IndexInfo(final Indexer indexer, final CollectionConfiguration collectionConfig) {
         this.indexer = indexer;
         this.collectionConfig = collectionConfig;
     }
@@ -61,7 +61,7 @@ public class IndexInfo {
     }
 
     //XXX: make protected
-    public void setTriggers(DocumentTriggers triggersVisitor) {
+    public void setTriggers(final DocumentTriggers triggersVisitor) {
         this.docTriggers = triggersVisitor;
     }
 
@@ -70,7 +70,7 @@ public class IndexInfo {
         return docTriggers;
     }
 
-    public void setCreating(boolean creating) {
+    public void setCreating(final boolean creating) {
         this.creating = creating;
     }
 
@@ -86,7 +86,7 @@ public class IndexInfo {
         return oldDocPermissions;
     }
 
-    void setReader(XMLReader reader, EntityResolver entityResolver) throws SAXException {
+    void setReader(final XMLReader reader, final EntityResolver entityResolver) throws SAXException {
         if(entityResolver != null) {
             reader.setEntityResolver(entityResolver);
         }
@@ -97,7 +97,7 @@ public class IndexInfo {
         reader.setErrorHandler(indexer);
     }
 
-    void setDOMStreamer(DOMStreamer streamer) {
+    void setDOMStreamer(final DOMStreamer streamer) {
         this.streamer = streamer;
         if (docTriggers == null) {
             streamer.setContentHandler(indexer);
