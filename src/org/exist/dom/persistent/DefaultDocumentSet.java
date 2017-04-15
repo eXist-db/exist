@@ -32,11 +32,7 @@ import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Node;
 
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Manages a set of documents.
@@ -301,7 +297,8 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
     @Override
     public void unlock(final boolean exclusive) {
         final Thread thread = Thread.currentThread();
-        for (int idx = 0; idx < tabSize; idx++) {
+        // NOTE: locks should be released in the reverse order that they were acquired
+        for (int idx = tabSize - 1; idx >= 0; idx--) {
             if (values[idx] == null || values[idx] == REMOVED) {
                 continue;
             }
