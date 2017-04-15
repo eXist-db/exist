@@ -33,28 +33,27 @@ public interface DocumentSet {
 
     DocumentSet EMPTY_DOCUMENT_SET = new EmptyDocumentSet();
 
-    public Iterator<DocumentImpl> getDocumentIterator();
+    Iterator<DocumentImpl> getDocumentIterator();
 
-    public Iterator<Collection> getCollectionIterator();
+    Iterator<Collection> getCollectionIterator();
 
-    public int getDocumentCount();
+    int getDocumentCount();
 
-    public DocumentImpl getDoc(int docId);
+    DocumentImpl getDoc(int docId);
 
-    public XmldbURI[] getNames();
+    XmldbURI[] getNames();
 
-    public DocumentSet intersection(DocumentSet other);
+    DocumentSet intersection(DocumentSet other);
 
-    public boolean contains(DocumentSet other);
+    boolean contains(DocumentSet other);
 
-    public boolean contains(int id);
+    boolean contains(int id);
 
-    public NodeSet docsToNodeSet();
+    NodeSet docsToNodeSet();
 
-    public void lock(DBBroker broker, boolean exclusive, boolean checkExisting) throws LockException;
+    void lock(DBBroker broker, boolean exclusive, boolean checkExisting) throws LockException;
 
-    public void unlock(boolean exclusive);
+    void unlock(boolean exclusive);
 
-    public boolean equalDocs(DocumentSet other);
-
+    boolean equalDocs(DocumentSet other);
 }
