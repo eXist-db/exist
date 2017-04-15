@@ -90,7 +90,16 @@ public class MutableCollection implements Collection {
     private int collectionId = UNKNOWN_COLLECTION_ID;
     private XmldbURI path;
     private final LockManager lockManager;
-    @GuardedBy("LockManager") private final Map<String, DocumentImpl> documents = new TreeMap<>();
+
+    /*
+     * LinkedHashSet is used to ensure a consistent iteration order of child Documents.
+     * The `insertion-order` of a LinkedHashSet means we effectively order by Document creation
+     * time, i.e. oldest first.
+     * This ordering ensures that adding new Documents does not affect the existing order of Documents,
+     * in this manner locks acquired when iterating are always acquired and released in the same order
+     * which gives us deadlock avoidance for Document iteration.
+     */
+    @GuardedBy("LockManager") private final LinkedHashMap<String, DocumentImpl> documents = new LinkedHashMap<>();
 
     /*
      * LinkedHashSet is used to ensure a consistent iteration order of sub-Collections.
@@ -188,6 +197,14 @@ public class MutableCollection implements Collection {
         return new LinkedHashSet<>(set).iterator();
     }
 
+    private static Iterator<DocumentImpl> stableDocumentIterator(final LinkedHashMap<String, DocumentImpl> documents) {
+        return new ArrayList<>(documents.values()).iterator();
+    }
+
+    private static Iterator<String> stableDocumentNameIterator(final LinkedHashMap<String, DocumentImpl> documents) {
+        return new ArrayList<>(documents.keySet()).iterator();
+    }
+
     @Override
     public List<CollectionEntry> getEntries(final DBBroker broker) throws PermissionDeniedException, LockException, IOException {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
@@ -196,8 +213,10 @@ public class MutableCollection implements Collection {
         final List<CollectionEntry> list = new ArrayList<>();
 
         final Iterator<XmldbURI> subCollectionIterator;
+        final Iterator<DocumentImpl> documentIterator;
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
             subCollectionIterator = stableIterator(subCollections);
+            documentIterator = stableDocumentIterator(documents);
         }
 
         while(subCollectionIterator.hasNext()) {
@@ -208,7 +227,8 @@ public class MutableCollection implements Collection {
             list.add(entry);
         }
 
-        for(final DocumentImpl document : copyOfDocs()) {
+        while(documentIterator.hasNext()) {
+            final DocumentImpl document = documentIterator.next();
             final CollectionEntry entry = new DocumentEntry(document);
             entry.readMetadata(broker);
             list.add(entry);
@@ -443,18 +463,21 @@ public class MutableCollection implements Collection {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
 
+        final Iterator<DocumentImpl> documentIterator;
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
+            documentIterator = stableDocumentIterator(documents);
             docs.addCollection(this);
-            addDocumentsToSet(broker, docs);
         }
+        addDocumentsToSet(broker, documentIterator, docs);
         
         return docs;
     }
 
     @Override
     public DocumentSet getDocumentsNoLock(final DBBroker broker, final MutableDocumentSet docs) {
+        final Iterator<DocumentImpl> documentIterator = stableDocumentIterator(documents);
         docs.addCollection(this);
-        addDocumentsToSet(broker, docs);
+        addDocumentsToSet(broker, documentIterator, docs);
         return docs;
     }
 
@@ -465,39 +488,19 @@ public class MutableCollection implements Collection {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
 
+        final Iterator<DocumentImpl> documentIterator;
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
+            documentIterator = stableDocumentIterator(documents);
             docs.addCollection(this);
-            addDocumentsToSet(broker, docs, lockMap, lockType);
         }
+        addDocumentsToSet(broker, documentIterator, docs, lockMap, lockType);
+
         return docs;
     }
 
-    /**
-     * Gets a stable list of the document objects
-     * from {@link #documents}
-     *
-     * @return A stable list of the document objects
-     */
-    private List<DocumentImpl> copyOfDocs() throws LockException {
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
-            return new ArrayList<>(documents.values());
-        }
-    }
-
-    /**
-     * Gets a stable set of the the document object
-     * names from {@link #documents}
-     *
-     * @return A stable set of the document names
-     */
-    private Set<String> copyOfDocNames() throws LockException {
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
-            return new TreeSet<>(documents.keySet());
-        }
-    }
-
-    private void addDocumentsToSet(final DBBroker broker, final MutableDocumentSet docs, final LockedDocumentMap lockMap, final LockMode lockType) throws LockException {
-    	for(final DocumentImpl doc : copyOfDocs()) {
+    private void addDocumentsToSet(final DBBroker broker, final Iterator<DocumentImpl> documentIterator, final MutableDocumentSet docs, final LockedDocumentMap lockMap, final LockMode lockType) throws LockException {
+        while(documentIterator.hasNext()) {
+            final DocumentImpl doc = documentIterator.next();
             if(doc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE)) {
                 doc.getUpdateLock().acquire(lockType);
 
@@ -507,15 +510,12 @@ public class MutableCollection implements Collection {
     	}
     }
     
-    private void addDocumentsToSet(final DBBroker broker, final MutableDocumentSet docs) {
-    	try {
-            for (final DocumentImpl doc : copyOfDocs()) {
-                if (doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
-                    docs.add(doc);
-                }
+    private void addDocumentsToSet(final DBBroker broker, final Iterator<DocumentImpl> documentIterator, final MutableDocumentSet docs) {
+        while (documentIterator.hasNext()) {
+            final DocumentImpl doc = documentIterator.next();
+            if (doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
+                docs.add(doc);
             }
-        } catch(final LockException e) {
-            LOG.error(e);
         }
     }
 
@@ -723,7 +723,7 @@ public class MutableCollection implements Collection {
             return documents.containsKey(name.getRawCollectionPath());
         } catch(final LockException e) {
             LOG.warn(e.getMessage(), e);
-            //TODO : ouch ! Should we return at any price ? Xithout even logging ? -pb
+            //TODO : ouch ! Should we return at any price ? Without even logging ? -pb
             return documents.containsKey(name.getRawCollectionPath());
         }
     }
@@ -1765,9 +1765,14 @@ public class MutableCollection implements Collection {
         buf.append("[");
 
         try {
-            for (final Iterator<String> i = copyOfDocNames().iterator(); i.hasNext(); ) {
-                buf.append(i.next());
-                if (i.hasNext()) {
+            final Iterator<String> documentNameIterator;
+            try (final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
+                documentNameIterator = documents.keySet().iterator();
+            }
+
+            while (documentNameIterator.hasNext()) {
+                buf.append(documentNameIterator.next());
+                if (documentNameIterator.hasNext()) {
                     buf.append(", ");
                 }
             }
