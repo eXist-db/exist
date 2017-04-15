@@ -188,12 +188,11 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         if (other.getDocumentCount() > size()) {
             return false;
         }
-        for (int idx = 0; idx < tabSize; idx++) {
-            if (values[idx] == null || values[idx] == REMOVED) {
-                continue;
-            }
-            final DocumentImpl d = (DocumentImpl)values[idx];
-            if (!contains(d.getDocId())) {
+
+        final Iterator<DocumentImpl> otherDocumentIterator = other.getDocumentIterator();
+        while (otherDocumentIterator.hasNext()) {
+            final DocumentImpl otherDocument = otherDocumentIterator.next();
+            if (!contains(otherDocument.getDocId())) {
                 return false;
             }
         }
