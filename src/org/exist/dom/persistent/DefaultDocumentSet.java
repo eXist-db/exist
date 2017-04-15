@@ -320,7 +320,9 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         final StringBuilder result = new StringBuilder();
         for (final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); ) {
             result.append(i.next());
-            result.append(", ");
+            if(i.hasNext()) {
+                result.append(", ");
+            }
         }
         return result.toString();
     }
