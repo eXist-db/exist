@@ -1,10 +1,12 @@
-xquery version "3.0";
+xquery version "3.1";
 
 (:~
- : Tests to check if the reported line numbers for errors are correct
- : if a function is called dynamically. In previous eXist versions, the
+ : Tests to check if the reported line numbers for errors are correct:
+ :
+ : * if a function is called dynamically. In previous eXist versions, the
  : line number always pointed to the place where the function item was created,
- : not the actual function body.
+ : not the actual function body
+ : * if newlines occur in string literals, constructors or comments
  :)
 module namespace et="http://exist-db.org/xquery/test/error-test";
 
@@ -21,7 +23,7 @@ declare function et:test2($a) {
 };
 
 declare
-    %test:assertEquals(15)
+    %test:assertEquals(17)
 function et:dynamically-called-function() {
     let $fn := function-lookup(xs:QName("et:test"), 1)
     return
@@ -33,7 +35,7 @@ function et:dynamically-called-function() {
 };
 
 declare
-    %test:assertEquals(20)
+    %test:assertEquals(22)
 function et:dynamically-called-function-path-expr() {
     let $fn := function-lookup(xs:QName("et:test2"), 1)
     return
@@ -45,7 +47,7 @@ function et:dynamically-called-function-path-expr() {
 };
 
 declare
-    %test:assertEquals(51)
+    %test:assertEquals(53)
 function et:inline-function-call() {
     let $fn := function($a) {
         $a + "bla"
@@ -59,7 +61,7 @@ function et:inline-function-call() {
 };
 
 declare
-    %test:assertEquals(15)
+    %test:assertEquals(17)
 function et:function-reference-call() {
     let $fn := et:test#1
     return
@@ -68,4 +70,72 @@ function et:function-reference-call() {
         } catch * {
             $err:line-number
         }
+};
+
+declare
+    %test:assertEquals(87)
+function et:nl-in-string-literal() {
+    try {
+        let $foo := "bar
+
+
+        "
+        return
+            element x {
+                attribute y { "1" },
+                (: next line will generate dynamic error :)
+                element z { sum($foo) }
+            }
+    } catch * {
+        $err:line-number
+    }
+};
+
+declare
+    %test:assertEquals(106)
+function et:nl-in-string-constructor() {
+    try {
+        let $foo := ``[bar
+
+
+        ]``
+        return
+            element x {
+                attribute y { "1" },
+                (: next line will generate dynamic error :)
+                element z { sum($foo) }
+            }
+    } catch * {
+        $err:line-number
+    }
+};
+
+declare
+    %test:assertEquals(124)
+function et:nl-in-element-constructor() {
+    try {
+        let $foo :=
+            <test>
+                <p>foo
+
+                </p>
+            </test>
+        return
+            "abc"/node()
+    } catch * {
+        $err:line-number
+    }
+};
+
+declare
+    %test:assertEquals(137)
+function et:nl-in-comment() {
+    try {
+        (: This is a
+
+        multiline comment :)
+        "abc"/node()
+    } catch * {
+        $err:line-number
+    }
 };
