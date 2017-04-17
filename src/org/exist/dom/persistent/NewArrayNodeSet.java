@@ -654,7 +654,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             final NodeId parentId = reference.getNodeId().getParentId();
             final int docIdx = findDoc(reference.getOwnerDocument());
             if(docIdx < 0) {
-                return NodeSet.EMPTY_SET;
+                continue;
             } //BUG: can't be null, make trouble @LocationStep line 388 -shabanovd
             // do a binary search to pick some node in the range of valid
             // child ids
