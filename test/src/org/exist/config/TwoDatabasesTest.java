@@ -168,16 +168,13 @@ public class TwoDatabasesTest {
             top.getDocuments(broker, docs);
             XmldbURI[] uris = docs.getNames();
             //binDoc = (BinaryDocument)broker.getXMLResource(XmldbURI.create("xmldb:exist:///bin"),LockMode.READ_LOCK);
+
             binDoc = (BinaryDocument) top.getDocument(broker, XmldbURI.create("xmldb:exist:///bin"));
             assertTrue(binDoc != null);
             try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream((int)binDoc.getContentLength())) {
                 broker.readBinaryResource(binDoc, os);
                 String comp = os.size() > 0 ? new String(os.toByteArray()) : "";
                 return comp.equals(bin + suffix);
-            }
-        } finally {
-            if (binDoc != null) {
-                binDoc.getUpdateLock().release(LockMode.READ_LOCK);
             }
         }
     }

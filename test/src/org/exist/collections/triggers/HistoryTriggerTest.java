@@ -27,6 +27,7 @@ import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -132,20 +133,14 @@ public class HistoryTriggerTest {
             try(final Collection testCollection = broker.openCollection(TEST_COLLECTION_URI, Lock.LockMode.WRITE_LOCK);) {
                 assertNotNull(testCollection);
 
-                DocumentImpl doc2 = testCollection.getDocumentWithLock(broker, testDoc2Name, Lock.LockMode.READ_LOCK);
-                try {
+                try(final LockedDocument lockedDoc2 = testCollection.getDocumentWithLock(broker, testDoc2Name, Lock.LockMode.READ_LOCK)) {
 
-                    assertNotNull(doc2);
+                    assertNotNull(lockedDoc2);
 
                     // copy doc2 over doc1
-                    broker.copyResource(transaction, doc2, testCollection, testDoc1Name);
+                    broker.copyResource(transaction, lockedDoc2.getDocument(), testCollection, testDoc1Name);
 
-                } finally {
-                    if(doc2 != null) {
-                        doc2.getUpdateLock().release(Lock.LockMode.READ_LOCK);
-                    }
                 }
-
             }
 
             transaction.commit();

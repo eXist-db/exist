@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import javax.annotation.Nullable;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.logging.log4j.LogManager;
@@ -33,6 +34,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
@@ -222,7 +224,7 @@ public class ZipEntryFunctions extends BasicFunction {
     }
 
     protected static class ZipFileFromDb implements ZipFileSource {
-        private BinaryDocument binaryDoc = null;
+        private LockedDocument binaryDoc = null;
         private final XmldbURI uri;
 
         public ZipFileFromDb(final XmldbURI uri) {
@@ -235,26 +237,30 @@ public class ZipEntryFunctions extends BasicFunction {
                 binaryDoc = getDoc(broker);
             }
 
-            return new ZipInputStream(broker.getBinaryResource(binaryDoc));
+            return new ZipInputStream(broker.getBinaryResource((BinaryDocument)binaryDoc.getDocument()));
         }
 
         @Override
         public void close() {
             if (binaryDoc != null) {
-                binaryDoc.getUpdateLock().release(LockMode.READ_LOCK);
+                binaryDoc.close();
             }
         }
 
-        private BinaryDocument getDoc(final DBBroker broker) throws PermissionDeniedException {
-            final DocumentImpl doc = broker.getXMLResource(uri, LockMode.READ_LOCK);
-            if (doc == null) {
+        /**
+         * @return only binary document otherwise null
+         */
+        @Nullable
+        private LockedDocument getDoc(final DBBroker broker) throws PermissionDeniedException {
+            final LockedDocument lockedDoc = broker.getXMLResource(uri, LockMode.READ_LOCK);
+            if(lockedDoc == null) {
                 return null;
-            } else if (doc.getResourceType() != DocumentImpl.BINARY_FILE) {
-                doc.getUpdateLock().release(LockMode.READ_LOCK);
+            } else if (lockedDoc.getDocument().getResourceType() != DocumentImpl.BINARY_FILE) {
+                lockedDoc.close();
                 return null;
             }
 
-            return (BinaryDocument) doc;
+            return lockedDoc;
         }
     }
 }

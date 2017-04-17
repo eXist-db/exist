@@ -3,9 +3,9 @@ package org.exist.storage.lock;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.concurrent.locks.*;
 
 import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistWebServer;
 import org.exist.util.LockException;
@@ -48,11 +48,11 @@ public class GetXMLResourceNoLockTest {
 
             final XmldbURI docPath = TestConstants.TEST_COLLECTION_URI.append(DOCUMENT_NAME_URI);
 
-            final BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(docPath, LockMode.NO_LOCK);
-
-			// if document is not present, null is returned
-			if(binDoc == null) {
-				fail("Binary document '" + docPath + " does not exist.");
+            try(final LockedDocument lockedDoc = broker.getXMLResource(docPath, LockMode.NO_LOCK)) {
+                // if document is not present, null is returned
+                if (lockedDoc == null) {
+                    fail("Binary document '" + docPath + " does not exist.");
+                }
             }
 
 			final LockManager lockManager = broker.getBrokerPool().getLockManager();

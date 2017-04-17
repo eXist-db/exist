@@ -20,6 +20,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.collections.ManagedLocks;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NewArrayNodeSet;
@@ -28,6 +29,7 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.storage.UpdateListener;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.util.LockException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -80,10 +82,13 @@ public class RootNode extends Step {
         
         // check if the loaded documents should remain locked
         NewArrayNodeSet result = new NewArrayNodeSet();
+        ManagedLocks<ManagedDocumentLock> docLocks = null;
         try {
             // wait for pending updates
-            if (!context.inProtectedMode())
-                {ds.lock(context.getBroker(), false);}
+            if (!context.inProtectedMode()) {
+                docLocks = ds.lock(context.getBroker(), false);
+            }
+
 	        DocumentImpl doc;
 	        for (final Iterator<DocumentImpl> i = ds.getDocumentIterator(); i.hasNext();) {
 	            doc = i.next();
@@ -99,8 +104,9 @@ public class RootNode extends Step {
             throw new XPathException(this, "Failed to acquire lock on the context document set");
         } finally {
             // release all locks
-            if (!context.inProtectedMode())
-                {ds.unlock();}
+            if (!context.inProtectedMode() && docLocks != null) {
+                docLocks.close();
+            }
         }
 //        result.updateNoSort();
         if (context.getProfiler().isEnabled()) 

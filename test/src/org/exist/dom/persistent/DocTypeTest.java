@@ -69,14 +69,13 @@ public class DocTypeTest {
 
     @Test
 	public void docType_usingInputSource() throws EXistException, URISyntaxException, LockException, SAXException, PermissionDeniedException, IOException {
-		DocumentImpl doc = null;
 		final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 		final TransactionManager transact = pool.getTransactionManager();
 
 		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final URL testFileUrl = getClass().getResource("test_content.xml");
 			final Path testFile = Paths.get(testFileUrl.toURI());
-            assertTrue(Files.isReadable(testFile));
+			assertTrue(Files.isReadable(testFile));
 			
 			final InputSource is = new FileInputSource(testFile);
 
@@ -89,35 +88,30 @@ public class DocTypeTest {
                 transact.commit(transaction);
             }
 
-			doc = broker.getXMLResource(root.getURI().append(XmldbURI.create("test2.xml")),LockMode.READ_LOCK);
+			try(final LockedDocument lockedDoc = broker.getXMLResource(root.getURI().append(XmldbURI.create("test2.xml")),LockMode.READ_LOCK)) {
+			    final DocumentImpl doc = lockedDoc.getDocument();
+                final DocumentType docType = doc.getDoctype();
+                assertNotNull(docType);
+                assertEquals("-//OASIS//DTD DITA Reference//EN", docType.getPublicId());
 
-			final DocumentType docType = doc.getDoctype();
-			assertNotNull(docType);
-			assertEquals("-//OASIS//DTD DITA Reference//EN", docType.getPublicId());
-			
-			final Serializer serializer = broker.getSerializer();
-			serializer.reset();
-			
-			serializer.setProperties(OUTPUT_PROPERTIES);
-			
-			final String serialized = serializer.serialize(doc);
+                final Serializer serializer = broker.getSerializer();
+                serializer.reset();
 
-			assertTrue("Checking for Public Id in output", serialized.contains("-//OASIS//DTD DITA Reference//EN"));
+                serializer.setProperties(OUTPUT_PROPERTIES);
 
-		} finally {
-		    if (doc != null) {
-                doc.getUpdateLock().release(LockMode.READ_LOCK);
+                final String serialized = serializer.serialize(doc);
+
+                assertTrue("Checking for Public Id in output", serialized.contains("-//OASIS//DTD DITA Reference//EN"));
             }
 		}
 	}
 
     @Test
 	public void docType_usingString() throws EXistException, PermissionDeniedException, SAXException {
-		DocumentImpl doc = null;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-
-            doc = broker.getXMLResource(root.getURI().append(XmldbURI.create("test.xml")), LockMode.READ_LOCK);
+		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final LockedDocument lockedDoc = broker.getXMLResource(root.getURI().append(XmldbURI.create("test.xml")),LockMode.READ_LOCK)) {
+            final DocumentImpl doc = lockedDoc.getDocument();
 
             DocumentType docType = doc.getDoctype();
 
@@ -134,11 +128,7 @@ public class DocTypeTest {
 
             assertTrue("Checking for Public Id in output", serialized.contains("-//OASIS//DTD DITA Topic//EN"));
 
-        } finally {
-		    if (doc != null) {
-                doc.getUpdateLock().release(LockMode.READ_LOCK);
-            }
-		}
+        }
 	}
 
     @ClassRule

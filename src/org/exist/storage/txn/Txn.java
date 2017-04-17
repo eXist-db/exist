@@ -31,6 +31,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedCollectionLock;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 
@@ -84,6 +85,11 @@ public class Txn implements Transaction {
 
     public void acquireCollectionLock(final SupplierE<ManagedCollectionLock, LockException> fnLockAcquire) throws LockException {
         final ManagedCollectionLock lock = fnLockAcquire.get();
+        locksHeld.add(new LockInfo(lock, lock::close));
+    }
+
+    public void acquireDocumentLock(final SupplierE<ManagedDocumentLock, LockException> fnLockAcquire) throws LockException {
+        final ManagedDocumentLock lock = fnLockAcquire.get();
         locksHeld.add(new LockInfo(lock, lock::close));
     }
 

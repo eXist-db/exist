@@ -31,6 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
@@ -141,7 +142,6 @@ public class DocUtils {
     private static Sequence getDocumentByPathFromDB(final XQueryContext context, final String path) throws XPathException, PermissionDeniedException {
         // check if the loaded documents should remain locked
         final LockMode lockType = context.lockDocumentsOnLoad() ? LockMode.WRITE_LOCK : LockMode.READ_LOCK;
-        DocumentImpl doc = null;
         try {
             XmldbURI pathUri = XmldbURI.xmldbUriFor(path, false);
 
@@ -160,27 +160,24 @@ public class DocUtils {
             }
 
             // try to open the document and acquire a lock
-            doc = context.getBroker().getXMLResource(pathUri, lockType);
-            if (doc == null) {
-                return Sequence.EMPTY_SEQUENCE;
-            } else {
-                if (!doc.getPermissions().validate(context.getSubject(), Permission.READ)) {
-                    throw new PermissionDeniedException("Insufficient privileges to read resource " + path);
-                }
+            try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(pathUri, lockType)){
+                if (lockedDoc == null) {
+                    return Sequence.EMPTY_SEQUENCE;
+                } else {
+                    final DocumentImpl doc = lockedDoc.getDocument();
+                    if (!doc.getPermissions().validate(context.getSubject(), Permission.READ)) {
+                        throw new PermissionDeniedException("Insufficient privileges to read resource " + path);
+                    }
 
-                if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                    throw new XPathException("Document " + path + " is a binary resource, not an XML document. Please consider using the function util:binary-doc() to retrieve a reference to it.");
-                }
+                    if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                        throw new XPathException("Document " + path + " is a binary resource, not an XML document. Please consider using the function util:binary-doc() to retrieve a reference to it.");
+                    }
 
-                return new NodeProxy(doc);
+                    return new NodeProxy(doc);
+                }
             }
         } catch (final URISyntaxException e) {
             throw new XPathException(e);
-        } finally {
-            // release all locks unless
-            if (doc != null) {
-                doc.getUpdateLock().release(lockType);
-            }
         }
     }
 

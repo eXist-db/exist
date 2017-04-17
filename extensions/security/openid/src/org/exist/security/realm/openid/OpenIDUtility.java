@@ -25,6 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.SchemaType;
 import org.exist.security.Subject;
 import org.exist.source.Source;
@@ -86,14 +87,10 @@ public class OpenIDUtility {
         }
         xqueryResourcePath = xqueryResourcePath.trim();
         LOG.info("org.exist.security.openid.verify_logging_script = \"" + xqueryResourcePath + "\"");
-        
-        BrokerPool pool = null;
 
         try {
-            DocumentImpl resource = null;
-            Source source = null;
 
-            pool = BrokerPool.getInstance();
+            final BrokerPool pool = BrokerPool.getInstance();
 
             try(final DBBroker broker = pool.get(Optional.of(principal))) {
                 if (broker == null) {
@@ -104,36 +101,33 @@ public class OpenIDUtility {
                 XmldbURI pathUri = XmldbURI.create(xqueryResourcePath);
 
 
-                resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
+                try(final LockedDocument lockedResource = broker.getXMLResource(pathUri, LockMode.READ_LOCK)) {
+                    if (lockedResource == null) {
+                        LOG.info("Resource " + xqueryResourcePath + " does not exist.");
+                        LOG.info("pathURI " + pathUri);
+                        return true;
+                    }
 
-                if (resource != null) {
+
                     LOG.info("Resource " + xqueryResourcePath + " exists.");
-                    source = new DBSource(broker, (BinaryDocument) resource, true);
-                } else {
-                    LOG.info("Resource " + xqueryResourcePath + " does not exist.");
-                    LOG.info("pathURI " + pathUri);
-                    return true;
-                }
+                    final Source source = new DBSource(broker, (BinaryDocument) lockedResource.getDocument(), true);
 
 
-                XQuery xquery = pool.getXQueryService();
+                    XQuery xquery = pool.getXQueryService();
 
-                if (xquery == null) {
-                    LOG.error("broker unable to retrieve XQueryService");
-                    return false;
-                }
+                    if (xquery == null) {
+                        LOG.error("broker unable to retrieve XQueryService");
+                        return false;
+                    }
 
-                XQueryContext context = new XQueryContext(broker.getBrokerPool());
+                    XQueryContext context = new XQueryContext(broker.getBrokerPool());
 
-                CompiledXQuery compiled = xquery.compile(broker, context, source);
+                    CompiledXQuery compiled = xquery.compile(broker, context, source);
 
-                Properties outputProperties = new Properties();
+                    Properties outputProperties = new Properties();
 
-                Sequence result = xquery.execute(broker, compiled, null, outputProperties);
-                LOG.info("XQuery execution results: " + result.toString());
-            } finally {
-                if(resource != null) {
-                    resource.getUpdateLock().release(LockMode.READ_LOCK);
+                    Sequence result = xquery.execute(broker, compiled, null, outputProperties);
+                    LOG.info("XQuery execution results: " + result.toString());
                 }
             }
         } catch (Exception e) {

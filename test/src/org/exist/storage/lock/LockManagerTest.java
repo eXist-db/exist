@@ -598,6 +598,117 @@ public class LockManagerTest {
         assertEquals(Lock.LockMode.WRITE_LOCK, event9.mode);
     }
 
+    @Test
+    public void getDocumentLock_isStripedByPath() {
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+
+        final ReentrantReadWriteLock doc1Lock1 = lockManager.getDocumentLock("/db/1.xml");
+        assertNotNull(doc1Lock1);
+
+        final ReentrantReadWriteLock doc1Lock2 = lockManager.getDocumentLock("/db/1.xml");
+        assertNotNull(doc1Lock2);
+
+        assertTrue(doc1Lock1 == doc1Lock2);
+
+        final ReentrantReadWriteLock doc2Lock = lockManager.getDocumentLock("/db/a/b/c/2.xml");
+        assertNotNull(doc2Lock);
+        assertFalse(doc1Lock1 == doc2Lock);
+
+        final ReentrantReadWriteLock doc3Lock = lockManager.getDocumentLock("/db/d/e/f/3.xml");
+        assertNotNull(doc3Lock);
+        assertFalse(doc1Lock1 == doc3Lock);
+
+        assertFalse(doc2Lock == doc3Lock);
+    }
+
+    /**
+     * When acquiring a READ lock on a Document
+     * ensure that we only take a single READ lock on the
+     * Document
+     */
+    @Test
+    public void acquireDocumentReadLock() throws LockException {
+        final LockTable lockTable = LockTable.getInstance();
+
+        final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
+        lockTable.registerListener(lockEventRecordingListener);
+
+        final XmldbURI docUri = XmldbURI.create("/db/a/b/c/1.xml");
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        try(final ManagedDocumentLock doc1Lock
+                    = lockManager.acquireDocumentReadLock(docUri)) {
+            assertNotNull(doc1Lock);
+        }
+
+        lockTable.deregisterListener(lockEventRecordingListener);
+
+        // wait for the listener to be deregistered
+        while(lockEventRecordingListener.isRegistered()) {}
+
+        final Stack<LockTable.LockAction> events = lockEventRecordingListener.getEvents();
+        assertEquals(3, events.size());
+        final LockTable.LockAction event3 = events.pop();
+        final LockTable.LockAction event2 = events.pop();
+        final LockTable.LockAction event1 = events.pop();
+
+        assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
+        assertEquals(docUri, event1.id);
+        assertEquals(Lock.LockMode.READ_LOCK, event1.mode);
+
+        assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
+        assertEquals(docUri, event2.id);
+        assertEquals(Lock.LockMode.READ_LOCK, event2.mode);
+
+        // we now expect to release the lock on the document (as the managed lock was closed)
+        assertEquals(LockTable.LockAction.Action.Released, event3.action);
+        assertEquals(docUri, event3.id);
+        assertEquals(Lock.LockMode.READ_LOCK, event3.mode);
+    }
+
+    /**
+     * When acquiring a WRITE lock on a Document
+     * ensure that we only take a single READ lock on the
+     * Document
+     */
+    @Test
+    public void acquireDocumentWriteLock() throws LockException {
+        final LockTable lockTable = LockTable.getInstance();
+
+        final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
+        lockTable.registerListener(lockEventRecordingListener);
+
+        final XmldbURI docUri = XmldbURI.create("/db/a/b/c/1.xml");
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        try(final ManagedDocumentLock doc1Lock
+                    = lockManager.acquireDocumentWriteLock(docUri)) {
+            assertNotNull(doc1Lock);
+        }
+
+        lockTable.deregisterListener(lockEventRecordingListener);
+
+        // wait for the listener to be deregistered
+        while(lockEventRecordingListener.isRegistered()) {}
+
+        final Stack<LockTable.LockAction> events = lockEventRecordingListener.getEvents();
+        assertEquals(3, events.size());
+        final LockTable.LockAction event3 = events.pop();
+        final LockTable.LockAction event2 = events.pop();
+        final LockTable.LockAction event1 = events.pop();
+
+        assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
+        assertEquals(docUri, event1.id);
+        assertEquals(Lock.LockMode.WRITE_LOCK, event1.mode);
+
+        assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
+        assertEquals(docUri, event2.id);
+        assertEquals(Lock.LockMode.WRITE_LOCK, event2.mode);
+
+        // we now expect to release the lock on the document (as the managed lock was closed)
+        assertEquals(LockTable.LockAction.Action.Released, event3.action);
+        assertEquals(docUri, event3.id);
+        assertEquals(Lock.LockMode.WRITE_LOCK, event3.mode);
+    }
+
     @ThreadSafe
     private static class LockEventRecordingListener implements LockTable.LockEventListener {
         private final Stack<LockTable.LockAction> events = new Stack<>();

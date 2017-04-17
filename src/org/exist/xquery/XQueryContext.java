@@ -46,13 +46,7 @@ import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.DebuggeeJoint;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DefaultDocumentSet;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.*;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.interpreter.Context;
@@ -1178,7 +1172,6 @@ public class XQueryContext implements BinaryValueManager, Context
                 throw new XPathException("Permission denied to read resource all resources: " + e.getMessage(), e);
             }
         } else {
-            DocumentImpl doc;
             Collection   collection;
 
             for( int i = 0; i < staticDocumentPaths.length; i++ ) {
@@ -1189,16 +1182,17 @@ public class XQueryContext implements BinaryValueManager, Context
                     if( collection != null ) {
                         collection.allDocs( getBroker(), ndocs, true);
                     } else {
-                        doc = getBroker().getXMLResource( staticDocumentPaths[i], LockMode.READ_LOCK );
+                        try(final LockedDocument lockedDocument = getBroker().getXMLResource( staticDocumentPaths[i], LockMode.READ_LOCK)) {
 
-                        if( doc != null ) {
+                            final DocumentImpl doc = lockedDocument == null ? null : lockedDocument.getDocument();
+                            if (doc != null) {
 
-                            if( doc.getPermissions().validate( 
-                            		getBroker().getCurrentSubject(), Permission.READ ) ) {
-                                
-                            	ndocs.add( doc );
+                                if (doc.getPermissions().validate(
+                                        getBroker().getCurrentSubject(), Permission.READ)) {
+
+                                    ndocs.add(doc);
+                                }
                             }
-                            doc.getUpdateLock().release( LockMode.READ_LOCK );
                         }
                     }
                 }
@@ -2762,11 +2756,9 @@ public class XQueryContext implements BinaryValueManager, Context
                                 locationUri = moduleLoadPathUri.resolveCollectionPath( locationUri );
                             }
 
-                            DocumentImpl sourceDoc = null;
+                            try (final LockedDocument lockedSourceDoc = getBroker().getXMLResource( locationUri.toCollectionPathURI(), LockMode.READ_LOCK)) {
 
-                            try {
-                                sourceDoc = getBroker().getXMLResource( locationUri.toCollectionPathURI(), LockMode.READ_LOCK );
-
+                                final DocumentImpl sourceDoc = lockedSourceDoc == null ? null : lockedSourceDoc.getDocument();
                                 if(sourceDoc == null) {
                                     throw moduleLoadException("Module location hint URI '" + location + "' does not refer to anything.", location);
                                 }
@@ -2782,10 +2774,6 @@ public class XQueryContext implements BinaryValueManager, Context
 
                             } catch(final PermissionDeniedException e) {
                                 throw moduleLoadException("Permission denied to read module source from location hint URI '" + location + ".", location, e);
-                            } finally {
-                                if(sourceDoc != null) {
-                                    sourceDoc.getUpdateLock().release(LockMode.READ_LOCK);
-                                }
                             }
                         } catch(final URISyntaxException e) {
                             throw moduleLoadException("Invalid module location hint URI '" + location + "'.", location, e);

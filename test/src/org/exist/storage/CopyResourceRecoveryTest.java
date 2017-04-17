@@ -27,7 +27,7 @@ import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
@@ -124,19 +124,13 @@ public class CopyResourceRecoveryTest {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
 
-            DocumentImpl doc = null;
-            try {
-                doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append("new_test.xml"), LockMode.READ_LOCK);
-                assertNotNull("Document should not be null", doc);
-                final String data = serializer.serialize(doc);
-                assertNotNull(data);
-            } finally {
-                if(doc != null) {
-                    doc.getUpdateLock().release(LockMode.READ_LOCK);
-                }
-            }
-        }
-    }
+			try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append("new_test.xml"), LockMode.READ_LOCK)) {
+				assertNotNull("Document should not be null", lockedDoc);
+				final String data = serializer.serialize(lockedDoc.getDocument());
+				assertNotNull(data);
+			}
+		}
+	}
 
     private void storeAborted(final String testCollectionName, final String subCollection) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -185,22 +179,17 @@ public class CopyResourceRecoveryTest {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
 
-            DocumentImpl doc = null;
-            try {
-                doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append(subCollection).append("test2.xml"), LockMode.READ_LOCK);
-                assertNotNull("Document should not be null", doc);
-                final String data = serializer.serialize(doc);
-                assertNotNull(data);
-            } finally {
-                if(doc != null) {
-                    doc.getUpdateLock().release(LockMode.READ_LOCK);
-                }
-            }
+			try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append(subCollection).append("test2.xml"), LockMode.READ_LOCK)) {
+				assertNotNull("Document should not be null", lockedDoc);
+				final String data = serializer.serialize(lockedDoc.getDocument());
+				assertNotNull(data);
+			}
 
-            doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append("new_test2.xml"), LockMode.READ_LOCK);
-            assertNull("Document should not exist as copy was not committed", doc);
-        }
-    }
+			try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append("new_test2.xml"), LockMode.READ_LOCK)) {
+                assertNull("Document should not exist as copy was not committed", lockedDoc);
+            }
+		}
+	}
 
     @After
     public void cleanup() {

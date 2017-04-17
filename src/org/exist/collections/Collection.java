@@ -4,10 +4,7 @@ import org.exist.EXistException;
 import org.exist.Resource;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.*;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.storage.*;
@@ -500,7 +497,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param name   The name of the document (without collection path)
      * @return the document or null if it doesn't exist
      */
-    DocumentImpl getDocument(DBBroker broker, XmldbURI name) throws PermissionDeniedException;
+    @Nullable DocumentImpl getDocument(DBBroker broker, XmldbURI name) throws PermissionDeniedException;
 
     /**
      * Retrieve a child resource after putting a read lock on it.
@@ -513,7 +510,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @deprecated Use {@link #getDocumentWithLock(DBBroker, XmldbURI, LockMode)}
      */
     @Deprecated
-    DocumentImpl getDocumentWithLock(DBBroker broker, XmldbURI name)
+    @Nullable LockedDocument getDocumentWithLock(DBBroker broker, XmldbURI name)
             throws LockException, PermissionDeniedException;
 
     /**
@@ -525,7 +522,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param lockMode The mode of the lock to acquire
      * @return The locked document or null if it doesn't exist
      */
-    DocumentImpl getDocumentWithLock(DBBroker broker, XmldbURI name, LockMode lockMode)
+    @Nullable LockedDocument getDocumentWithLock(DBBroker broker, XmldbURI name, LockMode lockMode)
             throws LockException, PermissionDeniedException;
 
     /**
@@ -539,24 +536,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @deprecated Use {@link #getDocument(DBBroker, XmldbURI)} instead
      */
     @Deprecated
-    DocumentImpl getDocumentNoLock(DBBroker broker, String rawPath) throws PermissionDeniedException;
-
-    /**
-     * Release any locks held on the document
-     *
-     * @param doc The document to release locks on
-     * @deprecated Use {@link #releaseDocument(DocumentImpl, LockMode)} instead
-     */
-    @Deprecated
-    void releaseDocument(DocumentImpl doc);
-
-    /**
-     * Release any locks held on the document
-     *
-     * @param doc  The document to release locks on
-     * @param mode The lock mode to release
-     */
-    void releaseDocument(DocumentImpl doc, LockMode mode);
+    @Nullable DocumentImpl getDocumentNoLock(DBBroker broker, String rawPath) throws PermissionDeniedException;
 
     /**
      * Remove the specified child Collection

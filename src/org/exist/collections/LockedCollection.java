@@ -22,10 +22,7 @@ package org.exist.collections;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.*;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
@@ -346,12 +343,12 @@ public class LockedCollection implements Collection {
 
     @Override
     @Deprecated
-    public DocumentImpl getDocumentWithLock(final DBBroker broker, final XmldbURI name) throws LockException, PermissionDeniedException {
+    public LockedDocument getDocumentWithLock(final DBBroker broker, final XmldbURI name) throws LockException, PermissionDeniedException {
         return collection.getDocumentWithLock(broker, name);
     }
 
     @Override
-    public DocumentImpl getDocumentWithLock(final DBBroker broker, final XmldbURI name, final Lock.LockMode lockMode) throws LockException, PermissionDeniedException {
+    public LockedDocument getDocumentWithLock(final DBBroker broker, final XmldbURI name, final Lock.LockMode lockMode) throws LockException, PermissionDeniedException {
         return collection.getDocumentWithLock(broker, name, lockMode);
     }
 
@@ -359,17 +356,6 @@ public class LockedCollection implements Collection {
     @Deprecated
     public DocumentImpl getDocumentNoLock(final DBBroker broker, final String rawPath) throws PermissionDeniedException {
         return collection.getDocumentNoLock(broker, rawPath);
-    }
-
-    @Override
-    @Deprecated
-    public void releaseDocument(final DocumentImpl doc) {
-        collection.releaseDocument(doc);
-    }
-
-    @Override
-    public void releaseDocument(final DocumentImpl doc, final Lock.LockMode mode) {
-        collection.releaseDocument(doc, mode);
     }
 
     @Override

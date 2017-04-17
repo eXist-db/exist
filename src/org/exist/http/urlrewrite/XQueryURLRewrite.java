@@ -27,6 +27,7 @@ import java.io.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.http.servlets.Authenticator;
 import org.exist.http.servlets.BasicAuthenticator;
 import org.exist.security.internal.web.HttpAccount;
@@ -725,19 +726,22 @@ public class XQueryURLRewrite extends HttpServlet {
 
     private @Nullable
     SourceInfo findSourceFromDb(final DBBroker broker, final String basePath, final String path, final String[] components) {
-        DocumentImpl controllerDoc = null;
+        LockedDocument lockedControllerDoc = null;
         try {
             final XmldbURI locationUri = XmldbURI.xmldbUriFor(basePath);
             XmldbURI resourceUri = locationUri;
             for(final String component : components) {
                 resourceUri = resourceUri.append(component);
             }
-            controllerDoc = findDbControllerXql(broker, locationUri, resourceUri);
 
-            if (controllerDoc == null) {
+            lockedControllerDoc = findDbControllerXql(broker, locationUri, resourceUri);
+
+            if (lockedControllerDoc == null) {
                 LOG.warn("XQueryURLRewrite controller could not be found for path: " + path);
                 return null;
             }
+
+            final DocumentImpl controllerDoc = lockedControllerDoc.getDocument();
 
             if (LOG.isTraceEnabled()) {
                 LOG.trace("Found controller file: " + controllerDoc.getURI());
@@ -756,8 +760,8 @@ public class XQueryURLRewrite extends HttpServlet {
             LOG.warn("Bad URI for base path: " + e.getMessage(), e);
             return null;
         } finally {
-            if (controllerDoc != null) {
-                controllerDoc.getUpdateLock().release(LockMode.READ_LOCK);
+            if (lockedControllerDoc != null) {
+                lockedControllerDoc.close();
             }
         }
     }
@@ -781,7 +785,7 @@ public class XQueryURLRewrite extends HttpServlet {
      */
     //@tailrec
     private @Nullable
-    DocumentImpl findDbControllerXql(final DBBroker broker, final XmldbURI collectionUri, final XmldbURI resourceUri) {
+    LockedDocument findDbControllerXql(final DBBroker broker, final XmldbURI collectionUri, final XmldbURI resourceUri) {
         if (collectionUri.compareTo(resourceUri) > 0) {
             return null;
         }
@@ -866,12 +870,13 @@ public class XQueryURLRewrite extends HttpServlet {
             // Is the module source stored in the database?
             try {
                 final XmldbURI locationUri = XmldbURI.xmldbUriFor(query);
-                DocumentImpl sourceDoc = null;
-                try {
-                    sourceDoc = broker.getXMLResource(locationUri.toCollectionPathURI(), LockMode.READ_LOCK);
-                    if (sourceDoc == null) {
+
+                try (final LockedDocument lockedSourceDoc = broker.getXMLResource(locationUri.toCollectionPathURI(), LockMode.READ_LOCK);) {
+                    if (lockedSourceDoc == null) {
                         throw new ServletException("XQuery resource: " + query + " not found in database");
                     }
+
+                    final DocumentImpl sourceDoc = lockedSourceDoc.getDocument();
                     if (sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
                             !"application/xquery".equals(sourceDoc.getMetadata().getMimeType())) {
                         throw new ServletException("XQuery resource: " + query + " is not an XQuery or " +
@@ -881,10 +886,6 @@ public class XQueryURLRewrite extends HttpServlet {
                             locationUri.toString());
                 } catch (final PermissionDeniedException e) {
                     throw new ServletException("permission denied to read module source from " + query);
-                } finally {
-                    if (sourceDoc != null) {
-                        sourceDoc.getUpdateLock().release(LockMode.READ_LOCK);
-                    }
                 }
             } catch (final URISyntaxException e) {
                 throw new ServletException(e.getMessage(), e);

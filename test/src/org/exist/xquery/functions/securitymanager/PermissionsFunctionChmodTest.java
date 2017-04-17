@@ -28,6 +28,7 @@ import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.GroupAider;
@@ -315,19 +316,14 @@ public class PermissionsFunctionChmodTest {
 
     private static void assertDocumentSetGid(final Subject execAsUser, final XmldbURI uri, final boolean isSet) throws EXistException, PermissionDeniedException {
         final BrokerPool pool = existWebServer.getBrokerPool();
-        try (final DBBroker broker = pool.get(Optional.of(execAsUser))) {
-            DocumentImpl doc = null;
-            try {
-                doc = broker.getXMLResource(uri, Lock.LockMode.READ_LOCK);
-                if (isSet) {
-                    assertTrue(doc.getPermissions().isSetGid());
-                } else {
-                    assertFalse(doc.getPermissions().isSetGid());
-                }
-            } finally {
-                if (doc != null) {
-                    doc.getUpdateLock().release(Lock.LockMode.READ_LOCK);
-                }
+        try (final DBBroker broker = pool.get(Optional.of(execAsUser));
+                final LockedDocument lockedDoc = broker.getXMLResource(uri, Lock.LockMode.READ_LOCK)) {
+
+            final DocumentImpl doc = lockedDoc.getDocument();
+            if (isSet) {
+                assertTrue(doc.getPermissions().isSetGid());
+            } else {
+                assertFalse(doc.getPermissions().isSetGid());
             }
         }
     }

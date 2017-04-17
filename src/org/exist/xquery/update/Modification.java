@@ -25,6 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.ManagedLocks;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.DocumentTriggers;
 import org.exist.collections.triggers.TriggerException;
@@ -41,6 +42,8 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.LockManager;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
@@ -69,7 +72,7 @@ public abstract class Modification extends AbstractExpression
     protected final Expression select;
     protected final Expression value;
 
-    protected DocumentSet lockedDocuments = null;
+    protected ManagedLocks<ManagedDocumentLock> lockedDocumentsLocks;
     protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
     protected Int2ObjectHashMap<DocumentTrigger> triggers;
 
@@ -140,12 +143,12 @@ public abstract class Modification extends AbstractExpression
         final java.util.concurrent.locks.Lock globalLock = context.getBroker().getBrokerPool().getGlobalUpdateLock();
         globalLock.lock();
         try {
-            lockedDocuments = nodes.getDocumentSet();
+            final DocumentSet lockedDocuments = nodes.getDocumentSet();
 
             // acquire a lock on all documents
             // we have to avoid that node positions change
             // during the modification
-            lockedDocuments.lock(context.getBroker(), true);
+            lockedDocumentsLocks = lockedDocuments.lock(context.getBroker(), true);
 
             final StoredNode ql[] = new StoredNode[nodes.getItemCount()];
             for (int i = 0; i < ql.length; i++) {
@@ -232,15 +235,15 @@ public abstract class Modification extends AbstractExpression
      */
     protected void unlockDocuments()
     {
-        if(lockedDocuments == null) {
+        if(lockedDocumentsLocks == null) {
             return;
         }
 
         modifiedDocuments.clear();
 
         //unlock documents
-        lockedDocuments.unlock();
-        lockedDocuments = null;
+        lockedDocumentsLocks.close();
+        lockedDocumentsLocks = null;
     }
 
     public static void checkFragmentation(XQueryContext context, DocumentSet docs) throws EXistException {
@@ -262,13 +265,13 @@ public abstract class Modification extends AbstractExpression
      */
     public static void checkFragmentation(XQueryContext context, DocumentSet docs, int splitCount) throws EXistException {
         final DBBroker broker = context.getBroker();
-        
+        final LockManager lockManager = broker.getBrokerPool().getLockManager();
         //if there is no batch update transaction, start a new individual transaction
         try (final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
             for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
                 final DocumentImpl next = i.next();
                 if(next.getMetadata().getSplitCount() > splitCount) {
-                    try(final ManagedLock<Lock> nextLock = ManagedLock.acquire(next.getUpdateLock(), LockMode.WRITE_LOCK)) {
+                    try(final ManagedDocumentLock nextLock = lockManager.acquireDocumentWriteLock(next.getURI())) {
                         broker.defragXMLResource(transaction, next);
                     }
                 }

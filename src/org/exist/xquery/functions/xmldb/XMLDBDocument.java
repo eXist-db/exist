@@ -24,6 +24,7 @@ package org.exist.xquery.functions.xmldb;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.exist.collections.ManagedLocks;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
@@ -36,6 +37,7 @@ import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.UpdateListener;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
@@ -169,31 +171,37 @@ public class XMLDBDocument extends Function {
                 cachedArgs = args;
 	    }
 	}
+
+	ManagedLocks<ManagedDocumentLock> docLocks = null;
 	try {
-            if(!cacheIsValid)
-                // wait for pending updates
-                {docs.lock(context.getBroker(), lockOnLoad);}
+		if(!cacheIsValid) {
+			// wait for pending updates
+			docLocks = docs.lock(context.getBroker(), lockOnLoad);
+		}
 	    // wait for pending updates
 	    if(result == null) {
-		result = new ExtArrayNodeSet(docs.getDocumentCount(), 1);
-                DocumentImpl doc;
-		for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
-                    doc = i.next();
-		    result.add(new NodeProxy(doc)); //, -1, Node.DOCUMENT_NODE));
-                    if(lockOnLoad) {
-                        context.addLockedDocument(doc);
-                    }
-		}
+			result = new ExtArrayNodeSet(docs.getDocumentCount(), 1);
+			for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
+				final DocumentImpl doc = i.next();
+		    	result.add(new NodeProxy(doc)); //, -1, Node.DOCUMENT_NODE));
+				if(lockOnLoad) {
+					context.addLockedDocument(doc);
+				}
+			}
 	    }
 	} catch (final LockException e) {
 	    logger.error("Could not acquire lock on document set", e);
 
-            throw new XPathException(this, "Could not acquire lock on document set.");
-        } finally {
-            if(!(cacheIsValid || lockOnLoad))
-                // release all locks
-                {docs.unlock();}
+		throw new XPathException(this, "Could not acquire lock on document set.");
+	} finally {
+		if(!(cacheIsValid || lockOnLoad)) {
+			// release all locks
+			if(docLocks != null) {
+				docLocks.close();
+			}
+		}
 	}
+
 	cached = result;
 	cachedDocs = docs;
 	registerUpdateListener();

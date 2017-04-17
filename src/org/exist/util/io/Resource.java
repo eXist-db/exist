@@ -39,10 +39,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.Collection.CollectionEntry;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentMetadata;
-import org.exist.dom.persistent.LockToken;
+import org.exist.dom.persistent.*;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
@@ -569,10 +566,6 @@ public class Resource extends File {
         }
 
         try (final DBBroker broker = db.getBroker()) {
-
-//			if (!uri.startsWith("/db"))
-//				uri = XmldbURI.DB.append(uri);
-//	
             try {
                 if (uri.endsWith("/")) {
                     throw new IOException("It collection, but should be resource: " + uri);
@@ -589,19 +582,6 @@ public class Resource extends File {
 
             final XmldbURI fileName = uri.lastSegment();
 
-//			try {
-//				resource = broker.getXMLResource(uri, LockMode.READ_LOCK);
-//			} catch (final PermissionDeniedException e1) {
-//			} finally {
-//				if (resource != null) {
-//					resource.getUpdateLock().release(LockMode.READ_LOCK);
-//					collection = resource.getCollection();
-//					initialized = true;
-//					
-//					return false;
-//				}
-//			}
-//			
             try {
                 resource = broker.getResource(uri, Permission.READ);
             } catch (final PermissionDeniedException e1) {
@@ -673,8 +653,8 @@ public class Resource extends File {
 
                     //resource
                 } else {
-                    try {
-                        resource = broker.getXMLResource(uri, LockMode.READ_LOCK);
+                    try(final LockedDocument lockedResource = broker.getXMLResource(uri, LockMode.READ_LOCK)) {
+                        resource = lockedResource == null ? null : lockedResource.getDocument();
                         if (resource == null) {
                             //may be, it's collection ... checking ...
                             collection = broker.getCollection(uri);
@@ -683,10 +663,6 @@ public class Resource extends File {
                             }
                         } else {
                             collection = resource.getCollection();
-                        }
-                    } finally {
-                        if (resource != null) {
-                            resource.getUpdateLock().release(LockMode.READ_LOCK);
                         }
                     }
                 }
@@ -1133,39 +1109,37 @@ public class Resource extends File {
 
                     //resource
                 } else {
-                    resource = broker.getXMLResource(uri, LockMode.READ_LOCK);
-                    if (resource == null) {
-                        //may be, it's collection ... checking ...
-                        collection = broker.getCollection(uri);
-                        if (collection == null) {
-                            throw new IOException("Resource not found: " + uri);
-                        }
+                    try(final LockedDocument lockedResource = broker.getXMLResource(uri, LockMode.READ_LOCK)) {
+                        resource = lockedResource == null ? null : lockedResource.getDocument();
+                        if (resource == null) {
+                            //may be, it's collection ... checking ...
+                            collection = broker.getCollection(uri);
+                            if (collection == null) {
+                                throw new IOException("Resource not found: " + uri);
+                            }
 
-                        try (final Txn txn = tm.beginTransaction()) {
-                            method.modify(broker, collection);
-                            broker.saveCollection(txn, collection);
+                            try (final Txn txn = tm.beginTransaction()) {
+                                method.modify(broker, collection);
+                                broker.saveCollection(txn, collection);
 
-                            tm.commit(txn);
-                        }
+                                tm.commit(txn);
+                            }
 
-                    } else {
-                        collection = resource.getCollection();
+                        } else {
+                            collection = resource.getCollection();
 
-                        try (final Txn txn = tm.beginTransaction()) {
-                            method.modify(broker, resource);
-                            broker.storeMetadata(txn, resource);
+                            try (final Txn txn = tm.beginTransaction()) {
+                                method.modify(broker, resource);
+                                broker.storeMetadata(txn, resource);
 
-                            tm.commit(txn);
+                                tm.commit(txn);
+                            }
                         }
                     }
                 }
             } catch (final Exception e) {
                 LOG.error(e);
                 throw new IOException(e);
-            } finally {
-                if (resource != null) {
-                    resource.getUpdateLock().release(LockMode.READ_LOCK);
-                }
             }
         } catch (final EXistException e) {
             LOG.error(e);

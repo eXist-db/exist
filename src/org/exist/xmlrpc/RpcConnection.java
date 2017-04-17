@@ -22,17 +22,7 @@ package org.exist.xmlrpc;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.DocumentMetadata;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.ExtArrayNodeSet;
-import org.exist.dom.persistent.DocumentTypeImpl;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.SortedNodeSet;
-import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.*;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.Version;
@@ -1012,20 +1002,14 @@ public class RpcConnection implements RpcAPI {
 
     private Map<String, Object> getPermissions(final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return withDb((broker, transaction) -> {
-            try(final Collection collection = broker.openCollection(uri, LockMode.READ_LOCK);) {
+            try(final Collection collection = broker.openCollection(uri, LockMode.READ_LOCK)) {
                 final Permission perm;
                 if (collection == null) {
-                    DocumentImpl doc = null;
-                    try {
-                        doc = broker.getXMLResource(uri, LockMode.READ_LOCK);
-                        if (doc == null) {
+                    try(final LockedDocument lockedDoc = broker.getXMLResource(uri, LockMode.READ_LOCK)) {
+                        if (lockedDoc == null) {
                             throw new EXistException("document or collection " + uri + " not found");
                         }
-                        perm = doc.getPermissions();
-                    } finally {
-                        if (doc != null) {
-                            doc.getUpdateLock().release(LockMode.READ_LOCK);
-                        }
+                        perm = lockedDoc.getDocument().getPermissions();
                     }
                 } else {
                     perm = collection.getPermissionsNoLock();
@@ -3213,18 +3197,12 @@ public class RpcConnection implements RpcAPI {
     @Override
     public boolean reindexDocument(final String docUri) throws EXistException, PermissionDeniedException {
         withDb((broker, transaction) -> {
-            DocumentImpl doc = null;
-            try {
-                doc = broker.getXMLResource(XmldbURI.create(docUri), LockMode.READ_LOCK);
-                broker.reindexXMLResource(transaction, doc, DBBroker.IndexMode.STORE);
+            try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.create(docUri), LockMode.READ_LOCK)) {
+                broker.reindexXMLResource(transaction, lockedDoc.getDocument(), DBBroker.IndexMode.STORE);
                 if(LOG.isDebugEnabled()) {
                     LOG.debug("document " + docUri + " reindexed");
                 }
                 return null;
-            } finally {
-                if (doc != null) {
-                    doc.getUpdateLock().release(LockMode.READ_LOCK);
-                }
             }
         });
         return true;
@@ -3839,23 +3817,17 @@ public class RpcConnection implements RpcAPI {
      */
     private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> withDocument(final LockMode lockMode, final DBBroker broker, final Txn transaction, final Collection collection, final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return readOp -> {
-            DocumentImpl document = null;
-            try {
-                document = collection.getDocumentWithLock(broker, uri.lastSegment(), lockMode);
-                if (document == null) {
+            try(final LockedDocument lockedDocument = collection.getDocumentWithLock(broker, uri.lastSegment(), lockMode)) {
+                if (lockedDocument == null) {
                     final String msg = "document " + uri + " not found!";
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(msg);
                     }
                     throw new EXistException(msg);
                 }
-                return readOp.apply(document, broker, transaction);
+                return readOp.apply(lockedDocument.getDocument(), broker, transaction);
             } catch (final LockException e) {
                 throw new EXistException(e);
-            } finally {
-                if (document != null) {
-                    collection.releaseDocument(document, lockMode);
-                }
             }
         };
     }

@@ -34,6 +34,7 @@ import org.exist.SystemProperties;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.repo.Deployment;
 import org.exist.repo.PackageLoader;
 import org.exist.security.PermissionDeniedException;
@@ -199,11 +200,15 @@ public class Deploy extends BasicFunction {
 
     private Optional<String> installAndDeployFromDb(final String path, final String repoURI) throws XPathException {
         final XmldbURI docPath = XmldbURI.createInternal(path);
-        DocumentImpl doc = null;
-        try {
-            doc = context.getBroker().getXMLResource(docPath, LockMode.READ_LOCK);
-            if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
+        try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(docPath, LockMode.READ_LOCK)) {
+            if(lockedDoc == null) {
+                throw new XPathException(this, EXPathErrorCode.EXPDY001, path + " no such .xar", new StringValue(path));
+            }
+
+            final DocumentImpl doc = lockedDoc.getDocument();
+            if (doc.getResourceType() != DocumentImpl.BINARY_FILE) {
                 throw new XPathException(this, EXPathErrorCode.EXPDY001, path + " is not a valid .xar", new StringValue(path));
+            }
 
             final Path file = ((NativeBroker)context.getBroker()).getCollectionBinaryFileFsPath(doc.getURI());
             RepoPackageLoader loader = null;
@@ -215,9 +220,6 @@ public class Deploy extends BasicFunction {
         } catch (PackageException | IOException | PermissionDeniedException e) {
             LOG.error(e.getMessage(), e);
             throw new XPathException(this, EXPathErrorCode.EXPDY007, "Package installation failed: " + e.getMessage(), new StringValue(e.getMessage()));
-        } finally {
-            if (doc != null)
-                doc.getUpdateLock().release(LockMode.READ_LOCK);
         }
     }
 

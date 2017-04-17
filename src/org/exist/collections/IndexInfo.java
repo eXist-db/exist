@@ -25,6 +25,7 @@ import org.exist.collections.triggers.DocumentTriggers;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.xmldb.XmldbURI;
@@ -46,14 +47,17 @@ public class IndexInfo {
 
     private final Indexer indexer;
     private final CollectionConfiguration collectionConfig;
+    private final ManagedDocumentLock documentLock;
+
     private DOMStreamer streamer;
     private DocumentTriggers docTriggers;
     private boolean creating = false;
     private Permission oldDocPermissions = null;
 
-    IndexInfo(final Indexer indexer, final CollectionConfiguration collectionConfig) {
+    IndexInfo(final Indexer indexer, final CollectionConfiguration collectionConfig, final ManagedDocumentLock documentLock) {
         this.indexer = indexer;
         this.collectionConfig = collectionConfig;
+        this.documentLock = documentLock;
     }
 
     public Indexer getIndexer() {
@@ -118,5 +122,9 @@ public class IndexInfo {
 
     public CollectionConfiguration getCollectionConfig() {
         return collectionConfig;
+    }
+
+    public ManagedDocumentLock getDocumentLock() {
+        return documentLock;
     }
 }

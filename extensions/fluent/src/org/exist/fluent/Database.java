@@ -17,6 +17,8 @@ import org.exist.security.*;
 import org.exist.storage.*;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.LockManager;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
@@ -71,6 +73,7 @@ public class Database {
 			BrokerPool.configure(dbName, 1, 5, config);
 			pool = BrokerPool.getInstance(dbName);
 			txManager = pool.getTransactionManager();
+			lockManager = pool.getLockManager();
 			configureRootCollection(configFile);
 			defragmenter.start();
 			QueryService.statistics().reset();
@@ -247,6 +250,7 @@ public class Database {
 	        try {
     	        pool = BrokerPool.getInstance(dbName);
                 txManager = pool.getTransactionManager();
+                lockManager = pool.getLockManager();
                 //configureRootCollection(configFile);
                 //defragmenter.start();
                 //QueryService.statistics().reset();
@@ -284,6 +288,7 @@ public class Database {
 	public static final String ROOT_PREFIX = XmldbURI.ROOT_COLLECTION;
 	private static volatile BrokerPool pool;
 	private static TransactionManager txManager;
+	private static LockManager lockManager;
 	private static final ThreadLocal<Transaction> localTransaction = new ThreadLocal<Transaction>();
 	private static final WeakHashMap<NativeBroker,Boolean> instrumentedBrokers = new WeakHashMap<NativeBroker,Boolean>();
 	
@@ -487,12 +492,12 @@ public class Database {
 	 */
 	static Transaction requireTransaction() {
 		Transaction t = localTransaction.get();
-		return t == null ? new Transaction(txManager, null) : new Transaction(t, null);
+		return t == null ? new Transaction(txManager, lockManager, null) : new Transaction(t, null);
 	}
 	
 	Transaction requireTransactionWithBroker() {
 		Transaction t = localTransaction.get();
-		return t == null ? new Transaction(txManager, this) : new Transaction(t, this);
+		return t == null ? new Transaction(txManager, lockManager,this) : new Transaction(t, this);
 	}
 	
 	void checkSame(Resource o) {
@@ -606,7 +611,7 @@ public class Database {
 							it.remove();
 						} else {
 							// Must hold write lock on doc before checking stale map to avoid race condition
-							try(final ManagedLock<Lock> updateLock = ManagedLock.attempt(doc.getUpdateLock(), LockMode.WRITE_LOCK)) {
+							try(final ManagedDocumentLock updateLock = pool.getLockManager().acquireDocumentWriteLock(doc.getURI())) {
 								String docPath = normalizePath(doc.getURI().getCollectionPath());
 								if (!staleMap.containsKey(docPath)) {
 									LOG.debug("defragmenting " + docPath);

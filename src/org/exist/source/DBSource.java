@@ -26,6 +26,7 @@ import java.io.*;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
@@ -86,26 +87,19 @@ public class DBSource extends AbstractSource {
 
     @Override
     public Validity isValid(final DBBroker broker) {
-        DocumentImpl d = null;
         Validity result;
-        try {
-            d = broker.getXMLResource(key, LockMode.READ_LOCK);
-            
-            if(d == null) {
+        try(final LockedDocument lockedDoc = broker.getXMLResource(key, LockMode.READ_LOCK);) {
+            if(lockedDoc == null) {
                 result = Validity.INVALID;
-            } else if(d.getMetadata().getLastModified() > lastModified) {
+            } else if(lockedDoc.getDocument().getMetadata().getLastModified() > lastModified) {
                 result = Validity.INVALID;
             } else {
                 result = Validity.VALID;
             }
         } catch(final PermissionDeniedException pde) {
             result = Validity.INVALID;
-        } finally {
-            if(d != null) {
-                d.getUpdateLock().release(LockMode.READ_LOCK);
-            }
         }
-        
+
         return result;
     }
 

@@ -32,6 +32,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
@@ -100,9 +101,11 @@ public class RecoverBinaryTest {
         BrokerPool.FORCE_CORRUPTION = false;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
-            final BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append(TestConstants.TEST_BINARY_URI), LockMode.READ_LOCK);
-            assertNotNull("Binary document is null", binDoc);
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append(TestConstants.TEST_BINARY_URI), LockMode.READ_LOCK)) {
+            assertNotNull("Binary document is null", lockedDoc);
+
+            final BinaryDocument binDoc = (BinaryDocument)lockedDoc.getDocument();
 
             try(final InputStream is = broker.getBinaryResource(binDoc)) {
                 final byte[] bdata = new byte[(int) broker.getBinaryResourceSize(binDoc)];

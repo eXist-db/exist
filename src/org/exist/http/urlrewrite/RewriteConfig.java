@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.EXistException;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.xmldb.XmldbURI;
@@ -148,15 +149,10 @@ public class RewriteConfig {
         if (controllerConfig.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
 
             try (final DBBroker broker = urlRewrite.getBrokerPool().get(Optional.ofNullable(urlRewrite.getDefaultUser()))) {
-                DocumentImpl doc = null;
-                try {
-                    doc = broker.getXMLResource(XmldbURI.create(controllerConfig), LockMode.READ_LOCK);
+                try (final LockedDocument lockedDocument = broker.getXMLResource(XmldbURI.create(controllerConfig), LockMode.READ_LOCK);) {
+                    final DocumentImpl doc = lockedDocument == null ? null : lockedDocument.getDocument();
                     if (doc != null) {
                         parse(doc);
-                    }
-                } finally {
-                    if (doc != null) {
-                        doc.getUpdateLock().release(LockMode.READ_LOCK);
                     }
                 }
             } catch (final EXistException | PermissionDeniedException e) {

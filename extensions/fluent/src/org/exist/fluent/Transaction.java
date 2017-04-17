@@ -4,6 +4,7 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.LockManager;
 import org.exist.storage.txn.*;
 import org.exist.util.LockException;
 
@@ -18,6 +19,7 @@ import org.exist.util.LockException;
  */
 class Transaction {
 	private final TransactionManager txManager;
+	private final LockManager lockManager;
 	final Txn tx;
 	final DBBroker broker;
 	private final Database db;
@@ -28,8 +30,9 @@ class Transaction {
 	 *
 	 * @param txManager the manager to use
 	 */
-	Transaction(TransactionManager txManager, Database db) {
+	Transaction(TransactionManager txManager, LockManager lockManager, Database db) {
 		this.txManager = txManager;
+		this.lockManager = lockManager;
 		this.tx = txManager.beginTransaction();
 		this.db = db;
 		this.broker = db == null ? null : db.acquireBroker();
@@ -43,6 +46,7 @@ class Transaction {
 	 */
 	Transaction(Transaction tx, Database db) {
 		this.txManager = null;
+		this.lockManager = null;
 		this.tx = tx.tx;
 		this.db = db;
 		this.broker = db == null ? null : db.acquireBroker();
@@ -69,18 +73,18 @@ class Transaction {
 		if (broker != null) db.releaseBroker(broker);
 		complete = true;
 	}
-	
-	void lockWrite(DocumentImpl doc) {
+
+	void lockWrite(final DocumentImpl doc) {
 		try {
-			tx.acquireLock(doc.getUpdateLock(), LockMode.WRITE_LOCK);
+			tx.acquireDocumentLock(() -> lockManager.acquireDocumentWriteLock(doc.getURI()));
 		} catch (LockException e) {
 			throw new DatabaseException(e);
 		}
 	}
-	
-	void lockRead(DocumentImpl doc) {
+
+	void lockRead(final DocumentImpl doc) {
 		try {
-			tx.acquireLock(doc.getUpdateLock(), LockMode.READ_LOCK);
+			tx.acquireDocumentLock(() -> lockManager.acquireDocumentReadLock(doc.getURI()));
 		} catch (LockException e) {
 			throw new DatabaseException(e);
 		}		

@@ -21,15 +21,19 @@ package org.exist.storage.md;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
@@ -39,11 +43,13 @@ import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -159,7 +165,7 @@ public class MatchDocumentsTest {
 	    	doc1Metadata.put(KEY1, doc2);
 	    	doc1Metadata.put(KEY2, VALUE1);
 
-	    	//add metas for binaty document
+	    	//add metas for binary document
 	    	doc3metadata.put(KEY1, VALUE2);
 	    	doc3metadata.put(KEY2, doc2);
 
@@ -178,9 +184,6 @@ public class MatchDocumentsTest {
 	        try(final Txn txn = txnManager.beginTransaction()) {
 	            broker.moveCollection(txn, col1, parentCol, col2uri.lastSegment());
 	            txnManager.commit(txn);
-	        } catch (Exception e) {
-                e.printStackTrace();
-	            fail(e.getMessage());
 	        }
 
 	    	matching = md.matchDocuments(KEY2, VALUE1);
@@ -258,10 +261,10 @@ public class MatchDocumentsTest {
 
             final TransactionManager txnManager = pool.getTransactionManager();
 	        try(final Txn txn = txnManager.beginTransaction()) {
-	            Collection col2 = broker.getOrCreateCollection(txn, col2uri);
+	            final Collection col2 = broker.getOrCreateCollection(txn, col2uri);
 	    		broker.saveCollection(txn, col2);
 
-                DocumentImpl doc1 = col1.getDocument(broker, doc1uri.lastSegment());
+                final DocumentImpl doc1 = col1.getDocument(broker, doc1uri.lastSegment());
 	            broker.moveResource(txn, doc1, col2, doc4uri.lastSegment());
 
 	            txnManager.commit(txn);
@@ -456,7 +459,7 @@ public class MatchDocumentsTest {
     }
 
 	@Before
-    public void startDB() throws DatabaseConfigurationException, EXistException {
+    public void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
 
         final Path confFile = ConfigurationHelper.lookup("conf.xml");
         Configuration config = new Configuration(confFile.toAbsolutePath().toString());
@@ -478,19 +481,18 @@ public class MatchDocumentsTest {
             //store test data
             IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
             root.store(txn, broker, info, XML1);
+
             info = root.validateXMLResource(txn, broker, doc2uri.lastSegment(), XML2);
             root.store(txn, broker, info, XML2);
+
             root.addBinaryResource(txn, broker, doc3uri.lastSegment(), BINARY.getBytes(), null);
 
             txnManager.commit(txn);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
 
     @After
-    public void cleanup() {
+    public void cleanup() throws TriggerException, PermissionDeniedException, EXistException, IOException {
     	clean();
     	shutdown();
     }
@@ -501,7 +503,7 @@ public class MatchDocumentsTest {
         pool = null;
     }
 
-    private void clean() {
+    private void clean() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final TransactionManager txnManager = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn txn = txnManager.beginTransaction();
@@ -518,9 +520,6 @@ public class MatchDocumentsTest {
             }
 
         	txnManager.commit(txn);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
 }

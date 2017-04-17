@@ -25,19 +25,8 @@ import org.apache.logging.log4j.Logger;
 import org.exist.collections.*;
 import org.exist.collections.Collection;
 import org.exist.dom.memtree.DOMIndexer;
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.AbstractCharacterData;
-import org.exist.dom.persistent.DefaultDocumentSet;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentMetadata;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.IStoredNode;
-import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.*;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.TextImpl;
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.backup.RawDataBackup;
@@ -99,7 +88,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.exist.dom.persistent.StoredNode;
 import org.exist.storage.dom.INodeIterator;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 
@@ -2529,7 +2517,7 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public DocumentImpl getXMLResource(XmldbURI fileName, final LockMode lockMode) throws PermissionDeniedException {
+    public LockedDocument getXMLResource(XmldbURI fileName, final LockMode lockMode) throws PermissionDeniedException {
         if(fileName == null) {
             return null;
         }
@@ -2546,22 +2534,24 @@ public class NativeBroker extends DBBroker {
                 //if (!collection.getPermissions().validate(getCurrentSubject(), Permission.EXECUTE)) {
                 //    throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "' by " + getCurrentSubject().getName());
                 //}
-                final DocumentImpl doc = collection.getDocumentWithLock(this, docUri, lockMode);
-                if (doc == null) {
+                final LockedDocument lockedDocument = collection.getDocumentWithLock(this, docUri, lockMode);
+                if (lockedDocument == null) {
                     //LOG.debug("document '" + fileName + "' not found!");
                     return null;
                 }
                 //if (!doc.getMode().validate(getUser(), Permission.READ))
                 //throw new PermissionDeniedException("not allowed to read document");
+                final DocumentImpl doc = lockedDocument.getDocument();
                 if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
                     final BinaryDocument bin = (BinaryDocument) doc;
                     try {
                         bin.setContentLength(getBinaryResourceSize(bin));
                     } catch (final IOException ex) {
                         LOG.fatal("Cannot get content size for " + bin.getURI(), ex);
+                        //TODO : exception
                     }
                 }
-                return doc;
+                return lockedDocument;
             } catch (final LockException e) {
                 LOG.error("Could not acquire lock on document " + fileName, e);
                 //TODO : exception ? -pb
@@ -2727,12 +2717,10 @@ public class NativeBroker extends DBBroker {
             throw new EXistException("The collection '" + targetCollectionUri + "' already has a sub-collection named '" + newName.lastSegment() + "', you cannot create a Document with the same name as an existing collection.");
         }
 
-        DocumentImpl oldDoc = null;
-        try {
-            oldDoc = targetCollection.getDocumentWithLock(this, newName, LockMode.WRITE_LOCK);
-
+        try(final LockedDocument oldLockedDoc = targetCollection.getDocumentWithLock(this, newName, LockMode.WRITE_LOCK)) {
             final DocumentTrigger trigger = new DocumentTriggers(this, targetCollection);
 
+            final DocumentImpl oldDoc = oldLockedDoc == null ? null : oldLockedDoc.getDocument();
             if (oldDoc == null) {
                 if (!targetCollection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
                     throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' does not have write access on the destination collection '" + targetCollectionUri + "'.");
@@ -2756,7 +2744,9 @@ public class NativeBroker extends DBBroker {
 
             DocumentImpl newDocument = null;
             if (sourceDocument.getResourceType() == DocumentImpl.BINARY_FILE) {
-                try (final InputStream is = getBinaryResource((BinaryDocument) sourceDocument)) {
+                final LockManager lockManager = getBrokerPool().getLockManager();
+                try (final ManagedDocumentLock newDocLock = lockManager.acquireDocumentWriteLock(destinationDocumentUri);
+                        final InputStream is = getBinaryResource((BinaryDocument) sourceDocument)) {
                     final BinaryDocument newDoc;
                     if (oldDoc != null) {
                         newDoc = new BinaryDocument(oldDoc);
@@ -2765,52 +2755,48 @@ public class NativeBroker extends DBBroker {
                     }
                     newDoc.copyOf(this, sourceDocument, oldDoc);
                     newDoc.setDocId(getNextResourceId(transaction));
-                    newDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
-                    try {
-                        final Date created;
-                        final Date lastModified;
-                        if(preserveOnCopy(preserve)) {
-                            copyResource_preserve(this, sourceDocument, newDoc, oldDoc != null);
-                            if (oldDoc != null) {
-                                created = new Date(oldDoc.getMetadata().getLastModified());
-                            } else {
-                                created = new Date(sourceDocument.getMetadata().getLastModified());
-                            }
-                            lastModified = new Date(sourceDocument.getMetadata().getLastModified());
+                    final Date created;
+                    final Date lastModified;
+                    if(preserveOnCopy(preserve)) {
+                        copyResource_preserve(this, sourceDocument, newDoc, oldDoc != null);
+                        if (oldDoc != null) {
+                            created = new Date(oldDoc.getMetadata().getLastModified());
                         } else {
-                            created = null;
-                            lastModified = null;
+                            created = new Date(sourceDocument.getMetadata().getLastModified());
                         }
-                        targetCollection.addBinaryResource(transaction, this, newDoc, is, sourceDocument.getMetadata().getMimeType(), -1, created, lastModified, preserve);
-                    } finally {
-                        newDoc.getUpdateLock().release(LockMode.WRITE_LOCK);
+                        lastModified = new Date(sourceDocument.getMetadata().getLastModified());
+                    } else {
+                        created = null;
+                        lastModified = null;
                     }
+
+                    targetCollection.addBinaryResource(transaction, this, newDoc, is, sourceDocument.getMetadata().getMimeType(), -1,  created, lastModified, preserve);
+
+                    newDocument = newDoc;
                 }
             } else {
-                final DocumentImpl newDoc;
-                if (oldDoc != null) {
-                    newDoc = new DocumentImpl(oldDoc);
-                } else {
-                    newDoc = new DocumentImpl(pool, targetCollection, newName);
-                }
-                newDoc.copyOf(this, sourceDocument, oldDoc);
-                newDoc.setDocId(getNextResourceId(transaction));
-                try(final ManagedLock<Lock> newDocLock = ManagedLock.acquire(newDoc.getUpdateLock(), LockMode.WRITE_LOCK)) {
+                final LockManager lockManager = getBrokerPool().getLockManager();
+                try (final ManagedDocumentLock newDocLock = lockManager.acquireDocumentWriteLock(destinationDocumentUri)) {
+                    final DocumentImpl newDoc;
+                    if (oldDoc != null) {
+                        newDoc = new DocumentImpl(oldDoc);
+                    } else {
+                        newDoc = new DocumentImpl(pool, targetCollection, newName);
+                    }
+                    newDoc.copyOf(this, sourceDocument, oldDoc);
+                    newDoc.setDocId(getNextResourceId(transaction));
                     copyXMLResource(transaction, sourceDocument, newDoc);
                     if (preserveOnCopy(preserve)) {
                         copyResource_preserve(this, sourceDocument, newDoc, oldDoc != null);
                     }
                     targetCollection.addDocument(transaction, this, newDoc);
                     storeXMLResource(transaction, newDoc);
+
+                    newDocument = newDoc;
                 }
-                newDocument = newDoc;
             }
 
             trigger.afterCopyDocument(this, transaction, newDocument, sourceDocumentUri);
-        } finally {
-            if(oldDoc != null) {
-                oldDoc.getUpdateLock().release(LockMode.WRITE_LOCK);
-            }
         }
     }
 

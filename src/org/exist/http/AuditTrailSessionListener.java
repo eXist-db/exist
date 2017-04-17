@@ -22,7 +22,7 @@ package org.exist.http;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.Subject;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
@@ -92,7 +92,6 @@ public class AuditTrailSessionListener implements HttpSessionListener {
                 final BrokerPool pool = BrokerPool.getInstance();
                 final Subject sysSubject = pool.getSecurityManager().getSystemSubject();
 
-                DocumentImpl resource = null;
                 try (final DBBroker broker = pool.get(Optional.of(sysSubject))) {
                     if (broker == null) {
                         LOG.error("Unable to retrieve DBBroker for " + sysSubject.getName());
@@ -102,60 +101,57 @@ public class AuditTrailSessionListener implements HttpSessionListener {
                     final XmldbURI pathUri = XmldbURI.create(xqueryResourcePath);
 
 
-                    resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
+                    try(final LockedDocument lockedResource = broker.getXMLResource(pathUri, LockMode.READ_LOCK)) {
 
-                    final Source source;
-                    if (resource != null) {
-                        if (LOG.isTraceEnabled()) {
-                            LOG.trace("Resource [" + xqueryResourcePath + "] exists.");
+                        final Source source;
+                        if (lockedResource != null) {
+                            if (LOG.isTraceEnabled()) {
+                                LOG.trace("Resource [" + xqueryResourcePath + "] exists.");
+                            }
+                            source = new DBSource(broker, (BinaryDocument) lockedResource.getDocument(), true);
+                        } else {
+                            LOG.error("Resource [" + xqueryResourcePath + "] does not exist.");
+                            return;
                         }
-                        source = new DBSource(broker, (BinaryDocument) resource, true);
-                    } else {
-                        LOG.error("Resource [" + xqueryResourcePath + "] does not exist.");
-                        return;
-                    }
 
 
-                    final XQuery xquery = pool.getXQueryService();
-                    if (xquery == null) {
-                        LOG.error("broker unable to retrieve XQueryService");
-                        return;
-                    }
-
-                    final XQueryPool xqpool = pool.getXQueryPool();
-                    CompiledXQuery compiled = xqpool.borrowCompiledXQuery(broker, source);
-                    final XQueryContext context;
-                    if (compiled == null) {
-                        context = new XQueryContext(broker.getBrokerPool());
-                    } else {
-                        context = compiled.getContext();
-                    }
-                    context.setStaticallyKnownDocuments(new XmldbURI[]{pathUri});
-                    context.setBaseURI(new AnyURIValue(pathUri.toString()));
-
-                    if (compiled == null) {
-                        compiled = xquery.compile(broker, context, source);
-                    } else {
-                        compiled.getContext().updateContext(context);
-                        context.getWatchDog().reset();
-                    }
-
-                    final Properties outputProperties = new Properties();
-
-                    try {
-                        final long startTime = System.currentTimeMillis();
-                        final Sequence result = xquery.execute(broker, compiled, null, outputProperties);
-                        final long queryTime = System.currentTimeMillis() - startTime;
-                        if (LOG.isTraceEnabled()) {
-                            LOG.trace("XQuery execution results: " + result.toString() + " in " + queryTime + "ms.");
+                        final XQuery xquery = pool.getXQueryService();
+                        if (xquery == null) {
+                            LOG.error("broker unable to retrieve XQueryService");
+                            return;
                         }
-                    } finally {
-                        context.runCleanupTasks();
-                        xqpool.returnCompiledXQuery(source, compiled);
-                    }
-                } finally {
-                    if (resource != null) {
-                        resource.getUpdateLock().release(LockMode.READ_LOCK);
+
+                        final XQueryPool xqpool = pool.getXQueryPool();
+                        CompiledXQuery compiled = xqpool.borrowCompiledXQuery(broker, source);
+                        final XQueryContext context;
+                        if (compiled == null) {
+                            context = new XQueryContext(broker.getBrokerPool());
+                        } else {
+                            context = compiled.getContext();
+                        }
+                        context.setStaticallyKnownDocuments(new XmldbURI[]{pathUri});
+                        context.setBaseURI(new AnyURIValue(pathUri.toString()));
+
+                        if (compiled == null) {
+                            compiled = xquery.compile(broker, context, source);
+                        } else {
+                            compiled.getContext().updateContext(context);
+                            context.getWatchDog().reset();
+                        }
+
+                        final Properties outputProperties = new Properties();
+
+                        try {
+                            final long startTime = System.currentTimeMillis();
+                            final Sequence result = xquery.execute(broker, compiled, null, outputProperties);
+                            final long queryTime = System.currentTimeMillis() - startTime;
+                            if (LOG.isTraceEnabled()) {
+                                LOG.trace("XQuery execution results: " + result.toString() + " in " + queryTime + "ms.");
+                            }
+                        } finally {
+                            context.runCleanupTasks();
+                            xqpool.returnCompiledXQuery(source, compiled);
+                        }
                     }
                 }
 

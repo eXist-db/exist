@@ -57,14 +57,8 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.debuggee.DebuggeeFactory;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DefaultDocumentSet;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentMetadata;
-import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.*;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.XMLUtil;
-
 import static java.lang.invoke.MethodType.methodType;
 import static org.exist.http.RESTServerParameter.*;
 
@@ -412,13 +406,15 @@ public class RESTServer {
             return;
         }
         // Process the request
+        LockedDocument lockedDocument = null;
         DocumentImpl resource = null;
         final XmldbURI pathUri = XmldbURI.createInternal(path);
         try {
             // check if path leads to an XQuery resource
             final String xquery_mime_type = MimeType.XQUERY_TYPE.getName();
             final String xproc_mime_type = MimeType.XPROC_TYPE.getName();
-            resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
+            lockedDocument = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
+            resource = lockedDocument == null ? null : lockedDocument.getDocument();
 
             if (null != resource && !isExecutableType(resource)) {
                 // return regular resource that is not an xquery and not is xproc
@@ -464,7 +460,8 @@ public class RESTServer {
                     break;
                 }
 
-                resource = broker.getXMLResource(servletPath, LockMode.READ_LOCK);
+                lockedDocument = broker.getXMLResource(servletPath, LockMode.READ_LOCK);
+                resource = lockedDocument == null ? null : lockedDocument.getDocument();
                 if (null != resource && isExecutableType(resource)) {
                     break;
 
@@ -551,8 +548,8 @@ public class RESTServer {
                 }
             }
         } finally {
-            if (resource != null) {
-                resource.getUpdateLock().release(LockMode.READ_LOCK);
+            if (lockedDocument != null) {
+                lockedDocument.close();
             }
         }
     }
@@ -576,9 +573,8 @@ public class RESTServer {
             encoding = "UTF-8";
         }
 
-        DocumentImpl resource = null;
-        try {
-            resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
+        try(final LockedDocument lockedDocument = broker.getXMLResource(pathUri, LockMode.READ_LOCK)) {
+            final DocumentImpl resource = lockedDocument == null ? null : lockedDocument.getDocument();
 
             if (resource != null) {
                 if (!resource.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
@@ -610,10 +606,6 @@ public class RESTServer {
                 response.setContentType(MimeType.XML_TYPE.getName() + "; charset=" + encoding);
                 setCreatedAndLastModifiedHeaders(response, col.getCreationTime(), col.getCreationTime());
             }
-        } finally {
-            if (resource != null) {
-                resource.getUpdateLock().release(LockMode.READ_LOCK);
-            }
         }
     }
 
@@ -643,6 +635,7 @@ public class RESTServer {
 
         final Properties outputProperties = new Properties(defaultOutputKeysProperties);
         final XmldbURI pathUri = XmldbURI.createInternal(path);
+        LockedDocument lockedDocument = null;
         DocumentImpl resource = null;
 
         final String encoding = outputProperties.getProperty(OutputKeys.ENCODING);
@@ -652,7 +645,8 @@ public class RESTServer {
             // if yes, the resource is loaded and the XQuery executed.
             final String xquery_mime_type = MimeType.XQUERY_TYPE.getName();
             final String xproc_mime_type = MimeType.XPROC_TYPE.getName();
-            resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
+            lockedDocument = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
+            resource = lockedDocument == null ? null : lockedDocument.getDocument();
 
             XmldbURI servletPath = pathUri;
 
@@ -665,7 +659,8 @@ public class RESTServer {
                     break;
                 }
 
-                resource = broker.getXMLResource(servletPath, LockMode.READ_LOCK);
+                lockedDocument = broker.getXMLResource(servletPath, LockMode.READ_LOCK);
+                resource = lockedDocument == null ? null : lockedDocument.getDocument();
                 if (null != resource
                         && (resource.getResourceType() == DocumentImpl.BINARY_FILE
                         && xquery_mime_type.equals(resource.getMetadata().getMimeType())
@@ -674,10 +669,12 @@ public class RESTServer {
                     break; // found a binary file with mime-type xquery or XML file with mime-type xproc
 
                 } else if (null != resource) {
+
                     // not an xquery or xproc resource. This means we have a path
                     // that cannot contain an xquery or xproc object even if we keep
                     // moving up the path, so bail out now
-                    resource.getUpdateLock().release(LockMode.READ_LOCK);
+                    lockedDocument.close();
+                    lockedDocument = null;
                     resource = null;
                     break;
                 }
@@ -716,8 +713,8 @@ public class RESTServer {
             }
 
         } finally {
-            if (resource != null) {
-                resource.getUpdateLock().release(LockMode.READ_LOCK);
+            if (lockedDocument != null) {
+                lockedDocument.close();
             }
         }
 
@@ -1189,13 +1186,15 @@ public class RESTServer {
         final Collection collection = broker.getCollection(path);
         if (collection == null) {
             XmldbURI servletPath = path;
+            LockedDocument lockedDocument = null;
             DocumentImpl resource = null;
             // work up the url path to find an
             // xquery resource
             while (null == resource) {
                 // traverse up the path looking for xquery objects
 
-                resource = broker.getXMLResource(servletPath, LockMode.READ_LOCK);
+                lockedDocument = broker.getXMLResource(servletPath, LockMode.READ_LOCK);
+                resource = lockedDocument == null ? null : lockedDocument.getDocument();
                 if (null != resource
                         && (resource.getResourceType() == DocumentImpl.BINARY_FILE
                         && xqueryType.equals(resource.getMetadata().getMimeType()))) {
@@ -1204,7 +1203,8 @@ public class RESTServer {
                     // not an xquery or xproc resource. This means we have a path
                     // that cannot contain an xquery or xproc object even if we keep
                     // moving up the path, so bail out now
-                    resource.getUpdateLock().release(LockMode.READ_LOCK);
+                    lockedDocument.close();
+                    lockedDocument = null;
                     resource = null;
                     break;
                 }
@@ -1225,7 +1225,7 @@ public class RESTServer {
                 } catch (final XPathException e) {
                     writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, "UTF-8", null, path.toString(), e);
                 } finally {
-                    resource.getUpdateLock().release(LockMode.READ_LOCK);
+                    lockedDocument.close();
                 }
                 return true;
             }

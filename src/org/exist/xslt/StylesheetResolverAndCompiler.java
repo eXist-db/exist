@@ -35,6 +35,7 @@ import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -86,22 +87,17 @@ public class StylesheetResolverAndCompiler implements Stylesheet {
 
     if (uri.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX)) {
       final String docPath = uri.substring(XmldbURI.EMBEDDED_SERVER_URI_PREFIX.length());
-      DocumentImpl doc = null;
-      try {
-        doc = broker.getXMLResource(XmldbURI.create(docPath), LockMode.READ_LOCK);
-        if (doc == null) {
+      try (final LockedDocument lockedDocument = broker.getXMLResource(XmldbURI.create(docPath), LockMode.READ_LOCK)) {
+        if (lockedDocument == null) {
           throw new IOException("XSL stylesheet not found: "+docPath);
         }
+        final DocumentImpl doc = lockedDocument.getDocument();
         if (templates == null || doc.getMetadata().getLastModified() > lastModified) {
           if (LOG.isDebugEnabled()) {
             LOG.debug("compiling stylesheet " + doc.getURI());
           }
           templates = compileTemplates(broker, doc, errorListener);
           lastModified = doc.getMetadata().getLastModified();
-        }
-      } finally {
-        if (doc != null) {
-          doc.getUpdateLock().release(LockMode.READ_LOCK);
         }
       }
 

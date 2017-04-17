@@ -44,34 +44,28 @@ public class NodeTest {
 
     @Test
     public void document() throws EXistException, LockException, PermissionDeniedException {
-        DocumentImpl doc = null;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),LockMode.READ_LOCK);
-            final NodeList children = doc.getChildNodes();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final LockedDocument lockedDoc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),LockMode.READ_LOCK)) {
+            final NodeList children = lockedDoc.getDocument().getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
                 final IStoredNode node = (IStoredNode<?>) children.item(i);
                 node.getNodeId();
                 node.getNodeName();
-            }
-        } finally {
-            if (doc != null) {
-                doc.getUpdateLock().release(LockMode.READ_LOCK);
             }
         }
     }
 
     @Test
 	public void childAxis() throws EXistException, LockException, PermissionDeniedException {
-		DocumentImpl doc = null;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),LockMode.READ_LOCK);
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final LockedDocument lockedDoc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),LockMode.READ_LOCK)) {
 
-            NodeList cl = doc.getChildNodes();
+            NodeList cl = lockedDoc.getDocument().getChildNodes();
             assertEquals(3, cl.getLength());
 
-            final Element docElement = doc.getDocumentElement();
+            final Element docElement = lockedDoc.getDocument().getDocumentElement();
             
             //Testing getChildNodes()
             cl = docElement.getChildNodes();
@@ -93,30 +87,24 @@ public class NodeTest {
             assertEquals("abc", cl.item(0).getNodeValue());
         	
         	//Testing getParentNode()
-        	Node parent = cl.item(0).getParentNode();
+            Node parent = cl.item(0).getParentNode();
             assertNotNull(parent);
-        	parent = node.getParentNode();
-        	assertEquals("test", parent.getNodeName());
-        	parent = parent.getParentNode();
+            parent = node.getParentNode();
+            assertEquals("test", parent.getNodeName());
+            parent = parent.getParentNode();
             assertNotNull(parent);
             parent = parent.getParentNode();
             assertNull(parent);
-
-        } finally {
-        	if (doc != null) {
-                doc.getUpdateLock().release(LockMode.READ_LOCK);
-            }
         }
 	}
 
     @Test
     public void siblingAxis() throws EXistException, LockException, PermissionDeniedException {
-        DocumentImpl doc = null;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),LockMode.READ_LOCK);
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final LockedDocument lockedDoc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),LockMode.READ_LOCK)) {
 
-            final Comment firstNode = (Comment)doc.getFirstChild();
+            final Comment firstNode = (Comment)lockedDoc.getDocument().getFirstChild();
             assertNotNull(firstNode);
             assertNull(firstNode.getPreviousSibling());
 
@@ -129,7 +117,7 @@ public class NodeTest {
             assertEquals(secondNode, thirdNode.getPreviousSibling());
             assertNull(thirdNode.getNextSibling());
 
-            final Element docElement = doc.getDocumentElement();
+            final Element docElement = lockedDoc.getDocument().getDocumentElement();
             assertEquals(secondNode, docElement);
             final Element child = (Element) docElement.getFirstChild();
             assertNotNull(child);
@@ -153,20 +141,15 @@ public class NodeTest {
                 count++;
             }
             assertEquals(4, count);
-        } finally {
-            if (doc != null) {
-                doc.getUpdateLock().release(LockMode.READ_LOCK);
-            }
         }
     }
 
     @Test
 	public void attributeAxis() throws EXistException, LockException, PermissionDeniedException {
-		DocumentImpl doc = null;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),LockMode.READ_LOCK);
-            Element docElement = doc.getDocumentElement();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final LockedDocument lockedDoc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),LockMode.READ_LOCK)) {
+            Element docElement = lockedDoc.getDocument().getDocumentElement();
             Element first = (Element) docElement.getFirstChild();
             assertEquals("a", first.getNodeName());
             
@@ -200,20 +183,16 @@ public class NodeTest {
             assertEquals("b", attr.getLocalName());
             assertEquals("http://foo.org", attr.getNamespaceURI());
             assertEquals("m", attr.getValue());
-        } finally {
-        	if (doc != null) doc.getUpdateLock().release(LockMode.READ_LOCK);
         }
 	}
 
     @Deprecated
 	@Test
     public void visitor() throws EXistException, LockException, PermissionDeniedException {
-        DocumentImpl doc = null;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            
-            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"));
-            StoredNode rootNode = (StoredNode) doc.getDocumentElement();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final LockedDocument lockedDoc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),LockMode.READ_LOCK)) {
+            StoredNode rootNode = (StoredNode) lockedDoc.getDocument().getDocumentElement();
             NodeVisitor visitor = new NodeVisitor() {
                 @Override
                 public boolean visit(IStoredNode node) {
@@ -223,10 +202,6 @@ public class NodeTest {
                 };
             };
             rootNode.accept(visitor);
-        } finally {
-            if (doc != null) {
-                doc.getUpdateLock().release(LockMode.READ_LOCK);
-            }
         }
     }
 

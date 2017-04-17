@@ -37,8 +37,8 @@ import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.UpdateListener;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.LockManager;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
@@ -159,23 +159,22 @@ public class ExtCollection extends Function {
         }
         // iterate through all docs and create the node set
         final NodeSet result = new NewArrayNodeSet();
-        Lock dlock;
+        final LockManager lockManager = context.getBroker().getBrokerPool().getLockManager();
         DocumentImpl doc;
         for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
             doc = i.next();
-            dlock = doc.getUpdateLock();
-            boolean lockAcquired = false;
+
+            ManagedDocumentLock dlock = null;
             try {
-                if (!context.inProtectedMode() && !dlock.hasLock()) {
-                    dlock.acquire(LockMode.READ_LOCK);
-                    lockAcquired = true;
+                if (!context.inProtectedMode()) {
+                    dlock = lockManager.acquireDocumentReadLock(doc.getURI());
                 }
                 result.add(new NodeProxy(doc)); // , -1, Node.DOCUMENT_NODE));
             } catch (final LockException e) {
                 throw new XPathException(e.getMessage());
             } finally {
-                if (lockAcquired) {
-                    dlock.release(LockMode.READ_LOCK);
+                if (dlock != null) {
+                    dlock.close();
                 }
             }
         }

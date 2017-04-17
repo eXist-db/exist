@@ -28,12 +28,7 @@ import org.exist.backup.RawDataBackup;
 import org.exist.collections.Collection;
 import org.exist.collections.Collection.SubCollectionEntry;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.IStoredNode;
-import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.*;
 import org.exist.indexing.Index;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.StreamListener;
@@ -403,7 +398,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * @return the document or null if no document could be found at the
      *         specified location.
      */
-    public abstract DocumentImpl getXMLResource(XmldbURI docURI, LockMode lockMode)
+    @Nullable public abstract LockedDocument getXMLResource(XmldbURI docURI, LockMode lockMode)
         throws PermissionDeniedException;
 
     /**

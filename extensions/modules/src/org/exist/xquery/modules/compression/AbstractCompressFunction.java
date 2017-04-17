@@ -24,13 +24,13 @@ package org.exist.xquery.modules.compression;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DefaultDocumentSet;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.*;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.LockManager;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Base64Decoder;
@@ -168,12 +168,10 @@ public abstract class AbstractCompressFunction extends BasicFunction
                 } else {
 
                     // try for a doc
-                    DocumentImpl doc = null;
-                    try
-                    {
-                        XmldbURI xmldburi = XmldbURI.create(uri);
-                        doc = context.getBroker().getXMLResource(xmldburi, LockMode.READ_LOCK);
+                    final XmldbURI xmldburi = XmldbURI.create(uri);
 
+                    try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(xmldburi, LockMode.READ_LOCK)) {
+                        final DocumentImpl doc = lockedDoc == null ? null : lockedDoc.getDocument();
                         if(doc == null)
                         {
                             // no doc, try for a collection
@@ -199,10 +197,6 @@ public abstract class AbstractCompressFunction extends BasicFunction
                     catch(PermissionDeniedException | LockException | SAXException | IOException pde)
                     {
                         throw new XPathException(this, pde.getMessage());
-                    } finally
-                    {
-                        if(doc != null)
-                            doc.getUpdateLock().release(LockMode.READ_LOCK);
                     }
                 }
 
@@ -471,19 +465,21 @@ public abstract class AbstractCompressFunction extends BasicFunction
 	 */
 	private void compressCollection(OutputStream os, Collection col, boolean useHierarchy, String stripOffset) throws IOException, SAXException, LockException, PermissionDeniedException {
 		// iterate over child documents
-		MutableDocumentSet childDocs = new DefaultDocumentSet();
-		col.getDocuments(context.getBroker(), childDocs);
-		for (Iterator<DocumentImpl> itChildDocs = childDocs.getDocumentIterator(); itChildDocs.hasNext();) {
+        final DBBroker broker = context.getBroker();
+        final LockManager lockManager = broker.getBrokerPool().getLockManager();
+        final MutableDocumentSet childDocs = new DefaultDocumentSet();
+		col.getDocuments(broker, childDocs);
+		for (final Iterator<DocumentImpl> itChildDocs = childDocs.getDocumentIterator(); itChildDocs.hasNext();) {
 			DocumentImpl childDoc = itChildDocs.next();
-			try(final ManagedLock<Lock> updateLock = ManagedLock.acquire(childDoc.getUpdateLock(), LockMode.READ_LOCK)) {
+			try(final ManagedDocumentLock updateLock = lockManager.acquireDocumentReadLock(childDoc.getURI())) {
 				compressResource(os, childDoc, useHierarchy, stripOffset, "", null);
 			}
 		}
 		// iterate over child collections
-		for (Iterator<XmldbURI> itChildCols = col.collectionIterator(context.getBroker()); itChildCols.hasNext();) {
+		for (final Iterator<XmldbURI> itChildCols = col.collectionIterator(broker); itChildCols.hasNext();) {
 			// get the child collection
 			XmldbURI childColURI = itChildCols.next();
-			Collection childCol = context.getBroker().getCollection(col.getURI().append(childColURI));
+			Collection childCol = broker.getCollection(col.getURI().append(childColURI));
 			// recurse
 			compressCollection(os, childCol, useHierarchy, stripOffset);
 		}

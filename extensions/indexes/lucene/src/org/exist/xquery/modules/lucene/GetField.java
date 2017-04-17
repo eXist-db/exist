@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.security.PermissionDeniedException;
@@ -64,24 +65,19 @@ public class GetField extends BasicFunction {
 			throws XPathException {
 		XmldbURI uri = XmldbURI.createInternal(args[0].getStringValue());
 		String field = args[1].getStringValue();
-		
-		DocumentImpl doc = null;
-		try {
-			doc = context.getBroker().getXMLResource(uri, LockMode.READ_LOCK);
-			if (doc == null) {
+
+		try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(uri, LockMode.READ_LOCK)) {
+			if (lockedDoc == null) {
                 return Sequence.EMPTY_SEQUENCE;
             }
 			// Get the lucene worker
-            LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-            String content = index.getFieldContent(doc.getDocId(), field);
+            final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
+            final String content = index.getFieldContent(lockedDoc.getDocument().getDocId(), field);
             return content == null ? Sequence.EMPTY_SEQUENCE : new org.exist.xquery.value.StringValue(content);
 		} catch (PermissionDeniedException e) {
 			throw new XPathException(this, LuceneModule.EXXQDYFT0001, "Permission denied to read document " + args[0].getStringValue());
 		} catch (IOException e) {
 			throw new XPathException(this, LuceneModule.EXXQDYFT0002, "IO error while reading document " + args[0].getStringValue());
-		} finally {
-			if (doc != null)
-				doc.getUpdateLock().release(LockMode.READ_LOCK);
 		}
 	}
 

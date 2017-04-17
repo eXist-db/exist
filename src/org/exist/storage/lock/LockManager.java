@@ -52,10 +52,12 @@ public class LockManager {
     private static final LockTable lockTable = LockTable.getInstance();
 
     private final WeakLazyStripes<String, ReentrantReadWriteLock> collectionLocks;
+    private final WeakLazyStripes<String, ReentrantReadWriteLock> documentLocks;
 
 
     public LockManager(final int concurrencyLevel) {
         this.collectionLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createCollectionLock);
+        this.documentLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createDocumentLock);
         LOG.info("Configured LockManager with concurrencyLevel={}", concurrencyLevel);
     }
 
@@ -65,6 +67,14 @@ public class LockManager {
      */
     private static ReentrantReadWriteLock createCollectionLock(final String collectionPath) {
         return new ReentrantReadWriteLock(USE_FAIR_SCHEDULER);
+    }
+
+    /**
+     * Creates a new lock for a Document
+     * will be Striped by the collectionPath
+     */
+    private static ReentrantReadWriteLock createDocumentLock(final String documentPath) {
+        return new ReentrantReadWriteLock();
     }
 
     /**
@@ -389,5 +399,107 @@ public class LockManager {
             lock.unlock();
             lockTable.released(groupId, collectionPathStr, LockType.COLLECTION, lockMode);
         });
+    }
+
+    /**
+     * Retrieves a lock for a Document
+     *
+     * This function is concerned with just the lock object
+     * and has no knowledge of the state of the lock. The only
+     * guarantee is that if this lock has not been requested before
+     * then it will be provided in the unlocked state
+     *
+     * @param documentPath The path of the Document for which a lock is requested
+     *
+     * @return A lock for the Document
+     */
+    ReentrantReadWriteLock getDocumentLock(final String documentPath) {
+        return documentLocks.get(documentPath);
+    }
+
+    /**
+     * Acquire a READ_LOCK on a Document
+     *
+     * @param documentPath The URI of the Document within the database
+     *
+     * @return the lock for the Document
+     *
+     * @throws LockException if the lock could not be acquired
+     */
+    public ManagedDocumentLock acquireDocumentReadLock(final XmldbURI documentPath) throws LockException {
+        final long groupId = System.nanoTime();
+        final String path = documentPath.toString();
+
+        final ReentrantReadWriteLock lock = getDocumentLock(path);
+        try {
+            lockTable.attempt(groupId, path, LockType.DOCUMENT, Lock.LockMode.READ_LOCK);
+
+            lock.readLock().lockInterruptibly();
+
+            lockTable.acquired(groupId, path, LockType.DOCUMENT, Lock.LockMode.READ_LOCK);
+        } catch(final InterruptedException e) {
+            lockTable.attemptFailed(groupId, path, LockType.DOCUMENT, Lock.LockMode.READ_LOCK);
+            throw new LockException("Unable to acquire READ_LOCK for: " + path, e);
+        }
+
+        return new ManagedDocumentLock(documentPath, lock.readLock(), () -> {
+            lock.readLock().unlock();
+            lockTable.released(groupId, path, LockType.DOCUMENT, Lock.LockMode.READ_LOCK);
+        });
+    }
+
+    /**
+     * Acquire a WRITE_LOCK on a Document
+     *
+     * @param documentPath The URI of the Document within the database
+     *
+     * @return the lock for the Document
+     *
+     * @throws LockException if the lock could not be acquired
+     */
+    public ManagedDocumentLock acquireDocumentWriteLock(final XmldbURI documentPath) throws LockException {
+        final long groupId = System.nanoTime();
+        final String path = documentPath.toString();
+
+        final ReentrantReadWriteLock lock = getDocumentLock(path);
+        try {
+            lockTable.attempt(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
+
+            lock.writeLock().lockInterruptibly();
+
+            lockTable.acquired(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
+        } catch(final InterruptedException e) {
+            lockTable.attemptFailed(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
+            throw new LockException("Unable to acquire WRITE_LOCK for: " + path, e);
+        }
+
+        return new ManagedDocumentLock(documentPath, lock.writeLock(), () -> {
+            lock.writeLock().unlock();
+            lockTable.released(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
+        });
+    }
+
+    /**
+     * Returns true if a WRITE_LOCK is held for a Document
+     *
+     * @param documentPath The URI of the Document within the database
+     *
+     * @return true if a WRITE_LOCK is held
+     */
+    public boolean isDocumentLockedForWrite(final XmldbURI documentPath) {
+        final ReentrantReadWriteLock existingLock = getDocumentLock(documentPath.toString());
+        return existingLock.isWriteLocked();
+    }
+
+    /**
+     * Returns true if a READ_LOCK is held for a Document
+     *
+     * @param documentPath The URI of the Document within the database
+     *
+     * @return true if a READ_LOCK is held
+     */
+    public boolean isDocumentLockedForRead(final XmldbURI documentPath) {
+        final ReentrantReadWriteLock existingLock = getDocumentLock(documentPath.toString());
+        return existingLock.getReadLockCount() > 0;
     }
 }

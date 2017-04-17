@@ -33,6 +33,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.dom.DOMFile;
@@ -120,11 +121,11 @@ public class RecoveryTest2 {
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            DocumentImpl doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append("terms-eng.xml"), LockMode.READ_LOCK);
-            assertNotNull("Document should not be null", doc);
-            String data = serializer.serialize(doc);
-            assertNotNull(data);
-            doc.getUpdateLock().release(LockMode.READ_LOCK);
+            try(final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append("terms-eng.xml"), LockMode.READ_LOCK)) {
+                assertNotNull("Document should not be null", lockedDoc);
+                String data = serializer.serialize(lockedDoc.getDocument());
+                assertNotNull(data);
+            }
         }
     }
 
