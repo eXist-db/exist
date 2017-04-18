@@ -27,7 +27,6 @@ import org.exist.storage.lock.LockTable.LockModeOwner;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * JMX MXBean for examining the LockTable
@@ -39,7 +38,7 @@ public class LockTable implements LockTableMXBean {
     private static final String EOL = System.getProperty("line.separator");
 
     @Override
-    public Map<String, Map<LockType, Map<Lock.LockMode, Set<String>>>> getAcquired() {
+    public Map<String, Map<LockType, Map<Lock.LockMode, Map<String, Integer>>>> getAcquired() {
         return org.exist.storage.lock.LockTable.getInstance().getAcquired();
     }
 
@@ -62,7 +61,7 @@ public class LockTable implements LockTableMXBean {
 
     private String stateToString() {
         final Map<String, Map<LockType, List<LockModeOwner>>> attempting = getAttempting();
-        final Map<String, Map<LockType, Map<Lock.LockMode, Set<String>>>> acquired = getAcquired();
+        final Map<String, Map<LockType, Map<Lock.LockMode, Map<String, Integer>>>> acquired = getAcquired();
 
         final StringBuilder builder = new StringBuilder();
 
@@ -71,23 +70,23 @@ public class LockTable implements LockTableMXBean {
                 .append("Acquired Locks").append(EOL)
                 .append("------------------------------------").append(EOL);
 
-        for(final Map.Entry<String, Map<LockType, Map<Lock.LockMode, Set<String>>>> acquire : acquired.entrySet()) {
+        for(final Map.Entry<String, Map<LockType, Map<Lock.LockMode, Map<String, Integer>>>> acquire : acquired.entrySet()) {
             builder.append(acquire.getKey()).append(EOL);
-            for(final Map.Entry<LockType, Map<Lock.LockMode, Set<String>>> type : acquire.getValue().entrySet()) {
+            for(final Map.Entry<LockType, Map<Lock.LockMode, Map<String, Integer>>> type : acquire.getValue().entrySet()) {
                 builder.append('\t').append(type.getKey()).append(EOL);
-                for(final Map.Entry<Lock.LockMode, Set<String>> lockModeOwners : type.getValue().entrySet()) {
+                for(final Map.Entry<Lock.LockMode, Map<String, Integer>> lockModeOwners : type.getValue().entrySet()) {
                     builder
                             .append("\t\t").append(lockModeOwners.getKey())
                             .append('\t');
 
                     boolean firstOwner = true;
-                    for(final String owner : lockModeOwners.getValue()) {
+                    for(final Map.Entry<String, Integer> ownerHoldCount : lockModeOwners.getValue().entrySet()) {
                         if(!firstOwner) {
                             builder.append(", ");
                         } else {
                             firstOwner = false;
                         }
-                        builder.append(owner);
+                        builder.append(ownerHoldCount.getKey()).append(" (count=").append(ownerHoldCount.getValue()).append(")");
                     }
                     builder.append(EOL);
                 }

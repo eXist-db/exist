@@ -32,6 +32,7 @@ import org.exist.storage.txn.Txn;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 import static org.exist.storage.lock.LockTable.LockAction.Action.*;
 
@@ -82,9 +83,9 @@ public class LockTable {
     /**
      * Reference count of acquired locks by id and type
      *
-     * Map<Id, Map<Lock Type, Map<Lock Mode, Set<Owner>>>>
+     * Map<Id, Map<Lock Type, Map<Lock Mode, Map<Owner, HoldCount>>>>
      */
-    private final ConcurrentMap<String, Map<LockType, Map<LockMode, Set<String>>>> acquired = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Map<LockType, Map<LockMode, Map<String, Integer>>>> acquired = new ConcurrentHashMap<>();
 
     /**
      * The {@link #queue} holds lock events and lock listener events
@@ -254,7 +255,7 @@ public class LockTable {
      *
      * @return acquired lock information
      */
-    public Map<String, Map<LockType, Map<LockMode, Set<String>>>> getAcquired() {
+    public Map<String, Map<LockType, Map<LockMode, Map<String, Integer>>>> getAcquired() {
         return new HashMap<>(acquired);
     }
 
@@ -279,12 +280,12 @@ public class LockTable {
     private static class QueueConsumer implements Runnable {
         private final TransferQueue<Either<ListenerAction, LockAction>> queue;
         private final ConcurrentMap<String, Map<LockType, List<LockModeOwner>>> attempting;
-        private final ConcurrentMap<String, Map<LockType, Map<LockMode, Set<String>>>> acquired;
+        private final ConcurrentMap<String, Map<LockType, Map<LockMode, Map<String, Integer>>>> acquired;
         private final List<LockEventListener> listeners = new ArrayList<>();
 
         QueueConsumer(final TransferQueue<Either<ListenerAction, LockAction>> queue,
                       final ConcurrentMap<String, Map<LockType, List<LockModeOwner>>> attempting,
-                      final ConcurrentMap<String, Map<LockType, Map<LockMode, Set<String>>>> acquired) {
+                      final ConcurrentMap<String, Map<LockType, Map<LockMode, Map<String, Integer>>>> acquired) {
             this.queue = queue;
             this.attempting = attempting;
             this.acquired = acquired;
@@ -435,16 +436,22 @@ public class LockTable {
                         v = new HashMap<>();
                     }
 
-                    v.compute(lockAction.mode, (mode, owners) -> {
-                        if (owners == null) {
-                            owners = new HashSet<>();
+                    v.compute(lockAction.mode, (mode, ownerHolds) -> {
+                        if (ownerHolds == null) {
+                            ownerHolds = new HashMap<>();
                         }
 
-                        owners.add(lockAction.threadName);
+                        ownerHolds.compute(lockAction.threadName, (threadName, holdCount) -> {
+                            if(holdCount == null) {
+                                holdCount = 0;
+                            }
+                            return ++holdCount;
+                        });
 
-                        notifyListenersOfAcquire(lockAction, owners.size());
+                        final int lockModeHolds = ownerHolds.values().stream().collect(Collectors.summingInt(Integer::intValue));
+                        notifyListenersOfAcquire(lockAction, lockModeHolds);
 
-                        return owners;
+                        return ownerHolds;
                     });
 
                     return v;
@@ -457,26 +464,43 @@ public class LockTable {
         private void decrementAcquired(final LockAction lockAction) {
             acquired.compute(lockAction.id, (id, acqu) -> {
                 if (acqu == null) {
+                    LOG.error("No entry found when trying to decrementAcquired for: id={}" + lockAction.id);
                     return null;
                 }
 
                 acqu.compute(lockAction.lockType, (lockType, v) -> {
                     if (v == null) {
+                        LOG.error("No entry found when trying to decrementAcquired for: id={}, lockType={}", lockAction.id, lockAction.lockType);
                         return null;
                     }
 
-                    v.compute(lockAction.mode, (mode, owners) -> {
-                        if (owners == null) {
+                    v.compute(lockAction.mode, (mode, ownerHolds) -> {
+                        if (ownerHolds == null) {
+                            LOG.error("No entry found when trying to decrementAcquired for: id={}, lockType={}, lockMode={}", lockAction.id, lockAction.lockType, lockAction.mode);
                             return null;
                         } else {
-                            owners.remove(lockAction.threadName);
+                            ownerHolds.compute(lockAction.threadName, (threadName, holdCount) -> {
+                                if(holdCount == null) {
+                                    LOG.error("No entry found when trying to decrementAcquired for: id={}, lockType={}, lockMode={}, threadName={}", lockAction.id, lockAction.lockType, lockAction.mode, lockAction.threadName);
+                                    return null;
+                                } else if(holdCount == 0) {
+                                    LOG.error("Negative release when trying to decrementAcquired for: id={}, lockType={}, lockMode={}, threadName={}", lockAction.id, lockAction.lockType, lockAction.mode, lockAction.threadName);
+                                    return null;
+                                } else if(holdCount == 1) {
+                                    return null;
+                                } else {
+                                    return --holdCount;
+                                }
+                            });
 
-                            notifyListenersOfRelease(lockAction, owners.size());
+                            final int lockModeHolds = ownerHolds.values().stream().collect(Collectors.summingInt(Integer::intValue));
 
-                            if (owners.size() <= 0) {
+                            notifyListenersOfRelease(lockAction, lockModeHolds);
+
+                            if (ownerHolds.isEmpty()) {
                                 return null;
                             } else {
-                                return owners;
+                                return ownerHolds;
                             }
                         }
                     });
