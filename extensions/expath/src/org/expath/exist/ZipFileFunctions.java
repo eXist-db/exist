@@ -251,7 +251,7 @@ public class ZipFileFunctions extends BasicFunction {
         public ZipInputStream getStream() throws IOException, PermissionDeniedException {
 
             if (binaryDoc == null) {
-                binaryDoc = getDoc();
+                binaryDoc = getBinaryDoc();
             }
 
             return new ZipInputStream(context.getBroker().getBinaryResource(binaryDoc));
@@ -264,10 +264,14 @@ public class ZipFileFunctions extends BasicFunction {
             }
         }
 
-        private BinaryDocument getDoc() throws PermissionDeniedException {
+        private BinaryDocument getBinaryDoc() throws PermissionDeniedException {
+            final DocumentImpl doc = context.getBroker().getXMLResource(uri, LockMode.READ_LOCK);
+            if (doc == null) {
+                return null;
+            }
 
-            DocumentImpl doc = context.getBroker().getXMLResource(uri, LockMode.READ_LOCK);
-            if (doc == null || doc.getResourceType() != DocumentImpl.BINARY_FILE) {
+            if(doc.getResourceType() != DocumentImpl.BINARY_FILE) {
+                doc.getUpdateLock().release(LockMode.READ_LOCK);
                 return null;
             }
 
