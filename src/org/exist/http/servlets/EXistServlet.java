@@ -34,7 +34,6 @@ import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Constants;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -59,16 +58,17 @@ public class EXistServlet extends AbstractExistHttpServlet {
     private final static Logger LOG = LogManager.getLogger(EXistServlet.class);
     private RESTServer srvREST;
 
+    public enum FeatureEnabled {
+        FALSE,
+        TRUE,
+        AUTHENTICATED_USERS_ONLY
+    }
+
     @Override
     public Logger getLog() {
         return LOG;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
-     */
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
@@ -78,12 +78,30 @@ public class EXistServlet extends AbstractExistHttpServlet {
             useDynamicContentType = "no";
         }
 
+        final FeatureEnabled xquerySubmission = parseFeatureEnabled(config, "xquery-submission", FeatureEnabled.TRUE);
+        final FeatureEnabled xupdateSubmission = parseFeatureEnabled(config,"xupdate-submission", FeatureEnabled.TRUE);
+
         // Instantiate REST Server
         srvREST = new RESTServer(getPool(), getFormEncoding(), getContainerEncoding(), useDynamicContentType.equalsIgnoreCase("yes")
-                || useDynamicContentType.equalsIgnoreCase("true"), isInternalOnly());
+                || useDynamicContentType.equalsIgnoreCase("true"), isInternalOnly(), xquerySubmission, xupdateSubmission);
 
         // XML lib checks....
         XmlLibraryChecker.check();
+    }
+
+    private FeatureEnabled parseFeatureEnabled(final ServletConfig config, final String paramName, final FeatureEnabled defaultValue) {
+        final String paramValue = config.getInitParameter(paramName);
+        if(paramValue != null) {
+            if (paramValue.equals("disabled")) {
+                return FeatureEnabled.FALSE;
+            } else if (paramValue.equals("enabled")) {
+                return FeatureEnabled.TRUE;
+            } else if (paramValue.equals("authenticated")) {
+                return FeatureEnabled.AUTHENTICATED_USERS_ONLY;
+            }
+        }
+
+        return defaultValue;
     }
 
     /*
