@@ -47,9 +47,17 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author Adam Retter <adam@evolvedbinary.com>
  */
 public class LockManager {
+    public final static String PROP_UPGRADE_CHECK = "exist.lockmanager.upgrade.check";
+
     private static final Logger LOG = LogManager.getLogger(LockManager.class);
     private static final boolean USE_FAIR_SCHEDULER = true;  //Java's ReentrantReadWriteLock must use the Fair Scheduler to get FIFO like ordering
     private static final LockTable lockTable = LockTable.getInstance();
+
+    /**
+     * Set to true to enable checking for lock upgrading within the same
+     * thread, i.e. READ_LOCK -> WRITE_LOCK
+     */
+    private volatile boolean upgradeCheck = Boolean.getBoolean(PROP_UPGRADE_CHECK);
 
     private final WeakLazyStripes<String, ReentrantReadWriteLock> collectionLocks;
     private final WeakLazyStripes<String, ReentrantReadWriteLock> documentLocks;
@@ -238,6 +246,10 @@ public class LockManager {
             rootModeLock = root.readLock();
         }
 
+        if(upgradeCheck && rootMode == Lock.LockMode.WRITE_LOCK && root.getReadHoldCount() > 0) {
+            throw new LockException("Lock upgrading would lead to a self-deadlock: " + path);
+        }
+
         try {
             lockTable.attempt(groupId, path, LockType.COLLECTION, rootMode);
 
@@ -272,6 +284,13 @@ public class LockManager {
             } else {
                 sonMode = Lock.LockMode.READ_LOCK;
                 sonModeLock = son.readLock();
+            }
+
+            if(upgradeCheck && sonMode == Lock.LockMode.WRITE_LOCK && son.getReadHoldCount() > 0) {
+                currentModeLock.unlock();
+                lockTable.released(groupId, currentModePath, LockType.COLLECTION, currentMode);
+
+                throw new LockException("Lock upgrading would lead to a self-deadlock: " + path);
             }
 
             try {
