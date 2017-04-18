@@ -987,6 +987,16 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     }
 
     @Override
+    public boolean isSameNode(final Node other) {
+        // This function is used by Saxon in some circumstances, and this partial implementation is required for proper Saxon operation.
+        if(other instanceof DocumentImpl) {
+            return this.docId == ((DocumentImpl) other).getDocId();
+        } else {
+            return false;
+        }
+    }
+
+    @Override
     public CDATASection createCDATASection(final String data) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createCDATASection not implemented on class " + getClass().getName());
     }

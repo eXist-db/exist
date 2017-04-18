@@ -376,11 +376,6 @@ public class AttrImpl extends NamedNode implements Attr {
     }
 
     @Override
-    public boolean isSameNode(final Node other) {
-        return false;
-    }
-
-    @Override
     public String lookupPrefix(final String namespaceURI) {
         return null;
     }

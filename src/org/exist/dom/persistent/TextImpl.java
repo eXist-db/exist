@@ -171,11 +171,6 @@ public class TextImpl extends AbstractCharacterData implements Text {
     }
 
     @Override
-    public boolean isSameNode(final Node other) {
-        return false;
-    }
-
-    @Override
     public String lookupPrefix(final String namespaceURI) {
         return null;
     }
