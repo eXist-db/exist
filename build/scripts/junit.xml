@@ -205,6 +205,8 @@
             <test fork="yes" name="org.exist.security.internal.aider.UnixStylePermissionAiderTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.storage.NativeBrokerTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.storage.StartupLockingTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.storage.lock.DocumentLocksTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.storage.lock.CollectionLocksTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.storage.lock.GetXMLResourceNoLockTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.storage.lock.LockManagerTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.storage.lock.ProtectedModeTest" todir="${junit.reports.dat}"/>
