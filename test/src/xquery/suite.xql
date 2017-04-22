@@ -12,5 +12,6 @@ test:suite((
     inspect:module-functions(xs:anyURI("comments.xql")),
     inspect:module-functions(xs:anyURI("fn.xql")),
     inspect:module-functions(xs:anyURI("errors.xql")),
-    inspect:module-functions(xs:anyURI("nill.xql"))
+    inspect:module-functions(xs:anyURI("nill.xql")),
+    inspect:module-functions(xs:anyURI("ft-match.xql"))
 ))
