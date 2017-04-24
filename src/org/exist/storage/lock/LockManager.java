@@ -48,6 +48,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class LockManager {
     public final static String PROP_UPGRADE_CHECK = "exist.lockmanager.upgrade.check";
+    public final static String PROP_WARN_WAIT_ON_READ_FOR_WRITE = "exist.lockmanager.warn.waitonreadforwrite";
 
     private static final Logger LOG = LogManager.getLogger(LockManager.class);
     private static final boolean USE_FAIR_SCHEDULER = true;  //Java's ReentrantReadWriteLock must use the Fair Scheduler to get FIFO like ordering
@@ -58,6 +59,14 @@ public class LockManager {
      * thread, i.e. READ_LOCK -> WRITE_LOCK
      */
     private volatile boolean upgradeCheck = Boolean.getBoolean(PROP_UPGRADE_CHECK);
+
+    /**
+     * Set to true to enable warning when a thread wants to acquire the WRITE_LOCK
+     * but another thread holds the READ_LOCK
+     */
+    private volatile boolean warnWaitOnReadForWrite = Boolean.getBoolean(PROP_WARN_WAIT_ON_READ_FOR_WRITE);
+
+
 
     private final WeakLazyStripes<String, ReentrantReadWriteLock> collectionLocks;
     private final WeakLazyStripes<String, ReentrantReadWriteLock> documentLocks;
@@ -227,7 +236,6 @@ public class LockManager {
             // 2.1) to add/remove/rename the child documents of the collection
             // 2.2) to modify the collections metadata (permissions, timestamps etc)
             //... So we read lock all the way down until the actual collection which we write lock
-
     public ManagedCollectionLock acquireCollectionWriteLock(final XmldbURI collectionPath, final boolean lockParent) throws LockException {
         final XmldbURI[] segments = collectionPath.getPathSegments();
 
@@ -248,6 +256,10 @@ public class LockManager {
 
         if(upgradeCheck && rootMode == Lock.LockMode.WRITE_LOCK && root.getReadHoldCount() > 0) {
             throw new LockException("Lock upgrading would lead to a self-deadlock: " + path);
+        }
+
+        if(warnWaitOnReadForWrite && rootMode == Lock.LockMode.WRITE_LOCK && root.getReadLockCount() > 0) {
+            LOG.warn("About to acquire WRITE_LOCK for: {}, but READ_LOCK held by other thread(s).", path);
         }
 
         try {
@@ -291,6 +303,10 @@ public class LockManager {
                 lockTable.released(groupId, currentModePath, LockType.COLLECTION, currentMode);
 
                 throw new LockException("Lock upgrading would lead to a self-deadlock: " + path);
+            }
+
+            if(warnWaitOnReadForWrite && sonMode == Lock.LockMode.WRITE_LOCK && son.getReadLockCount() > 0) {
+                LOG.warn("About to acquire WRITE_LOCK for: {}, but READ_LOCK held by other thread(s).", path);
             }
 
             try {
