@@ -501,20 +501,31 @@ throws PermissionDeniedException, EXistException, XPathException
 				}
 				|
 				"external"
+				{ PathExpr defaultValue = null; }
+				( 
+					{ defaultValue = new PathExpr(context); } 
+					step=ext:expr [defaultValue] 
+				)?
 				{
-				    Variable decl = null;
-					boolean isDeclared = false;
+					// variable may be declared in static context: retrieve and set its sequence type
+				    Variable external = null;
 					try {
-						decl = context.resolveVariable(qname.getText());
-						isDeclared = (decl != null);
+						external = context.resolveVariable(qname.getText());
+						if (external != null) {
+							external.setSequenceType(type);
+						}
 					} catch (XPathException ignoredException) {
 					}
 
-					if (!isDeclared)
-                        decl = context.declareVariable(qname.getText(), null);
-
-                    if (decl != null)
-                        decl.setSequenceType(type);
+					final VariableDeclaration decl = new VariableDeclaration(context, qn, defaultValue);
+					decl.setSequenceType(type);
+					decl.setASTNode(ext);
+					if (external == null) {
+						path.add(decl);
+					}
+					if(myModule != null) {
+						myModule.declareVariable(qn, decl);
+					}
 				}
 			)
 		)

@@ -27,6 +27,9 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
+
+import java.util.Optional;
 
 /**
  * A global variable declaration (with: declare variable). Variable bindings within
@@ -37,9 +40,9 @@ import org.exist.xquery.value.SequenceType;
  */
 public class VariableDeclaration extends AbstractExpression implements RewritableExpression {
 
-	QName qname;
-	SequenceType sequenceType = null;
-	Expression expression;
+	final QName qname;
+    Optional<Expression> expression;
+    SequenceType sequenceType = null;
     boolean analyzeDone = false;
 
     /**
@@ -48,7 +51,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 	public VariableDeclaration(XQueryContext context, QName qname, Expression expr) {
 		super(context);
 		this.qname = qname;
-		this.expression = expr;
+		this.expression = Optional.ofNullable(expr);
 	}
 
     public QName getName() {
@@ -93,7 +96,9 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
             }
             analyzeDone = true;
         }
-        expression.analyze(contextInfo);
+        if (expression.isPresent()) {
+            expression.get().analyze(contextInfo);
+        }
         var.setIsInitialized(true);
     }
 
@@ -104,8 +109,6 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
 
         context.pushInScopeNamespaces(false);
@@ -115,24 +118,41 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
             context.pushDocumentContext();
             try {
                 context.prologEnter(this);
-                // declare the variable
-                final Sequence seq = expression.eval(null, null);
-                final Variable var;
-                if (myModule != null) {
-                    var = myModule.declareVariable(qname, seq);
-                    var.setSequenceType(sequenceType);
-                    var.checkType();
-                } else {
-                    var = new VariableImpl(qname);
-                    var.setValue(seq);
-                    var.setSequenceType(sequenceType);
-                    var.checkType();
-                    context.declareGlobalVariable(var);
-                }
+                if (expression.isPresent()) {
+                    // normal variable declaration or external var with default value
+                    final Sequence seq = expression.get().eval(contextSequence, null);
+                    final Variable var;
+                    if (myModule != null) {
+                        var = myModule.declareVariable(qname, seq);
+                        var.setSequenceType(sequenceType);
+                        var.checkType();
+                    } else {
+                        var = new VariableImpl(qname);
+                        var.setValue(seq);
+                        var.setSequenceType(sequenceType);
+                        var.checkType();
+                        context.declareGlobalVariable(var);
+                    }
 
-                if (context.getProfiler().isEnabled()) {
-                    //Note : that we use seq but we return Sequence.EMPTY_SEQUENCE
-                    context.getProfiler().end(this, "", seq);
+                    if (context.getProfiler().isEnabled()) {
+                        //Note : that we use seq but we return Sequence.EMPTY_SEQUENCE
+                        context.getProfiler().end(this, "", seq);
+                    }
+                } else {
+                    // external variable without default
+                    final Variable external = context.resolveGlobalVariable(qname);
+                    if (external == null) {
+                        // If no value is provided for the variable by the external environment, and VarDefaultValue
+                        // is not specified, then a dynamic error is raised [err:XPDY0002]
+                        throw new XPathException(ErrorCodes.XPDY0002, "no value specified for external variable " +
+                                qname);
+                    }
+                    external.setSequenceType(sequenceType);
+
+                    if (myModule != null) {
+                        // declare on module
+                        myModule.declareVariable(external);
+                    }
                 }
             } finally {
                 context.popDocumentContext();
@@ -154,7 +174,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
         }
         dumper.display("{");
         dumper.startIndent();
-        expression.dump(dumper);
+        expression.ifPresent(e -> e.dump(dumper));
         dumper.endIndent();
         dumper.nl().display("}").nl();
     }
@@ -165,9 +185,11 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
         if(sequenceType != null) {
         	result.append(" as ").append(sequenceType.toString());
         }
-        result.append("{");
-        result.append(expression.toString());        
-        result.append("}");
+        if (expression.isPresent()) {
+            result.append("{");
+            result.append(expression.toString());
+            result.append("}");
+        }
         return result.toString();
     }    
     
@@ -175,7 +197,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */
 	public int returnsType() {
-		return expression.returnsType();
+		return expression.isPresent() ? expression.get().returnsType() : Type.ITEM;
 	}
 	
 	/* (non-Javadoc)
@@ -189,19 +211,19 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 	 * @see org.exist.xquery.AbstractExpression#getCardinality()
 	 */
 	public int getCardinality() {
-		return expression.getCardinality();
+		return expression.isPresent() ? expression.get().getCardinality() : Cardinality.ONE_OR_MORE;
 	}
 
-	public Expression getExpression() {
+	public Optional<Expression> getExpression() {
 		return expression;
 	}
 	
 	/* RewritableExpression API */
     
 	public void replace(Expression oldExpr, Expression newExpr) {
-		if (expression == oldExpr) {
-			expression = newExpr;
-		}
+	    if (expression.isPresent() && expression.get() == oldExpr) {
+            this.expression = Optional.ofNullable(newExpr);
+        }
 	}
 
 	@Override
@@ -235,7 +257,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 	 */
 	public void resetState(boolean postOptimization) {
 		super.resetState(postOptimization);
-		expression.resetState(postOptimization);
+		expression.ifPresent(e -> e.resetState(postOptimization));
         if (!postOptimization)
             {analyzeDone = false;}
     }

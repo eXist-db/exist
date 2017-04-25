@@ -100,10 +100,10 @@ COMMA=99
 LITERAL_inherit="inherit"=101
 "no-inherit"=102
 DOLLAR("dollar sign '$'")=103
-LCURLY("opening curly brace '{'")=104
-RCURLY("closing curly brace '}'")=105
-COLON=106
-LITERAL_external="external"=107
+LITERAL_external="external"=104
+COLON=105
+LCURLY("opening curly brace '{'")=106
+RCURLY("closing curly brace '}'")=107
 LITERAL_schema="schema"=108
 BRACED_URI_LITERAL("braced uri literal")=109
 LITERAL_as="as"=110

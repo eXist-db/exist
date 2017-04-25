@@ -349,11 +349,11 @@ varDecl [XQueryAST decl, XQueryAST ann] throws XPathException
 :
 	"variable"! DOLLAR! varName=varName! ( typeDeclaration )?
 	(
+		"external" ( COLON! EQ! e3:expr )?
+		|
 		LCURLY! e1:expr RCURLY! // deprecated
 		|
 		COLON! EQ! e2:expr
-		|
-		"external"
 	)
 	{
 		#varDecl= #(#[GLOBAL_VAR, varName], ann, #varDecl);

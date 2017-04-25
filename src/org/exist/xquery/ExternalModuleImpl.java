@@ -62,6 +62,11 @@ public class ExternalModuleImpl implements ExternalModule {
         this.mNamespaceURI = namespace;
     }
 
+    @Override
+    public void setContextItem(Sequence contextItem) {
+        mContext.setContextItem(contextItem);
+    }
+
     public void setIsReady(boolean ready) {
         this.isReady = ready;
     }
@@ -216,8 +221,19 @@ public class ExternalModuleImpl implements ExternalModule {
         final VariableDeclaration decl = mGlobalVariables.get(qname);
         Variable var = mStaticVariables.get(qname);
         if (isReady && decl != null && (var == null || var.getValue() == null)) {
-            decl.eval(null);
+            decl.eval(getContext().getContextItem());
             var = mStaticVariables.get(qname);
+        }
+        if (var == null) {
+            // external variable may be defined in root context importing this module
+            final Variable rootVar = getContext().getRootContext().resolveGlobalVariable(qname);
+            if (rootVar != null) {
+                var = declareVariable(rootVar);
+            }
+        }
+        // set sequence type if decl != null (might be null if called by parser before declaration)
+        if (var != null && decl != null) {
+            var.setSequenceType(decl.getSequenceType());
         }
         return var;
     }

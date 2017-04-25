@@ -13,5 +13,6 @@ test:suite((
     inspect:module-functions(xs:anyURI("fn.xql")),
     inspect:module-functions(xs:anyURI("fnRefs.xql")),
     inspect:module-functions(xs:anyURI("arrowop.xql")),
-    inspect:module-functions(xs:anyURI("strconstr.xql"))
+    inspect:module-functions(xs:anyURI("strconstr.xql")),
+    inspect:module-functions(xs:anyURI("load-xquery-module.xql"))
 ))
