@@ -53,10 +53,10 @@
 	<classpathentry kind="lib" path="lib/core/antlr-2.7.7.jar"/>
 	<classpathentry kind="lib" path="lib/core/excalibur-cli-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/jline-0.9.94.jar"/>
-	<classpathentry kind="lib" path="lib/core/log4j-api-2.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/core/log4j-core-2.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/core/log4j-slf4j-impl-2.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/core/log4j-jul-2.8.1.jar"/>
+	<classpathentry kind="lib" path="lib/core/log4j-api-2.8.2.jar"/>
+	<classpathentry kind="lib" path="lib/core/log4j-core-2.8.2.jar"/>
+	<classpathentry kind="lib" path="lib/core/log4j-slf4j-impl-2.8.2.jar"/>
+	<classpathentry kind="lib" path="lib/core/log4j-jul-2.8.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmldb.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/commons-io-2.4.jar"/>
