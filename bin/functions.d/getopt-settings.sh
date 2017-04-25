@@ -6,6 +6,10 @@ CLIENT_OPTS="|-u|--user|-P|--password|-p|--parse|-C|--config|-r|--remove|-c|--co
 
 STANDALONESERVER_OPTS="|-p|--http-port|-t|--threads|"
 
+PROCESS_OPTS="|--forking|--pidfile|"
+# defaults:
+FORKING=0
+
 JETTYCONTAINER_OPTS=""
 
 BACKUP_OPTS="|-u|--user|-p|--password|-P|--dba-password|-b|--backup|-d|--dir|-r|--restore|-o|--option|"
@@ -70,27 +74,40 @@ check_quiet_switch() {
 get_opts() {
     local -a ALL_OPTS=( "$@" )
     local found_jmx_opt
-    
+    local found_pidfile_opt
+
     for OPT in "${ALL_OPTS[@]}" ; do
-	if [ -n "$found_jmx_opt" ] ; then
-	    unset found_jmx_opt
-	    local found_jmx_opt
-	    if ! substring "${OPT}" $"-" && is_integer "${OPT}"; then
-		JMX_PORT="$OPT"
-		continue
+	    if [ -n "$found_jmx_opt" ] ; then
+	      unset found_jmx_opt
+	      local found_jmx_opt
+	      if ! substring "${OPT}" $"-" && is_integer "${OPT}"; then
+          JMX_PORT="$OPT"
+          continue
+	      fi
+      elif [ -n "$found_pidfile_opt" ]; then
+        unset found_pidfile_opt
+        PIDFILE=$OPT
+        continue
 	    fi
-	fi
-	if is_jmx_switch "$OPT"; then
-	    found_jmx_opt=1
-	else
-	    check_quiet_switch "$OPT";
-	    JAVA_OPTS[${NR_JAVA_OPTS}]="$OPT";
-	    let "NR_JAVA_OPTS += 1";
-	fi
+
+      if [ $OPT == "--forking" ]; then
+        FORKING=1
+        continue
+      fi
+
+      if is_jmx_switch "$OPT"; then
+        found_jmx_opt=1
+      elif [ $OPT == "--pidfile" ]; then
+        found_pidfile_opt=1
+      else
+        check_quiet_switch "$OPT";
+        JAVA_OPTS[${NR_JAVA_OPTS}]="$OPT";
+        let "NR_JAVA_OPTS += 1";
+      	fi
     done
-    
+
     if [ "${QUIET_ENABLED}" -eq 0 ]; then
-	echo "${JAVA_OPTS[@]}";
+        echo "${JAVA_OPTS[@]}";
     fi
 }
 
