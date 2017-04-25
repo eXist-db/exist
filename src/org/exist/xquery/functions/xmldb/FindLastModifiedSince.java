@@ -31,9 +31,10 @@ public class FindLastModifiedSince extends BasicFunction {
                 new FunctionParameterSequenceType("since", Type.DATE_TIME, Cardinality.EXACTLY_ONE,
                 		"Date")
 			},
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the mime-type if available, otherwise the empty sequence")
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes from resources which were modified since the specified " +
+					"date time.")
 		);
-	
+
 	public FindLastModifiedSince(XQueryContext context) {
 		super(context, signature);
 	}
