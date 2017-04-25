@@ -214,7 +214,12 @@ public class ErrorCodes {
     public static final ErrorCode FOJS0003 = new W3CErrorCode("FOJS0003", "JSON duplicate keys.");
 
     public static final ErrorCode FOUT1170 = new W3CErrorCode("FOUT1170", "Invalid $href argument to fn:unparsed-text() (etc.)");
+    public static final ErrorCode FOQM0001 = new W3CErrorCode("FOQM0001", "Module URI is a zero-length string");
     public static final ErrorCode FOQM0002 = new W3CErrorCode("FOQM0002", "Module URI not found.");
+    public static final ErrorCode FOQM0003 = new W3CErrorCode("FOQM0003", "Static error in dynamically-loaded XQuery module.");
+    public static final ErrorCode FOQM0005 = new W3CErrorCode("FOQM0005", "Parameter for dynamically-loaded XQuery " +
+            "module has incorrect type");
+    public static final ErrorCode FOQM0006 = new W3CErrorCode("FOQM0006", "No suitable XQuery processor available.");
     
     /* eXist specific XQuery and XPath errors
      *

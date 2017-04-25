@@ -20,6 +20,7 @@
 
 package org.exist.xquery.functions.fn;
 
+import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.map.AbstractMapType;
@@ -27,9 +28,8 @@ import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.*;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Implements fn:load-xquery-module. Creates a temporary context for the imported module, so the
@@ -88,6 +88,9 @@ public class LoadXQueryModule extends BasicFunction {
 
     public final static StringValue OPTIONS_LOCATION_HINTS = new StringValue("location-hints");
     public final static StringValue OPTIONS_XQUERY_VERSION = new StringValue("xquery-version");
+    public final static StringValue OPTIONS_VARIABLES = new StringValue("variables");
+    public final static StringValue OPTIONS_CONTEXT_ITEM = new StringValue("context-item");
+    public final static StringValue OPTIONS_VENDOR = new StringValue("vendor-options");
 
     public final static StringValue RESULT_FUNCTIONS = new StringValue("functions");
     public final static StringValue RESULT_VARIABLES = new StringValue("variables");
@@ -99,8 +102,13 @@ public class LoadXQueryModule extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         final String targetNamespace = args[0].getStringValue();
+        if (targetNamespace.length() == 0) {
+            throw new XPathException(this, ErrorCodes.FOQM0001, "Target namespace must be a string with length > 0");
+        }
         Sequence locationHints = Sequence.EMPTY_SEQUENCE;
         String xqVersion = getXQueryVersion(context.getXQueryVersion());
+        AbstractMapType externalVars = new MapType(context);
+        Sequence contextItem = Sequence.EMPTY_SEQUENCE;
 
         // evaluate options
         if (getArgumentCount() == 2) {
@@ -111,34 +119,64 @@ public class LoadXQueryModule extends BasicFunction {
             if (!versions.isEmpty()) {
                 xqVersion = versions.itemAt(0).getStringValue();
             }
+
+            final Sequence vars = map.get(OPTIONS_VARIABLES);
+            if (!vars.isEmpty()) {
+                if (vars.hasOne() && vars.itemAt(0).getType() == Type.MAP) {
+                    externalVars = (AbstractMapType) vars.itemAt(0);
+                } else {
+                    throw new XPathException(this, ErrorCodes.XPTY0004, "Option 'variables' must be a map");
+                }
+            }
+            contextItem = map.get(OPTIONS_CONTEXT_ITEM);
+            if (contextItem.getItemCount() > 1) {
+                throw new XPathException(this, ErrorCodes.XPTY0004, "Option 'context-item' must contain zero or one " +
+                        "items");
+            }
         }
 
         // create temporary context so main context is not polluted
         final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
         tempContext.setModuleLoadPath(context.getModuleLoadPath());
+        setExternalVars(externalVars, tempContext::declareGlobalVariable);
 
-        Module module = null;
-        if (locationHints.isEmpty()) {
-            // no location hint given, resolve from statically known modules
-            module = tempContext.importModule(targetNamespace, null, null);
-        } else {
-            // try to resolve the module from one of the location hints
-            for (final SequenceIterator i = locationHints.iterate(); i.hasNext(); ) {
-                final String location = i.nextItem().getStringValue();
-                final Module importedModule = tempContext.importModule(null, null, location);
-                if (importedModule != null && importedModule.getNamespaceURI().equals(targetNamespace) &&
-                        xqVersion.equals(getXQueryVersion(tempContext.getXQueryVersion()))) {
-                    module = importedModule;
-                    break;
+        Module loadedModule = null;
+        try {
+            if (locationHints.isEmpty()) {
+                // no location hint given, resolve from statically known modules
+                loadedModule = tempContext.importModule(targetNamespace, null, null);
+            } else {
+                // try to resolve the module from one of the location hints
+                for (final SequenceIterator i = locationHints.iterate(); i.hasNext(); ) {
+                    final String location = i.nextItem().getStringValue();
+                    final Module importedModule = tempContext.importModule(null, null, location);
+                    if (importedModule != null && importedModule.getNamespaceURI().equals(targetNamespace)) {
+                        loadedModule = importedModule;
+                        break;
+                    }
                 }
             }
+        } catch (XPathException e) {
+            if (e.getErrorCode() == ErrorCodes.XQST0059) {
+                // importModule may throw exception if no location is given and module cannot be resolved
+                throw new XPathException(this, ErrorCodes.FOQM0002, "Module with URI " + targetNamespace + " not found");
+            }
+            throw new XPathException(this, ErrorCodes.FOQM0003, "Error found when importing module: " + e.getMessage());
         }
 
         // not found, raise error
-        if (module == null) {
+        if (loadedModule == null) {
             throw new XPathException(this, ErrorCodes.FOQM0002, "Module with URI " + targetNamespace + " not found");
         }
 
+        if (!xqVersion.equals(getXQueryVersion(tempContext.getXQueryVersion()))) {
+            throw new XPathException(ErrorCodes.FOQM0003, "Imported module has wrong XQuery version: " +
+                    getXQueryVersion(tempContext.getXQueryVersion()));
+        }
+
+        final Module module = loadedModule;
+        module.setContextItem(contextItem);
+        setExternalVars(externalVars, module::declareVariable);
         final MapType result = new MapType(context);
 
         final ValueSequence functionSeq = new ValueSequence();
@@ -148,7 +186,7 @@ public class LoadXQueryModule extends BasicFunction {
             final FunctionReference ref = (FunctionReference) i.nextItem();
             final FunctionSignature signature = ref.getSignature();
             final QNameValue qn = new QNameValue(context, signature.getName());
-            MapType entry;
+            final MapType entry;
             if (functions.contains(qn)) {
                 entry = (MapType) functions.get(qn);
             } else {
@@ -162,11 +200,29 @@ public class LoadXQueryModule extends BasicFunction {
         final MapType variables = new MapType(context);
         for (final Iterator<QName> i = module.getGlobalVariables(); i.hasNext(); ) {
             final QName name = i.next();
-            final Variable var = module.resolveVariable(name);
-            variables.add(new QNameValue(context, name), var.getValue());
+            try {
+                final Variable var = module.resolveVariable(name);
+                variables.add(new QNameValue(context, name), var.getValue());
+            } catch (XPathException e) {
+                throw new XPathException(this, ErrorCodes.FOQM0005, "Incorrect type for external variable " + name);
+            }
         }
         result.add(RESULT_VARIABLES, variables);
         return result;
+    }
+
+    private void setExternalVars(final AbstractMapType externalVars, final ConsumerE<Variable, XPathException> setter)
+            throws XPathException {
+        for (final Map.Entry<AtomicValue, Sequence> entry: externalVars) {
+            if (!Type.subTypeOf(entry.getKey().getType(), Type.QNAME)) {
+                throw new XPathException(this, ErrorCodes.XPTY0004, "name of external variable must be a qname: " +
+                        entry.getKey());
+            }
+
+            final Variable var = new VariableImpl(((QNameValue) entry.getKey()).getQName());
+            var.setValue(entry.getValue());
+            setter.accept(var);
+        }
     }
 
     public static void addFunctionRefsFromModule(Expression parent, XQueryContext tempContext, ValueSequence resultSeq,
@@ -177,10 +233,12 @@ public class LoadXQueryModule extends BasicFunction {
             if (!signature.isPrivate()) {
                 if (module.isInternalModule()) {
                     int arity;
-                    if (signature.isOverloaded())
-                    {arity = signature.getArgumentTypes().length;}
-                    else
-                    {arity = signature.getArgumentCount();}
+                    if (signature.isOverloaded()) {
+                        arity = signature.getArgumentTypes().length;
+                    }
+                    else {
+                        arity = signature.getArgumentCount();
+                    }
                     final FunctionDef def = ((InternalModule)module).getFunctionDef(signature.getName(), arity);
                     final XQueryAST ast = new XQueryAST();
                     ast.setLine(parent.getLine());

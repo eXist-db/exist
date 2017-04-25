@@ -24,6 +24,7 @@ package org.exist.xquery;
 import java.util.Iterator;
 
 import org.exist.dom.QName;
+import org.exist.xquery.value.Sequence;
 
 /**
  * Defines an XQuery library module. A module consists of function definitions
@@ -123,4 +124,6 @@ public interface Module {
      * @return false while the module is being compiled.
      */
     public boolean isReady();
+
+    void setContextItem(Sequence contextItem);
 }

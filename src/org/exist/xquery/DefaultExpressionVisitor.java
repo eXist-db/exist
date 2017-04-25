@@ -152,7 +152,7 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
     
     @Override
     public void visitVariableDeclaration(VariableDeclaration decl) {
-    	decl.getExpression().accept(this);
+        decl.getExpression().ifPresent(e -> e.accept(this));
     }
 
     @Override
