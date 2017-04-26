@@ -30,7 +30,10 @@ public interface Lock extends Debuggable {
     enum LockMode {
         NO_LOCK,
         READ_LOCK,
-        WRITE_LOCK
+        WRITE_LOCK,
+
+        INTENTION_READ,
+        INTENTION_WRITE
     }
 
     /**

@@ -6,6 +6,7 @@ import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -42,19 +43,19 @@ public class LockManagerTest {
     public void getCollectionLock_isStripedByPath() {
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
 
-        final ReentrantReadWriteLock dbLock1 = lockManager.getCollectionLock("/db");
+        final MultiLock dbLock1 = lockManager.getCollectionLock("/db");
         assertNotNull(dbLock1);
 
-        final ReentrantReadWriteLock dbLock2 = lockManager.getCollectionLock("/db");
+        final MultiLock dbLock2 = lockManager.getCollectionLock("/db");
         assertNotNull(dbLock2);
 
         assertTrue(dbLock1 == dbLock2);
 
-        final ReentrantReadWriteLock abcLock = lockManager.getCollectionLock("/db/a/b/c");
+        final MultiLock abcLock = lockManager.getCollectionLock("/db/a/b/c");
         assertNotNull(abcLock);
         assertFalse(dbLock1 == abcLock);
 
-        final ReentrantReadWriteLock defLock = lockManager.getCollectionLock("/db/d/e/f");
+        final MultiLock defLock = lockManager.getCollectionLock("/db/d/e/f");
         assertNotNull(defLock);
         assertFalse(dbLock1 == defLock);
 
@@ -106,8 +107,9 @@ public class LockManagerTest {
 
     /**
      * When acquiring a READ lock on a sub-collection of the root
-     * Collection ensure that we hold a single READ lock on the
-     * sub-collection and perform top-down lock-coupling on the
+     * Collection ensure that we hold a READ lock on the
+     * sub-collection and READ_INTENTION locks on the ancestors,
+     * and that we have performed top-down locking on the
      * collection hierarchy to get there
      */
     @Test
@@ -141,11 +143,11 @@ public class LockManagerTest {
 
         assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event1.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event1.mode);
+        assertEquals(Lock.LockMode.INTENTION_READ, event1.mode);
 
         assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event2.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event2.mode);
+        assertEquals(Lock.LockMode.INTENTION_READ, event2.mode);
 
         // we now expect to couple /db with /db/colA by acquiring /db/colA whilst holding /db
         assertEquals(LockTable.LockAction.Action.Attempt, event3.action);
@@ -156,21 +158,22 @@ public class LockManagerTest {
         assertEquals(collectionPath, event4.id);
         assertEquals(Lock.LockMode.READ_LOCK, event4.mode);
 
-        // we now expect to release the lock on /db
+        // we now expect to release the lock on /db/colA (as the managed lock was closed)
         assertEquals(LockTable.LockAction.Action.Released, event5.action);
-        assertEquals(XmldbURI.ROOT_COLLECTION, event5.id);
+        assertEquals(collectionPath, event5.id);
         assertEquals(Lock.LockMode.READ_LOCK, event5.mode);
 
-        // we now expect to release the lock on /db/colA (as the managed lock was closed)
+        // we now expect to release the lock on /db (as the managed lock was closed)
         assertEquals(LockTable.LockAction.Action.Released, event6.action);
-        assertEquals(collectionPath, event6.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event6.mode);
+        assertEquals(XmldbURI.ROOT_COLLECTION, event6.id);
+        assertEquals(Lock.LockMode.INTENTION_READ, event6.mode);
     }
 
     /**
      * When acquiring a READ lock on a descendant-collection of the root
-     * Collection ensure that we hold a single READ lock on the
-     * descendant-collection and perform top-down lock-coupling on the
+     * Collection ensure that we hold a READ lock on the
+     * descendant-collection and READ_INTENTION locks on the ancestors,
+     * and that we have performed top-down locking on the
      * collection hierarchy to get there
      */
     @Test
@@ -208,44 +211,44 @@ public class LockManagerTest {
 
         assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event1.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event1.mode);
+        assertEquals(Lock.LockMode.INTENTION_READ, event1.mode);
 
         assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event2.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event2.mode);
+        assertEquals(Lock.LockMode.INTENTION_READ, event2.mode);
 
         // we now expect to couple /db with /db/colA by acquiring /db/colA whilst holding /db
         assertEquals(LockTable.LockAction.Action.Attempt, event3.action);
         assertEquals(collectionAPath, event3.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event3.mode);
+        assertEquals(Lock.LockMode.INTENTION_READ, event3.mode);
 
         assertEquals(LockTable.LockAction.Action.Acquired, event4.action);
         assertEquals(collectionAPath, event4.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event4.mode);
-
-        // we now expect to release the lock on /db
-        assertEquals(LockTable.LockAction.Action.Released, event5.action);
-        assertEquals(XmldbURI.ROOT_COLLECTION, event5.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event5.mode);
+        assertEquals(Lock.LockMode.INTENTION_READ, event4.mode);
 
         // we now expect to couple /db/colA with /db/colA/colB by acquiring /db/colA/colB whilst holding /db/colA
-        assertEquals(LockTable.LockAction.Action.Attempt, event6.action);
+        assertEquals(LockTable.LockAction.Action.Attempt, event5.action);
+        assertEquals(collectionBPath, event5.id);
+        assertEquals(Lock.LockMode.READ_LOCK, event5.mode);
+
+        assertEquals(LockTable.LockAction.Action.Acquired, event6.action);
         assertEquals(collectionBPath, event6.id);
         assertEquals(Lock.LockMode.READ_LOCK, event6.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event7.action);
+        // we now expect to release the lock on /db/colA/colB (as the managed lock was closed)
+        assertEquals(LockTable.LockAction.Action.Released, event7.action);
         assertEquals(collectionBPath, event7.id);
         assertEquals(Lock.LockMode.READ_LOCK, event7.mode);
 
-        // we now expect to release the lock on /db/colA
+        // we now expect to release the lock on /db/colA (as the managed lock was closed)
         assertEquals(LockTable.LockAction.Action.Released, event8.action);
         assertEquals(collectionAPath, event8.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event8.mode);
+        assertEquals(Lock.LockMode.INTENTION_READ, event8.mode);
 
-        // we now expect to release the lock on /db/colA/colB (as the managed lock was closed)
+        // we now expect to release the lock on /db (as the managed lock was closed)
         assertEquals(LockTable.LockAction.Action.Released, event9.action);
-        assertEquals(collectionBPath, event9.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event9.mode);
+        assertEquals(XmldbURI.ROOT_COLLECTION, event9.id);
+        assertEquals(Lock.LockMode.INTENTION_READ, event9.mode);
     }
 
     /**
@@ -308,7 +311,7 @@ public class LockManagerTest {
     /**
      * When acquiring a WRITE lock on a sub-collection of the root (without locking the parent)
      * Collection ensure that we hold a single WRITE lock on the
-     * sub-collection and perform top-down lock-coupling with READ locks on the
+     * sub-collection and perform top-down locking with INTENTION_WRITE locks on the
      * collection hierarchy to get there
      */
     @Test
@@ -343,11 +346,11 @@ public class LockManagerTest {
 
         assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event1.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event1.mode);
+        assertEquals(Lock.LockMode.INTENTION_WRITE, event1.mode);
 
         assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event2.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event2.mode);
+        assertEquals(Lock.LockMode.INTENTION_WRITE, event2.mode);
 
         // we now expect to couple /db with /db/colA by acquiring /db/colA whilst holding /db
         assertEquals(LockTable.LockAction.Action.Attempt, event3.action);
@@ -358,21 +361,21 @@ public class LockManagerTest {
         assertEquals(collectionPath, event4.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event4.mode);
 
-        // we now expect to release the lock on /db
-        assertEquals(LockTable.LockAction.Action.Released, event5.action);
-        assertEquals(XmldbURI.ROOT_COLLECTION, event5.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event5.mode);
-
         // we now expect to release the lock on /db/colA (as the managed lock was closed)
+        assertEquals(LockTable.LockAction.Action.Released, event5.action);
+        assertEquals(collectionPath, event5.id);
+        assertEquals(Lock.LockMode.WRITE_LOCK, event5.mode);
+
+        // we now expect to release the lock on /db (as the managed lock was closed)
         assertEquals(LockTable.LockAction.Action.Released, event6.action);
-        assertEquals(collectionPath, event6.id);
-        assertEquals(Lock.LockMode.WRITE_LOCK, event6.mode);
+        assertEquals(XmldbURI.ROOT_COLLECTION, event6.id);
+        assertEquals(Lock.LockMode.INTENTION_WRITE, event6.mode);
     }
 
     /**
      * When acquiring a WRITE lock on a sub-collection of the root (with parent locking)
      * Collection ensure that we hold a single WRITE lock on the
-     * sub-collection and a single WRITE lock on the parent, by performing top-down lock-coupling
+     * sub-collection and INTENTION_WRITE lock on the parent, by performing top-down lock-coupling
      * with READ locks (unless as in this-case the parent is the root, then WRITE locks) on the
      * collection hierarchy to get there
      */
@@ -436,7 +439,7 @@ public class LockManagerTest {
     /**
      * When acquiring a WRITE lock on a descendant-collection of the root (without locking the parent)
      * Collection ensure that we hold a single WRITE lock on the
-     * descendant-collection and perform top-down lock-coupling with READ locks on the
+     * descendant-collection and perform top-down locking with INTENTION_WRITE locks on the
      * collection hierarchy to get there
      */
     @Test
@@ -475,51 +478,51 @@ public class LockManagerTest {
 
         assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event1.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event1.mode);
+        assertEquals(Lock.LockMode.INTENTION_WRITE, event1.mode);
 
         assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event2.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event2.mode);
+        assertEquals(Lock.LockMode.INTENTION_WRITE, event2.mode);
 
         // we now expect to couple /db with /db/colA by acquiring /db/colA whilst holding /db
         assertEquals(LockTable.LockAction.Action.Attempt, event3.action);
         assertEquals(collectionAPath, event3.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event3.mode);
+        assertEquals(Lock.LockMode.INTENTION_WRITE, event3.mode);
 
         assertEquals(LockTable.LockAction.Action.Acquired, event4.action);
         assertEquals(collectionAPath, event4.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event4.mode);
-
-        // we now expect to release the lock on /db
-        assertEquals(LockTable.LockAction.Action.Released, event5.action);
-        assertEquals(XmldbURI.ROOT_COLLECTION, event5.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event5.mode);
+        assertEquals(Lock.LockMode.INTENTION_WRITE, event4.mode);
 
         // we now expect to couple /db/colA with /db/colA/colB by acquiring /db/colA/colB whilst holding /db/colA
-        assertEquals(LockTable.LockAction.Action.Attempt, event6.action);
+        assertEquals(LockTable.LockAction.Action.Attempt, event5.action);
+        assertEquals(collectionBPath, event5.id);
+        assertEquals(Lock.LockMode.WRITE_LOCK, event5.mode);
+
+        assertEquals(LockTable.LockAction.Action.Acquired, event6.action);
         assertEquals(collectionBPath, event6.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event6.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event7.action);
+        // we now expect to release the lock on /db/colA/colB (as the managed lock was closed)
+        assertEquals(LockTable.LockAction.Action.Released, event7.action);
         assertEquals(collectionBPath, event7.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event7.mode);
 
-        // we now expect to release the lock on /db/colA
+        // we now expect to release the lock on /db/colA (as the managed lock was closed)
         assertEquals(LockTable.LockAction.Action.Released, event8.action);
         assertEquals(collectionAPath, event8.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event8.mode);
+        assertEquals(Lock.LockMode.INTENTION_WRITE, event8.mode);
 
-        // we now expect to release the lock on /db/colA/colB (as the managed lock was closed)
+        // we now expect to release the lock on /db (as the managed lock was closed)
         assertEquals(LockTable.LockAction.Action.Released, event9.action);
-        assertEquals(collectionBPath, event9.id);
-        assertEquals(Lock.LockMode.WRITE_LOCK, event9.mode);
+        assertEquals(XmldbURI.ROOT_COLLECTION, event9.id);
+        assertEquals(Lock.LockMode.INTENTION_WRITE, event9.mode);
     }
 
     /**
      * When acquiring a WRITE lock on a descendant-collection of the root (with parent locking)
      * Collection ensure that we hold a single WRITE lock on the
-     * descendant-collection and a single WRITE lock on the parent, by performing top-down lock-coupling
-     * with READ locks (apart from the parent which takes a WRITE lock) on the
+     * descendant-collection and a single WRITE lock on the parent, and that we perform top-down locking
+     * with INTENTION_WRITE locks (apart from the parent which takes a WRITE lock) on the
      * collection hierarchy to get there
      */
     @Test
@@ -558,11 +561,11 @@ public class LockManagerTest {
 
         assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event1.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event1.mode);
+        assertEquals(Lock.LockMode.INTENTION_WRITE, event1.mode);
 
         assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event2.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event2.mode);
+        assertEquals(Lock.LockMode.INTENTION_WRITE, event2.mode);
 
         // we now expect to couple /db with /db/colA by acquiring /db/colA whilst holding /db
         assertEquals(LockTable.LockAction.Action.Attempt, event3.action);
@@ -573,29 +576,29 @@ public class LockManagerTest {
         assertEquals(collectionAPath, event4.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event4.mode);
 
-        // we now expect to release the lock on /db
-        assertEquals(LockTable.LockAction.Action.Released, event5.action);
-        assertEquals(XmldbURI.ROOT_COLLECTION, event5.id);
-        assertEquals(Lock.LockMode.READ_LOCK, event5.mode);
-
         // we now expect to couple /db/colA with /db/colA/colB by acquiring /db/colA/colB whilst holding /db/colA
-        assertEquals(LockTable.LockAction.Action.Attempt, event6.action);
+        assertEquals(LockTable.LockAction.Action.Attempt, event5.action);
+        assertEquals(collectionBPath, event5.id);
+        assertEquals(Lock.LockMode.WRITE_LOCK, event5.mode);
+
+        assertEquals(LockTable.LockAction.Action.Acquired, event6.action);
         assertEquals(collectionBPath, event6.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event6.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event7.action);
+        // we now expect to release the lock on /db/colA/colB and then /db/colA (as the managed lock (of both locks) was closed)
+        assertEquals(LockTable.LockAction.Action.Released, event7.action);
         assertEquals(collectionBPath, event7.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event7.mode);
 
-        // we now expect to release the lock on /db/colA/colB and then /db/colA (as the managed lock (of both locks) was closed)
+        // we now expect to release the lock on /db/colA  (as the managed lock (of both locks) was closed)
         assertEquals(LockTable.LockAction.Action.Released, event8.action);
-        assertEquals(collectionBPath, event8.id);
+        assertEquals(collectionAPath, event8.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event8.mode);
 
-        // we now expect to release the lock on /db/colA
+        // we now expect to release the lock on /db  (as the managed lock (of both locks) was closed)
         assertEquals(LockTable.LockAction.Action.Released, event9.action);
-        assertEquals(collectionAPath, event9.id);
-        assertEquals(Lock.LockMode.WRITE_LOCK, event9.mode);
+        assertEquals(XmldbURI.ROOT_COLLECTION, event9.id);
+        assertEquals(Lock.LockMode.INTENTION_WRITE, event9.mode);
     }
 
     @Test

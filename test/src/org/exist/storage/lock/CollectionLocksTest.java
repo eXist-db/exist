@@ -192,15 +192,16 @@ public class CollectionLocksTest {
                     firstWriteHolder.compareAndSet(null, this);
 
                     // make sure the second thread is waiting for the write lock before we continue
-                    if(lockParent) {
-                        while (!lockManager.getCollectionLock(collectionUri.removeLastSegment().getCollectionPath()).hasQueuedThreads()) {
-                            Thread.sleep(10);
-                        }
-                    } else {
-                        while (!lockManager.getCollectionLock(collectionUri.getCollectionPath()).hasQueuedThreads()) {
-                            Thread.sleep(10);
-                        }
-                    }
+                    Thread.sleep(100);
+//                    if(lockParent) {
+//                        while (!lockManager.getCollectionLock(collectionUri.removeLastSegment().getCollectionPath()).hasQueuedThreads()) {
+//                            Thread.sleep(10);
+//                        }
+//                    } else {
+//                        while (!lockManager.getCollectionLock(collectionUri.getCollectionPath()).hasQueuedThreads()) {
+//                            Thread.sleep(10);
+//                        }
+//                    }
 
                     lastWriteHolder.set(this);
                 }

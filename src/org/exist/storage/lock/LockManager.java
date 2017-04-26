@@ -19,17 +19,19 @@
  */
 package org.exist.storage.lock;
 
-import com.evolvedbinary.j8fu.Either;
-import com.evolvedbinary.j8fu.tuple.Tuple2;
+import com.evolvedbinary.j8fu.tuple.Tuple3;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.lock.Lock.LockType;
 import org.exist.util.LockException;
 import org.exist.util.WeakLazyStripes;
 import org.exist.xmldb.XmldbURI;
+import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
 
 /**
  * A Lock Manager for Locks that are used across
@@ -40,9 +42,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * receive different locks.
  *
  * The locking protocol for Collection locks is taken from the paper:
- *     Concurrency of Operations on B-Trees - Bayer and Schkolnick 1977
- *     {@see https://link.springer.com/article/10.1007/BF00263762}
- * specifically we have adopted Solution 2 presented in Section 3 of the paper
+ *     Granularity of Locks in a Shared Data Base - Gray, Lorie and Putzolu 1975
+ *     {@see https://pdfs.semanticscholar.org/5acd/43c51fa5e677b0c242b065a64f5948af022c.pdf}
+ * specifically we have adopted the acquisition algorithm from Section 3.2 of the paper
  *
  * @author Adam Retter <adam@evolvedbinary.com>
  */
@@ -68,7 +70,7 @@ public class LockManager {
 
 
 
-    private final WeakLazyStripes<String, ReentrantReadWriteLock> collectionLocks;
+    private final WeakLazyStripes<String, MultiLock> collectionLocks;
     private final WeakLazyStripes<String, ReentrantReadWriteLock> documentLocks;
 
 
@@ -82,8 +84,8 @@ public class LockManager {
      * Creates a new lock for a Collection
      * will be Striped by the collectionPath
      */
-    private static ReentrantReadWriteLock createCollectionLock(final String collectionPath) {
-        return new ReentrantReadWriteLock(USE_FAIR_SCHEDULER);
+    private static MultiLock createCollectionLock(final String collectionPath) {
+        return new MultiLock(null);
     }
 
     /**
@@ -106,123 +108,103 @@ public class LockManager {
      *
      * @return A lock for the Collection
      */
-    ReentrantReadWriteLock getCollectionLock(final String collectionPath) {
+    MultiLock getCollectionLock(final String collectionPath) {
         return collectionLocks.get(collectionPath);
     }
 
-    //See Concurrency of Operations on B-Trees - Bayer and Schkolnick 1977 - Solution 2
     public ManagedCollectionLock acquireCollectionReadLock(final XmldbURI collectionPath) throws LockException {
         final XmldbURI[] segments = collectionPath.getPathSegments();
 
         final long groupId = System.nanoTime();
-        String path = '/' + segments[0].toString();
 
-        final ReentrantReadWriteLock root = getCollectionLock(path);
-        try {
-            lockTable.attempt(groupId, path, LockType.COLLECTION, Lock.LockMode.READ_LOCK);
-
-            root.readLock().lockInterruptibly();
-
-            lockTable.acquired(groupId, path, LockType.COLLECTION, Lock.LockMode.READ_LOCK);
-        } catch(final InterruptedException e) {
-            lockTable.attemptFailed(groupId, path, LockType.COLLECTION, Lock.LockMode.READ_LOCK);
-            throw new LockException("Unable to acquire READ_LOCK for: " + path, e);
-        }
-
-        ReentrantReadWriteLock current = root;
-        String currentPath = path;
-
-        for(int i = 1; i < segments.length; i++) {
+        String path = "";
+        final Tuple3<MultiLock, Lock.LockMode, String>[] locked = new Tuple3[segments.length];
+        for(int i = 0; i < segments.length; i++) {
             path += '/' + segments[i].toString();
-            final ReentrantReadWriteLock son = getCollectionLock(path);
 
-            try {
-                lockTable.attempt(groupId, path, LockType.COLLECTION, Lock.LockMode.READ_LOCK);
-
-                son.readLock().lockInterruptibly();
-
-                lockTable.acquired(groupId, path, LockType.COLLECTION, Lock.LockMode.READ_LOCK);
-            } catch(final InterruptedException e) {
-                lockTable.attemptFailed(groupId, path, LockType.COLLECTION, Lock.LockMode.READ_LOCK);
-
-                current.readLock().unlock();
-                lockTable.released(groupId, currentPath, LockType.COLLECTION, Lock.LockMode.READ_LOCK);
-
-                throw new LockException("Unable to acquire READ_LOCK for: " + path, e);
+            final Lock.LockMode lockMode;
+            if(i + 1 == segments.length) {
+                lockMode = Lock.LockMode.READ_LOCK; //leaf
+            } else {
+                lockMode = Lock.LockMode.INTENTION_READ; //ancestor
             }
+            final MultiLock lock = getCollectionLock(path);
 
-            current.readLock().unlock();
-            lockTable.released(groupId, currentPath, LockType.COLLECTION, Lock.LockMode.READ_LOCK);
+            lockTable.attempt(groupId, path, LockType.COLLECTION, lockMode);
+            if(lock(lock, lockMode)) {
+                locked[i] = new Tuple3<>(lock, lockMode, path);
+                lockTable.acquired(groupId, path, LockType.COLLECTION, lockMode);
+            } else {
+                lockTable.attemptFailed(groupId, path, LockType.COLLECTION, lockMode);
 
-            current = son;
-            currentPath = path;
+                unlockAll(locked, l -> lockTable.released(groupId, l._3, LockType.COLLECTION, l._2));
+
+                throw new LockException("Unable to acquire " + lockMode + " for: " + path);
+            }
         }
 
-        final ReentrantReadWriteLock collectionReadLock = current;
-        final String collectionReadLockPath = currentPath;
+        return new ManagedCollectionLock(
+                collectionPath,
+                Arrays.stream(locked).map(Tuple3::get_1).toArray(MultiLock[]::new),
+                () -> unlockAll(locked, l -> lockTable.released(groupId, l._3, LockType.COLLECTION, l._2))
+        );
+    }
 
-        return new ManagedCollectionLock(collectionPath, Either.Left(collectionReadLock.readLock()), () -> {
-            collectionReadLock.readLock().unlock();
-            lockTable.released(groupId, collectionReadLockPath, LockType.COLLECTION, Lock.LockMode.READ_LOCK);
-        });
+    private boolean lock(final MultiLock lock, final Lock.LockMode lockMode) {
+        switch(lockMode) {
+            case INTENTION_READ:
+                return lock.lockIntentionRead();
+
+            case INTENTION_WRITE:
+                return lock.lockIntentionWrite();
+
+            case READ_LOCK:
+                return lock.lockRead();
+
+            case WRITE_LOCK:
+                return lock.lockWrite();
+
+            default:
+                throw new UnsupportedOperationException(); // TODO(AR) implement the other modes
+        }
     }
 
     /**
-     * Similar to {@link #acquireCollectionReadLock(XmldbURI)} but non-waiting.
-     * We only acquire the read lock if the write lock is not held by
-     * another thread at the time of invocation.
+     * Releases an array of locked locks for the modes with which they were locked
+     *
+     * Locks are released in the opposite to their acquisition order
+     *
+     * @param locked An array of locks in acquisition order
      */
-    public ManagedCollectionLock tryCollectionReadLock(final XmldbURI collectionPath) throws LockException {
-        final XmldbURI[] segments = collectionPath.getPathSegments();
-
-        final long groupId = System.nanoTime();
-        String path = '/' + segments[0].toString();
-        final ReentrantReadWriteLock root = getCollectionLock(path);
-
-        lockTable.attempt(groupId, path, LockType.COLLECTION, Lock.LockMode.READ_LOCK);
-        boolean hasLock = root.readLock().tryLock();
-        if(hasLock) {
-            lockTable.acquired(groupId, path, LockType.COLLECTION, Lock.LockMode.READ_LOCK);
-        } else {
-            lockTable.attemptFailed(groupId, path, LockType.COLLECTION, Lock.LockMode.READ_LOCK);
-            throw new LockException("Unable to acquire READ_LOCK for: " + path);
+    private void unlockAll(final Tuple3<MultiLock, Lock.LockMode, String>[] locked, final Consumer<Tuple3<MultiLock, Lock.LockMode, String>> unlockListener) {
+        for(int i = locked.length - 1; i >= 0; i--) {
+            final Tuple3<MultiLock, Lock.LockMode, String> lock = locked[i];
+            unlock(lock._1, lock._2);
+            unlockListener.accept(lock);
         }
+    }
 
-        ReentrantReadWriteLock current = root;
-        String currentPath = path;
+    private void unlock(final MultiLock lock, final Lock.LockMode lockMode) {
+        switch(lockMode) {
+            case INTENTION_READ:
+                lock.unlockIntentionRead();
+                break;
 
-        for(int i = 1; i < segments.length; i++) {
-            path += '/' + segments[i].toString();
-            final ReentrantReadWriteLock son = getCollectionLock(path);
+            case INTENTION_WRITE:
+                lock.unlockIntentionWrite();
+                break;
 
-            lockTable.attempt(groupId, path, LockType.COLLECTION, Lock.LockMode.READ_LOCK);
-            hasLock = son.readLock().tryLock();
+            case READ_LOCK:
+                lock.unlockRead();
+                break;
 
-            if(hasLock) {
-                lockTable.acquired(groupId, path, LockType.COLLECTION, Lock.LockMode.READ_LOCK);
-            } else {
-                lockTable.attemptFailed(groupId, path, LockType.COLLECTION, Lock.LockMode.READ_LOCK);
+            case WRITE_LOCK:
+                lock.unlockWrite();
+                break;
 
-                current.readLock().unlock();
-                lockTable.released(groupId, currentPath, LockType.COLLECTION, Lock.LockMode.READ_LOCK);
-
-                throw new LockException("Unable to acquire READ_LOCK for: " + path);
-            }
-
-            current.readLock().unlock();
-            lockTable.released(groupId, currentPath, LockType.COLLECTION, Lock.LockMode.READ_LOCK);
-
-            current = son;
-            currentPath = path;
+            default:
+                throw new UnsupportedOperationException(); // TODO(AR) implement the other modes
         }
-
-        final ReentrantReadWriteLock collectionReadLock = current;
-        final String collectionReadLockPath = currentPath;
-
-        return new ManagedCollectionLock(collectionPath, Either.Left(collectionReadLock.readLock()), () -> {
-            collectionReadLock.readLock().unlock();
-            lockTable.released(groupId, collectionReadLockPath, LockType.COLLECTION, Lock.LockMode.READ_LOCK);
-        });
     }
 
     //TODO(AR) there are several reasons we might lock a collection for writes
@@ -240,130 +222,52 @@ public class LockManager {
         final XmldbURI[] segments = collectionPath.getPathSegments();
 
         final long groupId = System.nanoTime();
-        String path = '/' + segments[0].toString();
 
-        final ReentrantReadWriteLock root = getCollectionLock(path);
-
-        final Lock.LockMode rootMode;
-        final java.util.concurrent.locks.Lock rootModeLock;
-        if(segments.length == 1 || (segments.length == 2 && lockParent)) {
-            rootMode = Lock.LockMode.WRITE_LOCK;
-            rootModeLock = root.writeLock();
-        } else {
-            rootMode = Lock.LockMode.READ_LOCK;
-            rootModeLock = root.readLock();
-        }
-
-        if(upgradeCheck && rootMode == Lock.LockMode.WRITE_LOCK && root.getReadHoldCount() > 0) {
-            throw new LockException("Lock upgrading would lead to a self-deadlock: " + path);
-        }
-
-        if(warnWaitOnReadForWrite && rootMode == Lock.LockMode.WRITE_LOCK && root.getReadLockCount() > 0) {
-            LOG.warn("About to acquire WRITE_LOCK for: {}, but READ_LOCK held by other thread(s).", path);
-        }
-
-        try {
-            lockTable.attempt(groupId, path, LockType.COLLECTION, rootMode);
-
-            rootModeLock.lockInterruptibly();
-
-            lockTable.acquired(groupId, path, LockType.COLLECTION, rootMode);
-        } catch(final InterruptedException e) {
-            lockTable.attemptFailed(groupId, path, LockType.COLLECTION, rootMode);
-            throw new LockException("Unable to acquire " + rootMode.name() + " for: " + path, e);
-        }
-
-        java.util.concurrent.locks.Lock currentModeLock = rootModeLock;
-        Lock.LockMode currentMode = rootMode;
-        String currentModePath = path;
-
-        java.util.concurrent.locks.Lock parentModeLock = null;
-        Lock.LockMode parentMode = null;
-        String parentPath = null;
-
-        final int lastSegmentIdx = segments.length - 1;
-
-        for(int i = 1; i < segments.length; i++) {
+        String path = "";
+        final Tuple3<MultiLock, Lock.LockMode, String>[] locked = new Tuple3[segments.length];
+        for(int i = 0; i < segments.length; i++) {
             path += '/' + segments[i].toString();
 
-            final ReentrantReadWriteLock son = getCollectionLock(path);
-
-            final Lock.LockMode sonMode;
-            final java.util.concurrent.locks.Lock sonModeLock;
-            if(i == lastSegmentIdx || (i == segments.length - 2 && lockParent)) {
-                sonMode = Lock.LockMode.WRITE_LOCK;
-                sonModeLock = son.writeLock();
+            final Lock.LockMode lockMode;
+            if(lockParent && i + 2 == segments.length) {
+                lockMode = Lock.LockMode.WRITE_LOCK;    // parent
+            } else if(i + 1 == segments.length) {
+                lockMode = Lock.LockMode.WRITE_LOCK;    // leaf
             } else {
-                sonMode = Lock.LockMode.READ_LOCK;
-                sonModeLock = son.readLock();
+                lockMode = Lock.LockMode.INTENTION_WRITE; // ancestor
             }
+            final MultiLock lock = getCollectionLock(path);
 
-            if(upgradeCheck && sonMode == Lock.LockMode.WRITE_LOCK && son.getReadHoldCount() > 0) {
-                currentModeLock.unlock();
-                lockTable.released(groupId, currentModePath, LockType.COLLECTION, currentMode);
-
+            if(upgradeCheck && lockMode == Lock.LockMode.WRITE_LOCK && (lock.getIntentionReadHoldCount() > 0  || lock.getReadHoldCount() > 0)) {
                 throw new LockException("Lock upgrading would lead to a self-deadlock: " + path);
             }
 
-            if(warnWaitOnReadForWrite && sonMode == Lock.LockMode.WRITE_LOCK && son.getReadLockCount() > 0) {
-                LOG.warn("About to acquire WRITE_LOCK for: {}, but READ_LOCK held by other thread(s).", path);
+            if(warnWaitOnReadForWrite && lockMode == Lock.LockMode.WRITE_LOCK) {
+                if(lock.getIntentionReadLockCount() > 0) {
+                    LOG.warn("About to acquire WRITE_LOCK for: {}, but INTENTION_READ_LOCK held by other thread(s): ", path);
+                } else if(lock.getReadLockCount() > 0) {
+                    LOG.warn("About to acquire WRITE_LOCK for: {}, but READ_LOCK held by other thread(s): ", path);
+                }
             }
 
-            try {
-                lockTable.attempt(groupId, path, LockType.COLLECTION, sonMode);
-
-                sonModeLock.lockInterruptibly();
-
-                lockTable.acquired(groupId, path, LockType.COLLECTION, sonMode);
-            } catch(final InterruptedException e) {
-                lockTable.attemptFailed(groupId, path, LockType.COLLECTION, sonMode);
-
-                currentModeLock.unlock();
-                lockTable.released(groupId, currentModePath, LockType.COLLECTION, currentMode);
-
-                throw new LockException("Unable to acquire " + sonMode.name() + " for: " + path, e);
-            }
-
-            if(!(i == lastSegmentIdx && lockParent)) {
-                currentModeLock.unlock();
-                lockTable.released(groupId, currentModePath, LockType.COLLECTION, currentMode);
+            lockTable.attempt(groupId, path, LockType.COLLECTION, lockMode);
+            if(lock(lock, lockMode)) {
+                locked[i] = new Tuple3<>(lock, lockMode, path);
+                lockTable.acquired(groupId, path, LockType.COLLECTION, lockMode);
             } else {
-                parentModeLock = currentModeLock;
-                parentMode = currentMode;
-                parentPath = currentModePath;
+                lockTable.attemptFailed(groupId, path, LockType.COLLECTION, lockMode);
+
+                unlockAll(locked, l -> lockTable.released(groupId, l._3, LockType.COLLECTION, l._2));
+
+                throw new LockException("Unable to acquire " + lockMode + " for: " + path);
             }
-
-            currentModeLock = sonModeLock;
-            currentMode = sonMode;
-            currentModePath = path;
         }
 
-        final String collectionPathStr = path;
-
-        if(lockParent && parentModeLock != null) {
-            //we return two locks as a single managed lock, the first lock is the parent collection and the second is the actual collection
-            final java.util.concurrent.locks.Lock parentCollectionLock = parentModeLock;
-            final Lock.LockMode parentCollectionMode = parentMode;
-            final String parentCollectionString = parentPath;
-
-            final java.util.concurrent.locks.Lock collectionLock = currentModeLock;
-            final Lock.LockMode collectionMode = currentMode;
-
-            return new ManagedCollectionLock(collectionPath, Either.Right(new Tuple2<>(parentCollectionLock, collectionLock)), () -> {
-                //TODO(AR) should this unlock order be inverted?
-                collectionLock.unlock();
-                lockTable.released(groupId, collectionPathStr, LockType.COLLECTION, collectionMode);
-
-                parentCollectionLock.unlock();
-                lockTable.released(groupId, parentCollectionString, LockType.COLLECTION, parentCollectionMode);
-            });
-        } else {
-            final java.util.concurrent.locks.Lock collectionLock = currentModeLock;
-            return new ManagedCollectionLock(collectionPath, Either.Left(collectionLock), () -> {
-                collectionLock.unlock();
-                lockTable.released(groupId, collectionPathStr, LockType.COLLECTION, Lock.LockMode.WRITE_LOCK);
-            });
-        }
+        return new ManagedCollectionLock(
+                collectionPath,
+                Arrays.stream(locked).map(Tuple3::get_1).toArray(MultiLock[]::new),
+                () -> unlockAll(locked, l -> lockTable.released(groupId, l._3, LockType.COLLECTION, l._2))
+        );
     }
 
     /**
@@ -403,37 +307,25 @@ public class LockManager {
         final String collectionPathStr = collectionPath.toString();
 
         //TODO(AR) is this correct do we need to unlock the parentLock's parent, and what about on LockException? -- need tests
-        final ReentrantReadWriteLock subCollectionLock = getCollectionLock(collectionPath.getCollectionPath());
-        final java.util.concurrent.locks.Lock lock;
-        switch(lockMode) {
-            case WRITE_LOCK:
-                lock = subCollectionLock.writeLock();
-                break;
+        final MultiLock subCollectionLock = getCollectionLock(collectionPath.getCollectionPath());
 
-            case READ_LOCK:
-                lock = subCollectionLock.readLock();
-                break;
+        lockTable.attempt(groupId, collectionPathStr, LockType.COLLECTION, lockMode);
 
-            default:
-                throw new IllegalArgumentException("Unsupported lock mode: " + lockMode);
-        }
-
-        try {
-            lockTable.attempt(groupId, collectionPathStr, LockType.COLLECTION, lockMode);
-
-            lock.lockInterruptibly();
-
+        if(lock(subCollectionLock, lockMode)) {
             lockTable.acquired(groupId, collectionPathStr, LockType.COLLECTION, lockMode);
-
-        } catch(final InterruptedException e) {
+        } else {
             lockTable.attemptFailed(groupId, collectionPathStr, LockType.COLLECTION, lockMode);
-            throw new LockException("Unable to acquire " + lockMode + " for: " + collectionPath, e);
+            throw new LockException("Unable to acquire " + lockMode + " for: " + collectionPath);
         }
 
-        return new ManagedCollectionLock(collectionPath, Either.Left(lock), () -> {
-            lock.unlock();
-            lockTable.released(groupId, collectionPathStr, LockType.COLLECTION, lockMode);
-        });
+        return new ManagedCollectionLock(
+                collectionPath,
+                new MultiLock[] { subCollectionLock },
+                () -> {
+                    unlock(subCollectionLock, lockMode);
+                    lockTable.released(groupId, collectionPathStr, LockType.COLLECTION, lockMode);
+                }
+        );
     }
 
     /**

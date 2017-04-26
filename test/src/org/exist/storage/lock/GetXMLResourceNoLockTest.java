@@ -20,6 +20,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
 import static org.junit.Assert.*;
 
@@ -56,8 +57,16 @@ public class GetXMLResourceNoLockTest {
             }
 
 			final LockManager lockManager = broker.getBrokerPool().getLockManager();
-			final java.util.concurrent.locks.ReentrantReadWriteLock colLock = lockManager.getCollectionLock(testCollection.getURI().toString());
-			assertEquals("Collection does not have lock!", true, colLock.getReadHoldCount() > 0);
+			final MultiLock colLock = lockManager.getCollectionLock(testCollection.getURI().toString());
+
+			final boolean didWriteLock = colLock.writeLock().tryLock();
+			try {
+                assertEquals("Collection does not have lock!", false, didWriteLock);
+            } finally {
+			    if(didWriteLock) {
+                    colLock.writeLock().unlock();
+                }
+            }
 		}
 	}
 

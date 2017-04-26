@@ -1,18 +1,17 @@
 package org.exist.storage.lock;
 
-import com.evolvedbinary.j8fu.Either;
-import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.xmldb.XmldbURI;
+import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
 /**
  * @author Adam Retter <adam@evolvedbinary.com>
  */
-public class ManagedCollectionLock extends ManagedLock<Either<java.util.concurrent.locks.Lock, Tuple2<java.util.concurrent.locks.Lock, java.util.concurrent.locks.Lock>>> {
+public class ManagedCollectionLock extends ManagedLock<MultiLock[]> {
 
     private final XmldbURI collectionUri;
 
-    public ManagedCollectionLock(final XmldbURI collectionUri, final Either<java.util.concurrent.locks.Lock, Tuple2<java.util.concurrent.locks.Lock, java.util.concurrent.locks.Lock>> lock, final Runnable closer) {
-        super(lock, closer);
+    public ManagedCollectionLock(final XmldbURI collectionUri, final MultiLock[] locks, final Runnable closer) {
+        super(locks, closer);
         this.collectionUri = collectionUri;
     }
 
