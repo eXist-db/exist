@@ -104,6 +104,7 @@ import javax.xml.transform.OutputKeys;
 
 import org.xmldb.api.base.*;
 
+import static org.exist.xmldb.EXistXPathQueryService.BEGIN_PROTECTED_MAX_LOCKING_RETRIES;
 import static java.nio.file.StandardOpenOption.*;
 
 /**
@@ -257,6 +258,8 @@ public class RpcConnection implements RpcAPI {
         if (protectColl == null) {
             return null;
         }
+
+        int retries = BEGIN_PROTECTED_MAX_LOCKING_RETRIES == - 1 ? -1 : BEGIN_PROTECTED_MAX_LOCKING_RETRIES - 2;
         do {
             MutableDocumentSet docs = null;
             final LockedDocumentMap lockedDocuments = new LockedDocumentMap();
@@ -266,13 +269,13 @@ public class RpcConnection implements RpcAPI {
                 coll.allDocs(broker, docs, true, lockedDocuments, LockMode.WRITE_LOCK);
                 return lockedDocuments;
             } catch (final LockException e) {
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("Deadlock detected. Starting over again. Docs: " + docs.getDocumentCount() + "; locked: "
-                            + lockedDocuments.size());
-                }
+                LOG.warn("Deadlock detected. Starting over again. Docs: {}; locked: {}. Cause: {}", docs.getDocumentCount(), lockedDocuments.size(), e.getMessage());
                 lockedDocuments.unlock();
             }
-        } while (true);
+            retries--;
+        } while (retries >= -1);
+
+        throw new EXistException("Unable to beginProtected after " + BEGIN_PROTECTED_MAX_LOCKING_RETRIES + " retries");
     }
 
     /**

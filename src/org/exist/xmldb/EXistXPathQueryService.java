@@ -32,6 +32,15 @@ import org.xmldb.api.modules.XPathQueryService;
  */
 public interface EXistXPathQueryService extends XPathQueryService {
 
+    //TODO(AR) this should likely be configurable
+    /**
+     * The maximum amount of times we should retry
+     * acquiring all locks in {@link #beginProtected()}
+     *
+     * Default: -1 which means infinite
+     */
+    int BEGIN_PROTECTED_MAX_LOCKING_RETRIES = -1;
+
     /**
      * Process an XPath query based on the result of a previous query.
      * The XMLResource contains the result received from a previous
