@@ -130,11 +130,13 @@ public class CollectionLocksTest {
 
         // execute threads
         final ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
-        final List<Future<Void>> futures = executorService.invokeAll(callables);
+        final List<Future<Void>> futures = executorService.invokeAll(callables, MULTI_READER_TEST_TIMEOUT, TimeUnit.MILLISECONDS);
 
         // await all threads to finish
         for(final Future<Void> future : futures) {
-            future.get();
+            if(future.isCancelled()) {
+                fail("multipleReaders test likely showed a thread deadlock");
+            }
         }
         executorService.shutdown();
 
@@ -192,14 +194,14 @@ public class CollectionLocksTest {
                     firstWriteHolder.compareAndSet(null, this);
 
                     // make sure the second thread is waiting for the write lock before we continue
-                    Thread.sleep(100);
+                    Thread.sleep(SINGLE_WRITER_THREAD_SLEEP);
 //                    if(lockParent) {
 //                        while (!lockManager.getCollectionLock(collectionUri.removeLastSegment().getCollectionPath()).hasQueuedThreads()) {
-//                            Thread.sleep(10);
+//                            Thread.sleep(SINGLE_WRITER_THREAD_SLEEP);
 //                        }
 //                    } else {
 //                        while (!lockManager.getCollectionLock(collectionUri.getCollectionPath()).hasQueuedThreads()) {
-//                            Thread.sleep(10);
+//                            Thread.sleep(SINGLE_WRITER_THREAD_SLEEP);
 //                        }
 //                    }
 
@@ -227,11 +229,13 @@ public class CollectionLocksTest {
 
         // execute threads
         final ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
-        final List<Future<Void>> futures = executorService.invokeAll(callables);
+        final List<Future<Void>> futures = executorService.invokeAll(callables, SINGLE_WRITER_TEST_TIMEOUT, TimeUnit.MILLISECONDS);
 
         // await all threads to finish
         for(final Future<Void> future : futures) {
-            future.get();
+            if(future.isCancelled()) {
+                fail("singleWriter test likely showed a thread deadlock");
+            }
         }
         executorService.shutdown();
 
@@ -493,12 +497,12 @@ public class CollectionLocksTest {
             try (final ManagedCollectionLock col1Lock = thread1Lock1.get()) {
                 thread2StartLatch.countDown();
 
-                thread1ContinueLatch.await();
+                thread1ContinueLatch.await(AWAIT_OTHER_THREAD_TIMEOUT, TimeUnit.MILLISECONDS);
 
                 try (final ManagedCollectionLock col2Lock = thread1Lock2.get()) {
                     thread2ContinueLatch.countDown();
 
-                    thread1FinishLatch.await();
+                    thread1FinishLatch.await(AWAIT_OTHER_THREAD_TIMEOUT, TimeUnit.MILLISECONDS);
                 }
 
                 thread2FinishLatch.countDown();
@@ -665,7 +669,7 @@ public class CollectionLocksTest {
 
         // execute threads
         final ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
-        final List<Future<Void>> futures = executorService.invokeAll(callables, TEST_STRESS_DEADLOCK_TIMEOUT, TimeUnit.MILLISECONDS);
+        final List<Future<Void>> futures = executorService.invokeAll(callables, STRESS_DEADLOCK_TEST_TIMEOUT, TimeUnit.MILLISECONDS);
 
         // await all threads to finish
         for(final Future<Void> future : futures) {
@@ -676,10 +680,14 @@ public class CollectionLocksTest {
         executorService.shutdown();
     }
 
+    /**
+     * Sleeps between 1 and STRESS_DEADLOCK_THREAD_SLEEP
+     * milliseconds
+     */
     private static void sleep() {
         try {
-            Thread.sleep(random.nextInt(1000) + 1);
-        } catch (InterruptedException e) {
+            Thread.sleep(1 + random.nextInt(STRESS_DEADLOCK_THREAD_SLEEP));
+        } catch (final InterruptedException e) {
             Thread.currentThread().interrupt();
         }
     }
