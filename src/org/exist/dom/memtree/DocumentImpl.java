@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2010 The eXist Project
+ * Copyright (C) 2001-2017 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -13,17 +13,17 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- *  $Id$
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.dom.memtree;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.Namespaces;
+import org.exist.dom.IDocument;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.NodeProxy;
@@ -72,14 +72,18 @@ import java.util.Arrays;
  *
  * @author wolf
  */
-public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
+public class DocumentImpl extends NodeImpl<DocumentImpl> implements IDocument, Document {
 
     private static final int NODE_SIZE = 16;
     private static final int ATTR_SIZE = 8;
     private static final int CHAR_BUF_SIZE = 256;
     private static final int REF_SIZE = 8;
 
-    private static long nextDocId = 0;
+    private static AtomicInteger nextDocId = new AtomicInteger();
+
+    private static int createDocId() {
+        return nextDocId.incrementAndGet();
+    }
 
     // holds the node type of a node
     protected short[] nodeKind = null;
@@ -129,7 +133,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     protected XQueryContext context;
     protected final boolean explicitlyCreated;
-    protected final long docId;
+    protected final int docId;
     private Database db = null;
     protected NamePool namePool;
 
@@ -149,6 +153,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         }
     }
 
+    @Override
+    public int getDocId() {
+        return docId;
+    }
+
     private Database getDatabase() {
         if(db == null) {
             try {
@@ -158,10 +167,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             }
         }
         return db;
-    }
-
-    private static long createDocId() {
-        return nextDocId++;
     }
 
     private void init() {

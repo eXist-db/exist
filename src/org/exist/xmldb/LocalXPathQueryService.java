@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2015 The eXist Project
+ * Copyright (C) 2001-2017 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -13,9 +13,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xmldb;
 
@@ -319,7 +319,11 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
 
     protected void setupContext(final Source source, final XQueryContext context) throws XMLDBException, XPathException {
         try {
-            context.setBaseURI(new AnyURIValue(properties.getProperty("base-uri", collection.getPath())));
+            String baseUri = properties.getProperty("base-uri", collection.getPath());
+
+            context.setBaseURI(new AnyURIValue(baseUri));
+            context.setModuleLoadPath(baseUri);
+
         } catch(final XPathException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI,"Invalid base uri",e);
         }

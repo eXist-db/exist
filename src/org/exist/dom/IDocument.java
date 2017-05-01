@@ -17,16 +17,18 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.xslt;
-
-import org.exist.xquery.XPathException;
-import org.exist.xquery.value.Sequence;
+package org.exist.dom;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
  */
-public abstract class Transformer extends javax.xml.transform.Transformer {
+public interface IDocument extends org.w3c.dom.Document {
 
-	public abstract Sequence transform(Sequence xmlSource) throws XPathException;
+  /**
+   * The method <code>getDocId</code>
+   *
+   * @return an <code>int</code> value
+   */
+  int getDocId();
+
 }

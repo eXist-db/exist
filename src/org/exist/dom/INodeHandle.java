@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2014 The eXist Project
+ * Copyright (C) 2001-2017 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -13,11 +13,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- *  $Id$
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.dom;
 
@@ -33,24 +31,24 @@ import org.exist.numbering.NodeId;
  * 
  * @author Adam Retter <adam@exist-db.org>
  */
-public interface INodeHandle<D extends org.w3c.dom.Document> {
+public interface INodeHandle<D extends IDocument> {
     
     /**
      * Get the ID of the Node
      * 
      * @return The ID of the Node
      */
-    public NodeId getNodeId();
+    NodeId getNodeId();
     
     /**
      * Get the type of the node
      */
-    public short getNodeType(); //TODO convert to enum? what about persistence of the enum id (if it is ever persisted?)?
+    short getNodeType(); //TODO convert to enum? what about persistence of the enum id (if it is ever persisted?)?
     
     /**
      * @see org.w3c.dom.Node#getOwnerDocument()
      * 
      * @return The persistent Owner Document
      */
-    public D getOwnerDocument(); //TODO consider extracting D into "org.exist.dom.IDocument extends org.w3c.com.Document" and returning an IDocument here
+    D getOwnerDocument();
 }

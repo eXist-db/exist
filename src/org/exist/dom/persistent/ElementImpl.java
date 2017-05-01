@@ -1,22 +1,21 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2014 The eXist-db Project
+ * Copyright (C) 2001-2017 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.dom.persistent;
 
@@ -1731,17 +1730,6 @@ public class ElementImpl extends NamedNode implements Element {
             }
         }
         return baseURI;
-    }
-
-    @Override
-    public boolean isSameNode(final Node other) {
-        // This function is used by Saxon in some circumstances, and this partial implementation is required for proper Saxon operation.
-        if(other instanceof IStoredNode) {
-            return (this.nodeId == ((IStoredNode<?>) other).getNodeId() &&
-                this.ownerDocument.getDocId() == ((IStoredNode<? extends IStoredNode>) other).getOwnerDocument().getDocId());
-        }
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "isSameNode(Node other) not implemented on other class " + other.getClass().getName());
     }
 
     @Override
