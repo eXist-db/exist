@@ -495,7 +495,7 @@ public class XMLWriter {
                     } else {
                         i++;
                     }
-                } else if(!charSet.inCharacterSet(ch) || ch == 160) {
+                } else if(!charSet.inCharacterSet(ch)) {
                                 break;
                 } else {
                     i++;
@@ -530,10 +530,6 @@ public class XMLWriter {
                         break;
                     case '"':
                         writer.write("&#34;");
-                        break;
-                    // non-breaking space:
-                    case 160:
-                        writer.write("&#160;");
                         break;
                     default:
                         writeCharacterReference(ch);
