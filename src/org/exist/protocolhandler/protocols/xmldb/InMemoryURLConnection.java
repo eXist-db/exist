@@ -24,11 +24,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.protocolhandler.embedded.EmbeddedInputStream;
-import org.exist.protocolhandler.embedded.EmbeddedOutputStream;
+import org.exist.protocolhandler.embedded.InMemoryInputStream;
+import org.exist.protocolhandler.embedded.InMemoryOutputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.protocolhandler.xmlrpc.XmlrpcInputStream;
 import org.exist.protocolhandler.xmlrpc.XmlrpcOutputStream;
@@ -36,70 +35,54 @@ import org.exist.protocolhandler.xmlrpc.XmlrpcOutputStream;
 /**
  *  A URLConnection object manages the translation of a URL object into a
  * resource stream.
- *
- * @see <A HREF="http://java.sun.com/developer/onlineTraining/protocolhandlers/"
- *                                     >A New Era for Java Protocol Handlers</A>
- *
- * @see java.net.URLConnection
- *
- * @author Dannes Wessels
  */
-public class ConnectionThreads extends URLConnection {
-    
-    private final static Logger LOG = LogManager.getLogger(ConnectionThreads.class);
-    
+public class InMemoryURLConnection extends URLConnection {
+
+    private final static Logger LOG = LogManager.getLogger(InMemoryURLConnection.class);
+
     /**
      * Constructs a URL connection to the specified URL.
       */
-    protected ConnectionThreads(URL url) {
+    protected InMemoryURLConnection(URL url) {
         super(url);
-        LOG.debug(url);
-        
+
         setDoInput(true);
         setDoOutput(true);
     }
-    
+
     /**
-     * @see java.net.URLConnection#connect
+     * @see URLConnection#connect
      */
     public void connect() throws IOException {
-        LOG.debug(url) ;
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("connect: "+url);
+        }
     }
-    
+
     /**
-     * @see java.net.URLConnection#getInputStream
+     * @see URLConnection#getInputStream
      */
     public InputStream getInputStream() throws IOException {
-        LOG.debug(url) ;
-        
-        InputStream inputstream=null;
         final XmldbURL xmldbURL = new XmldbURL(url);
-        
+
         if(xmldbURL.isEmbedded()){
-            inputstream = new EmbeddedInputStream( xmldbURL );
+            return InMemoryInputStream.stream( xmldbURL );
         } else {
-            inputstream = new XmlrpcInputStream( xmldbURL );
+            return new XmlrpcInputStream( xmldbURL );
         }
-        
-        return inputstream;
     }
-    
-    
+
+
     /**
-     * @see java.net.URLConnection#getOutputStream
+     * @see URLConnection#getOutputStream
      */
     public OutputStream getOutputStream() throws IOException {
-        LOG.debug(url) ;
-        
-        OutputStream outputstream=null;
         final XmldbURL xmldbURL = new XmldbURL(url);
         
         if(xmldbURL.isEmbedded()){
-            outputstream = new EmbeddedOutputStream( xmldbURL );
+            return new InMemoryOutputStream( xmldbURL );
         } else {
-            outputstream = new XmlrpcOutputStream( xmldbURL );
+            return new XmlrpcOutputStream( xmldbURL );
         }
-        
-        return outputstream;
     }
 }

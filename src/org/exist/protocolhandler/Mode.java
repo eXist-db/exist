@@ -23,6 +23,15 @@ package org.exist.protocolhandler;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public enum Mode {
+  /**
+   * low memory requirements, but it have design bugs:
+   *  - broker hold while io stream in "use";
+   *  - require 2 threads per operation.
+   */
   THREADS,
+
+  /**
+   * Keep stream's data in memory to solve THREADS design bugs.
+   */
   MEMORY
 }
