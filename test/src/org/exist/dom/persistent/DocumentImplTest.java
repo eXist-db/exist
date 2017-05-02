@@ -14,9 +14,9 @@ import org.exist.security.Permission;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.easymock.EasyMock.expect;
+import static org.junit.Assert.*;
+
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -144,6 +144,100 @@ public class DocumentImplTest {
         //assertions
         assertThat(otherCreated, new LessThan(docMetadata.getCreated()));
         assertThat(otherLastModified, new LessThan(docMetadata.getLastModified()));
+    }
+
+    @Test
+    public void isSameNode_sameDoc() {
+        final BrokerPool mockBrokerPool = EasyMock.createMock(BrokerPool.class);
+        final Database mockDatabase = EasyMock.createMock(Database.class);
+        final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
+        final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
+        final Group mockCurrentSubjectGroup= EasyMock.createMock(Group.class);
+        final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
+
+        //expectations
+        expect(mockBrokerPool.getSecurityManager()).andReturn(mockSecurityManager);
+        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
+        expect(mockDatabase.getActiveBroker()).andReturn(mockBroker);
+        expect(mockBroker.getCurrentSubject()).andReturn(mockCurrentSubject);
+        expect(mockCurrentSubject.getUserMask()).andReturn(Permission.DEFAULT_UMASK);
+        expect(mockCurrentSubject.getId()).andReturn(RealmImpl.SYSTEM_ACCOUNT_ID);
+        expect(mockCurrentSubject.getDefaultGroup()).andReturn(mockCurrentSubjectGroup);
+        expect(mockCurrentSubjectGroup.getId()).andReturn(RealmImpl.DBA_GROUP_ID);
+
+        replay(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
+
+        //test setup
+        final DocumentImpl doc = new DocumentImpl(mockBrokerPool);
+        doc.setDocId(99);
+        assertTrue(doc.isSameNode(doc));
+
+        verify(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
+    }
+
+    @Test
+    public void isSameNode_differentDoc() {
+        final BrokerPool mockBrokerPool = EasyMock.createMock(BrokerPool.class);
+        final Database mockDatabase = EasyMock.createMock(Database.class);
+        final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
+        final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
+        final Group mockCurrentSubjectGroup= EasyMock.createMock(Group.class);
+        final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
+
+        //expectations
+        expect(mockBrokerPool.getSecurityManager()).andReturn(mockSecurityManager).times(2);
+        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
+        expect(mockDatabase.getActiveBroker()).andReturn(mockBroker).times(2);
+        expect(mockBroker.getCurrentSubject()).andReturn(mockCurrentSubject).times(2);
+        expect(mockCurrentSubject.getUserMask()).andReturn(Permission.DEFAULT_UMASK).times(2);
+        expect(mockCurrentSubject.getId()).andReturn(RealmImpl.SYSTEM_ACCOUNT_ID).times(2);
+        expect(mockCurrentSubject.getDefaultGroup()).andReturn(mockCurrentSubjectGroup).times(2);
+        expect(mockCurrentSubjectGroup.getId()).andReturn(RealmImpl.DBA_GROUP_ID).times(2);
+
+        replay(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
+
+        //test setup
+        final DocumentImpl doc = new DocumentImpl(mockBrokerPool);
+        doc.setDocId(99);
+
+        final DocumentImpl doc2 = new DocumentImpl(mockBrokerPool);
+        doc2.setDocId(765);
+
+        assertFalse(doc.isSameNode(doc2));
+
+        verify(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
+    }
+
+    @Test
+    public void isSameNode_nonDoc() {
+        final BrokerPool mockBrokerPool = EasyMock.createMock(BrokerPool.class);
+        final Database mockDatabase = EasyMock.createMock(Database.class);
+        final DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
+        final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
+        final Group mockCurrentSubjectGroup= EasyMock.createMock(Group.class);
+        final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
+
+        //expectations
+        expect(mockBrokerPool.getSecurityManager()).andReturn(mockSecurityManager);
+        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
+        expect(mockDatabase.getActiveBroker()).andReturn(mockBroker);
+        expect(mockBroker.getCurrentSubject()).andReturn(mockCurrentSubject);
+        expect(mockCurrentSubject.getUserMask()).andReturn(Permission.DEFAULT_UMASK);
+        expect(mockCurrentSubject.getId()).andReturn(RealmImpl.SYSTEM_ACCOUNT_ID);
+        expect(mockCurrentSubject.getDefaultGroup()).andReturn(mockCurrentSubjectGroup);
+        expect(mockCurrentSubjectGroup.getId()).andReturn(RealmImpl.DBA_GROUP_ID);
+
+        replay(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
+
+        //test setup
+        final DocumentImpl doc = new DocumentImpl(mockBrokerPool);
+        doc.setDocId(99);
+
+        final TextImpl text = new TextImpl("hello");
+
+        assertFalse(doc.isSameNode(text));
+
+        verify(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
     }
 
     public class TestableDocumentImpl extends DocumentImpl {

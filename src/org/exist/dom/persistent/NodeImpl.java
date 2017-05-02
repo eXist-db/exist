@@ -213,12 +213,6 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     }
 
     @Override
-    public boolean isSameNode(final Node other) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "isSameNode(Node other) not implemented on class " + getClass().getName());
-    }
-
-    @Override
     public String lookupPrefix(final String namespaceURI) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "lookupPrefix(String namespaceURI) not implemented on class " + getClass().getName());
