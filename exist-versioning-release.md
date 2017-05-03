@@ -140,11 +140,75 @@ Once development on a new stable version is complete, the following steps will p
     **NOTE:** We increment to the next `MINOR` version, rather than to the next `PATCH` or `MAJOR` version, for two reasons. First, we assume the next version will likely contain features and not just bug patches, although this does not prevent us from doing a `3.1.1` (a `PATCH` release) release next, should we have only patches. By the same token, the future is uncertain and we recognise that it is easier to release features with non-breaking API changes and patches, although this still does not prevent us from doing a `4.0.0` release next, should we have breaking API changes.
 
 6. Check out the `eXist-3.1.0` tag and create product builds for publication:
-    ```
-    $ git checkout eXist-3.1.0
-    $ ./build.sh jnlp-unsign-all all jnlp-sign-exist jnlp-sign-core
-    $ ./build.sh installer installer-exe app dist-war
-    ```
+
+    1. If you haven't previously done so, download and install [IzPack 4.3.5](http://download.jboss.org/jbosstools/updates/requirements/izpack/4.3.5/IzPack-install-4.3.5.jar) to `/usr/local/izpack-4.3.5` or somewhere equally sensible.
+    
+    2. If you haven't previously done so, create the file `$EXIST_HOME/local.build.properties` and set your identity to use for code signing the Jar files and Mac products:
+        ```
+        keystore.file=/home/my-username/exist-release-build_key.store
+        keystore.alias=exist-release-build
+        keystore.password=exist-release-build-password
+        
+        izpack.dir = /usr/local/izpack-4.3.5
+
+        mac.codesign.identity=Developer ID Application: Your Megacorp Here
+        ```
+
+    3. If you haven't previously done so, or you are not using your own existing key, you need to create the Java keystore file `/home/my-username/exist-release-build_key.store`:
+        ```
+        $ keytool -genkeypair --alias exist-release-build -storepass exist-release-build-password -validity 9999 -keystore /home/my-username/exist-release-build_key.store
+        ```
+
+    4. Perform the build of the tag:
+        ```
+        $ git checkout eXist-3.1.0
+        $ ./build.sh jnlp-unsign-all all jnlp-sign-exist jnlp-sign-core
+        $ ./build.sh installer app-signed dist-war
+        ```
+
+#### Publishing the Product Release
+
+1. Login to https://bintray.com/existdb/ and create a new "Version", then upload the files `$EXIST_HOME/installer/eXist-db-setup-3.2.0.jar`, `$EXIST_HOME/dist/eXist-db-3.2.0.dmg` and `$EXIST_HOME/dist/exist-3.1.0.war`. Once the files have uploaded, make sure to click "Publish" to publish them to the version. Once published, you need to go to the "Files" section of the version, and click "Actions"->"Show in downloads list" for each file.
+
+2. Update and publish the latest Maven artifacts as described here: https://github.com/exist-db/mvn-repo
+
+3. Edit the links for the downloads on the eXist website, by logging into eXide on http://www.exist-db.org/exist/apps/eXide/ and opening the file `/db/apps/homepage/index.html`, you need to modify the HTML under `<a name="downloads"/>` and then save the page:
+
+   ```html
+   <a name="downloads"/>
+   <div class="row">
+     <div class="col-md-12">
+         <h2 id="download">Download</h2>
+         <a href="https://bintray.com/existdb/releases/exist/3.1.0/view">
+             <button class="btn btn-default download-btn stable" type="button">
+                 <span class="status">Latest Release</span>
+                 <span class="icon">
+                     <i class="fa fa-download"/>
+                 </span>
+                 <span class="exist-version">Version 3.1.0</span>
+             </button>
+         </a>
+         <a href="https://github.com/exist-db/mvn-repo">
+             <button class="btn btn-default download-btn maven" type="button">
+                 <span class="status">Maven Artifacts</span>
+                 <span class="icon">
+                     <i class="fa fa-github"/>
+                 </span>
+                 <span class="exist-version">Version 3.1.0</span>
+             </button>
+         </a>
+   ```
+
+    As a temporary measure, you also need to make the same modifications to the file in GitHub - https://github.com/eXist-db/website/blob/master/index.html and send a PR for that. 
+
+4. Login to the blog at http://exist-db.org/exist/apps/wiki/blogs/eXist/ and add a new news item which announces the release and holds the release notes. It should be named like http://exist-db.org/exist/apps/wiki/blogs/eXist/eXistdb310
+
+5. Visit the GitHub releases page https://github.com/eXist-db/exist/releases and create a new release, enter the tag you previously created and link the release notes from the blog and the binaries from BinTray.
+
+6. Send an email to the `exist-open` mailing list announcing the release with a title similar to `[ANN] Release of eXist 3.1.0`, copy and paste the release notes from the blog into the email.
+
+7. Tweet about it using the `existdb` twitter account.
+
 
 ### Preparing a Patch Release
 
