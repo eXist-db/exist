@@ -25,7 +25,7 @@ set EXIST_HOME=%CD%
 
 :gotExistHome
 set ANT_HOME=%EXIST_HOME%\tools\ant
-set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher-1.9.7.jar
+set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher-1.10.1.jar
 
 set JAVA_ENDORSED_DIRS=%EXIST_HOME%\lib\endorsed
 
