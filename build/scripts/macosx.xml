@@ -17,10 +17,7 @@
     <property name="app.resources" value="${app.dir}/Contents/Resources"/>
     <property name="app.exist" value="${app.resources}/eXist-db"/>
     <property name="app.icon" value="installer/scripts/icon.icns"/>
-    <property name="appbundler.jar" value="${tools.ant}/lib/appbundler-1.0.jar"/>
-    <property name="appbundler.url" value="http://java.net/downloads/appbundler/appbundler-1.0.jar"/>
-
-    <available property="appbundler.available" file="${appbundler.jar}"/>
+    <property name="appbundler.jar" value="${tools.appbundler}/lib/appbundler-20170504.jar"/>
 
     <condition property="isMacOS">
         <and>
@@ -35,17 +32,6 @@
         <echo unless:set="isMacOS">
             *** WARNING: There are no tools for signing Mac applications on non-Mac platforms. The resultant .app and .dmg are not signed!
         </echo>
-    </target>
-
-    <target name="install-appbundler" unless="appbundler.available">
-        <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask">
-            <classpath>
-                <pathelement location="${asocat-exist.jar}"/>
-            </classpath>
-        </taskdef>
-
-        <fetch dest="${tools.ant}/lib" url="${appbundler.url}"
-            failonerror="false" maxtime="120"/>
     </target>
 
     <target name="bundle" depends="prepare-app">
@@ -68,7 +54,7 @@
         </bundleapp>
     </target>
 
-    <target name="prepare-app" depends="install-appbundler,xars">
+    <target name="prepare-app" depends="xars">
         <delete failonerror="false" dir="${app.dir}"/>
         <mkdir dir="${dist}"/>
     </target>
