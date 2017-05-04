@@ -295,6 +295,9 @@
         <xs:annotation>
             <xs:documentation>Per collection validation-switch configuration</xs:documentation>
         </xs:annotation>
+        <xs:sequence>
+            <xs:element ref="entity-resolver" minOccurs="0"/>
+        </xs:sequence>
         <xs:attribute name="mode" use="required" type="modeType"/>
     </xs:complexType>
 
@@ -314,6 +317,23 @@
             <xs:enumeration value="false"/>
         </xs:restriction>
     </xs:simpleType>
+    
+    <xs:element name="entity-resolver" type="entityResolverType"/>
+    
+    <xs:complexType name="entityResolverType">
+        <xs:annotation>
+            <xs:documentation>Reference of a catalogue with grammar links</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element ref="catalog"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:element name="catalog" type="catalogType"/>
+    
+    <xs:complexType name="catalogType">
+        <xs:attribute name="uri" use="required" type="xs:string"/>
+    </xs:complexType>
     
     <!-- we are hiding attributes in attributeGroup to manage their
         namespaces as described here: http://docstore.mik.ua/orelly/xml/schema/ch10_04.htm -->
