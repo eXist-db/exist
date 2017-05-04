@@ -3,7 +3,7 @@
     xmlns:repo="http://exist-db.org/xquery/repo"
     xmlns:expath="http://expath.org/ns/pkg"
     xmlns:str="http://exslt.org/strings"
-    version="2.0">
+    version="1.0">
     
     <xsl:output indent="yes"/>
     
@@ -15,7 +15,7 @@
     <xsl:template match="packs">
         <packs>
             <xsl:apply-templates/>
-            <xsl:for-each select="tokenize($apps, ';')">
+            <xsl:for-each select="str:tokenize($apps, ';')">
                 <xsl:call-template name="app">
                     <xsl:with-param name="file" select="."/>
                 </xsl:call-template>
