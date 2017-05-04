@@ -17,10 +17,7 @@
     <property name="app.resources" value="${app.dir}/Contents/Resources"/>
     <property name="app.exist" value="${app.resources}/eXist-db"/>
     <property name="app.icon" value="installer/scripts/icon.icns"/>
-    <property name="appbundler.jar" value="${tools.ant}/lib/appbundler-1.0.jar"/>
-    <property name="appbundler.url" value="http://java.net/downloads/appbundler/appbundler-1.0.jar"/>
-
-    <available property="appbundler.available" file="${appbundler.jar}"/>
+    <property name="appbundler.jar" value="${tools.appbundler}/lib/appbundler-20170504.jar"/>
 
     <condition property="isMacOS">
         <and>
@@ -37,16 +34,10 @@
         </echo>
     </target>
 
-    <target name="install-appbundler" unless="appbundler.available">
-        <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask">
-            <classpath>
-                <pathelement location="${asocat-exist.jar}"/>
-            </classpath>
-        </taskdef>
+    <tstamp>
+        <format property="year" pattern="yyyy" timezone="UTC"/>
+    </tstamp>
 
-        <fetch dest="${tools.ant}/lib" url="${appbundler.url}"
-            failonerror="false" maxtime="120"/>
-    </target>
 
     <target name="bundle" depends="prepare-app">
         <taskdef
@@ -54,21 +45,31 @@
             classname="com.oracle.appbundler.AppBundlerTask"
             classpath="${appbundler.jar}" />
         <bundleapp
-            outputdirectory="${dist}"
-            name="eXist-db"
-            displayname="eXist-db"
-            identifier="org.exist.start.Main"
-            mainclassname="org.exist.start.Main"
-            shortversion="${project.version}"
-            icon="${app.icon}">
+                jvmrequired="1.8"
+                outputdirectory="${dist}"
+                name="${project.name}"
+                displayname="${project.name}"
+                executableName="eXist-JavaAppLauncher"
+                identifier="org.exist.start.Main"
+                shortversion="${project.version}"
+                version="${project.version}"
+                icon="${app.icon}"
+                mainclassname="org.exist.start.Main"
+                copyright="${year} The eXist Project"
+                applicationcategory="public.app-category.developer-tools">
+
             <classpath dir=".">
                 <include name="start.jar"/>
             </classpath>
+
             <option value="-Dexist.home=$APP_ROOT/Contents/Resources/eXist-db"/>
+
+            <option value="-Xdock:name=${project.name}"/>
+
         </bundleapp>
     </target>
 
-    <target name="prepare-app" depends="install-appbundler,xars">
+    <target name="prepare-app" depends="xars">
         <delete failonerror="false" dir="${app.dir}"/>
         <mkdir dir="${dist}"/>
     </target>
