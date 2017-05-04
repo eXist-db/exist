@@ -242,7 +242,14 @@
         <touch file="${dist.dir}/log/.DO_NOT_DELETE"/>
 
         <filter token="database" value="native"/>
-
+        <mkdir dir="${dist.dir}/autodeploy"/>
+        <mkdir dir="${dist.dir}/lib/test"/>
+        <copy todir="${dist.dir}/autodeploy">
+            <fileset dir="./autodeploy">
+                <exclude name="**/*~"/>
+                <include name="*.xar"/>
+            </fileset>
+        </copy>
         <copy todir="${dist.dir}/" filtering="true">
             <fileset dir=".">
                 <include name="LICENSE"/>
@@ -354,6 +361,17 @@
                 <include name="*.sh"/>
             </fileset>
         </chmod>
+        
+        <!-- Re-sign jar files that get re-built when this script gets invoked -->
+        <signjar alias="exist" storepass="secret" keystore="key.store">
+            <fileset dir="${dist.dir}">
+                <include name="exist*.jar"/>
+                <include name="start.jar"/>
+                <include name="exist-optional.jar"/>
+                <include name="examples.jar"/>
+                <include name="lib/extensions/exist-modules.jar"/>
+            </fileset>
+        </signjar>
     </target>
     
     <!-- ================================================================== -->
