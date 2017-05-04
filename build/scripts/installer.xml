@@ -28,21 +28,30 @@
         <!--ant antfile="build.xml" dir="tools/izpack"/-->
     </target>
 
-    <target name="macosx" depends="install-appbundler">
+    <target name="macosx">
         <taskdef
             name="bundleapp"
             classname="com.oracle.appbundler.AppBundlerTask"
             classpath="${appbundler.jar}" />
         <bundleapp
-            outputdirectory="${installer.scripts}"
-            name="eXist-db"
-            displayname="eXist-db"
-            identifier="org.exist.start.Main"
-            mainclassname="org.exist.start.Main"
-            shortversion="${project.version}"
-            icon="${installer.mac.icon}">
+                jvmrequired="1.8"
+                outputdirectory="${installer.scripts}"
+                name="${project.name}"
+                displayname="${project.name}"
+                executableName="eXist-JavaAppLauncher"
+                identifier="org.exist.start.Main"
+                shortversion="${project.version}"
+                version="${project.version}"
+                icon="${installer.mac.icon}"
+                mainclassname="org.exist.start.Main"
+                copyright="${year} The eXist Project"
+                applicationcategory="public.app-category.developer-tools">
+
             <classpath file="start.jar"/>
+
             <option value="-Dexist.home=$APP_ROOT/.."/>
+
+            <option value="-Xdock:name=${project.name}"/>
         </bundleapp>
     </target>
 

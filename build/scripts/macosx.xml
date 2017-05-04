@@ -34,23 +34,38 @@
         </echo>
     </target>
 
+    <tstamp>
+        <format property="year" pattern="yyyy" timezone="UTC"/>
+    </tstamp>
+
+
     <target name="bundle" depends="prepare-app">
         <taskdef
             name="bundleapp"
             classname="com.oracle.appbundler.AppBundlerTask"
             classpath="${appbundler.jar}" />
         <bundleapp
-            outputdirectory="${dist}"
-            name="eXist-db"
-            displayname="eXist-db"
-            identifier="org.exist.start.Main"
-            mainclassname="org.exist.start.Main"
-            shortversion="${project.version}"
-            icon="${app.icon}">
+                jvmrequired="1.8"
+                outputdirectory="${dist}"
+                name="${project.name}"
+                displayname="${project.name}"
+                executableName="eXist-JavaAppLauncher"
+                identifier="org.exist.start.Main"
+                shortversion="${project.version}"
+                version="${project.version}"
+                icon="${app.icon}"
+                mainclassname="org.exist.start.Main"
+                copyright="${year} The eXist Project"
+                applicationcategory="public.app-category.developer-tools">
+
             <classpath dir=".">
                 <include name="start.jar"/>
             </classpath>
+
             <option value="-Dexist.home=$APP_ROOT/Contents/Resources/eXist-db"/>
+
+            <option value="-Xdock:name=${project.name}"/>
+
         </bundleapp>
     </target>
 
