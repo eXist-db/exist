@@ -129,8 +129,12 @@ Once development on a new stable version is complete, the following steps will p
     $ git tag -s -m "Release tag for eXist 3.1.0" eXist-3.1.0
     $ git push origin eXist-3.1.0
     ```
+5. Update the stable branch (`master`) of eXist-db to reflect the latest release:
+    ```
+    $ git push origin develop:master
+    ```
 
-5. Prepare for development on the next version of eXist by modifying `$EXIST_HOME/build.properties` to increment to the next the snapshot phase of the next minor version:
+6. Prepare for development on the next version of eXist by modifying `$EXIST_HOME/build.properties` to increment to the next the snapshot phase of the next minor version:
     ```
     project.version = 3.2.0-SNAPSHOT
     ```
