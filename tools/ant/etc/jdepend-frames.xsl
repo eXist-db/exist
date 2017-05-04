@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <xsl:stylesheet  xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"
   xmlns:lxslt="http://xml.apache.org/xslt"
-  xmlns:redirect="http://xml.apache.org/xalan/redirect"
+  xmlns:redirect="org.apache.xalan.lib.Redirect"
   extension-element-prefixes="redirect">
 <xsl:output method="html" indent="yes" encoding="US-ASCII"/>
 <!--
@@ -27,8 +27,6 @@
 
  It creates a set of HTML files a la javadoc where you can browse easily
  through all packages and classes.
-
- @author <a href="mailto:jtulley@novell.com">Jeff Tulley</a>
 
   -->
 <xsl:param name="output.dir" select="'.'"/>
