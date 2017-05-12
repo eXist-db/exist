@@ -19,6 +19,8 @@
     $Id$
 -->
 <project name="Sign eXist jarfiles" default="jnlp-all" basedir="../..">
+
+    <property file="${basedir}/build.properties" />
     
     <description>Sign jarfiles for eXist webstart application</description>
     
