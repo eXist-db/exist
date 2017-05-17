@@ -69,6 +69,7 @@ public class JSONWriter extends XMLWriter {
     protected boolean useNSPrefix = false;
     
     protected boolean prefixAttributes = false;
+    protected boolean ignoreWhitespaceTextNodes = false;
     private String jsonp = null;
     private boolean indent = false;
 	
@@ -91,10 +92,12 @@ public class JSONWriter extends XMLWriter {
     public void setOutputProperties(final Properties properties) {
         super.setOutputProperties(properties);
 
-        final String useNSProp = properties.getProperty(EXistOutputKeys.JSON_OUTPUT_NS_PREFIX, "no");
-        useNSPrefix = useNSProp.equalsIgnoreCase("yes");
-        final String prefixForAttr = properties.getProperty(EXistOutputKeys.JSON_PREFIX_ATTRIBUTES, "no");
-        prefixAttributes = prefixForAttr.equalsIgnoreCase("yes");
+        final String useNSPrefixProp = properties.getProperty(EXistOutputKeys.JSON_OUTPUT_NS_PREFIX, "no");
+        useNSPrefix = useNSPrefixProp.equalsIgnoreCase("yes");
+        final String prefixAttributesProp = properties.getProperty(EXistOutputKeys.JSON_PREFIX_ATTRIBUTES, "no");
+        prefixAttributes = prefixAttributesProp.equalsIgnoreCase("yes");
+        final String ignoreWhitespaceTextNodesProp = properties.getProperty(EXistOutputKeys.JSON_IGNORE_WHITESPACE_TEXT_NODES, "no");
+        ignoreWhitespaceTextNodes = ignoreWhitespaceTextNodesProp.equalsIgnoreCase("yes");
         jsonp = properties.getProperty(EXistOutputKeys.JSONP);
         indent = properties.getProperty(OutputKeys.INDENT, "no").equalsIgnoreCase("yes");
     }
@@ -214,6 +217,13 @@ public class JSONWriter extends XMLWriter {
 
     @Override
     public void characters(final CharSequence chars) throws TransformerException {
+        if(ignoreWhitespaceTextNodes) {
+            final boolean isWhitespace = chars.toString().trim().isEmpty();
+            if(isWhitespace) {
+                return;
+            }
+        }
+
         final JSONObject parent = stack.peek();
         final JSONNode value = new JSONValue(chars.toString());
         value.setIndent(indent);
