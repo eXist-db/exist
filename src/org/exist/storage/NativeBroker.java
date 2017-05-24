@@ -52,9 +52,11 @@ import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.journal.*;
-import org.exist.storage.lock.*;
 import org.exist.storage.lock.Lock.LockMode;
-import org.exist.storage.lock.Lock.LockType;
+import org.exist.storage.lock.LockManager;
+import org.exist.storage.lock.ManagedCollectionLock;
+import org.exist.storage.lock.ManagedDocumentLock;
+import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.serializers.NativeSerializer;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
@@ -81,9 +83,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.function.BiFunction;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -191,6 +192,7 @@ public class NativeBroker extends DBBroker {
 
     private IEmbeddedXMLStreamReader streamReader = null;
 
+    private final LockManager lockManager;
     private final Optional<JournalManager> logManager;
 
     private boolean incrementalDocIds = false;
@@ -198,6 +200,7 @@ public class NativeBroker extends DBBroker {
     /** initialize database; read configuration, etc. */
     public NativeBroker(final BrokerPool pool, final Configuration config) throws EXistException {
         super(pool, config);
+        this.lockManager = pool.getLockManager();
         this.logManager = pool.getJournalManager();
         LOG.debug("Initializing broker " + hashCode());
 
@@ -875,7 +878,7 @@ public class NativeBroker extends DBBroker {
      */
     private @Nullable Collection loadCollection(final XmldbURI collectionUri, final long address)
             throws PermissionDeniedException, LockException, IOException {
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK, LockType.COLLECTIONS_DBX)) {
+        try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeReadLock(collectionsDb.getLockName())) {
             VariableByteInput is;
             if (address == BFile.UNKNOWN_ADDRESS) {
                 final Value key = new CollectionStore.CollectionKey(collectionUri.toString());
@@ -998,7 +1001,7 @@ public class NativeBroker extends DBBroker {
         final Pattern p = Pattern.compile(regexp);
         final Matcher m = p.matcher("");
 
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK, LockType.COLLECTIONS_DBX)) {
+        try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeReadLock(collectionsDb.getLockName())) {
 
             //TODO write a regexp lookup for key data in BTree.query
             //final IndexQuery idxQuery = new IndexQuery(IndexQuery.REGEXP, regexp);
@@ -1037,7 +1040,7 @@ public class NativeBroker extends DBBroker {
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         final Collection collection = collectionsCache.getIfPresent(uri);
         if(collection == null) {
-            try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK, LockType.COLLECTIONS_DBX)) {
+            try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeReadLock(collectionsDb.getLockName())) {
 
                 final Value key = new CollectionStore.CollectionKey(uri.toString());
                 final VariableByteInput is = collectionsDb.getAsStream(key);
@@ -1724,7 +1727,7 @@ public class NativeBroker extends DBBroker {
         collectionsCache.invalidate(sourceCollection.getURI());
 
         // remove source from disk
-        try (final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
+        try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
             final Value key = new CollectionStore.CollectionKey(sourceCollectionUri.toString());
             collectionsDb.remove(transaction, key);
         }
@@ -1808,7 +1811,7 @@ public class NativeBroker extends DBBroker {
 
             // 5) remove Collection from collections.dbx
             if(parentCollection != null) {
-                try (final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
+                try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
                     final Value key = new CollectionStore.CollectionKey(collectionUri.getRawCollectionPath());
                     collectionsDb.remove(transaction, key);
 
@@ -1831,7 +1834,7 @@ public class NativeBroker extends DBBroker {
 
             //TODO(AR) this could possibly be executed asynchronously as a task, we don't need to know when it completes (this is because access to documents is through a Collection, and the Collection was removed above), however we cannot recycle the collectionId until all docs are gone
             // 6) unlink all documents from the Collection
-            try (final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
+            try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
                 final Value docKey = new CollectionStore.DocumentKey(collection.getId());
                 final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, docKey);
                 collectionsDb.removeAll(transaction, query);
@@ -1903,7 +1906,7 @@ public class NativeBroker extends DBBroker {
             // WM: now removed in one step. see above.
             //removeResourceMetadata(transaction, doc);
             //Remove document nodes' index entries
-            new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
+            new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
                 @Override
                 public Object start() {
                     try {
@@ -1922,7 +1925,7 @@ public class NativeBroker extends DBBroker {
             }.run();
 
             //Remove nodes themselves
-            new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
+            new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
                 @Override
                 public Object start() {
                     if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
@@ -1993,7 +1996,6 @@ public class NativeBroker extends DBBroker {
      * @return A managed lock for the Collection
      */
     private ManagedCollectionLock writeLockCollection(@Nullable final ManagedCollectionLock parentCollectionLock, final XmldbURI collectionUri, final boolean lockParent) throws LockException {
-        final LockManager lockManager = getBrokerPool().getLockManager();
         if(parentCollectionLock != null) {
             return lockManager.acquireCollectionWriteLock(parentCollectionLock, collectionUri);
         } else {
@@ -2010,7 +2012,6 @@ public class NativeBroker extends DBBroker {
      * @return A managed lock for the Collection
      */
     private ManagedCollectionLock readLockCollection(@Nullable final ManagedCollectionLock parentCollectionLock, final XmldbURI collectionUri) throws LockException {
-        final LockManager lockManager = getBrokerPool().getLockManager();
         if(parentCollectionLock != null) {
             return lockManager.acquireCollectionReadLock(parentCollectionLock, collectionUri);
         } else {
@@ -2032,7 +2033,7 @@ public class NativeBroker extends DBBroker {
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         collectionsCache.put(collection);
 
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
+        try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
 
             if(collection.getId() == Collection.UNKNOWN_COLLECTION_ID) {
                 collection.setId(getNextCollectionId(transaction));
@@ -2065,7 +2066,7 @@ public class NativeBroker extends DBBroker {
         if(nextCollectionId != Collection.UNKNOWN_COLLECTION_ID) {
             return nextCollectionId;
         }
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, Lock.LockType.COLLECTIONS_DBX)) {
+        try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
             final Value key = new CollectionStore.CollectionKey(CollectionStore.NEXT_COLLECTION_ID_KEY);
             final Value data = collectionsDb.get(key);
             if(data != null) {
@@ -2169,7 +2170,7 @@ public class NativeBroker extends DBBroker {
         for (final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
             final DocumentImpl doc = i.next();
             LOG.debug("Dropping index for document " + doc.getFileURI());
-            new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
+            new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
                 @Override
                 public Object start() {
                     try {
@@ -2249,7 +2250,7 @@ public class NativeBroker extends DBBroker {
 
                 // if we opened the Collection rather than creating it, obtain a lock in the transaction
                 if (!created && transaction != null) {
-                    transaction.acquireCollectionLock(() -> pool.getLockManager().acquireCollectionWriteLock(temp.getURI(), false));
+                    transaction.acquireCollectionLock(() -> lockManager.acquireCollectionWriteLock(temp.getURI(), false));
                 }
 
                 storeXMLResource(transaction, targetDoc);
@@ -2295,7 +2296,7 @@ public class NativeBroker extends DBBroker {
     @Override
     public DocumentImpl getResourceById(final int collectionId, final byte resourceType, final int documentId) throws PermissionDeniedException {
         XmldbURI uri = null;
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK, LockType.COLLECTIONS_DBX)) {
+        try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeReadLock(collectionsDb.getLockName())) {
             //final VariableByteOutputStream os = new VariableByteOutputStream(8);
             //doc.write(os);
             //Value key = new CollectionStore.DocumentKey(doc.getCollection().getId(), doc.getResourceType(), doc.getDocId());
@@ -2356,7 +2357,7 @@ public class NativeBroker extends DBBroker {
     @Override
     public void storeXMLResource(final Txn transaction, final DocumentImpl doc) {
         try(final VariableByteOutputStream os = new VariableByteOutputStream(8);
-				final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
+                final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
             doc.write(os);
             final Value key = new CollectionStore.DocumentKey(doc.getCollection().getId(), doc.getResourceType(), doc.getDocId());
             collectionsDb.put(transaction, key, os.data(), true);
@@ -2588,7 +2589,7 @@ public class NativeBroker extends DBBroker {
     //TODO : consider a better cooperation with Collection -pb
     @Override
     public void getCollectionResources(final Collection.InternalAccess collectionInternalAccess) {
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK, LockType.COLLECTIONS_DBX)) {
+        try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeReadLock(collectionsDb.getLockName())) {
             final Value key = new CollectionStore.DocumentKey(collectionInternalAccess.getId());
             final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
 
@@ -2602,7 +2603,7 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public void getResourcesFailsafe(final BTreeCallback callback, final boolean fullScan) throws TerminatedException {
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK, LockType.COLLECTIONS_DBX)) {
+        try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeReadLock(collectionsDb.getLockName())) {
             final Value key = new CollectionStore.DocumentKey();
             final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
             if(fullScan) {
@@ -2619,7 +2620,7 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public void getCollectionsFailsafe(final BTreeCallback callback) throws TerminatedException {
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK, LockType.COLLECTIONS_DBX)) {
+        try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeReadLock(collectionsDb.getLockName())) {
             final Value key = new CollectionStore.CollectionKey();
             final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
             collectionsDb.query(query, callback);
@@ -3011,7 +3012,7 @@ public class NativeBroker extends DBBroker {
             }
             try {
                 if(!document.getMetadata().isReferenced()) {
-                    new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
+                    new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
                         @Override
                         public Object start() {
                             final NodeHandle node = (NodeHandle) document.getFirstChild();
@@ -3026,7 +3027,7 @@ public class NativeBroker extends DBBroker {
 
             final NodeRef ref = new NodeRef(document.getDocId());
             final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-            new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
+            new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
                 @Override
                 public Object start() {
                     try {
@@ -3108,7 +3109,7 @@ public class NativeBroker extends DBBroker {
      */
     private void removeResourceMetadata(final Txn transaction, final DocumentImpl document) {
         // remove document metadata
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
+        try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Removing resource metadata for " + document.getDocId());
             }
@@ -3139,7 +3140,7 @@ public class NativeBroker extends DBBroker {
             return nextDocId;
         }
         nextDocId = 1;
-        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
+        try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
             final Value key = new CollectionStore.CollectionKey(CollectionStore.NEXT_DOC_ID_KEY);
             final Value data = collectionsDb.get(key);
             if(data != null) {
@@ -3207,7 +3208,7 @@ public class NativeBroker extends DBBroker {
             // dropping dom index
             final NodeRef ref = new NodeRef(doc.getDocId());
             final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-            new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
+            new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
                 @Override
                 public Object start() {
                     try {
@@ -3237,7 +3238,7 @@ public class NativeBroker extends DBBroker {
             }
             flush();
             // remove the old nodes
-            new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
+            new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
                 @Override
                 public Object start() {
                     domDb.removeAll(transaction, firstChild);
@@ -3292,7 +3293,7 @@ public class NativeBroker extends DBBroker {
             xupdateConsistencyChecks = ((Boolean) property).booleanValue();
         }
         if(xupdateConsistencyChecks) {
-            new DOMTransaction(this, domDb, LockMode.READ_LOCK) {
+            new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
                 @Override
                 public Object start() throws ReadOnlyException {
                     LOG.debug("Pages used: " + domDb.debugPages(doc, false));
@@ -3316,7 +3317,7 @@ public class NativeBroker extends DBBroker {
             }
             final NodeRef ref = new NodeRef(doc.getDocId());
             final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-            new DOMTransaction(this, domDb, LockMode.READ_LOCK) {
+            new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
                 @Override
                 public Object start() {
                     try {
@@ -3344,7 +3345,7 @@ public class NativeBroker extends DBBroker {
         final DocumentImpl doc = node.getOwnerDocument();
         final short nodeType = node.getNodeType();
         final byte data[] = node.serialize();
-        new DOMTransaction(this, domDb, LockMode.WRITE_LOCK, doc) {
+        new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName()), doc) {
             @Override
             public Object start() throws ReadOnlyException {
                 long address;
@@ -3376,7 +3377,7 @@ public class NativeBroker extends DBBroker {
             final DocumentImpl doc = node.getOwnerDocument();
             final long internalAddress = node.getInternalAddress();
             final byte[] data = node.serialize();
-            new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
+            new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
                 @Override
                 public Object start() throws ReadOnlyException {
                     if(StorageAddress.hasAddress(internalAddress)) {
@@ -3412,7 +3413,7 @@ public class NativeBroker extends DBBroker {
     public void insertNodeAfter(final Txn transaction, final NodeHandle previous, final IStoredNode node) {
         final byte data[] = node.serialize();
         final DocumentImpl doc = previous.getOwnerDocument();
-        new DOMTransaction(this, domDb, LockMode.WRITE_LOCK, doc) {
+        new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName()), doc) {
             @Override
             public Object start() {
                 long address = previous.getInternalAddress();
@@ -3515,7 +3516,7 @@ public class NativeBroker extends DBBroker {
     public <T extends IStoredNode> void removeNode(final Txn transaction, final IStoredNode<T> node, final NodePath currentPath,
                            final String content) {
         final DocumentImpl doc = node.getOwnerDocument();
-        new DOMTransaction(this, domDb, LockMode.WRITE_LOCK, doc) {
+        new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName()), doc) {
             @Override
             public Object start() {
                 final long address = node.getInternalAddress();
@@ -3779,7 +3780,7 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public String getNodeValue(final IStoredNode node, final boolean addWhitespace) {
-        return (String) new DOMTransaction(this, domDb, LockMode.READ_LOCK) {
+        return (String) new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
             @Override
             public Object start() {
                 return domDb.getNodeValue(NativeBroker.this, node, addWhitespace);
@@ -3789,7 +3790,7 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public IStoredNode objectWith(final Document doc, final NodeId nodeId) {
-        return (IStoredNode<?>) new DOMTransaction(this, domDb, LockMode.READ_LOCK) {
+        return (IStoredNode<?>) new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
             @Override
             public Object start() {
                 final Value val = domDb.get(NativeBroker.this, new NodeProxy((DocumentImpl) doc, nodeId));
@@ -3812,7 +3813,7 @@ public class NativeBroker extends DBBroker {
         if(!StorageAddress.hasAddress(p.getInternalAddress())) {
             return objectWith(p.getOwnerDocument(), p.getNodeId());
         }
-        return (IStoredNode<?>) new DOMTransaction(this, domDb, LockMode.READ_LOCK) {
+        return (IStoredNode<?>) new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
             @Override
             public Object start() {
                 // DocumentImpl sets the nodeId to DOCUMENT_NODE when it's trying to find its top-level
@@ -3894,9 +3895,7 @@ public class NativeBroker extends DBBroker {
 
     protected void rebuildIndex(final byte indexId) {
         final BTree btree = getStorage(indexId);
-        final Lock lock = btree.getLock();
-        try(final ManagedLock<Lock> btreeLock = ManagedLock.acquire(lock, LockMode.WRITE_LOCK)) {
-
+        try(final ManagedLock<ReentrantLock> btreeLock = lockManager.acquireBtreeWriteLock(btree.getLockName())) {
             LOG.info("Rebuilding index " + FileUtils.fileName(btree.getFile()));
             btree.rebuild();
             LOG.info("Index " + FileUtils.fileName(btree.getFile()) + " was rebuilt.");
@@ -3925,7 +3924,7 @@ public class NativeBroker extends DBBroker {
             return;
         }
         try {
-            new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
+            new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
                 @Override
                 public Object start() {
                     try {
@@ -3937,7 +3936,7 @@ public class NativeBroker extends DBBroker {
                 }
             }.run();
             if(syncEvent == Sync.MAJOR) {
-                try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK, LockType.COLLECTIONS_DBX)) {
+                try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
                     collectionsDb.flush();
                 } catch(final LockException e) {
                     LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
@@ -3998,7 +3997,7 @@ public class NativeBroker extends DBBroker {
     //TODO UNDERSTAND : why not use shutdown ? -pb
     @Override
     public void closeDocument() {
-        new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
+        new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
             @Override
             public Object start() {
                 domDb.closeDocument();
@@ -4191,7 +4190,7 @@ public class NativeBroker extends DBBroker {
             final DocumentImpl doc = node.getOwnerDocument();
             if(indexMode == IndexMode.STORE && node.getNodeType() == Node.ELEMENT_NODE && level <= defaultIndexDepth) {
                 //TODO : used to be this, but NativeBroker.this avoids an owner change
-                new DOMTransaction(NativeBroker.this, domDb, LockMode.WRITE_LOCK) {
+                new DOMTransaction(NativeBroker.this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
                     @Override
                     public Object start() throws ReadOnlyException {
                         try {

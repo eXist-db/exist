@@ -6,8 +6,7 @@ import org.exist.indexing.StructuralIndex;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.structural.NativeStructuralIndexWorker;
 import org.exist.util.Configuration;
@@ -15,6 +14,7 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FileUtils;
 
 import java.util.Optional;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -55,7 +55,8 @@ public class Repair {
                 return;
             }
 
-            try(final ManagedLock<Lock> btreeLock = ManagedLock.acquire(btree.getLock(), LockMode.WRITE_LOCK)) {
+            final LockManager lockManager = broker.getBrokerPool().getLockManager();
+            try(final ManagedLock<ReentrantLock> btreeLock = lockManager.acquireBtreeWriteLock(btree.getLockName())) {
                 System.console().printf("Rebuilding %15s ...", FileUtils.fileName(btree.getFile()));
                 btree.rebuild();
                 System.out.println("Done");

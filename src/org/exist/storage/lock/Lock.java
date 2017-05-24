@@ -46,7 +46,7 @@ public interface Lock extends Debuggable {
         COLLECTION,
         DOCUMENT,
 
-        COLLECTIONS_DBX
+        BTREE
     }
 
     /**

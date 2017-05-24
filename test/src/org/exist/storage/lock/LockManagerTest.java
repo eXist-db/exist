@@ -10,6 +10,7 @@ import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.*;
@@ -670,7 +671,7 @@ public class LockManagerTest {
 
     /**
      * When acquiring a WRITE lock on a Document
-     * ensure that we only take a single READ lock on the
+     * ensure that we only take a single WRITE lock on the
      * Document
      */
     @Test
@@ -709,6 +710,117 @@ public class LockManagerTest {
         // we now expect to release the lock on the document (as the managed lock was closed)
         assertEquals(LockTable.LockAction.Action.Released, event3.action);
         assertEquals(docUri, event3.id);
+        assertEquals(Lock.LockMode.WRITE_LOCK, event3.mode);
+    }
+
+    @Test
+    public void getBtreeLock_isStripedByPath() {
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+
+        final ReentrantLock btree1Lock1 = lockManager.getBTreeLock("btree1.dbx");
+        assertNotNull(btree1Lock1);
+
+        final ReentrantLock btree1Lock2 = lockManager.getBTreeLock("btree1.dbx");
+        assertNotNull(btree1Lock2);
+
+        assertTrue(btree1Lock1 == btree1Lock2);
+
+        final ReentrantLock btree2Lock = lockManager.getBTreeLock("btree2.dbx");
+        assertNotNull(btree2Lock);
+        assertFalse(btree1Lock1 == btree2Lock);
+
+        final ReentrantLock btree3Lock = lockManager.getBTreeLock("btree3.dbx");
+        assertNotNull(btree3Lock);
+        assertFalse(btree1Lock1 == btree3Lock);
+
+        assertFalse(btree2Lock == btree3Lock);
+    }
+
+    /**
+     * When acquiring a READ lock on a BTree
+     * ensure that we only take a single BTree lock on the
+     * Document
+     */
+    @Test
+    public void acquireBTreeReadLock() throws LockException {
+        final LockTable lockTable = LockTable.getInstance();
+
+        final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
+        lockTable.registerListener(lockEventRecordingListener);
+
+        final String btree1Name = "btree1.dbx";
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        try(final ManagedLock<ReentrantLock> btree1Lock
+                    = lockManager.acquireBtreeReadLock(btree1Name)) {
+            assertNotNull(btree1Lock);
+        }
+
+        lockTable.deregisterListener(lockEventRecordingListener);
+
+        // wait for the listener to be deregistered
+        while(lockEventRecordingListener.isRegistered()) {}
+
+        final Stack<LockTable.LockAction> events = lockEventRecordingListener.getEvents();
+        assertEquals(3, events.size());
+        final LockTable.LockAction event3 = events.pop();
+        final LockTable.LockAction event2 = events.pop();
+        final LockTable.LockAction event1 = events.pop();
+
+        assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
+        assertEquals(btree1Name, event1.id);
+        assertEquals(Lock.LockMode.READ_LOCK, event1.mode);
+
+        assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
+        assertEquals(btree1Name, event2.id);
+        assertEquals(Lock.LockMode.READ_LOCK, event2.mode);
+
+        // we now expect to release the lock on the document (as the managed lock was closed)
+        assertEquals(LockTable.LockAction.Action.Released, event3.action);
+        assertEquals(btree1Name, event3.id);
+        assertEquals(Lock.LockMode.READ_LOCK, event3.mode);
+    }
+
+    /**
+     * When acquiring a WRITE lock on a BTree
+     * ensure that we only take a single WRITE lock on the
+     * BTree
+     */
+    @Test
+    public void acquireBTreeWriteLock() throws LockException {
+        final LockTable lockTable = LockTable.getInstance();
+
+        final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
+        lockTable.registerListener(lockEventRecordingListener);
+
+        final String btree1Name = "btree1.dbx";
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        try(final ManagedLock<ReentrantLock> btree1Lock
+                    = lockManager.acquireBtreeWriteLock(btree1Name)) {
+            assertNotNull(btree1Lock);
+        }
+
+        lockTable.deregisterListener(lockEventRecordingListener);
+
+        // wait for the listener to be deregistered
+        while(lockEventRecordingListener.isRegistered()) {}
+
+        final Stack<LockTable.LockAction> events = lockEventRecordingListener.getEvents();
+        assertEquals(3, events.size());
+        final LockTable.LockAction event3 = events.pop();
+        final LockTable.LockAction event2 = events.pop();
+        final LockTable.LockAction event1 = events.pop();
+
+        assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
+        assertEquals(btree1Name, event1.id);
+        assertEquals(Lock.LockMode.WRITE_LOCK, event1.mode);
+
+        assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
+        assertEquals(btree1Name, event2.id);
+        assertEquals(Lock.LockMode.WRITE_LOCK, event2.mode);
+
+        // we now expect to release the lock on the document (as the managed lock was closed)
+        assertEquals(LockTable.LockAction.Action.Released, event3.action);
+        assertEquals(btree1Name, event3.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event3.mode);
     }
 

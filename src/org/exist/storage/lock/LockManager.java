@@ -30,6 +30,7 @@ import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 
@@ -72,11 +73,13 @@ public class LockManager {
 
     private final WeakLazyStripes<String, MultiLock> collectionLocks;
     private final WeakLazyStripes<String, ReentrantReadWriteLock> documentLocks;
+    private final WeakLazyStripes<String, ReentrantLock> btreeLocks;
 
 
     public LockManager(final int concurrencyLevel) {
         this.collectionLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createCollectionLock);
         this.documentLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createDocumentLock);
+        this.btreeLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createBtreeLock);
         LOG.info("Configured LockManager with concurrencyLevel={}", concurrencyLevel);
     }
 
@@ -94,6 +97,14 @@ public class LockManager {
      */
     private static ReentrantReadWriteLock createDocumentLock(final String documentPath) {
         return new ReentrantReadWriteLock();
+    }
+
+    /**
+     * Creates a new lock for a {@link org.exist.storage.btree.BTree}
+     * will be Striped by the btreeFileName
+     */
+    private static ReentrantLock createBtreeLock(final String btreeFileName) {
+        return new ReentrantLock();
     }
 
     /**
@@ -429,4 +440,93 @@ public class LockManager {
         final ReentrantReadWriteLock existingLock = getDocumentLock(documentPath.toString());
         return existingLock.getReadLockCount() > 0;
     }
+
+    /**
+     * Retrieves a lock for a {@link org.exist.storage.dom.DOMFile}
+     *
+     * This function is concerned with just the lock object
+     * and has no knowledge of the state of the lock. The only
+     * guarantee is that if this lock has not been requested before
+     * then it will be provided in the unlocked state
+     *
+     * @param domFileName The path of the Document for which a lock is requested
+     *
+     * @return A lock for the DOMFile
+     */
+    ReentrantLock getBTreeLock(final String domFileName) {
+        return btreeLocks.get(domFileName);
+    }
+
+    /**
+     * Acquire a WRITE_LOCK on a {@link org.exist.storage.btree.BTree}
+     *
+     * @param btreeFileName the filename of the BTree
+     *
+     * @return the lock for the BTree
+     *
+     * @throws LockException if the lock could not be acquired
+     */
+    public ManagedLock<ReentrantLock> acquireBtreeReadLock(final String btreeFileName) throws LockException {
+        final long groupId = System.nanoTime();
+
+        final ReentrantLock lock = getBTreeLock(btreeFileName);
+        try {
+            lockTable.attempt(groupId, btreeFileName, LockType.BTREE, Lock.LockMode.READ_LOCK);
+
+            lock.lockInterruptibly();
+
+            lockTable.acquired(groupId, btreeFileName, LockType.BTREE, Lock.LockMode.READ_LOCK);
+        } catch(final InterruptedException e) {
+            lockTable.attemptFailed(groupId, btreeFileName, LockType.BTREE, Lock.LockMode.READ_LOCK);
+            throw new LockException("Unable to acquire READ_LOCK for: " + btreeFileName, e);
+        }
+
+        return new ManagedLock(lock, () -> {
+            lock.unlock();
+            lockTable.released(groupId, btreeFileName, LockType.BTREE, Lock.LockMode.READ_LOCK);
+        });
+    }
+
+    /**
+     * Acquire a WRITE_LOCK on a {@link org.exist.storage.btree.BTree}
+     *
+     * @param btreeFileName the filename of the BTree
+     *
+     * @return the lock for the BTree
+     *
+     * @throws LockException if the lock could not be acquired
+     */
+    public ManagedLock<ReentrantLock> acquireBtreeWriteLock(final String btreeFileName) throws LockException {
+        final long groupId = System.nanoTime();
+
+        final ReentrantLock lock = getBTreeLock(btreeFileName);
+        try {
+            lockTable.attempt(groupId, btreeFileName, LockType.BTREE, Lock.LockMode.WRITE_LOCK);
+
+            lock.lockInterruptibly();
+
+            lockTable.acquired(groupId, btreeFileName, LockType.BTREE, Lock.LockMode.WRITE_LOCK);
+        } catch(final InterruptedException e) {
+            lockTable.attemptFailed(groupId, btreeFileName, LockType.BTREE, Lock.LockMode.WRITE_LOCK);
+            throw new LockException("Unable to acquire WRITE_LOCK for: " + btreeFileName, e);
+        }
+
+        return new ManagedLock(lock, () -> {
+            lock.unlock();
+            lockTable.released(groupId, btreeFileName, LockType.BTREE, Lock.LockMode.WRITE_LOCK);
+        });
+    }
+
+    public boolean isBtreeLocked(final String domFileName) {
+        final ReentrantLock lock = getBTreeLock(domFileName);
+        return lock.isLocked();
+    }
+
+    /**
+     * @deprecated Just a place holder until we can make the BTree reader/writer safe
+     */
+    public boolean isBtreeLockedForWrite(final String btreeFileName) {
+        return isBtreeLocked(btreeFileName);
+    }
+
 }

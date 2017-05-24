@@ -42,8 +42,7 @@ import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.IndexQuery;
 import org.exist.storage.btree.Value;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.Lock.LockMode;
+
 import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
@@ -56,6 +55,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.exist.security.PermissionDeniedException;
 
 /**
@@ -114,7 +115,8 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
             final byte[] fromKey = computeKey(type, qname, range.start);
             final byte[] toKey = computeKey(type, qname, range.end + 1);
             final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
-            try(final ManagedLock<Lock> btreeLock = ManagedLock.acquire(index.btree.getLock(), LockMode.READ_LOCK)) {
+
+            try(final ManagedLock<ReentrantLock> btreeLock = index.lockManager.acquireBtreeReadLock(index.btree.getLockName())) {
                 index.btree.query(query, callback);
             } catch (final LockException e) {
                 NativeStructuralIndex.LOG.warn("Lock problem while searching structural index: " + e.getMessage(), e);
@@ -182,7 +184,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     public NodeSet findDescendantsByTagName(byte type, QName qname, int axis, DocumentSet docs, NodeSet contextSet, int contextId, Expression parent) {
         final NewArrayNodeSet result = new NewArrayNodeSet();
         final FindDescendantsCallback callback = new FindDescendantsCallback(type, axis, qname, contextId, result, parent);
-        try(final ManagedLock<Lock> btreeLock = ManagedLock.acquire(index.btree.getLock(), LockMode.READ_LOCK)) {
+        try(final ManagedLock<ReentrantLock> btreeLock = index.lockManager.acquireBtreeReadLock(index.btree.getLockName())) {
             for (final NodeProxy ancestor : contextSet) {
                 final DocumentImpl doc = ancestor.getOwnerDocument();
                 final NodeId ancestorId = ancestor.getNodeId();
@@ -212,7 +214,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     public NodeSet findAncestorsByTagName(byte type, QName qname, int axis, DocumentSet docs, NodeSet contextSet,
                                           int contextId) {
         final NewArrayNodeSet result = new NewArrayNodeSet();
-        try(final ManagedLock<Lock> btreeLock = ManagedLock.acquire(index.btree.getLock(), LockMode.READ_LOCK)) {
+        try(final ManagedLock<ReentrantLock> btreeLock = index.lockManager.acquireBtreeReadLock(index.btree.getLockName())) {
             for (final NodeProxy descendant : contextSet) {
                 NodeId parentId;
                 if (axis == Constants.ANCESTOR_SELF_AXIS || axis == Constants.SELF_AXIS)
@@ -258,7 +260,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
             final DocumentImpl doc = ancestor.getOwnerDocument();
             final NodeId ancestorId = ancestor.getNodeId();
             final List<QName> qnames = getQNamesForDoc(doc);
-            try(final ManagedLock<Lock> btreeLock = ManagedLock.acquire(index.btree.getLock(), LockMode.READ_LOCK)) {
+            try(final ManagedLock<ReentrantLock> btreeLock = index.lockManager.acquireBtreeReadLock(index.btree.getLockName())) {
 	            for (final QName qname : qnames) {
 	            	if (test.getName() == null || test.matches(qname)) {
 	            		callback.setAncestor(doc, ancestor);
@@ -479,7 +481,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         try {
             for (final Map.Entry<QName,List<NodeProxy>> entry: pending.entrySet()) {
                 final QName qname = entry.getKey();
-                try(final ManagedLock<Lock> btreeLock = ManagedLock.acquire(index.btree.getLock(), LockMode.WRITE_LOCK)) {
+                try(final ManagedLock<ReentrantLock> btreeLock = index.lockManager.acquireBtreeWriteLock(index.btree.getLockName())) {
                     final List<NodeProxy> nodes = entry.getValue();
                     for (final NodeProxy proxy : nodes) {
                         final NodeId nodeId = proxy.getNodeId();
@@ -505,7 +507,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
             final byte[] fromKey = computeKey(qname.getNameType(), qname, docToRemove.getDocId());
             final byte[] toKey = computeKey(qname.getNameType(), qname, docToRemove.getDocId() + 1);
             final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
-            try(final ManagedLock<Lock> btreeLock = ManagedLock.acquire(index.btree.getLock(), LockMode.WRITE_LOCK)) {
+            try(final ManagedLock<ReentrantLock> btreeLock = index.lockManager.acquireBtreeWriteLock(index.btree.getLockName())) {
                 index.btree.remove(query, null);
             } catch (final LockException e) {
                 NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
@@ -521,7 +523,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         final byte[] fromKey = computeDocKey(doc.getDocId());
         final byte[] toKey = computeDocKey(doc.getDocId() + 1);
         final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
-        try(final ManagedLock<Lock> btreeLock = ManagedLock.acquire(index.btree.getLock(), LockMode.WRITE_LOCK)) {
+        try(final ManagedLock<ReentrantLock> btreeLock = index.lockManager.acquireBtreeWriteLock(index.btree.getLockName())) {
             index.btree.remove(query, null);
         } catch (final LockException e) {
             NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
@@ -538,7 +540,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         final byte[] fromKey = computeDocKey(doc.getDocId());
         final byte[] toKey = computeDocKey(doc.getDocId() + 1);
         final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
-        try(final ManagedLock<Lock> btreeLock = ManagedLock.acquire(index.btree.getLock(), LockMode.WRITE_LOCK)) {
+        try(final ManagedLock<ReentrantLock> btreeLock = index.lockManager.acquireBtreeWriteLock(index.btree.getLockName())) {
             index.btree.query(query, new BTreeCallback() {
                 public boolean indexInfo(Value value, long pointer) throws TerminatedException {
                     final QName qname = readQName(value.getData());
@@ -597,7 +599,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                 final byte[] toKey = computeKey(qname.getNameType(), qname, doc.getDocId() + 1);
                 final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
 
-                try(final ManagedLock<Lock> btreeLock = ManagedLock.acquire(index.btree.getLock(), LockMode.READ_LOCK)) {
+                try(final ManagedLock<ReentrantLock> btreeLock = index.lockManager.acquireBtreeReadLock(index.btree.getLockName())) {
                     index.btree.query(query, new BTreeCallback() {
                         public boolean indexInfo(Value value, long pointer) throws TerminatedException {
                             Occurrences oc = occurrences.get(name);
@@ -664,7 +666,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         try {
             for (final Map.Entry<QName,List<NodeProxy>> entry: pending.entrySet()) {
                 final QName qname = entry.getKey();
-                try(final ManagedLock<Lock> btreeLock = ManagedLock.acquire(index.btree.getLock(), LockMode.WRITE_LOCK)) {
+                try(final ManagedLock<ReentrantLock> btreeLock = index.lockManager.acquireBtreeWriteLock(index.btree.getLockName())) {
                     final List<NodeProxy> nodes = entry.getValue();
                     for (final NodeProxy proxy : nodes) {
                         final NodeId nodeId = proxy.getNodeId();

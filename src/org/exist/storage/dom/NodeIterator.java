@@ -11,8 +11,7 @@ import org.exist.storage.StorageAddress;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.Paged.Page;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedLock;
 import org.exist.util.ByteConversion;
 import org.exist.util.FileUtils;
@@ -20,6 +19,8 @@ import org.exist.util.LockException;
 import org.exist.util.sanity.SanityCheck;
 
 import java.io.IOException;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.exist.dom.persistent.NodeHandle;
 
 /**
@@ -43,6 +44,7 @@ public final class NodeIterator implements INodeIterator {
     private long pageNum;
     private long startAddress = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
     private DBBroker broker;
+    private final LockManager lockManager;
     private boolean useNodePool = false;
 
     public NodeIterator(DBBroker broker, DOMFile db, NodeHandle node, boolean poolable)
@@ -52,6 +54,7 @@ public final class NodeIterator implements INodeIterator {
         this.useNodePool = poolable;
         this.node = node;
         this.broker = broker;
+        this.lockManager = broker.getBrokerPool().getLockManager();
     }
 
     /**
@@ -71,7 +74,7 @@ public final class NodeIterator implements INodeIterator {
      */
     @Override
     public boolean hasNext() {
-        try(final ManagedLock<Lock> domFileLock = ManagedLock.acquire(db.getLock(), LockMode.READ_LOCK)) {
+        try(final ManagedLock<ReentrantLock> domFileLock = lockManager.acquireBtreeReadLock(db.getLockName())) {
             db.setOwnerObject(broker);
             if (gotoNextPosition()) {
                 db.getPageBuffer().add(page);
@@ -100,7 +103,7 @@ public final class NodeIterator implements INodeIterator {
      */
     @Override
     public IStoredNode next() {
-        try(final ManagedLock<Lock> domFileLock = ManagedLock.acquire(db.getLock(), LockMode.READ_LOCK)) {
+        try(final ManagedLock<ReentrantLock> domFileLock = lockManager.acquireBtreeReadLock(db.getLockName())) {
             db.setOwnerObject(broker);
             IStoredNode nextNode = null;
             if (gotoNextPosition()) {
