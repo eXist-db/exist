@@ -96,7 +96,7 @@ public class LockTable {
     private final Future<?> queueConsumer;
 
     private LockTable() {
-        final ExecutorService executorService = Executors.newSingleThreadExecutor();
+        final ExecutorService executorService = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "exist-lockTable.processor"));
         this.queueConsumer = executorService.submit(new QueueConsumer(queue, attempting, acquired));
 
         // add a log listener if trace level logging is enabled
