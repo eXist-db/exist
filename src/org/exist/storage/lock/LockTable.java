@@ -655,7 +655,7 @@ public class LockTable {
     private final Map<String, Tuple2<Long, Long>> lockCounts = new HashMap<>();
 
     /**
-     * Checks that there are not more releases and then acquires
+     * Checks that there are not more releases that there are acquires
      */
     private void sanityCheckLockLifecycles(final LockAction lockAction) {
         synchronized(lockCounts) {
