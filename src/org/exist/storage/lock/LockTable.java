@@ -49,7 +49,7 @@ import static org.exist.storage.lock.LockTable.LockAction.Action.*;
  */
 public class LockTable {
 
-    public final static String PROP_ENABLE = "exist.locktable.enabled";
+    public final static String PROP_DISABLE = "exist.locktable.disable";
     public final static String PROP_SANITY_CHECK = "exist.locktable.sanity.check";
     public final static String PROP_TRACE_STACK_DEPTH = "exist.locktable.trace.stack.depth";
 
@@ -59,7 +59,7 @@ public class LockTable {
     /**
      * Set to false to disable all events
      */
-    private volatile boolean enableEvents = Boolean.getBoolean(PROP_ENABLE);
+    private volatile boolean disableEvents = Boolean.getBoolean(PROP_DISABLE);
 
     /**
      * Set to true to enable sanity checking of lock leases
@@ -144,7 +144,7 @@ public class LockTable {
     }
 
     private void event(final LockAction.Action action, final long groupId, final String id, final LockType lockType, final LockMode mode, final int count) {
-        if(!enableEvents) {
+        if(disableEvents) {
             return;
         }
 

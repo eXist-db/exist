@@ -27,15 +27,15 @@ public class LockManagerTest {
 
     @BeforeClass
     public static void enableLockEventsState() {
-        previousLockEventsState = System.setProperty(LockTable.PROP_ENABLE, "true");
+        previousLockEventsState = System.setProperty(LockTable.PROP_DISABLE, "false");
     }
 
     @AfterClass
     public static void restoreLockEventsState() {
         if(previousLockEventsState != null) {
-            System.setProperty(LockTable.PROP_ENABLE, previousLockEventsState);
+            System.setProperty(LockTable.PROP_DISABLE, previousLockEventsState);
         } else {
-            System.clearProperty(LockTable.PROP_ENABLE);
+            System.clearProperty(LockTable.PROP_DISABLE);
         }
     }
 
