@@ -84,10 +84,7 @@ public class JMXAgent implements Agent {
 
     public synchronized void registerSystemMBeans() {
         try {
-            ObjectName name = new ObjectName("org.exist.management:type=LockManager");
-            addMBean(name, new org.exist.management.impl.LockManager());
-
-            name = new ObjectName("org.exist.management:type=LockTable");
+            ObjectName name = new ObjectName("org.exist.management:type=LockTable");
             addMBean(name, new org.exist.management.impl.LockTable());
 
             name = new ObjectName("org.exist.management:type=SystemInfo");
