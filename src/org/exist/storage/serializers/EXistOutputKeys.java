@@ -24,6 +24,11 @@ package org.exist.storage.serializers;
 
 public class EXistOutputKeys {
 
+    /**
+     * Parameter "item-separator" from the XQuery serialization spec 3.1
+     */
+    public final static String ITEM_SEPARATOR = "item-separator";
+
 	public final static String OUTPUT_DOCTYPE = "output-doctype";
 	 
 	public final static String EXPAND_XINCLUDES = "expand-xincludes";

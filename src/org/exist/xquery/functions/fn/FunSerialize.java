@@ -54,7 +54,7 @@ public class FunSerialize extends BasicFunction {
             final XQuerySerializer xqSerializer = new XQuerySerializer(context.getBroker(), outputProperties, writer);
 
             Sequence seq = args[0];
-            if (!xqSerializer.isJSON()) {
+            if (xqSerializer.normalize()) {
                 seq = normalize(seq);
             }
 
