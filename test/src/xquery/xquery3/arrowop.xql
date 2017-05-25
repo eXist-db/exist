@@ -17,6 +17,12 @@ function ao:func-by-name2() {
 };
 
 declare
+    %test:assertEquals("hey")
+function ao:func-by-name3() {
+    "hello" => replace("llo", "y")
+};
+
+declare
     %test:assertEquals(3)
 function ao:func-inline() {
     ('A', 'B', 'C') => (function($sequence) { count($sequence)})()

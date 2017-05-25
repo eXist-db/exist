@@ -112,6 +112,7 @@ public class FunReplace extends FunMatches {
 	 * @see org.exist.xquery.Function#setArguments(java.util.List)
 	 */
 	public void setArguments(List<Expression> arguments) throws XPathException {
+	    steps.clear();
         Expression arg = arguments.get(0);
         arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, arg,
                 new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));    
