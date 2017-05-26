@@ -14,7 +14,7 @@ declare variable $mt:daysOfWeek :=
         "Fr" : "Friday",
         "Sa" : "Saturday"
     };
-    
+
 declare %test:assertEquals("Wednesday") function mt:createLiteral1() {
     $mt:daysOfWeek("We")
 };
@@ -47,7 +47,7 @@ declare %test:assertEquals("Sunday") function mt:createWithEntry() {
         $map("Su")
 };
 
-declare %test:assertXPath("count($result) = 8") %test:assertXPath("7 = $result") 
+declare %test:assertXPath("count($result) = 8") %test:assertXPath("7 = $result")
 function mt:createFromTwoMaps() {
     let $week := map{0: "Sonntag", 1: "Montag", 2: "Dienstag", 3: "Mittwoch", 4: "Donnerstag", 5: "Freitag", 6: "Samstag"}
     let $map := map:merge(($week, map { 7 : "Sonntag" }))
@@ -106,7 +106,7 @@ function mt:size() {
       map:size($m)
 };
 
-declare 
+declare
     %test:assertEquals("Sonntag", "Dienstag", "Donnerstag", "Samstag")
 function mt:for-each() {
     let $week := map{0: "Sonntag", 1: "Montag", 2: "Dienstag", 3: "Mittwoch", 4: "Donnerstag", 5: "Freitag", 6: "Samstag"}
@@ -119,7 +119,7 @@ function mt:for-each() {
         })
 };
 
-declare 
+declare
     %test:assertEquals(3)
 function mt:for-each2() {
     let $nm := map:merge(map:for-each(map{"a":1, "b":2}, function($k, $v){map:entry($k, $v+1)}))
@@ -153,8 +153,8 @@ declare %test:assertEquals("One", "Two") function mt:mapSequenceValue() {
 };
 
 declare %test:assertEquals("Heinz", "Roland", "Uschi", "Verona") function mt:keyTypeDate () {
-    let $map := map { 
-        xs:date("1975-03-19") : "Uschi", 
+    let $map := map {
+        xs:date("1975-03-19") : "Uschi",
         xs:date("1980-01-22") : "Verona",
         xs:date("1960-06-14") : "Heinz",
         xs:date("1963-10-21") : "Roland"
@@ -303,7 +303,7 @@ declare %private function mt:mapTest($map as map(*)) as map(xs:integer, xs:strin
     $map
 };
 
-declare 
+declare
     %test:assertError("EXMPDY001")
     %test:name("Throw error if key is not a single atomic value")
 function mt:wrongCardinality() {
@@ -366,7 +366,7 @@ function mt:mixedNumeric() {
 declare
     %test:assertEquals("<c ns='c'/>", "<c ns='c'/>")
 function mt:pathExpr() as element(c)+ {
-    let $test := 
+    let $test :=
         <a>
             <b ns="b">
                 <c ns="c"/>
@@ -381,10 +381,10 @@ function mt:pathExpr() as element(c)+ {
         ($map("a"), $map("b"))
 };
 
-declare 
+declare
     %test:assertEquals("What were you thinking?")
 function mt:lookupUnaryOperator() {
-    let $errors := ( 
+    let $errors := (
       map { "level" : 1, "text" : "Boys will be boys ..." },
       map { "level" : 2, "text" : "What were you thinking?" },
       map { "level" : 3, "text" : "Call the cops!" }
@@ -392,30 +392,30 @@ function mt:lookupUnaryOperator() {
     return $errors[?level = 2]?text
 };
 
-declare 
+declare
     %test:assertEquals("W0342", "M0535")
 function mt:lookupMultipleMaps() {
     let $maps := ( map { "id" : "W0342" }, map { "id" : "M0535" } )
     return $maps?id
 };
 
-declare 
+declare
     %test:assertEquals("W0342", "M0535")
 function mt:lookupMultipleMaps2() {
     ( map { "id" : "W0342" }, map { "id" : "M0535" } )?id
 };
 
-declare 
+declare
     %test:assertEquals("large")
 function mt:lookupNestedMap() {
-    let $map := map { 
+    let $map := map {
         "name": "sofa", "keys": map { "price": 200.0, "size": "large" }
     }
     return
         $map?keys?size
 };
 
-declare 
+declare
     %test:args("One")
     %test:assertEquals(1)
     %test:args("Two")
@@ -426,7 +426,7 @@ function mt:lookupParenthesized($key as xs:string) {
         $map?(lower-case($key))
 };
 
-declare 
+declare
     %test:assertError
 function mt:lookupWrongType() {
     let $map := map { "one": 1, "two": "2" }
@@ -446,7 +446,7 @@ function mt:lookupWildcard() {
         (every $day in $actual satisfies $day = $expected)
 };
 
-declare 
+declare
     %test:assertEquals(1)
 function mt:compat() {
     let $map := map { "one":= 1, "two":= "2" }
@@ -454,8 +454,17 @@ function mt:compat() {
         $map("one")
 };
 
-declare 
+declare
     %test:assertError
 function mt:no-atomization() {
     data(map { "k": "v" })
+};
+
+declare
+    %test:name("for-each on a map with a single entry caused NPE")
+    %test:assertEquals("k")
+function mt:single-entry-map() {
+    let $map := map:entry("k", ())
+    return
+        map:for-each($map, function($k, $v) { $k })
 };
