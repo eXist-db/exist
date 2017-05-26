@@ -31,8 +31,8 @@ import org.exist.xquery.InlineFunction;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.array.ArrayModule;
 import org.exist.xquery.functions.array.ArrayType;
+import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.functions.map.MapModule;
-import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.functions.math.MathModule;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Attr;
@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -134,7 +133,7 @@ public class AdaptiveSerializer extends AbstractSerializer {
                         serializeArray((ArrayType)item);
                         break;
                     case Type.MAP:
-                        serializeMap((MapType)item);
+                        serializeMap((AbstractMapType)item);
                         break;
                     case Type.FUNCTION_REFERENCE:
                         serializeFunctionItem((FunctionReference) item);
@@ -183,7 +182,7 @@ public class AdaptiveSerializer extends AbstractSerializer {
         }
     }
 
-    private void serializeMap(final MapType map) throws SAXException, XPathException {
+    private void serializeMap(final AbstractMapType map) throws SAXException, XPathException {
         try {
             writer.write("map{");
             for (final Iterator<Map.Entry<AtomicValue, Sequence>> i = map.iterator(); i.hasNext(); ) {
