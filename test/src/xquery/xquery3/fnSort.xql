@@ -6,19 +6,19 @@ declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 declare
     %test:assertEquals("1","3","4","5","6")
-function testSort:single_parameter() {
+function testSort:integers_vs_strings() {
     fn:sort((1, 4, 6, 5, 3))
 };
 
 declare
     %test:assertEquals("1","3","4","5","6")
-function testSort:single_parameter() {
+function testSort:strings() {
     fn:sort(("1", "4", "6", "5", "3"))
 };
 
 declare
     %test:assertEquals(1,3,4,5,6)
-function testSort:single_parameter_strings() {
+function testSort:integers_vs_integers() {
     fn:sort((1, 4, 6, 5, 3))
 };
 
