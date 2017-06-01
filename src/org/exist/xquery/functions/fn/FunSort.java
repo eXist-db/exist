@@ -25,6 +25,7 @@ import java.util.Arrays;
 import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.Atomize;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
@@ -33,10 +34,12 @@ import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
@@ -83,9 +86,9 @@ public class FunSort extends BasicFunction {
 
   @Override
   public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    if (getContext().getXQueryVersion()<30) {
+    if (getContext().getXQueryVersion()<31) {
       throw new XPathException(this, ErrorCodes.EXXQDY0003,
-          "Function " + getSignature().getName() + " is only supported for xquery version \"3.0\" and later.");
+          "Function " + getSignature().getName() + " is only supported for xquery version \"3.1\" and later.");
     }
 
     cachedContextInfo = new AnalyzeContextInfo(contextInfo);
@@ -116,13 +119,15 @@ public class FunSort extends BasicFunction {
         value = item.toSequence();
       }
 
-      keys.add(value);
+      keys.add(Atomize.atomize(value));
     }
 
     return sort(seq, keys, collator);
   }
 
   private Sequence sort(Sequence seq, ArrayList<Sequence> keys, Collator collator) throws XPathException {
+
+    final Holder<XPathException> exception = new Holder<>();
 
     //preparing
     final int size = seq.getItemCount();
@@ -160,29 +165,44 @@ public class FunSort extends BasicFunction {
           int res = Constants.EQUAL;
           if (FunDeepEqual.deepEquals(item1, item2, collator)) {
             continue;
-            //TODO: } else if (isNAN)
+          } if (Type.subTypeOf(item1.getType(), Type.NUMBER) && ((NumericValue)item1).isNaN()) {
+            res = Constants.INFERIOR;
+
           } else if (Type.subTypeOf(item1.getType(), Type.STRING) && Type.subTypeOf(item2.getType(), Type.STRING)) {
             try {
               res = Collations.compare(collator, item1.getStringValue(), item2.getStringValue());
             } catch (XPathException e) {
-              e.printStackTrace();
+              exception.set(e);
             }
-          } else if (item1 instanceof Comparable && item2 instanceof Comparable) {
-            res = ((Comparable) item1).compareTo(item2);
+          } else if (item1 instanceof AtomicValue && item2 instanceof AtomicValue) {
+            try {
+              res = ((AtomicValue)item1).compareTo(collator, (AtomicValue)item2);
+            } catch (XPathException e) {
+              exception.set(e);
+              throw new IllegalArgumentException();
+            }
+
+//          } else if (item1 instanceof Comparable && item2 instanceof Comparable) {
+//            res = ((Comparable) item1).compareTo(item2);
+
           } else {
             res = Constants.INFERIOR;
           }
 
-          if (res != Constants.EQUAL) return res;
-
+          if (res != Constants.EQUAL) {
+            return res;
+          }
         }
 
         return (size1 - size2);
       });
     } catch (IllegalArgumentException e) {
-      throw new XPathException(FunSort.this, ErrorCodes.XPTY0004, e.getMessage());
+      if (exception.get() != null) {
+        throw new XPathException(FunSort.this, ErrorCodes.XPTY0004, exception.get());
+      } else {
+        throw new XPathException(FunSort.this, ErrorCodes.XPTY0004, e.getMessage());
+      }
     }
-
 
     //form final sequence
     final ValueSequence result = new ValueSequence(seq.getItemCount());
@@ -218,6 +238,18 @@ public class FunSort extends BasicFunction {
       return ref;
     } else {
       return null;
+    }
+  }
+
+  static class Holder<T> {
+    T obj;
+
+    public void set(T obj) {
+      this.obj = obj;
+    }
+
+    public T get() {
+      return obj;
     }
   }
 }
