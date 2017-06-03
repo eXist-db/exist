@@ -50,12 +50,20 @@ import java.util.function.Consumer;
  * @author Adam Retter <adam@evolvedbinary.com>
  */
 public class LockManager {
+
+    public final static String PROP_ENABLE_COLLECTIONS_MULTI_WRITER = "exist.lockmanager.collections.multiwriter";
     public final static String PROP_UPGRADE_CHECK = "exist.lockmanager.upgrade.check";
     public final static String PROP_WARN_WAIT_ON_READ_FOR_WRITE = "exist.lockmanager.warn.waitonreadforwrite";
 
     private static final Logger LOG = LogManager.getLogger(LockManager.class);
     private static final boolean USE_FAIR_SCHEDULER = true;  //Java's ReentrantReadWriteLock must use the Fair Scheduler to get FIFO like ordering
     private static final LockTable lockTable = LockTable.getInstance();
+
+    /**
+     * Set to true to enable Multi-Writer/Multi-Reader semantics for
+     * the Collection Hierarchy as opposed to the default Single-Writer/Multi-Reader
+     */
+    private volatile boolean collectionsMultiWriter = Boolean.getBoolean(PROP_ENABLE_COLLECTIONS_MULTI_WRITER);
 
     /**
      * Set to true to enable checking for lock upgrading within the same
@@ -245,7 +253,15 @@ public class LockManager {
             } else if(i + 1 == segments.length) {
                 lockMode = Lock.LockMode.WRITE_LOCK;    // leaf
             } else {
-                lockMode = Lock.LockMode.INTENTION_WRITE; // ancestor
+                // ancestor
+
+                if(!collectionsMultiWriter) {
+                    // single-writer/multi-reader
+                    lockMode = Lock.LockMode.WRITE_LOCK;
+                } else {
+                    // multi-writer/multi-reader
+                    lockMode = Lock.LockMode.INTENTION_WRITE;
+                }
             }
             final MultiLock lock = getCollectionLock(path);
 

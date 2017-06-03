@@ -56,17 +56,9 @@ public class GetXMLResourceNoLockTest {
                 }
             }
 
-			final LockManager lockManager = broker.getBrokerPool().getLockManager();
-			final MultiLock colLock = lockManager.getCollectionLock(testCollection.getURI().toString());
-
-			final boolean didWriteLock = colLock.writeLock().tryLock();
-			try {
-                assertEquals("Collection does not have lock!", false, didWriteLock);
-            } finally {
-			    if(didWriteLock) {
-                    colLock.writeLock().unlock();
-                }
-            }
+            final LockManager lockManager = broker.getBrokerPool().getLockManager();
+            final MultiLock colLock = lockManager.getCollectionLock(testCollection.getURI().toString());
+            assertEquals("Collection does not have lock!", true, colLock.getReadHoldCount() > 0);
 		}
 	}
 

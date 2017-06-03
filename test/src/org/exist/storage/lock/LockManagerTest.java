@@ -3,11 +3,12 @@ package org.exist.storage.lock;
 import net.jcip.annotations.ThreadSafe;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
+import java.util.Arrays;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
@@ -20,23 +21,44 @@ import static org.junit.Assert.*;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
+@RunWith(Parameterized.class)
 public class LockManagerTest {
 
     private static final int CONCURRENCY_LEVEL = 100;
     private static String previousLockEventsState = null;
+    private static String previousCollectionsMultiWriterState = null;
 
-
-    @BeforeClass
-    public static void enableLockEventsState() {
-        previousLockEventsState = System.setProperty(LockTable.PROP_DISABLE, "false");
+    @Parameterized.Parameters(name = "{0}")
+    public static java.util.Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+                { "Collection single-writer/multi-reader", false},
+                { "Collection multi-writer/multi-reader", true }
+        });
     }
 
-    @AfterClass
-    public static void restoreLockEventsState() {
-        if(previousLockEventsState != null) {
-            System.setProperty(LockTable.PROP_DISABLE, previousLockEventsState);
+    @Parameterized.Parameter
+    public String apiName;
+
+    @Parameterized.Parameter(value = 1)
+    public boolean enableCollectionsMultiWriterState;
+
+    @Before
+    public void enableLockEventsState() {
+        previousLockEventsState = System.setProperty(LockTable.PROP_DISABLE, "false");
+        previousCollectionsMultiWriterState = System.setProperty(LockManager.PROP_ENABLE_COLLECTIONS_MULTI_WRITER, Boolean.toString(enableCollectionsMultiWriterState));
+    }
+
+    @After
+    public void restoreLockEventsState() {
+        restorePreviousPropertyState(LockTable.PROP_DISABLE, previousLockEventsState);
+        restorePreviousPropertyState(LockManager.PROP_ENABLE_COLLECTIONS_MULTI_WRITER, previousCollectionsMultiWriterState);
+    }
+
+    private static void restorePreviousPropertyState(final String propertyName, final String previousValue) {
+        if(previousValue != null) {
+            System.setProperty(propertyName, previousValue);
         } else {
-            System.clearProperty(LockTable.PROP_DISABLE);
+            System.clearProperty(propertyName);
         }
     }
 
@@ -347,11 +369,11 @@ public class LockManagerTest {
 
         assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event1.id);
-        assertEquals(Lock.LockMode.INTENTION_WRITE, event1.mode);
+        assertIntentionWriteOrWriteMode(event1.mode);
 
         assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event2.id);
-        assertEquals(Lock.LockMode.INTENTION_WRITE, event2.mode);
+        assertIntentionWriteOrWriteMode(event2.mode);
 
         // we now expect to couple /db with /db/colA by acquiring /db/colA whilst holding /db
         assertEquals(LockTable.LockAction.Action.Attempt, event3.action);
@@ -370,7 +392,7 @@ public class LockManagerTest {
         // we now expect to release the lock on /db (as the managed lock was closed)
         assertEquals(LockTable.LockAction.Action.Released, event6.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event6.id);
-        assertEquals(Lock.LockMode.INTENTION_WRITE, event6.mode);
+        assertIntentionWriteOrWriteMode(event6.mode);
     }
 
     /**
@@ -479,20 +501,20 @@ public class LockManagerTest {
 
         assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event1.id);
-        assertEquals(Lock.LockMode.INTENTION_WRITE, event1.mode);
+        assertIntentionWriteOrWriteMode(event1.mode);
 
         assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event2.id);
-        assertEquals(Lock.LockMode.INTENTION_WRITE, event2.mode);
+        assertIntentionWriteOrWriteMode(event2.mode);
 
         // we now expect to couple /db with /db/colA by acquiring /db/colA whilst holding /db
         assertEquals(LockTable.LockAction.Action.Attempt, event3.action);
         assertEquals(collectionAPath, event3.id);
-        assertEquals(Lock.LockMode.INTENTION_WRITE, event3.mode);
+        assertIntentionWriteOrWriteMode(event3.mode);
 
         assertEquals(LockTable.LockAction.Action.Acquired, event4.action);
         assertEquals(collectionAPath, event4.id);
-        assertEquals(Lock.LockMode.INTENTION_WRITE, event4.mode);
+        assertIntentionWriteOrWriteMode(event4.mode);
 
         // we now expect to couple /db/colA with /db/colA/colB by acquiring /db/colA/colB whilst holding /db/colA
         assertEquals(LockTable.LockAction.Action.Attempt, event5.action);
@@ -511,12 +533,12 @@ public class LockManagerTest {
         // we now expect to release the lock on /db/colA (as the managed lock was closed)
         assertEquals(LockTable.LockAction.Action.Released, event8.action);
         assertEquals(collectionAPath, event8.id);
-        assertEquals(Lock.LockMode.INTENTION_WRITE, event8.mode);
+        assertIntentionWriteOrWriteMode(event8.mode);
 
         // we now expect to release the lock on /db (as the managed lock was closed)
         assertEquals(LockTable.LockAction.Action.Released, event9.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event9.id);
-        assertEquals(Lock.LockMode.INTENTION_WRITE, event9.mode);
+        assertIntentionWriteOrWriteMode(event9.mode);
     }
 
     /**
@@ -562,11 +584,11 @@ public class LockManagerTest {
 
         assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event1.id);
-        assertEquals(Lock.LockMode.INTENTION_WRITE, event1.mode);
+        assertIntentionWriteOrWriteMode(event1.mode);
 
         assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event2.id);
-        assertEquals(Lock.LockMode.INTENTION_WRITE, event2.mode);
+        assertIntentionWriteOrWriteMode(event2.mode);
 
         // we now expect to couple /db with /db/colA by acquiring /db/colA whilst holding /db
         assertEquals(LockTable.LockAction.Action.Attempt, event3.action);
@@ -599,7 +621,7 @@ public class LockManagerTest {
         // we now expect to release the lock on /db  (as the managed lock (of both locks) was closed)
         assertEquals(LockTable.LockAction.Action.Released, event9.action);
         assertEquals(XmldbURI.ROOT_COLLECTION, event9.id);
-        assertEquals(Lock.LockMode.INTENTION_WRITE, event9.mode);
+        assertIntentionWriteOrWriteMode(event9.mode);
     }
 
     @Test
@@ -822,6 +844,12 @@ public class LockManagerTest {
         assertEquals(LockTable.LockAction.Action.Released, event3.action);
         assertEquals(btree1Name, event3.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event3.mode);
+    }
+
+
+    private void assertIntentionWriteOrWriteMode(final Lock.LockMode lockMode) {
+        final Lock.LockMode writeMode = enableCollectionsMultiWriterState ? Lock.LockMode.INTENTION_WRITE : Lock.LockMode.WRITE_LOCK;
+        assertEquals(writeMode, lockMode);
     }
 
     @ThreadSafe
