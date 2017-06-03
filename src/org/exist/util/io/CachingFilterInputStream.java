@@ -26,6 +26,8 @@
  */
 package org.exist.util.io;
 
+import net.jcip.annotations.NotThreadSafe;
+
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,6 +45,7 @@ import java.io.InputStream;
  * @author Adam Retter <adam.retter@googlemail.com>
  * @author Tobi Krebs <tobi.krebs AT gmail.com>
  */
+@NotThreadSafe
 public class CachingFilterInputStream extends FilterInputStream {
 
     //TODO what about if the underlying stream supports marking
@@ -183,7 +186,36 @@ public class CachingFilterInputStream extends FilterInputStream {
             getCache().close();
         }    
     }
-    
+
+    /**
+     * Determine the current offset
+     *
+     * @return The current offset of this stream
+     */
+    public int offset() {
+        return srcOffset;
+    }
+
+    /**
+     * Similar to {@link #skip(long)} but travels backwards
+     *
+     * @param len The number of bytes to skip backwards
+     *
+     * @return The actual number of bytes skipped backwards
+     */
+    public long skipBackwards(final long len) {
+        if(len == 0) {
+            return 0;
+        }
+
+        // can only skip back to zero
+        final long actualLen = Math.min(srcOffset, len);
+
+        srcOffset = srcOffset - (int)actualLen;
+
+        return actualLen;
+    }
+
     /**
      * We cant actually skip as we need to read so that we can cache the data,
      * however apart from the potentially increased I/O and Memory, the end
@@ -205,30 +237,54 @@ public class CachingFilterInputStream extends FilterInputStream {
 
             //if the requested bytes were more than what is present in the cache, then also read from the src
             if (actualLen < len) {
-                final byte skipped[] = new byte[(int) (len - actualLen)];
-                int srcLen = getCache().read(skipped);
 
-                //have we reached the end of the stream?
-                if (srcLen == FilterInputStreamCache.END_OF_STREAM) {
-                    return actualLen;
+                // we can't skip directly on the src otherwise it will never be read into the cache, so we read over the amount of bytes we want to skip instead
+
+                final int toReadFromSrc = (int) (len - actualLen);
+                final byte skipped[] = new byte[toReadFromSrc];
+
+                //read some data from the source (and into the cache)
+                int toRead = toReadFromSrc;
+                while(toRead > 0) {
+                    final int read = getCache().read(skipped, 0, toRead);
+
+                    //have we reached the end of the stream?
+                    if(read == FilterInputStreamCache.END_OF_STREAM) {
+                        break;
+                    }
+
+                    toRead -= read;
+                    actualLen += read;
                 }
-
-                //increase srcOffset due to the read operation above
-                srcOffset += srcLen;
-
-                actualLen += srcLen;
             }
+
+            //increase srcOffset due to the read operation above
+            srcOffset += (int)actualLen;
+
             return actualLen;
 
         } else {
 
             final byte skipped[] = new byte[(int) len];  //TODO could overflow
-            int actualLen = getCache().read(skipped);
+            int toRead = (int)len;
+
+            int totalRead = 0;
+            while(toRead > 0) {
+                final int read = getCache().read(skipped, 0, toRead);
+
+                //have we reached the end of the stream?
+                if(read == FilterInputStreamCache.END_OF_STREAM) {
+                    break;
+                }
+
+                toRead -= read;
+                totalRead += read;
+            }
 
             //increase srcOffset due to read operation above
-            srcOffset += actualLen;
+            srcOffset += totalRead;
 
-            return actualLen;
+            return totalRead;
         }
     }
 

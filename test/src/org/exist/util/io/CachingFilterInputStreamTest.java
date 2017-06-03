@@ -583,6 +583,28 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
+    public void skip_correctlyAdjustsSrcOffset_onSharedCache() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
+        final String testString = "helloWorld";
+        final byte testData[] = testString.getBytes();
+
+        final InputStream is = new ByteArrayInputStream(testData);
+        final FilterInputStreamCache cache = getNewCache(is);
+
+        final CachingFilterInputStream cfis1 = new CachingFilterInputStream(cache);
+        final CachingFilterInputStream cfis2 = new CachingFilterInputStream(cache);
+
+        assertEquals(0, cfis1.offset());
+        final long skipped1 = cfis1.skip(5);
+        assertEquals(5, skipped1);
+        assertEquals(5, cfis1.offset());
+
+        assertEquals(0, cfis2.offset());
+        final long skipped2 = cfis2.skip(5);
+        assertEquals(5, skipped2);
+        assertEquals(5, cfis2.offset());
+    }
+
+    @Test
     public void available_onClosedStream() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
