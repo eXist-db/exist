@@ -10,8 +10,6 @@ PROCESS_OPTS="|--forking|--pidfile|"
 # defaults:
 FORKING=0
 
-JETTYCONTAINER_OPTS=""
-
 BACKUP_OPTS="|-u|--user|-p|--password|-P|--dba-password|-b|--backup|-d|--dir|-r|--restore|-o|--option|"
 
 JMX_OPTS="|-j|--jmx|"
