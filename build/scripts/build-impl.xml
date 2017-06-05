@@ -202,6 +202,34 @@
         <!-- <ant antfile="build.xml" dir="extensions/indexes" target="compile" /> -->
     </target>
 
+    <target name="compile-testkit" depends="prepare,compile" description="Compiles the Test Kit source code">
+        <mkdir dir="${junit.reports}/classes"/>
+
+        <echo
+                message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
+
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" destdir="${junit.reports}/classes"
+               encoding="UTF-8" optimize="${build.optimize}" srcdir="${junit.reports}/src"
+               source="${build.compiler.source}" target="${build.compiler.target}"
+               fork="true" memoryInitialSize="512m" memoryMaximumSize="1024m">
+
+            <include name="org/exist/test/**"/>
+            <include name="org/exist/TestUtils.java"/>
+            <include name="xquery/TestRunner.java"/>
+            <include name="xquery/TestRunnerMain.java"/>
+
+            <classpath>
+                <path path="${build.classes}"/>
+                <fileset dir="${lib.core}">
+                    <include name="*.jar"/>
+                </fileset>
+                <path refid="classpath.jetty"/>
+                <path refid="classpath.test-libs"/>
+            </classpath>
+        </javac>
+
+    </target>
+
 
     <!-- =================================================================== -->
     <!-- Check if aspectj needs to be called. If no source file is newer     -->
@@ -285,7 +313,7 @@
     <!-- ================================================================== -->
     <!-- Create jar files                    				    -->
     <!-- ================================================================== -->
-    <target name="jar" depends="git.details,compile,compile-aspectj"
+    <target name="jar" depends="git.details,compile,compile-testkit,compile-aspectj"
         description="Create eXist-db unsigned jar files">
         <filter token="version" value="${project.version}"/>
         <filter token="build" value="${DSTAMP}${TSTAMP}"/>
@@ -453,6 +481,35 @@
             <include name="org/exist/xquery/functions/request/**"/>
             <include name="org/exist/xquery/functions/response/**"/>
             <include name="org/exist/xquery/functions/session/**"/>
+        </jar>
+        <echo message="Creating exist-testkit.jar ..."/>
+        <jar basedir="${junit.reports}/classes" compress="true" jarfile="exist-testkit.jar">
+            <manifest>
+                <attribute name="Implementation-Title" value="${project.name} Test Kit"/>
+                <attribute name="Implementation-Version" value="${project.version}"/>
+                <attribute name="Implementation-Vendor" value="The eXist Project"/>
+                <attribute name="Implementation-Vendor-Id" value="org.exist-db"/>
+                <attribute name="Implementation-URL" value="https://github.com/exist-db/exist"/>
+
+                <attribute name="Specification-Title" value="${project.name} Test Kit"/>
+                <attribute name="Specification-Version" value="${project.version}"/>
+                <attribute name="Specification-Vendor" value="The eXist Project"/>
+
+                <attribute name="Source-Repository" value="scm:git:https://github.com/exist-db/exist.git"/>
+                <attribute name="Git-Commit" value="${git.revision.full}"/>
+                <attribute name="Git-Commit-Abbrev" value="${git.revision}"/>
+                <attribute name="Build-Tag" value="${git.branch.full}"/>
+                <attribute name="Build-Timestamp" value="${DSTAMP}${TSTAMP}"/>
+                <attribute name="Built-By" value="${user.name}"/>
+                <attribute name="Build-Jdk" value="${java.version}"/>
+
+                <attribute name="Description" value="eXist XML Native Database Test Kit"/>
+                <attribute name="Created-By" value="${ant.version}"/>
+            </manifest>
+            <include name="org/exist/TestUtils.class"/>
+            <include name="org/exist/test/**"/>
+            <include name="xquery/TestRunner.class"/>
+            <include name="xquery/TestRunnerMain.class"/>
         </jar>
     </target>
 
