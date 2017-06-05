@@ -24,7 +24,7 @@ public class TransformTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
-	private static final String TEST_COLLECTION_NAME = "transform-test";
+    private static final String TEST_COLLECTION_NAME = "transform-test";
 
     private Collection testCollection;
     
@@ -34,14 +34,10 @@ public class TransformTest {
      */
     @Test
     public void transform() throws XMLDBException {
-    	@SuppressWarnings("unused")
-		String imports = 
-    		"import module namespace transform='http://exist-db.org/xquery/transform';\n";
-
         String query =
             "import module namespace transform='http://exist-db.org/xquery/transform';\n" +
-            "let $xml := <empty />,\n" +
-            "	$xsl := 'xmldb:exist:///db/"+TEST_COLLECTION_NAME+"/xsl1/1.xsl'\n" +
+            "let $xml := <empty/>\n" +
+            "let $xsl := 'xmldb:exist:///db/"+TEST_COLLECTION_NAME+"/xsl1/1.xsl'\n" +
             "return transform:transform($xml, $xsl, ())";
         String result = execQuery(query);
         assertEquals(result, "<doc>" +
