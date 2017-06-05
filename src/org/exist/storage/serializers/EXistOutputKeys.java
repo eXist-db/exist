@@ -67,6 +67,12 @@ public class EXistOutputKeys {
     public final static String JSON_PREFIX_ATTRIBUTES = "prefix-attributes";
 
     /**
+     * JSON serialization: if text nodes are encountered which consist solely of whitespace then they
+     * will be ignored by the serializer
+     */
+    public final static String JSON_IGNORE_WHITESPACE_TEXT_NODES = "json-ignore-whitespace-text-nodes";
+
+    /**
      * Defines the output method to be used for serializing nodes within json output.
      */
     public final static String JSON_NODE_OUTPUT_METHOD = "json-node-output-method";
