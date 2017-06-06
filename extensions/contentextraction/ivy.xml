@@ -1,5 +1,5 @@
-<!-- 
- Ivy module to retrieve the tika jars, including dependencies, 
+<!--
+ Ivy module to retrieve the tika jars, including dependencies,
  excluding jars that are provided by eXist-db already
 -->
 <ivy-module version="2.0">
@@ -8,7 +8,7 @@
 
     <dependencies>
 
-        <dependency org="org.apache.tika" name="tika-parsers" rev="1.14" conf="*->*,!sources,!javadoc"/>
+        <dependency org="org.apache.tika" name="tika-parsers" rev="1.15" conf="*->*,!sources,!javadoc"/>
 
         <!-- identified as provided by eXist-db -->
         <exclude module="asm"/>
@@ -24,7 +24,6 @@
         <exclude module="geronimo-stax-api_1.0_spec"/>
         <exclude module="jackson-core"/>
         <exclude module="jdom"/>
-        <!-- <exclude module="junrar"/> -->
         <exclude module="log4j"/>
         <exclude module="quartz"/>
         <exclude module="servlet-api"/>
