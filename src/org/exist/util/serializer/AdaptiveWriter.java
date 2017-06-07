@@ -100,6 +100,15 @@ public class AdaptiveWriter extends IndentingXMLWriter {
                         writeText(ns.getName() + "=\"" + ns.getValue() + '"');
                         break;
                     case Type.STRING:
+                    case Type.NORMALIZED_STRING:
+                    case Type.TOKEN:
+                    case Type.LANGUAGE:
+                    case Type.NMTOKEN:
+                    case Type.NAME:
+                    case Type.NCNAME:
+                    case Type.ID:
+                    case Type.IDREF:
+                    case Type.ENTITY:
                     case Type.UNTYPED_ATOMIC:
                     case Type.ANY_URI:
                         final String v = item.getStringValue();

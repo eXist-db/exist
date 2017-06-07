@@ -4,11 +4,26 @@ module namespace ser="http://exist-db.org/xquery/test/serialize";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
-declare variable $ser:adaptive-opts :=
-    <output:serialization-parameters
-           xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
-        <output:method value="adaptive"/>
-      </output:serialization-parameters>;
+declare %private function ser:adaptive($data, $itemSep as xs:string?) {
+    let $options :=
+        <output:serialization-parameters
+            xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
+            <output:method value="adaptive"/>
+            <output:indent>no</output:indent>
+            {
+                if ($itemSep) then
+                    <output:item-separator>{$itemSep}</output:item-separator>
+                else
+                    ()
+            }
+        </output:serialization-parameters>
+    return
+        serialize($data, $options)
+};
+
+declare %private function ser:adaptive($data) {
+    ser:adaptive($data, ())
+};
 
 declare variable $ser:atomic :=
     <atomic:root xmlns:atomic="http://www.w3.org/XQueryTest" xmlns:foo="http://www.example.com/foo"
@@ -137,7 +152,7 @@ declare
     %test:args('Hello "world"!')
     %test:assertEquals('"Hello ""world""!"')
 function ser:adaptive-simple-atomic($atomic as xs:anyAtomicType) {
-    serialize($atomic, $ser:adaptive-opts)
+    ser:adaptive($atomic)
 };
 
 declare
@@ -157,7 +172,7 @@ function ser:adaptive-function-item() {
         ser:adaptive-simple-atomic#1
     )
     return
-        serialize($input, $ser:adaptive-opts)
+        ser:adaptive($input)
 };
 
 declare
@@ -168,7 +183,7 @@ a="abc"
 function ser:adaptive-xml() {
     let $input := ($ser:test-xml, $ser:test-xml/elem, $ser:test-xml/elem/@a, $ser:test-xml/elem/comment())
     return
-        serialize($input, $ser:adaptive-opts)
+        ser:adaptive($input)
 };
 
 declare
@@ -180,7 +195,7 @@ function ser:adaptive-xml-stored() {
     let $doc := doc($ser:collection || "/test.xml")
     let $input := ($doc, $doc/elem, $doc/elem/@a, $doc/elem/comment())
     return
-        serialize($input, $ser:adaptive-opts)
+        ser:adaptive($input)
 };
 
 declare
@@ -188,13 +203,13 @@ declare
 function ser:adaptive-xml-namespace() {
     let $input := namespace foo { "http://exist-db.org/foo" }
     return
-        serialize($input, $ser:adaptive-opts)
+        ser:adaptive($input)
 };
 
 declare
     %test:assertEquals("Q{http://exist.sourceforge.net/NS/exist}test")
 function ser:adaptive-qname() {
-    serialize(xs:QName("exist:test"), $ser:adaptive-opts)
+    ser:adaptive(xs:QName("exist:test"))
 };
 
 declare
@@ -202,7 +217,7 @@ declare
 function ser:adaptive-array() {
     let $input := [(1 to 3), 'hello "world"!', true(), 1 = 0]
     return
-        serialize($input, $ser:adaptive-opts)
+        ser:adaptive($input)
 };
 
 declare
@@ -213,7 +228,7 @@ function ser:adaptive-map() {
         "k2": map { "k3": $ser:test-xml/elem/@a, "k4": array { 1 to 2 } }
     }
     return
-        serialize($input, $ser:adaptive-opts)
+        ser:adaptive($input)
 };
 
 declare
@@ -223,7 +238,7 @@ declare
 function ser:adaptive-double() {
     let $input := (xs:double(1), xs:double(math:pi()), xs:double(2.543e1))
     return
-        serialize($input, $ser:adaptive-opts)
+        ser:adaptive($input)
 };
 
 declare
@@ -247,5 +262,130 @@ function ser:adaptive-mixed() {
         map:entry("k", ())
     )
     return
-        serialize($input, $ser:adaptive-opts)
+        ser:adaptive($input)
+};
+
+declare
+    %test:assertEquals("[]")
+function ser:adaptive-empty-array() {
+    ser:adaptive([])
+};
+
+declare
+    %test:assertEquals("map{}")
+function ser:adaptive-empty-map() {
+    ser:adaptive(map { })
+};
+
+declare
+    %test:assertEquals("")
+function ser:adaptive-empty-seq() {
+    ser:adaptive(())
+};
+
+declare
+    %test:assertEquals("content")
+function ser:adaptive-text-node() {
+    ser:adaptive(<test>content</test>/text())
+};
+
+declare
+    %test:assertEquals("<!--comment-->")
+function ser:adaptive-comment-node() {
+    ser:adaptive(<!--comment-->)
+};
+
+declare
+    %test:assertEquals("<?target instruction ?>")
+function ser:adaptive-processing-instr() {
+    ser:adaptive(<?target instruction ?>)
+};
+
+declare
+    %test:assertEquals('att-name="att-value"')
+function ser:adaptive-attribute-node() {
+    ser:adaptive(attribute att-name { "att-value" })
+};
+
+declare
+    %test:assertEquals('[xs:float("NaN")]')
+function ser:adaptive-array-with-NaN() {
+    ser:adaptive([ xs:float("NaN") ])
+};
+
+declare
+    %test:assertEquals('[xs:float("NaN")]')
+function ser:adaptive-array-with-NaN() {
+    ser:adaptive([ xs:float("NaN") ])
+};
+
+declare
+    %test:assertEquals('1-2-3-4-5')
+function ser:adaptive-seq-with-item-separator() {
+    ser:adaptive(1 to 5, "-")
+};
+
+declare
+    %test:assertEquals('"the quick", "brown fox"')
+function ser:adaptive-seq-with-item-separator2() {
+    ser:adaptive(("the quick", "brown fox"), ", ")
+};
+
+declare
+    %test:assertEquals('map{"a":("quotes ("")","apos (&apos;)")}')
+function ser:adaptive-map-with-itemsep-no-quotes() {
+    let $input := map{ "a":("quotes ("")", "apos (')") }
+    return
+        ser:adaptive($input, ",")
+};
+
+declare
+    %test:assertEquals('xs:dateTime("1999-05-31T13:20:00-05:00")')
+function ser:adaptive-xs-date-time() {
+    ser:adaptive(xs:dateTime('1999-05-31T13:20:00-05:00'))
+};
+
+declare
+    %test:assertEquals('xs:duration("P1Y2M3DT10H30M23S")')
+function ser:adaptive-xs-duration() {
+    ser:adaptive(xs:duration("P1Y2M3DT10H30M23S"))
+};
+
+declare
+    %test:assertEquals('xs:float("1")')
+function ser:adaptive-xs-float() {
+    ser:adaptive(xs:float("1e0"))
+};
+
+declare
+    %test:assertEquals('1.0e0')
+function ser:adaptive-xs-double() {
+    let $input := xs:double(1e0)
+    return
+        ser:adaptive($input, ",")
+};
+
+declare
+    %test:assertEquals('1.2,1,0,-1,0,0')
+function ser:adaptive-xs-integers() {
+    let $input := (xs:decimal(1.2), xs:integer(1), xs:nonPositiveInteger("0"),
+        xs:negativeInteger(-1), xs:long(0), xs:int(0))
+    return
+        ser:adaptive($input, ",")
+};
+
+declare
+    %test:assertEquals('"""","""",""""')
+function ser:adaptive-string-escaping() {
+    let $input := ('"', xs:untypedAtomic('"'), xs:anyURI('"'))
+    return
+        ser:adaptive($input, ",")
+};
+
+declare
+    %test:assertEquals('"en","en","en","en","en"')
+function ser:adaptive-xs-strings() {
+    let $input := (xs:normalizedString("en"), xs:token("en"), xs:language("en"), xs:ID("en"), xs:NCName("en"))
+    return
+        ser:adaptive($input, ",")
 };
