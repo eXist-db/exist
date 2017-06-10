@@ -30,7 +30,7 @@ public abstract class AbstractSerializer {
         new HTML5Writer()
     };
 
-    private final static Properties defaultProperties = new Properties();
+    protected final static Properties defaultProperties = new Properties();
 
     static {
         defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
@@ -51,7 +51,7 @@ public abstract class AbstractSerializer {
 
     public void setOutput(Writer writer, Properties properties) {
         if (properties == null) {
-            outputProperties = defaultProperties;
+            outputProperties = new Properties(defaultProperties);
         } else {
             outputProperties = properties;
         }

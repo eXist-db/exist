@@ -21,6 +21,7 @@
 
 package org.exist.util.serializer;
 
+import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -202,6 +203,13 @@ public class IndentingXMLWriter extends XMLWriter {
 
     private boolean isMatchTag(final String namespaceURI, final String localName) {
         return namespaceURI != null && namespaceURI.equals(Namespaces.EXIST_NS) && localName.equals("match");
+    }
+
+    protected void addSpaceIfIndent() throws IOException {
+        if (!indent || whitespacePreserve) {
+            return;
+        }
+        writer.write(' ');
     }
 
     protected void indent() throws TransformerException {
