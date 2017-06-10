@@ -51,7 +51,7 @@ public class AdaptiveSerializer extends AbstractSerializer {
     @Override
     public void setOutput(final Writer writer, final Properties properties) {
         if (properties == null) {
-            outputProperties = defaultProperties;
+            outputProperties = new Properties(defaultProperties);
         } else {
             outputProperties = properties;
         }

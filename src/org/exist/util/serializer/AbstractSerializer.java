@@ -51,7 +51,7 @@ public abstract class AbstractSerializer {
 
     public void setOutput(Writer writer, Properties properties) {
         if (properties == null) {
-            outputProperties = defaultProperties;
+            outputProperties = new Properties(defaultProperties);
         } else {
             outputProperties = properties;
         }
