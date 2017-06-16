@@ -21,44 +21,35 @@
  */
 package org.exist.webdav;
 
+import com.bradmcevoy.http.*;
+import com.bradmcevoy.http.Request.Method;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import com.bradmcevoy.http.Auth;
-import com.bradmcevoy.http.LockInfo;
-import com.bradmcevoy.http.LockTimeout;
-import com.bradmcevoy.http.LockToken;
-import com.bradmcevoy.http.Request;
-import com.bradmcevoy.http.Request.Method;
-import com.bradmcevoy.http.Resource;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import java.util.Date;
-import java.util.GregorianCalendar;
-
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.XMLGregorianCalendar;
-
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.xmldb.XmldbURI;
 
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
 /**
  * Generic class representing a Milton Resource.
- * 
+ *
  * @author Dannes Wessels <dannes@exist-db.org>
  */
 public class MiltonResource implements Resource {
 
     protected final static Logger LOG = LogManager.getLogger(MiltonResource.class);
+    protected final static String AUTHENTICATED = "AUTHENTICATED";
     protected XmldbURI resourceXmldbUri;
     protected BrokerPool brokerPool;
     protected String host;
     protected Subject subject;
-    protected final static String AUTHENTICATED = "AUTHENTICATED";
     protected String REALM = "exist";
     protected ExistResource existResource;
 
@@ -66,7 +57,7 @@ public class MiltonResource implements Resource {
     private DatatypeFactory datatypeFactory;
 
     public MiltonResource() {
-        if(datatypeFactory==null){
+        if (datatypeFactory == null) {
             try {
                 datatypeFactory = DatatypeFactory.newInstance();
             } catch (DatatypeConfigurationException ex) {
@@ -90,13 +81,14 @@ public class MiltonResource implements Resource {
     /**
      * Convert date to dateTime XML format.
      * s
+     *
      * @param date Representation of data
      * @return ISO8601 like formatted representation of date.s
      */
-    protected String getXmlDateTime(Long date){
+    protected String getXmlDateTime(Long date) {
         // Convert to Calendar
         GregorianCalendar gc = new GregorianCalendar();
-        gc.setTime( new Date(date) );
+        gc.setTime(new Date(date));
 
         // COnvert to XML dateTimes
         XMLGregorianCalendar xgc = datatypeFactory.newXMLGregorianCalendar(gc);
@@ -104,7 +96,7 @@ public class MiltonResource implements Resource {
     }
 
     /**
-     *  Converts an org.exist.dom.persistent.LockToken into com.bradmcevoy.http.LockToken.
+     * Converts an org.exist.dom.persistent.LockToken into com.bradmcevoy.http.LockToken.
      *
      * @param existLT Exist-db representation of a webdav token.
      * @return Milton representation of a webdav token.
@@ -166,12 +158,12 @@ public class MiltonResource implements Resource {
         Long timeout = existLT.getTimeOut();
 
         // Special treatment when no LOCK was present
-        if(timeout == org.exist.dom.persistent.LockToken.NO_LOCK_TIMEOUT){
-            timeout=null;
+        if (timeout == org.exist.dom.persistent.LockToken.NO_LOCK_TIMEOUT) {
+            timeout = null;
 
-        // Special treatment infinite lock
-        } else if(timeout == org.exist.dom.persistent.LockToken.LOCK_TIMEOUT_INFINITE){ 
-            timeout=Long.MAX_VALUE;
+            // Special treatment infinite lock
+        } else if (timeout == org.exist.dom.persistent.LockToken.LOCK_TIMEOUT_INFINITE) {
+            timeout = Long.MAX_VALUE;
         }
 
         LockTimeout lt = new LockTimeout(timeout);
@@ -185,7 +177,7 @@ public class MiltonResource implements Resource {
     }
 
     /**
-     *  Converts an org.exist.dom.persistent.LockToken into com.bradmcevoy.http.LockToken.
+     * Converts an org.exist.dom.persistent.LockToken into com.bradmcevoy.http.LockToken.
      */
     protected org.exist.dom.persistent.LockToken convertToken(LockTimeout timeout, LockInfo lockInfo) {
 
@@ -230,38 +222,38 @@ public class MiltonResource implements Resource {
         if (timeout == null || timeout.getSeconds() == null) {
             existToken.setTimeOut(org.exist.dom.persistent.LockToken.NO_LOCK_TIMEOUT);
 
-        } else if (timeout.getSeconds() == Long.MAX_VALUE ) {
+        } else if (timeout.getSeconds() == Long.MAX_VALUE) {
             existToken.setTimeOut(org.exist.dom.persistent.LockToken.LOCK_TIMEOUT_INFINITE);
-            
+
         } else {
-            Long futureDate = (new Date().getTime())/1000 + timeout.getSeconds();
-            existToken.setTimeOut( futureDate );
+            Long futureDate = (new Date().getTime()) / 1000 + timeout.getSeconds();
+            existToken.setTimeOut(futureDate);
         }
-        
+
         // Copy username if existent
         String user = lockInfo.lockedByUser;
-        if(user != null){
+        if (user != null) {
             existToken.setOwner(user);
         }
-        
+
 
         return existToken;
     }
 
 
     /**
-     *  Convert % encoded string back to text
+     * Convert % encoded string back to text
      */
-    protected XmldbURI decodePath(XmldbURI uri){
+    protected XmldbURI decodePath(XmldbURI uri) {
 
-        XmldbURI retval =null;
+        XmldbURI retval = null;
 
         try {
             String path = new URI(uri.toString()).getPath();
 
-            retval = XmldbURI.xmldbUriFor(""+path, false);
-            
-        } catch (URISyntaxException ex){
+            retval = XmldbURI.xmldbUriFor("" + path, false);
+
+        } catch (URISyntaxException ex) {
             // oops
             LOG.error(ex.getMessage());
 
@@ -270,11 +262,11 @@ public class MiltonResource implements Resource {
     }
 
     /**
-     *  Convert % encoded string back to text
+     * Convert % encoded string back to text
      */
-    protected String decodePath(String uri){
+    protected String decodePath(String uri) {
 
-        String path =null;
+        String path = null;
 
         try {
             path = new URI(uri).getPath();
@@ -289,7 +281,7 @@ public class MiltonResource implements Resource {
     /* ========
      * Resource
      * ======== */
-    
+
     @Override
     public String getUniqueId() {
         return null; // disables the ETag field
@@ -297,13 +289,13 @@ public class MiltonResource implements Resource {
 
     @Override
     public String getName() {
-        return decodePath(""+resourceXmldbUri.lastSegment());
+        return decodePath("" + resourceXmldbUri.lastSegment());
     }
 
     @Override
     public Object authenticate(String username, String password) {
 
-        if(LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled())
             LOG.debug(String.format("Authenticating user %s for %s", username, resourceXmldbUri));
 
         // Check if username is provided.
@@ -313,7 +305,7 @@ public class MiltonResource implements Resource {
 
         // Check is subject was already authenticated.
         if (subject != null) {
-            if(LOG.isDebugEnabled())
+            if (LOG.isDebugEnabled())
                 LOG.debug("User was already authenticated.");
             return AUTHENTICATED;
         }
@@ -323,7 +315,7 @@ public class MiltonResource implements Resource {
 
         // Quick return if no subject object was returned
         if (subject == null) {
-            if(LOG.isDebugEnabled())
+            if (LOG.isDebugEnabled())
                 LOG.debug("User could not be authenticated.");
             return null;
         }
@@ -340,7 +332,7 @@ public class MiltonResource implements Resource {
         // Collect data for this resource
         existResource.initMetadata();
 
-        if(LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled())
             LOG.debug(String.format("User '%s' has been authenticated.", subject.getName()));
         return AUTHENTICATED;
     }
@@ -354,7 +346,7 @@ public class MiltonResource implements Resource {
          * First perform checks on Milton authentication
          */
         if (auth == null) {
-            if(LOG.isDebugEnabled())
+            if (LOG.isDebugEnabled())
                 LOG.debug("User hasn't been authenticated.");
             return false;
         }
@@ -370,7 +362,7 @@ public class MiltonResource implements Resource {
 
         // If object does not exist, there was no successfull authentication
         if (tag == null) {
-            if(LOG.isDebugEnabled())
+            if (LOG.isDebugEnabled())
                 LOG.debug(String.format("No tag, user %s not authenticated", userName));
             return false;
 
@@ -380,7 +372,7 @@ public class MiltonResource implements Resource {
                 // The correct TAG is returned!
 
             } else {
-                if(LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled())
                     LOG.debug(String.format("Authentication tag contains wrong value, user %s is not authenticated", userName));
                 return false;
             }
@@ -391,27 +383,27 @@ public class MiltonResource implements Resource {
          */
         if (method.isWrite) {
             if (!existResource.writeAllowed) {
-                if(LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled())
                     LOG.debug(String.format("User %s is NOT authorized to write resource, abort.", userName));
                 return false;
             }
 
         } else {
             if (!existResource.readAllowed) {
-                if(LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled())
                     LOG.debug(String.format("User %s is NOT authorized to read resource, abort.", userName));
                 return false;
             }
         }
 
-        if(auth.getUri()==null){
-            if(LOG.isTraceEnabled())
+        if (auth.getUri() == null) {
+            if (LOG.isTraceEnabled())
                 LOG.trace("URI is null");
             // not sure why the null value can be there
         }
 
         String action = method.isWrite ? "write" : "read";
-        if(LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled())
             LOG.debug(String.format("User %s is authorized to %s resource %s", userName, action, resourceXmldbUri.toString()));
 
         return true;
@@ -427,7 +419,7 @@ public class MiltonResource implements Resource {
 
         Date modifiedDate = null;
 
-        Long time = existResource.getLastModified(); 
+        Long time = existResource.getLastModified();
         if (time != null) {
             modifiedDate = new Date(time);
         }

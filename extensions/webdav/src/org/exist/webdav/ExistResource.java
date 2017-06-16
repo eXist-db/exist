@@ -21,21 +21,21 @@
  */
 package org.exist.webdav;
 
-import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import org.exist.security.SecurityManager;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
+import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.xmldb.XmldbURI;
 
+import java.util.Properties;
+
 /**
  * Generic class representing an eXist Resource.
- * 
- *  @author Dannes Wessels <dannes@exist-db.org>
+ *
+ * @author Dannes Wessels <dannes@exist-db.org>
  */
 public abstract class ExistResource {
 
@@ -53,12 +53,8 @@ public abstract class ExistResource {
 
     protected String ownerUser;
     protected String ownerGroup;
-    
-    protected Properties configuration = new Properties();
 
-    protected enum Mode {
-        MOVE, COPY
-    }
+    protected Properties configuration = new Properties();
 
     abstract void initMetadata();
 
@@ -101,12 +97,12 @@ public abstract class ExistResource {
     public String getOwnerUser() {
         return ownerUser;
     }
-    
-    public Properties getSerializationConfiguration(){
+
+    public Properties getSerializationConfiguration() {
         return configuration;
     }
-    
-    public void setSerializationConfiguration(Properties config){
+
+    public void setSerializationConfiguration(Properties config) {
         configuration = config;
     }
 
@@ -128,5 +124,9 @@ public abstract class ExistResource {
             LOG.info(String.format("User %s could not be authenticated. %s", username, e.getMessage()));
         }
         return subject;
+    }
+
+    protected enum Mode {
+        MOVE, COPY
     }
 }
