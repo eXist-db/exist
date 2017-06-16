@@ -394,6 +394,8 @@ public class MiltonCollection extends MiltonResource
             // Begin document
             writer.writeStartDocument();
 
+            writer.writeComment("Warning: this XML format is *not* part of the WebDAV specification.");
+
             // Root element
             writer.writeStartElement("exist", "result", "http://exist.sourceforge.net/NS/exist");
 
