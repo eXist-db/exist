@@ -585,7 +585,7 @@ public class MiltonDocument extends MiltonResource
      * 
      * @param config XML serialization options
      */
-    public void setConfiguration(Properties config){
-        existDocument.setConfiguration(config);
+    public void setSerializationConfiguration(Properties config){
+        existDocument.setSerializationConfiguration(config);
     }
 }

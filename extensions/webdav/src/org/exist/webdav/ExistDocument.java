@@ -21,13 +21,6 @@
  */
 package org.exist.webdav;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.URISyntaxException;
-import java.util.Optional;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -48,8 +41,14 @@ import org.exist.util.VirtualTempFile;
 import org.exist.webdav.exceptions.DocumentAlreadyLockedException;
 import org.exist.webdav.exceptions.DocumentNotLockedException;
 import org.exist.xmldb.XmldbURI;
-
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.URISyntaxException;
+import java.util.Optional;
 
 /**
  * Class for accessing the Collection class of the exist-db native API.
@@ -171,8 +170,10 @@ public class ExistDocument extends ExistResource {
                     Serializer serializer = broker.getSerializer();
                     serializer.reset();
                     try {
-                        // Set serialization options
-                        serializer.setProperties(configuration);
+                        // Set custom serialization options when available
+                        if (!configuration.isEmpty()) {
+                            serializer.setProperties(configuration);
+                        }
 
                         // Serialize document
                         try (Writer w = new OutputStreamWriter(os, "UTF-8")) {

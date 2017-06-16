@@ -34,7 +34,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Properties;
-import javax.xml.transform.OutputKeys;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -42,7 +41,6 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
-import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 
@@ -55,23 +53,9 @@ public class ExistResourceFactory implements ResourceFactory {
 
     private final static Logger LOG = LogManager.getLogger(ExistResourceFactory.class);
     private BrokerPool brokerPool = null;
-    
-    //	default output properties for the XML serialization
-    public final static Properties DEFAULT_WEBDAV_OPTIONS = new Properties();
-    
-    /** XML serialization options */
-    private Properties webDavOptions = new Properties(); 
 
-    /**
-     * Default serialization options
-     */
-    static {
-        DEFAULT_WEBDAV_OPTIONS.setProperty(OutputKeys.INDENT, "yes");
-        DEFAULT_WEBDAV_OPTIONS.setProperty(OutputKeys.ENCODING, "UTF-8");
-        DEFAULT_WEBDAV_OPTIONS.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-        DEFAULT_WEBDAV_OPTIONS.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
-        DEFAULT_WEBDAV_OPTIONS.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
-    }
+    /** XML serialization options */
+    private Properties webDavOptions = new Properties();
 
     private enum ResourceType {
         DOCUMENT, COLLECTION, IGNORABLE, NOT_EXISTING
@@ -89,9 +73,6 @@ public class ExistResourceFactory implements ResourceFactory {
             LOG.error("Unable to initialize WebDAV interface.", e);
         }
         
-        // Set default values
-        webDavOptions.putAll(DEFAULT_WEBDAV_OPTIONS);
-        
         // load specific options
         try {
             // Find right file
@@ -106,7 +87,7 @@ public class ExistResourceFactory implements ResourceFactory {
                 }
                 
             } else {
-                LOG.info("Using WebDAV default serialization options.");
+                LOG.info("Using eXist-db default serialization options.");
             }
             
         } catch (Throwable ex) {
@@ -155,7 +136,7 @@ public class ExistResourceFactory implements ResourceFactory {
         switch (getResourceType(brokerPool, xmldbUri)) {
             case DOCUMENT:
                 MiltonDocument doc = new MiltonDocument(host, xmldbUri, brokerPool);
-                doc.setConfiguration(webDavOptions);
+                doc.setSerializationConfiguration(webDavOptions);
                 return doc;
 
             case COLLECTION:

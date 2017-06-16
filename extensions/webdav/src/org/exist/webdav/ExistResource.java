@@ -50,7 +50,6 @@ public abstract class ExistResource {
     protected boolean readAllowed = false;
     protected boolean writeAllowed = false;
     protected boolean executeAllowed = false;
-//    protected ExistResource existResource;
 
     protected String ownerUser;
     protected String ownerGroup;
@@ -103,11 +102,11 @@ public abstract class ExistResource {
         return ownerUser;
     }
     
-    public Properties getConfiguration(){
+    public Properties getSerializationConfiguration(){
         return configuration;
     }
     
-    public void setConfiguration(Properties config){
+    public void setSerializationConfiguration(Properties config){
         configuration = config;
     }
 
