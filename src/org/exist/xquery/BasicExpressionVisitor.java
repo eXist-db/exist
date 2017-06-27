@@ -19,8 +19,12 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.QName;
+
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Basic implementation of the {@link ExpressionVisitor} interface.
@@ -161,6 +165,21 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
         return visitor.ref;
     }
 
+    /**
+     * Recursively descends to find the first reference of a
+     * named variable.
+     *
+     * @param variableName The name of the variable
+     * @param expr The expression to start from
+     *
+     * @return The first Variable Reference or null
+     */
+    public static @Nullable VariableReference findVariableRef(final QName variableName, final Expression expr) {
+        final FirstVariableRefVisitor visitor = new FirstVariableRefVisitor(variableName);
+        expr.accept(visitor);
+        return visitor.ref;
+    }
+
     @Override
     public void visitForExpression(ForExpr forExpr) {
         //Nothing to do
@@ -262,6 +281,207 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
         public void visitPathExpr(PathExpr expression) {
             for (int i = 0; i < expression.getLength(); i++) {
                 final Expression next = expression.getExpression(i);
+                next.accept(this);
+            }
+        }
+    }
+
+    /**
+     * Visitor that will recursively descend to find the first reference of a
+     * named variable.
+     */
+    public static class FirstVariableRefVisitor extends BasicExpressionVisitor {
+        private final QName variableQName;
+        private boolean stop;
+        private VariableReference ref = null;
+
+        public FirstVariableRefVisitor(final QName variableQName) {
+            this.variableQName = variableQName;
+        }
+
+        @Override
+        public void visitVariableReference(final VariableReference ref) {
+            if(variableQName.equals(ref.getName())) {
+                this.ref = ref;
+                stop = true;    // stop on the first reference we find
+            }
+        }
+
+        @Override
+        public void visitVariableDeclaration(final VariableDeclaration decl) {
+            if(stop) {
+                return;
+            }
+
+            final Optional<Expression> next = decl.getExpression();
+            if(next.isPresent()) {
+                next.get().accept(this);
+            } else {
+                processExpressionWrapper(decl);
+            }
+        }
+
+        @Override
+        public void visitBuiltinFunction(final Function function) {
+            for(int i = 0; i < function.getArgumentCount(); i++) {
+                if(stop) {
+                    return;
+                }
+
+                final Expression next = function.getArgument(i);
+                next.accept(this);
+            }
+        }
+
+        @Override
+        public void visitUserFunction(final UserDefinedFunction function) {
+            for(int i = 0; i < function.getArgumentCount(); i++) {
+                if(stop) {
+                    return;
+                }
+
+                final Expression next = function.getArgument(i);
+                next.accept(this);
+            }
+        }
+
+        @Override
+        public void visitFunctionCall(final FunctionCall call) {
+            for(int i = 0; i < call.getArgumentCount(); i++) {
+                if(stop) {
+                    return;
+                }
+
+                final Expression next = call.getArgument(i);
+                next.accept(this);
+            }
+        }
+
+        @Override
+        public void visitCastExpr(final CastExpression castExpression) {
+            if(!stop) {
+                final Expression next = castExpression.getInnerExpression();
+                next.accept(this);
+            }
+        }
+
+        @Override
+        public void visitGeneralComparison(final GeneralComparison comparison) {
+            processExpressionWrapper(comparison);
+        }
+
+        @Override
+        public void visitUnionExpr(final Union union) {
+            processExpressionWrapper(union);
+        }
+
+        @Override
+        public void visitIntersectionExpr(final Intersect intersect) {
+            processExpressionWrapper(intersect);
+        }
+
+        @Override
+        public void visitAndExpr(final OpAnd and) {
+            processExpressionWrapper(and);
+        }
+
+        @Override
+        public void visitOrExpr(final OpOr or) {
+            processExpressionWrapper(or);
+        }
+
+        @Override
+        public void visitLocationStep(final LocationStep locationStep) {
+            processExpressionWrapper(locationStep);
+        }
+
+        @Override
+        public void visitFilteredExpr(final FilteredExpression filtered) {
+            processExpressionWrapper(filtered);
+        }
+
+        @Override
+        public void visitPredicate(final Predicate predicate) {
+            processExpressionWrapper(predicate);
+        }
+
+        @Override
+        public void visitForExpression(final ForExpr forExpr) {
+            processExpressionWrapper(forExpr);
+        }
+
+        @Override
+        public void visitLetExpression(final LetExpr letExpr) {
+            processExpressionWrapper(letExpr);
+        }
+
+        @Override
+        public void visitOrderByClause(final OrderByClause orderBy) {
+            processExpressionWrapper(orderBy);
+        }
+
+        @Override
+        public void visitGroupByClause(final GroupByClause groupBy) {
+            processExpressionWrapper(groupBy);
+        }
+
+        @Override
+        public void visitWhereClause(final WhereClause where) {
+            processExpressionWrapper(where);
+        }
+
+        @Override
+        public void visitConditional(final ConditionalExpression conditional) {
+            processExpressionWrapper(conditional);
+        }
+
+        @Override
+        public void visitTryCatch(final TryCatchExpression conditional) {
+            processExpressionWrapper(conditional);
+        }
+
+        @Override
+        public void visitDocumentConstructor(final DocumentConstructor constructor) {
+            processExpressionWrapper(constructor);
+        }
+
+        @Override
+        public void visitElementConstructor(final ElementConstructor constructor) {
+            processExpressionWrapper(constructor);
+        }
+
+        @Override
+        public void visitTextConstructor(final DynamicTextConstructor constructor) {
+            processExpressionWrapper(constructor);
+        }
+
+        @Override
+        public void visitAttribConstructor(final AttributeConstructor constructor) {
+            processExpressionWrapper(constructor);
+        }
+
+        @Override
+        public void visitAttribConstructor(final DynamicAttributeConstructor constructor) {
+            processExpressionWrapper(constructor);
+        }
+
+        @Override
+        public void visitSimpleMapOperator(final OpSimpleMap simpleMap) {
+            processExpressionWrapper(simpleMap);
+        }
+
+        @Override
+        public void visitPathExpr(final PathExpr expression) {
+            processExpressionWrapper(expression);
+        }
+
+        private void processExpressionWrapper(final Expression expression) {
+            for(int i = 0; i < expression.getSubExpressionCount(); i++) {
+                if(stop) {
+                    return;
+                }
+
+                final Expression next = expression.getSubExpression(i);
                 next.accept(this);
             }
         }

@@ -41,6 +41,7 @@ import java.util.Stack;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
+import javax.annotation.Nullable;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
@@ -2566,24 +2567,42 @@ public class XQueryContext implements BinaryValueManager, Context
     }
 
 
-    public void popLocalVariables(LocalVariable var) {
-        popLocalVariables(var, null);
+    public void popLocalVariables(final LocalVariable var) {
+        popLocalVariables(var, null, null);
+    }
+
+    public void popLocalVariables(final LocalVariable var, @Nullable final Sequence resultSeq) {
+        popLocalVariables(var, null, resultSeq);
+    }
+
+    public void popLocalVariables(final LocalVariable var, @Nullable final Expression parent) {
+        popLocalVariables(var, parent, null);
     }
 
     /**
      * Restore the local variable stack to the position marked by variable var.
      *
-     * @param  var
-     *
+     * @param var The variable
+     * @param returnExpr the return expression or null
+     * @param resultSeq the result sequence or null
      */
-    public void popLocalVariables(LocalVariable var, Sequence resultSeq)
-    {
+    public void popLocalVariables(final LocalVariable var, @Nullable final Expression returnExpr, @Nullable final Sequence resultSeq) {
         if( var != null ) {
             // clear all variables registered after var. they should be out of scope.
             LocalVariable outOfScope = var.after;
             while (outOfScope != null) {
                 if (outOfScope != var && !outOfScope.isClosureVar()) {
-                    outOfScope.destroy(this, resultSeq);
+
+                    // check the variable is not bound in the return expression
+                    if(returnExpr == null) {
+                        outOfScope.destroy(this, resultSeq);
+                    } else {
+                        final VariableReference ref = BasicExpressionVisitor.findVariableRef(outOfScope.getQName(), returnExpr);
+                        if(ref == null) {
+                            // no reference to the variable in the return expr
+                            outOfScope.destroy(this, resultSeq);
+                        }
+                    }
                 }
                 outOfScope = outOfScope.after;
             }
