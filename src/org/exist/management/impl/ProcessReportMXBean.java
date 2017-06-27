@@ -21,17 +21,17 @@
  */
 package org.exist.management.impl;
 
-import javax.management.openmbean.TabularData;
+import java.util.List;
 
 public interface ProcessReportMXBean {
 
-    TabularData getScheduledJobs();
+    List<Job> getScheduledJobs();
 
-    TabularData getRunningJobs();
+    List<Job> getRunningJobs();
 
-    TabularData getRunningQueries();
+    List<RunningQuery> getRunningQueries();
 
-    TabularData getRecentQueryHistory();
+    List<RecentQueryHistory> getRecentQueryHistory();
 
     void killQuery(int id);
 

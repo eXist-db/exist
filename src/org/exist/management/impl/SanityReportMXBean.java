@@ -22,8 +22,7 @@
 package org.exist.management.impl;
 
 import java.util.Date;
-
-import javax.management.openmbean.TabularData;
+import java.util.List;
 
 public interface SanityReportMXBean {
 
@@ -39,7 +38,7 @@ public interface SanityReportMXBean {
 
     public long getPingTime();
     
-    public TabularData getErrors();
+    public List<Error> getErrors();
 
     public void triggerCheck(String output, String backup, String incremental);
     

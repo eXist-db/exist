@@ -392,6 +392,8 @@ public class JMXtoXML {
         if (object instanceof TabularData) {
             serialize(builder, (TabularData) object);
 
+        } else if (object instanceof CompositeData[]) {
+            serialize(builder, (CompositeData[]) object);
         } else if (object instanceof CompositeData) {
             serialize(builder, (CompositeData) object);
 
@@ -431,6 +433,14 @@ public class JMXtoXML {
                 serializeObject(builder, columnData);
                 builder.endElement();
             }
+            builder.endElement();
+        }
+    }
+
+    private void serialize(MemTreeBuilder builder, CompositeData[] array) throws SAXException {
+        for (final CompositeData data : array) {
+            builder.startElement(ROW_ELEMENT, null);
+            serialize(builder, data);
             builder.endElement();
         }
     }
