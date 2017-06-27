@@ -21,42 +21,8 @@
  */
 package org.exist.webdav;
 
-import com.bradmcevoy.http.Auth;
-import com.bradmcevoy.http.CollectionResource;
-import com.bradmcevoy.http.CopyableResource;
-import com.bradmcevoy.http.DeletableResource;
-import com.bradmcevoy.http.GetableResource;
-import com.bradmcevoy.http.LockInfo;
-import com.bradmcevoy.http.LockNullResource;
-import com.bradmcevoy.http.LockResult;
-import com.bradmcevoy.http.LockTimeout;
-import com.bradmcevoy.http.LockToken;
-import com.bradmcevoy.http.LockingCollectionResource;
-import com.bradmcevoy.http.MakeCollectionableResource;
-import com.bradmcevoy.http.MoveableResource;
-import com.bradmcevoy.http.PropFindableResource;
-import com.bradmcevoy.http.PutableResource;
-import com.bradmcevoy.http.Range;
-import com.bradmcevoy.http.Resource;
-import com.bradmcevoy.http.exceptions.BadRequestException;
-import com.bradmcevoy.http.exceptions.ConflictException;
-import com.bradmcevoy.http.exceptions.LockedException;
-import com.bradmcevoy.http.exceptions.NotAuthorizedException;
-import com.bradmcevoy.http.exceptions.PreConditionFailedException;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
+import com.bradmcevoy.http.*;
+import com.bradmcevoy.http.exceptions.*;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
@@ -65,6 +31,14 @@ import org.exist.webdav.ExistResource.Mode;
 import org.exist.webdav.exceptions.CollectionDoesNotExistException;
 import org.exist.webdav.exceptions.CollectionExistsException;
 import org.exist.xmldb.XmldbURI;
+
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.*;
 
 /**
  * Class for representing an eXist-db collection as a Milton WebDAV collection.
@@ -80,31 +54,31 @@ public class MiltonCollection extends MiltonResource
     private ExistCollection existCollection;
 
     /**
-     *  Constructor of representation of a Collection in the Milton framework, without subject information.
+     * Constructor of representation of a Collection in the Milton framework, without subject information.
      * To be called by the resource factory.
      *
-     * @param host  FQ host name including port number.
-     * @param uri   Path on server indicating path of resource
-     * @param pool  Handle to Exist database.
+     * @param host FQ host name including port number.
+     * @param uri  Path on server indicating path of resource
+     * @param pool Handle to Exist database.
      */
     public MiltonCollection(String host, XmldbURI uri, BrokerPool pool) {
         this(host, uri, pool, null);
     }
 
     /**
-     *  Constructor of representation of a Document in the Milton framework, with subject information.
+     * Constructor of representation of a Document in the Milton framework, with subject information.
      * To be called by the resource factory.
      *
-     * @param host  FQ host name including port number.
-     * @param uri   Path on server indicating path of resource.
-     * @param subject  An Exist operation is performed with Subject. Can be NULL.
-     * @param pool  Handle to Exist database.
+     * @param host    FQ host name including port number.
+     * @param uri     Path on server indicating path of resource.
+     * @param subject An Exist operation is performed with Subject. Can be NULL.
+     * @param pool    Handle to Exist database.
      */
     public MiltonCollection(String host, XmldbURI uri, BrokerPool pool, Subject subject) {
 
         super();
 
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("COLLECTION=%s", uri.toString()));
         }
 
@@ -130,7 +104,7 @@ public class MiltonCollection extends MiltonResource
     @Override
     public Resource child(String childName) {
 
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("get child=%s", childName));
         }
 
@@ -177,7 +151,7 @@ public class MiltonCollection extends MiltonResource
         allResources.addAll(getCollectionResources());
         allResources.addAll(getDocumentResources());
 
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("Nr of children=%s", allResources.size()));
         }
 
@@ -198,7 +172,7 @@ public class MiltonCollection extends MiltonResource
             createDate = new Date(time);
         }
 
-        if(LOG.isTraceEnabled()) {
+        if (LOG.isTraceEnabled()) {
             LOG.trace(String.format("Create date=%s", createDate));
         }
 
@@ -210,8 +184,8 @@ public class MiltonCollection extends MiltonResource
      * ==================== */
     @Override
     public void delete() throws NotAuthorizedException, ConflictException, BadRequestException {
-        
-        if(LOG.isDebugEnabled()) {
+
+        if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("Delete collection '%s'.", resourceXmldbUri));
         }
 
@@ -279,8 +253,8 @@ public class MiltonCollection extends MiltonResource
      * ========================= */
     @Override
     public LockToken createAndLock(String name, LockTimeout timeout, LockInfo lockInfo) throws NotAuthorizedException {
-        
-        if(LOG.isDebugEnabled()) {
+
+        if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("'%s' name='%s'", resourceXmldbUri, name));
         }
 
@@ -307,7 +281,7 @@ public class MiltonCollection extends MiltonResource
     @Override
     public LockResult refreshLock(String token) throws NotAuthorizedException, PreConditionFailedException {
 
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("'%s' token='%s'", resourceXmldbUri, token));
         }
 
@@ -322,14 +296,14 @@ public class MiltonCollection extends MiltonResource
     @Override
     public void unlock(String tokenId) throws NotAuthorizedException, PreConditionFailedException {
         // Just do nothing
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("'%s' token='%s'", resourceXmldbUri, tokenId));
         }
     }
 
     @Override
     public LockToken getCurrentLock() {
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("'%s'", resourceXmldbUri));
         }
         return null; // null is allowed
@@ -342,7 +316,7 @@ public class MiltonCollection extends MiltonResource
     @Override
     public void moveTo(CollectionResource rDest, String newName) throws ConflictException {
 
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("Move '%s' to '%s' in '%s'", resourceXmldbUri, newName, rDest.getName()));
         }
 
@@ -362,10 +336,10 @@ public class MiltonCollection extends MiltonResource
     @Override
     public void copyTo(CollectionResource toCollection, String newName) {
 
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("Move '%s' to '%s' in '%s'", resourceXmldbUri, newName, toCollection.getName()));
         }
-        
+
         XmldbURI destCollection = ((MiltonCollection) toCollection).getXmldbUri();
         try {
             existCollection.resourceCopyMove(destCollection, newName, Mode.COPY);
@@ -379,10 +353,10 @@ public class MiltonCollection extends MiltonResource
     /* ================
      * GettableResource
      * ================ */
-    
+
     @Override
     public void sendContent(OutputStream out, Range range, Map<String, String> params,
-            String contentType) throws IOException, NotAuthorizedException, BadRequestException {
+                            String contentType) throws IOException, NotAuthorizedException, BadRequestException {
 
         try {
             XMLOutputFactory xf = XMLOutputFactory.newInstance();
@@ -393,6 +367,8 @@ public class MiltonCollection extends MiltonResource
 
             // Begin document
             writer.writeStartDocument();
+
+            writer.writeComment("Warning: this XML format is *not* part of the WebDAV specification.");
 
             // Root element
             writer.writeStartElement("exist", "result", "http://exist.sourceforge.net/NS/exist");

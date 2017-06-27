@@ -21,13 +21,6 @@
  */
 package org.exist.webdav;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.URISyntaxException;
-import java.util.Optional;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -48,8 +41,14 @@ import org.exist.util.VirtualTempFile;
 import org.exist.webdav.exceptions.DocumentAlreadyLockedException;
 import org.exist.webdav.exceptions.DocumentNotLockedException;
 import org.exist.xmldb.XmldbURI;
-
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.URISyntaxException;
+import java.util.Optional;
 
 /**
  * Class for accessing the Collection class of the exist-db native API.
@@ -58,11 +57,15 @@ import org.xml.sax.SAXException;
  */
 public class ExistDocument extends ExistResource {
 
+    private String mimeType;
+    private long contentLength = 0;
+    private boolean isXmlDocument = false;
+
     /**
-     *  Constructor.
-     * 
-     * @param uri   URI of document
-     * @param pool  Reference to brokerpool
+     * Constructor.
+     *
+     * @param uri  URI of document
+     * @param pool Reference to brokerpool
      */
     public ExistDocument(XmldbURI uri, BrokerPool pool) {
 
@@ -91,7 +94,7 @@ public class ExistDocument extends ExistResource {
             return;
         }
 
-        try(final DBBroker broker = brokerPool.get(Optional.of(subject))) {
+        try (final DBBroker broker = brokerPool.get(Optional.of(subject))) {
             DocumentImpl document = null;
             try {
                 // If it is not a collection, check if it is a document
@@ -118,7 +121,7 @@ public class ExistDocument extends ExistResource {
 
                 // Get (estimated) file size
                 contentLength = document.getContentLength();
-            }  finally {
+            } finally {
                 // Cleanup resources
                 if (document != null) {
                     document.getUpdateLock().release(LockMode.READ_LOCK);
@@ -130,19 +133,14 @@ public class ExistDocument extends ExistResource {
 
         isInitialized = true;
     }
-    private String mimeType;
 
     public String getMimeType() {
         return mimeType;
     }
-    
-    private long contentLength = 0;
 
     public long getContentLength() {
         return contentLength;
     }
-    
-    private boolean isXmlDocument = false;
 
     public boolean isXmlDocument() {
         return isXmlDocument;
@@ -159,7 +157,7 @@ public class ExistDocument extends ExistResource {
 
         long startTime = System.currentTimeMillis();
 
-        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
 
             DocumentImpl document = null;
             try {
@@ -171,8 +169,10 @@ public class ExistDocument extends ExistResource {
                     Serializer serializer = broker.getSerializer();
                     serializer.reset();
                     try {
-                        // Set serialization options
-                        serializer.setProperties(configuration);
+                        // Set custom serialization options when available
+                        if (!configuration.isEmpty()) {
+                            serializer.setProperties(configuration);
+                        }
 
                         // Serialize document
                         try (Writer w = new OutputStreamWriter(os, "UTF-8")) {
@@ -230,8 +230,8 @@ public class ExistDocument extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
-            final Txn txn = txnManager.beginTransaction()) {
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
+             final Txn txn = txnManager.beginTransaction()) {
 
             // Need to split path into collection and document name
             XmldbURI collName = xmldbUri.removeLastSegment();
@@ -295,7 +295,7 @@ public class ExistDocument extends ExistResource {
 
         DocumentImpl document = null;
 
-        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
 
             // If it is not a collection, check if it is a document
             document = broker.getXMLResource(xmldbUri, LockMode.READ_LOCK);
@@ -361,7 +361,7 @@ public class ExistDocument extends ExistResource {
 
         DocumentImpl document = null;
 
-        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
 
             // Try to get document (add catch?)
             document = broker.getXMLResource(xmldbUri, LockMode.WRITE_LOCK);
@@ -385,9 +385,9 @@ public class ExistDocument extends ExistResource {
                 }
             }
 
-            if ( userLock != null && userLock.getName() != null 
+            if (userLock != null && userLock.getName() != null
                     && !userLock.getName().equals(subject.getName())
-                    && !subject.hasDbaRole() ) {
+                    && !subject.hasDbaRole()) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(String.format("Resource is locked by user %s.", userLock.getName()));
                 }
@@ -414,7 +414,7 @@ public class ExistDocument extends ExistResource {
 
             // Make token persistant
             final TransactionManager txnManager = brokerPool.getTransactionManager();
-            try(final Txn txn = txnManager.beginTransaction()) {
+            try (final Txn txn = txnManager.beginTransaction()) {
                 broker.storeMetadata(txn, document);
                 txnManager.commit(txn);
             }
@@ -422,7 +422,7 @@ public class ExistDocument extends ExistResource {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Successfully retrieved token");
             }
-            
+
             return inputToken;
 
 
@@ -433,7 +433,7 @@ public class ExistDocument extends ExistResource {
         } catch (TriggerException e) {
             LOG.error(e);
             throw new EXistException(e);
-		} finally {
+        } finally {
 
             // TODO: check if can be done earlier
             if (document != null) {
@@ -459,8 +459,8 @@ public class ExistDocument extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
-            final Txn txn = txnManager.beginTransaction()) {
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
+             final Txn txn = txnManager.beginTransaction()) {
 
 
             // Try to get document (add catch?)
@@ -482,7 +482,7 @@ public class ExistDocument extends ExistResource {
             }
 
             // Check if Resource is from subject
-            if (!lock.getName().equals(subject.getName()) && !subject.hasDbaRole() ) {
+            if (!lock.getName().equals(subject.getName()) && !subject.hasDbaRole()) {
                 LOG.debug(String.format("Resource lock is from user %s", lock.getName()));
                 throw new PermissionDeniedException(lock.getName());
             }
@@ -502,7 +502,7 @@ public class ExistDocument extends ExistResource {
         } catch (TriggerException e) {
             LOG.error(e);
             throw new EXistException(e);
-		} finally {
+        } finally {
             if (document != null) {
                 document.getUpdateLock().release(LockMode.WRITE_LOCK);
             }
@@ -541,8 +541,8 @@ public class ExistDocument extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
-            final Txn txn = txnManager.beginTransaction()) {
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
+             final Txn txn = txnManager.beginTransaction()) {
 
             // Need to split path into collection and document name
             XmldbURI srcCollectionUri = xmldbUri.removeLastSegment();
@@ -633,7 +633,7 @@ public class ExistDocument extends ExistResource {
             throw new EXistException("token is null");
         }
 
-        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
 
             // Try to get document (add catch?)
             document = broker.getXMLResource(xmldbUri, LockMode.WRITE_LOCK);
@@ -658,7 +658,7 @@ public class ExistDocument extends ExistResource {
                 throw new DocumentNotLockedException(msg);
             }
 
-            if (userLock.getName() != null && !userLock.getName().equals(subject.getName()) 
+            if (userLock.getName() != null && !userLock.getName().equals(subject.getName())
                     && !subject.hasDbaRole()) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(String.format("Resource is locked by %s", userLock.getName()));
@@ -679,7 +679,7 @@ public class ExistDocument extends ExistResource {
 
             // Make token persistant
             final TransactionManager txnManager = brokerPool.getTransactionManager();
-            try(final Txn txn = txnManager.beginTransaction()) {
+            try (final Txn txn = txnManager.beginTransaction()) {
                 broker.storeXMLResource(txn, document);
                 txnManager.commit(txn);
             }

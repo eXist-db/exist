@@ -24,22 +24,22 @@ package org.exist.webdav.exceptions;
 /**
  * Class that represents a situation that a file cannot be created  because the collection
  * does not exist.
- * 
+ *
  * @author wessels
  */
 public class DocumentAlreadyLockedException extends Exception {
 
-	private static final long serialVersionUID = 7229034225491130620L;
+    private static final long serialVersionUID = 7229034225491130620L;
 
-	public DocumentAlreadyLockedException() {
+    public DocumentAlreadyLockedException() {
         super();
     }
 
-    public DocumentAlreadyLockedException( Throwable inner ) {
+    public DocumentAlreadyLockedException(Throwable inner) {
         super(inner);
     }
 
-    public DocumentAlreadyLockedException( String message ) {
+    public DocumentAlreadyLockedException(String message) {
         super(message);
     }
 
