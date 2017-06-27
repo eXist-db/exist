@@ -21,12 +21,12 @@
  */
 package org.exist.management.impl;
 
-import javax.management.openmbean.TabularData;
+import java.util.List;
 
 /**
  * 
  */
 public interface LockManagerMXBean {
 
-    public TabularData getWaitingThreads();
+    public List<Lock> getWaitingThreads();
 }

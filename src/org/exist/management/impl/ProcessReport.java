@@ -21,7 +21,11 @@
  */
 package org.exist.management.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.exist.scheduler.ScheduledJobInfo;
 import org.exist.scheduler.Scheduler;
 import org.exist.storage.BrokerPool;
@@ -45,42 +49,6 @@ public class ProcessReport implements ProcessReportMXBean {
 
     private final static Logger LOG = LogManager.getLogger(ProcessReport.class);
 
-    private static String[] pItemNames = { "id", "action", "info" };
-    private static String[] pItemDescriptions = {
-        "Process ID",
-        "Description of the current action",
-        "Additional info provided by thread"
-    };
-    private static String[] pIndexNames = { "id" };
-
-
-    private static String[] qItemNames = { "id", "sourceType", "sourceKey", "terminating", "requestURI", "thread", "elapsed" };
-    private static String[] qItemDescriptions = {
-        "XQuery ID",
-        "Type of the query source",
-        "Description of the source",
-        "Is query terminating?",
-        "The URI by which the query was called (if any)",
-        "The thread running this query",
-        "The time in milliseconds since the query was started"
-    };
-
-    private static String[] qIndexNames = { "id" };
-
-    private static String[] qhItemNames = { "idx", "sourceKey", "recentInvocationCount", "mostRecentExecutionTime", "mostRecentExecutionDuration",
-        "requestURI" };
-
-    private static String[] qhItemDescriptions = {
-        "Index of the query in the history",
-        "Description of the source",
-        "Recent invocation count",
-        "Most recent query invocation start time",
-        "Most recent query invocation duration",
-        "The URI by which the query was called (if any)"
-    };
-
-    private static String[] qhIndexNames = { "idx" };
-
     private ProcessMonitor processMonitor;
 
     private Scheduler scheduler;
@@ -91,74 +59,41 @@ public class ProcessReport implements ProcessReportMXBean {
     }
 
     @Override
-    public TabularData getScheduledJobs() {
-        final OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING };
-        CompositeType infoType;
-        try {
-            infoType = new CompositeType("scheduledJobs", "Lists currently scheduled jobs in eXist",
-                    pItemNames, pItemDescriptions, itemTypes);
-            final TabularType tabularType = new TabularType("jobList", "List of currently scheduled jobs", infoType, pIndexNames);
-            final TabularDataSupport data = new TabularDataSupport(tabularType);
-            final List<ScheduledJobInfo> jobs = scheduler.getScheduledJobs();
-            for (final ScheduledJobInfo job : jobs) {
-                final Object[] itemValues = { job.getName(), job.getGroup(),
-                        job.getTriggerExpression() };
-                data.put(new CompositeDataSupport(infoType, pItemNames, itemValues));
-            }
-            return data;
-        } catch (final OpenDataException e) {
-            LOG.warn(e.getMessage(), e);
+    public List<Job> getScheduledJobs() {
+        final List<Job> jobList = new ArrayList<>();
+
+        final List<ScheduledJobInfo> jobs = scheduler.getScheduledJobs();
+        for (final ScheduledJobInfo job : jobs) {
+            jobList.add(new Job(job.getName(), job.getGroup(), job.getTriggerExpression()));
         }
-        return null;
+        return jobList;
     }
 
     @Override
-    public TabularData getRunningJobs() {
-        final OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING };
-        CompositeType infoType;
-        try {
-            infoType = new CompositeType("runningJobs", "Lists currently running jobs in eXist",
-                    pItemNames, pItemDescriptions, itemTypes);
-            final TabularType tabularType = new TabularType("jobList", "List of currently running jobs", infoType, pIndexNames);
-            final TabularDataSupport data = new TabularDataSupport(tabularType);
-            final ProcessMonitor.JobInfo[] jobs = processMonitor.runningJobs();
-            for (ProcessMonitor.JobInfo job : jobs) {
-                final Object[] itemValues = {job.getThread().getName(), job.getAction(), job.getAddInfo().toString()};
-                data.put(new CompositeDataSupport(infoType, pItemNames, itemValues));
-            }
-            return data;
-        } catch (final OpenDataException e) {
-            LOG.warn(e.getMessage(), e);
+    public List<Job> getRunningJobs() {
+        final List<Job> jobList = new ArrayList<>();
+
+        final ProcessMonitor.JobInfo[] jobs = processMonitor.runningJobs();
+        for (final ProcessMonitor.JobInfo job : jobs) {
+            jobList.add(new Job(job.getThread().getName(), job.getAction(), job.getAddInfo().toString()));
         }
-        return null;
+        return jobList;
     }
 
     @Override
-    public TabularData getRunningQueries() {
-        final OpenType<?>[] itemTypes = { SimpleType.INTEGER, SimpleType.STRING, SimpleType.STRING, SimpleType.BOOLEAN,
-                SimpleType.STRING, SimpleType.STRING, SimpleType.LONG };
-        CompositeType infoType;
-        try {
-            infoType = new CompositeType("runningQueries", "Lists currently running XQueries",
-                    qItemNames, qItemDescriptions, itemTypes);
-            final TabularType tabularType = new TabularType("queryList", "List of currently running XQueries", infoType, qIndexNames);
-            final TabularDataSupport data = new TabularDataSupport(tabularType);
-            final XQueryWatchDog[] watchdogs = processMonitor.getRunningXQueries();
-            for (XQueryWatchDog watchdog : watchdogs) {
-                String requestURI = null;
-                if (processMonitor.getTrackRequestURI()) {
-                    requestURI = ProcessMonitor.getRequestURI(watchdog);
-                }
-                final Object[] itemValues = { Integer.valueOf(watchdog.getContext().hashCode()), watchdog.getContext().getSource().type(),
-                        watchdog.getContext().getSource().path(), Boolean.valueOf(watchdog.isTerminating()), requestURI,
-                        watchdog.getRunningThread(), System.currentTimeMillis() - watchdog.getStartTime()};
-                data.put(new CompositeDataSupport(infoType, qItemNames, itemValues));
+    public List<RunningQuery> getRunningQueries() {
+        final List<RunningQuery> queries = new ArrayList<>();
+
+        final XQueryWatchDog[] watchdogs = processMonitor.getRunningXQueries();
+        for (final XQueryWatchDog watchdog : watchdogs) {
+            String requestURI = null;
+            if (processMonitor.getTrackRequestURI()) {
+                requestURI = ProcessMonitor.getRequestURI(watchdog);
             }
-            return data;
-        } catch (final OpenDataException e) {
-            LOG.warn(e.getMessage(), e);
+
+            queries.add(new RunningQuery(watchdog, requestURI));
         }
-        return null;
+        return queries;
     }
 
     public void killQuery(int id) {
@@ -176,26 +111,14 @@ public class ProcessReport implements ProcessReportMXBean {
     }
 
     @Override
-    public TabularData getRecentQueryHistory() {
-        final OpenType<?>[] itemTypes = { SimpleType.INTEGER, SimpleType.STRING, SimpleType.INTEGER, SimpleType.LONG, SimpleType.LONG, SimpleType.STRING };
-        CompositeType infoType;
-        try {
-            infoType = new CompositeType("recentQueryHistory", "Lists recently completed XQueries", qhItemNames, qhItemDescriptions, itemTypes);
-
-            final TabularType tabularType = new TabularType("queryList", "List of recently completed XQueries", infoType, qhIndexNames);
-            final TabularDataSupport data = new TabularDataSupport(tabularType);
-            final QueryHistory[] queryHistories = processMonitor.getRecentQueryHistory();
-            int i = 0;
-            for(final QueryHistory queryHistory : queryHistories) {
-                final Object[] itemValues = { i++, queryHistory.getSource(), queryHistory.getInvocationCount(), queryHistory.getMostRecentExecutionTime(),
-                        queryHistory.getMostRecentExecutionDuration(), queryHistory.getRequestURI() };
-                data.put(new CompositeDataSupport(infoType, qhItemNames, itemValues));
-            }
-            return data;
-        } catch (final OpenDataException e) {
-            LOG.warn(e.getMessage(), e);
+    public List<RecentQueryHistory> getRecentQueryHistory() {
+        final List<RecentQueryHistory> history = new ArrayList<>();
+        final QueryHistory[] queryHistories = processMonitor.getRecentQueryHistory();
+        int i = 0;
+        for(final QueryHistory queryHistory : queryHistories) {
+            history.add(new RecentQueryHistory(i++, queryHistory));
         }
-        return null;
+        return history;
     }
 
     /**

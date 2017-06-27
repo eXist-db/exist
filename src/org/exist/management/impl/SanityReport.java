@@ -62,10 +62,6 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     
     public final static int PING_WAITING = -1;
     public final static int PING_ERROR = -2;
-    
-    private static String[] itemNames = { "errcode", "description" };
-    private static String[] itemDescriptions = { "Error code", "Description of the error" };
-    private static String[] indexNames = { "errcode" };
 
     private static List<ErrorReport> NO_ERRORS = new LinkedList<ErrorReport>();
 
@@ -133,24 +129,12 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     }
     
     @Override
-    public TabularData getErrors() {
-        final OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING };
-        CompositeType infoType;
-        try {
-            infoType = new CompositeType("errorInfo", "Provides information on a consistency check error", itemNames,
-                    itemDescriptions, itemTypes);
-            final TabularType tabularType = new TabularType("errorList", "List of consistency check errors", infoType, indexNames);
-            final TabularDataSupport data = new TabularDataSupport(tabularType);
-            for (final ErrorReport error : errors) {
-                final Object[] itemValues = { error.getErrcodeString(), error.getMessage() };
-                data.put(new CompositeDataSupport(infoType, itemNames, itemValues));
-            }
-            return data;
-
-        } catch (final OpenDataException e) {
-            LOG.warn(e.getMessage(), e);
-            return null;
+    public List<Error> getErrors() {
+        final List<Error> errorList = new ArrayList<>();
+        for (final ErrorReport error : errors) {
+            errorList.add(new Error(error.getErrcodeString(), error.getMessage()));
         }
+        return errorList;
     }
 
     @Override

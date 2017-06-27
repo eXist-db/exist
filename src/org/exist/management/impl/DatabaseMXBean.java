@@ -1,6 +1,6 @@
 package org.exist.management.impl;
 
-import javax.management.openmbean.TabularData;
+import java.util.List;
 
 /*
 *  eXist Open Source Native XML Database
@@ -41,7 +41,7 @@ public interface DatabaseMXBean {
 
     long getCollectionCacheMem();
 
-    TabularData getActiveBrokersMap();
+    List<ActiveBroker> getActiveBrokersMap();
 
     public long getUptime();
 
