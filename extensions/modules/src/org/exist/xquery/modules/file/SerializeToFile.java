@@ -21,30 +21,24 @@
  */
 package org.exist.xquery.modules.file;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.dom.QName;
+import org.exist.storage.serializers.Serializer;
+import org.exist.xquery.*;
+import org.exist.xquery.util.SerializerUtils;
+import org.exist.xquery.value.*;
+import org.xml.sax.SAXException;
+
+import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Properties;
-import javax.xml.transform.OutputKeys;
 import java.nio.file.StandardOpenOption;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import org.exist.dom.QName;
-import org.exist.storage.serializers.Serializer;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Option;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.util.SerializerUtils;
-import org.exist.xquery.value.*;
-import org.xml.sax.SAXException;
+import java.util.Properties;
 
 public class SerializeToFile extends BasicFunction {
 	private final static Logger logger = LogManager.getLogger(SerializeToFile.class);
@@ -206,15 +200,21 @@ public class SerializeToFile extends BasicFunction {
         final Serializer serializer = context.getBroker().getSerializer();
         serializer.reset();
 
-        try(final OutputStream os = Files.newOutputStream(file, doAppend ? StandardOpenOption.APPEND : StandardOpenOption.CREATE,StandardOpenOption.TRUNCATE_EXISTING);
+        StandardOpenOption ops[] = doAppend ? new StandardOpenOption[]{StandardOpenOption.APPEND}
+                : new StandardOpenOption[]{StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING};
+
+        try (final OutputStream os = Files.newOutputStream(file, ops);
                 final Writer writer = new OutputStreamWriter(os)) {
 
             serializer.setProperties(outputProperties);
 
-            while(siNode.hasNext()) {
-                final NodeValue nv = (NodeValue)siNode.nextItem();
+            while (siNode.hasNext()) {
+                final NodeValue nv = (NodeValue) siNode.nextItem();
                 serializer.serialize(nv, writer);
             }
+        } catch(UnsupportedOperationException | IllegalArgumentException e){
+            throw new XPathException(this, "Error wile writing to file: " + e.getMessage(), e);
+
         } catch(final IOException | SAXException e) {
             throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the node set: " + e.getMessage(), e);
         }
