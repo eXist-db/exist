@@ -116,7 +116,7 @@
             <fileset dir="lib/core">
                 <include name="*.jar"/>
             </fileset>
-            <fileset dir="lib/extensions">
+            <fileset dir="lib/extensions" erroronmissingdir="false">
                 <include name="exist-netedit.jar"/>
             </fileset>
             <fileset dir="lib/optional">
