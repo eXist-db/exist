@@ -196,7 +196,7 @@ public class ArrayFunction extends BasicFunction {
                     "supplied arrays.",
                     new SequenceType[] {
                             new FunctionParameterSequenceType("array1", Type.ARRAY, Cardinality.EXACTLY_ONE, "The first array to process"),
-                            new FunctionParameterSequenceType("array1", Type.ARRAY, Cardinality.EXACTLY_ONE, "The second array to process"),
+                            new FunctionParameterSequenceType("array2", Type.ARRAY, Cardinality.EXACTLY_ONE, "The second array to process"),
                             new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function to call for each pair")
                     },
                     new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "The resulting array")
