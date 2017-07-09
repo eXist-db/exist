@@ -27,19 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.SimpleTimeZone;
-import java.util.Stack;
-import java.util.TimeZone;
-import java.util.TreeMap;
+import java.util.*;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -1408,11 +1396,8 @@ public class XQueryContext implements BinaryValueManager, Context
             watchdog.reset();
         }
 
-        for( final Module module : modules.values() ) {
-            if (module instanceof ExternalModule && ((ModuleContext)((ExternalModule)module).getContext()).getParentContext() != this) {
-                continue;
-            }
-            module.reset( this );
+        for( final Module module : allModules.values() ) {
+            module.reset( this, keepGlobals );
         }
 
         if( !keepGlobals ) {
