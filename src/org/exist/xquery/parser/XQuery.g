@@ -975,7 +975,7 @@ stringConcatExpr throws XPathException
 { boolean isConcat = false; }
 :
 	r1:rangeExpr (
-		CONCAT^ rangeExpr { isConcat = true; }
+		CONCAT! rangeExpr { isConcat = true; }
 	)*
 	{
 		if (isConcat)
