@@ -203,7 +203,13 @@ public abstract class AbstractInternalModule implements InternalModule {
     }
 
     @Override
-    public void reset(XQueryContext xqueryContext, boolean keepGlobals) {
+    public void reset(XQueryContext context) {
         //Nothing to do
+    }
+
+    @Override
+    public void reset(XQueryContext xqueryContext, boolean keepGlobals) {
+        // call deprecated method for backwards compatibility
+        reset(xqueryContext);
     }
 }

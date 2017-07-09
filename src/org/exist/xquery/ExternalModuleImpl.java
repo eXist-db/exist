@@ -270,6 +270,11 @@ public class ExternalModuleImpl implements ExternalModule {
         return mSource != null && mSource.isValid(broker) == Source.VALID;
     }
 
+    @Override
+    public void reset(XQueryContext context) {
+        // deprecated, ignore
+    }
+
     public void reset(XQueryContext xqueryContext, boolean keepGlobals) {
         // prevent recursive calls by checking needsReset
         if (needsReset) {
