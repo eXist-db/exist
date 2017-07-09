@@ -148,9 +148,9 @@ public class SQLModule extends AbstractInternalModule {
      * @param  xqueryContext  The XQueryContext
      */
     @Override
-    public void reset(XQueryContext xqueryContext) {
+    public void reset(XQueryContext xqueryContext, boolean keepGlobals) {
         // reset the module context
-        super.reset(xqueryContext);
+        super.reset(xqueryContext, keepGlobals);
 
         // close any open PreparedStatements
         closeAllPreparedStatements(xqueryContext);
