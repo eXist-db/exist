@@ -91,7 +91,9 @@ public class DynamicFunctionCall extends AbstractExpression {
     }
 
     @Override
-    public void resetState(boolean postOptimization) {
+    public void resetState(final boolean postOptimization) {
         super.resetState(postOptimization);
+        functionExpr.resetState(postOptimization);
+        arguments.forEach(arg -> arg.resetState(postOptimization));
     }
 }

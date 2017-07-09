@@ -136,8 +136,8 @@ public class FunctionCall extends Function {
 	 */
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		//updateFunction();
-		contextInfo.setParent(this);
          final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+         newContextInfo.setParent(this);
          newContextInfo.removeFlag(IN_NODE_CONSTRUCTOR);
          super.analyze(newContextInfo);
 		if (context.tailRecursiveCall(functionDef.getSignature())) {
@@ -342,7 +342,6 @@ public class FunctionCall extends Function {
     @Override
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
-        setRecursive(false);
         if(expression.needsReset() || postOptimization) {
             expression.resetState(postOptimization);
         }

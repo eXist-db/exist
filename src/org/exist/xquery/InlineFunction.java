@@ -22,6 +22,7 @@
 package org.exist.xquery;
 
 import java.util.List;
+import java.util.Stack;
 
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
@@ -41,6 +42,7 @@ public class InlineFunction extends AbstractExpression {
 	public final static QName INLINE_FUNCTION_QNAME = new QName("", "");
 	
 	private UserDefinedFunction function;
+	private Stack<FunctionCall> calls = new Stack<>();
 	
     private AnalyzeContextInfo cachedContextInfo;
 
@@ -51,16 +53,10 @@ public class InlineFunction extends AbstractExpression {
 
 	@Override
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-        cachedContextInfo = new AnalyzeContextInfo(contextInfo);
 
-        final AnalyzeContextInfo info = new AnalyzeContextInfo(contextInfo);
-		info.addFlag(SINGLE_STEP_EXECUTION);
-		
-		// local variable context is known within inline function:
-		final List<Variable> closureVars = context.getLocalStack();
-		function.setClosureVariables(closureVars);
-		
-		function.analyze(info);
+        cachedContextInfo = new AnalyzeContextInfo(contextInfo);
+        cachedContextInfo.addFlag(SINGLE_STEP_EXECUTION);
+        cachedContextInfo.setParent(this);
 	}
 
 	@Override
@@ -77,13 +73,17 @@ public class InlineFunction extends AbstractExpression {
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 			throws XPathException {
 		// local variable context is known within inline function
-		final List<Variable> closureVars = context.getLocalStack();
-		function.setClosureVariables(closureVars);
+		final List<ClosureVariable> closureVars = context.getLocalStack();
 		
 		final FunctionCall call = new FunctionCall(context, function);
+		call.getFunction().setClosureVariables(closureVars);
 		call.setLocation(function.getLine(), function.getColumn());
-		function.setCaller(call);
-		function.analyze(cachedContextInfo);
+		call.analyze(new AnalyzeContextInfo(cachedContextInfo));
+
+		// push the created function call to the stack so we can clear
+        // it after execution
+		calls.push(call);
+
 		return new FunctionReference(call);
 	}
 
@@ -96,6 +96,12 @@ public class InlineFunction extends AbstractExpression {
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         // clear closure variables set on inline function
-        function.setClosureVariables(null);
+        calls.forEach(call -> {
+            if (!postOptimization) {
+                call.getFunction().setClosureVariables(null);
+            }
+        });
+        calls.clear();
+        function.resetState(postOptimization);
     }
 }

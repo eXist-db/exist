@@ -2045,9 +2045,10 @@ public class XQueryContext implements BinaryValueManager, Context
      * 
      * @return currently visible local variables as a stack
      */
-    public List<Variable> getLocalStack() {
-    	final List<Variable> variables = new ArrayList<Variable>(10);
-    	
+    public List<ClosureVariable> getLocalStack() {
+
+        final List<ClosureVariable> closure = new ArrayList<>(6);
+
     	final LocalVariable end = contextStack.isEmpty() ? null : contextStack.peek();
 
         for ( LocalVariable var = lastVar; var != null; var = var.before ) {
@@ -2056,10 +2057,10 @@ public class XQueryContext implements BinaryValueManager, Context
                 break;
             }
 
-            variables.add( new LocalVariable(var, true) );
+            closure.add( new ClosureVariable(var) );
         }
 
-        return ( variables );
+        return ( closure );
     }
     
     public Map<QName, Variable> getGlobalVariables() {
@@ -2076,9 +2077,9 @@ public class XQueryContext implements BinaryValueManager, Context
      * @param stack
      * @throws XPathException
      */
-    public void restoreStack(List<Variable> stack) throws XPathException {
+    public void restoreStack(List<ClosureVariable> stack) throws XPathException {
         for (int i = stack.size() - 1; i > -1; i--) {
-            declareVariableBinding((LocalVariable)stack.get(i));
+            declareVariableBinding(new ClosureVariable(stack.get(i)));
         }
     }
     
