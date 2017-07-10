@@ -2566,15 +2566,17 @@ public class XQueryContext implements BinaryValueManager, Context
         return( lastVar );
     }
 
-
+    @Override
     public void popLocalVariables(final LocalVariable var) {
         popLocalVariables(var, null, null);
     }
 
+    @Override
     public void popLocalVariables(final LocalVariable var, @Nullable final Sequence resultSeq) {
         popLocalVariables(var, null, resultSeq);
     }
 
+    @Override
     public void popLocalVariables(final LocalVariable var, @Nullable final Expression parent) {
         popLocalVariables(var, parent, null);
     }
@@ -2586,6 +2588,7 @@ public class XQueryContext implements BinaryValueManager, Context
      * @param returnExpr the return expression or null
      * @param resultSeq the result sequence or null
      */
+    @Override
     public void popLocalVariables(final LocalVariable var, @Nullable final Expression returnExpr, @Nullable final Sequence resultSeq) {
         if( var != null ) {
             // clear all variables registered after var. they should be out of scope.

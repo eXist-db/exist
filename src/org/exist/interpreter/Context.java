@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
 
+import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.stream.XMLStreamException;
 
@@ -652,9 +653,34 @@ public interface Context {
 	/**
 	 * Restore the local variable stack to the position marked by variable var.
 	 *
-	 * @param  var
+	 * @param var The variable indicating position
 	 */
-	public void popLocalVariables(LocalVariable var);
+	void popLocalVariables(LocalVariable var);
+
+	/**
+	 * Restore the local variable stack to the position marked by variable var.
+	 *
+	 * @param var The variable indicating position
+	 * @param resultSeq The result sequence
+	 */
+	void popLocalVariables(final LocalVariable var, @Nullable final Sequence resultSeq);
+
+	/**
+	 * Restore the local variable stack to the position marked by variable var.
+	 *
+	 * @param var The variable indicating position
+	 * @param parent The parent expression
+	 */
+	void popLocalVariables(final LocalVariable var, @Nullable final Expression parent);
+
+	/**
+	 * Restore the local variable stack to the position marked by variable var.
+	 *
+	 * @param var The variable indicating position
+	 * @param returnExpr The return expression
+	 * @param resultSeq The result sequence
+	 */
+	void popLocalVariables(final LocalVariable var, @Nullable final Expression returnExpr, @Nullable final Sequence resultSeq);
 
 	/**
 	 * Returns the current size of the stack. This is used to determine where a variable has been declared.
