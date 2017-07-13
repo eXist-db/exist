@@ -251,18 +251,21 @@ public abstract class Modification {
 		if(lockedDocuments == null) {
 			return;
 		}
-		
-		//finish Trigger
-		final Iterator<DocumentImpl> iterator = modifiedDocuments.getDocumentIterator();
-		while (iterator.hasNext()) {
-			finishTrigger(transaction, iterator.next());
+
+		try {
+			//finish Trigger
+			final Iterator<DocumentImpl> iterator = modifiedDocuments.getDocumentIterator();
+			while (iterator.hasNext()) {
+				finishTrigger(transaction, iterator.next());
+			}
+		} finally {
+			triggers.clear();
+			modifiedDocuments.clear();
+
+			//unlock documents
+			lockedDocuments.unlock();
+			lockedDocuments = null;
 		}
-        triggers.clear();
-        modifiedDocuments.clear();
-		
-		//unlock documents
-	    lockedDocuments.unlock();
-	    lockedDocuments = null;
 	}
 	
 	/**
