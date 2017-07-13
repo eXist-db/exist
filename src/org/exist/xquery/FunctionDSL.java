@@ -23,6 +23,8 @@ package org.exist.xquery;
 import org.exist.dom.QName;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -156,6 +158,42 @@ public class FunctionDSL {
                 description,
                 paramTypes,
                 returnType
+        );
+    }
+
+    /**
+     * Deprecates a function signature
+     *
+     * @param deprecationDescription An explanation of the purpose for deprecation
+     * @param functionSignature The functionSignature to deprecate
+     *
+     * @return The function signature object
+     */
+    public static FunctionSignature deprecated(final String deprecationDescription, final FunctionSignature functionSignature) {
+        return new FunctionSignature(
+                functionSignature.getName(),
+                functionSignature.getDescription(),
+                functionSignature.getArgumentTypes(),
+                functionSignature.getReturnType(),
+                deprecationDescription
+        );
+    }
+
+    /**
+     * Deprecates a function signature
+     *
+     * @param fsDeprecates The new functionSignature which deprecates <code>functionSignature</code>
+     * @param functionSignature The functionSignature to deprecate
+     *
+     * @return The function signature object
+     */
+    public static FunctionSignature deprecated(final FunctionSignature fsDeprecates, final FunctionSignature functionSignature) {
+        return new FunctionSignature(
+                functionSignature.getName(),
+                functionSignature.getDescription(),
+                functionSignature.getArgumentTypes(),
+                functionSignature.getReturnType(),
+                fsDeprecates
         );
     }
 
@@ -298,6 +336,18 @@ public class FunctionDSL {
     }
 
     /**
+     * Creates a Function Return Type which has a cardinality of {@link Cardinality#ZERO_OR_ONE}
+     *
+     * @param type The XDM type of the return value, i.e. one of {@link org.exist.xquery.value.Type}
+     * @param description A description of the return value
+     *
+     * @return The function return type object
+     */
+    public static FunctionReturnSequenceType returnsOpt(final int type, final String description) {
+        return returns(type, Cardinality.ZERO_OR_ONE, description);
+    }
+
+    /**
      * Creates a Function Return Type which has a cardinality of {@link Cardinality#EXACTLY_ONE}
      *
      * @param type The XDM type of the return value, i.e. one of {@link org.exist.xquery.value.Type}
@@ -306,6 +356,18 @@ public class FunctionDSL {
      */
     public static FunctionReturnSequenceType returns(final int type) {
         return returns(type, Cardinality.EXACTLY_ONE);
+    }
+
+    /**
+     * Creates a Function Return Type which has a cardinality of {@link Cardinality#EXACTLY_ONE}
+     *
+     * @param type The XDM type of the return value, i.e. one of {@link org.exist.xquery.value.Type}
+     * @param description A description of the return value
+     *
+     * @return The function return type object
+     */
+    public static FunctionReturnSequenceType returns(final int type, final String description) {
+        return returns(type, Cardinality.EXACTLY_ONE, description);
     }
 
     /**
@@ -320,6 +382,18 @@ public class FunctionDSL {
     }
 
     /**
+     * Creates a Function Return Type which has a cardinality of {@link Cardinality#ONE_OR_MORE}
+     *
+     * @param type The XDM type of the return value, i.e. one of {@link org.exist.xquery.value.Type}
+     * @param description A description of the return value
+     *
+     * @return The function return type object
+     */
+    public static FunctionReturnSequenceType returnsMany(final int type, final String description) {
+        return returns(type, Cardinality.ONE_OR_MORE, description);
+    }
+
+    /**
      * Creates a Function Return Type which has a cardinality of {@link Cardinality#ZERO_OR_MORE}
      *
      * @param type The XDM type of the return value, i.e. one of {@link org.exist.xquery.value.Type}
@@ -328,6 +402,27 @@ public class FunctionDSL {
      */
     public static FunctionReturnSequenceType returnsOptMany(final int type) {
         return returns(type, Cardinality.ZERO_OR_MORE);
+    }
+
+    /**
+     * Creates a Function Return Type which has a cardinality of {@link Cardinality#ZERO_OR_MORE}
+     *
+     * @param type The XDM type of the return value, i.e. one of {@link org.exist.xquery.value.Type}
+     * @param description A description of the return value
+     *
+     * @return The function return type object
+     */
+    public static FunctionReturnSequenceType returnsOptMany(final int type, final String description) {
+        return returns(type, Cardinality.ZERO_OR_MORE, description);
+    }
+
+    /**
+     * Creates a Function Return Type which describes no result.
+     *
+     * @return a Function Return Type which has a cardinality of {@link Cardinality#EMPTY} and {@link Type#EMPTY}
+     */
+    public static FunctionReturnSequenceType returnsNothing() {
+        return new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY, null);
     }
 
     /**

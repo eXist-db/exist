@@ -1,75 +1,75 @@
 package org.exist.xquery.modules.cache;
 
-import java.util.HashMap;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.ValueSequence;
 
-import org.exist.xquery.value.*;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Static Global cache model
- * 
- * @author Evgeny Gazdovsky <gazdovsky@gmail.com>
- * @version 1.0
+ * The cache itself.
+ *
+ * Just a small wrapper around {@link ConcurrentHashMap} to manage
+ * translating to/from sequences
  */
-public class Cache extends HashMap<String, Sequence> {
-	
-	private static final long serialVersionUID = 2560835928124595024L;
+class Cache {
 
-	private static HashMap<String, Cache> globalCache = new HashMap<>();
-	
-    public Cache(String name) {
-    	super();
-    	globalCache.put(name, this);
+	private final CacheConfig config;
+	private final Map<String, Sequence> store = new ConcurrentHashMap<>();
+
+	public Cache(final CacheConfig config) {
+		this.config = config;
+	}
+
+	public CacheConfig getConfig() {
+		return config;
+	}
+
+    public Sequence put(final String key, final Sequence value) {
+	    return store.put(key, value);
     }
-    
-	public static Cache getInstance(String name){
-		Cache cache = globalCache.get(name);
-		if (cache == null){
-			cache = new Cache(name);
-		}
-		return cache;
-	}
-	
-	public Sequence put(String key, Sequence value){
-		Sequence v = super.put(key, value); 
-		return (v==null) ? Sequence.EMPTY_SEQUENCE : v;
-	}
-	
-	public static Sequence put(String name, String key, Sequence value){
-		return getInstance(name).put(key, value);
-	}
-	
-	public Sequence get(String key){
-		Sequence v = super.get(key); 
-		return (v==null) ? Sequence.EMPTY_SEQUENCE : v;
-	}
-	
-	public static Sequence get(String name, String key){
-		return getInstance(name).get(key);
-	}
 
-    public static Sequence keys(String name) {
-        ValueSequence keys = new ValueSequence();
-        for (String key : getInstance(name).keySet()) {
-            keys.add(new StringValue(key));
+    public Sequence list(final String[] keys) throws XPathException {
+	    final ValueSequence values = new ValueSequence();
+
+	    if(keys.length == 0) {
+	        // all keys
+            for(final Sequence value : store.values()) {
+                values.addAll(value);
+            }
+        } else {
+	        // just the specified keys
+            for (final String key : keys) {
+                final Sequence value = store.get(key);
+                if (value != null) {
+                    values.addAll(value);
+                }
+            }
         }
-        return keys;
+
+        return values;
     }
 
-	public Sequence remove(String key){
-		Sequence v = super.remove(key); 
-		return (v==null) ? Sequence.EMPTY_SEQUENCE : v;
-	}
-	
-	public static Sequence remove(String name, String key){
-		return getInstance(name).remove(key);
-	}
-	
-	public static void clear(String name){
-		getInstance(name).clear();
-	}
-	
-	public static void clearGlobal(){
-		globalCache.clear();
-	}
-	
+    public Sequence get(final String key) {
+	    final Sequence value = store.get(key);
+	    if(value == null) {
+	        return Sequence.EMPTY_SEQUENCE;
+        } else {
+	        return value;
+        }
+    }
+
+    public Sequence remove(final String key) {
+        final Sequence prevValue = store.remove(key);
+        if(prevValue == null) {
+            return Sequence.EMPTY_SEQUENCE;
+        } else {
+            return prevValue;
+        }
+    }
+
+    public void clear() {
+        store.clear();
+    }
 }

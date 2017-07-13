@@ -16,22 +16,27 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * $Id$
  */
 package org.exist.xquery.modules.cache;
 
 import java.util.List;
 import java.util.Map;
-import org.exist.xquery.AbstractInternalModule;
-import org.exist.xquery.FunctionDef;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.exist.dom.QName;
+import org.exist.xquery.*;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import static org.exist.xquery.FunctionDSL.functionDefs;
 
 /**
  * XQuery Extension module for store data in global cache
- * 
+ *
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author Evgeny Gazdovsky <gazdovsky@gmail.com>
  * @author ljo
- * @version 1.0
+ *
+ * @version 2.0
  */
 public class CacheModule extends AbstractInternalModule {
 
@@ -40,18 +45,22 @@ public class CacheModule extends AbstractInternalModule {
     public final static String PREFIX = "cache";
     public final static String INCLUSION_DATE = "2009-03-04";
     public final static String RELEASED_IN_VERSION = "eXist-1.4";
-        
-    private final static FunctionDef[] functions = {
-        new FunctionDef(PutFunction.signatures[0], PutFunction.class),
-        new FunctionDef(GetFunction.signatures[0], GetFunction.class),
-        new FunctionDef(CacheFunction.signatures[0], CacheFunction.class),
-        new FunctionDef(ClearFunction.signatures[0], ClearFunction.class),
-        new FunctionDef(ClearFunction.signatures[1], ClearFunction.class),
-        new FunctionDef(RemoveFunction.signatures[0], RemoveFunction.class),
-        new FunctionDef(ListFunction.signature, ListFunction.class)
-    };
 
-    public CacheModule(Map<String, List<? extends Object>> parameters) {
+    public static final FunctionDef[] functions = functionDefs(
+            CacheFunctions.class,
+            CacheFunctions.FS_CACHE,
+            CacheFunctions.FS_CREATE_CACHE,
+            CacheFunctions.FS_PUT,
+            CacheFunctions.FS_LIST,
+            CacheFunctions.FS_GET,
+            CacheFunctions.FS_REMOVE,
+            CacheFunctions.FS_CLEAR[0],
+            CacheFunctions.FS_CLEAR[1]);
+
+
+    static final Map<String, Cache> caches = new ConcurrentHashMap<>();
+
+    public CacheModule(final Map<String, List<? extends Object>> parameters) {
         super(functions, parameters);
     }
 
@@ -67,11 +76,28 @@ public class CacheModule extends AbstractInternalModule {
 
     @Override
     public String getDescription() {
-            return "A module for accessing a global cache for stored/shared data between sessions";
+        return "A module for accessing global caches for sharing data between concurrent sessions";
     }
 
     @Override
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }
+
+    static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
+        return FunctionDSL.functionSignature(new QName(name, NAMESPACE_URI), description, returnType, paramTypes);
+    }
+
+    static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
+        return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI), description, returnType, variableParamTypes);
+    }
+
+    static class CacheModuleErrorCode extends ErrorCodes.ErrorCode {
+        private CacheModuleErrorCode(final String code, final String description) {
+            super(new QName(code, NAMESPACE_URI, PREFIX), description);
+        }
+    }
+
+    static final ErrorCodes.ErrorCode INSUFFICIENT_PERMISSIONS = new CacheModuleErrorCode("insufficient-permissions", "The calling user does not have sufficient permissions to operate on the cache.");
+    static final ErrorCodes.ErrorCode KEY_SERIALIZATION = new CacheModuleErrorCode("key-serialization", "Unable to serialize the provided key.");
 }
