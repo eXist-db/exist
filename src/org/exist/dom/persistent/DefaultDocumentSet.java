@@ -54,6 +54,8 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
     private final BitSet collectionIds = new BitSet();
     private final Set<Collection> collections = new TreeSet<>();
 
+    private final Deque<Runnable> lockReleasers = new ArrayDeque<>();
+
     public DefaultDocumentSet() {
         super(DEFAULT_SIZE, DEFAULT_GROWTH);
     }
@@ -276,39 +278,23 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
     }
 
     @Override
-    public void lock(final DBBroker broker, final boolean exclusive, final boolean checkExisting) throws LockException {
-        //final Thread thread = Thread.currentThread();
+    public void lock(final DBBroker broker, final boolean exclusive) throws LockException {
         for (int idx = 0; idx < tabSize; idx++) {
             if (values[idx] == null || values[idx] == REMOVED) {
                 continue;
             }
             final DocumentImpl d = (DocumentImpl)values[idx];
             final Lock dlock = d.getUpdateLock();
-            //if (checkExisting && dlock.hasLock(thread))
-            //continue;
-            if (exclusive) {
-                dlock.acquire(LockMode.WRITE_LOCK);
-            } else {
-                dlock.acquire(LockMode.READ_LOCK);
-            }
+            dlock.acquire(exclusive ? LockMode.WRITE_LOCK : LockMode.READ_LOCK);
+            lockReleasers.push(() -> dlock.release(exclusive ? LockMode.WRITE_LOCK : LockMode.READ_LOCK));
         }
     }
 
     @Override
-    public void unlock(final boolean exclusive) {
-        final Thread thread = Thread.currentThread();
-        // NOTE: locks should be released in the reverse order that they were acquired
-        for (int idx = tabSize - 1; idx >= 0; idx--) {
-            if (values[idx] == null || values[idx] == REMOVED) {
-                continue;
-            }
-            final DocumentImpl d = (DocumentImpl)values[idx];
-            final Lock dlock = d.getUpdateLock();
-            if (exclusive) {
-                dlock.release(LockMode.WRITE_LOCK);
-            } else if (dlock.isLockedForRead(thread)) {
-                dlock.release(LockMode.READ_LOCK);
-            }
+    public void unlock() {
+        // NOTE: locks are released in the reverse order that they were acquired
+        while(!lockReleasers.isEmpty()) {
+            lockReleasers.pop().run();
         }
     }
 

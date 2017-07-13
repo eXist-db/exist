@@ -88,12 +88,12 @@ public class EmptyDocumentSet implements DocumentSet {
     }
 
     @Override
-    public void lock(final DBBroker broker, final boolean exclusive, final boolean checkExisting) throws
+    public void lock(final DBBroker broker, final boolean exclusive) throws
             LockException {
     }
 
     @Override
-    public void unlock(final boolean exclusive) {
+    public void unlock() {
     }
 
     @Override

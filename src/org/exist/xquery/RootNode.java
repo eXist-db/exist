@@ -83,7 +83,7 @@ public class RootNode extends Step {
         try {
             // wait for pending updates
             if (!context.inProtectedMode())
-                {ds.lock(context.getBroker(), false, true);}
+                {ds.lock(context.getBroker(), false);}
 	        DocumentImpl doc;
 	        for (final Iterator<DocumentImpl> i = ds.getDocumentIterator(); i.hasNext();) {
 	            doc = i.next();
@@ -100,7 +100,7 @@ public class RootNode extends Step {
         } finally {
             // release all locks
             if (!context.inProtectedMode())
-                {ds.unlock(false);}
+                {ds.unlock();}
         }
 //        result.updateNoSort();
         if (context.getProfiler().isEnabled()) 

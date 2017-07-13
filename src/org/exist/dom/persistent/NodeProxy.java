@@ -50,9 +50,7 @@ import org.xml.sax.ext.LexicalHandler;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Placeholder class for DOM nodes.
@@ -76,6 +74,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     public static final short UNKNOWN_NODE_TYPE = -1;
     public static final int UNKNOWN_NODE_LEVEL = -1;
+
+    private final Deque<Runnable> lockReleasers = new ArrayDeque<>();
 
     /**
      * The owner document of this node.
@@ -1420,18 +1420,17 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     }
 
     @Override
-    public void lock(final DBBroker broker, final boolean exclusive, final boolean checkExisting) throws LockException {
+    public void lock(final DBBroker broker, final boolean exclusive) throws LockException {
         final Lock docLock = doc.getUpdateLock();
         docLock.acquire(exclusive ? LockMode.WRITE_LOCK : LockMode.READ_LOCK);
+        lockReleasers.push(() -> docLock.release(exclusive ? LockMode.WRITE_LOCK : LockMode.READ_LOCK));
     }
 
     @Override
-    public void unlock(final boolean exclusive) {
-        final Lock docLock = doc.getUpdateLock();
-        if(exclusive) {
-            docLock.release(LockMode.WRITE_LOCK);
-        } else if(docLock.isLockedForRead(Thread.currentThread())) {
-            docLock.release(LockMode.READ_LOCK);
+    public void unlock() {
+        // NOTE: locks are released in the reverse order that they were acquired
+        while(!lockReleasers.isEmpty()) {
+            lockReleasers.pop().run();
         }
     }
 

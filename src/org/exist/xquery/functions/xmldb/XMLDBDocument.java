@@ -172,7 +172,7 @@ public class XMLDBDocument extends Function {
 	try {
             if(!cacheIsValid)
                 // wait for pending updates
-                {docs.lock(context.getBroker(), lockOnLoad, true);}
+                {docs.lock(context.getBroker(), lockOnLoad);}
 	    // wait for pending updates
 	    if(result == null) {
 		result = new ExtArrayNodeSet(docs.getDocumentCount(), 1);
@@ -192,7 +192,7 @@ public class XMLDBDocument extends Function {
         } finally {
             if(!(cacheIsValid || lockOnLoad))
                 // release all locks
-                {docs.unlock(lockOnLoad);}
+                {docs.unlock();}
 	}
 	cached = result;
 	cachedDocs = docs;
