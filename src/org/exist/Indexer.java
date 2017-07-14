@@ -405,26 +405,23 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
             if (!validate && RangeIndexSpec.hasQNameOrValueIndex(last.getIndexType())) {
                 elemContent = nodeContentStack.pop();
             }
-            if (!validate) {
+            if (validate) {
+                if (childCnt != null) {
+                    setChildCount(last);
+                }
+            } else {
                 final String content = elemContent == null ? null : elemContent.toString();
                 broker.endElement(last, currentPath, content);
+                if (childCnt == null && last.getChildCount() > 0
+                        || (childCnt != null && childCnt[last.getPosition()] != last.getChildCount())) {
+                    broker.updateNode(transaction, last, false);
+                }
 
                 if (indexListener != null) {
                     indexListener.endElement(transaction, last, currentPath);
                 }
             }
             currentPath.removeLastComponent();
-            if (validate) {
-                if (childCnt != null) {
-                    setChildCount(last);
-                }
-            } else {
-                document.setOwnerDocument(document);
-                if (childCnt == null && last.getChildCount() > 0
-                        || (childCnt != null && childCnt[last.getPosition()] != last.getChildCount())) {
-                    broker.updateNode(transaction, last, false);
-                }
-            }
             setPrevious(last);
             level--;
         }
@@ -536,6 +533,15 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
          * considers the Document to be the first node with an id.
          */
         nodeFactoryInstanceCnt = 1;
+    }
+
+    final boolean hasNormAttribute(final Attributes attributes) {
+        for (int i = 0; i < attributes.getLength(); i++) {
+            if(attributes.getLocalName(i).equals("norm")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
