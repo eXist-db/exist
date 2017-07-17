@@ -1,5 +1,6 @@
 package org.exist.storage.lock;
 
+import com.evolvedbinary.j8fu.function.RunnableE;
 import net.jcip.annotations.ThreadSafe;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
@@ -92,23 +93,14 @@ public class LockManagerTest {
      */
     @Test
     public void acquireCollectionReadLock_root() throws LockException {
-        final LockTable lockTable = LockTable.getInstance();
+        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
+            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+            try(final ManagedCollectionLock rootLock
+                        = lockManager.acquireCollectionReadLock(XmldbURI.ROOT_COLLECTION_URI)) {
+                assertNotNull(rootLock);
+            }
+        });
 
-        final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
-        lockTable.registerListener(lockEventRecordingListener);
-
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
-        try(final ManagedCollectionLock rootLock
-                    = lockManager.acquireCollectionReadLock(XmldbURI.ROOT_COLLECTION_URI)) {
-            assertNotNull(rootLock);
-        }
-
-        lockTable.deregisterListener(lockEventRecordingListener);
-
-        // wait for the listener to be deregistered
-        while(lockEventRecordingListener.isRegistered()) {}
-
-        final Stack<LockTable.LockAction> events = lockEventRecordingListener.getEvents();
         assertEquals(3, events.size());
         final LockTable.LockAction event3 = events.pop();
         final LockTable.LockAction event2 = events.pop();
@@ -137,25 +129,16 @@ public class LockManagerTest {
      */
     @Test
     public void acquireCollectionReadLock_depth2() throws LockException {
-        final LockTable lockTable = LockTable.getInstance();
-
-        final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
-        lockTable.registerListener(lockEventRecordingListener);
-
         final String collectionPath = "/db/colA";
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
-        try(final ManagedCollectionLock colALock
-                    = lockManager.acquireCollectionReadLock(XmldbURI.create(collectionPath))) {
-            assertNotNull(colALock);
-        }
+        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
+            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+            try (final ManagedCollectionLock colALock
+                         = lockManager.acquireCollectionReadLock(XmldbURI.create(collectionPath))) {
+                assertNotNull(colALock);
+            }
+        });
 
-        lockTable.deregisterListener(lockEventRecordingListener);
-
-        // wait for the listener to be deregistered
-        while(lockEventRecordingListener.isRegistered()) {}
-
-        final Stack<LockTable.LockAction> events = lockEventRecordingListener.getEvents();
         assertEquals(6, events.size());
         final LockTable.LockAction event6 = events.pop();
         final LockTable.LockAction event5 = events.pop();
@@ -201,26 +184,17 @@ public class LockManagerTest {
      */
     @Test
     public void acquireCollectionReadLock_depth3() throws LockException {
-        final LockTable lockTable = LockTable.getInstance();
-
-        final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
-        lockTable.registerListener(lockEventRecordingListener);
-
         final String collectionAPath = "/db/colA";
         final String collectionBPath = collectionAPath + "/colB";
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
-        try(final ManagedCollectionLock colBLock
-                    = lockManager.acquireCollectionReadLock(XmldbURI.create(collectionBPath))) {
-            assertNotNull(colBLock);
-        }
+        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
+            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+            try (final ManagedCollectionLock colBLock
+                         = lockManager.acquireCollectionReadLock(XmldbURI.create(collectionBPath))) {
+                assertNotNull(colBLock);
+            }
+        });
 
-        lockTable.deregisterListener(lockEventRecordingListener);
-
-        // wait for the listener to be deregistered
-        while(lockEventRecordingListener.isRegistered()) {}
-
-        final Stack<LockTable.LockAction> events = lockEventRecordingListener.getEvents();
         assertEquals(9, events.size());
         final LockTable.LockAction event9 = events.pop();
         final LockTable.LockAction event8 = events.pop();
@@ -295,23 +269,14 @@ public class LockManagerTest {
     }
 
     private void acquireCollectionWriteLock_root(final boolean lockParent) throws LockException {
-        final LockTable lockTable = LockTable.getInstance();
+        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
+            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+            try (final ManagedCollectionLock rootLock
+                         = lockManager.acquireCollectionWriteLock(XmldbURI.ROOT_COLLECTION_URI, lockParent)) {
+                assertNotNull(rootLock);
+            }
+        });
 
-        final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
-        lockTable.registerListener(lockEventRecordingListener);
-
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
-        try(final ManagedCollectionLock rootLock
-                    = lockManager.acquireCollectionWriteLock(XmldbURI.ROOT_COLLECTION_URI, lockParent)) {
-            assertNotNull(rootLock);
-        }
-
-        lockTable.deregisterListener(lockEventRecordingListener);
-
-        // wait for the listener to be deregistered
-        while(lockEventRecordingListener.isRegistered()) {}
-
-        final Stack<LockTable.LockAction> events = lockEventRecordingListener.getEvents();
         assertEquals(3, events.size());
         final LockTable.LockAction event3 = events.pop();
         final LockTable.LockAction event2 = events.pop();
@@ -339,26 +304,17 @@ public class LockManagerTest {
      */
     @Test
     public void acquireCollectionWriteLock_depth2_withoutLockParent() throws LockException {
-        final LockTable lockTable = LockTable.getInstance();
-
-        final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
-        lockTable.registerListener(lockEventRecordingListener);
-
         final String collectionPath = "/db/colA";
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
-        final boolean lockParent = false;
-        try(final ManagedCollectionLock colALock
-                    = lockManager.acquireCollectionWriteLock(XmldbURI.create(collectionPath), lockParent)) {
-            assertNotNull(colALock);
-        }
+        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
+            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+            final boolean lockParent = false;
+            try (final ManagedCollectionLock colALock
+                         = lockManager.acquireCollectionWriteLock(XmldbURI.create(collectionPath), lockParent)) {
+                assertNotNull(colALock);
+            }
+        });
 
-        lockTable.deregisterListener(lockEventRecordingListener);
-
-        // wait for the listener to be deregistered
-        while(lockEventRecordingListener.isRegistered()) {}
-
-        final Stack<LockTable.LockAction> events = lockEventRecordingListener.getEvents();
         assertEquals(6, events.size());
         final LockTable.LockAction event6 = events.pop();
         final LockTable.LockAction event5 = events.pop();
@@ -404,26 +360,17 @@ public class LockManagerTest {
      */
     @Test
     public void acquireCollectionWriteLock_depth2_withLockParent() throws LockException {
-        final LockTable lockTable = LockTable.getInstance();
-
-        final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
-        lockTable.registerListener(lockEventRecordingListener);
-
         final String collectionPath = "/db/colA";
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
-        final boolean lockParent = true;
-        try(final ManagedCollectionLock colALock
-                    = lockManager.acquireCollectionWriteLock(XmldbURI.create(collectionPath), lockParent)) {
-            assertNotNull(colALock);
-        }
+        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
+            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+            final boolean lockParent = true;
+            try (final ManagedCollectionLock colALock
+                         = lockManager.acquireCollectionWriteLock(XmldbURI.create(collectionPath), lockParent)) {
+                assertNotNull(colALock);
+            }
+        });
 
-        lockTable.deregisterListener(lockEventRecordingListener);
-
-        // wait for the listener to be deregistered
-        while(lockEventRecordingListener.isRegistered()) {}
-
-        final Stack<LockTable.LockAction> events = lockEventRecordingListener.getEvents();
         assertEquals(6, events.size());
         final LockTable.LockAction event6 = events.pop();
         final LockTable.LockAction event5 = events.pop();
@@ -467,27 +414,19 @@ public class LockManagerTest {
      */
     @Test
     public void acquireCollectionWriteLock_depth3_withoutLockParent() throws LockException {
-        final LockTable lockTable = LockTable.getInstance();
-
-        final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
-        lockTable.registerListener(lockEventRecordingListener);
-
         final String collectionAPath = "/db/colA";
         final String collectionBPath = collectionAPath + "/colB";
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
-        final boolean lockParent = false;
-        try(final ManagedCollectionLock colBLock
-                    = lockManager.acquireCollectionWriteLock(XmldbURI.create(collectionBPath), lockParent)) {
-            assertNotNull(colBLock);
-        }
+        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
+            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+            final boolean lockParent = false;
+            try (final ManagedCollectionLock colBLock
+                         = lockManager.acquireCollectionWriteLock(XmldbURI.create(collectionBPath), lockParent)) {
+                assertNotNull(colBLock);
+            }
 
-        lockTable.deregisterListener(lockEventRecordingListener);
+        });
 
-        // wait for the listener to be deregistered
-        while(lockEventRecordingListener.isRegistered()) {}
-
-        final Stack<LockTable.LockAction> events = lockEventRecordingListener.getEvents();
         assertEquals(9, events.size());
         final LockTable.LockAction event9 = events.pop();
         final LockTable.LockAction event8 = events.pop();
@@ -550,27 +489,19 @@ public class LockManagerTest {
      */
     @Test
     public void acquireCollectionWriteLock_depth3_withLockParent() throws LockException {
-        final LockTable lockTable = LockTable.getInstance();
-
-        final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
-        lockTable.registerListener(lockEventRecordingListener);
-
         final String collectionAPath = "/db/colA";
         final String collectionBPath = collectionAPath + "/colB";
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
-        final boolean lockParent = true;
-        try(final ManagedCollectionLock colBLock
-                    = lockManager.acquireCollectionWriteLock(XmldbURI.create(collectionBPath), lockParent)) {
-            assertNotNull(colBLock);
-        }
+        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
+            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+            final boolean lockParent = true;
+            try (final ManagedCollectionLock colBLock
+                         = lockManager.acquireCollectionWriteLock(XmldbURI.create(collectionBPath), lockParent)) {
+                assertNotNull(colBLock);
+            }
 
-        lockTable.deregisterListener(lockEventRecordingListener);
+        });
 
-        // wait for the listener to be deregistered
-        while(lockEventRecordingListener.isRegistered()) {}
-
-        final Stack<LockTable.LockAction> events = lockEventRecordingListener.getEvents();
         assertEquals(9, events.size());
         final LockTable.LockAction event9 = events.pop();
         final LockTable.LockAction event8 = events.pop();
@@ -654,24 +585,16 @@ public class LockManagerTest {
      */
     @Test
     public void acquireDocumentReadLock() throws LockException {
-        final LockTable lockTable = LockTable.getInstance();
-
-        final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
-        lockTable.registerListener(lockEventRecordingListener);
-
         final XmldbURI docUri = XmldbURI.create("/db/a/b/c/1.xml");
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
-        try(final ManagedDocumentLock doc1Lock
-                    = lockManager.acquireDocumentReadLock(docUri)) {
-            assertNotNull(doc1Lock);
-        }
 
-        lockTable.deregisterListener(lockEventRecordingListener);
+        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
+            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+            try (final ManagedDocumentLock doc1Lock
+                         = lockManager.acquireDocumentReadLock(docUri)) {
+                assertNotNull(doc1Lock);
+            }
+        });
 
-        // wait for the listener to be deregistered
-        while(lockEventRecordingListener.isRegistered()) {}
-
-        final Stack<LockTable.LockAction> events = lockEventRecordingListener.getEvents();
         assertEquals(3, events.size());
         final LockTable.LockAction event3 = events.pop();
         final LockTable.LockAction event2 = events.pop();
@@ -698,24 +621,16 @@ public class LockManagerTest {
      */
     @Test
     public void acquireDocumentWriteLock() throws LockException {
-        final LockTable lockTable = LockTable.getInstance();
-
-        final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
-        lockTable.registerListener(lockEventRecordingListener);
-
         final XmldbURI docUri = XmldbURI.create("/db/a/b/c/1.xml");
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
-        try(final ManagedDocumentLock doc1Lock
-                    = lockManager.acquireDocumentWriteLock(docUri)) {
-            assertNotNull(doc1Lock);
-        }
 
-        lockTable.deregisterListener(lockEventRecordingListener);
+        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
+            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+            try (final ManagedDocumentLock doc1Lock
+                         = lockManager.acquireDocumentWriteLock(docUri)) {
+                assertNotNull(doc1Lock);
+            }
+        });
 
-        // wait for the listener to be deregistered
-        while(lockEventRecordingListener.isRegistered()) {}
-
-        final Stack<LockTable.LockAction> events = lockEventRecordingListener.getEvents();
         assertEquals(3, events.size());
         final LockTable.LockAction event3 = events.pop();
         final LockTable.LockAction event2 = events.pop();
@@ -765,24 +680,16 @@ public class LockManagerTest {
      */
     @Test
     public void acquireBTreeReadLock() throws LockException {
-        final LockTable lockTable = LockTable.getInstance();
-
-        final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
-        lockTable.registerListener(lockEventRecordingListener);
-
         final String btree1Name = "btree1.dbx";
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
-        try(final ManagedLock<ReentrantLock> btree1Lock
-                    = lockManager.acquireBtreeReadLock(btree1Name)) {
-            assertNotNull(btree1Lock);
-        }
 
-        lockTable.deregisterListener(lockEventRecordingListener);
+        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
+            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+            try (final ManagedLock<ReentrantLock> btree1Lock
+                         = lockManager.acquireBtreeReadLock(btree1Name)) {
+                assertNotNull(btree1Lock);
+            }
+        });
 
-        // wait for the listener to be deregistered
-        while(lockEventRecordingListener.isRegistered()) {}
-
-        final Stack<LockTable.LockAction> events = lockEventRecordingListener.getEvents();
         assertEquals(3, events.size());
         final LockTable.LockAction event3 = events.pop();
         final LockTable.LockAction event2 = events.pop();
@@ -809,24 +716,16 @@ public class LockManagerTest {
      */
     @Test
     public void acquireBTreeWriteLock() throws LockException {
-        final LockTable lockTable = LockTable.getInstance();
-
-        final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
-        lockTable.registerListener(lockEventRecordingListener);
-
         final String btree1Name = "btree1.dbx";
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
-        try(final ManagedLock<ReentrantLock> btree1Lock
-                    = lockManager.acquireBtreeWriteLock(btree1Name)) {
-            assertNotNull(btree1Lock);
-        }
 
-        lockTable.deregisterListener(lockEventRecordingListener);
+        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
+            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+            try (final ManagedLock<ReentrantLock> btree1Lock
+                         = lockManager.acquireBtreeWriteLock(btree1Name)) {
+                assertNotNull(btree1Lock);
+            }
+        });
 
-        // wait for the listener to be deregistered
-        while(lockEventRecordingListener.isRegistered()) {}
-
-        final Stack<LockTable.LockAction> events = lockEventRecordingListener.getEvents();
         assertEquals(3, events.size());
         final LockTable.LockAction event3 = events.pop();
         final LockTable.LockAction event2 = events.pop();
@@ -846,6 +745,24 @@ public class LockManagerTest {
         assertEquals(Lock.LockMode.WRITE_LOCK, event3.mode);
     }
 
+
+    private Stack<LockTable.LockAction> recordLockEvents(final RunnableE<LockException> runnable) throws LockException{
+        final LockTable lockTable = LockTable.getInstance();
+        final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
+        lockTable.registerListener(lockEventRecordingListener);
+
+        // wait for the listener to be registered
+        while(!lockEventRecordingListener.isRegistered()) {}
+
+        runnable.run();
+
+        lockTable.deregisterListener(lockEventRecordingListener);
+
+        // wait for the listener to be deregistered
+        while(lockEventRecordingListener.isRegistered()) {}
+
+        return lockEventRecordingListener.getEvents();
+    }
 
     private void assertIntentionWriteOrWriteMode(final Lock.LockMode lockMode) {
         final Lock.LockMode writeMode = enableCollectionsMultiWriterState ? Lock.LockMode.INTENTION_WRITE : Lock.LockMode.WRITE_LOCK;

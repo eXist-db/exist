@@ -67,8 +67,11 @@ public class StartupLockingTest {
     private static LockTable lockTable = LockTable.getInstance();
     static {
         lockTable.registerListener(lockCountListener);
+        while(!lockCountListener.isRegistered()) {}
 //        lockTable.registerListener(lockEventJsonListener);
+//        while(!lockEventJsonListener.isRegistered()) {}
 //        lockTable.registerListener(lockEventXmlListener);
+//        while(!lockEventXmlListener.isRegistered()) {}
     }
 
     @ClassRule

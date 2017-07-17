@@ -94,6 +94,9 @@ public class NativeBrokerLockingTest {
                  final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
                 lockTable.registerListener(lockSymmetryListener);
+                // wait for the listener to be registered
+                while(!lockSymmetryListener.isRegistered());
+
                 registered = true;
                 try(final Collection collectionA = broker.openCollection(COLLECTION_A, LockMode.READ_LOCK)) {
                     //no -op
@@ -126,6 +129,9 @@ public class NativeBrokerLockingTest {
                  final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
                 lockTable.registerListener(lockSymmetryListener);
+                // wait for the listener to be registered
+                while(!lockSymmetryListener.isRegistered());
+
                 registered = true;
                 try(final Collection collectionNone = broker.openCollection(COLLECTION_A.append("none"), LockMode.READ_LOCK)) {
                     assertNull(collectionNone);
@@ -158,6 +164,9 @@ public class NativeBrokerLockingTest {
                  final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
                 lockTable.registerListener(lockSymmetryListener);
+                // wait for the listener to be registered
+                while(!lockSymmetryListener.isRegistered());
+
                 registered = true;
                 final Collection collectionA = broker.getCollection(COLLECTION_B);
                 assertNotNull(collectionA);
@@ -189,7 +198,10 @@ public class NativeBrokerLockingTest {
                  final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
                 lockTable.registerListener(lockSymmetryListener);
+                // wait for the listener to be registered
+                while(!lockSymmetryListener.isRegistered());
                 registered = true;
+
                 final Collection collectionNone = broker.getCollection(COLLECTION_B.append("none"));
                 assertNull(collectionNone);
 
@@ -220,6 +232,9 @@ public class NativeBrokerLockingTest {
                  final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
                 lockTable.registerListener(lockSymmetryListener);
+                // wait for the listener to be registered
+                while(!lockSymmetryListener.isRegistered());
+
                 registered = true;
                 final XmldbURI collectionC = COLLECTION_B.append("colC");
                 try(final Collection collectionA = broker.getOrCreateCollection(transaction, collectionC)) {
@@ -256,6 +271,9 @@ public class NativeBrokerLockingTest {
                 final Collection collectionB = broker.getCollection(COLLECTION_B);
 
                 lockTable.registerListener(lockSymmetryListener);
+                // wait for the listener to be registered
+                while(!lockSymmetryListener.isRegistered());
+
                 registered = true;
                 broker.moveCollection(transaction, collectionA, collectionB, XmldbURI.create("colA"));
 
@@ -289,6 +307,9 @@ public class NativeBrokerLockingTest {
                 final Collection collectionB = broker.getCollection(COLLECTION_B);
 
                 lockTable.registerListener(lockSymmetryListener);
+                // wait for the listener to be registered
+                while(!lockSymmetryListener.isRegistered());
+
                 registered = true;
                 broker.copyCollection(transaction, collectionA, collectionB, XmldbURI.create("colA"));
 
@@ -321,6 +342,9 @@ public class NativeBrokerLockingTest {
                 final Collection collectionA = broker.getCollection(COLLECTION_A);
 
                 lockTable.registerListener(lockSymmetryListener);
+                // wait for the listener to be registered
+                while(!lockSymmetryListener.isRegistered());
+
                 registered = true;
                 broker.removeCollection(transaction, collectionA);
 
