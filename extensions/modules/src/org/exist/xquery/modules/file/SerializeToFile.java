@@ -200,8 +200,9 @@ public class SerializeToFile extends BasicFunction {
         final Serializer serializer = context.getBroker().getSerializer();
         serializer.reset();
 
-        StandardOpenOption ops[] = doAppend ? new StandardOpenOption[]{StandardOpenOption.APPEND}
-                : new StandardOpenOption[]{StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING};
+        StandardOpenOption ops[] = doAppend ? new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.APPEND}
+                : new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING};
+
 
         try (final OutputStream os = Files.newOutputStream(file, ops);
                 final Writer writer = new OutputStreamWriter(os)) {
@@ -221,7 +222,11 @@ public class SerializeToFile extends BasicFunction {
 	}
 
     private void serializeBinary(final BinaryValue binary, final Path file, final boolean doAppend) throws XPathException {
-        try(final OutputStream os = Files.newOutputStream(file, doAppend ? StandardOpenOption.APPEND : StandardOpenOption.CREATE,StandardOpenOption.TRUNCATE_EXISTING)) {
+
+        StandardOpenOption ops[] = doAppend ? new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.APPEND}
+                : new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING};
+
+        try(final OutputStream os = Files.newOutputStream(file, ops)) {
             binary.streamBinaryTo(os);
         } catch(final IOException ioe) {
             throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the binary data: " + ioe.getMessage(), ioe);
