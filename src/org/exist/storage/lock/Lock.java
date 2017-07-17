@@ -40,6 +40,12 @@ public interface Lock extends Debuggable {
      * The type of a {@link Lock}
      */
     enum LockType {
+
+        /**
+         * Should not be used outside of {@link EnsureLocked}!
+         */
+        @Deprecated UNKNOWN,
+
         @Deprecated LEGACY_COLLECTION,
         @Deprecated LEGACY_DOCUMENT,
 

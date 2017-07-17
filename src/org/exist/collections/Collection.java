@@ -10,6 +10,8 @@ import org.exist.security.SecurityManager;
 import org.exist.storage.*;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
+import org.exist.storage.lock.EnsureLocked;
+import org.exist.storage.lock.EnsureUnlocked;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.LockedDocumentMap;
@@ -497,7 +499,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param name   The name of the document (without collection path)
      * @return the document or null if it doesn't exist
      */
-    @Nullable DocumentImpl getDocument(DBBroker broker, XmldbURI name) throws PermissionDeniedException;
+    @Nullable @EnsureUnlocked DocumentImpl getDocument(DBBroker broker, XmldbURI name) throws PermissionDeniedException;
 
     /**
      * Retrieve a child resource after putting a read lock on it.
