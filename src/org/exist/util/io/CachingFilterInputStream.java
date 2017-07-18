@@ -79,7 +79,7 @@ public class CachingFilterInputStream extends FilterInputStream {
     /**
      * Gets the cache implementation
      */
-    private FilterInputStreamCache getCache() {
+    FilterInputStreamCache getCache() {
         return cache;
     }
 
@@ -175,6 +175,10 @@ public class CachingFilterInputStream extends FilterInputStream {
 
             return actualLen;
         }
+    }
+
+    public boolean isClosed() {
+        return getCache().isSrcClosed();
     }
 
     /**
@@ -292,12 +296,18 @@ public class CachingFilterInputStream extends FilterInputStream {
         //If cache hasRead and srcOffset is still in cache useCache
         return getCache().getSrcOffset() > 0 && getCache().getLength() > srcOffset;
     }
-    
-    public void register(InputStream inputStream) {
-        getCache().register(inputStream);
+
+    /**
+     * Increments the number of shared references to the cache.
+     */
+    public void incrementSharedReferences() {
+        getCache().incrementSharedReferences();
     }
-    
-    public void deregister(InputStream inputStream) {
-        getCache().deregister(inputStream);
+
+    /**
+     * Decrements the number of shared references to the cache.
+     */
+    public void decrementSharedReferences() {
+        getCache().decrementSharedReferences();
     }
 }

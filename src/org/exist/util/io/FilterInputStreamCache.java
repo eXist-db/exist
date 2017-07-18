@@ -27,7 +27,6 @@
 package org.exist.util.io;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * Interface for Cache Implementations for use by the CachingFilterInputStream
@@ -165,8 +164,14 @@ public interface FilterInputStreamCache {
     public boolean isSrcClosed();
     
     public boolean srcIsFilterInputStreamCache();
-    
-    public void register(InputStream inputStream);
-    
-    public void deregister(InputStream inputStream);
+
+    /**
+     * Increments the number of shared references to the cache.
+     */
+    void incrementSharedReferences();
+
+    /**
+     * Decrements the number of shared references to the cache.
+     */
+    void decrementSharedReferences();
 }

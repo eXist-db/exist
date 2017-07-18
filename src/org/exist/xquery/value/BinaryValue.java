@@ -28,10 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
 
-import java.io.FilterOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.text.Collator;
 
 /**
@@ -264,6 +261,8 @@ public abstract class BinaryValue extends AtomicValue {
     }
 
     public abstract InputStream getInputStream();
+
+    public abstract boolean isClosed();
 
     public abstract void close() throws IOException;
 }

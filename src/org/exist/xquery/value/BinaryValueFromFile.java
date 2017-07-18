@@ -73,6 +73,11 @@ public class BinaryValueFromFile extends BinaryValue {
     }
 
     @Override
+    public boolean isClosed() {
+        return !channel.isOpen();
+    }
+
+    @Override
     public void close() throws IOException {
         channel.close();
     }

@@ -88,6 +88,11 @@ public class BinaryValueFromInputStream extends BinaryValue {
     }
 
     @Override
+    public boolean isClosed() {
+        return is.isClosed();
+    }
+
+    @Override
     public void close() throws IOException {
         is.close();
     }
