@@ -356,6 +356,30 @@ public class LockManager {
     }
 
     /**
+     * Returns true if a WRITE_LOCK is held for a Collection
+     *
+     * @param collectionPath The URI of the Collection within the database
+     *
+     * @return true if a WRITE_LOCK is held
+     */
+    public boolean isCollectionLockedForWrite(final XmldbURI collectionPath) {
+        final MultiLock existingLock = getCollectionLock(collectionPath.toString());
+        return existingLock.getWriteLockCount() > 0;
+    }
+
+    /**
+     * Returns true if a READ_LOCK is held for a Collection
+     *
+     * @param collectionPath The URI of the Collection within the database
+     *
+     * @return true if a READ_LOCK is held
+     */
+    public boolean isCollectionLockedForRead(final XmldbURI collectionPath) {
+        final MultiLock existingLock = getCollectionLock(collectionPath.toString());
+        return existingLock.getReadLockCount() > 0;
+    }
+
+    /**
      * Retrieves a lock for a Document
      *
      * This function is concerned with just the lock object
