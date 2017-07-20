@@ -66,7 +66,7 @@ public class LetExpr extends BindingExpression {
             returnExpr.analyze(contextInfo);
         } finally {
             // restore the local variable stack
-            context.popLocalVariables(mark);
+            context.popLocalVariables(mark, contextInfo.getParent());
         }
     }
 
@@ -143,7 +143,7 @@ public class LetExpr extends BindingExpression {
                 }
             } finally {
                 // Restore the local variable stack
-                context.popLocalVariables(mark, resultSequence);
+                context.popLocalVariables(mark, returnExpr, resultSequence);
             }
             clearContext(getExpressionId(), in);
             if (context.getProfiler().isEnabled())

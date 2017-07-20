@@ -28,6 +28,7 @@
 	<classpathentry kind="src" path="lib/core/j8fu-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/pkg-repo.jar"/>
 	<classpathentry kind="lib" path="lib/core/rsyntaxtextarea-2.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/core/jsr305-3.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xml-apis-1.4.01.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xercesImpl-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xml-resolver-1.2.jar"/>

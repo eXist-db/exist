@@ -34,6 +34,7 @@ import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.Sequence;
 
+import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import java.net.URISyntaxException;
@@ -377,17 +378,31 @@ public class ModuleContext extends XQueryContext {
 		parentContext.pushDocumentContext();
 	}
 
+	@Override
     public LocalVariable markLocalVariables(boolean newContext) {
         return parentContext.markLocalVariables(newContext);
     }
 
-    public void popLocalVariables(LocalVariable var) {
+    @Override
+    public void popLocalVariables(final LocalVariable var) {
         parentContext.popLocalVariables(var);
     }
 
-    public void popLocalVariables(LocalVariable var, Sequence resultSequence) {
+    @Override
+    public void popLocalVariables(final LocalVariable var, @Nullable final Sequence resultSequence) {
         parentContext.popLocalVariables(var, resultSequence);
     }
+
+    @Override
+    public void popLocalVariables(final LocalVariable var, @Nullable final Expression parent) {
+        parentContext.popLocalVariables(var, parent);
+    }
+
+    @Override
+    public void popLocalVariables(final LocalVariable var, @Nullable final Expression returnExpr, @Nullable final Sequence resultSeq) {
+	    parentContext.popLocalVariables(var, returnExpr, resultSeq);
+    }
+
 
     public LocalVariable declareVariableBinding(LocalVariable var) throws XPathException {
         return parentContext.declareVariableBinding(var);
