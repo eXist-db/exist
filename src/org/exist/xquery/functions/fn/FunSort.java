@@ -24,16 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import org.exist.dom.QName;
 import org.exist.util.Collations;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.Atomize;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.ErrorCodes;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReference;
@@ -176,6 +167,8 @@ public class FunSort extends BasicFunction {
             }
           } else if (item1 instanceof AtomicValue && item2 instanceof AtomicValue) {
             try {
+              // throw type error if values cannot be compared with lt
+              ValueComparison.compareAtomic(collator, (AtomicValue)item1, (AtomicValue)item2, Constants.StringTruncationOperator.NONE, Constants.Comparison.LT);
               res = ((AtomicValue)item1).compareTo(collator, (AtomicValue)item2);
             } catch (XPathException e) {
               exception.set(e);

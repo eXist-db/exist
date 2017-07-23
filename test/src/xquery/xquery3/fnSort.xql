@@ -35,9 +35,21 @@ function testSort:order_by_inline_function() {
 };
 
 declare
-    %test:assertError("FORG0006")
-function testSort:order_fail() {
+    %test:assertError("XPTY0004")
+function testSort:order_fail1() {
     fn:sort((1,'a'))
+};
+
+declare
+    %test:assertError("XPTY0004")
+function testSort:order_fail2() {
+    fn:sort((1,'1'))
+};
+
+declare
+    %test:assertError("XPTY0004")
+function testSort:order_fail3() {
+    fn:sort( (map{"key":1}, map{"key":"a"}), (), map:get(?, "key"))
 };
 
 declare
@@ -128,11 +140,7 @@ function testSort:items_array_with_NaN() {
     $b := [xs:float("NaN"), 2],
     $r := sort(($a,$b,$a,$b))
     return
-        fn:deep-equal($r[1], [xs:float("NaN"), 1]) and
-        fn:deep-equal($r[2], [xs:float("NaN"), 1]) and
-        fn:deep-equal($r[3], [xs:float("NaN"), 2]) and
-        fn:deep-equal($r[4], [xs:float("NaN"), 2])
-
+        $r[1]?2 eq 1 and $r[2]?2 eq 1
 };
 
 declare
@@ -169,4 +177,49 @@ function testSort:items_mixed_with_empty_array_2() {
     return
         fn:deep-equal($r[1], [()]) and
         fn:deep-equal($r[2], 1)
+};
+
+declare
+    %test:assertTrue
+function testSort:empty-collation() {
+    let $r := fn:sort(("boy","for","new","chosen","black","pope"), ())
+    return (count($r) eq 6
+        and $r[1] eq "black"
+        and $r[2] eq "boy"
+        and $r[3] eq "chosen"
+        and $r[4] eq "for"
+        and $r[5] eq "new"
+        and $r[6] eq "pope"
+	)
+};
+
+declare
+    %test:assertEquals("blUE", "green", "ORanGE", "PINK", "Red")
+function testSort:collation-case-blind() {
+    fn:sort(("Red", "green", "blUE", "PINK", "ORanGE"), "?strength=secondary")
+};
+
+declare
+    %test:assertEquals("ORanGE", "PINK", "Red", "blUE", "green")
+function testSort:collation-explicit-codepoint() {
+    fn:sort(("Red", "green", "blUE", "PINK", "ORanGE"), "http://www.w3.org/2005/xpath-functions/collation/codepoint")
+};
+
+declare
+    %test:assertEquals("cześć", "część", "część", "cześć")
+function testSort:collation-primary-strength() {
+    fn:sort(("część", "cześć")),
+    fn:sort(("część", "cześć"), "?strength=primary")
+};
+
+declare
+    %test:assertEquals("bauer", "bier", "buch", "bäuerin")
+function testSort:collation-default() {
+    fn:sort(("buch", "bauer", "bäuerin", "bier"))
+};
+
+declare
+    %test:assertEquals("bauer", "bäuerin", "bier", "buch")
+function testSort:collation-german() {
+    fn:sort(("buch", "bauer", "bäuerin", "bier"), "?lang=de")
 };
