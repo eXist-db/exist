@@ -116,6 +116,7 @@ public interface Module {
 	 *
 	 * @deprecated use {@link #reset(XQueryContext, boolean)} instead
 	 */
+	@Deprecated
     void reset(XQueryContext context);
 
 	/**

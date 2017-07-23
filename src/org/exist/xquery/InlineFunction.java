@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Stack;
 
@@ -42,7 +43,7 @@ public class InlineFunction extends AbstractExpression {
 	public final static QName INLINE_FUNCTION_QNAME = new QName("", "");
 	
 	private UserDefinedFunction function;
-	private Stack<FunctionCall> calls = new Stack<>();
+	private ArrayDeque<FunctionCall> calls = new ArrayDeque<>();
 	
     private AnalyzeContextInfo cachedContextInfo;
 
@@ -96,11 +97,9 @@ public class InlineFunction extends AbstractExpression {
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         // clear closure variables set on inline function
-        calls.forEach(call -> {
-            if (!postOptimization) {
-                call.getFunction().setClosureVariables(null);
-            }
-        });
+		if (!postOptimization) {
+			calls.forEach(call -> call.getFunction().setClosureVariables(null));
+		}
         calls.clear();
         function.resetState(postOptimization);
     }
