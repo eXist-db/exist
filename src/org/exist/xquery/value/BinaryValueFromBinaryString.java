@@ -22,6 +22,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
     private final static Logger LOG = LogManager.getLogger(BinaryValueFromBinaryString.class);
 
     private final String value;
+    private boolean closed = false;
 
     public BinaryValueFromBinaryString(BinaryValueType binaryValueType, String value) throws XPathException {
         super(null, binaryValueType);
@@ -88,7 +89,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
     @Override
     public void streamTo(OutputStream os) throws IOException {
         //write
-        final byte data[] = value.getBytes(); //TODO consider a more efficient approach for writting large strings
+        final byte data[] = value.getBytes(); //TODO consider a more efficient approach for writing large strings
         os.write(data);
     }
 
@@ -108,6 +109,12 @@ public class BinaryValueFromBinaryString extends BinaryValue {
     }
 
     @Override
+    public boolean isClosed() {
+        return closed;
+    }
+
+    @Override
     public void close() throws IOException {
+        closed = true;
     }
 }

@@ -22,14 +22,13 @@ package org.exist.util.io;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Vector;
 
 /**
  *
  * @author zwobit
  */
 public abstract class AbstractFilterInputStreamCache extends FilterInputStream implements FilterInputStreamCache {
-    protected Vector<InputStream> consumers = new Vector<InputStream>();
+    private int sharedReferenceCount = 0;
     
     private int srcOffset = 0;
 
@@ -39,11 +38,12 @@ public abstract class AbstractFilterInputStreamCache extends FilterInputStream i
     public AbstractFilterInputStreamCache(InputStream src) {
         super(src);
         this.src = src;
-        //register src
-        this.register(src);
+        incrementSharedReferences();
+
         //if src is CachingFilterInputStream also register there so it can keep track of stream which rely on cache
         if(src instanceof CachingFilterInputStream) {
-           ((CachingFilterInputStream) src).register(src);
+            final FilterInputStreamCache otherCache = ((CachingFilterInputStream) src).getCache();
+            otherCache.incrementSharedReferences();
         }
     }
         
@@ -69,22 +69,20 @@ public abstract class AbstractFilterInputStreamCache extends FilterInputStream i
      * Closes the src InputStream and empties the cache
      */
     public void close() throws IOException {
-        if(consumers.contains(src)) {
-            deregister(src);
-            if(consumers.size() <= 0) {
-                if (!srcClosed) {
-                    try {
-                        if(src instanceof CachingFilterInputStream) {
-                            ((CachingFilterInputStream) src).deregister(this);
-                        } else {
-                            src.close();
-                        }
-                    } finally {
-                        srcClosed = true;
-                    }  
+        decrementSharedReferences();
+        if(sharedReferenceCount <= 0) {
+            if (!srcClosed) {
+                try {
+                    if(src instanceof CachingFilterInputStream) {
+                        ((CachingFilterInputStream) src).decrementSharedReferences();
+                    } else {
+                        src.close();
+                    }
+                } finally {
+                    srcClosed = true;
                 }
-                this.invalidate(); //empty the cache
             }
+            this.invalidate(); //empty the cache
         }
     }
 
@@ -187,14 +185,12 @@ public abstract class AbstractFilterInputStreamCache extends FilterInputStream i
     }
 
     @Override
-    public void register(InputStream inputStream) {
-        consumers.add(inputStream);
+    public void incrementSharedReferences() {
+        sharedReferenceCount++;
     }
 
     @Override
-    public void deregister(InputStream inputStream) {
-        consumers.remove(inputStream);
+    public void decrementSharedReferences() {
+        sharedReferenceCount--;
     }
-
-    
 }

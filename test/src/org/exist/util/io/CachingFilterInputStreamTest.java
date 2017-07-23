@@ -14,6 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Test cases for CachingFilterInputStream
@@ -757,6 +758,36 @@ public class CachingFilterInputStreamTest {
         cfis.reset();
 
         assertEquals(testData.length - 2, cfis.available());
+    }
+
+    @Test
+    public void sharedReferences() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
+        final String testString = "helloWorld";
+        final byte testData[] = testString.getBytes();
+
+        final InputStream is = new ByteArrayInputStream(testData);
+
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+
+        // increment shared references (will now be 2)
+        cfis.incrementSharedReferences();
+
+        // close should not close as we just incremented the shared references
+        cfis.close();
+
+        //read first 2 bytes
+        cfis.read();
+        cfis.read();
+
+        // close the second time, should actually close, as shared references will now be zero
+        cfis.close();
+
+        try {
+            cfis.read();
+            fail("Should not be able to read after shared references reach zero");
+        } catch(final IOException ioe) {
+            // no op, we expected the IOException
+        }
     }
 
     private byte[] subArray(byte data[], int len) {
