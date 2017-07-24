@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<userInput>
-    <panel order="0">
+<izpack:userinput xmlns:izpack="http://izpack.org/schema/userinput" version="5.0">
+    <panel id="DataDirPanel">
         <field size="1.33" bold="false" txt="Set Data Directory" align="left"
             type="title"/>
         <field
@@ -11,7 +11,7 @@
                 txt="Data dir: "/>
         </field>
     </panel>
-    <panel order="1">
+    <panel id="AdminPasswordPanel">
         <field size="1.33" bold="false" txt="Set Admin Password and Configure Memory" align="left"
             type="title"/>
         <field align="left" variable="adminPasswd" type="password">
@@ -21,7 +21,7 @@
                 <pwd set="" size="20" txt="Enter password: "/>
                 <pwd set="" size="20" txt="Retype password: "/>
             </spec>
-            <validator class="com.izforge.izpack.util.PasswordEqualityValidator"
+            <validator class="com.izforge.izpack.panels.userinput.validator.PasswordEqualityValidator"
                 txt="Entered passwords did not match."/>
         </field>
         <field align="bottom" type="divider"/>
@@ -35,4 +35,4 @@
           <spec txt="Cache memory in MB:" size="5" set="256"/>
         </field>
     </panel>
-</userInput>
+</izpack:userinput>

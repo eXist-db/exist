@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<shortcuts>
+<izpack:shortcuts xmlns:izpack="http://izpack.org/schema/shortcuts" version="5.0">
 	<programGroup defaultName="eXist-db XML Database" location="applications"/>
 	
 	<shortcut 
@@ -26,4 +26,4 @@
 		programGroup="yes"
 		desktop="no"
 		type="Application"/>
-</shortcuts>
+</izpack:shortcuts>

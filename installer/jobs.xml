@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<processing>
+<izpack:processing xmlns:izpack="http://izpack.org/schema/processing" version="5.0">
     <logfiledir>$INSTALL_PATH</logfiledir>
     <job name="Setting admin password ...">
         <os family="windows"/>
@@ -13,4 +13,4 @@
             <arg>pass:$adminPasswd</arg>
         </executefile>
     </job>
-</processing>
+</izpack:processing>

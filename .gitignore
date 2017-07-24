@@ -17,6 +17,7 @@ examples.jar
 exist-optional.jar
 exist-testkit.jar
 exist.jar
+exist-testkit.jar
 extensions/**/build/
 extensions/contentextraction/lib/
 extensions/lib/

@@ -2,7 +2,7 @@
 
 <!-- The English langpack -->
 
-<langpack>
+<izpack:langpack xmlns:izpack="http://izpack.org/schema/langpack" version="5.0">
 
     <!-- Heading messages START -->
     <str id="CheckedHelloPanel.headline" txt="Welcome"/>
@@ -286,4 +286,4 @@
     <str id="log.error_0" txt="unable to write ''{0}''"/>
     <str id="debug.changevariable" txt="modify value"/>
 		
-</langpack>
+</izpack:langpack>

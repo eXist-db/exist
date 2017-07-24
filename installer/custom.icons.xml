@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
 
-<icons>
+<izpack:icons xmlns:izpack="http://izpack.org/schema/icons" version="5.0">
 
     <icon res="/img/leftarrow.png" id="stepback"/>
     <icon res="/img/rightarrow.png" id="stepforward"/>
@@ -36,4 +36,4 @@
     <sysicon res="/img/question.png" id="OptionPane.questionIcon"/>
     <sysicon res="/img/uparrow.png" id="FileChooser.upFolderIcon"/>
 
-</icons>
+</izpack:icons>

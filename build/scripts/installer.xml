@@ -154,8 +154,6 @@
         <izpack input="installer/install.xml"
             output="${inst-jar}"
             basedir="." izPackDir="${izpack.dir}"
-            compression="bzip2"
-            compressionlevel="9"
             installerType="standard"/>
 
         <echo unless:set="key.store.present">
