@@ -52,6 +52,8 @@ public class ExternalModuleImpl implements ExternalModule {
 
     private XQueryContext mContext = null;
 
+    private boolean needsReset = true;
+
     public ExternalModuleImpl(String namespaceURI, String prefix) {
         mNamespaceURI = namespaceURI;
         mPrefix = prefix;
@@ -268,9 +270,25 @@ public class ExternalModuleImpl implements ExternalModule {
         return mSource != null && mSource.isValid(broker) == Source.VALID;
     }
 
-    public void reset(XQueryContext xqueryContext) {
-        mContext.reset();
-        mStaticVariables.clear();
+    @Override
+    public void reset(XQueryContext context) {
+        // deprecated, ignore
+    }
+
+    public void reset(XQueryContext xqueryContext, boolean keepGlobals) {
+        // prevent recursive calls by checking needsReset
+        if (needsReset) {
+            needsReset = false;
+            mContext.reset(keepGlobals);
+            if (!keepGlobals) {
+                mStaticVariables.clear();
+                // reset state of variable declarations
+                mGlobalVariables.values().forEach(v -> v.resetState(true));
+            }
+            // reset state of declared functions
+            mFunctionMap.values().forEach(f -> f.resetState(true));
+            needsReset = true;
+        }
     }
 
     private Expression rootExpression = null;

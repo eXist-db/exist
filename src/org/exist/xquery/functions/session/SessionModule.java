@@ -65,12 +65,14 @@ public class SessionModule extends AbstractInternalModule
 		new FunctionDef( SetCurrentUser.signature, SetCurrentUser.class ),
 		new FunctionDef( GetExists.signature, GetExists.class )
 	};
-	
+
+	private final Variable sessionVar;
+
 	public SessionModule(Map<String, List<? extends Object>> parameters) throws XPathException
 	{
 		super(functions,  parameters);
 		// predefined module global variables:
-		declareVariable( SESSION_VAR, null );
+		this.sessionVar = declareVariable( SESSION_VAR, null );
 	}
 
 	/* (non-Javadoc)
@@ -138,4 +140,11 @@ public class SessionModule extends AbstractInternalModule
 		return( ret );
 	}
 
+    @Override
+    public void reset(XQueryContext xqueryContext, boolean keepGlobals) {
+        super.reset(xqueryContext, keepGlobals);
+        if (!keepGlobals) {
+            sessionVar.setValue(null);
+        }
+    }
 }

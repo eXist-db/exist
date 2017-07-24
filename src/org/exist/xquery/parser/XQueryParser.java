@@ -6637,9 +6637,6 @@ inputState.guessing--;
 		_loop301:
 		do {
 			if ((LA(1)==CONCAT)) {
-				org.exist.xquery.parser.XQueryAST tmp299_AST = null;
-				tmp299_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp299_AST);
 				match(CONCAT);
 				rangeExpr();
 				astFactory.addASTChild(currentAST, returnAST);

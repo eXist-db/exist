@@ -27,19 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.SimpleTimeZone;
-import java.util.Stack;
-import java.util.TimeZone;
-import java.util.TreeMap;
+import java.util.*;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -1408,11 +1396,8 @@ public class XQueryContext implements BinaryValueManager, Context
             watchdog.reset();
         }
 
-        for( final Module module : modules.values() ) {
-            if (module instanceof ExternalModule && ((ModuleContext)((ExternalModule)module).getContext()).getParentContext() != this) {
-                continue;
-            }
-            module.reset( this );
+        for( final Module module : allModules.values() ) {
+            module.reset( this, keepGlobals );
         }
 
         if( !keepGlobals ) {
@@ -2045,9 +2030,10 @@ public class XQueryContext implements BinaryValueManager, Context
      * 
      * @return currently visible local variables as a stack
      */
-    public List<Variable> getLocalStack() {
-    	final List<Variable> variables = new ArrayList<Variable>(10);
-    	
+    public List<ClosureVariable> getLocalStack() {
+
+        final List<ClosureVariable> closure = new ArrayList<>(6);
+
     	final LocalVariable end = contextStack.isEmpty() ? null : contextStack.peek();
 
         for ( LocalVariable var = lastVar; var != null; var = var.before ) {
@@ -2056,10 +2042,10 @@ public class XQueryContext implements BinaryValueManager, Context
                 break;
             }
 
-            variables.add( new LocalVariable(var, true) );
+            closure.add( new ClosureVariable(var) );
         }
 
-        return ( variables );
+        return ( closure );
     }
     
     public Map<QName, Variable> getGlobalVariables() {
@@ -2076,9 +2062,9 @@ public class XQueryContext implements BinaryValueManager, Context
      * @param stack
      * @throws XPathException
      */
-    public void restoreStack(List<Variable> stack) throws XPathException {
+    public void restoreStack(List<ClosureVariable> stack) throws XPathException {
         for (int i = stack.size() - 1; i > -1; i--) {
-            declareVariableBinding((LocalVariable)stack.get(i));
+            declareVariableBinding(new ClosureVariable(stack.get(i)));
         }
     }
     

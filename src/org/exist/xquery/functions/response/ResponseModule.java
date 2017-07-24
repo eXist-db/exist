@@ -24,9 +24,7 @@ package org.exist.xquery.functions.response;
 import java.util.List;
 import java.util.Map;
 import org.exist.dom.QName;
-import org.exist.xquery.AbstractInternalModule;
-import org.exist.xquery.FunctionDef;
-import org.exist.xquery.XPathException;
+import org.exist.xquery.*;
 
 
 /**
@@ -58,12 +56,14 @@ public class ResponseModule extends AbstractInternalModule
         new FunctionDef( GetExists.signature, GetExists.class )
     };
 
+    private final Variable responseVar;
+
     public ResponseModule(Map<String, List<? extends Object>> parameters) throws XPathException
     {
         super(functions, parameters);
 
         // predefined module global variables:
-        declareVariable( RESPONSE_VAR, null );
+        this.responseVar = declareVariable( RESPONSE_VAR, null );
     }
 
     /* (non-Javadoc)
@@ -98,4 +98,11 @@ public class ResponseModule extends AbstractInternalModule
         return( RELEASED_IN_VERSION );
     }
 
+    @Override
+    public void reset(XQueryContext xqueryContext, boolean keepGlobals) {
+        super.reset(xqueryContext, keepGlobals);
+        if (!keepGlobals) {
+            responseVar.setValue(null);
+        }
+    }
 }

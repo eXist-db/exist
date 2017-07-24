@@ -416,9 +416,9 @@ public class MailModule extends AbstractInternalModule {
      * @param context The XQueryContext
      */
     @Override
-    public void reset( XQueryContext context ) {
+    public void reset( XQueryContext context, boolean keepGlobals ) {
         // reset the module context
-        super.reset(context);
+        super.reset(context, keepGlobals);
 
         // close any open MessageLists
         closeAllMessageLists(context);

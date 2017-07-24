@@ -26,9 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.exist.dom.QName;
-import org.exist.xquery.AbstractInternalModule;
-import org.exist.xquery.FunctionDef;
-import org.exist.xquery.XPathException;
+import org.exist.xquery.*;
 
 /**
  * Module function definitions for transform module.
@@ -81,10 +79,12 @@ public class RequestModule extends AbstractInternalModule {
         Arrays.sort(functions, new FunctionComparator());
     }
 
+    private final Variable requestVar;
+
     public RequestModule(Map<String, List<? extends Object>> parameters) throws XPathException {
         super(functions, parameters, true);
         // predefined module global variables:
-        declareVariable(REQUEST_VAR, null);
+        this.requestVar = declareVariable(REQUEST_VAR, null);
     }
 
     /* (non-Javadoc)
@@ -110,5 +110,13 @@ public class RequestModule extends AbstractInternalModule {
 
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
+    }
+
+    @Override
+    public void reset(XQueryContext xqueryContext, boolean keepGlobals) {
+        super.reset(xqueryContext, keepGlobals);
+        if (!keepGlobals) {
+            requestVar.setValue(null);
+        }
     }
 }

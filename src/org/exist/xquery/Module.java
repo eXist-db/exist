@@ -110,12 +110,20 @@ public interface Module {
      * module implementation (internal modules).
      */
     public Iterator<QName> getGlobalVariables();
-    
+
+	/**
+	 * Reset the module's internal state for being reused.
+	 *
+	 * @deprecated use {@link #reset(XQueryContext, boolean)} instead
+	 */
+	@Deprecated
+    void reset(XQueryContext context);
+
 	/**
 	 * Reset the module's internal state for being reused.
 	 *
 	 */
-	public void reset(XQueryContext xqueryContext);
+	public void reset(XQueryContext xqueryContext, boolean keepGlobals);
 
     /**
      * Check if this module has been fully loaded
