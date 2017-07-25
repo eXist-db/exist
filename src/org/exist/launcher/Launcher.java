@@ -100,6 +100,7 @@ public class Launcher extends Observable implements Observer {
     private final Path jettyConfig;
     private UtilityPanel utilityPanel;
     private ConfigurationDialog configDialog;
+    private boolean isInstallingService = false;
 
     public Launcher(final String[] args) {
         if (SystemTray.isSupported()) {
@@ -117,13 +118,14 @@ public class Launcher extends Observable implements Observer {
             initSystemTray = initSystemTray();
         }
 
+        serviceManager.queryState();
+
         configDialog = new ConfigurationDialog(this::shutdown);
 
         splash = new SplashScreen(this);
         splash.addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent windowEvent) {
-                setServiceState();
                 if (serviceManager.isInstalled()) {
                     splash.setStatus("eXist-db is already installed as service! Attaching to it ...");
                     final Timer timer = new Timer(3000, (event) -> splash.setVisible(false));
@@ -182,7 +184,6 @@ public class Launcher extends Observable implements Observer {
         trayIcon.setPopupMenu(popup);
         trayIcon.addActionListener(actionEvent -> {
                 trayIcon.displayMessage(null, "Right click for menu", TrayIcon.MessageType.INFO);
-                setServiceState();
             }
         );
 
@@ -192,7 +193,6 @@ public class Launcher extends Observable implements Observer {
                 @Override
                 public void mouseClicked(MouseEvent mouseEvent) {
                     if (mouseEvent.getButton() == MouseEvent.BUTTON1) {
-                        setServiceState();
                         hiddenFrame.add(popup);
                         popup.show(hiddenFrame, mouseEvent.getXOnScreen(), mouseEvent.getYOnScreen());
                     }
@@ -239,7 +239,6 @@ public class Launcher extends Observable implements Observer {
                 } else {
                     showTrayMessage("Starting eXistdb service failed", TrayIcon.MessageType.ERROR);
                 }
-                setServiceState();
             }
         });
 
@@ -256,7 +255,6 @@ public class Launcher extends Observable implements Observer {
                 } else {
                     showTrayMessage("Stopping eXistdb service failed", TrayIcon.MessageType.ERROR);
                 }
-                setServiceState();
             }
         });
 
@@ -286,7 +284,7 @@ public class Launcher extends Observable implements Observer {
         uninstallServiceItem = new MenuItem("Uninstall service" + requiresRootMsg);
         popup.add(uninstallServiceItem);
         uninstallServiceItem.setEnabled(serviceManager.canUseServices());
-        uninstallServiceItem.addActionListener(e -> SwingUtilities.invokeLater(this::uninstallService));
+        uninstallServiceItem.addActionListener(e -> SwingUtilities.invokeLater(serviceManager::uninstall));
 
         if (SystemUtils.IS_OS_WINDOWS) {
             showServices = new MenuItem("Show services console");
@@ -332,8 +330,6 @@ public class Launcher extends Observable implements Observer {
             quitItem = new MenuItem("Quit (and stop server)");
             popup.add(quitItem);
             quitItem.addActionListener(actionEvent -> shutdown(false));
-
-            setServiceState();
         }
         return popup;
     }
@@ -346,20 +342,9 @@ public class Launcher extends Observable implements Observer {
             }
         });
         jetty = Optional.empty();
-
+        
         serviceManager.installAsService();
-    }
-
-    protected void uninstallService() {
-        if (serviceManager.isInstalled()) {
-
-            if (serviceManager.uninstall()) {
-                showTrayMessage("Service removed and db stopped", TrayIcon.MessageType.INFO);
-            } else {
-                JOptionPane.showMessageDialog(null, "Removing the service failed.", "Removing Service Failed", JOptionPane.ERROR_MESSAGE);
-            }
-            setServiceState();
-        }
+        isInstallingService = false;
     }
 
     protected void setServiceState() {
@@ -401,6 +386,7 @@ public class Launcher extends Observable implements Observer {
         SwingUtilities.invokeLater(() -> {
             if (serviceManager.isRunning()) {
                 if (serviceManager.stop()) {
+                    serviceManager.start();
                     trayIcon.displayMessage(null, "Database stopped", TrayIcon.MessageType.INFO);
                 } else {
                     trayIcon.displayMessage(null, "Failed to stop. Please stop service manually.", TrayIcon.MessageType.INFO);
@@ -486,23 +472,23 @@ public class Launcher extends Observable implements Observer {
             checkInstalledApps();
             registerObserver();
         }
-//        if (!inServiceInstall && !runningAsService.isPresent() && SystemUtils.IS_OS_WINDOWS) {
-//            inServiceInstall = true;
-//            SwingUtilities.invokeLater(() -> {
-//                if (JOptionPane.showConfirmDialog(splash, "It is recommended to run eXist as a service on " +
-//                                "Windows.\nNot doing so may lead to data loss if you shut down the computer before " +
-//                                "eXist.\n\nWould you like to install the service?", "Install as Service?",
-//                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-//                    installAsService();
-//                }
-//            });
-//        }
+        if (SystemUtils.IS_OS_WINDOWS && !isInstallingService && !serviceManager.isInstalled() && !ConfigurationUtility.isFirstStart()) {
+            isInstallingService = true;
+            SwingUtilities.invokeLater(() -> {
+                if (JOptionPane.showConfirmDialog(splash, "It is recommended to run eXist as a service on " +
+                                "Windows.\nNot doing so may lead to data loss if you shut down the computer before " +
+                                "eXist.\n\nWould you like to install the service?", "Install as Service?",
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+                    SwingUtilities.invokeLater(() -> installAsService());
+                }
+            });
+        }
     }
 
     protected void signalShutdown() {
         if (isSystemTraySupported()) {
             trayIcon.setToolTip("eXist-db server stopped");
-            if (!serviceManager.isInstallingService()) {
+            if (!isInstallingService) {
                 startItem.setEnabled(true);
                 stopItem.setEnabled(false);
             }

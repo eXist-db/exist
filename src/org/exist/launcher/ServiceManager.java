@@ -46,12 +46,12 @@ public class ServiceManager {
 
     private Launcher launcher;
     private final Properties wrapperProperties;
+    private final Path wrapperDir;
     private boolean canUseServices;
-    private boolean inServiceInstall = false;
     private boolean isInstalled = false;
     private boolean isRunning = false;
 
-    public ServiceManager(Launcher launcher) {
+    ServiceManager(Launcher launcher) {
         this.launcher = launcher;
 
         if (SystemUtils.IS_OS_WINDOWS) {
@@ -61,48 +61,37 @@ public class ServiceManager {
         }
 
         final Optional<Path> eXistHome = ConfigurationHelper.getExistHome();
-        final Path wrapperConfig;
+
         if (eXistHome.isPresent()) {
-            wrapperConfig = eXistHome.get().resolve("tools/yajsw/conf/wrapper.conf");
+            wrapperDir = eXistHome.get().resolve("tools/yajsw");
         } else {
-            wrapperConfig = Paths.get("tools/yajsw/conf/wrapper.conf");
+            wrapperDir = Paths.get("tools/yajsw");
         }
+
+        final Path wrapperConfig = wrapperDir.resolve("conf/wrapper.conf");
 
         System.setProperty("wrapper.config", wrapperConfig.toString());
 
         wrapperProperties = new Properties();
         wrapperProperties.setProperty("wrapper.working.dir", eXistHome.orElse(Paths.get(".")).toString());
         wrapperProperties.setProperty("wrapper.config", wrapperConfig.toString());
-
-        installedAsService();
     }
 
-    public boolean isInstallingService() {
-        return inServiceInstall;
-    }
-
-    public boolean isInstalled() {
+    boolean isInstalled() {
         return isInstalled;
     }
 
-    public boolean isRunning() {
+    boolean isRunning() {
         return isRunning;
     }
 
-    public boolean canUseServices() {
+    boolean canUseServices() {
         return canUseServices;
     }
 
-    private void installedAsService() {
+    void queryState() {
         if (canUseServices) {
-            final String cmd;
-            if (SystemUtils.IS_OS_UNIX) {
-                cmd = "tools/yajsw/bin/queryDaemon.sh";
-            } else {
-                cmd = "tools/yajsw/bin/queryService.bat";
-            }
-
-            runWrapperCmd(cmd, (code, output) -> {
+            runWrapperCmd("query", (code, output) -> {
                 if (code == 0) {
                     Pattern statusRegex = Pattern.compile("^Installed\\s*:\\s*(.*)$|^Running\\s*:\\s*(.*)$", Pattern.MULTILINE);
                     Matcher m = statusRegex.matcher(output);
@@ -114,53 +103,42 @@ public class ServiceManager {
                         }
                     }
                 }
+                launcher.setServiceState();
             });
+        } else {
+            launcher.setServiceState();
         }
     }
 
-    protected void installAsService() {
+    void installAsService() {
         launcher.showTrayMessage("Installing service and starting eXistdb ...", TrayIcon.MessageType.INFO);
 
-        inServiceInstall = true;
-
         if (canUseServices) {
-            final String cmd;
-            if (SystemUtils.IS_OS_UNIX) {
-                cmd = "tools/yajsw/bin/installDaemon.sh";
-            } else {
-                cmd = "tools/yajsw/bin/installService.bat";
-            }
-
-            runWrapperCmd(cmd, (code, output) -> {
+            runWrapperCmd("install", (code, output) -> {
                 if (code == 0) {
+                    isRunning = false;
                     isInstalled = true;
                     start();
                     launcher.showTrayMessage("Service installed and started", TrayIcon.MessageType.INFO);
                 } else {
+                    LOG.warn("Failed to install service. Exit code: " + code);
                     JOptionPane.showMessageDialog(null, "Failed to install service. ", "Install Service Failed", JOptionPane.ERROR_MESSAGE);
                     isInstalled = false;
                     isRunning = false;
                 }
             });
         }
-        inServiceInstall = false;
     }
 
-    protected boolean uninstall() {
+    boolean uninstall() {
         if (isInstalled) {
-            final String cmd;
-            if (SystemUtils.IS_OS_MAC) {
-                cmd = "tools/yajsw/bin/uninstallDaemon.sh";
-            } else {
-                cmd = "tools/yajsw/bin/uninstallService.bat";
-            }
-
-            runWrapperCmd(cmd, (code, output) -> {
+            runWrapperCmd("uninstall", (code, output) -> {
                 if (code == 0) {
                     isInstalled = false;
                     isRunning = false;
                     launcher.showTrayMessage("Service stopped and uninstalled", TrayIcon.MessageType.INFO);
                 } else {
+                    LOG.warn("Failed to uninstall service. Exit code: " + code);
                     JOptionPane.showMessageDialog(null, "Failed to uninstall service. ", "Uninstalling Service Failed", JOptionPane.ERROR_MESSAGE);
                     isInstalled = true;
                     isRunning = true;
@@ -171,19 +149,13 @@ public class ServiceManager {
         return false;
     }
 
-    protected boolean start() {
+    boolean start() {
         if (!isRunning) {
-            final String cmd;
-            if (SystemUtils.IS_OS_MAC) {
-                cmd = "tools/yajsw/bin/startDaemon.sh";
-            } else {
-                cmd = "tools/yajsw/bin/startService.bat";
-            }
-            runWrapperCmd(cmd, (code, output) -> {
+            runWrapperCmd("start", (code, output) -> {
                 if (code == 0) {
                     isRunning = true;
-                    launcher.showTrayMessage("Service started", TrayIcon.MessageType.INFO);
                 } else {
+                    LOG.warn("Failed to start service. Exit code: " + code);
                     JOptionPane.showMessageDialog(null, "Failed to start service. ", "Starting Service Failed", JOptionPane.ERROR_MESSAGE);
                     isRunning = false;
                 }
@@ -193,26 +165,27 @@ public class ServiceManager {
         return isRunning;
     }
 
-    protected boolean stop() {
+    boolean stop() {
         if (isRunning) {
-            final String cmd;
-            if (SystemUtils.IS_OS_MAC) {
-                cmd = "tools/yajsw/bin/stopDaemon.sh";
-            } else {
-                cmd = "tools/yajsw/bin/stopService.bat";
-            }
-            runWrapperCmd(cmd, (code, output) -> {
+            runWrapperCmd("stop", (code, output) -> {
                 if (code == 0) {
                     isRunning = false;
-                    launcher.showTrayMessage("Service stopped", TrayIcon.MessageType.INFO);
                 } else {
-                    JOptionPane.showMessageDialog(null, "Failed to stop service. ", "Stopping Service Failed", JOptionPane.ERROR_MESSAGE);
+                    LOG.warn("Failed to stop service. Exit code: " + code);
+                    JOptionPane.showMessageDialog(null, "Failed to stop service.", "Stopping Service Failed", JOptionPane.ERROR_MESSAGE);
                     isRunning = true;
                 }
                 launcher.setServiceState();
             });
         }
-        return false;
+        return !isRunning;
+    }
+
+    private String getShellCmd(String cmd) {
+        if (SystemUtils.IS_OS_UNIX) {
+            return cmd + "Daemon.sh";
+        }
+        return cmd + "Service.bat";
     }
 
     private void isRoot(Consumer<Boolean> consumer) {
@@ -224,7 +197,7 @@ public class ServiceManager {
         });
     }
 
-    public void showServicesConsole() {
+    void showServicesConsole() {
         final List<String> args = new ArrayList<>(2);
         args.add("cmd");
         args.add("/c");
@@ -233,9 +206,11 @@ public class ServiceManager {
         run(args, null);
     }
 
-    private static void runWrapperCmd(final String cmd, final BiConsumer<Integer, String> consumer) {
+    private void runWrapperCmd(final String cmd, final BiConsumer<Integer, String> consumer) {
+        final Path executable = wrapperDir.resolve("bin/" + getShellCmd(cmd));
         final List<String> args = new ArrayList<>(1);
-        args.add(cmd);
+        args.add(executable.toString());
+
         run(args, (code, output) -> {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(output);
