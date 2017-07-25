@@ -327,9 +327,18 @@ public class Launcher extends Observable implements Observer {
             }
 
             popup.addSeparator();
-            quitItem = new MenuItem("Quit (and stop server)");
+            quitItem = new MenuItem("Quit");
             popup.add(quitItem);
-            quitItem.addActionListener(actionEvent -> shutdown(false));
+            quitItem.addActionListener(actionEvent -> {
+                if (serviceManager.isInstalled()) {
+                    if (tray != null) {
+                        tray.remove(trayIcon);
+                    }
+                    System.exit(SystemExitCodes.OK_EXIT_CODE);
+                } else {
+                    shutdown(false);
+                }
+            });
         }
         return popup;
     }
@@ -384,7 +393,7 @@ public class Launcher extends Observable implements Observer {
     protected void shutdown(final boolean restart) {
         utilityPanel.setStatus("Shutting down ...");
         SwingUtilities.invokeLater(() -> {
-            if (serviceManager.isRunning()) {
+            if (serviceManager.isRunning() && restart) {
                 if (serviceManager.stop()) {
                     serviceManager.start();
                     trayIcon.displayMessage(null, "Database stopped", TrayIcon.MessageType.INFO);
