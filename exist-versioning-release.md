@@ -209,9 +209,11 @@ Once development on a new stable version is complete, the following steps will p
 
 5. Visit the GitHub releases page https://github.com/eXist-db/exist/releases and create a new release, enter the tag you previously created and link the release notes from the blog and the binaries from BinTray.
 
-6. Send an email to the `exist-open` mailing list announcing the release with a title similar to `[ANN] Release of eXist 3.1.0`, copy and paste the release notes from the blog into the email.
+6. Send an email to the `exist-open` mailing list announcing the release with a title similar to `[ANN] Release of eXist 3.1.0`, copy and paste the release notes from the blog into the email and reformat appropriately (see past emails).
 
 7. Tweet about it using the `existdb` twitter account.
+
+8. Go to GitHub and move all issues and PRs which are still open for the release milestone to the next release milestone. Close the release milestone.
 
 
 ### Preparing a Patch Release
