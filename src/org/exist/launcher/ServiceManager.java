@@ -44,6 +44,8 @@ public class ServiceManager {
 
     private final static Logger LOG = Logger.getLogger(ServiceManager.class);
 
+    private final static Pattern STATUS_REGEX = Pattern.compile("Installed\\s*:\\s*(.*)\n\\s*Running\\s*:\\s*(.*)\n", Pattern.MULTILINE);
+
     private Launcher launcher;
     private final Properties wrapperProperties;
     private final Path wrapperDir;
@@ -93,8 +95,8 @@ public class ServiceManager {
         if (canUseServices) {
             runWrapperCmd("query", (code, output) -> {
                 if (code == 0) {
-                    Pattern statusRegex = Pattern.compile("^Installed\\s*:\\s*(.*)$|^Running\\s*:\\s*(.*)$", Pattern.MULTILINE);
-                    Matcher m = statusRegex.matcher(output);
+
+                    final Matcher m = STATUS_REGEX.matcher(output);
                     if (m.find()) {
                         isInstalled = Boolean.valueOf(m.group(1));
                         isRunning = Boolean.valueOf(m.group(2));
@@ -219,7 +221,7 @@ public class ServiceManager {
         });
     }
 
-    public static void run(List<String> args, BiConsumer<Integer, String> consumer) {
+    static void run(List<String> args, BiConsumer<Integer, String> consumer) {
         final ProcessBuilder pb = new ProcessBuilder(args);
         final Optional<Path> home = ConfigurationHelper.getExistHome();
 

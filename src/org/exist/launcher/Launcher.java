@@ -50,6 +50,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * A launcher for the eXist-db server integrated with the desktop.
@@ -92,6 +93,8 @@ public class Launcher extends Observable implements Observer {
         SwingUtilities.invokeLater(() -> new Launcher(args));
     }
 
+    private final ReentrantLock serviceLock = new ReentrantLock();
+
     private ServiceManager serviceManager;
     private SystemTray tray = null;
     private TrayIcon trayIcon = null;
@@ -102,7 +105,7 @@ public class Launcher extends Observable implements Observer {
     private ConfigurationDialog configDialog;
     private boolean isInstallingService = false;
 
-    public Launcher(final String[] args) {
+    Launcher(final String[] args) {
         if (SystemTray.isSupported()) {
             tray = SystemTray.getSystemTray();
         }
@@ -112,7 +115,7 @@ public class Launcher extends Observable implements Observer {
         this.jettyConfig = getJettyConfig();
 
         serviceManager = new ServiceManager(this);
-
+        
         boolean initSystemTray = true;
         if (isSystemTraySupported()) {
             initSystemTray = initSystemTray();
@@ -126,19 +129,24 @@ public class Launcher extends Observable implements Observer {
         splash.addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent windowEvent) {
-                if (serviceManager.isInstalled()) {
-                    splash.setStatus("eXist-db is already installed as service! Attaching to it ...");
-                    final Timer timer = new Timer(3000, (event) -> splash.setVisible(false));
-                    timer.setRepeats(false);
-                    timer.start();
-                } else {
-                    if (ConfigurationUtility.isFirstStart()) {
-                        splash.setVisible(false);
-                        configDialog.open(true);
-                        configDialog.requestFocus();
+                serviceLock.lock();
+                try {
+                    if (serviceManager.isInstalled()) {
+                        splash.setStatus("eXist-db is already installed as service! Attaching to it ...");
+                        final Timer timer = new Timer(3000, (event) -> splash.setVisible(false));
+                        timer.setRepeats(false);
+                        timer.start();
                     } else {
-                        startJetty();
+                        if (ConfigurationUtility.isFirstStart()) {
+                            splash.setVisible(false);
+                            configDialog.open(true);
+                            configDialog.requestFocus();
+                        } else {
+                            startJetty();
+                        }
                     }
+                } finally {
+                    serviceLock.unlock();
                 }
             }
         });
@@ -148,8 +156,9 @@ public class Launcher extends Observable implements Observer {
         SwingUtilities.invokeLater(() -> utilityPanel = new UtilityPanel(Launcher.this, systemTrayReady));
     }
 
-    protected void startJetty() {
+    void startJetty() {
         new Thread(() -> {
+            serviceLock.lock();
             try {
                 if (!jetty.isPresent()) {
                     jetty = Optional.of(new JettyStart());
@@ -158,11 +167,13 @@ public class Launcher extends Observable implements Observer {
             } catch (final Exception e) {
                 showMessageAndExit("Error Occurred", "An error occurred during eXist-db startup. Please check console output and logs.", true);
                 System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
+            } finally {
+                serviceLock.unlock();
             }
         }).start();
     }
 
-    public boolean isSystemTraySupported() {
+    boolean isSystemTraySupported() {
         return tray != null;
     }
 
@@ -213,213 +224,244 @@ public class Launcher extends Observable implements Observer {
     }
 
     private PopupMenu createMenu() {
-
-
         final PopupMenu popup = new PopupMenu();
-        startItem = new MenuItem("Start server");
-        popup.add(startItem);
-        startItem.addActionListener(actionEvent -> {
-            if (jetty.isPresent()) {
-                jetty.ifPresent(server -> {
-                    if (server.isStarted()) {
-                        showTrayMessage("Server already started", TrayIcon.MessageType.WARNING);
-                    } else {
-                        server.run(new String[]{jettyConfig.toAbsolutePath().toString()}, null);
-                        if (server.isStarted()) {
-                            showTrayMessage("eXist-db server running on port " + server.getPrimaryPort(), TrayIcon
-                                    .MessageType.INFO);
+        serviceLock.lock();
+        try {
+            startItem = new MenuItem("Start server");
+            popup.add(startItem);
+            startItem.addActionListener(actionEvent -> {
+                serviceLock.lock();
+                try {
+                    if (serviceManager.isInstalled()) {
+                        showTrayMessage("Starting the eXistdb service. Please wait...", TrayIcon.MessageType.INFO);
+                        if (serviceManager.start()) {
+                            showTrayMessage("eXistdb service started", TrayIcon.MessageType.INFO);
+                        } else {
+                            showTrayMessage("Starting eXistdb service failed", TrayIcon.MessageType.ERROR);
                         }
+                    } else if (jetty.isPresent()) {
+                        jetty.ifPresent(server -> {
+                            if (server.isStarted()) {
+                                showTrayMessage("Server already started", TrayIcon.MessageType.WARNING);
+                            } else {
+                                server.run(new String[]{jettyConfig.toAbsolutePath().toString()}, null);
+                                if (server.isStarted()) {
+                                    showTrayMessage("eXist-db server running on port " + server.getPrimaryPort(), TrayIcon
+                                            .MessageType.INFO);
+                                }
+                            }
+                            setServiceState();
+                        });
+                    } else {
+                        startJetty();
                     }
-                    setServiceState();
-                });
-            } else if (serviceManager.isInstalled()){
-                showTrayMessage("Starting the eXistdb service. Please wait...", TrayIcon.MessageType.INFO);
-                if (serviceManager.start()) {
-                    showTrayMessage("eXistdb service started", TrayIcon.MessageType.INFO);
-                } else {
-                    showTrayMessage("Starting eXistdb service failed", TrayIcon.MessageType.ERROR);
-                }
-            }
-        });
-
-        stopItem = new MenuItem("Stop server");
-        popup.add(stopItem);
-        stopItem.addActionListener(actionEvent -> {
-            if (jetty.isPresent()) {
-                jetty.get().shutdown();
-                setServiceState();
-                showTrayMessage("eXist-db stopped", TrayIcon.MessageType.INFO);
-            } else if (serviceManager.isRunning()) {
-                if (serviceManager.stop()) {
-                    showTrayMessage("eXistdb service stopped", TrayIcon.MessageType.INFO);
-                } else {
-                    showTrayMessage("Stopping eXistdb service failed", TrayIcon.MessageType.ERROR);
-                }
-            }
-        });
-
-        popup.addSeparator();
-        final MenuItem configItem = new MenuItem("System Configuration");
-        popup.add(configItem);
-        configItem.addActionListener(e -> EventQueue.invokeLater(() -> {
-            configDialog.open(false);
-            configDialog.toFront();
-            configDialog.repaint();
-            configDialog.requestFocus();
-        }));
-
-        final String requiresRootMsg;
-        if (serviceManager.canUseServices()) {
-            requiresRootMsg = "";
-        } else {
-            requiresRootMsg = " (requires root)";
-        }
-
-        installServiceItem = new MenuItem("Install as service" + requiresRootMsg);
-
-        popup.add(installServiceItem);
-        installServiceItem.setEnabled(serviceManager.canUseServices());
-        installServiceItem.addActionListener(e -> SwingUtilities.invokeLater(this::installAsService));
-
-        uninstallServiceItem = new MenuItem("Uninstall service" + requiresRootMsg);
-        popup.add(uninstallServiceItem);
-        uninstallServiceItem.setEnabled(serviceManager.canUseServices());
-        uninstallServiceItem.addActionListener(e -> SwingUtilities.invokeLater(serviceManager::uninstall));
-
-        if (SystemUtils.IS_OS_WINDOWS) {
-            showServices = new MenuItem("Show services console");
-            popup.add(showServices);
-            showServices.addActionListener(e -> SwingUtilities.invokeLater(serviceManager::showServicesConsole));
-        }
-        popup.addSeparator();
-
-        final MenuItem toolbar = new MenuItem("Show tool window");
-        popup.add(toolbar);
-        toolbar.addActionListener(actionEvent -> EventQueue.invokeLater(() -> {
-            utilityPanel.toFront();
-            utilityPanel.setVisible(true);
-        }));
-
-        MenuItem item;
-
-        if (Desktop.isDesktopSupported()) {
-            popup.addSeparator();
-            final Desktop desktop = Desktop.getDesktop();
-            if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                dashboardItem = new MenuItem("Open Dashboard");
-                popup.add(dashboardItem);
-                dashboardItem.addActionListener(actionEvent -> dashboard(desktop));
-                eXideItem = new MenuItem("Open eXide");
-                popup.add(eXideItem);
-                eXideItem.addActionListener(actionEvent -> eXide(desktop));
-                item = new MenuItem("Open Java Admin Client");
-                popup.add(item);
-                item.addActionListener(actionEvent -> client());
-                monexItem = new MenuItem("Open Monitoring and Profiling");
-                popup.add(monexItem);
-                monexItem.addActionListener(actionEvent -> monex(desktop));
-            }
-            if (desktop.isSupported(Desktop.Action.OPEN)) {
-                popup.addSeparator();
-                item = new MenuItem("Open exist.log");
-                popup.add(item);
-                item.addActionListener(new LogActionListener());
-            }
-
-            popup.addSeparator();
-            quitItem = new MenuItem("Quit");
-            popup.add(quitItem);
-            quitItem.addActionListener(actionEvent -> {
-                if (serviceManager.isInstalled()) {
-                    if (tray != null) {
-                        tray.remove(trayIcon);
-                    }
-                    System.exit(SystemExitCodes.OK_EXIT_CODE);
-                } else {
-                    shutdown(false);
+                } finally {
+                    serviceLock.unlock();
                 }
             });
+
+            stopItem = new MenuItem("Stop server");
+            popup.add(stopItem);
+            stopItem.addActionListener(actionEvent -> {
+                serviceLock.lock();
+                try {
+                    if (jetty.isPresent()) {
+                        jetty.get().shutdown();
+                        setServiceState();
+                        showTrayMessage("eXist-db stopped", TrayIcon.MessageType.INFO);
+                    } else if (serviceManager.isRunning()) {
+                        if (serviceManager.stop()) {
+                            showTrayMessage("eXistdb service stopped", TrayIcon.MessageType.INFO);
+                        } else {
+                            showTrayMessage("Stopping eXistdb service failed", TrayIcon.MessageType.ERROR);
+                        }
+                    }
+                } finally {
+                    serviceLock.unlock();
+                }
+            });
+
+            popup.addSeparator();
+            final MenuItem configItem = new MenuItem("System Configuration");
+            popup.add(configItem);
+            configItem.addActionListener(e -> EventQueue.invokeLater(() -> {
+                configDialog.open(false);
+                configDialog.toFront();
+                configDialog.repaint();
+                configDialog.requestFocus();
+            }));
+
+            final String requiresRootMsg;
+            if (serviceManager.canUseServices()) {
+                requiresRootMsg = "";
+            } else {
+                requiresRootMsg = " (requires root)";
+            }
+
+            installServiceItem = new MenuItem("Install as service" + requiresRootMsg);
+
+            popup.add(installServiceItem);
+            installServiceItem.setEnabled(serviceManager.canUseServices());
+            installServiceItem.addActionListener(e -> SwingUtilities.invokeLater(this::installAsService));
+
+            uninstallServiceItem = new MenuItem("Uninstall service" + requiresRootMsg);
+            popup.add(uninstallServiceItem);
+            uninstallServiceItem.setEnabled(serviceManager.canUseServices());
+            uninstallServiceItem.addActionListener(e -> SwingUtilities.invokeLater(serviceManager::uninstall));
+
+            if (SystemUtils.IS_OS_WINDOWS) {
+                showServices = new MenuItem("Show services console");
+                popup.add(showServices);
+                showServices.addActionListener(e -> SwingUtilities.invokeLater(serviceManager::showServicesConsole));
+            }
+            popup.addSeparator();
+
+            final MenuItem toolbar = new MenuItem("Show tool window");
+            popup.add(toolbar);
+            toolbar.addActionListener(actionEvent -> EventQueue.invokeLater(() -> {
+                utilityPanel.toFront();
+                utilityPanel.setVisible(true);
+            }));
+
+            MenuItem item;
+
+            if (Desktop.isDesktopSupported()) {
+                popup.addSeparator();
+                final Desktop desktop = Desktop.getDesktop();
+                if (desktop.isSupported(Desktop.Action.BROWSE)) {
+                    dashboardItem = new MenuItem("Open Dashboard");
+                    popup.add(dashboardItem);
+                    dashboardItem.addActionListener(actionEvent -> dashboard(desktop));
+                    eXideItem = new MenuItem("Open eXide");
+                    popup.add(eXideItem);
+                    eXideItem.addActionListener(actionEvent -> eXide(desktop));
+                    item = new MenuItem("Open Java Admin Client");
+                    popup.add(item);
+                    item.addActionListener(actionEvent -> client());
+                    monexItem = new MenuItem("Open Monitoring and Profiling");
+                    popup.add(monexItem);
+                    monexItem.addActionListener(actionEvent -> monex(desktop));
+                }
+                if (desktop.isSupported(Desktop.Action.OPEN)) {
+                    popup.addSeparator();
+                    item = new MenuItem("Open exist.log");
+                    popup.add(item);
+                    item.addActionListener(new LogActionListener());
+                }
+
+                popup.addSeparator();
+                quitItem = new MenuItem("Quit");
+                popup.add(quitItem);
+                quitItem.addActionListener(actionEvent -> {
+                    if (serviceManager.isInstalled()) {
+                        if (tray != null) {
+                            tray.remove(trayIcon);
+                        }
+                        System.exit(SystemExitCodes.OK_EXIT_CODE);
+                    } else {
+                        shutdown(false);
+                    }
+                });
+            }
+        } finally {
+            serviceLock.unlock();
         }
         return popup;
     }
 
-    protected void installAsService() {
-        jetty.ifPresent(server -> {
-            if (server.isStarted()) {
-                showTrayMessage("Stopping eXistdb...", TrayIcon.MessageType.INFO);
-                server.shutdown();
-            }
-        });
-        jetty = Optional.empty();
-        
-        serviceManager.installAsService();
-        isInstallingService = false;
-    }
-
-    protected void setServiceState() {
-        if (serviceManager.isInstalled()) {
-
-            final boolean serverRunning = serviceManager.isRunning();
-            installServiceItem.setEnabled(false);
-            uninstallServiceItem.setEnabled(true);
-
-            quitItem.setLabel("Quit");
-            stopItem.setEnabled(serverRunning);
-            startItem.setEnabled(!serverRunning);
-            if (dashboardItem != null) {
-                dashboardItem.setEnabled(serverRunning);
-                monexItem.setEnabled(serverRunning);
-                eXideItem.setEnabled(serverRunning);
-            }
-        } else {
-            final boolean serverRunning = jetty.isPresent() && jetty.get().isStarted();
-            if (serviceManager.canUseServices()) {
-                if (installServiceItem != null && uninstallServiceItem != null) {
-                    installServiceItem.setEnabled(true);
-                    uninstallServiceItem.setEnabled(false);
+    private void installAsService() {
+        serviceLock.lock();
+        try {
+            jetty.ifPresent(server -> {
+                if (server.isStarted()) {
+                    showTrayMessage("Stopping eXistdb...", TrayIcon.MessageType.INFO);
+                    server.shutdown();
                 }
-            }
-            quitItem.setLabel("Quit (and stop server)");
-            stopItem.setEnabled(serverRunning);
-            startItem.setEnabled(!serverRunning);
-            if (dashboardItem != null) {
-                dashboardItem.setEnabled(serverRunning);
-                monexItem.setEnabled(serverRunning);
-                eXideItem.setEnabled(serverRunning);
-            }
+            });
+            jetty = Optional.empty();
+
+            serviceManager.installAsService();
+            isInstallingService = false;
+        } finally {
+            serviceLock.unlock();
         }
     }
 
-    protected void shutdown(final boolean restart) {
-        utilityPanel.setStatus("Shutting down ...");
-        SwingUtilities.invokeLater(() -> {
-            if (serviceManager.isRunning() && restart) {
-                if (serviceManager.stop()) {
-                    serviceManager.start();
-                    trayIcon.displayMessage(null, "Database stopped", TrayIcon.MessageType.INFO);
-                } else {
-                    trayIcon.displayMessage(null, "Failed to stop. Please stop service manually.", TrayIcon.MessageType.INFO);
+    void setServiceState() {
+        serviceLock.lock();
+        try {
+            if (serviceManager.isInstalled()) {
+
+                final boolean serverRunning = serviceManager.isRunning();
+                installServiceItem.setEnabled(false);
+                uninstallServiceItem.setEnabled(true);
+
+                quitItem.setLabel("Quit");
+                stopItem.setEnabled(serverRunning);
+                startItem.setEnabled(!serverRunning);
+                if (dashboardItem != null) {
+                    dashboardItem.setEnabled(serverRunning);
+                    monexItem.setEnabled(serverRunning);
+                    eXideItem.setEnabled(serverRunning);
                 }
             } else {
-                if (tray != null) {
-                    tray.remove(trayIcon);
-                }
-                if (jetty.isPresent()) {
-                    jetty.get().shutdown();
-                    if (restart) {
-                        final LauncherWrapper wrapper = new LauncherWrapper(Launcher.class.getName());
-                        wrapper.launch();
+                final boolean serverRunning = jetty.isPresent() && jetty.get().isStarted();
+                if (serviceManager.canUseServices()) {
+                    if (installServiceItem != null && uninstallServiceItem != null) {
+                        installServiceItem.setEnabled(true);
+                        uninstallServiceItem.setEnabled(false);
                     }
                 }
-                System.exit(SystemExitCodes.OK_EXIT_CODE);
+                quitItem.setLabel("Quit (and stop server)");
+                stopItem.setEnabled(serverRunning);
+                startItem.setEnabled(!serverRunning);
+                if (dashboardItem != null) {
+                    dashboardItem.setEnabled(serverRunning);
+                    monexItem.setEnabled(serverRunning);
+                    eXideItem.setEnabled(serverRunning);
+                }
+            }
+        } finally {
+            serviceLock.unlock();
+        }
+    }
+
+    void shutdown(final boolean restart) {
+        utilityPanel.setStatus("Shutting down ...");
+        SwingUtilities.invokeLater(() -> {
+            serviceLock.lock();
+            try {
+                if (serviceManager.isRunning() && restart) {
+                    if (serviceManager.stop()) {
+                        serviceManager.start();
+                        trayIcon.displayMessage(null, "Database stopped", TrayIcon.MessageType.INFO);
+                    } else {
+                        trayIcon.displayMessage(null, "Failed to stop. Please stop service manually.", TrayIcon.MessageType.INFO);
+                    }
+                } else {
+                    if (tray != null) {
+                        tray.remove(trayIcon);
+                    }
+                    if (jetty.isPresent()) {
+                        jetty.get().shutdown();
+                        if (restart) {
+                            final LauncherWrapper wrapper = new LauncherWrapper(Launcher.class.getName());
+                            wrapper.launch();
+                        }
+                    }
+                    System.exit(SystemExitCodes.OK_EXIT_CODE);
+                }
+            } finally {
+                serviceLock.unlock();
             }
         });
     }
 
-    protected void dashboard(Desktop desktop) {
+    void dashboard(Desktop desktop) {
         utilityPanel.setStatus("Opening dashboard in browser ...");
-        final int port = jetty.isPresent() ? jetty.get().getPrimaryPort() : 8080;
+        serviceLock.lock();
         try {
+            final int port = jetty.isPresent() ? jetty.get().getPrimaryPort() : 8080;
             final URI url = new URI("http://localhost:" + port + "/exist/apps/dashboard/");
             desktop.browse(url);
         } catch (final URISyntaxException e) {
@@ -430,13 +472,16 @@ public class Launcher extends Observable implements Observer {
             if (isSystemTraySupported())
                 {trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);}
             utilityPanel.setStatus("Unable to launch browser");
+        } finally {
+            serviceLock.unlock();
         }
     }
 
-    protected void eXide(Desktop desktop) {
+    void eXide(Desktop desktop) {
         utilityPanel.setStatus("Opening dashboard in browser ...");
-        final int port = jetty.isPresent() ? jetty.get().getPrimaryPort() : 8080;
+        serviceLock.lock();
         try {
+            final int port = jetty.isPresent() ? jetty.get().getPrimaryPort() : 8080;
             final URI url = new URI("http://localhost:" + port + "/exist/apps/eXide/");
             desktop.browse(url);
         } catch (final URISyntaxException e) {
@@ -447,13 +492,16 @@ public class Launcher extends Observable implements Observer {
             if (isSystemTraySupported())
                 {trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);}
             utilityPanel.setStatus("Unable to launch browser");
+        } finally {
+            serviceLock.unlock();
         }
     }
 
-    protected void monex(Desktop desktop) {
+    void monex(Desktop desktop) {
         utilityPanel.setStatus("Opening Monitoring and Profiling in browser ...");
-        final int port = jetty.isPresent() ? jetty.get().getPrimaryPort() : 8080;
+        serviceLock.lock();
         try {
+            final int port = jetty.isPresent() ? jetty.get().getPrimaryPort() : 8080;
             final URI url = new URI("http://localhost:" + port + "/exist/apps/monex/");
             desktop.browse(url);
         } catch (final URISyntaxException e) {
@@ -464,24 +512,24 @@ public class Launcher extends Observable implements Observer {
             if (isSystemTraySupported())
                 {trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);}
             utilityPanel.setStatus("Unable to launch browser");
+        } finally {
+            serviceLock.unlock();
         }
     }
 
-    protected void client() {
+    void client() {
         final LauncherWrapper wrapper = new LauncherWrapper("client");
         wrapper.launch();
     }
 
-    protected void signalStarted() {
+    void signalStarted() {
         if (isSystemTraySupported()) {
-            final int port = jetty.isPresent() ? jetty.get().getPrimaryPort() : 8080;
-            trayIcon.setToolTip("eXist-db server running on port " + port);
             startItem.setEnabled(false);
             stopItem.setEnabled(true);
             checkInstalledApps();
             registerObserver();
         }
-        if (SystemUtils.IS_OS_WINDOWS && !isInstallingService && !serviceManager.isInstalled() && !ConfigurationUtility.isFirstStart()) {
+        if (SystemUtils.IS_OS_WINDOWS && !isInstallingService && !serviceManager.isInstalled()) {
             isInstallingService = true;
             SwingUtilities.invokeLater(() -> {
                 if (JOptionPane.showConfirmDialog(splash, "It is recommended to run eXist as a service on " +
@@ -494,7 +542,7 @@ public class Launcher extends Observable implements Observer {
         }
     }
 
-    protected void signalShutdown() {
+    void signalShutdown() {
         if (isSystemTraySupported()) {
             trayIcon.setToolTip("eXist-db server stopped");
             if (!isInstallingService) {
@@ -580,7 +628,7 @@ public class Launcher extends Observable implements Observer {
                 .resolve(Main.STANDARD_ENABLED_JETTY_CONFIGS);
     }
 
-    protected void showMessageAndExit(String title, String message, boolean logs) {
+    void showMessageAndExit(String title, String message, boolean logs) {
         final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
@@ -602,7 +650,7 @@ public class Launcher extends Observable implements Observer {
         //System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
     }
 
-    protected void showTrayMessage(String message, TrayIcon.MessageType type) {
+    void showTrayMessage(String message, TrayIcon.MessageType type) {
         if (isSystemTraySupported()) {
             trayIcon.displayMessage(message, message, type);
         }
@@ -617,7 +665,7 @@ public class Launcher extends Observable implements Observer {
         System.setErr(createLoggingProxy(System.err));
     }
 
-    public PrintStream createLoggingProxy(final PrintStream realStream) {
+    private PrintStream createLoggingProxy(final PrintStream realStream) {
         final OutputStream out = new OutputStream() {
             @Override
             public void write(int i) throws IOException {
