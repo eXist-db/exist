@@ -36,7 +36,11 @@ fi
 if [ -z "${JAVA_HOME}" ]; then
   echo -e "\nNo JAVA_HOME environment variable found!"
   echo "Attempting to determine JAVA_HOME (if this fails you must manually set it)..."
-  java_bin=$(readlink `which java`)
+  if [ "$(uname -s)" == "Darwin" ]; then
+      java_bin=$(readlink `which java`)
+  else
+      java_bin=$(readlink -f `which java`)
+  fi
   java_bin_dir=$(dirname "${java_bin}")
   JAVA_HOME=$(dirname "${java_bin_dir}")
   echo -e "Found JAVA_HOME=${JAVA_HOME}\n"
