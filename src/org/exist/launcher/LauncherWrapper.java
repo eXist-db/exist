@@ -25,10 +25,6 @@ import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.SystemUtils;
 import org.exist.util.ConfigurationHelper;
-import org.rzo.yajsw.os.OperatingSystem;
-import org.rzo.yajsw.os.Process;
-import org.rzo.yajsw.os.ProcessManager;
-import org.rzo.yajsw.os.ms.win.w32.WindowsXPProcess;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,9 +76,6 @@ public class LauncherWrapper {
         final String debugLauncher = System.getProperty("exist.debug.launcher", "false");
         final PropertiesConfiguration vmProperties = getVMProperties();
 
-        final OperatingSystem os = OperatingSystem.instance();
-        final ProcessManager pm = os.processManagerInstance();
-        final Process process = pm.createProcess();
         final List<String> args = new ArrayList<>();
         args.add(getJavaCmd());
         getJavaOpts(args, home, vmProperties);
@@ -95,17 +88,7 @@ public class LauncherWrapper {
         args.add("start.jar");
         args.add(command);
 
-        process.setWorkingDir(home);
-        process.setVisible(false);
-        process.setPipeStreams(false, false);
-        System.out.println(String.join(" ", args));
-        process.setCommand(args.toArray(new String[args.size()]));
-
-        if (process instanceof WindowsXPProcess) {
-            ((WindowsXPProcess)process).startElevated();
-        } else {
-            process.start();
-        }
+        ServiceManager.run(args, null);
     }
 
     protected String getJavaCmd() {

@@ -118,6 +118,14 @@
             <PatternLayout pattern="${exist.file.pattern}"/>
         </RollingRandomAccessFile>
         
+        <RollingRandomAccessFile name="exist.launcher" filePattern="${logs}/launcher.${rollover.file.pattern}.log.gz" fileName="${logs}/launcher.log">
+            <Policies>
+                <SizeBasedTriggeringPolicy size="${rollover.max.size}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${rollover.max}"/>
+            <PatternLayout pattern="${exist.file.pattern}"/>
+        </RollingRandomAccessFile>
+        
     </Appenders>
     
     <Loggers>
@@ -213,6 +221,9 @@
         </Logger>
         <Logger name="org.exist.repo" additivity="false" level="trace">
             <AppenderRef ref="expath.repo"/>
+        </Logger>
+        <Logger name="org.exist.launcher" additivity="false" level="warn">
+            <AppenderRef ref="exist.launcher"/>
         </Logger>
         
         <Root level="info">
