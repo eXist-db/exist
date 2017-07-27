@@ -48,7 +48,7 @@
 
     <!-- setup conditional properties -->
     <available file="${xmldb.src}" type="dir" property="has.xmldb.src"/>
-    <available file="key.store" property="key.store.present"/>
+    <available file="${keystore.file}" property="key.store.present"/>
 
     <!-- additional set of ant tasks -->
     <property name="asocat-exist.jar" location="${tools.ant}/lib/asocat-exist-1.0.jar"/>
@@ -836,15 +836,6 @@
         <echo message="!! Signing jar files ..."/>
         <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
         <ant antfile="build/scripts/jarsigner.xml" dir="." target="jnlp-sign-exist"/>
-
-        <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
-        <echo message="!! Please run &apos;$EXIST_HOME/build.[bat|sh] -f build\scripts\jarsigner.xml&apos; "/>
-        <echo message="!! once manually to use a default keystore to sign the core jars or put !!"/>
-	    <echo message="!! your own certificate in $EXIST_HOME/key.store and sign for enabling webstart !!"/>
-        <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
-
-        <!-- the core jars can NOT be signed in this build.xml file because -->
-        <!-- the jars are some how locked by ant (classpath.core)-->
 
     </target>
 
