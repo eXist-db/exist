@@ -15,6 +15,7 @@ dist/
 eXist.iws
 examples.jar
 exist-optional.jar
+exist-testkit.jar
 exist.jar
 extensions/**/build/
 extensions/contentextraction/lib/
