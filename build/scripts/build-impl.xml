@@ -702,6 +702,7 @@
         <delete failonerror="no" file="examples.jar"/>
         <delete failonerror="no" file="exist.jar"/>
         <delete failonerror="no" file="exist-optional.jar"/>
+        <delete failonerror="no" file="exist-testkit.jar"/>
         <delete failonerror="no" file="start.jar"/>
         <delete>
             <fileset dir="installer" includes="eXist-*.jar,install.xml"/>
