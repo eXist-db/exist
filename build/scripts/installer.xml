@@ -25,7 +25,6 @@
     <property file="installer/apps.properties"/>
 
 	<target name="commandline-installer">
-        <!--ant antfile="build.xml" dir="tools/izpack"/-->
     </target>
 
     <target name="macosx">
