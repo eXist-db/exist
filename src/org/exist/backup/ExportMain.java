@@ -89,7 +89,6 @@ public class ExportMain {
             .build();
     private static final Argument<File> outputDirArg = fileArgument("-d", "--dir")
             .description("the directory to which all output will be written.")
-            .required()
             .defaultValue(Paths.get("export").toAbsolutePath().toFile())
             .build();
 
