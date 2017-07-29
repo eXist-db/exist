@@ -20,85 +20,6 @@
  */
 package org.exist.client;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.HeadlessException;
-import java.awt.Insets;
-import java.awt.Toolkit;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowFocusListener;
-import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.prefs.Preferences;
-import java.util.stream.Collectors;
-import javax.swing.BorderFactory;
-import javax.swing.DropMode;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextPane;
-import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
-import javax.swing.ProgressMonitor;
-import javax.swing.SwingUtilities;
-import javax.swing.border.BevelBorder;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableRowSorter;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.xml.transform.OutputKeys;
-
 import org.exist.SystemProperties;
 import org.exist.backup.Backup;
 import org.exist.backup.CreateBackupDialog;
@@ -106,10 +27,7 @@ import org.exist.backup.Restore;
 import org.exist.backup.restore.listener.GuiRestoreListener;
 import org.exist.client.security.EditPropertiesDialog;
 import org.exist.client.security.UserManagerDialog;
-import org.exist.security.ACLPermission;
-import org.exist.security.Account;
-import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
+import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.PermissionAider;
 import org.exist.security.internal.aider.PermissionAiderFactory;
@@ -127,6 +45,39 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+
+import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableRowSorter;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.xml.transform.OutputKeys;
+import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.*;
+import java.awt.event.*;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -1079,10 +1030,16 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             // DWES add check here?
             final Path target = Paths.get(backuptarget).normalize();
             if (Files.exists(target)) {
-                if (JOptionPane.showConfirmDialog(this,
+                final int response = JOptionPane.showConfirmDialog(this,
                         String.format("%s %s %s", Messages.getString("CreateBackupDialog.6a"), backuptarget, Messages.getString("CreateBackupDialog.6b")),
-                        Messages.getString("CreateBackupDialog.6c"),  JOptionPane.YES_NO_OPTION)
-                        == JOptionPane.YES_OPTION) {
+                        Messages.getString("CreateBackupDialog.6c"), JOptionPane.YES_NO_OPTION);
+
+                if (response == JOptionPane.CLOSED_OPTION) {
+                    // User clicked close window
+                    return;
+
+                } else if (response == JOptionPane.YES_OPTION) {
+                    // User wants directory to be removed
                     deleteDirectory(target);
                 }
 
