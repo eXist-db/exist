@@ -1080,12 +1080,9 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             final Path target = Paths.get(backuptarget).normalize();
             if (Files.exists(target)) {
                 if (JOptionPane.showConfirmDialog(this,
-                        Messages.getString("CreateBackupDialog.6a") + " "
-                                + backuptarget + " "
-                                + Messages.getString("CreateBackupDialog.6b"),
-                        Messages.getString("CreateBackupDialog.6c"),
-                        JOptionPane.YES_NO_OPTION)
-                        == JOptionPane.NO_OPTION) {
+                        String.format("%s %s %s", Messages.getString("CreateBackupDialog.6a"), backuptarget, Messages.getString("CreateBackupDialog.6b")),
+                        Messages.getString("CreateBackupDialog.6c"),  JOptionPane.YES_NO_OPTION)
+                        == JOptionPane.YES_OPTION) {
                     deleteDirectory(target);
                 }
 
