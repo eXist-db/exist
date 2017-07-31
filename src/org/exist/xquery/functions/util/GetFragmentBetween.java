@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
@@ -449,19 +450,21 @@ public class GetFragmentBetween extends Function {
    * @param n The node to get the name for
    * @return The full name of the node
    */
-  private String getFullNodeName(Node n) {
+  private String getFullNodeName(final Node n) {
     final String prefix = n.getPrefix();
     final String localName = n.getLocalName();
-    if (prefix == null || "".equals(prefix)) {
-      if (localName == null || "".equals(localName))
-        {return "";}
-      else
-        {return localName;}
+    if (prefix == null || XMLConstants.DEFAULT_NS_PREFIX.equals(prefix)) {
+      if (localName == null || localName.isEmpty()) {
+        return "";
+      } else {
+        return localName;
+      }
     } else {
-      if (localName == null || "".equals(localName))
-        {return "";}
-      else
-        {return prefix + ":" + localName;}
+      if (localName == null || localName.isEmpty()) {
+        return "";
+      } else {
+        return prefix + ":" + localName;
+      }
     }
   }
 }

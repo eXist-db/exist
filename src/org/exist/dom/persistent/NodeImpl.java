@@ -256,9 +256,15 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public String getPrefix() {
-        final QName nodeName = getQName();
-        final String prefix = nodeName.getPrefix();
-        return prefix == null ? XMLConstants.DEFAULT_NS_PREFIX : prefix;
+        switch(getNodeType()) {
+            case Node.ELEMENT_NODE:
+            case Node.ATTRIBUTE_NODE:
+                final String prefix = getQName().getPrefix();
+                return prefix;
+
+            default:
+                return null;
+        }
     }
 
     @Override
@@ -271,7 +277,12 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public String getNamespaceURI() {
-        return getQName().getNamespaceURI();
+        final String nsUri = getQName().getNamespaceURI();
+        if(nsUri.equals(XMLConstants.NULL_NS_URI)) {
+            return null;
+        } else {
+            return nsUri;
+        }
     }
 
     @Override

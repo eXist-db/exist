@@ -200,7 +200,8 @@ public class RedirectorServlet extends HttpServlet {
                     return;
                 }
                 Element elem = (Element) node;
-                if (!(Namespaces.EXIST_NS.equals(elem.getNamespaceURI()) && "dispatch".equals(elem.getLocalName())))
+                final String ns = elem.getNamespaceURI();
+                if (ns == null || ((!Namespaces.EXIST_NS.equals(ns)) && "dispatch".equals(elem.getLocalName())))
                 {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST,
                             "Redirect XQuery should return an element <exist:dispatch>. Received: " + resource.getContent());
@@ -223,7 +224,8 @@ public class RedirectorServlet extends HttpServlet {
                 if (elem.hasChildNodes()) {
                     node = elem.getFirstChild();
                     while (node != null) {
-                        if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(node.getNamespaceURI())) {
+                        final String nsUri = node.getNamespaceURI();
+                        if (node.getNodeType() == Node.ELEMENT_NODE && nsUri != null && Namespaces.EXIST_NS.equals(nsUri)) {
                             elem = (Element) node;
                             if ("add-parameter".equals(elem.getLocalName())) {
                                 if (modifiedRequest == null)

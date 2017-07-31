@@ -171,7 +171,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     @Override
     public String getNamespaceURI() {
-        return XMLConstants.NULL_NS_URI;
+        return null;
     }
 
     /************************************************

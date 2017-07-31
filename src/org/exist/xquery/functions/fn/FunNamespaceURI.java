@@ -40,6 +40,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
+import javax.xml.XMLConstants;
+
 /**
  * xpath-library function: namespace-uri()
  *
@@ -117,7 +119,11 @@ public class FunNamespaceURI extends Function {
                         Type.getTypeName(item.getType()));}
             //TODO : how to improve performance ?
             final Node n = ((NodeValue)item).getNode();
-            result = new AnyURIValue(n.getNamespaceURI());
+            String ns = n.getNamespaceURI();
+            if(ns == null) {
+            	ns = XMLConstants.NULL_NS_URI;
+			}
+            result = new AnyURIValue(ns);
         }
         
         if (context.getProfiler().isEnabled()) 

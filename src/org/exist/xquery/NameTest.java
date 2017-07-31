@@ -8,6 +8,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamReader;
 
 public class NameTest extends TypeTest {
@@ -67,13 +68,17 @@ public class NameTest extends TypeTest {
 		return true;
 	}
 	
-    public boolean matchesName(Node other) {
+    public boolean matchesName(final Node other) {
         if (other.getNodeType() == NodeImpl.REFERENCE_NODE) {
             return matchesName(((ReferenceNode)other).getReference().getNode());
         }
 
         if(!(nodeName instanceof QName.WildcardNamespaceURIQName)) {
-            if (!nodeName.getNamespaceURI().equals(other.getNamespaceURI())) {
+            String otherNs = other.getNamespaceURI();
+            if(otherNs == null) {
+                otherNs = XMLConstants.NULL_NS_URI;
+            }
+            if (!nodeName.getNamespaceURI().equals(otherNs)) {
                 return false;
             }
 		}
@@ -85,7 +90,8 @@ public class NameTest extends TypeTest {
 		return true;
 	}
 
-    public boolean matches(XMLStreamReader reader) {
+	@Override
+    public boolean matches(final XMLStreamReader reader) {
         final int ev = reader.getEventType();
         if (!isOfEventType(ev)) {
             return false;
@@ -94,8 +100,13 @@ public class NameTest extends TypeTest {
         switch (ev) {
             case XMLStreamReader.START_ELEMENT :
                 if(!(nodeName instanceof QName.WildcardNamespaceURIQName)) {
-                    if (!nodeName.getNamespaceURI().equals(reader.getNamespaceURI()))
-                        {return false;}
+                    String readerNs = reader.getNamespaceURI();
+                    if(readerNs == null) {
+                        readerNs = XMLConstants.NULL_NS_URI;
+                    }
+                    if (!nodeName.getNamespaceURI().equals(readerNs)) {
+                        return false;
+                    }
                 }
 
                 if(!(nodeName instanceof QName.WildcardLocalPartQName)) {

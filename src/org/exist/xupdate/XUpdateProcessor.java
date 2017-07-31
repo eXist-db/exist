@@ -67,6 +67,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -453,7 +454,9 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 						final Node n = contents.item(i);
 						String ns = n.getNamespaceURI();
 						final String nname = ns == null ? n.getNodeName() : n.getLocalName();
-						if(ns == null) {ns = "";}
+						if(ns == null) {
+							ns = XMLConstants.NULL_NS_URI;
+						}
 						// check for duplicate attributes
 						if(n.getNodeType() == Node.ATTRIBUTE_NODE &&
 								nname.equals(name) &&

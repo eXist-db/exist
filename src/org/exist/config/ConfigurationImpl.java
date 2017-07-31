@@ -92,8 +92,9 @@ public class ConfigurationImpl implements Configuration {
             if (child.getNodeType() == Node.ELEMENT_NODE) {
 
                 final Element el = (Element)child;
-                
-                if (name.equals( el.getLocalName() ) && NS.equals( el.getNamespaceURI() )) {
+
+                final String ns = el.getNamespaceURI();
+                if (name.equals( el.getLocalName() ) && ns != null && NS.equals( ns )) {
                     
                     final Configuration config = new ConfigurationImpl(el);
                     list.add(config);
@@ -118,8 +119,9 @@ public class ConfigurationImpl implements Configuration {
         while (child != null) {
             
             if (child.getNodeType() == Node.ELEMENT_NODE) {
-                
-                if (NS.equals(child.getNamespaceURI())) {
+
+                final String ns = child.getNamespaceURI();
+                if (ns != null && NS.equals(ns)) {
                     
                     String name = child.getLocalName();
                     
@@ -193,8 +195,9 @@ public class ConfigurationImpl implements Configuration {
             if (child.getNodeType() == Node.ELEMENT_NODE) {
 
                 final Element el = (Element) child;
-                
-                if (name.equals( el.getLocalName() ) && NS.equals( el.getNamespaceURI() )) {
+
+                final String ns = el.getNamespaceURI();
+                if (name.equals( el.getLocalName() ) && ns != null && NS.equals( ns )) {
                     
                     if(!el.hasAttributes()){
                         continue;

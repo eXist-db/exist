@@ -130,7 +130,7 @@ public class CollectionConfiguration {
                     "' in configuration document. Got element '" + root.getLocalName() + "'", checkOnly);
             return;
         }
-        if (!NAMESPACE.equals(root.getNamespaceURI())) {
+        if (root.getNamespaceURI() == null || !NAMESPACE.equals(root.getNamespaceURI())) {
             throwOrLog("Expected namespace '" + NAMESPACE +
                     "' for element '" + PARAMETER_ELEMENT +
                     "' in configuration document. Got '" + root.getNamespaceURI() + "'", checkOnly);

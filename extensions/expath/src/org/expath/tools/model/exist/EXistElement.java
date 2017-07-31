@@ -37,6 +37,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
 /**
@@ -143,7 +144,7 @@ public class EXistElement implements Element {
         final NodeList children = element.getNode().getChildNodes();
         for(int i = 0; i < children.getLength(); i++) {
             final Node child = children.item(i);
-            if(child.getNamespaceURI() == null && child.getPrefix() == null || child.getNamespaceURI().equalsIgnoreCase("")) {
+            if(child.getNamespaceURI() == null && child.getPrefix() == null || child.getNamespaceURI().equals(XMLConstants.NULL_NS_URI)) {
                 return true;
             }
         }
@@ -173,7 +174,7 @@ public class EXistElement implements Element {
             final String ns = attr.getNamespaceURI();
 
             if( Arrays.binarySearch(sorted_ns, ns) >= 0 ) {
-                if(attr.getNamespaceURI().equals(HttpConstants.HTTP_CLIENT_NS_URI)) {
+                if(ns != null && ns.equals(HttpConstants.HTTP_CLIENT_NS_URI)) {
                     throw new ToolsException("@" + attr_name + " in namespace " + ns + " not allowed on " + getDisplayName());
                 }
             } else if ( ! "".equals(ns) ) {
@@ -275,7 +276,8 @@ public class EXistElement implements Element {
                     final Node child = children.item(i);
                     if(child.getNodeType() == Node.ELEMENT_NODE) {
                         if(inNamespaceURI != null) {
-                            if(inNamespaceURI.equals(child.getNamespaceURI())){
+                            final String ns = child.getNamespaceURI();
+                            if(ns != null && inNamespaceURI.equals(ns)){
                                 elements.add((org.w3c.dom.Element)child);
                             }
                         } else {

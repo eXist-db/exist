@@ -67,7 +67,8 @@ public abstract class URLRewrite {
         if (config != null && config.hasChildNodes()) {
             Node node = config.getFirstChild();
             while (node != null) {
-                if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(node.getNamespaceURI())) {
+                final String ns = node.getNamespaceURI();
+                if (node.getNodeType() == Node.ELEMENT_NODE && ns != null && Namespaces.EXIST_NS.equals(ns)) {
                     final Element elem = (Element) node;
                     if ("add-parameter".equals(elem.getLocalName())) {
                         addParameter(elem.getAttribute("name"), elem.getAttribute("value"));

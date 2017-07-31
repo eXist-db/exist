@@ -319,13 +319,16 @@ public class FunDeepEqual extends CollatingFunction {
         if (getAttrCount(nnma) != getAttrCount(nnmb)) {return false;}
         for (int i = 0; i < nnma.getLength(); i++) {
             final Node ta = nnma.item(i);
-            if (Namespaces.XMLNS_NS.equals(ta.getNamespaceURI()))
-                {continue;}
+            final String nsA = ta.getNamespaceURI();
+            if (nsA != null && Namespaces.XMLNS_NS.equals(nsA)) {
+                continue;
+            }
             final Node tb = ta.getLocalName() == null ?
                 nnmb.getNamedItem(ta.getNodeName()) :
                 nnmb.getNamedItemNS(ta.getNamespaceURI(), ta.getLocalName());
-            if (tb == null || !safeEquals(ta.getNodeValue(), tb.getNodeValue()))
-                {return false;}
+            if (tb == null || !safeEquals(ta.getNodeValue(), tb.getNodeValue())) {
+                return false;
+            }
         }
         return true;
     }
@@ -338,8 +341,10 @@ public class FunDeepEqual extends CollatingFunction {
         int count = 0;
         for (int i=0; i<nnm.getLength(); i++) {
             final Node n = nnm.item(i);
-            if (!Namespaces.XMLNS_NS.equals(n.getNamespaceURI()))
-                {++count;}
+            final String ns = n.getNamespaceURI();
+            if (ns == null || !Namespaces.XMLNS_NS.equals(ns)) {
+                ++count;
+            }
         }
         return count;
     }

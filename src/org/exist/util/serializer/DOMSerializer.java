@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
@@ -92,10 +93,12 @@ public class DOMSerializer extends AbstractSerializer {
             receiver.startElement(node.getNamespaceURI(), node.getLocalName(), node.getNodeName());
             String uri = node.getNamespaceURI();
             String prefix = node.getPrefix();
-            if (uri == null)
-                {uri = "";}
-            if (prefix == null)
-                {prefix = "";}
+            if (uri == null) {
+                uri = XMLConstants.NULL_NS_URI;
+            }
+            if (prefix == null) {
+                prefix = XMLConstants.DEFAULT_NS_PREFIX;
+            }
             if (nsSupport.getURI(prefix) == null) {
                 namespaceDecls.put(prefix, uri);
                 nsSupport.declarePrefix(prefix, uri);
@@ -107,11 +110,11 @@ public class DOMSerializer extends AbstractSerializer {
             for (int i = 0; i < attrs.getLength(); i++) {
                 nextAttr = (Attr) attrs.item(i);
                 attrName = nextAttr.getName();
-                if ("xmlns".equals(attrName)) {
-                    final String oldURI = nsSupport.getURI("");
+                if (XMLConstants.XMLNS_ATTRIBUTE.equals(attrName)) {
+                    final String oldURI = nsSupport.getURI(XMLConstants.DEFAULT_NS_PREFIX);
                     uri = nextAttr.getValue();
                     if (oldURI == null || (!oldURI.equals(uri))) {
-                        namespaceDecls.put("", uri);
+                        namespaceDecls.put(XMLConstants.DEFAULT_NS_PREFIX, uri);
                         nsSupport.declarePrefix("", uri);
                     }
                 } else if (attrName.startsWith("xmlns:")) {
@@ -142,7 +145,7 @@ public class DOMSerializer extends AbstractSerializer {
             for (int i = 0; i < attrs.getLength(); i++) {
                 nextAttr = (Attr) attrs.item(i);
                 name = nextAttr.getName();
-                if(name.startsWith("xmlns"))
+                if(name.startsWith(XMLConstants.XMLNS_ATTRIBUTE))
                     {continue;}
                 receiver.attribute(nextAttr.getName(), nextAttr.getValue());
             }

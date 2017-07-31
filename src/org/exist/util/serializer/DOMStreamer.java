@@ -151,10 +151,12 @@ public class DOMStreamer {
             nsSupport.pushContext();
             String uri = node.getNamespaceURI();
             String prefix = node.getPrefix();
-            if (uri == null)
-                {uri = XMLConstants.XML_NS_URI;}
-            if (prefix == null)
-                {prefix = XMLConstants.DEFAULT_NS_PREFIX;}
+            if (uri == null) {
+                uri = XMLConstants.XML_NS_URI;
+            }
+            if (prefix == null) {
+                prefix = XMLConstants.DEFAULT_NS_PREFIX;
+            }
             if (nsSupport.getURI(prefix) == null) {
                 namespaceDecls.put(prefix, uri);
                 nsSupport.declarePrefix(prefix, uri);
@@ -181,6 +183,9 @@ public class DOMStreamer {
                     }
                 } else if (attrName.indexOf(':') > 0) {
                     prefix = nextAttr.getPrefix();
+                    if(prefix == null) {
+                        prefix = XMLConstants.DEFAULT_NS_PREFIX;
+                    }
                     uri = nextAttr.getNamespaceURI();
                     if (nsSupport.getURI(prefix) == null) {
                         namespaceDecls.put(prefix, uri);

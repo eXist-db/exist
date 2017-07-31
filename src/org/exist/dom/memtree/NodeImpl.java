@@ -196,7 +196,12 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
         switch(getNodeType()) {
             case Node.ELEMENT_NODE:
             case Node.ATTRIBUTE_NODE:
-                return getQName().getNamespaceURI();
+                final String nsUri = getQName().getNamespaceURI();
+                if(nsUri.equals(XMLConstants.NULL_NS_URI)) {
+                    return null;
+                } else {
+                    return nsUri;
+                }
 
             case NodeImpl.NAMESPACE_NODE:
                 return XMLConstants.XMLNS_ATTRIBUTE_NS_URI;
@@ -212,7 +217,8 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
             case Node.ELEMENT_NODE:
             case Node.ATTRIBUTE_NODE:
             case NodeImpl.NAMESPACE_NODE:
-                return getQName().getPrefix();
+                final String prefix = getQName().getPrefix();
+                return prefix == null ? null : prefix;
 
             default:
                 return null;

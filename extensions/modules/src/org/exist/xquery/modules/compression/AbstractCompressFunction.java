@@ -279,8 +279,10 @@ public abstract class AbstractCompressFunction extends BasicFunction
 	private void compressElement(OutputStream os, Element element, boolean useHierarchy, String stripOffset) throws XPathException
         {
 
-            if(!(element.getNodeName().equals("entry") || element.getNamespaceURI().length() > 0))
+            final String ns = element.getNamespaceURI();
+            if(!(element.getNodeName().equals("entry") || (ns != null && ns.length() > 0))) {
                 throw new XPathException(this, "Item must be type of xs:anyURI or element entry.");
+            }
 
             if(element.getChildNodes().getLength() > 1)
                 throw new XPathException(this, "Entry content is not valid XML fragment.");

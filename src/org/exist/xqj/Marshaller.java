@@ -204,8 +204,10 @@ public class Marshaller {
     }
 
     public static Sequence demarshall(NodeImpl node) throws XMLStreamException, XPathException {
-        if (!NAMESPACE.equals(node.getNamespaceURI()))
-            {throw new XMLStreamException("Root element is not in the correct namespace. Expected: " + NAMESPACE);}
+        final String ns = node.getNamespaceURI();
+        if (ns == null || !NAMESPACE.equals(ns)) {
+            throw new XMLStreamException("Root element is not in the correct namespace. Expected: " + NAMESPACE);
+        }
         if (!SEQ_ELEMENT.equals(node.getLocalName()))
             {throw new XMLStreamException("Root element should be a " + SEQ_ELEMENT_QNAME);}
         final ValueSequence result = new ValueSequence();
