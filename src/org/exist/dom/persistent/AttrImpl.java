@@ -343,6 +343,11 @@ public class AttrImpl extends NamedNode implements Attr {
     }
 
     @Override
+    public Node getNextSibling() {
+        return null;
+    }
+
+    @Override
     public TypeInfo getSchemaTypeInfo() {
         return null;
     }

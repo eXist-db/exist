@@ -85,6 +85,11 @@ public class AttrImpl extends NodeImpl implements Attr {
     }
 
     @Override
+    public Node getNextSibling() {
+        return null;
+    }
+
+    @Override
     public boolean getSpecified() {
         return true;
     }
