@@ -4,6 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.util.PatternFactory;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
@@ -103,9 +104,9 @@ public class FunAnalyzeString extends BasicFunction {
         final Pattern ptn;
         if (flags != null) {
             final int iFlags = parseStringFlags(flags);
-            ptn = Pattern.compile(pattern, iFlags);
+            ptn = PatternFactory.getInstance().getPattern(pattern, iFlags);
         } else {
-            ptn = Pattern.compile(pattern);
+            ptn = PatternFactory.getInstance().getPattern(pattern);
         }
         
         final Matcher matcher = ptn.matcher(input);

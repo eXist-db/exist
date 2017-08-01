@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.exist.dom.QName;
+import org.exist.util.PatternFactory;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.ErrorCodes;
@@ -113,7 +114,7 @@ public class FunTokenize extends FunMatches {
         						.getStringValue());}
         		try {
         			if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
-        				pat = Pattern.compile(pattern, flags);
+						pat = PatternFactory.getInstance().getPattern(pattern, flags);
                     }
                     final String[] tokens = pat.split(string, -1);
                     result = new ValueSequence();

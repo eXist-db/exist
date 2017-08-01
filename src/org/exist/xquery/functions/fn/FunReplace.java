@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.exist.dom.QName;
+import org.exist.util.PatternFactory;
 import org.exist.xquery.Atomize;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -203,7 +204,7 @@ public class FunReplace extends FunMatches {
     			{flags =	parseFlags(getArgument(3).eval(contextSequence, contextItem).getStringValue());}
     		try {
     			if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
-    				pat = Pattern.compile(pattern, flags);
+    				pat = PatternFactory.getInstance().getPattern(pattern, flags);
                     matcher = pat.matcher(string);
                 } else {
                     matcher.reset(string);
