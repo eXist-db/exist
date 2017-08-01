@@ -312,6 +312,16 @@ public class AttrImpl extends NamedNode implements Attr {
     }
 
     @Override
+    public Node getParentNode() {
+        return null;
+    }
+
+    @Override
+    public StoredNode getParentStoredNode() {
+        return (StoredNode)getOwnerDocument().getNode(nodeId.getParentId());
+    }
+
+    @Override
     public boolean getSpecified() {
         return true;
     }

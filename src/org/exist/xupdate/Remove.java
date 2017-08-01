@@ -34,6 +34,7 @@ import org.exist.storage.UpdateListener;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 
 import java.util.Map;
@@ -77,13 +78,20 @@ public class Remove extends Modification {
 						Permission.WRITE)) {
             				throw new PermissionDeniedException("User '" + broker.getCurrentSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                                 }
-				parent = (NodeImpl) node.getParentNode();
+
+				if(node.getNodeType() == Node.ATTRIBUTE_NODE) {
+					parent = (NodeImpl) ((Attr)node).getOwnerElement();
+				} else {
+					parent = (NodeImpl) node.getParentNode();
+				}
+
                 if (parent == null || parent.getNodeType() != Node.ELEMENT_NODE) {
 					throw new EXistException(
 							"you cannot remove the document element. Use update "
 									+ "instead");
-				} else
-					{parent.removeChild(transaction, node);}
+				} else {
+					parent.removeChild(transaction, node);
+				}
 				doc.getMetadata().setLastModified(System.currentTimeMillis());
 				modifiedDocuments.add(doc);
 				broker.storeXMLResource(transaction, doc);

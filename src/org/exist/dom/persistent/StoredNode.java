@@ -32,6 +32,7 @@ import org.exist.storage.Signatures;
 import org.exist.storage.dom.INodeIterator;
 import org.exist.util.pool.NodePool;
 import org.exist.xquery.Constants;
+import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
@@ -381,7 +382,14 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
         if(getNodeType() == Node.ELEMENT_NODE) {
             path.addComponent(getQName());
         }
-        NodeImpl parent = (NodeImpl) getParentNode();
+
+        NodeImpl parent;
+        if(getNodeType() == Node.ATTRIBUTE_NODE) {
+            parent = (NodeImpl) ((Attr)this).getOwnerElement();
+        } else {
+            parent = (NodeImpl) getParentNode();
+        }
+
         while(parent != null && parent.getNodeType() != Node.DOCUMENT_NODE) {
             path.addComponentAtStart(parent.getQName());
             parent = (NodeImpl) parent.getParentNode();

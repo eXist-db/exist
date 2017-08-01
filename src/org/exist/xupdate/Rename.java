@@ -82,17 +82,18 @@ public class Rename extends Modification {
                 if (!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE)) {
                         throw new PermissionDeniedException("User '" + broker.getCurrentSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                 }
-                parent = (NodeImpl) node.getParentNode();
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
                         final ElementImpl newElem = new ElementImpl((ElementImpl) node);
                         newElem.setNodeName(new QName(newName, "", null));
+                        parent = (NodeImpl) node.getParentNode();
                         parent.updateChild(transaction, node, newElem);
                         modificationCount++;
                         break;
                     case Node.ATTRIBUTE_NODE:
                         final AttrImpl newAttr = new AttrImpl((AttrImpl) node);
                         newAttr.setNodeName(new QName(newName, "", null));
+                        parent = (NodeImpl) ((AttrImpl) node).getOwnerElement();
                         parent.updateChild(transaction, node, newAttr);
                         modificationCount++;
                         break;

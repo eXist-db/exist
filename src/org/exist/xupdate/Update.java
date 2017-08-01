@@ -40,6 +40,7 @@ import org.exist.storage.UpdateListener;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -104,7 +105,7 @@ public class Update extends Modification {
                         parent.updateChild(transaction, node, text);
                         break;
                     case Node.ATTRIBUTE_NODE:
-                        parent = (ElementImpl) node.getParentNode();
+                        parent = (ElementImpl) ((Attr)node).getOwnerElement();
                         if (parent == null) {
                             LOG.warn("parent node not found for "
                                     + node.getNodeId());

@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * Tests basic DOM methods like getChildNodes(), getAttribute() ...
@@ -75,12 +76,12 @@ public class NodeTest {
             NodeList cl = rootNode.getChildNodes();
             assertEquals(((IStoredNode<?>)rootNode).getChildCount(), cl.getLength());
             assertEquals(4, cl.getLength());
-        	assertEquals(cl.item(0).getNodeName(), "a");
-        	assertEquals(cl.item(1).getNodeName(), "b");
+        	assertEquals("a", cl.item(0).getNodeName());
+        	assertEquals("b", cl.item(1).getNodeName());
         	
         	//Testing getFirstChild()
         	StoredNode node = (StoredNode) cl.item(1).getFirstChild();
-            assertEquals(node.getNodeValue(), "def");
+            assertEquals("def", node.getNodeValue());
             
             //Testing getChildNodes()
             node = (StoredNode) cl.item(0);
@@ -88,16 +89,18 @@ public class NodeTest {
             assertEquals(2, node.getAttributes().getLength());
         	cl = node.getChildNodes();
         	assertEquals(3, cl.getLength());
-        	assertEquals(cl.item(2).getNodeValue(), "abc");
+        	assertEquals("abc", cl.item(2).getNodeValue());
         	
         	//Testing getParentNode()
         	Node parent = cl.item(0).getParentNode();
-        	assertNotNull(parent);
-        	assertEquals(parent.getNodeName(), "a");
-        	
+        	assertNull(parent);
+        	parent = node.getParentNode();
+        	assertEquals("test", parent.getNodeName());
         	parent = parent.getParentNode();
         	assertNotNull(parent);
-        	assertEquals(parent.getNodeName(), "test");
+            parent = parent.getParentNode();
+            assertNull(parent);
+
         } finally {
         	if (doc != null) {
                 doc.getUpdateLock().release(LockMode.READ_LOCK);
@@ -165,8 +168,7 @@ public class NodeTest {
             assertEquals(parent.getNodeName(), "a");
             
             parent = attr.getParentNode();
-            assertNotNull(parent);
-            assertEquals(parent.getNodeName(), "a");
+            assertNull(parent);
             
             attr = first.getAttributeNodeNS("http://foo.org", "a");
             assertNotNull(attr);

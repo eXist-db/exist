@@ -141,16 +141,17 @@ public class Rename extends Modification {
                     }
 
                     //update the document
-                    parent = (NodeImpl) node.getParentNode();
                     switch (node.getNodeType()) {
                         case Node.ELEMENT_NODE:
                             final ElementImpl newElem = new ElementImpl((ElementImpl) node);
                             newElem.setNodeName(newQName, context.getBroker().getBrokerPool().getSymbols());
+                            parent = (NodeImpl) node.getParentNode();
                             parent.updateChild(transaction, node, newElem);
                             break;
                         case Node.ATTRIBUTE_NODE:
                             final AttrImpl newAttr = new AttrImpl((AttrImpl) node);
                             newAttr.setNodeName(newQName, context.getBroker().getBrokerPool().getSymbols());
+                            parent = (NodeImpl) ((AttrImpl) node).getOwnerElement();
                             parent.updateChild(transaction, node, newAttr);
                             break;
                         default:

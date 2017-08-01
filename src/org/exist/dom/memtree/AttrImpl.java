@@ -127,6 +127,11 @@ public class AttrImpl extends NodeImpl implements Attr {
     }
 
     @Override
+    public Node getParentNode() {
+        return null;
+    }
+
+    @Override
     public void selectDescendantAttributes(final NodeTest test, final Sequence result) throws XPathException {
         if(test.matches(this)) {
             result.add(this);
@@ -134,17 +139,8 @@ public class AttrImpl extends NodeImpl implements Attr {
     }
 
     @Override
-    public Node getParentNode() {
-        final int parent = document.attrParent[nodeNumber];
-        if(parent > 0) {
-            return document.getNode(parent);
-        }
-        return null;
-    }
-
-    @Override
     public Node selectParentNode() {
-        return getParentNode();
+        return getOwnerElement();
     }
 
     @Override
