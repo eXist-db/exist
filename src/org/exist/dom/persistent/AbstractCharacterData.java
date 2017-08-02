@@ -88,8 +88,20 @@ public abstract class AbstractCharacterData extends StoredNode implements Charac
 
     @Override
     public void deleteData(final int offset, final int count) throws DOMException {
+        if(offset < 0) {
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+        }
+
         if(cdata != null) {
-            cdata.delete(offset, count);
+            if(offset > cdata.length()) {
+                throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+            }
+
+            if(offset + count > cdata.length()) {
+                cdata.delete(offset, cdata.length() - offset);
+            } else {
+                cdata.delete(offset, count);
+            }
         }
     }
 
