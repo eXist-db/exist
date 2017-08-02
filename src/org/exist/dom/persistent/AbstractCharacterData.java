@@ -167,9 +167,18 @@ public abstract class AbstractCharacterData extends StoredNode implements Charac
 
     @Override
     public String substringData(final int offset, final int count) throws DOMException {
+        if(offset < 0) {
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+        }
+
         if(cdata == null) {
             throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, "string index out of bounds");
         }
+
+        if(offset > cdata.length()) {
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+        }
+
         return cdata.substring(offset, count);
     }
 

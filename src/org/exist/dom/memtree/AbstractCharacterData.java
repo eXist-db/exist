@@ -48,7 +48,21 @@ public abstract class AbstractCharacterData extends NodeImpl implements Characte
 
     @Override
     public String substringData(final int offset, final int count) throws DOMException {
-        return null;
+        if(offset < 0) {
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+        }
+
+        final int length = document.alphaLen[nodeNumber];
+        final int inDocOffset = document.alpha[nodeNumber];
+        if(offset > length) {
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+        }
+
+        if(offset + count > length) {
+            return new String(document.characters, inDocOffset + offset, length - offset);
+        } else {
+            return new String(document.characters, inDocOffset + offset, length);
+        }
     }
 
     @Override
