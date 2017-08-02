@@ -67,6 +67,10 @@ public abstract class AbstractCharacterData extends NodeImpl implements Characte
 
     @Override
     public void replaceData(final int offset, final int count, final String arg) throws DOMException {
+        if(offset < 0) {
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+        }
+        throw new UnsupportedOperationException("Operation is unsupported on node type: " + this.getNodeType());
     }
 
     @Override
