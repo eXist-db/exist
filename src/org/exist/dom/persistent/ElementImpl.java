@@ -990,28 +990,55 @@ public class ElementImpl extends NamedNode implements Element {
         return "";
     }
 
-    /**
-     * @see org.w3c.dom.Element#removeAttribute(java.lang.String)
-     */
     @Override
     public void removeAttribute(final String name) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "removeAttribute(String name) not implemented on class " + getClass().getName());
+        final Attr attr = getAttributeNode(name);
+        if(attr == null) {
+            return;
+        }
+
+        removeAttributeNode(attr);
     }
 
-    /**
-     * @see org.w3c.dom.Element#removeAttributeNS(java.lang.String, java.lang.String)
-     */
     @Override
     public void removeAttributeNS(final String namespaceURI, final String name) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "removeAttributeNS(String namespaceURI, String name) not implemented on class " + getClass().getName());
+        final Attr attr = getAttributeNodeNS(namespaceURI, name);
+        if(attr == null) {
+            return;
+        }
     }
 
     @Override
     public Attr removeAttributeNode(final Attr oldAttr) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "removeAttributeNode(Attr oldAttr) not implemented on class " + getClass().getName());
+        try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker();
+            final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
+            try {
+                if (!(oldAttr instanceof IStoredNode)) {
+                    throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Wrong node type");
+                }
+                final IStoredNode<?> old = (IStoredNode<?>) oldAttr;
+                if (!old.getNodeId().isChildOf(nodeId)) {
+                    throw new DOMException(DOMException.NOT_FOUND_ERR, "node " +
+                            old.getNodeId().getParentId() +
+                            " is not a child of element " + nodeId);
+                }
+                final NodePath oldPath = old.getPath();
+                // remove old custom indexes
+                final IndexController indexes = broker.getIndexController();
+                indexes.reindex(transaction, old,
+                        ReindexMode.REMOVE_SOME_NODES);
+                broker.removeNode(transaction, old, oldPath, null);
+                children--;
+                attributes--;
+            } finally {
+                broker.endRemove(transaction);
+            }
+        } catch (final EXistException e) {
+            LOG.error(e);
+            throw new DOMException(DOMException.INVALID_ACCESS_ERR, e.getMessage());
+        }
+
+        return oldAttr;
     }
 
     @Override
