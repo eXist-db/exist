@@ -122,6 +122,16 @@ public class AttrImpl extends NodeImpl implements Attr {
     }
 
     @Override
+    public String getTextContent() throws DOMException {
+        return getNodeValue();
+    }
+
+    @Override
+    public void setTextContent(final String textContent) throws DOMException {
+        setNodeValue(textContent);
+    }
+
+    @Override
     public Element getOwnerElement() {
         return (Element) document.getNode(document.attrParent[nodeNumber]);
     }

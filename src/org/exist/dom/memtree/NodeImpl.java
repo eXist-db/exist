@@ -266,7 +266,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public String getNodeValue() throws DOMException {
-        throw unsupported();
+        return null;
     }
 
     @Override

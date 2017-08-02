@@ -65,7 +65,7 @@ public class ConfigurationImpl implements Configuration {
 
     @Override
     public String getValue() {
-        return element.getNodeValue();
+        return element.getTextContent();
     }
 
     @Override
@@ -131,7 +131,7 @@ public class ConfigurationImpl implements Configuration {
                             props.remove(name);
                         }
                     } else {
-                        props.put(name, child.getNodeValue());
+                        props.put(name, child.getTextContent());
                         names.add(name);
                     }
                 }
@@ -167,7 +167,7 @@ public class ConfigurationImpl implements Configuration {
 //            {return getAttribute(name);}
 //        final NodeList nodes = getElementsByTagNameNS(NS, name);
 //        if (nodes.getLength() == 1) {
-//            return nodes.item(0).getNodeValue();
+//            return nodes.item(0).getTextContent();
 //        }
 //        return null;
     }
@@ -215,7 +215,7 @@ public class ConfigurationImpl implements Configuration {
                         continue;
                     
                     final String key = attr.getNodeValue();
-                    final String value = el.getNodeValue();
+                    final String value = el.getTextContent();
 
                     if (key != null && !key.isEmpty() && value != null && !value.isEmpty()) {
                         map.put(key, value);
@@ -242,7 +242,7 @@ public class ConfigurationImpl implements Configuration {
 //                return null;
 //            }
 //            final String key = attrs.getNamedItem("key").getNodeValue();
-//            final String value = item.getNodeValue();
+//            final String value = item.getTextContent();
 //            if(value == null || value.isEmpty()){
 //                return null;
 //            }

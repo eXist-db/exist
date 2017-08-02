@@ -555,7 +555,7 @@ public class ElementImpl extends NodeImpl implements Element {
     }
 
     @Override
-    public String getNodeValue() throws DOMException {
+    public String getTextContent() throws DOMException {
         final StringBuilder result = new StringBuilder();
         for(int i = 0; i < this.getChildCount(); i++) {
             final Node child = getChildNodes().item(i);

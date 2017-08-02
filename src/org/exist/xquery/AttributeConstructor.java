@@ -38,7 +38,7 @@ import java.util.List;
 public class AttributeConstructor extends NodeConstructor {
 
 	final String qname;
-	public final List<Object> contents = new ArrayList<Object>(5);
+	public final List<Object> contents = new ArrayList<>(5);
 	boolean isNamespaceDecl = false;
 	
 	public AttributeConstructor(XQueryContext context, String name) {

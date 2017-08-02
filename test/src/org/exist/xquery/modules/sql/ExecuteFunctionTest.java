@@ -90,7 +90,7 @@ public class ExecuteFunctionTest {
 
         Node col = row.getFirstChild();
         assertEquals("sql:field", col.getNodeName());
-        assertEquals(testValue, col.getNodeValue());
+        assertEquals(testValue, col.getTextContent());
 
     }
 
@@ -148,14 +148,14 @@ public class ExecuteFunctionTest {
 
         Node msg = state.getNextSibling();
         assertEquals("sql:message", msg.getNodeName());
-        assertEquals(testMessage, msg.getNodeValue());
+        assertEquals(testMessage, msg.getTextContent());
 
         Node stacktrace = msg.getNextSibling();
         assertEquals("sql:stack-trace", stacktrace.getNodeName());
 
         Node sql = stacktrace.getNextSibling();
         assertEquals("sql:sql", sql.getNodeName());
-        assertEquals(query, sql.getNodeValue());
+        assertEquals(query, sql.getTextContent());
 
         Node xquery = sql.getNextSibling();
         assertEquals("sql:xquery", xquery.getNodeName());

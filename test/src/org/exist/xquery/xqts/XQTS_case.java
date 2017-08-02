@@ -198,7 +198,7 @@ public class XQTS_case extends TestCase {
                         else if (name.equals("module"))
                             modules.add(child);
                         else if (name.equals("expected-error"))
-                            expectedError = ((ElementImpl) child).getNodeValue();
+                            expectedError = child.getTextContent();
                         break;
                     default :
                         ;
@@ -218,7 +218,7 @@ public class XQTS_case extends TestCase {
                 Map<String, String> moduleMap = (Map<String, String>)broker.getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
                 for (int i = 0; i < modules.getLength(); i++) {
                     ElementImpl module = (ElementImpl)modules.item(i);
-                    String id = module.getNodeValue();
+                    String id = module.getTextContent();
                     moduleMap.put(module.getAttribute("namespace"), moduleSources.get(id));
                 }
                 broker.getConfiguration().setProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP, moduleMap);
@@ -226,7 +226,7 @@ public class XQTS_case extends TestCase {
                 //declare variable
                 for (int i = 0; i < inputFiles.getLength(); i++) {
                     ElementImpl inputFile = (ElementImpl)inputFiles.item(i);
-                    String id = inputFile.getNodeValue();
+                    String id = inputFile.getTextContent();
 
                     //use DocUtils
                     //context.declareVariable( 
@@ -241,7 +241,7 @@ public class XQTS_case extends TestCase {
                 Sequence contextSequence = null;
                 //set context item
                 if (contextItem != null) {
-                    String id = contextItem.getNodeValue();
+                    String id = contextItem.getTextContent();
                     contextSequence = loadVarFromURI(context, sources.get(id));
                 }
 
@@ -322,7 +322,7 @@ public class XQTS_case extends TestCase {
                                 continue;
                             }
                             
-                            final Path expectedResult = Paths.get(XQTS_folder + "ExpectedTestResults/" + folder, outputFile.getNodeValue());
+                            final Path expectedResult = Paths.get(XQTS_folder + "ExpectedTestResults/" + folder, outputFile.getTextContent());
                             if (!Files.isReadable(expectedResult)) {
                                 Assert.fail("can't read expected result");
                             }
@@ -351,7 +351,7 @@ public class XQTS_case extends TestCase {
                     StringBuilder data = new StringBuilder();
                     for (int i = 0; i < inputFiles.getLength(); i++) {
                         ElementImpl inputFile = (ElementImpl)inputFiles.item(i);
-                        String id = inputFile.getNodeValue();
+                        String id = inputFile.getTextContent();
                         data.append(inputFile.getAttribute("variable"));
                         data.append(" = \n");
                         data.append(readFileAsString(Paths.get(sources.get(id)), 1024));

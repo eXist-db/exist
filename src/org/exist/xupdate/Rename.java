@@ -75,7 +75,7 @@ public class Rename extends Modification {
             final StoredNode[] ql = selectAndLock(transaction);
             NodeImpl parent;
             final NotificationService notifier = broker.getBrokerPool().getNotificationService();
-            final String newName = children.item(0).getNodeValue();
+            final String newName = children.item(0).getTextContent();
             for (int i = 0; i < ql.length; i++) {
                 final StoredNode node = ql[i];
                 final DocumentImpl doc = node.getOwnerDocument();

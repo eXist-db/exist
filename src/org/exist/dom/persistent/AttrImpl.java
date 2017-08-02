@@ -383,11 +383,12 @@ public class AttrImpl extends NamedNode implements Attr {
 
     @Override
     public String getTextContent() throws DOMException {
-        return null;
+        return getNodeValue();
     }
 
     @Override
     public void setTextContent(final String textContent) throws DOMException {
+        setNodeValue(textContent);
     }
 
     @Override

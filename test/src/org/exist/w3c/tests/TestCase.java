@@ -137,7 +137,7 @@ public abstract class TestCase {
 		if (outputFile == null)
 			Assert.fail("no expected result information");
 
-		Path expectedResult = Paths.get(testLocation+folder, outputFile.getNodeValue());
+		Path expectedResult = Paths.get(testLocation+folder, outputFile.getTextContent());
 		if (!Files.isReadable(expectedResult)) {
 			Assert.fail("can't read expected result");
 		}

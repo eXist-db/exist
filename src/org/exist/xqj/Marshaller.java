@@ -237,8 +237,9 @@ public class Marshaller {
                     final StringBuilder data = new StringBuilder();
                     Node txt = child.getFirstChild();
                     while (txt != null) {
-                        if (!(txt.getNodeType() == Node.TEXT_NODE || txt.getNodeType() == Node.CDATA_SECTION_NODE))
-                            {throw new XMLStreamException("sx:value should only contain text if type is " + typeName);}
+                        if (!(txt.getNodeType() == Node.TEXT_NODE || txt.getNodeType() == Node.CDATA_SECTION_NODE)) {
+                            throw new XMLStreamException("sx:value should only contain text if type is " + typeName);
+                        }
                         data.append(txt.getNodeValue());
                         txt = txt.getNextSibling();
                     }

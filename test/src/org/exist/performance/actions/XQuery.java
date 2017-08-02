@@ -58,8 +58,9 @@ public class XQuery extends AbstractAction {
             Node child = config.getFirstChild();
             StringBuffer buf = new StringBuffer();
             while (child != null) {
-                if (child.getNodeType() == Node.TEXT_NODE || child.getNodeType() == Node.CDATA_SECTION_NODE)
+                if (child.getNodeType() == Node.TEXT_NODE || child.getNodeType() == Node.CDATA_SECTION_NODE) {
                     buf.append(child.getNodeValue());
+                }
                 child = child.getNextSibling();
             }
             query = buf.toString();

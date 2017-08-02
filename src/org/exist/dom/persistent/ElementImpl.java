@@ -979,12 +979,8 @@ public class ElementImpl extends NamedNode implements Element {
         return findAttribute(new QName(localName, namespaceURI)) != null;
     }
 
-    /**
-     * @see org.w3c.dom.Node#getNodeValue()
-     */
-    //TODO getNodeValue() on org.exist.dom.persistent.ElementImpl should return null according to W3C spec, and getTextContent() should be implemented!
     @Override
-    public String getNodeValue() throws DOMException {
+    public String getTextContent() throws DOMException {
         //TODO : parametrize the boolean value ?
         try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
             return broker.getNodeValue(this, false);

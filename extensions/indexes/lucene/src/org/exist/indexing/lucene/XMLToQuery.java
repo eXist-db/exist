@@ -421,21 +421,23 @@ public class XMLToQuery {
     }
 
     private String getText(Element root) {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         Node child = root.getFirstChild();
         while (child != null) {
-            if (child.getNodeType() == Node.TEXT_NODE)
+            if (child.getNodeType() == Node.TEXT_NODE) {
                 buf.append(child.getNodeValue());
+            }
             child = child.getNextSibling();
         }
         return buf.toString();
     }
 
-    private boolean hasElementContent(Element root) {
+    private boolean hasElementContent(final Element root) {
         Node child = root.getFirstChild();
         while (child != null) {
-            if (child.getNodeType() == Node.ELEMENT_NODE)
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
                 return true;
+            }
             child = child.getNextSibling();
         }
         return false;
