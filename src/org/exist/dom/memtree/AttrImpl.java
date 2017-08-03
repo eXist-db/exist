@@ -100,25 +100,25 @@ public class AttrImpl extends NodeImpl implements Attr {
     }
 
     @Override
-    public String getNodeValue() throws DOMException {
-        return document.attrValue[nodeNumber];
+    public void setValue(final String value) throws DOMException {
+        document.attrValue[nodeNumber] = value;
     }
 
     @Override
-    public String getStringValue() throws DOMException {
-        return document.attrValue[nodeNumber];
+    public String getNodeValue() throws DOMException {
+        return getValue();
     }
 
     @Override
     public void setNodeValue(final String nodeValue) throws DOMException {
         //This method was added to enable the SQL XQuery Extension Module
         //to change the value of an attribute after the fact - Andrzej
-        document.attrValue[nodeNumber] = nodeValue;
+        setValue(nodeValue);
     }
 
     @Override
-    public void setValue(final String value) throws DOMException {
-        document.attrValue[nodeNumber] = value;
+    public String getStringValue() throws DOMException {
+        return document.attrValue[nodeNumber];
     }
 
     @Override

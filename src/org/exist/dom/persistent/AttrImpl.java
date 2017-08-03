@@ -297,13 +297,18 @@ public class AttrImpl extends NamedNode implements Attr {
     }
 
     @Override
+    public void setValue(final String value) throws DOMException {
+        this.value = new XMLString(value.toCharArray());
+    }
+
+    @Override
     public String getNodeValue() {
         return getValue();
     }
 
     @Override
-    public void setValue(final String value) throws DOMException {
-        this.value = new XMLString(value.toCharArray());
+    public void setNodeValue(final String nodeValue) throws DOMException {
+       setValue(nodeValue);
     }
 
     @Override
