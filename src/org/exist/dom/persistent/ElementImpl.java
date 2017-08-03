@@ -67,6 +67,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -1043,27 +1044,124 @@ public class ElementImpl extends NamedNode implements Element {
 
     @Override
     public void setAttribute(final String name, final String value) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "setAttribute(String name, String value) not implemented on class " + getClass().getName());
+        setAttribute(new QName(name), value, qname -> getAttributeNode(qname.getLocalPart()));
     }
 
     @Override
     public void setAttributeNS(final String namespaceURI, final String qualifiedName, final String value) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "setAttributeNS(String namespaceURI, String qualifiedName," +
-                "String value) not implemented on class " + getClass().getName());
+        setAttribute(QName.parse(namespaceURI, qualifiedName), value, qname -> getAttributeNodeNS(qname.getNamespaceURI(), qname.getLocalPart()));
+    }
+
+    private void setAttribute(final QName attrName, final String value, final Function<QName, Attr> getFn) {
+        final Attr existingAttr = getFn.apply(attrName);
+        if(existingAttr != null) {
+
+            // update an existing attribute
+
+            existingAttr.setValue(value);
+
+            try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker();
+                final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
+
+                if (!(existingAttr instanceof IStoredNode)) {
+                    throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Wrong node type");
+                }
+                final IStoredNode<?> existing = (IStoredNode<?>) existingAttr;
+                if (!existing.getNodeId().isChildOf(nodeId)) {
+                    throw new DOMException(DOMException.NOT_FOUND_ERR, "node " +
+                            existing.getNodeId().getParentId() +
+                            " is not a child of element " + nodeId);
+                }
+
+                // update old custom indexes
+                final IndexController indexes = broker.getIndexController();
+                indexes.reindex(transaction, existing, ReindexMode.STORE);
+
+                broker.updateNode(transaction, existing, true);
+
+                transaction.commit();
+            } catch (final EXistException e) {
+                LOG.error(e);
+                throw new DOMException(DOMException.INVALID_ACCESS_ERR, e.getMessage());
+            }
+        } else {
+
+            // create a new attribute
+
+            try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
+
+                final AttrImpl attrib = new AttrImpl(attrName, value, broker.getBrokerPool().getSymbols());
+                appendChild(attrib);
+            } catch (final EXistException e) {
+                LOG.error(e);
+                throw new DOMException(DOMException.INVALID_ACCESS_ERR, e.getMessage());
+            }
+        }
     }
 
     @Override
     public Attr setAttributeNode(final Attr newAttr) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "setAttributeNode(Attr newAttr) not implemented on class " + getClass().getName());
+        return setAttributeNode(newAttr, qname -> getAttributeNode(qname.getLocalPart()));
     }
 
     @Override
     public Attr setAttributeNodeNS(final Attr newAttr) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "setAttributeNodeNS(Attr newAttr) not implemented on class " + getClass().getName());
+        return setAttributeNode(newAttr, qname -> getAttributeNodeNS(qname.getNamespaceURI(), qname.getLocalPart()));
+    }
+
+    private Attr setAttributeNode(final Attr newAttr, final Function<QName, Attr> getFn) {
+        final QName attrName = new QName(newAttr.getLocalName(), newAttr.getNamespaceURI(), newAttr.getPrefix(), ElementValue.ATTRIBUTE);
+        final Attr existingAttr = getFn.apply(attrName);
+        if (existingAttr != null) {
+            if(existingAttr.equals(newAttr)) {
+                return newAttr;
+            }
+
+            // update an existing attribute
+            existingAttr.setValue(newAttr.getValue());
+
+            try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker();
+                final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
+
+                if (!(existingAttr instanceof IStoredNode)) {
+                    throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Wrong node type");
+                }
+                final IStoredNode<?> existing = (IStoredNode<?>) existingAttr;
+                if (!existing.getNodeId().isChildOf(nodeId)) {
+                    throw new DOMException(DOMException.NOT_FOUND_ERR, "node " +
+                            existing.getNodeId().getParentId() +
+                            " is not a child of element " + nodeId);
+                }
+
+                // update old custom indexes
+                final IndexController indexes = broker.getIndexController();
+                indexes.reindex(transaction, existing, ReindexMode.STORE);
+
+                broker.updateNode(transaction, existing, true);
+
+                transaction.commit();
+            } catch (final EXistException e) {
+                LOG.error(e);
+                throw new DOMException(DOMException.INVALID_ACCESS_ERR, e.getMessage());
+            }
+
+            return existingAttr;
+
+        } else {
+
+            // create a new attribute
+
+            try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
+
+                final AttrImpl attrib = new AttrImpl(attrName, newAttr.getValue(), broker.getBrokerPool().getSymbols());
+                return (Attr)appendChild(attrib);
+            } catch (final EXistException e) {
+                LOG.error(e);
+                throw new DOMException(DOMException.INVALID_ACCESS_ERR, e.getMessage());
+            }
+        }
+
+
     }
 
     public void setChildCount(final int count) {

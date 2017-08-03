@@ -25,6 +25,7 @@ import org.exist.Namespaces;
 import org.exist.dom.NamedNodeMapImpl;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
+import org.exist.storage.ElementValue;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
@@ -45,6 +46,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 
 public class ElementImpl extends NodeImpl implements Element {
@@ -124,11 +126,32 @@ public class ElementImpl extends NodeImpl implements Element {
     @Override
     public void setAttribute(final String name, final String value) throws DOMException {
         try {
-            final int lastNode = document.getLastNode();
-            final QName qname = QName.parse(document.context, name);
-            document.addAttribute(lastNode, qname, value, AttrImpl.ATTR_CDATA_TYPE);
+            final QName attrName = QName.parse(document.context, name);
+            setAttribute(attrName, value, qname -> getAttributeNode(qname.getLocalPart()));
         } catch(final XPathException e) {
             throw new DOMException(DOMException.SYNTAX_ERR, e.getMessage());
+        }
+    }
+
+    @Override
+    public void setAttributeNS(final String namespaceURI, final String qualifiedName, final String value) throws DOMException {
+        final QName name = QName.parse(namespaceURI, qualifiedName);
+        setAttribute(name, value, qname -> getAttributeNodeNS(qname.getNamespaceURI(), qname.getLocalPart()));
+    }
+
+    private void setAttribute(final QName name, final String value, final Function<QName, Attr> getFn) {
+        final Attr existingAttr = getFn.apply(name);
+        if(existingAttr != null) {
+
+            // update an existing attribute
+            existingAttr.setValue(value);
+
+        } else {
+
+            // create a new attribute
+
+            final int lastNode = document.getLastNode();
+            document.addAttribute(lastNode, name, value, AttrImpl.ATTR_CDATA_TYPE);
         }
     }
 
@@ -188,7 +211,31 @@ public class ElementImpl extends NodeImpl implements Element {
 
     @Override
     public Attr setAttributeNode(final Attr newAttr) throws DOMException {
-        return null;
+        return setAttributeNode(newAttr, qname -> getAttributeNode(qname.getLocalPart()));
+    }
+
+    private Attr setAttributeNode(final Attr newAttr, final Function<QName, Attr> getFn) {
+        final QName attrName = new QName(newAttr.getLocalName(), newAttr.getNamespaceURI(), newAttr.getPrefix(), ElementValue.ATTRIBUTE);
+        final Attr existingAttr = getFn.apply(attrName);
+
+        if(existingAttr != null) {
+            if(existingAttr.equals(newAttr)) {
+                return newAttr;
+            }
+
+            // update an existing attribute
+            existingAttr.setValue(newAttr.getValue());
+
+            return existingAttr;
+
+        } else {
+
+            // create a new attribute
+
+            final int lastNode = document.getLastNode();
+            final int attrNodeNum = document.addAttribute(lastNode, attrName, newAttr.getValue(), AttrImpl.ATTR_CDATA_TYPE);
+            return new AttrImpl(document, attrNodeNum);
+        }
     }
 
     @Override
@@ -307,10 +354,6 @@ public class ElementImpl extends NodeImpl implements Element {
     }
 
     @Override
-    public void setAttributeNS(final String namespaceURI, final String qualifiedName, final String value) throws DOMException {
-    }
-
-    @Override
     public void removeAttributeNS(final String namespaceURI, final String localName) throws DOMException {
     }
 
@@ -343,7 +386,7 @@ public class ElementImpl extends NodeImpl implements Element {
 
     @Override
     public Attr setAttributeNodeNS(final Attr newAttr) throws DOMException {
-        return null;
+        return setAttributeNode(newAttr, qname -> getAttributeNodeNS(qname.getNamespaceURI(), qname.getLocalPart()));
     }
 
     @Override

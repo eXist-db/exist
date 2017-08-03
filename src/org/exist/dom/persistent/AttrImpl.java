@@ -429,5 +429,20 @@ public class AttrImpl extends NamedNode implements Attr {
     public Object getUserData(final String key) {
         return null;
     }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if(!super.equals(obj)) {
+            return false;
+        }
+
+        if(obj instanceof AttrImpl) {
+            final AttrImpl other = ((AttrImpl)obj);
+            return other.getQName().equals(getQName())
+                    && other.value.equals(value);
+        }
+
+        return false;
+    }
 }
 

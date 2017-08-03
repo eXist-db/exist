@@ -192,4 +192,19 @@ public class AttrImpl extends NodeImpl implements Attr {
             throws XPathException {
         //do nothing, which will return an empty sequence
     }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if(!super.equals(obj)) {
+            return false;
+        }
+
+        if(obj instanceof AttrImpl) {
+            final AttrImpl other = ((AttrImpl)obj);
+            return other.getQName().equals(getQName())
+                    && other.document.attrValue[nodeNumber].equals(document.attrValue[nodeNumber]);
+        }
+
+        return false;
+    }
 }
