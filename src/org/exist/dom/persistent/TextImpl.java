@@ -162,15 +162,6 @@ public class TextImpl extends AbstractCharacterData implements Text {
     }
 
     @Override
-    public String getTextContent() throws DOMException {
-        return null;
-    }
-
-    @Override
-    public void setTextContent(final String textContent) throws DOMException {
-    }
-
-    @Override
     public String lookupPrefix(final String namespaceURI) {
         return null;
     }

@@ -128,6 +128,21 @@ public abstract class AbstractCharacterData extends StoredNode implements Charac
     }
 
     @Override
+    public void setNodeValue(final String value) throws DOMException {
+        setData(value);
+    }
+
+    @Override
+    public String getTextContent() throws DOMException {
+        return getNodeValue();
+    }
+
+    @Override
+    public void setTextContent(final String textContent) throws DOMException {
+        setNodeValue(textContent);
+    }
+
+    @Override
     public void insertData(final int offset, final String arg) throws DOMException {
         if(offset < 0) {
             throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");

@@ -84,10 +84,87 @@ public abstract class AbstractCharacterData extends NodeImpl implements Characte
 
     @Override
     public void appendData(final String arg) throws DOMException {
+        if(arg == null || arg.length() == 0) {
+            return;
+        }
+
+        final int len = arg.length();
+        final int existingDataOffset = document.alpha[nodeNumber];
+        final int existingDataLen = document.alphaLen[nodeNumber];
+
+        // expand space for existing data and set
+
+        // 1) create a new array of the correct size for the data
+        final int existingCharactersLen = document.characters.length;
+        final int extraRequired = len;
+        final int newCharactersLen = existingCharactersLen + extraRequired;
+        final char newCharacters[] = new char[newCharactersLen];
+
+        // 2) copy everything from data to newData that is upto the end of our offset + len
+        System.arraycopy(document.characters, 0, newCharacters, 0, existingDataOffset + existingDataLen);
+
+        // 3) insert our new data after the existing data
+        System.arraycopy(arg.toCharArray(), 0, newCharacters, existingDataOffset + existingDataLen, len);
+
+        // 4) copy everything from data to newData that is after our our offset + len
+        final int remainingExistingCharacters = existingCharactersLen - (existingDataOffset + existingDataLen);
+        System.arraycopy(document.characters, existingDataOffset + existingDataLen, newCharacters, existingDataOffset + existingDataLen + len, remainingExistingCharacters);
+
+        // 5) replace document.characters with our new characters
+        document.characters = newCharacters;
+        document.alphaLen[nodeNumber] = existingDataLen + len;
+
+        // 6) renumber all offsets following our offset
+        for(int i = nodeNumber + 1; i < document.alpha.length; i++) {
+            document.alpha[i] += extraRequired;
+        }
     }
 
     @Override
-    public void setData(final String data) throws DOMException {
+    public void setData(String data) throws DOMException {
+        if(data == null) {
+            data = "";
+        }
+
+        final int len = data.length();
+        final int existingDataOffset = document.alpha[nodeNumber];
+        final int existingDataLen = document.alphaLen[nodeNumber];
+
+        if(len <= existingDataLen) {
+            // replace existing data
+
+            System.arraycopy(data.toCharArray(), 0, document.characters, existingDataOffset, len);
+            document.alphaLen[nodeNumber] = len;
+
+        } else {
+            // expand space for existing data and set
+
+            // 1) create a new array of the correct size for the data
+            final int existingCharactersLen = document.characters.length;
+            final int extraRequired = len - existingDataLen;
+            final int newCharactersLen = existingCharactersLen + extraRequired;
+            final char newCharacters[] = new char[newCharactersLen];
+
+            // 2) copy everything from data to newData that is before our offset
+            System.arraycopy(document.characters, 0, newCharacters, 0, existingDataOffset);
+
+            // 3) insert our new data
+            System.arraycopy(data.toCharArray(), 0, newCharacters, existingDataOffset, len);
+
+            // 4) copy everything from data to newData that is after our offset
+            final int remainingExistingCharacters = existingCharactersLen - (existingDataOffset + existingDataLen);
+            System.arraycopy(document.characters, existingDataOffset + existingDataLen, newCharacters, existingDataOffset + len, remainingExistingCharacters);
+
+            // 5) replace document.characters with our new characters
+            document.characters = newCharacters;
+            document.alphaLen[nodeNumber] = len;
+
+
+            // 6) renumber all offsets following our offset
+            for(int i = nodeNumber + 1; i < document.alpha.length; i++) {
+                document.alpha[i] += extraRequired;
+            }
+        }
     }
 
     @Override
@@ -113,6 +190,31 @@ public abstract class AbstractCharacterData extends NodeImpl implements Characte
             document.alpha[nodeNumber] = inDocOffset + offset;
             document.alphaLen[nodeNumber] = count;
         }
+    }
+
+    @Override
+    public String getNodeValue() throws DOMException {
+        return getData();
+    }
+
+    @Override
+    public void setNodeValue(final String nodeValue) throws DOMException {
+        setData(nodeValue);
+    }
+
+    @Override
+    public String getTextContent() throws DOMException {
+        return getNodeValue();
+    }
+
+    @Override
+    public void setTextContent(final String textContent) throws DOMException {
+        setNodeValue(textContent);
+    }
+
+    @Override
+    public String getStringValue() {
+        return getData();
     }
 
     @Override
