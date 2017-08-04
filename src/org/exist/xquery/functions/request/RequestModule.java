@@ -79,12 +79,8 @@ public class RequestModule extends AbstractInternalModule {
         Arrays.sort(functions, new FunctionComparator());
     }
 
-    private final Variable requestVar;
-
     public RequestModule(Map<String, List<? extends Object>> parameters) throws XPathException {
         super(functions, parameters, true);
-        // predefined module global variables:
-        this.requestVar = declareVariable(REQUEST_VAR, null);
     }
 
     /* (non-Javadoc)
@@ -115,8 +111,5 @@ public class RequestModule extends AbstractInternalModule {
     @Override
     public void reset(XQueryContext xqueryContext, boolean keepGlobals) {
         super.reset(xqueryContext, keepGlobals);
-        if (!keepGlobals) {
-            requestVar.setValue(null);
-        }
     }
 }
