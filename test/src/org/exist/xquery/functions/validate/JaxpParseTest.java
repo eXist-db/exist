@@ -29,7 +29,6 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.function.Predicate;
 
 import org.custommonkey.xmlunit.XMLAssert;
@@ -47,7 +46,7 @@ import org.xmldb.api.base.XMLDBException;
 public class JaxpParseTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     private static final String noValidation = "<?xml version='1.0'?>" +
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -74,7 +73,7 @@ public class JaxpParseTest {
         Collection schemasCollection = null;
         try {
             schemasCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse_validate");
-            final Path schemas = Paths.get("samples/validation/parse_validate");
+            final Path schemas = TestUtils.resolveSample("validation/parse_validate");
 
             for (final Path file : FileUtils.list(schemas, filter)) {
                 final byte[] data = TestUtils.readFile(file);

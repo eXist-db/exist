@@ -32,11 +32,7 @@ import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Node;
 
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Manages a set of documents.
@@ -46,6 +42,7 @@ import java.util.TreeSet;
  * belong to.
  *
  * @author wolf
+ * @author aretter
  */
 @NotThreadSafe
 public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocumentSet {
@@ -188,16 +185,25 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         if (other.getDocumentCount() > size()) {
             return false;
         }
-        for (int idx = 0; idx < tabSize; idx++) {
-            if (values[idx] == null || values[idx] == REMOVED) {
-                continue;
+
+        if(other instanceof DefaultDocumentSet) {
+            // optimization for fast comparison when other is also a DefaultDocumentSet
+            final DefaultDocumentSet otherDDS = (DefaultDocumentSet)other;
+            final BitSet compare = new BitSet();
+            compare.or(docIds);
+            compare.and(otherDDS.docIds);
+            return compare.equals(otherDDS.docIds);
+        } else {
+            // otherwise, fallback to general comparison
+            final Iterator<DocumentImpl> otherDocumentIterator = other.getDocumentIterator();
+            while (otherDocumentIterator.hasNext()) {
+                final DocumentImpl otherDocument = otherDocumentIterator.next();
+                if (!contains(otherDocument.getDocId())) {
+                    return false;
+                }
             }
-            final DocumentImpl d = (DocumentImpl)values[idx];
-            if (!contains(d.getDocId())) {
-                return false;
-            }
+            return true;
         }
-        return true;
     }
 
     @Override
@@ -248,19 +254,25 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
             return true;
         }
 
-        if (size() != other.getDocumentCount()) {
+        if (getDocumentCount() != other.getDocumentCount()) {
             return false;
         }
 
-        for (int idx = 0; idx < tabSize; idx++) {
-            if (values[idx] == null || values[idx] == REMOVED) {
-                continue;
+        if(other instanceof DefaultDocumentSet) {
+            // optimization for fast comparison when other is also a DefaultDocumentSet
+            final DefaultDocumentSet otherDDS = (DefaultDocumentSet)other;
+            return docIds.equals(otherDDS.docIds);
+        } else {
+            // otherwise, fallback to general comparison
+            final Iterator<DocumentImpl> otherDocumentIterator = other.getDocumentIterator();
+            while (otherDocumentIterator.hasNext()) {
+                final DocumentImpl otherDocument = otherDocumentIterator.next();
+                if (!contains(otherDocument.getDocId())) {
+                    return false;
+                }
             }
-            if (!other.contains(keys[idx])) {
-                return false;
-            }
+            return true;
         }
-        return true;
     }
 
     @Override
@@ -285,7 +297,8 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
     @Override
     public void unlock(final boolean exclusive) {
         final Thread thread = Thread.currentThread();
-        for (int idx = 0; idx < tabSize; idx++) {
+        // NOTE: locks should be released in the reverse order that they were acquired
+        for (int idx = tabSize - 1; idx >= 0; idx--) {
             if (values[idx] == null || values[idx] == REMOVED) {
                 continue;
             }
@@ -304,7 +317,9 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         final StringBuilder result = new StringBuilder();
         for (final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); ) {
             result.append(i.next());
-            result.append(", ");
+            if(i.hasNext()) {
+                result.append(", ");
+            }
         }
         return result.toString();
     }

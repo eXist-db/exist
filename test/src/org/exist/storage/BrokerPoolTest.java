@@ -19,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 public class BrokerPoolTest {
 
     @Rule
-    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     @Test
     public void noPrivilegeEscalationThroughBrokerRelease() throws EXistException {

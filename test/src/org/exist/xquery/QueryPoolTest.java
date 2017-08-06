@@ -39,7 +39,7 @@ import static org.junit.Assert.assertNotNull;
 public class QueryPoolTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     private Collection testCollection;
 

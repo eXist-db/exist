@@ -6,6 +6,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
 
+import java.util.AbstractMap;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
@@ -78,6 +79,25 @@ public class SingleKeyMapType extends AbstractMapType {
 
     @Override
     public Iterator<Map.Entry<AtomicValue, Sequence>> iterator() {
-        return null;
+        return new SingleKeyMapIterator();
+    }
+
+    private class SingleKeyMapIterator implements Iterator<Map.Entry<AtomicValue, Sequence>> {
+
+        boolean hasMore = true;
+
+        @Override
+        public boolean hasNext() {
+            return hasMore;
+        }
+
+        @Override
+        public Map.Entry<AtomicValue, Sequence> next() {
+            if (!hasMore) {
+                return null;
+            }
+            hasMore = false;
+            return new AbstractMap.SimpleEntry<AtomicValue, Sequence>(key, value);
+        }
     }
 }

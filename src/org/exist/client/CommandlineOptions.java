@@ -109,7 +109,7 @@ public class CommandlineOptions {
 
 
     /* put/get/rm document arguments */
-    private static final Argument<List<File>> parseDocsArg = fileArgument("p", "--parse")
+    private static final Argument<List<File>> parseDocsArg = fileArgument("-p", "--parse")
             .description("store files or directories given as extra args on command line.")
             .variableArity()
             .build();

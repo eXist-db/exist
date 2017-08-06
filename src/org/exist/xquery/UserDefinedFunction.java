@@ -52,7 +52,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
 
     private boolean visited = false;
 
-    private List<Variable> closureVariables = null;
+    private List<ClosureVariable> closureVariables = null;
     
 	public UserDefinedFunction(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
@@ -104,10 +104,11 @@ public class UserDefinedFunction extends Function implements Cloneable {
 					var = new LocalVariable(varName);
 					context.declareVariableBinding(var);
 				}
-				
-				contextInfo.setParent(this);
+
+				final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+				newContextInfo.setParent(this);
 				if (!bodyAnalyzed) {
-					body.analyze(contextInfo);
+					body.analyze(newContextInfo);
 					bodyAnalyzed = true;
 				}
 			} finally {
@@ -217,20 +218,15 @@ public class UserDefinedFunction extends Function implements Cloneable {
 		super.resetState(postOptimization);
         // Question: understand this test. Why not reset even is not in recursion ?
 		// Answer: would lead to an infinite loop if the function is recursive.
-		if(call != null && !call.isRecursive()) {
-            bodyAnalyzed = false;
-			body.resetState(postOptimization);
-		}
+        bodyAnalyzed = false;
+        body.resetState(postOptimization);
+
         if (!postOptimization) {
             currentArguments = null;
             contextDocs = null;
         }
     }
 
-	public boolean needsReset() {
-		return currentArguments != null;
-	}
-	
     public void accept(ExpressionVisitor visitor) {
         if (visited)
             {return;}
@@ -272,10 +268,14 @@ public class UserDefinedFunction extends Function implements Cloneable {
     	this.call = call;
     }
     
-    public void setClosureVariables(List<Variable> vars) {
+    public void setClosureVariables(List<ClosureVariable> vars) {
     	this.closureVariables = vars;
     }
-    
+
+    public List<ClosureVariable> getClosureVariables() {
+        return closureVariables;
+    }
+
     protected Sequence[] getCurrentArguments() {
         return currentArguments;
     }

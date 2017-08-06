@@ -154,7 +154,7 @@ public class JSONObject extends JSONNode {
                      Text in mixed content nodes is ignored though.
                     */
                     if(allowText) {
-                        writer.write("\"#text\"");
+                        writer.write("\"" + next.getName() + "\"");     // next.getName() returns "#text"
                         if(isIndent()) {
                             writer.write(' ');
                         }

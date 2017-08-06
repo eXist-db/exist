@@ -47,7 +47,7 @@ import org.xmldb.api.base.XMLDBException;
 public class ParseXsdTestNOK {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     private static final String noValidation = "<?xml version='1.0'?>" +
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -79,7 +79,7 @@ public class ParseXsdTestNOK {
         try {
             collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "addressbook");
 
-            final Path sources = Paths.get("samples/validation/addressbook");
+            final Path sources = TestUtils.resolveSample("validation/addressbook");
             for (final Path file : FileUtils.list(sources, filter)) {
                 final byte[] data = TestUtils.readFile(file);
                 ExistXmldbEmbeddedServer.storeResource(collection, FileUtils.fileName(file), data);

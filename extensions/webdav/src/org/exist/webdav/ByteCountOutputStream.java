@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- *
  * @author wessels
  */
 public class ByteCountOutputStream extends OutputStream {

@@ -27,7 +27,7 @@
 	<classpathentry kind="src" path="extensions/commands/src"/>
 	<classpathentry kind="src" path="lib/core/j8fu-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/pkg-repo.jar"/>
-	<classpathentry kind="lib" path="lib/core/rsyntaxtextarea-2.5.6.jar"/>
+	<classpathentry kind="lib" path="lib/core/rsyntaxtextarea-2.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xml-apis-1.4.01.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xercesImpl-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xml-resolver-1.2.jar"/>
@@ -53,10 +53,10 @@
 	<classpathentry kind="lib" path="lib/core/antlr-2.7.7.jar"/>
 	<classpathentry kind="lib" path="lib/core/excalibur-cli-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/jline-0.9.94.jar"/>
-	<classpathentry kind="lib" path="lib/core/log4j-api-2.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/core/log4j-core-2.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/core/log4j-slf4j-impl-2.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/core/log4j-jul-2.8.1.jar"/>
+	<classpathentry kind="lib" path="lib/core/log4j-api-2.8.2.jar"/>
+	<classpathentry kind="lib" path="lib/core/log4j-core-2.8.2.jar"/>
+	<classpathentry kind="lib" path="lib/core/log4j-slf4j-impl-2.8.2.jar"/>
+	<classpathentry kind="lib" path="lib/core/log4j-jul-2.8.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmldb.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/commons-io-2.4.jar"/>
@@ -67,6 +67,7 @@
 	<classpathentry kind="lib" path="tools/wrapper/lib/wrapper.jar"/>
 	<classpathentry kind="lib" path="lib/core/jta-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/commons-collections-3.2.2.jar"/>
+        <classpathentry kind="lib" path="lib/core/commons-configuration2-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-discovery-0.5.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jing-20091111.jar"/>
 	<classpathentry kind="lib" path="extensions/xqdoc/lib/xqdoc_conv.jar"/>
@@ -109,9 +110,9 @@
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-4.10.4.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-queries-4.10.4.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-queryparser-4.10.4.jar"/>
-	<classpathentry kind="lib" path="tools/ant/lib/ant-1.9.7.jar"/>
+	<classpathentry kind="lib" path="tools/ant/lib/ant-1.10.1.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/ant-antunit-1.3.jar"/>
-	<classpathentry kind="lib" path="tools/ant/lib/ant-launcher-1.9.7.jar"/>
+	<classpathentry kind="lib" path="tools/ant/lib/ant-launcher-1.10.1.jar"/>
 	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjrt-1.8.9.jar"/>
 	<classpathentry kind="lib" path="lib/core/cglib-nodep-2.2.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/clj-ds-0.0.4.jar"/>

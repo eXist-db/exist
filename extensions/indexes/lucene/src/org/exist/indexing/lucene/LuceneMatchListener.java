@@ -183,11 +183,17 @@ public class LuceneMatchListener extends AbstractMatchListener {
                         if (--level < 0) {
                             break;
                         }
-                        textOffset += extractor.endElement(reader.getQName());
+                        // call extractor.endElement unless this is the root of the current fragment
+                        if (level > 0) {
+                            textOffset += extractor.endElement(reader.getQName());
+                        }
                         break;
                     case XMLStreamConstants.START_ELEMENT:
+                        // call extractor.startElement unless this is the root of the current fragment
+                        if (level > 0) {
+                            textOffset += extractor.startElement(reader.getQName());
+                        }
                         ++level;
-                        textOffset += extractor.startElement(reader.getQName());
                         break;
                     case XMLStreamConstants.CHARACTERS:
                         NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);

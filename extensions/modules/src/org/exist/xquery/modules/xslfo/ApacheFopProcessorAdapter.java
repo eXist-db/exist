@@ -3,18 +3,25 @@ package org.exist.xquery.modules.xslfo;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
+
 import org.apache.avalon.framework.configuration.Configuration;
 import org.apache.avalon.framework.configuration.SAXConfigurationHandler;
 import org.apache.fop.apps.*;
 import org.apache.fop.apps.io.ResourceResolverFactory;
+import org.apache.fop.events.Event;
+import org.apache.fop.events.EventFormatter;
+import org.apache.fop.events.EventListener;
+import org.apache.fop.events.model.EventSeverity;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.xmlgraphics.io.ResourceResolver;
 import org.apache.xmlgraphics.io.URIResolverAdapter;
 import org.exist.storage.DBBroker;
-import org.exist.xquery.functions.transform.EXistURIResolver;
+import org.exist.xslt.EXistURIResolver;
 import org.exist.xquery.value.NodeValue;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -62,10 +69,11 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
             // transformer handler
             final FOUserAgent foUserAgent = setupFOUserAgent(fopFactory.newFOUserAgent(), parameters);
 
+            foUserAgent.getEventBroadcaster().addEventListener(new ExistLoggingEventListener(LOG));
+
             // create new instance of FOP using the mimetype, the created user
             // agent, and the output stream
             final Fop fop = fopFactory.newFop(mimeType, foUserAgent, os);
-
             // Obtain FOP's DefaultHandler
             return fop.getDefaultHandler();
         } catch(final URISyntaxException e) {
@@ -126,7 +134,9 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
      */
     private ResourceResolver getResourceResolver(final DBBroker broker, final String baseUri) {
         final ResourceResolverFactory.SchemeAwareResourceResolverBuilder builder = ResourceResolverFactory.createSchemeAwareResourceResolverBuilder(ResourceResolverFactory.createDefaultResourceResolver());
-        final URIResolverAdapter uriResolver = new URIResolverAdapter(new ExistSchemeRewriter(new EXistURIResolver(broker, baseUri)));
+        final URIResolverAdapter uriResolver = new URIResolverAdapter(
+            new ExistSchemeRewriter(new EXistURIResolver(broker.getBrokerPool(), baseUri))
+        );
         builder.registerResourceResolverForScheme("exist", uriResolver);
         builder.registerResourceResolverForScheme("http", uriResolver);
         builder.registerResourceResolverForScheme("https", uriResolver);
@@ -169,7 +179,7 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
      * Extension of the Apache Avalon DefaultConfigurationBuilder Allows better
      * integration with Nodes passed in from eXist as Configuration files
      */
-    private class FopConfigurationBuilder extends org.apache.avalon.framework.configuration.DefaultConfigurationBuilder {
+    private static class FopConfigurationBuilder extends org.apache.avalon.framework.configuration.DefaultConfigurationBuilder {
 
         private final DBBroker broker;
 
@@ -189,6 +199,54 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
             handler.clear();
             configFile.toSAX(broker, handler, new Properties());
             return handler.getConfiguration();
+        }
+    }
+
+    private static class ExistLoggingEventListener implements EventListener {
+        private final Logger log;
+        private final Set<String> loggedMessages = new HashSet<>();
+
+        public ExistLoggingEventListener(final Logger log) {
+            this.log = log;
+        }
+
+        @Override
+        public void processEvent(final Event event) {
+            String msg = EventFormatter.format(event);
+            EventSeverity severity = event.getSeverity();
+            if (severity == EventSeverity.INFO) {
+                log.info(msg);
+            } else if (severity == EventSeverity.WARN) {
+                // we want to prevent logging of duplicate messages in situations where they are likely
+                // to occur; for instance, warning related to layout do not repeat (since line number
+                // will be different) and as such we do not try to filter them here; on the other hand,
+                // font related warnings are very likely to repeat and we try to filter them out here;
+                // the same may happen with missing images (but not implemented yet).
+                String eventGroupID = event.getEventGroupID();
+                if (eventGroupID.equals("org.apache.fop.fonts.FontEventProducer")) {
+                    if (!loggedMessages.contains(msg)) {
+                        loggedMessages.add(msg);
+                        log.warn(msg);
+                    }
+                } else {
+                    log.warn(msg);
+                }
+            } else if (severity == EventSeverity.ERROR) {
+                if (event.getParam("e") != null) {
+                    log.error(msg, (Throwable)event.getParam("e"));
+                } else {
+                    log.error(msg);
+                }
+            } else if (severity == EventSeverity.FATAL) {
+
+                    if (event.getParam("e") != null) {
+                        log.fatal(msg, (Throwable)event.getParam("e"));
+                    } else {
+                        log.fatal(msg);
+                    }
+            } else {
+                assert false;
+            }
         }
     }
 }

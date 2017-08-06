@@ -65,17 +65,18 @@ public class InspectIndex extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		String path = args[0].itemAt(0).getStringValue();
-		
+
+		DocumentImpl doc = null;
         try {
 			// Retrieve document from database
-			DocumentImpl doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK);
+			 doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK);
 
 			// Verify the document actually exists
 			if (doc == null) {
-			    throw new XPathException("Document " + path + " does not exist.");
+			    throw new XPathException(this, "Document " + path + " does not exist.");
 			}
 			
-			LuceneIndexWorker index = (LuceneIndexWorker)
+			final LuceneIndexWorker index = (LuceneIndexWorker)
 				context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
 			return new BooleanValue(index.hasIndex(doc.getDocId()));
 		} catch (PermissionDeniedException e) {
@@ -84,6 +85,10 @@ public class InspectIndex extends BasicFunction {
 			throw new XPathException(this, LuceneModule.EXXQDYFT0003, e.getMessage());
 		} catch (IOException e) {
 			throw new XPathException(this, LuceneModule.EXXQDYFT0002, e.getMessage());
+		} finally {
+        	if(doc != null) {
+        		doc.getUpdateLock().release(LockMode.READ_LOCK);
+			}
 		}
 	}
 

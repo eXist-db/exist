@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import org.exist.TestUtils;
 import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
 import org.exist.xmldb.CollectionManagementServiceImpl;
@@ -36,8 +37,6 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
 public class CreateCollectionAction extends Action {
-
-    private final static String DIR_PATH = "samples" + java.io.File.separatorChar + "shakespeare";
     
     private int collectionCnt = 0;
     
@@ -64,9 +63,9 @@ public class CreateCollectionAction extends Action {
     }
 
     private void addFiles(final Collection col) throws XMLDBException, IOException {
-        final Path d = Paths.get(DIR_PATH);
+        final Path d = TestUtils.shakespeareSamples();
         if(!(Files.isReadable(d) && Files.isDirectory(d))) {
-            throw new RuntimeException("Cannot read directory: " + DIR_PATH);
+            throw new RuntimeException("Cannot read directory: " + d.toAbsolutePath());
         }
 
         final List<Path> files = FileUtils.list(d);

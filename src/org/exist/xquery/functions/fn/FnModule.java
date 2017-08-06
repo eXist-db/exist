@@ -235,7 +235,12 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(JSON.signatures[0], JSON.class),
         new FunctionDef(JSON.signatures[1], JSON.class),
         new FunctionDef(JSON.signatures[2], JSON.class),
-        new FunctionDef(JSON.signatures[3], JSON.class)
+        new FunctionDef(JSON.signatures[3], JSON.class),
+        new FunctionDef(LoadXQueryModule.LOAD_XQUERY_MODULE_1, LoadXQueryModule.class),
+        new FunctionDef(LoadXQueryModule.LOAD_XQUERY_MODULE_2, LoadXQueryModule.class),
+        new FunctionDef(FunSort.signatures[0], FunSort.class),
+        new FunctionDef(FunSort.signatures[1], FunSort.class),
+        new FunctionDef(FunSort.signatures[2], FunSort.class)
     };
 
     static {

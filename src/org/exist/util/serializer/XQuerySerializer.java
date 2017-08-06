@@ -37,15 +37,24 @@ public class XQuerySerializer {
     }
 
     public void serialize(final Sequence sequence, final int start, final int howmany, final boolean wrap, final boolean typed, final long compilationTime, final long executionTime) throws SAXException, XPathException {
-        if (isJSON()) {
-            serializeJSON(sequence, compilationTime, executionTime);
-        } else {
-            serializeXML(sequence, start, howmany, wrap, typed, compilationTime, executionTime);
+        final String method = outputProperties.getProperty(OutputKeys.METHOD, "xml");
+        switch (method) {
+            case "adaptive":
+                serializeAdaptive(sequence);
+                break;
+            case "json":
+                serializeJSON(sequence, compilationTime, executionTime);
+                break;
+            case "xml":
+            default:
+                serializeXML(sequence, start, howmany, wrap, typed, compilationTime, executionTime);
+                break;
         }
     }
 
-    public boolean isJSON() {
-        return "json".equals(outputProperties.getProperty(OutputKeys.METHOD, "xml"));
+    public boolean normalize() {
+        final String method = outputProperties.getProperty(OutputKeys.METHOD, "xml");
+        return !("json".equals(method) || "adaptive".equals(method));
     }
 
     private void serializeXML(final Sequence sequence, final int start, final int howmany, final boolean wrap, final boolean typed, final long compilationTime, final long executionTime) throws SAXException, XPathException {
@@ -77,5 +86,11 @@ public class XQuerySerializer {
             JSONSerializer serializer = new JSONSerializer(broker, outputProperties);
             serializer.serialize(sequence, writer);
         }
+    }
+
+    private void serializeAdaptive(final Sequence sequence) throws SAXException, XPathException {
+        final AdaptiveSerializer serializer = new AdaptiveSerializer(broker);
+        serializer.setOutput(writer, outputProperties);
+        serializer.serialize(sequence);
     }
 }

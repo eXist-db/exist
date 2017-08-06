@@ -24,22 +24,22 @@ package org.exist.webdav.exceptions;
 /**
  * Class that represents a situation that a file cannot be created  because the collection
  * does not exist.
- * 
+ *
  * @author wessels
  */
 public class DocumentNotLockedException extends Exception {
 
-	private static final long serialVersionUID = -4907184035845864493L;
+    private static final long serialVersionUID = -4907184035845864493L;
 
-	public DocumentNotLockedException() {
+    public DocumentNotLockedException() {
         super();
     }
 
-    public DocumentNotLockedException( Throwable inner ) {
+    public DocumentNotLockedException(Throwable inner) {
         super(inner);
     }
 
-    public DocumentNotLockedException( String message ) {
+    public DocumentNotLockedException(String message) {
         super(message);
     }
 

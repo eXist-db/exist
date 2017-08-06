@@ -45,7 +45,7 @@ import org.xmldb.api.base.XMLDBException;
 public class DocTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     private Collection test = null;
 

@@ -23,10 +23,10 @@ package org.exist.storage;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.exist.EXistException;
+import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
@@ -35,7 +35,7 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
@@ -52,14 +52,23 @@ import org.xml.sax.SAXException;
  */
 public class CopyResourceTest {
 
+    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+
     @Test
     public void storeAndRead() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException {
         final String testCollectionName = "copyResource";
         final String subCollection = "storeAndRead";
 
-        store(testCollectionName, subCollection);
-        tearDown();
-        read(testCollectionName);
+        BrokerPool.FORCE_CORRUPTION = true;
+        BrokerPool pool = startDb();
+        store(pool, testCollectionName, subCollection);
+
+        stopDb();
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = startDb();
+        read(pool, testCollectionName);
     }
 
     @Test
@@ -67,16 +76,18 @@ public class CopyResourceTest {
         final String testCollectionName = "copyResource";
         final String subCollection = "storeAndReadAborted";
 
-        storeAborted(testCollectionName, subCollection);
-        tearDown();
-        readAborted(testCollectionName, subCollection);
+
+        BrokerPool.FORCE_CORRUPTION = true;
+        BrokerPool pool = startDb();
+        storeAborted(pool, testCollectionName, subCollection);
+
+        stopDb();
+
+        pool = startDb();
+        readAborted(pool, testCollectionName, subCollection);
     }
 
-	private void store(final String testCollectionName, final String subCollection) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, DatabaseConfigurationException {
-		BrokerPool.FORCE_CORRUPTION = true;
-
-		final BrokerPool pool = startDB();
-
+	private void store(final BrokerPool pool, final String testCollectionName, final String subCollection) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, DatabaseConfigurationException {
         final TransactionManager transact = pool.getTransactionManager();
 		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
@@ -96,10 +107,7 @@ public class CopyResourceTest {
                 assertNotNull(subTestCollection);
                 broker.saveCollection(transaction, subTestCollection);
 
-                final String existHome = System.getProperty("exist.home");
-                Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-                existDir = existDir.normalize();
-                final Path f = existDir.resolve("samples/shakespeare/r_and_j.xml");
+                final Path f = TestUtils.resolveShakespeareSample("r_and_j.xml");
                 assertNotNull(f);
                 info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toUri().toASCIIString()));
                 assertNotNull(info);
@@ -118,11 +126,7 @@ public class CopyResourceTest {
 		}
 	}
 
-	private void read(final String testCollectionName) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException {
-		BrokerPool.FORCE_CORRUPTION = false;
-		final BrokerPool pool = startDB();
-		assertNotNull(pool);
-
+	private void read(final BrokerPool pool, final String testCollectionName) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException {
 		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 			final Serializer serializer = broker.getSerializer();
 			serializer.reset();
@@ -141,12 +145,7 @@ public class CopyResourceTest {
 		}
 	}
 
-    private void storeAborted(final String testCollectionName, final String subCollection) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, LockException {
-
-		BrokerPool.FORCE_CORRUPTION = true;
-
-        final BrokerPool pool = startDB();
-
+    private void storeAborted(final BrokerPool pool, final String testCollectionName, final String subCollection) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, LockException {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
@@ -167,10 +166,7 @@ public class CopyResourceTest {
                 assertNotNull(subTestCollection);
                 broker.saveCollection(transaction, subTestCollection);
 
-                final String existHome = System.getProperty("exist.home");
-                Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-                existDir = existDir.normalize();
-                final Path f = existDir.resolve("samples/shakespeare/r_and_j.xml");
+                final Path f = TestUtils.resolveShakespeareSample("r_and_j.xml");
                 assertNotNull(f);
                 info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), new InputSource(f.toUri().toASCIIString()));
                 assertNotNull(info);
@@ -189,11 +185,7 @@ public class CopyResourceTest {
 		}
 	}
 
-	private void readAborted(final String testCollectionName, final String subCollection) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException {
-
-		final BrokerPool pool = startDB();
-		assertNotNull(pool);
-
+	private void readAborted(final BrokerPool pool, final String testCollectionName, final String subCollection) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException {
 		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 			final Serializer serializer = broker.getSerializer();
 			serializer.reset();
@@ -215,14 +207,13 @@ public class CopyResourceTest {
 		}
 	}
 
-	protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
-		final Configuration config = new Configuration();
-		BrokerPool.configure(1, 5, config);
-		return BrokerPool.getInstance();
-	}
+    private BrokerPool startDb() throws EXistException, IOException, DatabaseConfigurationException {
+        existEmbeddedServer.startDb();
+        return existEmbeddedServer.getBrokerPool();
+    }
 
     @After
-	public void tearDown() {
-		BrokerPool.stopAll(false);
-	}
+    public void stopDb() {
+        existEmbeddedServer.stopDb();
+    }
 }

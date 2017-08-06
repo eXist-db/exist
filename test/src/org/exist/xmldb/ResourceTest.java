@@ -36,6 +36,7 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.exist.TestUtils;
 import org.exist.dom.QName;
 import org.exist.security.Account;
 import org.exist.test.ExistXmldbEmbeddedServer;
@@ -67,7 +68,7 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 public class ResourceTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     private final static String TEST_COLLECTION = "testResource";
 
@@ -357,7 +358,7 @@ public class ResourceTest {
 
         //store sample files as guest
         final Collection testCollectionAsGuest = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
-        try(final Stream<Path> files = Files.list(getShakespeareSamplesDirectory()).filter(XMLFilenameFilter.asPredicate())) {
+        try(final Stream<Path> files = Files.list(TestUtils.shakespeareSamples()).filter(XMLFilenameFilter.asPredicate())) {
             for(final Path file : files.collect(Collectors.toList())) {
                 final XMLResource res = (XMLResource) testCollectionAsGuest.createResource(file.getFileName().toString(), "XMLResource");
                 res.setContent(file.toFile());

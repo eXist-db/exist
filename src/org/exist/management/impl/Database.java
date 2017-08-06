@@ -22,25 +22,15 @@
 package org.exist.management.impl;
 
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.management.openmbean.*;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 
-public class Database implements DatabaseMBean {
-
-    private static final String[] itemNames = {
-        "owner", "referenceCount", "stack", "stackAcquired"};
-    
-    private static final String[] itemDescriptions = {
-        "Name of the thread owning the broker",
-        "Number of references held by the thread",
-        "Stack trace",
-        "Broker acquired"
-    };
-    
-    private static final String[] indexNames = {"owner"};
+public class Database implements DatabaseMXBean {
 
     private final BrokerPool pool;
 
@@ -74,26 +64,17 @@ public class Database implements DatabaseMBean {
     }
     
     @Override
-    public TabularData getActiveBrokersMap() {
-        final OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.INTEGER, SimpleType.STRING, SimpleType.STRING };
-        try {
-            final CompositeType infoType = new CompositeType("brokerInfo", "Provides information on a broker instance.",
-                    itemNames, itemDescriptions, itemTypes);
-            final TabularType tabularType = new TabularType("activeBrokers", "Lists all threads currently using a broker instance", infoType, indexNames);
-            final TabularDataSupport data = new TabularDataSupport(tabularType);
-            for (final Map.Entry<Thread, DBBroker> entry : pool.getActiveBrokers().entrySet()) {
-                final Thread thread = entry.getKey();
-                final DBBroker broker = entry.getValue();
-                final String trace = printStackTrace(thread);
-                final String watchdogTrace = pool.getWatchdog().map(wd -> wd.get(broker)).orElse(null);
-                final Object[] itemValues = { thread.getName(), broker.getReferenceCount(), trace, watchdogTrace };
-                data.put(new CompositeDataSupport(infoType, itemNames, itemValues));
-            }
-            return data;
-        } catch (final OpenDataException e) {
-            e.printStackTrace();
-            return null;
+    public List<ActiveBroker> getActiveBrokersMap() {
+        final List<ActiveBroker> brokersList = new ArrayList<>();
+
+        for (final Map.Entry<Thread, DBBroker> entry : pool.getActiveBrokers().entrySet()) {
+            final Thread thread = entry.getKey();
+            final DBBroker broker = entry.getValue();
+            final String trace = printStackTrace(thread);
+            final String watchdogTrace = pool.getWatchdog().map(wd -> wd.get(broker)).orElse(null);
+            brokersList.add(new ActiveBroker(thread.getName(), broker.getReferenceCount(), trace, watchdogTrace));
         }
+        return brokersList;
     }
 
     @Override

@@ -837,17 +837,33 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        String collectionCache = getConfigAttributeValue( con, CollectionCacheManager.CACHE_SIZE_ATTRIBUTE );
-
-        if( collectionCache != null ) {
-
-            if( collectionCache.endsWith( "M" ) || collectionCache.endsWith( "m" ) ) {
-                collectionCache = collectionCache.substring( 0, collectionCache.length() - 1 );
-            }
+        String collectionCache = getConfigAttributeValue(con, CollectionCacheManager.CACHE_SIZE_ATTRIBUTE);
+        if(collectionCache != null) {
+            collectionCache = collectionCache.toLowerCase();
 
             try {
-                config.put( CollectionCacheManager.PROPERTY_CACHE_SIZE, Integer.valueOf(collectionCache) );
-                LOG.debug( CollectionCacheManager.PROPERTY_CACHE_SIZE + ": " + config.get( CollectionCacheManager.PROPERTY_CACHE_SIZE ) + "m" );
+                final int collectionCacheBytes;
+                if(collectionCache.endsWith("k")) {
+                    collectionCacheBytes = 1024 * Integer.valueOf(collectionCache.substring(0, collectionCache.length() - 1));
+                } else if(collectionCache.endsWith("kb")) {
+                    collectionCacheBytes = 1024 * Integer.valueOf(collectionCache.substring(0, collectionCache.length() - 2));
+                } else if(collectionCache.endsWith("m")) {
+                    collectionCacheBytes = 1024 * 1024 * Integer.valueOf(collectionCache.substring(0, collectionCache.length() - 1));
+                } else if(collectionCache.endsWith("mb")) {
+                    collectionCacheBytes = 1024 * 1024 * Integer.valueOf(collectionCache.substring(0, collectionCache.length() - 2));
+                } else if(collectionCache.endsWith("g")) {
+                    collectionCacheBytes = 1024 * 1024 * 1024 * Integer.valueOf(collectionCache.substring(0, collectionCache.length() - 1));
+                } else if(collectionCache.endsWith("gb")) {
+                    collectionCacheBytes = 1024 * 1024 * 1024 * Integer.valueOf(collectionCache.substring(0, collectionCache.length() - 2));
+                } else {
+                    collectionCacheBytes = Integer.valueOf(collectionCache);
+                }
+
+                config.put(CollectionCacheManager.PROPERTY_CACHE_SIZE_BYTES, collectionCacheBytes);
+
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Set config {} = {}", CollectionCacheManager.PROPERTY_CACHE_SIZE_BYTES, config.get(CollectionCacheManager.PROPERTY_CACHE_SIZE_BYTES));
+                }
             }
             catch( final NumberFormatException nfe ) {
                 LOG.warn( nfe );

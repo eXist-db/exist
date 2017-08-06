@@ -23,17 +23,16 @@
 
 package org.exist.xquery.value;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.text.Collator;
-
-import javax.xml.datatype.DatatypeConstants;
-import javax.xml.datatype.Duration;
-
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
+
+import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.Duration;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.text.Collator;
 
 /**
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
@@ -46,10 +45,6 @@ public class DurationValue extends ComputableValue {
     public final static int HOUR = 3;
     public final static int MINUTE = 4;
     public final static int SIGN = 5;
-
-    protected final Duration duration;
-    private Duration canonicalDuration;
-
     protected static final BigInteger
             TWELVE = BigInteger.valueOf(12),
             TWENTY_FOUR = BigInteger.valueOf(24),
@@ -57,9 +52,23 @@ public class DurationValue extends ComputableValue {
     protected static final BigDecimal
             SIXTY_DECIMAL = BigDecimal.valueOf(60),
             ZERO_DECIMAL = BigDecimal.ZERO;
-
     protected static final Duration CANONICAL_ZERO_DURATION =
             TimeUtils.getInstance().newDuration(true, null, null, null, null, null, ZERO_DECIMAL);
+    protected final Duration duration;
+    private Duration canonicalDuration;
+
+    public DurationValue(Duration duration) {
+        this.duration = duration;
+    }
+
+    public DurationValue(String str) throws XPathException {
+        try {
+            this.duration = TimeUtils.getInstance().newDuration(StringValue.trimWhitespace(str));
+        } catch (final IllegalArgumentException e) {
+            throw new XPathException(ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
+                    " from \"" + str + "\"");
+        }
+    }
 
     /**
      * Create a new duration value of the most specific type allowed by the fields set in the given
@@ -78,45 +87,6 @@ public class DurationValue extends ComputableValue {
                 return new DurationValue(duration);
             }
         }
-    }
-
-    public DurationValue(Duration duration) {
-        this.duration = duration;
-    }
-
-    public DurationValue(String str) throws XPathException {
-        try {
-            this.duration = TimeUtils.getInstance().newDuration(StringValue.trimWhitespace(str));
-        } catch (final IllegalArgumentException e) {
-            throw new XPathException(ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
-                    " from \"" + str + "\"");
-        }
-    }
-
-    public DurationValue wrap() {
-        return wrap(duration);
-    }
-
-    public Duration getCanonicalDuration() {
-        canonicalize();
-        return canonicalDuration;
-    }
-
-    public int getType() {
-        return Type.DURATION;
-    }
-
-    protected DurationValue createSameKind(Duration d) throws XPathException {
-        return new DurationValue(d);
-    }
-
-    public DurationValue negate() throws XPathException {
-        return createSameKind(duration.negate());
-    }
-
-    public String getStringValue() {
-        canonicalize();
-        return canonicalDuration.toString();
     }
 
     private static BigInteger nullIfZero(BigInteger x) {
@@ -145,6 +115,43 @@ public class DurationValue extends ComputableValue {
             x = ZERO_DECIMAL;
         }
         return x;
+    }
+
+    public static boolean areReallyEqual(Duration duration1, Duration duration2) {
+        final boolean secondsEqual = zeroIfNull((BigDecimal) duration1.getField(DatatypeConstants.SECONDS)).compareTo(
+                zeroIfNull((BigDecimal) duration2.getField(DatatypeConstants.SECONDS))) == Constants.EQUAL;
+        return secondsEqual &&
+                duration1.getMinutes() == duration2.getMinutes() &&
+                duration1.getHours() == duration2.getHours() &&
+                duration1.getDays() == duration2.getDays() &&
+                duration1.getMonths() == duration2.getMonths() &&
+                duration1.getYears() == duration2.getYears();
+    }
+
+    public DurationValue wrap() {
+        return wrap(duration);
+    }
+
+    public Duration getCanonicalDuration() {
+        canonicalize();
+        return canonicalDuration;
+    }
+
+    public int getType() {
+        return Type.DURATION;
+    }
+
+    protected DurationValue createSameKind(Duration d) throws XPathException {
+        return new DurationValue(d);
+    }
+
+    public DurationValue negate() throws XPathException {
+        return createSameKind(duration.negate());
+    }
+
+    public String getStringValue() {
+        canonicalize();
+        return canonicalDuration.toString();
     }
 
     private void canonicalize() {
@@ -332,7 +339,7 @@ public class DurationValue extends ComputableValue {
             case LTEQ:
             case GT:
             case GTEQ:
-                throw new XPathException(ErrorCodes.XPTY0004, "" + Type.getTypeName(other.getType()) + " type can not be ordered");
+                throw new XPathException(ErrorCodes.XPTY0004, Type.getTypeName(other.getType()) + " type can not be ordered");
             default:
                 throw new IllegalArgumentException("Unknown comparison operator");
         }
@@ -393,17 +400,6 @@ public class DurationValue extends ComputableValue {
     public boolean effectiveBooleanValue() throws XPathException {
         throw new XPathException(ErrorCodes.FORG0006, "value of type " + Type.getTypeName(getType()) +
                 " has no boolean value.");
-    }
-
-    public static boolean areReallyEqual(Duration duration1, Duration duration2) {
-        final boolean secondsEqual = zeroIfNull((BigDecimal) duration1.getField(DatatypeConstants.SECONDS)).compareTo(
-                zeroIfNull((BigDecimal) duration2.getField(DatatypeConstants.SECONDS))) == Constants.EQUAL;
-        return secondsEqual &&
-                duration1.getMinutes() == duration2.getMinutes() &&
-                duration1.getHours() == duration2.getHours() &&
-                duration1.getDays() == duration2.getDays() &&
-                duration1.getMonths() == duration2.getMonths() &&
-                duration1.getYears() == duration2.getYears();
     }
 
     @Override

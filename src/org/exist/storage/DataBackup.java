@@ -36,6 +36,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
@@ -49,6 +50,7 @@ public class DataBackup implements SystemTask {
     private final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DATE_FORMAT_PICTURE);
     
 	private Path dest;
+	private Optional<Path> lastBackup = Optional.empty();
 	
     public DataBackup() {
     }
@@ -97,6 +99,7 @@ public class DataBackup implements SystemTask {
 		
 		final String creationDate = creationDateFormat.format(Calendar.getInstance().getTime());
         final Path outFilename = dest.resolve(creationDate + ".zip");
+        this.lastBackup = Optional.of(outFilename);
         
         // Create the ZIP file
         LOG.debug("Archiving data files into: " + outFilename);
@@ -107,9 +110,13 @@ public class DataBackup implements SystemTask {
             broker.backupToArchive(cb);
             // close the zip file
 		} catch (final IOException e) {
-			LOG.warn("An IO error occurred while backing up data files: " + e.getMessage(), e);
+			LOG.error("An IO error occurred while backing up data files: " + e.getMessage(), e);
 		}
 	}
+
+    public Optional<Path> getLastBackup() {
+        return lastBackup;
+    }
 
     private static class Callback implements RawDataBackup {
         final private ZipOutputStream zout;

@@ -509,7 +509,11 @@ public class NativeBroker extends DBBroker {
                 LOG.warn("Storage file is null: " + i);
                 continue;
             }
-            try(final OutputStream os = backup.newEntry(FileUtils.fileName(paged.getFile()))) {
+
+            // do not use try-with-resources here, closing the OutputStream will close the entire backup
+//            try(final OutputStream os = backup.newEntry(FileUtils.fileName(paged.getFile()))) {
+            try {
+                final OutputStream os = backup.newEntry(FileUtils.fileName(paged.getFile()));
                 paged.backupToStream(os);
             } finally {
                 backup.closeEntry();
@@ -529,7 +533,10 @@ public class NativeBroker extends DBBroker {
                 backupBinary(backup, p, thisPath);
             }
         } else {
-            try(final OutputStream os = backup.newEntry(thisPath)) {
+            // do not use try-with-resources here, closing the OutputStream will close the entire backup
+//            try(final OutputStream os = backup.newEntry(thisPath)) {
+            try {
+                final OutputStream os = backup.newEntry(thisPath);
                 Files.copy(file, os);
             } finally {
                 backup.closeEntry();

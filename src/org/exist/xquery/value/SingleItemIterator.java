@@ -22,28 +22,29 @@ package org.exist.xquery.value;
 
 public class SingleItemIterator implements SequenceIterator {
 
-	boolean more = true;
-	Item item;
+    boolean more = true;
+    Item item;
 
-	public SingleItemIterator(Item item) {
-		this.item = item;
-	}
+    public SingleItemIterator(Item item) {
+        this.item = item;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.SequenceIterator#hasNext()
-	 */
-	public boolean hasNext() {
-		return more;
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.SequenceIterator#hasNext()
+     */
+    public boolean hasNext() {
+        return more;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.SequenceIterator#nextItem()
-	 */
-	public Item nextItem() {
-		if (!more)
-			{return null;}
-		more = false;
-		return item;
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.SequenceIterator#nextItem()
+     */
+    public Item nextItem() {
+        if (!more) {
+            return null;
+        }
+        more = false;
+        return item;
+    }
 
 }

@@ -21,17 +21,17 @@
  */
 package org.exist.xquery.value;
 
-import java.text.Collator;
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.*;
 import org.exist.xquery.Constants.Comparison;
 
+import java.text.Collator;
+import java.util.List;
+
 /**
  * Represents a function item, i.e. a reference to a function that can be called dynamically.
- * 
+ *
  * @author wolf
  */
 public class FunctionReference extends AtomicValue {
@@ -43,30 +43,30 @@ public class FunctionReference extends AtomicValue {
     public FunctionReference(FunctionCall fcall) {
         this.functionCall = fcall;
     }
-    
+
     public FunctionCall getCall() {
-    	return functionCall;
+        return functionCall;
     }
-    
+
     /**
      * Get the signature of the function.
-     * 
+     *
      * @return signature of this function
      */
     public FunctionSignature getSignature() {
         return functionCall.getSignature();
     }
-    
+
     /**
      * Calls {@link FunctionCall#analyze(AnalyzeContextInfo)}.
-     * 
+     *
      * @param contextInfo
      * @throws XPathException
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    	functionCall.analyze(contextInfo);
+        functionCall.analyze(contextInfo);
         if (functionCall.getContext().optimizationsEnabled()) {
-            final Optimizer optimizer = new Optimizer( functionCall.getContext() );
+            final Optimizer optimizer = new Optimizer(functionCall.getContext());
             functionCall.accept(optimizer);
             if (optimizer.hasOptimized()) {
                 functionCall.resetState(true);
@@ -79,23 +79,22 @@ public class FunctionReference extends AtomicValue {
      * Calls {@link FunctionCall#eval(Sequence)}.
      */
     public Sequence eval(Sequence contextSequence) throws XPathException {
-    	return functionCall.eval(contextSequence);
+        return functionCall.eval(contextSequence);
     }
 
     /**
      * Calls {@link FunctionCall#evalFunction(Sequence, Item, Sequence[])}.
-     * 
      */
     public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq) throws XPathException {
-    	return functionCall.evalFunction(contextSequence, contextItem, seq);
+        return functionCall.evalFunction(contextSequence, contextItem, seq);
     }
-    
+
     public void setArguments(List<Expression> arguments) throws XPathException {
-    	functionCall.setArguments(arguments);
+        functionCall.setArguments(arguments);
     }
-    
+
     public void setContext(XQueryContext context) {
-    	functionCall.setContext(context);
+        functionCall.setContext(context);
     }
 
     public void resetState(boolean postOptimization) {
@@ -109,7 +108,7 @@ public class FunctionReference extends AtomicValue {
     public int getType() {
         return Type.FUNCTION_REFERENCE;
     }
-    
+
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#getStringValue()
      */
@@ -121,14 +120,15 @@ public class FunctionReference extends AtomicValue {
      * @see org.exist.xquery.value.Sequence#convertTo(int)
      */
     public AtomicValue convertTo(int requiredType) throws XPathException {
-        if (requiredType == Type.FUNCTION_REFERENCE)
-            {return this;}
+        if (requiredType == Type.FUNCTION_REFERENCE) {
+            return this;
+        }
         throw new XPathException("cannot convert function reference to " + Type.getTypeName(requiredType));
     }
-    
-	public boolean effectiveBooleanValue() throws XPathException {
-		throw new XPathException(ErrorCodes.FORG0006, "Effective boolean value is not defined for a FunctionReference");
-	}    
+
+    public boolean effectiveBooleanValue() throws XPathException {
+        throw new XPathException(ErrorCodes.FORG0006, "Effective boolean value is not defined for a FunctionReference");
+    }
 
     @Override
     public boolean compareTo(Collator collator, Comparison operator, AtomicValue other)

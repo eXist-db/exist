@@ -24,7 +24,7 @@ import java.util.Optional;
 public class ValueSequenceTest {
 
     @ClassRule
-    public final static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    public final static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     @Test
     public void sortInDocumentOrder() throws EXistException, PermissionDeniedException, AuthenticationException {

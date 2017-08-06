@@ -131,6 +131,10 @@ public class OpenIDUtility {
 
                 Sequence result = xquery.execute(broker, compiled, null, outputProperties);
                 LOG.info("XQuery execution results: " + result.toString());
+            } finally {
+                if(resource != null) {
+                    resource.getUpdateLock().release(LockMode.READ_LOCK);
+                }
             }
         } catch (Exception e) {
             LOG.error("Exception while executing OpenID registration script for " + principal.getMetadataValue(AXSchemaType.ALIAS_USERNAME), e);

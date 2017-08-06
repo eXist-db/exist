@@ -7,7 +7,7 @@ package org.exist.management;
  * Time: 8:31:15 AM
  * To change this template use File | Settings | File Templates.
  */
-public class CacheManager implements CacheManagerMBean {
+public class CacheManager implements CacheManagerMXBean {
 
     private final org.exist.storage.CacheManager manager;
 

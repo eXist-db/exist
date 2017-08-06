@@ -47,7 +47,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class TriggerConfigTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     @Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {

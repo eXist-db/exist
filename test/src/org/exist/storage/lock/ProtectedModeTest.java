@@ -22,6 +22,7 @@
 package org.exist.storage.lock;
 
 import org.exist.TestDataGenerator;
+import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.exist.xmldb.IndexQueryService;
@@ -40,13 +41,12 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Random;
 
 public class ProtectedModeTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     private final static String COLLECTION_CONFIG =
 		"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -139,7 +139,7 @@ public class ProtectedModeTest {
         final IndexQueryService idxConf = (IndexQueryService) collection.getService("IndexQueryService", "1.0");
         idxConf.configureCollection(COLLECTION_CONFIG);
         final XMLResource hamlet = (XMLResource) collection.createResource("hamlet.xml", "XMLResource");
-        hamlet.setContent(Paths.get("samples/shakespeare/hamlet.xml"));
+        hamlet.setContent(TestUtils.resolveShakespeareSample("hamlet.xml"));
         collection.storeResource(hamlet);
 
         mgmt = (CollectionManagementService) collection.getService("CollectionManagementService", "1.0");

@@ -60,7 +60,7 @@ import static org.junit.Assert.assertTrue;
 public class RESTServiceTest {
 
     @ClassRule
-    public final static ExistWebServer existWebServer = new ExistWebServer(true);
+    public final static ExistWebServer existWebServer = new ExistWebServer(true, false, true);
 
     private final static String XML_DATA = "<test>"
             + "<para>\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC</para>"

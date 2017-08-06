@@ -1734,17 +1734,6 @@ public class ElementImpl extends NamedNode implements Element {
     }
 
     @Override
-    public boolean isSameNode(final Node other) {
-        // This function is used by Saxon in some circumstances, and this partial implementation is required for proper Saxon operation.
-        if(other instanceof IStoredNode) {
-            return (this.nodeId == ((IStoredNode<?>) other).getNodeId() &&
-                this.ownerDocument.getDocId() == ((IStoredNode<? extends IStoredNode>) other).getOwnerDocument().getDocId());
-        }
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "isSameNode(Node other) not implemented on other class " + other.getClass().getName());
-    }
-
-    @Override
     public boolean accept(final INodeIterator iterator, final NodeVisitor visitor) {
         if(!visitor.visit(this)) {
             return false;

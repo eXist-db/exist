@@ -171,10 +171,18 @@
 		-->
 		<trigger class="org.exist.security.GnuCryptoJceProviderStartupTrigger"/>
 
-		<!--
-		    Trigger for registering eXists XML:DB URL handler with Java
-		-->
-		<trigger class="org.exist.protocolhandler.URLStreamHandlerStartupTrigger"/>
+                <!--
+                    Trigger for registering eXists XML:DB URL handler with Java
+                -->
+                <trigger class="org.exist.protocolhandler.URLStreamHandlerStartupTrigger">
+                    <!-- Keep stream's data in memory -->
+                    <parameter name="mode" value="memory"/>
+                    <!-- low memory requirements, but also it have design bugs:
+                          - broker hold while io stream in "use";
+                          - require 2 threads per operation
+                    -->
+                    <!--<parameter name="mode" value="threads"/>-->
+                </trigger>
 
                 <!-- 
                     EXQuery RESTXQ trigger to load the RESTXQ Registry at startup time 
@@ -880,16 +888,13 @@
             
             <!-- Modules to be enabled when building the distribution -->
             <module uri="http://exist-db.org/xquery/contentextraction"  class="org.exist.contentextraction.xquery.ContentExtractionModule" />
-            <!--module uri="http://exist-db.org/xquery/context"            class="org.exist.xquery.modules.context.ContextModule" /-->
             <module uri="http://exist-db.org/xquery/counter"            class="org.exist.xquery.modules.counter.CounterModule" />
             <module uri="http://exist-db.org/xquery/datetime"           class="org.exist.xquery.modules.datetime.DateTimeModule" />
             <module uri="http://exist-db.org/xquery/httpclient"         class="org.exist.xquery.modules.httpclient.HTTPClientModule" />
             <module uri="http://exist-db.org/xquery/image"              class="org.exist.xquery.modules.image.ImageModule" />
-            <module uri="http://exist-db.org/xquery/jndi"               class="org.exist.xquery.modules.jndi.JNDIModule" />
             <module uri="http://exist-db.org/xquery/mail"               class="org.exist.xquery.modules.mail.MailModule" />
             <module uri="http://exist-db.org/xquery/scheduler"          class="org.exist.xquery.modules.scheduler.SchedulerModule" />
             <module uri="http://exist-db.org/xquery/sql"                class="org.exist.xquery.modules.sql.SQLModule" />
-            <!--module uri="http://exist-db.org/xquery/versioning/svn"     class="org.exist.versioning.svn.xquery.SVNModule" /-->
             <module uri="http://exist-db.org/xquery/xmldiff"            class="org.exist.xquery.modules.xmldiff.XmlDiffModule" />
 
             <!--
@@ -903,6 +908,23 @@
                 <parameter name="processorAdapter" value="org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter"/>
             </module>
 
+            <!-- Modules not enabled in the distribution by default -->
+            <!--
+            <module uri="http://exist-db.org/xquery/cssparser"          class="org.exist.xquery.modules.cssparser.CSSParserModule"/>
+            <module uri="http://exist-db.org/xquery/backups"            class="org.exist.backup.xquery.BackupModule" />
+            <module uri="http://exist-db.org/xquery/cache"              class="org.exist.xquery.modules.cache.CacheModule" />
+            <module uri="http://exist-db.org/xquery/context"            class="org.exist.xquery.modules.context.ContextModule" />
+            <module uri="http://exist-db.org/xquery/cqlparser"          class="org.exist.xquery.modules.cqlparser.CQLParserModule" />
+            <module uri="http://exist-db.org/xquery/exi"                class="org.exist.xquery.modules.exi.ExiModule" />
+            <module uri="http://exist-db.org/xquery/jndi"               class="org.exist.xquery.modules.jndi.JNDIModule" />
+            <module uri="http://exist-db.org/xquery/jfreechart"         class="org.exist.xquery.modules.jfreechart.JFreeChartModule" /> 
+            <module uri="http://exist-db.org/xquery/memcached"          class="org.exist.xquery.modules.memcached.MemcachedModule" />
+            <module uri="http://exist-db.org/xquery/oracle"             class="org.exist.xquery.modules.oracle.OracleModule" />
+            <module uri="http://exist-db.org/xquery/simpleql"           class="org.exist.xquery.modules.simpleql.SimpleQLModule" />
+            <module uri="http://exist-db.org/xquery/versioning/svn"     class="org.exist.versioning.svn.xquery.SVNModule" />
+            <module uri="http://exist-db.org/xquery/xmpp"               class="org.exist.xquery.modules.xmpp.XMPPModule" />
+            -->
+
             <!--
                 exiftool:
                 - perl-path - file system path to the perl executable
@@ -915,18 +937,6 @@
             </module>
             -->
 
-            <!-- Modules not enabled in the distribution by default -->
-            <!--
-            <module uri="http://exist-db.org/xquery/cssparser" class="org.exist.xquery.modules.cssparser.CSSParserModule"/>
-            <module uri="http://exist-db.org/xquery/backups"            class="org.exist.backup.xquery.BackupModule" />
-            <module uri="http://exist-db.org/xquery/cache"              class="org.exist.xquery.modules.cache.CacheModule" />
-            <module uri="http://exist-db.org/xquery/cqlparser"           class="org.exist.xquery.modules.cqlparser.CQLParserModule" />
-            <module uri="http://exist-db.org/xquery/exi"                class="org.exist.xquery.modules.exi.ExiModule" />
-            <module uri="http://exist-db.org/xquery/jfreechart"         class="org.exist.xquery.modules.jfreechart.JFreeChartModule" /> 
-            <module uri="http://exist-db.org/xquery/memcached"          class="org.exist.xquery.modules.memcached.MemcachedModule" />
-            <module uri="http://exist-db.org/xquery/oracle"             class="org.exist.xquery.modules.oracle.OracleModule" />
-            <module uri="http://exist-db.org/xquery/xmpp"               class="org.exist.xquery.modules.xmpp.XMPPModule" />
-            -->
         </builtin-modules>
     </xquery>
 

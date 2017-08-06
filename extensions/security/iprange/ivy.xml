@@ -1,0 +1,6 @@
+<!--
+    Ivy module to retrieve jar for iprange
+-->
+<ivy-module version="2.0">
+    <info organisation="org.exist" module="security.iprange"/>
+</ivy-module>

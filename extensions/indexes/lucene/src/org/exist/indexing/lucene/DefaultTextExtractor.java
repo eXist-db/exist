@@ -28,6 +28,10 @@ public class DefaultTextExtractor extends AbstractTextExtractor {
     private boolean addSpaceBeforeNext = false;
     
     public int startElement(QName name) {
+        if(isInlineNode(name)) {
+            // discard not yet applied whitespaces
+            addSpaceBeforeNext = false;
+        }
         if (config.isIgnoredNode(name) || (idxConfig != null && idxConfig.isIgnoredNode(name)))
             stack++;
         else if (!isInlineNode(name) && buffer.length() > 0 && buffer.charAt(buffer.length() - 1) != ' ') {

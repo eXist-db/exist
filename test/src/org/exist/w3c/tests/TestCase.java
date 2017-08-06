@@ -80,7 +80,7 @@ public abstract class TestCase {
 	public static final String testLocation = "test/external/";
 
 	@ClassRule
-	public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+	public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {

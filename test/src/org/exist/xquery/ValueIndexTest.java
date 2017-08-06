@@ -49,7 +49,7 @@ import static org.junit.Assert.assertNotNull;
 public class ValueIndexTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     private String CONFIG =
     	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" + 

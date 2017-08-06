@@ -49,7 +49,7 @@ import java.util.List;
 public class XIncludeSerializerTest {
 
     @ClassRule
-    public static final ExistWebServer existWebServer = new ExistWebServer(true, true);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, true, true);
 
     private final static XmldbURI XINCLUDE_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test");
     private final static XmldbURI XINCLUDE_NESTED_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test/data");

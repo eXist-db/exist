@@ -40,7 +40,7 @@ import org.xmldb.api.modules.XPathQueryService;
 public class AnnotationsTest {
 
     @ClassRule
-    public final static ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public final static ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     public AnnotationsTest() {
     }

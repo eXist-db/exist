@@ -178,6 +178,7 @@ public class EmbeddedUpload {
                     }
 
                     LOG.debug("commit");
+                    txn.commit();
                 }
             } finally {
                 if(collection != null) {

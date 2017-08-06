@@ -88,6 +88,11 @@ public abstract class AbstractInternalModule implements InternalModule {
     }
 
     @Override
+    public void setContextItem(Sequence contextItem) {
+        // not used for internal modules
+    }
+
+    @Override
     public boolean isReady() {
         return true; // internal modules don't need to be compiled
     }
@@ -198,7 +203,13 @@ public abstract class AbstractInternalModule implements InternalModule {
     }
 
     @Override
-    public void reset(XQueryContext xqueryContext) {
+    public void reset(XQueryContext context) {
         //Nothing to do
+    }
+
+    @Override
+    public void reset(XQueryContext xqueryContext, boolean keepGlobals) {
+        // call deprecated method for backwards compatibility
+        reset(xqueryContext);
     }
 }

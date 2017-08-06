@@ -28,11 +28,11 @@ import java.util.Map;
  */
 public class DocumentTriggerProxy extends AbstractTriggerProxy<DocumentTrigger> {
 
-    public DocumentTriggerProxy(Class<? extends DocumentTrigger> clazz) {
+    public DocumentTriggerProxy(final Class<? extends DocumentTrigger> clazz) {
         super(clazz);
     }
     
-    public DocumentTriggerProxy(Class<? extends DocumentTrigger> clazz, Map<String, List<? extends Object>> parameters) {
+    public DocumentTriggerProxy(final Class<? extends DocumentTrigger> clazz, final Map<String, List<? extends Object>> parameters) {
         super(clazz, parameters);
     }
 }

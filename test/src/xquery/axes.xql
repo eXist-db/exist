@@ -29,11 +29,28 @@ declare variable $axes:NESTED_DIVS :=
         </div>
     </body>;
 
+declare variable $axes:in-mem-doc1 :=
+    document {
+        <root>
+            <a/>
+            <b/>
+        </root>
+    };
+
+declare variable $axes:in-mem-doc2 :=
+    document {
+        <root>
+            <a/>
+        </root>
+    };
+
 declare 
     %test:setUp
 function axes:setup() {
     xmldb:create-collection("/db", "axes-test"),
-    xmldb:store("/db/axes-test", "test.xml", $axes:NESTED_DIVS)
+    xmldb:store("/db/axes-test", "test.xml", $axes:NESTED_DIVS),
+    xmldb:store("/db/axes-test", "doc1.xml", $axes:in-mem-doc1),
+    xmldb:store("/db/axes-test", "doc2.xml", $axes:in-mem-doc2)
 };
 
 declare 
@@ -72,6 +89,45 @@ function axes:descendant-axis-except-nested2() {
     return
         ($node//div except $node//div//div)/head
 };
+
+declare
+    %test:assertEquals("<b/>")
+function axes:following-sibling-in-memory-by-name() {
+    let $in-mem-tests := ($axes:in-mem-doc1, $axes:in-mem-doc2)/root
+    return
+        $in-mem-tests//a/following-sibling::*[name()='b']
+};
+
+declare
+    %test:assertEquals("<b/>")
+function axes:following-sibling-in-memory() {
+    let $in-mem-tests := ($axes:in-mem-doc1, $axes:in-mem-doc2)/root
+    return
+        $in-mem-tests//a/following-sibling::b
+};
+
+declare
+    %test:assertEquals("<b/>")
+function axes:following-sibling-stored-by-name() {
+    let $stored-tests := (
+        doc("/db/axes-test/doc1.xml"),
+        doc("/db/axes-test/doc2.xml")
+    )/root
+    return
+        $stored-tests//a/following-sibling::*[name()='b']
+};
+
+declare
+    %test:assertEquals("<b/>")
+function axes:following-sibling-stored() {
+    let $stored-tests := (
+        doc("/db/axes-test/doc1.xml"),
+        doc("/db/axes-test/doc2.xml")
+    )/root
+    return
+        $stored-tests//a/following-sibling::b
+};
+
 
 declare
 %test:assertError("err:XPDY0002")

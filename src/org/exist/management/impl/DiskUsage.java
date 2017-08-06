@@ -41,7 +41,7 @@ import com.evolvedbinary.j8fu.function.FunctionE;
  *
  * @author dizzzz@exist-db.org
  */
-public class DiskUsage implements DiskUsageMBean {
+public class DiskUsage implements DiskUsageMXBean {
 
     private final static Logger LOG = LogManager.getLogger(DiskUsage.class);
 

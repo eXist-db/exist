@@ -43,6 +43,8 @@ import java.nio.file.Path;
 /**
  * Implementation of URIResolver which
  * will resolve paths from the eXist database
+ *
+ * @Deprecated use {@link org.exist.xslt.EXistURIResolver}
  */
 public class EXistURIResolver implements URIResolver {
     private static final Logger LOG = LogManager.getLogger(EXistURIResolver.class);

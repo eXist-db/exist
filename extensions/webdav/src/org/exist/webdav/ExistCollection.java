@@ -21,6 +21,25 @@
  */
 package org.exist.webdav;
 
+import org.apache.commons.io.IOUtils;
+import org.exist.EXistException;
+import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
+import org.exist.util.*;
+import org.exist.webdav.exceptions.CollectionDoesNotExistException;
+import org.exist.webdav.exceptions.CollectionExistsException;
+import org.exist.xmldb.XmldbURI;
+import org.xml.sax.SAXException;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -31,48 +50,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.io.IOUtils;
-
-import org.exist.EXistException;
-import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
-import org.exist.storage.txn.TransactionManager;
-import org.exist.storage.txn.Txn;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock.LockMode;
-import org.exist.util.LockException;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
-import org.exist.util.VirtualTempFile;
-import org.exist.util.VirtualTempFileInputSource;
-
-import org.exist.webdav.exceptions.CollectionDoesNotExistException;
-import org.exist.webdav.exceptions.CollectionExistsException;
-import org.exist.xmldb.XmldbURI;
-
-import org.xml.sax.SAXException;
-
 /**
  * Class for accessing the Collection class of the exist-db native API.
  *
  * @author Dannes Wessels (dizzzz_at_exist-db.org)
  */
 public class ExistCollection extends ExistResource {
-	
+
     /**
-     *  Constructor.
-     * 
-     * @param uri   URI of document
-     * @param pool  Reference to brokerpool
+     * Constructor.
+     *
+     * @param uri  URI of document
+     * @param pool Reference to brokerpool
      */
     public ExistCollection(XmldbURI uri, BrokerPool pool) {
 
-        if(LOG.isTraceEnabled()) {
+        if (LOG.isTraceEnabled()) {
             LOG.trace(String.format("New collection object for %s", uri));
         }
 
@@ -97,7 +90,7 @@ public class ExistCollection extends ExistResource {
             return;
         }
 
-        try(final DBBroker broker = brokerPool.get(Optional.of(subject))) {
+        try (final DBBroker broker = brokerPool.get(Optional.of(subject))) {
             // Get access to collection
             Collection collection = null;
             try {
@@ -139,7 +132,7 @@ public class ExistCollection extends ExistResource {
     public List<XmldbURI> getCollectionURIs() {
         final List<XmldbURI> collectionURIs = new ArrayList<>();
 
-        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
             // Try to read as specified subject
             Collection collection = null;
             try {
@@ -170,7 +163,7 @@ public class ExistCollection extends ExistResource {
     public List<XmldbURI> getDocumentURIs() {
         final List<XmldbURI> documentURIs = new ArrayList<>();
 
-        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
             Collection collection = null;
             try {
                 // Try to read as specified subject
@@ -201,7 +194,7 @@ public class ExistCollection extends ExistResource {
      */
     void delete() {
 
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("Deleting '%s'", xmldbUri));
         }
 
@@ -209,8 +202,8 @@ public class ExistCollection extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
-            final Txn txn = txnManager.beginTransaction()) {
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
+             final Txn txn = txnManager.beginTransaction()) {
 
             // Open collection if possible, else abort
             collection = broker.openCollection(xmldbUri, LockMode.WRITE_LOCK);
@@ -225,7 +218,7 @@ public class ExistCollection extends ExistResource {
             // Commit change
             txnManager.commit(txn);
 
-            if(LOG.isDebugEnabled()) {
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("Document deleted sucessfully");
             }
         } catch (EXistException | IOException | PermissionDeniedException | TriggerException e) {
@@ -237,7 +230,7 @@ public class ExistCollection extends ExistResource {
                 collection.release(LockMode.WRITE_LOCK);
             }
 
-            if(LOG.isDebugEnabled()) {
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("Finished delete");
             }
         }
@@ -245,7 +238,7 @@ public class ExistCollection extends ExistResource {
 
     public XmldbURI createCollection(String name) throws PermissionDeniedException, CollectionExistsException, EXistException {
 
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("Create  '%s' in '%s'", name, xmldbUri));
         }
 
@@ -254,8 +247,8 @@ public class ExistCollection extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
-            final Txn txn = txnManager.beginTransaction()) {
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
+             final Txn txn = txnManager.beginTransaction()) {
 
             // Check if collection exists. not likely to happen since availability is
             // checked by ResourceFactory
@@ -264,7 +257,7 @@ public class ExistCollection extends ExistResource {
                 final String msg = "Collection already exists";
 
                 LOG.debug(msg);
-                
+
                 //XXX: double "abort" is bad thing!!!
                 txnManager.abort(txn);
                 throw new CollectionExistsException(msg);
@@ -278,7 +271,7 @@ public class ExistCollection extends ExistResource {
             // Commit change
             txnManager.commit(txn);
 
-            if(LOG.isDebugEnabled()) {
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("Collection created sucessfully");
             }
         } catch (EXistException | PermissionDeniedException e) {
@@ -296,7 +289,7 @@ public class ExistCollection extends ExistResource {
                 collection.release(LockMode.WRITE_LOCK);
             }
 
-            if(LOG.isDebugEnabled()) {
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("Finished creation");
             }
         }
@@ -307,7 +300,7 @@ public class ExistCollection extends ExistResource {
     public XmldbURI createFile(String newName, InputStream is, Long length, String contentType)
             throws IOException, PermissionDeniedException, CollectionDoesNotExistException {
 
-        if(LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled())
             LOG.debug(String.format("Create '%s' in '%s'", newName, xmldbUri));
 
         XmldbURI newNameUri = XmldbURI.create(newName);
@@ -323,8 +316,8 @@ public class ExistCollection extends ExistResource {
 
         // create temp file and store. Existdb needs to read twice from a stream.
         VirtualTempFile vtf = new VirtualTempFile();
-        try(final BufferedInputStream bis = new BufferedInputStream(is);
-            final BufferedOutputStream bos = new BufferedOutputStream(vtf)) {
+        try (final BufferedInputStream bis = new BufferedInputStream(is);
+             final BufferedOutputStream bos = new BufferedOutputStream(vtf)) {
 
             // Perform actual copy
             IOUtils.copy(bis, bos);
@@ -335,7 +328,7 @@ public class ExistCollection extends ExistResource {
         // XML documents are not supported a small file will be created.
         if (mime.isXMLType() && vtf.length() == 0L) {
 
-            if(LOG.isDebugEnabled())
+            if (LOG.isDebugEnabled())
                 LOG.debug(String.format("Creating dummy XML file for null resource lock '%s'", newNameUri));
 
             vtf = new VirtualTempFile();
@@ -345,8 +338,8 @@ public class ExistCollection extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
-            final Txn txn = txnManager.beginTransaction()) {
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
+             final Txn txn = txnManager.beginTransaction()) {
 
             // Check if collection exists. not likely to happen since availability is checked
             // by ResourceFactory
@@ -360,11 +353,11 @@ public class ExistCollection extends ExistResource {
 
             if (mime.isXMLType()) {
 
-                if(LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled())
                     LOG.debug(String.format("Inserting XML document '%s'", mime.getName()));
 
                 // Stream into database
-                try(final VirtualTempFileInputSource vtfis = new VirtualTempFileInputSource(vtf)) {
+                try (final VirtualTempFileInputSource vtfis = new VirtualTempFileInputSource(vtf)) {
                     IndexInfo info = collection.validateXMLResource(txn, broker, newNameUri, vtfis);
                     DocumentImpl doc = info.getDocument();
                     doc.getMetadata().setMimeType(mime.getName());
@@ -373,12 +366,12 @@ public class ExistCollection extends ExistResource {
 
             } else {
 
-                if(LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled())
                     LOG.debug(String.format("Inserting BINARY document '%s'", mime.getName()));
 
                 // Stream into database
-                try(final InputStream fis = vtf.getByteStream();
-                    final InputStream bis = new BufferedInputStream(fis)) {
+                try (final InputStream fis = vtf.getByteStream();
+                     final InputStream bis = new BufferedInputStream(fis)) {
                     collection.addBinaryResource(txn, broker, newNameUri, bis, mime.getName(), length);
                 }
             }
@@ -414,7 +407,7 @@ public class ExistCollection extends ExistResource {
                 collection.release(LockMode.WRITE_LOCK);
             }
 
-            if(LOG.isDebugEnabled()) {
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("Finished creation");
             }
         }
@@ -427,13 +420,13 @@ public class ExistCollection extends ExistResource {
 
     void resourceCopyMove(XmldbURI destCollectionUri, String newName, Mode mode) throws EXistException {
 
-        if(LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled())
             LOG.debug(String.format("%s '%s' to '%s' named '%s'", mode, xmldbUri, destCollectionUri, newName));
 
         XmldbURI newNameUri = null;
         try {
             newNameUri = XmldbURI.xmldbUriFor(newName);
-            
+
         } catch (URISyntaxException ex) {
             LOG.error(ex);
             throw new EXistException(ex.getMessage());
@@ -449,8 +442,8 @@ public class ExistCollection extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
-            final Txn txn = txnManager.beginTransaction()) {
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
+             final Txn txn = txnManager.beginTransaction()) {
 
             // Open collection if possible, else abort
             srcCollection = broker.openCollection(srcCollectionUri, srcCollectionLockMode);
@@ -479,7 +472,7 @@ public class ExistCollection extends ExistResource {
             // Commit change
             txnManager.commit(txn);
 
-            if(LOG.isDebugEnabled()) {
+            if (LOG.isDebugEnabled()) {
                 LOG.debug(String.format("Collection %sd successfully", mode));
             }
 

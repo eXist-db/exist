@@ -54,7 +54,8 @@ import org.junit.runners.Suite;
         UnionTest.class,
         TestXPathOpOrSpecialCase.class,
         MemtreeDescendantOrSelfNodeKindTest.class,
-        PersistentDescendantOrSelfNodeKindTest.class
+        PersistentDescendantOrSelfNodeKindTest.class,
+        CleanupTest.class
 })
 public class AllXqueryTests {
 }

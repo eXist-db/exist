@@ -40,7 +40,7 @@ import static org.junit.Assert.assertTrue;
 public class XPathQueryTest {
 
     @ClassRule
-    public static final ExistWebServer existWebServer = new ExistWebServer(true, true);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, true, true);
     private static final String PORT_PLACEHOLDER = "${PORT}";
 
     @Parameterized.Parameters(name = "{0}")

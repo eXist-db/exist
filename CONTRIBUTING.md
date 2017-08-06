@@ -33,6 +33,9 @@ Although the following are taken from our [Developer Manifesto](http://www.exist
 - **Make sure the appropriate licence header appears at the top of your source code file.** We use [LGPL v2.1](http://opensource.org/licenses/LGPL-2.1 "The GNU Lesser General Public License, version 2.1") for eXist and *strongly* encourage that, but ultimately any compatible [OSI approved license](http://opensource.org/licenses "Open Source Licenses") without further restrictions may be used.
 - **Run the full eXist test suite.** We don't accept code that causes regressions.
 
+Versions and Releases
+---------------------
+eXist follows a Semantic Verisoning scheme, this is further documented in the [eXist Versioning Scheme and Release Process](exist-versioning-release.md) document.
 
 Do I work on a bug-fix using a `feature` or a `hotfix`?
 -------------------------------------------------------

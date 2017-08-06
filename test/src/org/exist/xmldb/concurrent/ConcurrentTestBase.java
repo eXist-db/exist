@@ -20,11 +20,10 @@
  */
 package org.exist.xmldb.concurrent;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.exist.TestUtils;
 import org.exist.xmldb.concurrent.action.Action;
 import org.exist.xmldb.IndexQueryService;
 import org.junit.Test;
@@ -121,10 +120,7 @@ public abstract class ConcurrentTestBase {
         testCol = DBUtils.addCollection(rootCol, testColName);
         assertNotNull(testCol);
 
-        String existHome = System.getProperty("exist.home");
-        Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-        existDir = existDir.normalize();
-        DBUtils.addXMLResource(rootCol, "biblio.rdf", existDir.resolve("samples/biblio.rdf"));
+        DBUtils.addXMLResource(rootCol, "biblio.rdf", TestUtils.resolveSample("biblio.rdf"));
     }
 
     public void tearDown() throws XMLDBException {

@@ -23,8 +23,8 @@
 package org.exist.xmldb;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
+import org.exist.TestUtils;
 import org.exist.xmldb.concurrent.DBUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -112,10 +112,8 @@ public class ShutdownTest {
             testCol = DBUtils.addCollection(rootCol, "C1");
             assertNotNull(testCol);
         }
-                    String existHome = System.getProperty("exist.home");
-		Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-		existDir = existDir.normalize();
-        DBUtils.addXMLResource(rootCol, "biblio.rdf", existDir.resolve("samples/biblio.rdf"));
+
+        DBUtils.addXMLResource(rootCol, "biblio.rdf", TestUtils.resolveSample("biblio.rdf"));
         wordList = DBUtils.wordList(rootCol);
 
         // store the data files

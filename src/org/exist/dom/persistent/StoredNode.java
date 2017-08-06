@@ -443,4 +443,15 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
             return Constants.SUPERIOR;
         }
     }
+
+    @Override
+    public boolean isSameNode(final Node other) {
+        // This function is used by Saxon in some circumstances, and is required for proper Saxon operation.
+        if(other instanceof IStoredNode) {
+            return (this.nodeId.equals(((IStoredNode<?>) other).getNodeId()) &&
+                    this.ownerDocument.getDocId() == ((IStoredNode<? extends IStoredNode>) other).getOwnerDocument().getDocId());
+        } else {
+            return false;
+        }
+    }
 }

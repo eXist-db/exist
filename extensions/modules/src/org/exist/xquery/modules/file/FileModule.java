@@ -98,15 +98,4 @@ public class FileModule extends AbstractInternalModule
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }
-	
-	/**
-	 * Resets the Module Context 
-	 * 
-	 * @param xqueryContext The XQueryContext
-	 */
-	
-	public void reset( XQueryContext xqueryContext )
-	{
-		super.reset( xqueryContext );
-	}
 }

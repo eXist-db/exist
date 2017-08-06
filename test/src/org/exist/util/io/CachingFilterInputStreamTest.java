@@ -14,6 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Test cases for CachingFilterInputStream
@@ -583,6 +584,28 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
+    public void skip_correctlyAdjustsSrcOffset_onSharedCache() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
+        final String testString = "helloWorld";
+        final byte testData[] = testString.getBytes();
+
+        final InputStream is = new ByteArrayInputStream(testData);
+        final FilterInputStreamCache cache = getNewCache(is);
+
+        final CachingFilterInputStream cfis1 = new CachingFilterInputStream(cache);
+        final CachingFilterInputStream cfis2 = new CachingFilterInputStream(cache);
+
+        assertEquals(0, cfis1.offset());
+        final long skipped1 = cfis1.skip(5);
+        assertEquals(5, skipped1);
+        assertEquals(5, cfis1.offset());
+
+        assertEquals(0, cfis2.offset());
+        final long skipped2 = cfis2.skip(5);
+        assertEquals(5, skipped2);
+        assertEquals(5, cfis2.offset());
+    }
+
+    @Test
     public void available_onClosedStream() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
@@ -735,6 +758,36 @@ public class CachingFilterInputStreamTest {
         cfis.reset();
 
         assertEquals(testData.length - 2, cfis.available());
+    }
+
+    @Test
+    public void sharedReferences() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
+        final String testString = "helloWorld";
+        final byte testData[] = testString.getBytes();
+
+        final InputStream is = new ByteArrayInputStream(testData);
+
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+
+        // increment shared references (will now be 2)
+        cfis.incrementSharedReferences();
+
+        // close should not close as we just incremented the shared references
+        cfis.close();
+
+        //read first 2 bytes
+        cfis.read();
+        cfis.read();
+
+        // close the second time, should actually close, as shared references will now be zero
+        cfis.close();
+
+        try {
+            cfis.read();
+            fail("Should not be able to read after shared references reach zero");
+        } catch(final IOException ioe) {
+            // no op, we expected the IOException
+        }
     }
 
     private byte[] subArray(byte data[], int len) {

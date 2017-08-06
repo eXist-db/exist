@@ -1,14 +1,14 @@
 package org.exist.xquery.value;
 
+import org.exist.xquery.XPathException;
+
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import org.exist.xquery.XPathException;
 
 /**
- *
  * @author Adam Retter <adam@existsolutions.com>
  */
 public abstract class BinaryValueType<T extends FilterOutputStream> {
@@ -28,18 +28,18 @@ public abstract class BinaryValueType<T extends FilterOutputStream> {
     public T getEncoder(OutputStream os) throws IOException {
         return instantiateCoder(os, true);
     }
-    
+
     public T getDecoder(OutputStream os) throws IOException {
         return instantiateCoder(os, false);
     }
-    
+
     private T instantiateCoder(OutputStream stream, boolean encoder) throws IOException {
         try {
             final Constructor<T> c = coder.getConstructor(OutputStream.class, boolean.class);
             final T f = c.newInstance(stream, encoder);
             return f;
-        } catch(final NoSuchMethodException | InvocationTargetException | IllegalAccessException | IllegalArgumentException | InstantiationException nsme) {
-            throw new IOException("Unable to get binary coder '" + coder.getName() +  "': " + nsme.getMessage(), nsme);
+        } catch (final NoSuchMethodException | InvocationTargetException | IllegalAccessException | IllegalArgumentException | InstantiationException nsme) {
+            throw new IOException("Unable to get binary coder '" + coder.getName() + "': " + nsme.getMessage(), nsme);
         }
     }
 

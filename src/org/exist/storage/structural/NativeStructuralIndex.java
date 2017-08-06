@@ -119,8 +119,11 @@ public class NativeStructuralIndex extends AbstractIndex implements RawBackupSup
     }
 
 	@Override
-	public void backupToArchive(RawDataBackup backup) throws IOException {
-        try(final OutputStream os = backup.newEntry(FileUtils.fileName(btree.getFile()))) {
+	public void backupToArchive(final RawDataBackup backup) throws IOException {
+        // do not use try-with-resources here, closing the OutputStream will close the entire backup
+//        try(final OutputStream os = backup.newEntry(FileUtils.fileName(btree.getFile()))) {
+        try {
+            final OutputStream os = backup.newEntry(FileUtils.fileName(btree.getFile()));
             btree.backupToStream(os);
         } finally {
             backup.closeEntry();

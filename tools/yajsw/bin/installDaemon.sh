@@ -36,7 +36,11 @@ fi
 if [ -z "${JAVA_HOME}" ]; then
   echo -e "\nNo JAVA_HOME environment variable found!"
   echo "Attempting to determine JAVA_HOME (if this fails you must manually set it)..."
-  java_bin=$(readlink -f `which java`)
+  if [ "$(uname -s)" == "Darwin" ]; then
+      java_bin=$(readlink `which java`)
+  else
+      java_bin=$(readlink -f `which java`)
+  fi
   java_bin_dir=$(dirname "${java_bin}")
   JAVA_HOME=$(dirname "${java_bin_dir}")
   echo -e "Found JAVA_HOME=${JAVA_HOME}\n"
@@ -79,7 +83,7 @@ function install_systemd_config {
     fi
     systemd_service="${systemd_sys_dir}/eXist-db.service"
     echo "Installing template ${wrapper_home}/templates/systemd.vm as non-privileged service ${systemd_service}";
-    sudo echo -e "$(eval "echo -e \"`<${wrapper_home}/templates/systemd.vm`\"")" > "${systemd_service}";
+    eval "echo -e \"`<${wrapper_home}/templates/systemd.vm`\"" | sudo tee "${systemd_service}" > /dev/null
     sudo chmod 664 "${systemd_service}"
     echo -e "\nEnabling the service...\n";
     sudo systemctl daemon-reload

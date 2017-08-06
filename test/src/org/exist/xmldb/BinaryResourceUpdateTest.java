@@ -21,6 +21,7 @@
  */
 package org.exist.xmldb;
 
+import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.After;
 import org.junit.Before;
@@ -36,12 +37,11 @@ import java.nio.file.Path;
 
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
-import static org.exist.xmldb.XmldbLocalTests.*;
 
 public class BinaryResourceUpdateTest  {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     private final static String TEST_COLLECTION = "testBinaryResource";
 
@@ -53,8 +53,8 @@ public class BinaryResourceUpdateTest  {
     private static final Path xmlFile;
 
     static {
-      binFile = getExistDir().resolve("LICENSE");
-      xmlFile = getExistDir().resolve("samples/examples.xml");
+      binFile = TestUtils.getEXistHome().get().resolve("LICENSE");
+      xmlFile = TestUtils.resolveSample("examples.xml");
     }
 
     @Test

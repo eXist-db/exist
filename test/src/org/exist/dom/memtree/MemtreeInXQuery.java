@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 public class MemtreeInXQuery {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(true, true);
 
     @Test
     public void pi_attributes() throws XMLDBException {

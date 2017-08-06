@@ -349,11 +349,11 @@ varDecl [XQueryAST decl, XQueryAST ann] throws XPathException
 :
 	"variable"! DOLLAR! varName=varName! ( typeDeclaration )?
 	(
+		"external" ( COLON! EQ! e3:expr )?
+		|
 		LCURLY! e1:expr RCURLY! // deprecated
 		|
 		COLON! EQ! e2:expr
-		|
-		"external"
 	)
 	{
 		#varDecl= #(#[GLOBAL_VAR, varName], ann, #varDecl);
@@ -975,7 +975,7 @@ stringConcatExpr throws XPathException
 { boolean isConcat = false; }
 :
 	r1:rangeExpr (
-		CONCAT^ rangeExpr { isConcat = true; }
+		CONCAT! rangeExpr { isConcat = true; }
 	)*
 	{
 		if (isConcat)
@@ -1084,7 +1084,7 @@ stepExpr throws XPathException
 	=> axisStep
 	|
 	( ( "element" | "attribute" | "text" | "document" | "comment" |
-	  "namespace-node" | "processing-instruction" | "namespace" | "ordered" | 
+	  "namespace-node" | "processing-instruction" | "namespace" | "ordered" |
 	  "unordered" | "map" | "array" ) LCURLY ) =>
 	postfixExpr
 	|
@@ -1195,7 +1195,7 @@ postfixExpr throws XPathException:
 arrowExpr throws XPathException:
     unaryExpr ( ARROW_OP^ arrowFunctionSpecifier argumentList )*
     ;
-    
+
 arrowFunctionSpecifier throws XPathException
 { String name= null; }:
     name=n:eqName
@@ -1284,13 +1284,13 @@ primaryExpr throws XPathException
 
 stringConstructor throws XPathException
 	:
-	STRING_CONSTRUCTOR_START^ 
-	{ lexer.inStringConstructor = true; } 
-	stringConstructorContent 
-	{ lexer.inStringConstructor = false; } 
+	STRING_CONSTRUCTOR_START^
+	{ lexer.inStringConstructor = true; }
+	stringConstructorContent
+	{ lexer.inStringConstructor = false; }
 	STRING_CONSTRUCTOR_END!
 	;
-	
+
 stringConstructorContent throws XPathException
 	:
 	( STRING_CONSTRUCTOR_CONTENT | stringConstructorInterpolation )*
@@ -2267,16 +2267,16 @@ options {
 	paraphrase="string literal";
 }
 :
-	'"'! ( PREDEFINED_ENTITY_REF | CHAR_REF | ( '"'! '"' ) | ~ ( '"' | '&' ) )*
+	'"'! ( PREDEFINED_ENTITY_REF | CHAR_REF | ('\n') => '\n' { newline(); } | ( '"'! '"' ) | ~ ( '"' | '&' ) )*
 	'"'!
 	|
-	'\''! ( PREDEFINED_ENTITY_REF | CHAR_REF | ( '\''! '\'' ) | ~ ( '\'' | '&' ) )*
+	'\''! ( PREDEFINED_ENTITY_REF | CHAR_REF | ('\n') => '\n' { newline(); } | ( '\''! '\'' ) | ~ ( '\'' | '&' ) )*
 	'\''!
 	;
 
 protected STRING_CONSTRUCTOR_START options { paraphrase="start of string constructor"; }: "``[";
 protected STRING_CONSTRUCTOR_END options { paraphrase="start of string constructor"; }: "]``";
-protected STRING_CONSTRUCTOR_INTERPOLATION_START 
+protected STRING_CONSTRUCTOR_INTERPOLATION_START
 options { paraphrase="start of interpolated expression"; }: "`{";
 protected STRING_CONSTRUCTOR_INTERPOLATION_END
 options { paraphrase="end of interpolated expression"; }: "}`";
@@ -2288,6 +2288,7 @@ options {
 }
 :
 	(
+        ( '\n' ) => '\n' { newline(); } |
 		( '&' ) => ( PREDEFINED_ENTITY_REF | CHAR_REF ) |
 		( ( ']' '`' ) ~ ( '`' ) ) => ( ']' '`' ) |
 		( ']' ~ ( '`' ) ) => ']' |

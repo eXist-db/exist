@@ -25,6 +25,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.exist.TestUtils;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -50,14 +51,4 @@ public class XmldbLocalTests {
     public final static String ADMIN_PWD = "";
 
     public final static String GUEST_UID = "guest";
-
-    public static Path getExistDir() {
-        final String existHome = System.getProperty("exist.home");
-        return existHome == null ? Paths.get(".").normalize() : Paths.get(existHome).normalize();
-    }
-
-    public static Path getShakespeareSamplesDirectory() {
-        final String directory = "samples/shakespeare";
-        return getExistDir().resolve(directory).normalize();
-    }
 }

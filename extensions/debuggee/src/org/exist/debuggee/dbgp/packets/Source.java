@@ -92,9 +92,11 @@ public class Source extends Command {
 
     @Override
     public void exec() {
-    	if (fileURI == null)
-    		return;
-    	
+    	if (fileURI == null) {
+			return;
+		}
+
+		DocumentImpl resource = null;
     	InputStream is = null;
         try {
         	
@@ -108,7 +110,7 @@ public class Source extends Command {
 	
 	        		Database db = getJoint().getContext().getDatabase();
 	        		try(final DBBroker broker = db.getBroker()) {
-		    			DocumentImpl resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
+		    			resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
 		
 		    			if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
 		    				is = broker.getBinaryResource((BinaryDocument) resource);
@@ -139,13 +141,19 @@ public class Source extends Command {
         } catch (PermissionDeniedException | IOException e) {
             exception = e;
         } finally {
-        	if (is != null)
+        	if (is != null) {
 				try {
 					is.close();
 				} catch (IOException e) {
-					if (exception == null)
+					if (exception == null) {
 						exception = e;
+					}
 				}
+			}
+
+			if(resource != null) {
+        		resource.getUpdateLock().release(LockMode.READ_LOCK);
+			}
 		}
     }
 

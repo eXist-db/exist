@@ -36,6 +36,7 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
@@ -53,14 +54,17 @@ public class ConcurrentStoreTest {
     private static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
     
     private static Path dir = Paths.get(directory);
-    
+
+    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+
     private BrokerPool pool;
     private Collection test, test2;
 
     @Test
     public synchronized void store() throws InterruptedException, EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException {
         BrokerPool.FORCE_CORRUPTION = true;
-        pool = startDB();
+        pool = startDb();
         setupCollections();
 
         Thread t1 = new StoreThread1();
@@ -76,9 +80,9 @@ public class ConcurrentStoreTest {
     }
 
     @Test
-    public void read() throws EXistException, PermissionDeniedException, DatabaseConfigurationException, LockException {
+    public void read() throws EXistException, PermissionDeniedException, DatabaseConfigurationException, LockException, IOException {
         BrokerPool.FORCE_CORRUPTION = false;
-        pool = startDB();
+        pool = startDb();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
@@ -109,16 +113,15 @@ public class ConcurrentStoreTest {
             transact.commit(transaction);
         }
     }
-    
-    protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
-        final Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        return BrokerPool.getInstance();
+
+    private BrokerPool startDb() throws EXistException, IOException, DatabaseConfigurationException {
+        existEmbeddedServer.startDb();
+        return existEmbeddedServer.getBrokerPool();
     }
 
     @After
-    protected void tearDown() {
-        BrokerPool.stopAll(false);
+    public void stopDb() {
+        existEmbeddedServer.stopDb();
     }
     
     class StoreThread1 extends Thread {

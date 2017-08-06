@@ -24,6 +24,11 @@ package org.exist.storage.serializers;
 
 public class EXistOutputKeys {
 
+    /**
+     * Parameter "item-separator" from the XQuery serialization spec 3.1
+     */
+    public final static String ITEM_SEPARATOR = "item-separator";
+
 	public final static String OUTPUT_DOCTYPE = "output-doctype";
 	 
 	public final static String EXPAND_XINCLUDES = "expand-xincludes";
@@ -65,6 +70,12 @@ public class EXistOutputKeys {
      * them as JSON properties
      */
     public final static String JSON_PREFIX_ATTRIBUTES = "prefix-attributes";
+
+    /**
+     * JSON serialization: if text nodes are encountered which consist solely of whitespace then they
+     * will be ignored by the serializer
+     */
+    public final static String JSON_IGNORE_WHITESPACE_TEXT_NODES = "json-ignore-whitespace-text-nodes";
 
     /**
      * Defines the output method to be used for serializing nodes within json output.

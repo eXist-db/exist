@@ -52,7 +52,7 @@ import static org.junit.Assert.assertNotNull;
 public class RecoverBinaryTest {
 
     @Rule
-    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     @Test
     public void storeAndLoad() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {

@@ -62,6 +62,8 @@ import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.XMLUtil;
 import static org.exist.http.RESTServerParameter.*;
+
+import org.exist.http.servlets.EXistServlet;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.servlets.ResponseWrapper;
@@ -71,6 +73,8 @@ import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.Subject;
+import org.exist.security.internal.RealmImpl;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
@@ -158,16 +162,18 @@ public class RESTServer {
             + "h1 { color: #C0C0C0; }" + ".path {" + "  padding-bottom: 10px;"
             + "}" + ".high { " + "  color: #666699; " + "  font-weight: bold;"
             + "}" + "</style>" + "</head>" + "<body>" + "<h1>XQuery Error</h1>";
-    private String formEncoding; // TODO: we may be able to remove this
+    private final String formEncoding; // TODO: we may be able to remove this
     // eventually, in favour of
     // HttpServletRequestWrapper being setup in
     // EXistServlet, currently used for doPost()
     // but perhaps could be used for other
     // Request Methods? - deliriumsky
-    private String containerEncoding;
-    private boolean useDynamicContentType;
-    private boolean safeMode = false;
-    private SessionManager sessionManager;
+    private final String containerEncoding;
+    private final boolean useDynamicContentType;
+    private final boolean safeMode;
+    private final SessionManager sessionManager;
+    private final EXistServlet.FeatureEnabled xquerySubmission;
+    private final EXistServlet.FeatureEnabled xupdateSubmission;
 
     //EXQuery Request Module details
     private String xqueryContextExqueryRequestAttribute = null;
@@ -175,12 +181,14 @@ public class RESTServer {
     
     // Constructor
     public RESTServer(final BrokerPool pool, final String formEncoding,
-            final String containerEncoding, final boolean useDynamicContentType, final boolean safeMode) {
+                      final String containerEncoding, final boolean useDynamicContentType, final boolean safeMode, final EXistServlet.FeatureEnabled xquerySubmission, final EXistServlet.FeatureEnabled xupdateSubmission) {
         this.formEncoding = formEncoding;
         this.containerEncoding = containerEncoding;
         this.useDynamicContentType = useDynamicContentType;
         this.safeMode = safeMode;
         this.sessionManager = new SessionManager(pool);
+        this.xquerySubmission = xquerySubmission;
+        this.xupdateSubmission = xupdateSubmission;
         
         //get (optiona) EXQuery Request Module details
         try {
@@ -857,8 +865,21 @@ public class RESTServer {
                     }
 
                 } else if (rootNS != null && rootNS.equals(XUpdateProcessor.XUPDATE_NS)) {
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("Got xupdate request: " + content);
+                    }
 
-                    LOG.debug("Got xupdate request: " + content);
+                    if(xupdateSubmission == EXistServlet.FeatureEnabled.FALSE) {
+                        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                        return;
+                    } else if(xupdateSubmission == EXistServlet.FeatureEnabled.AUTHENTICATED_USERS_ONLY) {
+                        final Subject currentSubject = broker.getCurrentSubject();
+                        if(!currentSubject.isAuthenticated() || currentSubject.getId() == RealmImpl.GUEST_GROUP_ID) {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            return;
+                        }
+                    }
+
                     final MutableDocumentSet docs = new DefaultDocumentSet();
                     final Collection collection = broker.getCollection(pathUri);
                     if (collection != null) {
@@ -1246,6 +1267,17 @@ public class RESTServer {
         final HttpServletRequest request,
         final HttpServletResponse response) throws BadRequestException,
         PermissionDeniedException, XPathException {
+
+        if(xquerySubmission == EXistServlet.FeatureEnabled.FALSE) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        } else if(xquerySubmission == EXistServlet.FeatureEnabled.AUTHENTICATED_USERS_ONLY) {
+            final Subject currentSubject = broker.getCurrentSubject();
+            if(!currentSubject.isAuthenticated() || currentSubject.getId() == RealmImpl.GUEST_GROUP_ID) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+        }
 
         final String sessionIdParam = outputProperties.getProperty(Serializer.PROPERTY_SESSION_ID);
         if (sessionIdParam != null) {

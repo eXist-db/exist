@@ -27,19 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.SimpleTimeZone;
-import java.util.Stack;
-import java.util.TimeZone;
-import java.util.TreeMap;
+import java.util.*;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -255,6 +243,9 @@ public class XQueryContext implements BinaryValueManager, Context
 
     /** Should empty order greatest or least? */
     private boolean                                    orderEmptyGreatest            = true;
+
+    /** The context item set in the query prolog or externally */
+    private Sequence                                   contextItem                   = Sequence.EMPTY_SEQUENCE;
 
     /**
      * The position of the currently processed item in the context sequence. This field has to be set on demand, for example, before calling the
@@ -539,6 +530,14 @@ public class XQueryContext implements BinaryValueManager, Context
         //Reset current context position
         setContextSequencePosition( 0, null );
         //Note that, for some reasons, an XQueryContext might be used without calling this method
+    }
+
+    public void setContextItem(Sequence contextItem) {
+        this.contextItem = contextItem;
+    }
+
+    public Sequence getContextItem() {
+        return contextItem;
     }
 
     /**
@@ -1369,6 +1368,7 @@ public class XQueryContext implements BinaryValueManager, Context
         resetDocumentBuilder();
 
         contextSequence = null;
+        contextItem = Sequence.EMPTY_SEQUENCE;
 
         if( !keepGlobals ) {
 
@@ -1396,11 +1396,8 @@ public class XQueryContext implements BinaryValueManager, Context
             watchdog.reset();
         }
 
-        for( final Module module : modules.values() ) {
-            if (module instanceof ExternalModule && ((ModuleContext)((ExternalModule)module).getContext()).getParentContext() != this) {
-                continue;
-            }
-            module.reset( this );
+        for( final Module module : allModules.values() ) {
+            module.reset( this, keepGlobals );
         }
 
         if( !keepGlobals ) {
@@ -1920,7 +1917,6 @@ public class XQueryContext implements BinaryValueManager, Context
         return( resolveVariable( qn ) );
     }
 
-
     /**
      * Try to resolve a variable.
      *
@@ -1948,7 +1944,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
         // check if the variable is declared global
         if( var == null ) {
-            var = (Variable)globalVariables.get( qname );
+            var = globalVariables.get( qname );
         }
 
         //if (var == null)
@@ -1956,6 +1952,9 @@ public class XQueryContext implements BinaryValueManager, Context
         return( var );
     }
 
+    protected Variable resolveGlobalVariable(QName qname) {
+        return globalVariables.get(qname);
+    }
 
     protected Variable resolveLocalVariable( QName qname ) throws XPathException
     {
@@ -1973,7 +1972,6 @@ public class XQueryContext implements BinaryValueManager, Context
         }
         return( null );
     }
-
 
     public boolean isVarDeclared( QName qname )
     {
@@ -2032,9 +2030,10 @@ public class XQueryContext implements BinaryValueManager, Context
      * 
      * @return currently visible local variables as a stack
      */
-    public List<Variable> getLocalStack() {
-    	final List<Variable> variables = new ArrayList<Variable>(10);
-    	
+    public List<ClosureVariable> getLocalStack() {
+
+        final List<ClosureVariable> closure = new ArrayList<>(6);
+
     	final LocalVariable end = contextStack.isEmpty() ? null : contextStack.peek();
 
         for ( LocalVariable var = lastVar; var != null; var = var.before ) {
@@ -2043,10 +2042,10 @@ public class XQueryContext implements BinaryValueManager, Context
                 break;
             }
 
-            variables.add( new LocalVariable(var, true) );
+            closure.add( new ClosureVariable(var) );
         }
 
-        return ( variables );
+        return ( closure );
     }
     
     public Map<QName, Variable> getGlobalVariables() {
@@ -2063,9 +2062,9 @@ public class XQueryContext implements BinaryValueManager, Context
      * @param stack
      * @throws XPathException
      */
-    public void restoreStack(List<Variable> stack) throws XPathException {
+    public void restoreStack(List<ClosureVariable> stack) throws XPathException {
         for (int i = stack.size() - 1; i > -1; i--) {
-            declareVariableBinding((LocalVariable)stack.get(i));
+            declareVariableBinding(new ClosureVariable(stack.get(i)));
         }
     }
     
@@ -2853,7 +2852,8 @@ public class XQueryContext implements BinaryValueManager, Context
             reader = source.getReader();
 
             if( reader == null ) {
-                throw( new XPathException( "failed to load module: '" + namespaceURI + "' from: '" + source + "', location: '" + location + "'. Source not found. " ) );
+                throw(moduleLoadException("failed to load module: '" + namespaceURI + "' from: " +
+                        "'" + source + "', location: '" + location + "'. Source not found. ", location));
             }
 
             if (namespaceURI == null) {
@@ -2864,7 +2864,8 @@ public class XQueryContext implements BinaryValueManager, Context
             }
         }
         catch( final IOException e ) {
-            throw( new XPathException( "IO exception while loading module '" + namespaceURI + "' from '" + source + "'", e ) );
+            throw(moduleLoadException("IO exception while loading module '" + namespaceURI + "'" +
+                    " from '" + source + "'", location, e));
         }
         final ExternalModuleImpl modExternal = new ExternalModuleImpl(namespaceURI, prefix);
         setModule(namespaceURI, modExternal);
@@ -2879,7 +2880,8 @@ public class XQueryContext implements BinaryValueManager, Context
 
             if( parser.foundErrors() ) {
                 LOG.debug( parser.getErrorMessage() );
-                throw( new XPathException( "error found while loading module from " + location + ": " + parser.getErrorMessage() ) );
+                throw( new XPathException( "error found while loading module from " + location +
+                        ": " + parser.getErrorMessage() ) );
             }
             final AST      ast  = parser.getAST();
 

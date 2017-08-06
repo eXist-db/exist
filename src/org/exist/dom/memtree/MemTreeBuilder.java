@@ -28,6 +28,7 @@ import org.exist.dom.QName;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XQueryContext;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 
@@ -415,12 +416,26 @@ public class MemTreeBuilder {
 
 
     public int namespaceNode(final QName qname) {
+        return namespaceNode(qname, false);
+    }
+
+    public int namespaceNode(final QName qname, boolean checkNS) {
         final int lastNode = doc.getLastNode();
         boolean addNode = true;
         if(doc.nodeName != null) {
             final QName elemQN = doc.nodeName[lastNode];
             if(elemQN != null) {
                 final String elemPrefix = (elemQN.getPrefix() == null) ? XMLConstants.DEFAULT_NS_PREFIX : elemQN.getPrefix();
+                if (checkNS
+                    && XMLConstants.DEFAULT_NS_PREFIX.equals(elemPrefix)
+                    && XMLConstants.XMLNS_ATTRIBUTE.equals(qname.getPrefix())
+                    && "".equals(qname.getLocalPart())) {
+
+                    throw new DOMException(
+                        DOMException.NAMESPACE_ERR,
+                        "Cannot output a namespace node for the default namespace when the element is in no namespace."
+                    );
+                }
                 if(elemPrefix.equals(qname.getLocalPart()) && (elemQN.getNamespaceURI() != null)) {
                     addNode = false;
                 }

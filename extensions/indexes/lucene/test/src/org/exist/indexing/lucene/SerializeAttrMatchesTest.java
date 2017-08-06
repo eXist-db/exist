@@ -119,7 +119,7 @@ public class SerializeAttrMatchesTest {
     }
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     @Before
     public void setup() throws EXistException, PermissionDeniedException, IOException, TriggerException {

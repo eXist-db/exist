@@ -439,7 +439,7 @@ public class ModuleContext extends XQueryContext {
     	return parentContext.getLocalVariables();
     }
 
-    public List<Variable> getLocalStack() {
+    public List<ClosureVariable> getLocalStack() {
     	return parentContext.getLocalStack();
     }
     
@@ -447,7 +447,7 @@ public class ModuleContext extends XQueryContext {
     	return parentContext.getGlobalVariables();
     }
 
-    public void restoreStack(List<Variable> stack) throws XPathException {
+    public void restoreStack(List<ClosureVariable> stack) throws XPathException {
     	parentContext.restoreStack(stack);
     }
     

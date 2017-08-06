@@ -21,7 +21,7 @@
  */
 package org.exist.management;
 
-public class Cache implements CacheMBean {
+public class Cache implements CacheMXBean {
 
     private final org.exist.storage.cache.Cache cache;
 

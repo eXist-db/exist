@@ -44,7 +44,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class BFileOverflowTest {
 
     @Rule
-    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     @Test
     public void add() throws EXistException, IOException {

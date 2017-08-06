@@ -60,7 +60,7 @@ import static org.junit.Assert.*;
 public class XQueryTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     private static final String NUMBERS_XML = "numbers.xml";
     private static final String BOWLING_XML = "bowling.xml";

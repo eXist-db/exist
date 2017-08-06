@@ -83,7 +83,7 @@ public interface CacheManager {
     /**
      * Returns the default initial size for all caches.
      *
-     * @return  Default initial size.
+     * @return  Default initial size in bytes.
      */
     int getDefaultInitialSize();
 }

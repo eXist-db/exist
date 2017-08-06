@@ -492,7 +492,12 @@ public class Configurator {
                             if(applicableConfs.size() == confs.size()) {
                                 LOG.debug("Configuration was removed, will attempt to replace [" + obj + "].");
                                 if(list.size() > i) {
-                                    removed.put(((Configurable) list.remove(i)).getConfiguration().getProperty(referenceBy.get()), i);
+                                    Configurable old = ((Configurable) list.remove(i));
+                                    String key = old.getConfiguration().getProperty(referenceBy.orElse(Configuration.ID));
+
+                                    if (key != null) {
+                                        removed.put(key, i);
+                                    }
                                 }
                             } else {
                                 confs = applicableConfs;

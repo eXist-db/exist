@@ -30,6 +30,7 @@ import org.exist.backup.Restore;
 import org.exist.backup.restore.listener.ConsoleRestoreListener;
 import org.exist.backup.restore.listener.RestoreListener;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -164,15 +165,15 @@ public class RestoreTask extends AbstractXMLDBTask
      *
      * @param  dir
      */
-    public void setDir( Path dir )
+    public void setDir( File dir )
     {
-        this.dir = dir;
+        this.dir = dir.toPath();
     }
 
 
-    public void setFile( Path file )
+    public void setFile( File file )
     {
-        this.zipFile = file;
+        this.zipFile = file.toPath();
     }
 
 

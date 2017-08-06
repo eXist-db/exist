@@ -1,23 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2011 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2017 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xquery.functions.transform;
 
@@ -26,12 +24,9 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.numbering.NodeId;
-import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.serializers.XIncludeFilter;
@@ -41,32 +36,23 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.value.*;
+import org.exist.xslt.Stylesheet;
+import org.exist.xslt.TemplatesFactory;
 import org.exist.xslt.TransformerFactoryAllocator;
+import org.exist.xslt.XSLTErrorsListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 import javax.xml.transform.*;
 import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -150,8 +136,6 @@ public class Transform extends BasicFunction {
     };
 
     private static final Logger logger = LogManager.getLogger(Transform.class);
-    private final Map<String, CachedStylesheet> cache = new HashMap<>();
-    private boolean caching = true;
 
     private boolean stopOnError = true;
     private boolean stopOnWarn = false;
@@ -162,11 +146,6 @@ public class Transform extends BasicFunction {
      */
     public Transform(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
-
-        final Object property = context.getBroker().getConfiguration().getProperty(TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE);
-        if (property != null) {
-            caching = (Boolean) property;
-        }
     }
 
     /* (non-Javadoc)
@@ -208,10 +187,16 @@ public class Transform extends BasicFunction {
                 "yes".equals(serializationProps.getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes"));
 
 
+        final XSLTErrorsListener<XPathException> errorListener =
+            new XSLTErrorsListener<XPathException>(stopOnError, stopOnWarn) {
+                @Override
+                protected void raiseError(String error, Exception ex) throws XPathException {
+                    throw new XPathException(Transform.this, error, ex);
+                }
+            };
+
         // Setup handler and error listener
-        final TransformerHandler handler = createHandler(stylesheetItem, stylesheetParams, attributes);
-        final TransformErrorListener errorListener = new TransformErrorListener();
-        handler.getTransformer().setErrorListener(errorListener);
+        final TransformerHandler handler = createHandler(stylesheetItem, stylesheetParams, attributes, errorListener);
 
 
         if (isCalledAs("transform")) {
@@ -360,17 +345,24 @@ public class Transform extends BasicFunction {
      * @throws TransformerFactoryConfigurationError
      * @throws XPathException
      */
-    private TransformerHandler createHandler(Item stylesheetItem, Properties options, Properties attributes) throws TransformerFactoryConfigurationError, XPathException {
-        final SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(context.getBroker().getBrokerPool());
+    private TransformerHandler createHandler(
+        Item stylesheetItem,
+        Properties options,
+        Properties attributes,
+        XSLTErrorsListener<XPathException> errorListener
+    )
+        throws TransformerFactoryConfigurationError, XPathException
+    {
 
-        //set any attributes
-        for (final Map.Entry<Object, Object> attribute : attributes.entrySet()) {
-            factory.setAttribute((String) attribute.getKey(), attribute.getValue());
+        boolean useCache = true;
+        final Object property = context.getBroker().getConfiguration().getProperty(TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE);
+        if (property != null) {
+            useCache = (Boolean) property;
         }
 
         TransformerHandler handler;
         try {
-            Templates templates = null;
+            Stylesheet stylesheet = null;
             if (Type.subTypeOf(stylesheetItem.getType(), Type.NODE)) {
                 final NodeValue stylesheetNode = (NodeValue) stylesheetItem;
                 // if the passed node is a document node or document root element,
@@ -378,53 +370,50 @@ public class Transform extends BasicFunction {
                 if (stylesheetNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                     final NodeProxy root = (NodeProxy) stylesheetNode;
                     if (root.getNodeId() == NodeId.DOCUMENT_NODE || root.getNodeId().getTreeLevel() == 1) {
-                        //as this is a persistent node (e.g. a stylesheet stored in the db)
-                        //set the URI Resolver as a DatabaseResolver
-                        factory.setURIResolver(new EXistURIResolver(context.getBroker(), root.getOwnerDocument().getCollection().getURI().toString()));
 
                         final String uri = XmldbURI.XMLDB_URI_PREFIX + context.getBroker().getBrokerPool().getId() + "://" + root.getOwnerDocument().getURI();
-                        templates = getSource(factory, uri);
+
+                        stylesheet = TemplatesFactory.stylesheet(uri, context.getModuleLoadPath(), attributes, useCache);
                     }
                 }
-                if (templates == null) {
-                    if (stylesheetItem instanceof Document) {
-                        String uri = ((Document) stylesheetItem).getDocumentURI();
-
-						/*
-                         * This must be checked because in the event the stylesheet is
-						 * an in-memory document, it will cause an NPE
-						 */
-                        if (uri != null) {
-                            uri = uri.substring(0, uri.lastIndexOf('/'));
-                            factory.setURIResolver(new EXistURIResolver(context.getBroker(), uri));
-                        }
-                    }
-                    templates = getSource(factory, stylesheetNode);
+                if (stylesheet == null) {
+                    stylesheet = TemplatesFactory.stylesheet(
+                        getContext().getBroker(),
+                        stylesheetNode,
+                        context.getModuleLoadPath()
+                    );
                 }
             } else {
+                String baseUri = context.getModuleLoadPath();
                 if (stylesheetItem instanceof Document) {
-                    String uri = ((Document) stylesheetItem).getDocumentURI();
+                    baseUri = ((Document) stylesheetItem).getDocumentURI();
 
-					/*
-					 * This must be checked because in the event the stylesheet is 
-					 * an in-memory document, it will cause an NPE
-					 */
-                    if (uri != null) {
-                        uri = uri.substring(0, uri.lastIndexOf('/'));
-                        factory.setURIResolver(new EXistURIResolver(context.getBroker(), uri));
+                    /*
+                     * This must be checked because in the event the stylesheet is
+                     * an in-memory document, it will cause an NPE
+                     */
+                    if (baseUri == null) {
+                        baseUri = context.getModuleLoadPath();
+                    } else {
+                        baseUri = baseUri.substring(0, baseUri.lastIndexOf('/'));
                     }
                 }
 
-                final String stylesheet = stylesheetItem.getStringValue();
-                templates = getSource(factory, stylesheet);
+                final String uri = stylesheetItem.getStringValue();
+
+                stylesheet = TemplatesFactory.stylesheet(uri, baseUri, attributes, useCache);
             }
-            handler = factory.newTransformerHandler(templates);
+
+            handler = stylesheet.newTransformerHandler(getContext().getBroker(), errorListener);
 
             if (options != null) {
                 setParameters(options, handler.getTransformer());
             }
 
-        } catch (final TransformerConfigurationException e) {
+        } catch (final Exception e) {
+            if (e instanceof XPathException) {
+                throw (XPathException) e;
+            }
             throw new XPathException(this, "Unable to set up transformer: " + e.getMessage(), e);
         }
         return handler;
@@ -489,216 +478,6 @@ public class Transform extends BasicFunction {
         for (Object o : parameters.keySet()) {
             final String key = (String) o;
             handler.setParameter(key, parameters.getProperty(key));
-        }
-    }
-
-    private Templates getSource(SAXTransformerFactory factory, String stylesheet)
-            throws XPathException, TransformerConfigurationException {
-        String base;
-        if (stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
-            Path f = Paths.get(stylesheet).normalize();
-            if (Files.isReadable(f)) {
-                stylesheet = f.toUri().toASCIIString();
-            } else {
-                stylesheet = context.getModuleLoadPath() + File.separatorChar + stylesheet;
-                f = Paths.get(stylesheet).normalize();
-                if (Files.isReadable(f)) {
-                    stylesheet = f.toUri().toASCIIString();
-                }
-            }
-        }
-
-        //TODO : use dedicated function in XmldbURI
-        final int p = stylesheet.lastIndexOf("/");
-        if (p != Constants.STRING_NOT_FOUND) {
-            base = stylesheet.substring(0, p);
-        } else {
-            base = stylesheet;
-        }
-
-        CachedStylesheet cached = cache.get(stylesheet);
-        try {
-            if (cached == null) {
-                cached = new CachedStylesheet(factory, stylesheet, base);
-                cache.put(stylesheet, cached);
-            }
-            return cached.getTemplates();
-
-        } catch (final MalformedURLException e) {
-            LOG.debug(e.getMessage(), e);
-            throw new XPathException(this, "Malformed URL for stylesheet: " + stylesheet, e);
-
-        } catch (final IOException e) {
-            throw new XPathException(this, "IO error while loading stylesheet: " + stylesheet, e);
-        }
-    }
-
-    private Templates getSource(SAXTransformerFactory factory, NodeValue stylesheetRoot) throws XPathException, TransformerConfigurationException {
-        final TemplatesHandler handler = factory.newTemplatesHandler();
-        try {
-            handler.startDocument();
-            stylesheetRoot.toSAX(context.getBroker(), handler, null);
-            handler.endDocument();
-            return handler.getTemplates();
-
-        } catch (final SAXException e) {
-            throw new XPathException(this,
-                    "A SAX exception occurred while compiling the stylesheet: " + e.getMessage(), e);
-        }
-    }
-
-    public static class ExternalResolver implements URIResolver {
-        private final String baseURI;
-
-        public ExternalResolver(final String base) {
-            this.baseURI = base;
-        }
-
-        @Override
-        public Source resolve(final String href, final String base) throws TransformerException {
-            try {
-                //TODO : use dedicated function in XmldbURI
-                final URL url = new URL(baseURI + "/" + href);
-                final URLConnection connection = url.openConnection();
-                return new StreamSource(connection.getInputStream());
-            } catch (final IOException e) {
-                LOG.warn(e);
-                return null;
-            }
-        }
-    }
-
-    //TODO: revisit this class with XmldbURI in mind
-    private class CachedStylesheet {
-
-        SAXTransformerFactory factory;
-        long lastModified = -1;
-        Templates templates = null;
-        String uri;
-
-        public CachedStylesheet(SAXTransformerFactory factory, String uri, String baseURI)
-                throws TransformerConfigurationException, IOException, XPathException {
-            this.factory = factory;
-            this.uri = uri;
-            if (!baseURI.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX)) {
-                factory.setURIResolver(new ExternalResolver(baseURI));
-            }
-            getTemplates();
-        }
-
-        public Templates getTemplates() throws TransformerConfigurationException, IOException, XPathException {
-            if (uri.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX)) {
-                final String docPath = uri.substring(XmldbURI.EMBEDDED_SERVER_URI_PREFIX.length());
-                DocumentImpl doc = null;
-                try {
-                    doc = context.getBroker().getXMLResource(XmldbURI.create(docPath), LockMode.READ_LOCK);
-                    if (!caching || (doc != null && (templates == null || doc.getMetadata().getLastModified() > lastModified))) {
-                        templates = getSource(doc);
-                    }
-                    lastModified = doc.getMetadata().getLastModified();
-                } catch (final PermissionDeniedException e) {
-                    throw new XPathException(Transform.this, "Permission denied to read stylesheet: " + uri);
-                } finally {
-                    if (doc != null) {
-                        doc.getUpdateLock().release(LockMode.READ_LOCK);
-                    }
-                }
-
-            } else {
-                final URL url = new URL(uri);
-                final URLConnection connection = url.openConnection();
-                long modified = connection.getLastModified();
-                if (!caching || (templates == null || modified > lastModified || modified == 0)) {
-                    LOG.debug("compiling stylesheet " + url);
-                    try (final InputStream is = connection.getInputStream()) {
-                        templates = factory.newTemplates(new StreamSource(is));
-                    }
-                }
-                lastModified = modified;
-            }
-            return templates;
-        }
-
-        private Templates getSource(DocumentImpl stylesheet)
-                throws XPathException, TransformerConfigurationException {
-            factory.setURIResolver(new EXistURIResolver(context.getBroker(), stylesheet.getCollection().getURI().toString()));
-            final TransformErrorListener errorListener = new TransformErrorListener();
-            factory.setErrorListener(errorListener);
-            final TemplatesHandler handler = factory.newTemplatesHandler();
-
-            try {
-                handler.startDocument();
-                final Serializer serializer = context.getBroker().getSerializer();
-                serializer.reset();
-                serializer.setSAXHandlers(handler, null);
-                serializer.toSAX(stylesheet);
-                handler.endDocument();
-                final Templates t = handler.getTemplates();
-                errorListener.checkForErrors();
-                return t;
-
-            } catch (final Exception e) {
-                if (e instanceof XPathException) {
-                    throw (XPathException) e;
-                }
-                throw new XPathException(Transform.this,
-                        "An exception occurred while compiling the stylesheet: " + stylesheet.getURI() +
-                                ": " + e.getMessage(), e);
-            }
-        }
-    }
-
-    private class TransformErrorListener implements ErrorListener {
-
-        private final static int NO_ERROR = 0;
-        private final static int WARNING = 1;
-        private final static int ERROR = 2;
-        private final static int FATAL = 3;
-
-        private int errorCode = NO_ERROR;
-        private Exception exception;
-
-        protected void checkForErrors() throws XPathException {
-            switch (errorCode) {
-                case WARNING:
-                    if (stopOnWarn) {
-                        throw new XPathException("XSL transform reported warning: " + exception.getMessage(),
-                                exception);
-                    }
-                    break;
-                case ERROR:
-                    if (stopOnError) {
-                        throw new XPathException("XSL transform reported error: " + exception.getMessage(), exception);
-                    }
-                    break;
-                case FATAL:
-                    throw new XPathException("XSL transform reported error: " + exception.getMessage(), exception);
-            }
-        }
-
-        public void warning(TransformerException except) throws TransformerException {
-            LOG.warn("XSL transform reports warning: " + except.getMessage(), except);
-            errorCode = WARNING;
-            exception = except;
-            if (stopOnWarn) {
-                throw except;
-            }
-        }
-
-        public void error(TransformerException except) throws TransformerException {
-            LOG.warn("XSL transform reports recoverable error: " + except.getMessage(), except);
-            errorCode = ERROR;
-            exception = except;
-            if (stopOnError) {
-                throw except;
-            }
-        }
-
-        public void fatalError(TransformerException except) throws TransformerException {
-            LOG.warn("XSL transform reports fatal error: " + except.getMessage(), except);
-            errorCode = FATAL;
-            exception = except;
-            throw except;
         }
     }
 }

@@ -24,13 +24,13 @@ package org.exist.util;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.exist.TestUtils;
 import org.exist.util.serializer.DOMSerializer;
 import org.junit.Test;
 import org.w3c.dom.Document;
@@ -45,13 +45,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class DOMSerializerTest {
 
-    static Path existDir;
-    static {
-        String existHome = System.getProperty("exist.home");
-		existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-		existDir = existDir.normalize();
-    }
-    private final static String file = existDir.resolve("samples/biblio.rdf").toAbsolutePath().toString();
+    private final static Path file = TestUtils.resolveSample("biblio.rdf");
 
 	@Test
 	public void serialize() throws ParserConfigurationException, IOException, SAXException, TransformerException {
@@ -60,10 +54,11 @@ public class DOMSerializerTest {
 		factory.setNamespaceAware(true);
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		assertNotNull(builder);
-		Document doc = builder.parse(new InputSource(file));
+		Document doc = builder.parse(new InputSource(file.toAbsolutePath().toString()));
 		assertNotNull(doc);
-		StringWriter writer = new StringWriter();
-		DOMSerializer serializer = new DOMSerializer(writer, null);
-		serializer.serialize(doc.getDocumentElement());
+		try(final StringWriter writer = new StringWriter()) {
+			DOMSerializer serializer = new DOMSerializer(writer, null);
+			serializer.serialize(doc.getDocumentElement());
+		}
 	}
 }

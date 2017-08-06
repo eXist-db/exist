@@ -38,6 +38,7 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
@@ -46,22 +47,32 @@ import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 
 public class RecoverBinaryTest2 {
-    
+
+    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+
     private static String directory = "webapp/resources";
 
     @Test
     public void storeAndRead() throws TriggerException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
-        store();
-        tearDown();
-        read();
-        tearDown();
-        read2();
+        BrokerPool.FORCE_CORRUPTION = true;
+        BrokerPool pool = startDb();
+        store(pool);
+
+        stopDb();
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = startDb();
+        read(pool);
+
+        stopDb();
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = startDb();
+        read2(pool);
     }
 
-    //@Test
-    public void store() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException, LockException {
-        BrokerPool.FORCE_CORRUPTION = true;
-        final BrokerPool pool = startDB();
+    public void store(final BrokerPool pool) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException, LockException {
         final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -80,12 +91,7 @@ public class RecoverBinaryTest2 {
         }
     }
 
-    //@Test
-    public void read() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, LockException, IOException, TriggerException {
-
-        BrokerPool.FORCE_CORRUPTION = false;
-        final BrokerPool pool = startDB();
-
+    public void read(final BrokerPool pool) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, LockException, IOException, TriggerException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
             for (final Iterator<DocumentImpl> i = test2.iterator(broker); i.hasNext(); ) {
@@ -104,12 +110,7 @@ public class RecoverBinaryTest2 {
         }
     }
 
-    //@Test
-    public void read2() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException, LockException {
-
-        BrokerPool.FORCE_CORRUPTION = false;
-        final BrokerPool pool = startDB();
-
+    public void read2(final BrokerPool pool) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException, LockException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             final Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
@@ -150,15 +151,14 @@ public class RecoverBinaryTest2 {
             }
         }
     }
-    
-    protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
-        final Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        return BrokerPool.getInstance();
+
+    private BrokerPool startDb() throws EXistException, IOException, DatabaseConfigurationException {
+        existEmbeddedServer.startDb();
+        return existEmbeddedServer.getBrokerPool();
     }
 
     @After
-    public void tearDown() {
-        BrokerPool.stopAll(false);
+    public void stopDb() {
+        existEmbeddedServer.stopDb();
     }
 }

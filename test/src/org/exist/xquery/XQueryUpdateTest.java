@@ -445,7 +445,7 @@ public class XQueryUpdateTest {
     }
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     @Before
     public void loadTestData() throws EXistException, DatabaseConfigurationException, LockException, SAXException, PermissionDeniedException, IOException {

@@ -61,6 +61,13 @@ public class Lookup extends AbstractExpression {
             leftSeq = contextExpression.eval(contextSequence);
         }
         final int contextType = leftSeq.getItemType();
+
+        // Make compatible with baseX and Saxon
+        if (leftSeq.isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+
+
         if (!(Type.subTypeOf(contextType, Type.MAP) || Type.subTypeOf(contextType, Type.ARRAY))) {
             throw new XPathException(this, ErrorCodes.XPTY0004,
                     "expression to the left of a lookup operator needs to be a sequence of maps or arrays");

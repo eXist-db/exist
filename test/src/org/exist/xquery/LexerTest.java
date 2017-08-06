@@ -44,7 +44,7 @@ public class LexerTest {
 			+ "</body></text>";
 
 	@ClassRule
-	public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+	public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
 	@Test
 	public void query() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, RecognitionException, XPathException, TokenStreamException {

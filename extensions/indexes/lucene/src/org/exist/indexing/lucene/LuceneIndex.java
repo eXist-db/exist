@@ -251,11 +251,14 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     }
 
 	@Override
-	public void backupToArchive(RawDataBackup backup) throws IOException {
-		for (String name : directory.listAll()) {
-			String path = getDirName() + "/" + name;
+	public void backupToArchive(final RawDataBackup backup) throws IOException {
+		for (final String name : directory.listAll()) {
+			final String path = getDirName() + "/" + name;
 
-            try(final OutputStream os = backup.newEntry(path)) {
+            // do not use try-with-resources here, closing the OutputStream will close the entire backup
+//            try(final OutputStream os = backup.newEntry(path)) {
+            try {
+                final OutputStream os = backup.newEntry(path);
                 Files.copy(getDataDir().resolve(path), os);
             } finally {
                 backup.closeEntry();

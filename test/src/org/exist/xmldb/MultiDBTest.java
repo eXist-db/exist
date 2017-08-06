@@ -21,6 +21,7 @@
  */
 package org.exist.xmldb;
 
+import org.exist.TestUtils;
 import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
@@ -73,10 +74,7 @@ public class MultiDBTest {
                 test = service.createCollection("test");
             }
 
-            String existHome = System.getProperty("exist.home");
-            Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-            existDir = existDir.normalize();
-            final Path samples = existDir.resolve("samples/shakespeare");
+            final Path samples = TestUtils.shakespeareSamples();
             final List<Path> files = FileUtils.list(samples);
             final MimeTable mimeTab = MimeTable.getInstance();
             for (final Path file : files) {

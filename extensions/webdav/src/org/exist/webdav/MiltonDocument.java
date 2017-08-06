@@ -21,49 +21,29 @@
  */
 package org.exist.webdav;
 
-import com.bradmcevoy.http.CollectionResource;
-import com.bradmcevoy.http.Auth;
-import com.bradmcevoy.http.CopyableResource;
-import com.bradmcevoy.http.DeletableResource;
-import com.bradmcevoy.http.GetableResource;
-import com.bradmcevoy.http.HttpManager;
-import com.bradmcevoy.http.LockInfo;
-import com.bradmcevoy.http.LockResult;
-import com.bradmcevoy.http.LockTimeout;
-import com.bradmcevoy.http.LockToken;
-import com.bradmcevoy.http.LockableResource;
-import com.bradmcevoy.http.MoveableResource;
-import com.bradmcevoy.http.PropFindableResource;
-import com.bradmcevoy.http.Range;
-import com.bradmcevoy.http.exceptions.BadRequestException;
-import com.bradmcevoy.http.exceptions.ConflictException;
-import com.bradmcevoy.http.exceptions.LockedException;
-import com.bradmcevoy.http.exceptions.NotAuthorizedException;
-import com.bradmcevoy.http.exceptions.PreConditionFailedException;
+import com.bradmcevoy.http.*;
+import com.bradmcevoy.http.exceptions.*;
 import com.bradmcevoy.http.webdav.DefaultUserAgentHelper;
 import com.bradmcevoy.http.webdav.UserAgentHelper;
+import org.apache.commons.io.IOUtils;
+import org.exist.EXistException;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.Subject;
+import org.exist.storage.BrokerPool;
+import org.exist.util.VirtualTempFile;
+import org.exist.webdav.ExistResource.Mode;
+import org.exist.webdav.exceptions.DocumentAlreadyLockedException;
+import org.exist.webdav.exceptions.DocumentNotLockedException;
+import org.exist.xmldb.XmldbURI;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import org.apache.commons.io.IOUtils;
-
-import org.exist.EXistException;
-import org.exist.storage.BrokerPool;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.Subject;
-import org.exist.util.VirtualTempFile;
-import org.exist.webdav.ExistResource.Mode;
-import org.exist.webdav.exceptions.DocumentAlreadyLockedException;
-import org.exist.webdav.exceptions.DocumentNotLockedException;
-import org.exist.xmldb.XmldbURI;
 
 /**
  * Class for representing an eXist-db document as a Milton WebDAV document.
@@ -74,37 +54,26 @@ import org.exist.xmldb.XmldbURI;
 public class MiltonDocument extends MiltonResource
         implements GetableResource, PropFindableResource,
         DeletableResource, LockableResource, MoveableResource, CopyableResource {
-    
+
     public static final String PROPFIND_METHOD_XML_SIZE = "org.exist.webdav.PROPFIND_METHOD_XML_SIZE";
     public static final String GET_METHOD_XML_SIZE = "org.exist.webdav.GET_METHOD_XML_SIZE";
-
-    private ExistDocument existDocument;
-    
-    private VirtualTempFile vtf = null;;
-
-    // Only for PROPFIND the estimate size for an XML document must be shown
-    private boolean isPropFind=false;
-    
-    private enum SIZE_METHOD { NULL, EXACT, APPROXIMATE }; 
-    
-    private static SIZE_METHOD propfindSizeMethod=null;
-    private static SIZE_METHOD getSizeMethod=null;
-    
+    private static SIZE_METHOD propfindSizeMethod = null;
+    private static SIZE_METHOD getSizeMethod = null;
+    ;
     private static UserAgentHelper userAgentHelper = null;
+    private ExistDocument existDocument;
+
+    ;
+    private VirtualTempFile vtf = null;
+    // Only for PROPFIND the estimate size for an XML document must be shown
+    private boolean isPropFind = false;
 
     /**
-     * Set to TRUE if getContentLength is used for PROPFIND.
-     */
-    public void setIsPropFind(boolean isPropFind) {
-        this.isPropFind = isPropFind;
-    }
-
-    /**
-     *  Constructor of representation of a Document in the Milton framework, without subject information.
+     * Constructor of representation of a Document in the Milton framework, without subject information.
      * To be called by the resource factory.
      *
-     * @param host  FQ host name including port number.
-     * @param uri   Path on server indicating path of resource
+     * @param host       FQ host name including port number.
+     * @param uri        Path on server indicating path of resource
      * @param brokerPool Handle to Exist database.
      */
     public MiltonDocument(String host, XmldbURI uri, BrokerPool brokerPool) {
@@ -112,26 +81,26 @@ public class MiltonDocument extends MiltonResource
     }
 
     /**
-     *  Constructor of representation of a Document in the Milton framework, with subject information.
+     * Constructor of representation of a Document in the Milton framework, with subject information.
      * To be called by the resource factory.
      *
-     * @param host  FQ host name including port number.
-     * @param uri   Path on server indicating path of resource.
-     * @param subject  An Exist operation is performed with  User. Can be NULL.
-     * @param pool Handle to Exist database.
+     * @param host    FQ host name including port number.
+     * @param uri     Path on server indicating path of resource.
+     * @param subject An Exist operation is performed with  User. Can be NULL.
+     * @param pool    Handle to Exist database.
      */
     public MiltonDocument(String host, XmldbURI uri, BrokerPool pool, Subject subject) {
 
         super();
-        
-        if(userAgentHelper==null){
-            userAgentHelper=new DefaultUserAgentHelper();
+
+        if (userAgentHelper == null) {
+            userAgentHelper = new DefaultUserAgentHelper();
         }
 
-        if(LOG.isTraceEnabled()) {
+        if (LOG.isTraceEnabled()) {
             LOG.trace(String.format("DOCUMENT:%s", uri.toString()));
         }
-        
+
         resourceXmldbUri = uri;
         brokerPool = pool;
         this.host = host;
@@ -145,13 +114,13 @@ public class MiltonDocument extends MiltonResource
             existDocument.setUser(subject);
             existDocument.initMetadata();
         }
-        
-   
-        // PROPFIND method 
+
+
+        // PROPFIND method
         if (propfindSizeMethod == null) {
             // get user supplied preferred size determination approach
             String systemProp = System.getProperty(PROPFIND_METHOD_XML_SIZE);
-            
+
             if (systemProp == null) {
                 // Default method is approximate
                 propfindSizeMethod = SIZE_METHOD.APPROXIMATE;
@@ -160,20 +129,20 @@ public class MiltonDocument extends MiltonResource
                 // Try to parse from environment property
                 try {
                     propfindSizeMethod = SIZE_METHOD.valueOf(systemProp.toUpperCase());
-                    
+
                 } catch (IllegalArgumentException ex) {
                     LOG.debug(ex.getMessage());
                     // Set preffered default
                     propfindSizeMethod = SIZE_METHOD.APPROXIMATE;
                 }
-             }
+            }
         }
-        
+
         // GET method
         if (getSizeMethod == null) {
             // get user supplied preferred size determination approach
             String systemProp = System.getProperty(GET_METHOD_XML_SIZE);
-            
+
             if (systemProp == null) {
                 // Default method is NULL
                 getSizeMethod = SIZE_METHOD.NULL;
@@ -182,51 +151,58 @@ public class MiltonDocument extends MiltonResource
                 // Try to parse from environment property
                 try {
                     getSizeMethod = SIZE_METHOD.valueOf(systemProp.toUpperCase());
-                    
+
                 } catch (IllegalArgumentException ex) {
                     LOG.debug(ex.getMessage());
                     // Set preffered default
                     getSizeMethod = SIZE_METHOD.APPROXIMATE;
                 }
-             }
+            }
         }
 
-        
+
     }
 
-    /* ================
-     * GettableResource
-     * ================ */
+    /**
+     * Set to TRUE if getContentLength is used for PROPFIND.
+     */
+    public void setIsPropFind(boolean isPropFind) {
+        this.isPropFind = isPropFind;
+    }
 
     @Override
     public void sendContent(OutputStream out, Range range, Map<String, String> params, String contentType)
             throws IOException, NotAuthorizedException, BadRequestException {
         try {
-            if(vtf==null){
+            if (vtf == null) {
                 LOG.debug("Serializing from database");
                 existDocument.stream(out);
-                
+
             } else {
                 // Experimental. Does not work right, the virtual file
                 // Often does not contain the right amount of bytes.
-                
+
                 LOG.debug("Serializing from buffer");
                 InputStream is = vtf.getByteStream();
                 IOUtils.copy(is, out);
                 out.flush();
                 IOUtils.closeQuietly(is);
                 vtf.delete();
-                vtf=null;
+                vtf = null;
             }
-            
+
         } catch (PermissionDeniedException e) {
             LOG.debug(e.getMessage());
             throw new NotAuthorizedException(this);
-            
+
         } finally {
             IOUtils.closeQuietly(out);
         }
     }
+
+    /* ================
+     * GettableResource
+     * ================ */
 
     @Override
     public Long getMaxAgeSeconds(Auth auth) {
@@ -240,8 +216,8 @@ public class MiltonDocument extends MiltonResource
 
     @Override
     public Long getContentLength() {
-        
-        
+
+
         // Note
         // Whilst for non-XML documents the exact size of the documents can
         // be determined by checking the administration, this is not possible
@@ -260,35 +236,35 @@ public class MiltonDocument extends MiltonResource
         // way the size is calculated. Supported values are
         // NULL, EXACT, APPROXIMATE
         //
-        // PROPFIND: Unfortunately both NULL and APPROXIMATE do not work for 
-        // MacOsX Finder. The default behaviour for the Finder 'user-agent' is 
-        // exact, for the others it is approximate. 
+        // PROPFIND: Unfortunately both NULL and APPROXIMATE do not work for
+        // MacOsX Finder. The default behaviour for the Finder 'user-agent' is
+        // exact, for the others it is approximate.
         // This behaviour is swiched by the system properties.
         //
         // GET: the NULL value seems to be working well for macosx too.
-        
-        Long size=null;       
-        
+
+        Long size = null;
+
         // MacOsX has a bad reputation
-        boolean isMacFinder = userAgentHelper.isMacFinder( HttpManager.request().getUserAgentHeader() );
-        
-        if(existDocument.isXmlDocument()){
+        boolean isMacFinder = userAgentHelper.isMacFinder(HttpManager.request().getUserAgentHeader());
+
+        if (existDocument.isXmlDocument()) {
             // XML document, exact size is not (directly) known)
 
             if (isPropFind) {
-                
+
                 // PROPFIND
                 // In this scensario the XML document is not actually
                 // downloaded, only the size needs to be known.
                 // This is the most expensive scenario
-                
-                if(isMacFinder || SIZE_METHOD.EXACT==propfindSizeMethod) {
-                    
-                    // Returns the exact size, default behaviour for Finder, 
+
+                if (isMacFinder || SIZE_METHOD.EXACT == propfindSizeMethod) {
+
+                    // Returns the exact size, default behaviour for Finder,
                     // or when set by a system property
-                    
-                    if(LOG.isDebugEnabled()){
-                        LOG.debug(String.format("Serializing XML to /dev/null to determine size (%s) MacFinder=%s", 
+
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(String.format("Serializing XML to /dev/null to determine size (%s) MacFinder=%s",
                                 resourceXmldbUri, isMacFinder));
                     }
 
@@ -302,36 +278,36 @@ public class MiltonDocument extends MiltonResource
                     }
 
                     size = counter.getByteCount();
-                    
-                    
-                } else if (SIZE_METHOD.NULL==propfindSizeMethod) {
-                    
+
+
+                } else if (SIZE_METHOD.NULL == propfindSizeMethod) {
+
                     // Returns size unknown. This is not supported
                     // by MacOsX finder
-           
+
                     size = null;
-                    
-                
-                } else { 
+
+
+                } else {
                     // Returns the estimated document size. This is the
                     // default value, but not suitable for MacOsX Finder.
                     size = existDocument.getContentLength();
                 }
-                
-                
+
+
             } else {
-                
+
                 // GET
                 // In this scenario, the document will actually be downloaded
                 // in the next step.
-                
+
                 if (SIZE_METHOD.EXACT == getSizeMethod) {
 
                     // Return the exact size by pre-serializing the document
                     // to a buffer first. isMacFinder is not needed
 
                     try {
-                        if(LOG.isDebugEnabled()) {
+                        if (LOG.isDebugEnabled()) {
                             LOG.debug(String.format("Serializing XML to virtual file (%s)", resourceXmldbUri));
                         }
 
@@ -344,41 +320,37 @@ public class MiltonDocument extends MiltonResource
                     }
 
                     size = vtf.length();
-                    
-                    
+
+
                 } else if (SIZE_METHOD.APPROXIMATE == getSizeMethod) {
-                    
+
                     // Return approximate size, be warned to use this
-                    
+
                     size = existDocument.getContentLength();
                     vtf = null; // force live serialization
-                    
+
                 } else {
-                    
+
                     // Return no size, the whole file will be downloaded
                     // Works well for macosx finder
-                    
+
                     size = null;
                     vtf = null; // force live serialization
                 }
             }
-            
-            
+
+
         } else {
             // Non XML document, actual size is known
             size = existDocument.getContentLength();
         }
-        
-        if(LOG.isDebugEnabled()) {
+
+        if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("Size=%s (%s)", size, resourceXmldbUri));
         }
         return size;
-        
-    }
 
-    /* ====================
-     * PropFindableResource
-     * ==================== */
+    }
 
     @Override
     public Date getCreateDate() {
@@ -392,19 +364,18 @@ public class MiltonDocument extends MiltonResource
         return createDate;
     }
 
-    /* =================
-     * DeletableResource
-     * ================= */
+    /* ====================
+     * PropFindableResource
+     * ==================== */
 
     @Override
     public void delete() throws NotAuthorizedException, ConflictException, BadRequestException {
         existDocument.delete();
     }
 
-    
-    /* ================
-     * LockableResource
-     * ================ */
+    /* =================
+     * DeletableResource
+     * ================= */
 
     @Override
     public LockResult lock(LockTimeout timeout, LockInfo lockInfo)
@@ -415,7 +386,7 @@ public class MiltonDocument extends MiltonResource
         if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("Lock: %s", resourceXmldbUri));
         }
-        
+
         LockResult lr = null;
         try {
             org.exist.dom.persistent.LockToken existLT = existDocument.lock(inputToken);
@@ -441,10 +412,15 @@ public class MiltonDocument extends MiltonResource
         return lr;
     }
 
+    
+    /* ================
+     * LockableResource
+     * ================ */
+
     @Override
     public LockResult refreshLock(String token) throws NotAuthorizedException, PreConditionFailedException {
-        
-        if(LOG.isDebugEnabled()) {
+
+        if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("Refresh: %s token=%s", resourceXmldbUri, token));
         }
 
@@ -476,10 +452,10 @@ public class MiltonDocument extends MiltonResource
     @Override
     public void unlock(String tokenId) throws NotAuthorizedException, PreConditionFailedException {
 
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("Unlock: %s", resourceXmldbUri));
         }
-        
+
         try {
             existDocument.unlock();
         } catch (PermissionDeniedException ex) {
@@ -496,10 +472,10 @@ public class MiltonDocument extends MiltonResource
     @Override
     public LockToken getCurrentLock() {
 
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("getCurrentLock: %s", resourceXmldbUri));
         }
-        
+
         org.exist.dom.persistent.LockToken existLT = existDocument.getCurrentLock();
 
         if (existLT == null) {
@@ -514,15 +490,10 @@ public class MiltonDocument extends MiltonResource
         return miltonLT;
     }
 
-
-    /* ================
-     * MoveableResource
-     * ================ */
-
     @Override
     public void moveTo(CollectionResource rDest, String newName) throws ConflictException {
 
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("moveTo: %s newName=%s", resourceXmldbUri, newName));
         }
 
@@ -537,16 +508,16 @@ public class MiltonDocument extends MiltonResource
 
 
     /* ================
-     * CopyableResource
+     * MoveableResource
      * ================ */
 
     @Override
     public void copyTo(CollectionResource rDest, String newName) {
 
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("copyTo: %s newName=%s", resourceXmldbUri, newName));
         }
-        
+
         XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();
         try {
             existDocument.resourceCopyMove(destCollection, newName, Mode.COPY);
@@ -559,12 +530,12 @@ public class MiltonDocument extends MiltonResource
 
 
     /* ================
-     * StAX serializer
+     * CopyableResource
      * ================ */
-    
+
     /**
-     *  Serialize document properties
-     * 
+     * Serialize document properties
+     *
      * @param writer STAX writer
      * @throws XMLStreamException Thrown when writing data failed
      */
@@ -579,13 +550,20 @@ public class MiltonDocument extends MiltonResource
         writer.writeAttribute("size", "" + existDocument.getContentLength());
         writer.writeEndElement();
     }
-    
+
+
+    /* ================
+     * StAX serializer
+     * ================ */
+
     /**
      * Set specific WebDAV serialization options
-     * 
+     *
      * @param config XML serialization options
      */
-    public void setConfiguration(Properties config){
-        existDocument.setConfiguration(config);
+    public void setSerializationConfiguration(Properties config) {
+        existDocument.setSerializationConfiguration(config);
     }
+
+    private enum SIZE_METHOD {NULL, EXACT, APPROXIMATE}
 }

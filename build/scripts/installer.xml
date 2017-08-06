@@ -25,24 +25,32 @@
     <property file="installer/apps.properties"/>
 
 	<target name="commandline-installer">
-        <!--ant antfile="build.xml" dir="tools/izpack"/-->
     </target>
 
-    <target name="macosx" depends="install-appbundler">
+    <target name="macosx">
         <taskdef
             name="bundleapp"
             classname="com.oracle.appbundler.AppBundlerTask"
             classpath="${appbundler.jar}" />
         <bundleapp
-            outputdirectory="${installer.scripts}"
-            name="eXist-db"
-            displayname="eXist-db"
-            identifier="org.exist.start.Main"
-            mainclassname="org.exist.start.Main"
-            shortversion="${project.version}"
-            icon="${installer.mac.icon}">
+                jvmrequired="1.8"
+                outputdirectory="${installer.scripts}"
+                name="${project.name}"
+                displayname="${project.name}"
+                executableName="eXist-JavaAppLauncher"
+                identifier="org.exist.start.Main"
+                shortversion="${project.version}"
+                version="${project.version}"
+                icon="${installer.mac.icon}"
+                mainclassname="org.exist.start.Main"
+                copyright="${year} The eXist Project"
+                applicationcategory="public.app-category.developer-tools">
+
             <classpath file="start.jar"/>
+
             <option value="-Dexist.home=$APP_ROOT/.."/>
+
+            <option value="-Xdock:name=${project.name}"/>
         </bundleapp>
     </target>
 
@@ -141,7 +149,7 @@
         <move file="${apps.dir}/expath-pkg.xml" tofile="${apps.dir}/${app.name}.xml"/>
     </target>
 
-    <target depends="git.details, prepare-installer,commandline-installer" name="installer" description="Create installer">
+    <target name="installer" depends="git.details, prepare-installer,commandline-installer" description="Create installer" xmlns:unless="ant:unless" >
         <echo message="Calling IzPack to create installer ..."/>
         <property name="inst-jar" value="installer/${project.name}-setup-${project.version}${build.label}.jar"/>
         <izpack input="installer/install.xml"
@@ -151,23 +159,17 @@
             compressionlevel="9"
             installerType="standard"/>
 
-        <!--mkdir dir="installer/temp"/>
-        <tstamp/>
-        <unjar src="${inst-jar}"
-            dest="installer/temp"/>
-        <delete>
-            <fileset dir="installer/temp">
-                <include name="META-INF/EXIST.*"/>
-            </fileset>
-        </delete>
-        <delete file="${inst-jar}"/>
-        <jar destfile="${inst-jar}"
-            basedir="installer/temp" compress="yes" update="yes">
-            <manifest>
-                <attribute name="Main-Class" value="com.izforge.izpack.installer.Installer"/>
-            </manifest>
-        </jar>
-        <delete dir="installer/temp"/-->
+        <echo unless:set="key.store.present">
+            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            *** WARNING: The Core Jar files in the installer have
+                not been signed because the keystore.file could not
+                be found.
+                If you expected signed Jar files, please check the
+                location of your keystore file matches that set in
+                build.properties.
+            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        </echo>
+
     </target>
 
     <target name="copy_scripts">

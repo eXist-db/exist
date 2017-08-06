@@ -41,7 +41,7 @@ import static org.junit.Assert.fail;
 public class XMLNodeAsXQueryParameterTest {
 
 	@ClassRule
-	public final static ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+	public final static ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
 	/**
 	 * This test passes a W3C dom node as an xquery parameter to eXist and tries

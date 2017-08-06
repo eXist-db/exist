@@ -22,21 +22,31 @@
 package org.exist.validation;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Optional;
 
 import org.exist.EXistException;
+import org.exist.TestUtils;
+import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
 
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
 import org.junit.*;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.TestUtils.GUEST_DB_USER;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
+import static org.exist.validation.TestTools.executeQuery;
+import static org.exist.validation.TestTools.storeDocument;
+import static org.exist.validation.TestTools.storeTextDocument;
 import static org.junit.Assert.*;
-
-import org.exist.collections.IndexInfo;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -45,13 +55,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
-
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XPathQueryService;
 
 /**
  * Set of Tests for validation:validate($a) and validation:validate($a, $b)
@@ -63,117 +66,133 @@ public class ValidationFunctions_DTD_Test {
     
     private final static String TEST_COLLECTION = "testValidationFunctionsDTD";
 
-    private final static String ADMIN_UID = "admin";
-    private final static String ADMIN_PWD = "";
+    private final static XmldbURI VALIDATION_HOME_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append(TEST_COLLECTION).append(TestTools.VALIDATION_HOME_COLLECTION);
 
-    private final static String GUEST_UID = "guest";
+    private final static XmldbURI VALIDATION_DTD_COLLECTION_URI = VALIDATION_HOME_COLLECTION_URI.append(TestTools.VALIDATION_DTD_COLLECTION);
+    private final static XmldbURI VALIDATION_XSD_COLLECTION_URI = VALIDATION_HOME_COLLECTION_URI.append(TestTools.VALIDATION_XSD_COLLECTION);
+    private final static XmldbURI VALIDATION_TMP_COLLECTION_URI = VALIDATION_HOME_COLLECTION_URI.append(TestTools.VALIDATION_TMP_COLLECTION);
 
-    private final static String VALIDATION_HOME_COLLECTION_URI = "/db/" + TEST_COLLECTION + "/" + TestTools.VALIDATION_HOME_COLLECTION;
-
-    private static XPathQueryService service = null;
-
-    private final static String VALIDATION_DTD_COLLECTION_URI = VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_DTD_COLLECTION;
-    private final static String VALIDATION_XSD_COLLECTION_URI = VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_XSD_COLLECTION;
-    private final static String VALIDATION_TMP_COLLECTION_URI = VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION;
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(
+            propertiesBuilder()
+                    .set(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto")
+                    .build(),
+            true,
+            false);
 
     @Test
-    public void validateUsingSystemCatalog() throws XMLDBException {
+    public void validateUsingSystemCatalog() throws XPathException, PermissionDeniedException, EXistException {
         // DTD for hamlet_valid.xml is registered in system catalog.
         // result should be "document is valid"
-        ResourceSet result = service.query("validation:validate( xs:anyURI('" + VALIDATION_TMP_COLLECTION_URI + "/hamlet_valid.xml'))");
-        String r = (String) result.getResource(0).getContent();
-        assertEquals( "hamlet_valid.xml in systemcatalog", "true", r );
+        final Sequence result = executeQuery(existEmbeddedServer.getBrokerPool(), "validation:validate( xs:anyURI('" + VALIDATION_TMP_COLLECTION_URI + "/hamlet_valid.xml'))");
+        assertEquals(1, result.getItemCount());
+        final Item r = result.itemAt(0);
+        assertTrue(r instanceof BooleanValue);
+        assertEquals( "hamlet_valid.xml in systemcatalog", BooleanValue.TRUE, r );
     }
     
     @Test
-    public void specifiedCatalog_test1() throws XMLDBException {
-        ResourceSet result = service.query("validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml') ," +" xs:anyURI('" + VALIDATION_DTD_COLLECTION_URI + "/catalog.xml'))");
-        String r = (String) result.getResource(0).getContent();
-        assertEquals("valid document", "true", r );
+    public void specifiedCatalog_test1() throws XPathException, PermissionDeniedException, EXistException {
+        final Sequence result = executeQuery(existEmbeddedServer.getBrokerPool(), "validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml') ," +" xs:anyURI('" + VALIDATION_DTD_COLLECTION_URI + "/catalog.xml'))");
+        assertEquals(1, result.getItemCount());
+        final Item r = result.itemAt(0);
+        assertTrue(r instanceof BooleanValue);
+        assertEquals("valid document", BooleanValue.TRUE, r );
     }
 
     @Test
-    public void specifiedCatalog_test2() throws XMLDBException {
-        ResourceSet result = service.query("validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_invalid.xml'), xs:anyURI('" + VALIDATION_DTD_COLLECTION_URI + "/catalog.xml'))");
-        String r = (String) result.getResource(0).getContent();
-        assertEquals( "invalid document", "false", r );
+    public void specifiedCatalog_test2() throws XPathException, PermissionDeniedException, EXistException {
+        final Sequence result = executeQuery(existEmbeddedServer.getBrokerPool(), "validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_invalid.xml'), xs:anyURI('" + VALIDATION_DTD_COLLECTION_URI + "/catalog.xml'))");
+        assertEquals(1, result.getItemCount());
+        final Item r = result.itemAt(0);
+        assertTrue(r instanceof BooleanValue);
+        assertEquals( "invalid document", BooleanValue.FALSE, r );
     }
             
     @Test
-    public void specifiedCatalog_test3() throws XMLDBException {
-        ResourceSet result = service.query("validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml'), xs:anyURI('" + VALIDATION_XSD_COLLECTION_URI + "/catalog.xml'))");
-        String r = (String) result.getResource(0).getContent();
-        assertEquals("wrong catalog", "false", r);
+    public void specifiedCatalog_test3() throws XPathException, PermissionDeniedException, EXistException {
+        final Sequence result = executeQuery(existEmbeddedServer.getBrokerPool(), "validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml'), xs:anyURI('" + VALIDATION_XSD_COLLECTION_URI + "/catalog.xml'))");
+        assertEquals(1, result.getItemCount());
+        final Item r = result.itemAt(0);
+        assertTrue(r instanceof BooleanValue);
+        assertEquals("wrong catalog", BooleanValue.FALSE, r);
     }
 
     @Test
-    public void specifiedCatalog_test4() throws XMLDBException {
-        ResourceSet result = service.query("validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_invalid.xml'), xs:anyURI('" + VALIDATION_XSD_COLLECTION_URI + "/catalog.xml'))");
-        String r = (String) result.getResource(0).getContent();
-        assertEquals("wrong catalog, invalid document", "false", r );
+    public void specifiedCatalog_test4() throws XPathException, PermissionDeniedException, EXistException {
+        final Sequence result = executeQuery(existEmbeddedServer.getBrokerPool(), "validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_invalid.xml'), xs:anyURI('" + VALIDATION_XSD_COLLECTION_URI + "/catalog.xml'))");
+        assertEquals(1, result.getItemCount());
+        final Item r = result.itemAt(0);
+        assertTrue(r instanceof BooleanValue);
+        assertEquals("wrong catalog, invalid document", BooleanValue.FALSE, r );
     }
 
     @Test
-    public void specifiedGrammar_dtd_forValidDoc() throws XMLDBException {
-        ResourceSet result = service.query("validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml'), xs:anyURI('" + VALIDATION_DTD_COLLECTION_URI + "/hamlet.dtd'))");
-        String r = (String) result.getResource(0).getContent();
-        assertEquals("valid document", "true", r );
+    public void specifiedGrammar_dtd_forValidDoc() throws XPathException, PermissionDeniedException, EXistException {
+        final Sequence result = executeQuery(existEmbeddedServer.getBrokerPool(), "validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml'), xs:anyURI('" + VALIDATION_DTD_COLLECTION_URI + "/hamlet.dtd'))");
+        assertEquals(1, result.getItemCount());
+        final Item r = result.itemAt(0);
+        assertTrue(r instanceof BooleanValue);
+        assertEquals("valid document", BooleanValue.TRUE, r );
     }
 
     @Test
-    public void specifiedGrammar_dtd_forInvalidDoc() throws XMLDBException {
-        ResourceSet result = service.query("validation:validate( xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_invalid.xml'), xs:anyURI('" + VALIDATION_DTD_COLLECTION_URI + "/hamlet.dtd') )");
-        String r = (String) result.getResource(0).getContent();
-        assertEquals( "invalid document", "false", r );
+    public void specifiedGrammar_dtd_forInvalidDoc() throws XPathException, PermissionDeniedException, EXistException {
+        final Sequence result = executeQuery(existEmbeddedServer.getBrokerPool(), "validation:validate( xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_invalid.xml'), xs:anyURI('" + VALIDATION_DTD_COLLECTION_URI + "/hamlet.dtd') )");
+        assertEquals(1, result.getItemCount());
+        final Item r = result.itemAt(0);
+        assertTrue(r instanceof BooleanValue);
+        assertEquals( "invalid document", BooleanValue.FALSE, r );
     }
 
     @Test
-    public void searchedGrammar_valid_dtd() throws XMLDBException {
-        ResourceSet result = service.query("validation:validate( xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml'), xs:anyURI('" + VALIDATION_DTD_COLLECTION_URI + "/'))");
-        String r = (String) result.getResource(0).getContent();
-        assertEquals("valid document", "true", r );
+    public void searchedGrammar_valid_dtd() throws XPathException, PermissionDeniedException, EXistException {
+        final Sequence result = executeQuery(existEmbeddedServer.getBrokerPool(), "validation:validate( xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml'), xs:anyURI('" + VALIDATION_DTD_COLLECTION_URI + "/'))");
+        assertEquals(1, result.getItemCount());
+        final Item r = result.itemAt(0);
+        assertTrue(r instanceof BooleanValue);
+        assertEquals("valid document", BooleanValue.TRUE, r );
     }
 
     @Test
-    public void searchedGrammar_valid_xsd() throws XMLDBException {
-        ResourceSet result = service.query("validation:validate( xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml'), xs:anyURI('" + VALIDATION_XSD_COLLECTION_URI + "/') )");
-        String r = (String) result.getResource(0).getContent();
-        assertEquals( "valid document, not found", "false", r );
+    public void searchedGrammar_valid_xsd() throws XPathException, PermissionDeniedException, EXistException {
+        final Sequence result = executeQuery(existEmbeddedServer.getBrokerPool(), "validation:validate( xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml'), xs:anyURI('" + VALIDATION_XSD_COLLECTION_URI + "/') )");
+        assertEquals(1, result.getItemCount());
+        final Item r = result.itemAt(0);
+        assertTrue(r instanceof BooleanValue);
+        assertEquals( "valid document, not found", BooleanValue.FALSE, r );
     }
             
     @Test
-    public void searchedGrammar_valid() throws XMLDBException {
-            ResourceSet result = service.query("validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml'), xs:anyURI('/db/'))");
-            String r = (String) result.getResource(0).getContent();
-            assertEquals("valid document", "true", r );
+    public void searchedGrammar_valid() throws XPathException, PermissionDeniedException, EXistException {
+        final Sequence result = executeQuery(existEmbeddedServer.getBrokerPool(), "validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml'), xs:anyURI('/db/'))");
+        assertEquals(1, result.getItemCount());
+        final Item r = result.itemAt(0);
+        assertTrue(r instanceof BooleanValue);
+        assertEquals("valid document", BooleanValue.TRUE, r );
     }
             
     @Test
-    public void searchedGrammar_invalid() throws XMLDBException {
-        ResourceSet result = service.query("validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_invalid.xml'), xs:anyURI('/db/'))");
-        String r = (String) result.getResource(0).getContent();
-        assertEquals( "invalid document", "false", r );
+    public void searchedGrammar_invalid() throws XPathException, PermissionDeniedException, EXistException {
+        final Sequence result = executeQuery(existEmbeddedServer.getBrokerPool(), "validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_invalid.xml'), xs:anyURI('/db/'))");
+        assertEquals(1, result.getItemCount());
+        final Item r = result.itemAt(0);
+        assertTrue(r instanceof BooleanValue);
+        assertEquals( "invalid document", BooleanValue.FALSE, r );
     }
-
-    @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(propertiesBuilder()
-            .set(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto").build());
 
     @BeforeClass
-    public static void startup() throws Exception {
+    public static void startup() throws SAXException, PermissionDeniedException, EXistException, IOException, LockException {
         //create the collections we need for these tests
         createTestCollections();
 
         //create the documents we need for the tests
         createTestDocuments();
-
-        //get xmldb xpath query service
-        service = getXPathService();
     }
 
     @Before
-    public void clearGrammarCache() throws XMLDBException {
-        service.query("validation:clear-grammar-cache()");
+    public void clearGrammarCache() throws XPathException, PermissionDeniedException, EXistException {
+        executeQuery(existEmbeddedServer.getBrokerPool(), "validation:clear-grammar-cache()");
     }
 
     @AfterClass
@@ -181,46 +200,35 @@ public class ValidationFunctions_DTD_Test {
         removeTestCollections();
     }
 
-    private static XPathQueryService getXPathService() throws Exception {
-        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-        Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-        return (XPathQueryService) root.getService( "XQueryService", "1.0" );
-    }
-
-    private static void createTestCollections() throws Exception {
-
+    private static void createTestCollections() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn txn = transact.beginTransaction()) {
 
-            /** create nessecary collections if they dont exist */
-            org.exist.collections.Collection testCollection = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI));
-            testCollection.getPermissions().setOwner(GUEST_UID);
-            broker.saveCollection(txn, testCollection);
+            /* create necessary collections if they don't exist */
+            final Collection validationCol = broker.getOrCreateCollection(txn, VALIDATION_HOME_COLLECTION_URI);
+            validationCol.getPermissions().setOwner(GUEST_DB_USER);
+            broker.saveCollection(txn, validationCol);
 
-            org.exist.collections.Collection col = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_DTD_COLLECTION));
-            col.getPermissions().setOwner(GUEST_UID);
-            broker.saveCollection(txn, col);
+            final Collection dtdCol = broker.getOrCreateCollection(txn, VALIDATION_DTD_COLLECTION_URI);
+            dtdCol.getPermissions().setOwner(GUEST_DB_USER);
+            broker.saveCollection(txn, dtdCol);
 
-            col = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_XSD_COLLECTION));
-            col.getPermissions().setOwner(GUEST_UID);
-            broker.saveCollection(txn, col);
+            final Collection xsdCol = broker.getOrCreateCollection(txn, VALIDATION_XSD_COLLECTION_URI);
+            xsdCol.getPermissions().setOwner(GUEST_DB_USER);
+            broker.saveCollection(txn, xsdCol);
 
-            col = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION));
-            col.getPermissions().setOwner(GUEST_UID);
-            broker.saveCollection(txn, col);
+            final Collection tmpCol = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION));
+            tmpCol.getPermissions().setOwner(GUEST_DB_USER);
+            broker.saveCollection(txn, tmpCol);
 
             transact.commit(txn);
         }
     }
 
-    private static void createTestDocuments() throws Exception {
-
+    private static void createTestDocuments() throws EXistException, PermissionDeniedException, LockException, SAXException, IOException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Configuration config = pool.getConfiguration();
         final TransactionManager transact = pool.getTransactionManager();
@@ -228,55 +236,44 @@ public class ValidationFunctions_DTD_Test {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getGuestSubject()));
             final Txn txn = transact.beginTransaction()) {
 
-            /** create necessary documents  */
+            /* create necessary documents  */
 
             //hamlet
-            String sb = new String(TestTools.getHamlet());
+            String sb = new String(TestUtils.readHamletSampleXml(), UTF_8);
             sb = sb.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
                 "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"play.dtd\">" );
 
-            org.exist.collections.Collection tmpCol = broker.getCollection(XmldbURI.create(VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION));
+            final Collection tmpCol = broker.getCollection(VALIDATION_TMP_COLLECTION_URI);
             storeDocument(broker, txn, tmpCol, "hamlet_valid.xml", sb);
-            broker.saveCollection(txn, tmpCol);
 
+            final String prevValidationMode = (String)config.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE);
             config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
 
-            org.exist.collections.Collection dtdCol = broker.getCollection(XmldbURI.create(VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_DTD_COLLECTION));
-            storeTextDocument(broker, txn, dtdCol, "hamlet.dtd", new String(TestTools.loadSample("validation/dtd/hamlet.dtd")));
-            storeDocument(broker, txn, dtdCol, "catalog.xml", new String(TestTools.loadSample("validation/dtd/catalog.xml")));
-            broker.saveCollection(txn, dtdCol);
 
-            org.exist.collections.Collection homeCol = broker.getCollection(XmldbURI.create(VALIDATION_HOME_COLLECTION_URI));
-            storeDocument(broker, txn, homeCol, "hamlet_valid.xml", new String(TestTools.loadSample("validation/dtd/hamlet_valid.xml")));
-            storeDocument(broker, txn, homeCol, "hamlet_invalid.xml", new String(TestTools.loadSample("validation/dtd/hamlet_invalid.xml")));
-            broker.saveCollection(txn, homeCol);
+            final Path dtd = TestUtils.resolveSample("validation/dtd");
 
-            config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "yes");
+            final Collection dtdCol = broker.getCollection(VALIDATION_DTD_COLLECTION_URI);
+            storeTextDocument(broker, txn, dtdCol, "hamlet.dtd", dtd.resolve("hamlet.dtd"));
+            storeDocument(broker, txn, dtdCol, "catalog.xml", dtd.resolve("catalog.xml"));
+
+            final Collection validationCol = broker.getCollection(VALIDATION_HOME_COLLECTION_URI);
+            storeDocument(broker, txn, validationCol, "hamlet_valid.xml", dtd.resolve("hamlet_valid.xml"));
+            storeDocument(broker, txn, validationCol, "hamlet_invalid.xml", dtd.resolve("hamlet_invalid.xml"));
+
+            config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, prevValidationMode);
 
             transact.commit(txn);
         }
     }
 
-    private static void storeDocument(DBBroker broker, Txn txn, org.exist.collections.Collection collection, String name, String data) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
-        XmldbURI docUri  = XmldbURI.create(name);
-        IndexInfo info = collection.validateXMLResource(txn, broker, docUri, data);
-        collection.store(txn, broker, info, data);
-    }
-
-    private static void storeTextDocument(DBBroker broker, Txn txn, org.exist.collections.Collection collection, String name, String data) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
-        XmldbURI docUri  = XmldbURI.create(name);
-        collection.addBinaryResource(txn, broker, docUri, data.getBytes(), "text/plain");
-    }
-
-    private static void removeTestCollections() throws Exception {
-
+    private static void removeTestCollections() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn txn = transact.beginTransaction()) {
 
-            org.exist.collections.Collection testCollection = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI));
+            final Collection testCollection = broker.getOrCreateCollection(txn, VALIDATION_HOME_COLLECTION_URI);
             broker.removeCollection(txn, testCollection);
 
             transact.commit(txn);

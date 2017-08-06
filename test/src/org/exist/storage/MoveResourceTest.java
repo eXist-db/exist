@@ -23,7 +23,6 @@ package org.exist.storage;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.exist.EXistException;
@@ -36,10 +35,11 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
+import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.junit.After;
@@ -48,7 +48,6 @@ import org.junit.Test;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
@@ -59,18 +58,50 @@ import org.xmldb.api.base.XMLDBException;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MoveResourceTest {
 
+    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+
     @Test
-    public void store1() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
-        doStore();
-        tearDown();
-        doRead();
+    public void storeAndRead() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
+        BrokerPool.FORCE_CORRUPTION = true;
+        BrokerPool pool = startDb();
+        store(pool);
+
+        stopDb();
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = startDb();
+        read(pool);
     }
 
-    private void doStore() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    @Test
+    public void storeAndReadAborted() throws Exception {
         BrokerPool.FORCE_CORRUPTION = true;
-        final BrokerPool pool = startDB();
-        final TransactionManager transact = pool.getTransactionManager();
+        BrokerPool pool = startDb();
+        storeAborted(pool);
 
+        stopDb();
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = startDb();
+        readAborted(pool);
+    }
+
+    @Test
+    public void storeAndReadXmldb() throws XMLDBException, DatabaseConfigurationException, IOException, EXistException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+        BrokerPool.FORCE_CORRUPTION = true;
+        BrokerPool pool = startDb();
+        xmldbStore(pool);
+
+        stopDb();
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = startDb();
+        xmldbRead(pool);
+    }
+
+    private void store(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+        final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
 
@@ -82,10 +113,7 @@ public class MoveResourceTest {
             assertNotNull(test2);
             broker.saveCollection(transaction, test2);
 
-            final String existHome = System.getProperty("exist.home");
-            Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-            existDir = existDir.normalize();
-            final Path f = existDir.resolve("samples/shakespeare/r_and_j.xml");
+            final Path f = TestUtils.resolveShakespeareSample("r_and_j.xml");
 
             final IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toUri().toASCIIString()));
             assertNotNull(info);
@@ -100,11 +128,7 @@ public class MoveResourceTest {
         }
     }
 
-    private void doRead() throws EXistException, PermissionDeniedException, SAXException, IOException {
-
-        BrokerPool.FORCE_CORRUPTION = false;
-        final BrokerPool pool = startDB();
-
+    private void read(final BrokerPool pool) throws EXistException, PermissionDeniedException, SAXException, IOException, LockException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
@@ -128,18 +152,8 @@ public class MoveResourceTest {
         }
     }
 
-    @Test
-    public void store3Aborted() throws Exception {
-        storeAborted();
-        tearDown();
-        readAborted();
-    }
-
-    private void storeAborted() throws Exception {
-        BrokerPool.FORCE_CORRUPTION = true;
-        final BrokerPool pool = startDB();
+    private void storeAborted(final BrokerPool pool) throws Exception {
         final TransactionManager transact = pool.getTransactionManager();
-
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             try(final Txn transaction = transact.beginTransaction()) {
@@ -148,10 +162,7 @@ public class MoveResourceTest {
                 assertNotNull(test2);
                 broker.saveCollection(transaction, test2);
 
-                final String existHome = System.getProperty("exist.home");
-                Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-                existDir = existDir.normalize();
-                final Path f = existDir.resolve("samples/shakespeare/r_and_j.xml");
+                final Path f = TestUtils.resolveShakespeareSample("r_and_j.xml");
 
                 final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("new_test2.xml"),
                         new InputSource(f.toUri().toASCIIString()));
@@ -177,11 +188,7 @@ public class MoveResourceTest {
         }
     }
 
-    private void readAborted() throws EXistException, PermissionDeniedException, SAXException, IOException {
-
-        BrokerPool.FORCE_CORRUPTION = false;
-        final BrokerPool pool = startDB();
-
+    private void readAborted(final BrokerPool pool) throws EXistException, PermissionDeniedException, SAXException, IOException, LockException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
@@ -206,18 +213,7 @@ public class MoveResourceTest {
         }
     }
 
-    @Test
-    public void store2XMLDB() throws XMLDBException {
-        doXmldbStore();
-        tearDown();
-        doXmldbRead();
-    }
-
-    private void doXmldbStore() throws XMLDBException {
-        BrokerPool.FORCE_CORRUPTION = true;
-        @SuppressWarnings("unused")
-        final BrokerPool pool = startDB();
-
+    private void xmldbStore(final BrokerPool pool) throws XMLDBException {
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         final CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl)
                 root.getService("CollectionManagementService", "1.0");
@@ -232,10 +228,7 @@ public class MoveResourceTest {
             test2 = mgr.createCollection("test2");
         }
 
-        final String existHome = System.getProperty("exist.home");
-        Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-        existDir = existDir.normalize();
-        final Path f = existDir.resolve("samples/shakespeare/r_and_j.xml");
+        final Path f = TestUtils.resolveShakespeareSample("r_and_j.xml");
 
         final Resource res = test2.createResource("test3.xml", "XMLResource");
         res.setContent(f);
@@ -245,11 +238,7 @@ public class MoveResourceTest {
                 TestConstants.TEST_COLLECTION_URI, XmldbURI.create("new_test3.xml"));
     }
 
-    private void doXmldbRead() throws XMLDBException {
-        BrokerPool.FORCE_CORRUPTION = false;
-        @SuppressWarnings("unused")
-        final BrokerPool pool = startDB();
-
+    private void xmldbRead(final BrokerPool pool) throws XMLDBException {
         final org.xmldb.api.base.Collection test = DatabaseManager.getCollection(XmldbURI.LOCAL_DB +  "/test", "admin", "");
         final Resource res = test.getResource("new_test3.xml");
         assertNotNull("Document should not be null", res);
@@ -261,27 +250,20 @@ public class MoveResourceTest {
         mgr.removeCollection(XmldbURI.create("test2"));
     }
 
-    protected BrokerPool startDB() {
-        try {
-            final Configuration config = new Configuration();
-            BrokerPool.configure(1, 5, config);
+    private BrokerPool startDb() throws EXistException, IOException, DatabaseConfigurationException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+        existEmbeddedServer.startDb();
 
-            // initialize driver
-            final Database database = (Database) Class.forName("org.exist.xmldb.DatabaseImpl").newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
+        // initialize driver
+        final Database database = new DatabaseImpl();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
 
-            return BrokerPool.getInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-        return null;
+        return existEmbeddedServer.getBrokerPool();
     }
 
     @After
-    public void tearDown() {
-        BrokerPool.stopAll(false);
+    public void stopDb() {
+        existEmbeddedServer.stopDb();
     }
 
     @AfterClass

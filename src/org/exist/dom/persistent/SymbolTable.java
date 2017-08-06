@@ -397,8 +397,14 @@ public class SymbolTable implements BrokerPoolService {
     }
 
     public void backupToArchive(final RawDataBackup backup) throws IOException {
-        final OutputStream os = backup.newEntry(FileUtils.fileName(getFile()));
-        backupSymbolsTo(os);
+        // do not use try-with-resources here, closing the OutputStream will close the entire backup
+        //try(final OutputStream os = backup.newEntry(FileUtils.fileName(getFile()))) {
+        try {
+            final OutputStream os = backup.newEntry(FileUtils.fileName(getFile()));
+            backupSymbolsTo(os);
+        } finally {
+            backup.closeEntry();
+        }
     }
 
     public void flush() throws EXistException {

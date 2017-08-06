@@ -64,8 +64,8 @@ public class ConfigurationDialog extends JDialog {
             final int cacheSizeProp = existConfig.getInteger(DefaultCacheManager.PROPERTY_CACHE_SIZE);
             cacheSize.setValue(Integer.valueOf(cacheSizeProp));
             
-            final int collectionCacheProp = existConfig.getInteger(CollectionCacheManager.PROPERTY_CACHE_SIZE);
-            collectionCache.setValue(Integer.valueOf(collectionCacheProp));
+            final int collectionCacheProp = existConfig.getInteger(CollectionCacheManager.PROPERTY_CACHE_SIZE_BYTES);
+            collectionCache.setValue(Integer.valueOf(collectionCacheProp / 1024 / 1024)); // show in MB
 
             final Path dir = (Path)existConfig.getProperty(BrokerPool.PROPERTY_DATA_DIR);
             dataDir.setText(dir.toAbsolutePath().toString());

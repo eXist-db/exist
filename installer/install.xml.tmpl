@@ -39,7 +39,6 @@
         <!--res id="pkgicon" src="installer/apps/icon.png"/-->
     </resources>
 
-    <!--jar src="tools/izpack/clinstaller.jar" stage="install"/-->
     <!--jar src="lib/core/excalibur-cli-1.0.jar" stage="install"/-->
 
     <native type="izpack" name="ShellLink.dll"/>
@@ -96,12 +95,6 @@
                 <exclude name=".*"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/test/src" dir="test/src">
-                <exclude name="**/*~"/>
-                <exclude name="**/.*"/>
-                <exclude name="**/CVS/"/>
-                <exclude name=".*"/>
-            </fileset>
-            <fileset targetdir="$INSTALL_PATH/tools/izpack/src" dir="tools/izpack/src">
                 <exclude name="**/*~"/>
                 <exclude name="**/.*"/>
                 <exclude name="**/CVS/"/>
@@ -232,7 +225,6 @@
             <file src="installer/icon.png" targetdir="$INSTALL_PATH"/>
             <file src="installer/icon.ico" targetdir="$INSTALL_PATH"/>
             <file src="installer/install.xml.tmpl" targetdir="$INSTALL_PATH/installer"/>
-            <file src="tools/izpack/build.xml" targetdir="$INSTALL_PATH/tools/izpack"/>
 
             <file src="installer/scripts/setup.sh" targetdir="$INSTALL_PATH/bin">
                 <os family="unix"/>
@@ -264,7 +256,7 @@
                 <exclude name="**/.svn/"/>
             </fileset>
 
-            <executable targetfile="$INSTALL_PATH/eXist-db.app/Contents/MacOS/JavaAppLauncher"
+            <executable targetfile="$INSTALL_PATH/eXist-db.app/Contents/MacOS/eXist-JavaAppLauncher"
                 stage="never">
                 <os family="mac"/>
             </executable>

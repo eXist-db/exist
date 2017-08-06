@@ -15,6 +15,7 @@ dist/
 eXist.iws
 examples.jar
 exist-optional.jar
+exist-testkit.jar
 exist.jar
 extensions/**/build/
 extensions/contentextraction/lib/
@@ -47,7 +48,6 @@ test/external/
 test/junit/
 test/src/org/exist/xquery/xqts/
 test/temp/
-tools/ant/lib/appbundler-1.0.jar
 tools/jetty/logs/
 tools/jetty/tmp/
 tools/wrapper/bin/eXist-db.java.status

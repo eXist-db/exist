@@ -52,6 +52,8 @@ public class ExternalModuleImpl implements ExternalModule {
 
     private XQueryContext mContext = null;
 
+    private boolean needsReset = true;
+
     public ExternalModuleImpl(String namespaceURI, String prefix) {
         mNamespaceURI = namespaceURI;
         mPrefix = prefix;
@@ -60,6 +62,11 @@ public class ExternalModuleImpl implements ExternalModule {
     public void setNamespace(String prefix, String namespace) {
         this.mPrefix = prefix;
         this.mNamespaceURI = namespace;
+    }
+
+    @Override
+    public void setContextItem(Sequence contextItem) {
+        mContext.setContextItem(contextItem);
     }
 
     public void setIsReady(boolean ready) {
@@ -216,8 +223,19 @@ public class ExternalModuleImpl implements ExternalModule {
         final VariableDeclaration decl = mGlobalVariables.get(qname);
         Variable var = mStaticVariables.get(qname);
         if (isReady && decl != null && (var == null || var.getValue() == null)) {
-            decl.eval(null);
+            decl.eval(getContext().getContextItem());
             var = mStaticVariables.get(qname);
+        }
+        if (var == null) {
+            // external variable may be defined in root context importing this module
+            final Variable rootVar = getContext().getRootContext().resolveGlobalVariable(qname);
+            if (rootVar != null) {
+                var = declareVariable(rootVar);
+            }
+        }
+        // set sequence type if decl != null (might be null if called by parser before declaration)
+        if (var != null && decl != null) {
+            var.setSequenceType(decl.getSequenceType());
         }
         return var;
     }
@@ -252,9 +270,25 @@ public class ExternalModuleImpl implements ExternalModule {
         return mSource != null && mSource.isValid(broker) == Source.VALID;
     }
 
-    public void reset(XQueryContext xqueryContext) {
-        mContext.reset();
-        mStaticVariables.clear();
+    @Override
+    public void reset(XQueryContext context) {
+        // deprecated, ignore
+    }
+
+    public void reset(XQueryContext xqueryContext, boolean keepGlobals) {
+        // prevent recursive calls by checking needsReset
+        if (needsReset) {
+            needsReset = false;
+            mContext.reset(keepGlobals);
+            if (!keepGlobals) {
+                mStaticVariables.clear();
+                // reset state of variable declarations
+                mGlobalVariables.values().forEach(v -> v.resetState(true));
+            }
+            // reset state of declared functions
+            mFunctionMap.values().forEach(f -> f.resetState(true));
+            needsReset = true;
+        }
     }
 
     private Expression rootExpression = null;

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.exist.TestUtils;
 import org.exist.dom.persistent.XMLUtil;
 import org.exist.security.Account;
 import org.exist.test.ExistXmldbEmbeddedServer;
@@ -56,7 +57,7 @@ import static org.exist.xmldb.XmldbLocalTests.*;
 public class CreateCollectionsTest  {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     private final static String TEST_COLLECTION = "testCreateCollection";
 
@@ -113,7 +114,7 @@ public class CreateCollectionsTest  {
 
         final List<String> storedResourceNames = new ArrayList<>();
         final List<String> filenames = new ArrayList<>();
-        try(final Stream<Path> files = Files.list(getShakespeareSamplesDirectory()).filter(XMLFilenameFilter.asPredicate())) {
+        try(final Stream<Path> files = Files.list(TestUtils.shakespeareSamples()).filter(XMLFilenameFilter.asPredicate())) {
             //store the samples
             for (final Path file : files.collect(Collectors.toList())) {
                 final Resource res = storeResourceFromFile(file, testCollection);
@@ -143,7 +144,7 @@ public class CreateCollectionsTest  {
         ums.chmod("rwxr-xr-x");
 
         final String testFile = "macbeth.xml";
-        storeResourceFromFile(getShakespeareSamplesDirectory().resolve(testFile), testCollection);
+        storeResourceFromFile(TestUtils.resolveShakespeareSample(testFile), testCollection);
         Resource resMacbeth = testCollection.getResource(testFile);
         assertNotNull("getResource(" + testFile + "\")", resMacbeth);
 
@@ -155,7 +156,7 @@ public class CreateCollectionsTest  {
         assertNull(resMacbeth);
 
         // restore the resource just removed
-        storeResourceFromFile(getShakespeareSamplesDirectory().resolve(testFile), testCollection);
+        storeResourceFromFile(TestUtils.resolveShakespeareSample(testFile), testCollection);
         assertEquals("After re-store resource count must increase", resourceCount, testCollection.getResourceCount());
         resMacbeth = testCollection.getResource(testFile);
         assertNotNull("getResource(" + testFile + "\")", resMacbeth);
@@ -169,7 +170,7 @@ public class CreateCollectionsTest  {
         UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
         ums.chmod("rwxr-xr-x");
 
-        byte[] data = storeBinaryResourceFromFile(getExistDir().resolve("webapp/logo.jpg"), testCollection);
+        byte[] data = storeBinaryResourceFromFile(TestUtils.getEXistHome().get().resolve("webapp/logo.jpg"), testCollection);
         Object content = testCollection.getResource("logo.jpg").getContent();
         byte[] dataStored = (byte[])content;
         assertArrayEquals("After storing binary resource, data out==data in", data, dataStored);

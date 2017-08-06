@@ -17,26 +17,27 @@
     <property name="app.resources" value="${app.dir}/Contents/Resources"/>
     <property name="app.exist" value="${app.resources}/eXist-db"/>
     <property name="app.icon" value="installer/scripts/icon.icns"/>
-    <property name="codesign.identity" value="Lars Windauer"/>
-    <property name="appbundler.jar" value="${tools.ant}/lib/appbundler-1.0.jar"/>
-    <property name="appbundler.url" value="http://java.net/downloads/appbundler/appbundler-1.0.jar"/>
+    <property name="appbundler.jar" value="${tools.appbundler}/lib/appbundler-20170504.jar"/>
 
-    <available property="appbundler.available" file="${appbundler.jar}"/>
+    <condition property="isMacOS">
+        <and>
+            <os family="mac"/>
+            <os family="unix"/>
+        </and>
+    </condition>
 
     <target name="app" description="Build Mac OS X dmg (unsigned)" depends="all,bundle,copy-all,dmg"/>
 
-    <target name="app-signed" description="Build Mac OS X dmg (signed)" depends="all,bundle,copy-all,codesign,dmg"/>
-
-    <target name="install-appbundler" unless="appbundler.available">
-        <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask">
-            <classpath>
-                <pathelement location="${asocat-exist.jar}"/>
-            </classpath>
-        </taskdef>
-
-        <fetch dest="${tools.ant}/lib" url="${appbundler.url}"
-            failonerror="false" maxtime="120"/>
+    <target name="app-signed" description="Build Mac OS X dmg (signed)" xmlns:unless="ant:unless" depends="all,bundle,copy-all,codesign-app,dmg,codesign-dmg">
+        <echo unless:set="isMacOS">
+            *** WARNING: There are no tools for signing Mac applications on non-Mac platforms. The resultant .app and .dmg are not signed!
+        </echo>
     </target>
+
+    <tstamp>
+        <format property="year" pattern="yyyy" timezone="UTC"/>
+    </tstamp>
+
 
     <target name="bundle" depends="prepare-app">
         <taskdef
@@ -44,21 +45,31 @@
             classname="com.oracle.appbundler.AppBundlerTask"
             classpath="${appbundler.jar}" />
         <bundleapp
-            outputdirectory="${dist}"
-            name="eXist-db"
-            displayname="eXist-db"
-            identifier="org.exist.start.Main"
-            mainclassname="org.exist.start.Main"
-            shortversion="${project.version}"
-            icon="${app.icon}">
+                jvmrequired="1.8"
+                outputdirectory="${dist}"
+                name="${project.name}"
+                displayname="${project.name}"
+                executableName="eXist-JavaAppLauncher"
+                identifier="org.exist.start.Main"
+                shortversion="${project.version}"
+                version="${project.version}"
+                icon="${app.icon}"
+                mainclassname="org.exist.start.Main"
+                copyright="${year} The eXist Project"
+                applicationcategory="public.app-category.developer-tools">
+
             <classpath dir=".">
                 <include name="start.jar"/>
             </classpath>
+
             <option value="-Dexist.home=$APP_ROOT/Contents/Resources/eXist-db"/>
+
+            <option value="-Xdock:name=${project.name}"/>
+
         </bundleapp>
     </target>
 
-    <target name="prepare-app" depends="install-appbundler,xars">
+    <target name="prepare-app" depends="xars">
         <delete failonerror="false" dir="${app.dir}"/>
         <mkdir dir="${dist}"/>
     </target>
@@ -186,11 +197,13 @@
         </chmod>
     </target>
 
-    <target name="codesign" description="Codesign .app">
+    <!-- NOTE: there are currently no tools available to code sign Mac .app files on Linux :-( -->
+    <target name="codesign-app" description="Codesign .app" depends="copy-all" if="isMacOS">
+        <echo message="Signing '${app.dir}' as '${mac.codesign.identity}'..."/>
         <exec executable="/usr/bin/codesign" os="Mac OS X" failonerror="true">
-            <arg value="-f"/>
-            <arg value="-s"/>
-            <arg value="${codesign.identity}"/>
+            <arg value="--force"/>
+            <arg value="--sign"/>
+            <arg value="${mac.codesign.identity}"/>
             <arg value="${app.dir}"/>
         </exec>
     </target>
@@ -350,5 +363,16 @@
             <fileset dir="${mountdir}" includes="**/*"/>
         </delete>
 
+    </target>
+
+    <!-- NOTE: there are currently no tools available to code sign Mac .dmg files on Linux :-( -->
+    <target name="codesign-dmg" description="Codesign .dmg" depends="dmg" if="isMacOS">
+        <echo message="Signing '${dist}/${dmg.name}' as '${mac.codesign.identity}'..."/>
+        <exec executable="/usr/bin/codesign" os="Mac OS X" failonerror="true">
+            <arg value="--force"/>
+            <arg value="--sign"/>
+            <arg value="${mac.codesign.identity}"/>
+            <arg value="${dist}/${dmg.name}"/>
+        </exec>
     </target>
 </project>

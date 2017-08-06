@@ -1,18 +1,15 @@
 package org.exist.xquery.value;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
 import org.exist.util.io.ByteBufferAccessor;
 import org.exist.util.io.ByteBufferInputStream;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
 
 /**
  * Representation of an XSD binary value e.g. (xs:base64Binary or xs:hexBinary)
@@ -32,7 +29,7 @@ public class BinaryValueFromFile extends BinaryValue {
             this.file = file;
             this.channel = new RandomAccessFile(file, "r").getChannel();
             this.buf = channel.map(MapMode.READ_ONLY, 0, channel.size());
-        } catch(final IOException ioe) {
+        } catch (final IOException ioe) {
             throw new XPathException(ioe);
         }
     }
@@ -52,15 +49,15 @@ public class BinaryValueFromFile extends BinaryValue {
 
     @Override
     public void streamBinaryTo(OutputStream os) throws IOException {
-        if(!channel.isOpen()) {
+        if (!channel.isOpen()) {
             throw new IOException("Underlying channel has been closed");
         }
 
         try {
             byte data[] = new byte[READ_BUFFER_SIZE];
-            while(buf.hasRemaining()) {
+            while (buf.hasRemaining()) {
                 final int remaining = buf.remaining();
-                if(remaining < READ_BUFFER_SIZE) {
+                if (remaining < READ_BUFFER_SIZE) {
                     data = new byte[remaining];
                 }
 
@@ -76,6 +73,11 @@ public class BinaryValueFromFile extends BinaryValue {
     }
 
     @Override
+    public boolean isClosed() {
+        return !channel.isOpen();
+    }
+
+    @Override
     public void close() throws IOException {
         channel.close();
     }
@@ -88,25 +90,26 @@ public class BinaryValueFromFile extends BinaryValue {
 
             @Override
             public ByteBuffer getBuffer() {
-                if(roBuf == null) {
+                if (roBuf == null) {
                     roBuf = buf.asReadOnlyBuffer();
                 }
                 return roBuf;
             }
         });
     }
-    
+
     @Override
     public Object toJavaObject() throws XPathException {
-    	return file;
+        return file;
     }
 
     @Override
     public void destroy(XQueryContext context, Sequence contextSequence) {
         // do not close if this object is part of the contextSequence
         if (contextSequence == this ||
-                (contextSequence instanceof ValueSequence && ((ValueSequence)contextSequence).containsValue(this)))
-            {return;}
+                (contextSequence instanceof ValueSequence && ((ValueSequence) contextSequence).containsValue(this))) {
+            return;
+        }
         try {
             this.close();
         } catch (final IOException e) {

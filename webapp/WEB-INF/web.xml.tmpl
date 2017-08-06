@@ -100,6 +100,52 @@
             <param-value>false</param-value>
         </init-param>
 
+        <!--
+            Determines who is allowed to submit XQuery to the servlet
+            and have it executed.
+
+            For example the RESTServer allows submission via the
+            GET query parameter _query, and
+            POST via an XML document with a <query> document element
+
+            - disabled
+                Does not allow anyone to submit XQuery for execution
+
+            - enabled
+                Allows anyone to submit XQuery for execution
+
+            - authenticated
+                Allows any authenticated (non-guest) user to submit
+                XQuery for execution
+        -->
+        <init-param>
+            <param-name>xquery-submission</param-name>
+            <param-value>enabled</param-value>
+        </init-param>
+
+        <!--
+            Determines who is allowed to submit XUpdate to the servlet
+            and have it executed.
+
+            For example the RESTServer allows submission via
+            POST of an XML XUpdate document
+
+            - disabled
+                Does not allow anyone to submit XUpdate for execution
+
+            - enabled
+                Allows anyone to submit XUpdate for execution
+
+            - authenticated
+                Allows any authenticated (non-guest) user to submit
+                XUpdate for execution
+        -->
+        <init-param>
+            <param-name>xupdate-submission</param-name>
+            <param-value>enabled</param-value>
+        </init-param>
+
+
         <load-on-startup>2</load-on-startup>
     </servlet>
 

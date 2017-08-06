@@ -23,6 +23,7 @@
 package org.exist.storage;
 
 import org.exist.EXistException;
+import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.IndexInfo;
@@ -32,12 +33,13 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.TestDataGenerator;
+import org.junit.After;
 import org.xml.sax.InputSource;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -45,7 +47,6 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Optional;
 
@@ -54,6 +55,9 @@ import java.util.Optional;
  *
  */
 public class RemoveCollectionTest {
+
+    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     private final static String generateXQ =
             "<book id=\"{$filename}\" n=\"{$count}\">" +
@@ -82,20 +86,40 @@ public class RemoveCollectionTest {
     	"</collection>";
     
     private final static int COUNT = 300;
-    
+
     @Test
     public void removeCollectionTests() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, DatabaseConfigurationException {
-        removeCollection();
-        recover(true);
-        removeResources();
-        recover(true);
-        replaceResources();
-        recover(false);
+        BrokerPool.FORCE_CORRUPTION = true;
+        BrokerPool pool = startDb();
+        removeCollection(pool);
+        stopDb();
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = startDb();
+        recover(pool, true);
+        stopDb();
+
+        BrokerPool.FORCE_CORRUPTION = true;
+        pool = startDb();
+        removeResources(pool);
+        stopDb();
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = startDb();
+        recover(pool, true);
+        stopDb();
+
+        BrokerPool.FORCE_CORRUPTION = true;
+        pool = startDb();
+        replaceResources(pool);
+        stopDb();
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = startDb();
+        recover(pool, false);
     }
-    
-    public void removeCollection() throws PermissionDeniedException, IOException, CollectionConfigurationException, SAXException, EXistException, LockException, DatabaseConfigurationException {
-    	BrokerPool.FORCE_CORRUPTION = true;
-        final BrokerPool pool = startDB();
+
+    public void removeCollection(final BrokerPool pool) throws PermissionDeniedException, IOException, CollectionConfigurationException, SAXException, EXistException, LockException, DatabaseConfigurationException {
         final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -106,14 +130,10 @@ public class RemoveCollectionTest {
 
                 transact.commit(transaction);
             }
-        } finally {
-            stopDB();
         }
     }
 
-    public void removeResources() throws PermissionDeniedException, IOException, SAXException, EXistException, LockException, CollectionConfigurationException, DatabaseConfigurationException {
-    	BrokerPool.FORCE_CORRUPTION = true;
-        final BrokerPool pool = startDB();
+    public void removeResources(final BrokerPool pool) throws PermissionDeniedException, IOException, SAXException, EXistException, LockException, CollectionConfigurationException, DatabaseConfigurationException {
         final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -129,16 +149,11 @@ public class RemoveCollectionTest {
                 broker.saveCollection(transaction, test);
                 transact.commit(transaction);
             }
-        } finally {
-            stopDB();
         }
     }
 
-    public void replaceResources() throws SAXException, PermissionDeniedException, EXistException, LockException, IOException, CollectionConfigurationException, DatabaseConfigurationException {
-    	BrokerPool.FORCE_CORRUPTION = true;
-        final BrokerPool pool = startDB();
+    public void replaceResources(final BrokerPool pool) throws SAXException, PermissionDeniedException, EXistException, LockException, IOException, CollectionConfigurationException, DatabaseConfigurationException {
         final TransactionManager transact = pool.getTransactionManager();
-
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Collection test = storeDocs(broker, transact);
 
@@ -159,8 +174,6 @@ public class RemoveCollectionTest {
                 generator.releaseAll();
                 transact.commit(transaction);
             }
-        } finally {
-            stopDB();
         }
     }
 
@@ -176,7 +189,7 @@ public class RemoveCollectionTest {
             final CollectionConfigurationManager mgr = broker.getBrokerPool().getConfigurationManager();
             mgr.addConfiguration(transaction, broker, test, COLLECTION_CONFIG);
 
-            final InputSource is = new InputSource(Paths.get("samples/shakespeare/hamlet.xml").toUri().toASCIIString());
+            final InputSource is = new InputSource(TestUtils.resolveShakespeareSample("hamlet.xml").toUri().toASCIIString());
             assertNotNull(is);
             final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), is);
             assertNotNull(info);
@@ -200,11 +213,7 @@ public class RemoveCollectionTest {
         return test;
     }
 
-    public void recover(final boolean checkResource) throws EXistException, PermissionDeniedException, DatabaseConfigurationException {
-        BrokerPool.FORCE_CORRUPTION = false;
-
-        final BrokerPool pool = startDB();
-        assertNotNull(pool);
+    public void recover(final BrokerPool pool, final boolean checkResource) throws EXistException, PermissionDeniedException, DatabaseConfigurationException, IOException {
         DocumentImpl doc = null;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             if (checkResource) {
@@ -215,17 +224,16 @@ public class RemoveCollectionTest {
             if (doc != null) {
                 doc.getUpdateLock().release(LockMode.READ_LOCK);
             }
-            stopDB();
         }
     }
 
-    protected BrokerPool startDB() throws EXistException, DatabaseConfigurationException {
-        final Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        return BrokerPool.getInstance();
+    private BrokerPool startDb() throws EXistException, IOException, DatabaseConfigurationException {
+        existEmbeddedServer.startDb();
+        return existEmbeddedServer.getBrokerPool();
     }
 
-    protected void stopDB() {
-        BrokerPool.stopAll(false);
+    @After
+    public void stopDb() {
+        existEmbeddedServer.stopDb();
     }
 }

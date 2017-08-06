@@ -698,10 +698,6 @@ public class Resource extends File {
             } catch (final Exception e) {
                 LOG.error(e);
                 throw new IOException(e);
-            } finally {
-                if (resource != null) {
-                    resource.getUpdateLock().release(LockMode.READ_LOCK);
-                }
             }
 
         } catch (final Exception e) {

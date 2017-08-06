@@ -2,10 +2,14 @@ package org.exist.test;
 
 import org.exist.TestUtils;
 import org.exist.jetty.JettyStart;
+import org.exist.util.FileUtils;
 import org.junit.rules.ExternalResource;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 import java.util.Random;
 
 import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
@@ -14,9 +18,16 @@ import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
  * Exist Jetty Web Server Rule for JUnit
  */
 public class ExistWebServer extends ExternalResource {
-    private final static int MIN_RANDOM_PORT = 49152;
-    private final static int MAX_RANDOM_PORT = 65535;
-    private final static int MAX_RANDOM_PORT_ATTEMPTS = 10;
+    private static final String CONFIG_PROP_FILES = "org.exist.db-connection.files";
+    private static final String CONFIG_PROP_JOURNAL_DIR = "org.exist.db-connection.recovery.journal-dir";
+
+    private static final String PROP_JETTY_PORT = "jetty.port";
+    private static final String PROP_JETTY_SECURE_PORT = "jetty.secure.port";
+    private static final String PROP_JETTY_SSL_PORT = "jetty.ssl.port";
+
+    private static final int MIN_RANDOM_PORT = 49152;
+    private static final int MAX_RANDOM_PORT = 65535;
+    private static final int MAX_RANDOM_PORT_ATTEMPTS = 10;
 
     private JettyStart server = null;
     private String prevAutoDeploy = "off";
@@ -25,6 +36,8 @@ public class ExistWebServer extends ExternalResource {
     private final boolean useRandomPort;
     private final boolean cleanupDbOnShutdown;
     private final boolean disableAutoDeploy;
+    private final boolean useTemporaryStorage;
+    private Optional<Path> temporaryStorage = Optional.empty();
 
     public ExistWebServer() {
         this(false);
@@ -39,9 +52,14 @@ public class ExistWebServer extends ExternalResource {
     }
 
     public ExistWebServer(final boolean useRandomPort, final boolean cleanupDbOnShutdown, final boolean disableAutoDeploy) {
+        this(useRandomPort, cleanupDbOnShutdown, disableAutoDeploy, false);
+    }
+
+    public ExistWebServer(final boolean useRandomPort, final boolean cleanupDbOnShutdown, final boolean disableAutoDeploy, final boolean useTemporaryStorage) {
         this.useRandomPort = useRandomPort;
         this.cleanupDbOnShutdown = cleanupDbOnShutdown;
         this.disableAutoDeploy = disableAutoDeploy;
+        this.useTemporaryStorage = useTemporaryStorage;
     }
 
     public final int getPort() {
@@ -60,10 +78,18 @@ public class ExistWebServer extends ExternalResource {
         }
 
         if (server == null) {
+            if(useTemporaryStorage) {
+                this.temporaryStorage = Optional.of(Files.createTempDirectory("org.exist.test.ExistWebServer"));
+                final String absTemporaryStorage = temporaryStorage.get().toAbsolutePath().toString();
+                System.setProperty(CONFIG_PROP_FILES, absTemporaryStorage);
+                System.setProperty(CONFIG_PROP_JOURNAL_DIR, absTemporaryStorage);
+                System.out.println("Using temporary storage location: " + absTemporaryStorage);
+            }
+
             if(useRandomPort) {
-                System.setProperty("jetty.port", Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT)));
-                System.setProperty("jetty.secure.port", Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT)));
-                System.setProperty("jetty.ssl.port", Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT)));
+                System.setProperty(PROP_JETTY_PORT, Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT)));
+                System.setProperty(PROP_JETTY_SECURE_PORT, Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT)));
+                System.setProperty(PROP_JETTY_SSL_PORT, Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT)));
             }
 
             server = new JettyStart();
@@ -95,6 +121,19 @@ public class ExistWebServer extends ExternalResource {
             }
             server.shutdown();
             server = null;
+
+            if(useTemporaryStorage && temporaryStorage.isPresent()) {
+                FileUtils.deleteQuietly(temporaryStorage.get());
+                temporaryStorage = Optional.empty();
+                System.clearProperty(CONFIG_PROP_JOURNAL_DIR);
+                System.clearProperty(CONFIG_PROP_FILES);
+            }
+
+            if(useRandomPort) {
+                System.clearProperty(PROP_JETTY_SSL_PORT);
+                System.clearProperty(PROP_JETTY_SECURE_PORT);
+                System.clearProperty(PROP_JETTY_PORT);
+            }
         } else {
             throw new IllegalStateException("ExistWebServer already stopped");
         }

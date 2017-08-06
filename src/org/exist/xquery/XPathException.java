@@ -30,7 +30,7 @@ import org.exist.xquery.value.Sequence;
 /**
  *  Class for representing a generic XPath exception.
  */
-public class XPathException extends Exception {
+public class XPathException extends Exception implements XPathErrorProvider {
 
     private static final long serialVersionUID = 212844692232650666L;
     private int line = 0;
@@ -147,36 +147,42 @@ public class XPathException extends Exception {
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
-    public XPathException(Throwable cause) {
+    public XPathException(final Throwable cause) {
         super(cause);
+        if(cause instanceof XPathErrorProvider) {
+            this.errorCode = ((XPathErrorProvider)cause).getErrorCode();
+        }
     }
 
     /**
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
-    public XPathException(String message, Throwable cause) {
+    public XPathException(final String message, final Throwable cause) {
         super(cause);
         this.message = message;
+        if(cause instanceof XPathErrorProvider) {
+            this.errorCode = ((XPathErrorProvider)cause).getErrorCode();
+        }
     }
 
     /**
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
-    public XPathException(Expression expr, Throwable cause) {
-        this(expr, ErrorCodes.ERROR, cause.getMessage(), null, cause);
+    public XPathException(final Expression expr, final Throwable cause) {
+        this(expr, cause instanceof  XPathErrorProvider ? ((XPathErrorProvider)cause).getErrorCode() : ErrorCodes.ERROR, cause.getMessage(), null, cause);
     }
 
     /**
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
-    public XPathException(Expression expr, String message, Throwable cause) {
-        this(expr, ErrorCodes.ERROR, message, null, cause);
+    public XPathException(final Expression expr, final String message, final Throwable cause) {
+        this(expr, cause instanceof  XPathErrorProvider ? ((XPathErrorProvider)cause).getErrorCode() : ErrorCodes.ERROR, message, null, cause);
     }
 
-    public XPathException(Expression expr, ErrorCode errorCode, String errorDesc, Sequence errorVal, Throwable cause) {
+    public XPathException(final Expression expr, final ErrorCode errorCode, final String errorDesc, final Sequence errorVal, final Throwable cause) {
         this(expr.getLine(), expr.getColumn(), errorDesc, cause);
         this.errorCode = errorCode;
         this.errorVal = errorVal;
@@ -224,21 +230,27 @@ public class XPathException extends Exception {
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
-    protected XPathException(int line, int column, String message, Throwable cause) {
+    protected XPathException(final int line, final int column, final String message, final Throwable cause) {
         super(cause);
         this.message = message;
         this.line = line;
         this.column = column;
+        if(cause instanceof XPathErrorProvider) {
+            this.errorCode = ((XPathErrorProvider)cause).getErrorCode();
+        }
     }
 
     /**
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
-    public XPathException(int line, int column, Throwable cause) {
+    public XPathException(final int line, final int column, final Throwable cause) {
         super(cause);
         this.line = line;
         this.column = column;
+        if(cause instanceof XPathErrorProvider) {
+            this.errorCode = ((XPathErrorProvider)cause).getErrorCode();
+        }
     }
 
     public void setLocation(int line, int column) {
@@ -261,9 +273,11 @@ public class XPathException extends Exception {
     }
 
     /**
-     *  Get the xquery error code. Use getErroCode instead.
+     * Get the xquery error code. Use getErroCode instead.
      * 
      * @return The error code or ErrorCode#Error when not available.
+     *
+     * @deprecated Use {@link #getErrorCode()}
      */
     @Deprecated
     public ErrorCode getCode() {
@@ -388,12 +402,7 @@ public class XPathException extends Exception {
         return buf.toString();
     }
 
-
-    /**
-     *  Get the xquery error code.
-     * 
-     * @return The errorcode or ErrorCode#Error when not available.
-     */
+    @Override
     public ErrorCode getErrorCode() {
         return errorCode;
     }

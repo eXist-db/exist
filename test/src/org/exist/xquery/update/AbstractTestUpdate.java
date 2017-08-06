@@ -18,7 +18,7 @@ import static org.junit.Assert.assertEquals;
  */
 public abstract class AbstractTestUpdate {
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     private Collection testCollection;
 

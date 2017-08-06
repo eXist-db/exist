@@ -17,7 +17,7 @@ import static org.junit.Assert.assertNotNull;
 public class DocumentUpdateTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
 	private static final String TEST_COLLECTION_NAME = "testup";
     private Collection testCollection;

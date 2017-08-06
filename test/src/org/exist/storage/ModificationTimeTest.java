@@ -119,7 +119,7 @@ public class ModificationTimeTest {
     }
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     private DocumentImpl getDocument(final XmldbURI uri) throws EXistException, PermissionDeniedException, DatabaseConfigurationException {
         DocumentImpl doc = null;

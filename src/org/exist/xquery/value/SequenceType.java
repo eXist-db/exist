@@ -30,155 +30,163 @@ import org.w3c.dom.Node;
 /**
  * Represents an XQuery SequenceType and provides methods to check
  * sequences and items against this type.
- * 
+ *
  * @author wolf
  */
 public class SequenceType {
- 
-	private int primaryType = Type.ITEM;
-	private int cardinality = Cardinality.EXACTLY_ONE;
-	private QName nodeName = null;
-	
-	public SequenceType() {
-	}
+
+    private int primaryType = Type.ITEM;
+    private int cardinality = Cardinality.EXACTLY_ONE;
+    private QName nodeName = null;
+
+    public SequenceType() {
+    }
 
     /**
      * Construct a new SequenceType using the specified
      * primary type and cardinality constants.
-     * 
+     *
      * @param primaryType
      * @param cardinality
      */
-	public SequenceType(int primaryType, int cardinality) {
-		this.primaryType = primaryType;
-		this.cardinality = cardinality;
-	}
+    public SequenceType(int primaryType, int cardinality) {
+        this.primaryType = primaryType;
+        this.cardinality = cardinality;
+    }
 
     /**
      * Returns the primary type as one of the
      * constants defined in {@link Type}.
      */
-	public int getPrimaryType() {
-		return primaryType;
-	}
+    public int getPrimaryType() {
+        return primaryType;
+    }
 
-	public void setPrimaryType(int type) {
-		this.primaryType = type;
-	}
+    public void setPrimaryType(int type) {
+        this.primaryType = type;
+    }
 
     /**
-     * Returns the expected cardinality. See the constants 
+     * Returns the expected cardinality. See the constants
      * defined in {@link Cardinality}.
-     * 
      */
-	public int getCardinality() {
-		return cardinality;
-	}
+    public int getCardinality() {
+        return cardinality;
+    }
 
-	public void setCardinality(int cardinality) {
-		this.cardinality = cardinality;
-	}
+    public void setCardinality(int cardinality) {
+        this.cardinality = cardinality;
+    }
 
-	public QName getNodeName() {
-		return nodeName;
-	}
-	
-	public void setNodeName(QName qname) {
-		this.nodeName = qname;
-	}
+    public QName getNodeName() {
+        return nodeName;
+    }
+
+    public void setNodeName(QName qname) {
+        this.nodeName = qname;
+    }
 
     /**
      * Check the specified sequence against this SequenceType.
-     *  
+     *
      * @param seq
-     * @throws XPathException 
-     * @throws XPathException 
+     * @throws XPathException
+     * @throws XPathException
      */
     public boolean checkType(Sequence seq) throws XPathException {
         if (nodeName != null) {
             Item next;
             for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 next = i.nextItem();
-                if (!checkType(next))
-                    {return false;}
+                if (!checkType(next)) {
+                    return false;
+                }
             }
             return true;
         } else {
             return Type.subTypeOf(seq.getItemType(), primaryType);
         }
     }
-    
+
     /**
      * Check a single item against this SequenceType.
-     * 
+     *
      * @param item
      */
-	public boolean checkType(Item item) {
+    public boolean checkType(Item item) {
         Node realNode = null;
         int type = item.getType();
         if (type == Type.NODE) {
-            realNode = ((NodeValue)item).getNode();
+            realNode = ((NodeValue) item).getNode();
             type = realNode.getNodeType();
         }
-        if(!Type.subTypeOf(type, primaryType))
-			{return false;}
-		if(nodeName != null) {
-			//TODO : how to improve performance ?
-            final QName realName = ((NodeValue)item).getQName();
-			if (nodeName.getNamespaceURI() != null) {
-				if (!nodeName.getNamespaceURI().equals(realName.getNamespaceURI()))
-					{return false;}
-			}
-			if (nodeName.getLocalPart() != null) {
-				return nodeName.getLocalPart().equals(realName.getLocalPart());
-			}
-		}
-		return true;
-	}
-	
+        if (!Type.subTypeOf(type, primaryType)) {
+            return false;
+        }
+        if (nodeName != null) {
+            //TODO : how to improve performance ?
+            final QName realName = ((NodeValue) item).getQName();
+            if (nodeName.getNamespaceURI() != null) {
+                if (!nodeName.getNamespaceURI().equals(realName.getNamespaceURI())) {
+                    return false;
+                }
+            }
+            if (nodeName.getLocalPart() != null) {
+                return nodeName.getLocalPart().equals(realName.getLocalPart());
+            }
+        }
+        return true;
+    }
+
     /**
      * Check the given type against the primary type
      * declared in this SequenceType.
-     * 
+     *
      * @param type
      * @throws XPathException
      */
-	public void checkType(int type) throws XPathException {
-		if (type == Type.EMPTY || type == Type.ITEM)
-			{return;}
-		
-		//Although xs:anyURI is not a subtype of xs:string, both types are compatible
-		if (type ==	Type.ANY_URI && primaryType == Type.STRING)
-			{return;}
-        
-		if (!Type.subTypeOf(type, primaryType))
-			{throw new XPathException(
-				"Type error: expected type: "
-					+ Type.getTypeName(primaryType)
-					+ "; got: "
-					+ Type.getTypeName(type));}
-	}
+    public void checkType(int type) throws XPathException {
+        if (type == Type.EMPTY || type == Type.ITEM) {
+            return;
+        }
+
+        //Although xs:anyURI is not a subtype of xs:string, both types are compatible
+        if (type == Type.ANY_URI && primaryType == Type.STRING) {
+            return;
+        }
+
+        if (!Type.subTypeOf(type, primaryType)) {
+            throw new XPathException(
+                    "Type error: expected type: "
+                            + Type.getTypeName(primaryType)
+                            + "; got: "
+                            + Type.getTypeName(type));
+        }
+    }
 
     /**
      * Check if the given sequence has the cardinality required
      * by this sequence type.
-     * 
+     *
      * @param seq
      * @throws XPathException
      */
-	public void checkCardinality(Sequence seq) throws XPathException {
-		if (!seq.isEmpty() && cardinality == Cardinality.EMPTY)
-			{throw new XPathException("Empty sequence expected; got " + seq.getItemCount());}
-		if (seq.isEmpty() && (cardinality & Cardinality.ZERO) == 0)
-			{throw new XPathException("Empty sequence is not allowed here");}
-		else if (seq.hasMany() && (cardinality & Cardinality.MANY) == 0)
-			{throw new XPathException("Sequence with more than one item is not allowed here");}
-	}
+    public void checkCardinality(Sequence seq) throws XPathException {
+        if (!seq.isEmpty() && cardinality == Cardinality.EMPTY) {
+            throw new XPathException("Empty sequence expected; got " + seq.getItemCount());
+        }
+        if (seq.isEmpty() && (cardinality & Cardinality.ZERO) == 0) {
+            throw new XPathException("Empty sequence is not allowed here");
+        } else if (seq.hasMany() && (cardinality & Cardinality.MANY) == 0) {
+            throw new XPathException("Sequence with more than one item is not allowed here");
+        }
+    }
 
-	public String toString() {
-		if (cardinality == Cardinality.EMPTY)
-			{return Cardinality.toString(cardinality);}
-		return Type.getTypeName(primaryType) + Cardinality.toString(cardinality);
-	}
+    public String toString() {
+        if (cardinality == Cardinality.EMPTY) {
+            return Cardinality.toString(cardinality);
+        }
+        return Type.getTypeName(primaryType) + Cardinality.toString(cardinality);
+    }
 
 }

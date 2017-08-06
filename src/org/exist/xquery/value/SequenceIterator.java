@@ -18,25 +18,25 @@
  * 
  *  $Id$
  */
- 
+
 package org.exist.xquery.value;
 
 //TODO replace with extends Iterator<Item>
 public interface SequenceIterator {
 
-	public static final SequenceIterator EMPTY_ITERATOR = new EmptySequenceIterator();
+    SequenceIterator EMPTY_ITERATOR = new EmptySequenceIterator();
 
-	/**
-	 * Determines if there is a next item in the sequence
-	 *
-	 * @return true if there is another item available, false otherwise.
-	 */
-	public boolean hasNext();
+    /**
+     * Determines if there is a next item in the sequence
+     *
+     * @return true if there is another item available, false otherwise.
+     */
+    boolean hasNext();
 
-	/**
-	 * Retrieves the next item from the Sequence
-	 *
-	 * @return The item, or null if there are no more items
-	 */
-	public Item nextItem();
+    /**
+     * Retrieves the next item from the Sequence
+     *
+     * @return The item, or null if there are no more items
+     */
+    Item nextItem();
 }
