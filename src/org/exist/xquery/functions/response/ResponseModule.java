@@ -56,14 +56,9 @@ public class ResponseModule extends AbstractInternalModule
         new FunctionDef( GetExists.signature, GetExists.class )
     };
 
-    private final Variable responseVar;
-
     public ResponseModule(Map<String, List<? extends Object>> parameters) throws XPathException
     {
         super(functions, parameters);
-
-        // predefined module global variables:
-        this.responseVar = declareVariable( RESPONSE_VAR, null );
     }
 
     /* (non-Javadoc)
@@ -101,8 +96,5 @@ public class ResponseModule extends AbstractInternalModule
     @Override
     public void reset(XQueryContext xqueryContext, boolean keepGlobals) {
         super.reset(xqueryContext, keepGlobals);
-        if (!keepGlobals) {
-            responseVar.setValue(null);
-        }
     }
 }

@@ -404,7 +404,7 @@ public class Eval extends BasicFunction {
 
     private void cleanup(XQueryContext evalContext, XQueryContext innerContext, DocumentSet oldDocs, LocalVariable mark, Item expr, Sequence resultSequence) {
         if(innerContext != evalContext) {
-           innerContext.reset();
+           innerContext.reset(true);
         }
 
         if(oldDocs != null) {

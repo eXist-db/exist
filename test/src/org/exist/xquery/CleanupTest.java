@@ -56,7 +56,6 @@ public class CleanupTest {
     private final static String TEST_MODULE = "module namespace t=\"" + MODULE_NS + "\";" +
             "declare variable $t:VAR := 123;" +
             "declare function t:test($a) { $a };" +
-            "declare function t:unused($a) { $a };" +
             "declare function t:inline($a) { function() { $a } };";
 
     private final static String TEST_QUERY = "import module namespace t=\"" + MODULE_NS + "\" at " +
@@ -92,15 +91,13 @@ public class CleanupTest {
     }
 
     @Test
-    public void resetStateOfUnusedModuleMembers() throws XMLDBException, XPathException {
+    public void resetStateOfModuleVars() throws XMLDBException, XPathException {
         final XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
         final CompiledExpression compiled = service.compile(TEST_QUERY);
 
         final Module module = ((PathExpr) compiled).getContext().getModule(MODULE_NS);
-        final UserDefinedFunction unusedFunc = ((ExternalModule)module).getFunction(new QName("unused", MODULE_NS, "t"), 1, ((ExternalModule) module).getContext());
         final java.util.Collection<VariableDeclaration> varDecls = ((ExternalModule) module).getVariableDeclarations();
         final VariableDeclaration var = varDecls.iterator().next();
-        final Expression unusedBody = unusedFunc.getFunctionBody();
         final FunctionCall root = (FunctionCall) ((PathExpr) compiled).getFirst();
         final UserDefinedFunction calledFunc = root.getFunction();
         final Expression calledBody = calledFunc.getFunctionBody();
@@ -108,7 +105,6 @@ public class CleanupTest {
         // set some property so we can test if it gets cleared
         calledFunc.setContextDocSet(DocumentSet.EMPTY_DOCUMENT_SET);
         calledBody.setContextDocSet(DocumentSet.EMPTY_DOCUMENT_SET);
-        unusedBody.setContextDocSet(DocumentSet.EMPTY_DOCUMENT_SET);
         var.setContextDocSet(DocumentSet.EMPTY_DOCUMENT_SET);
 
         // execute query and check result
@@ -120,10 +116,6 @@ public class CleanupTest {
         assertNull(args);
         assertNull(calledFunc.getContextDocSet());
         assertNull(calledBody.getContextDocSet());
-        args = unusedFunc.getCurrentArguments();
-        assertNull(args);
-        assertNull(unusedBody.getContextDocSet());
-        assertNull(unusedFunc.getContextDocSet());
         assertNull(var.getContextDocSet());
     }
 

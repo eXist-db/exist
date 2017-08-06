@@ -211,5 +211,8 @@ public abstract class AbstractInternalModule implements InternalModule {
     public void reset(XQueryContext xqueryContext, boolean keepGlobals) {
         // call deprecated method for backwards compatibility
         reset(xqueryContext);
+        if (!keepGlobals) {
+            mGlobalVariables.clear();
+        }
     }
 }

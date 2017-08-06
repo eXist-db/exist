@@ -285,8 +285,6 @@ public class ExternalModuleImpl implements ExternalModule {
                 // reset state of variable declarations
                 mGlobalVariables.values().forEach(v -> v.resetState(true));
             }
-            // reset state of declared functions
-            mFunctionMap.values().forEach(f -> f.resetState(true));
             needsReset = true;
         }
     }
