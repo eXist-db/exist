@@ -25,6 +25,7 @@ import org.exist.numbering.NodeId;
 import org.exist.storage.Signatures;
 import org.exist.util.ByteConversion;
 import org.exist.util.pool.NodePool;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
@@ -86,6 +87,11 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
     @Override
     public String getNamespaceURI() {
         return XMLConstants.NULL_NS_URI;
+    }
+
+    @Override
+    public String getNodeValue() throws DOMException {
+        return getData();
     }
 
     /**
