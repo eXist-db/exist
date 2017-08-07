@@ -20,6 +20,10 @@
  */
 package org.exist.util;
 
+import net.jcip.annotations.ThreadSafe;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * A pool for byte arrays.
  * <p>
@@ -28,12 +32,13 @@ package org.exist.util;
  * with length &lt; MAX are kept in the pool. Large arrays are rarely
  * reused.
  */
+@ThreadSafe
 public class ByteArrayPool {
 
     private static final int POOL_SIZE = 32;
     private static final int MAX = 128;
     private static final ThreadLocal<byte[][]> pools_ = new PoolThreadLocal();
-    private static int slot_ = 0;
+    private static AtomicInteger slot_ = new AtomicInteger();
 
     private ByteArrayPool() {
     }
@@ -66,8 +71,7 @@ public class ByteArrayPool {
             }
         }
 
-        // TODO(AR) I note that this ++ operation is not thread-safe, slot requires some form of synchronization
-        int s = slot_++;
+        int s = slot_.incrementAndGet();
         if (s < 0) {
             s = -s;
         }
