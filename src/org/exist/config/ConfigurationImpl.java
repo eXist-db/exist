@@ -30,6 +30,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.xml.XMLConstants;
+
 /**
  * configuration -> element
  * property -> attribute
@@ -145,7 +147,7 @@ public class ConfigurationImpl implements Configuration {
             
             Node attr = attrs.item(i);
             
-            if ( !"xmlns".equals( attr.getPrefix() ) ) {
+            if ( !XMLConstants.XMLNS_ATTRIBUTE.equals( attr.getPrefix() ) ) {
                 
                 props.put(attr.getLocalName(), attr.getNodeValue());
             }
@@ -368,7 +370,7 @@ public class ConfigurationImpl implements Configuration {
         final NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             //ignore namespace declarations
-            if ( !"xmlns".equals( attrs.item(i).getPrefix() ) )
+            if ( !XMLConstants.XMLNS_ATTRIBUTE.equals( attrs.item(i).getPrefix() ) )
                 {properties.add(attrs.item(i).getNodeName());}
         }
         final NodeList children = element.getChildNodes();

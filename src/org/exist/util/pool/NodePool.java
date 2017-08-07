@@ -23,6 +23,7 @@ package org.exist.util.pool;
 
 import java.util.LinkedList;
 
+import net.jcip.annotations.ThreadSafe;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.CDATASectionImpl;
 import org.exist.dom.persistent.CommentImpl;
@@ -38,33 +39,25 @@ import org.w3c.dom.Node;
  * objects. To reduce garbage collection, we use a pool to cache a certain number
  * of objects.
  */
+@ThreadSafe
 public class NodePool {
 
-    public final static int MAX_OBJECTS = 20;
+    public static final int MAX_OBJECTS = 20;
+    private static final ThreadLocal<NodePool> pools = new PoolThreadLocal();
+
+    private int maxActive;
+    private Int2ObjectHashMap<Pool> poolMap = new Int2ObjectHashMap<>(17);
+
+    private NodePool(final int maxObjects) {
+        this.maxActive = maxObjects;
+    }
 
     public static NodePool getInstance() {
         return pools.get();
     }
 
-    private static class PoolThreadLocal extends ThreadLocal<NodePool> {
-
-        protected NodePool initialValue() {
-           return new NodePool(MAX_OBJECTS);
-        }
-    }
-
-    private static final ThreadLocal<NodePool> pools = new PoolThreadLocal();
-    
-
-    private int maxActive;
-    private Int2ObjectHashMap<Pool> poolMap = new Int2ObjectHashMap<Pool>(17);
-
-    public NodePool(int maxObjects) {
-        this.maxActive = maxObjects;
-    }
-
-    public NodeImpl borrowNode(short key) {
-        Pool pool = (Pool) poolMap.get(key);
+    public NodeImpl borrowNode(final short key) {
+        Pool pool = poolMap.get(key);
         if (pool == null) {
             pool = new Pool();
             poolMap.put(key, pool);
@@ -72,18 +65,19 @@ public class NodePool {
         return pool.borrowNode(key);
     }
 
-    public void returnNode(NodeImpl node) {
-        final Pool pool = (Pool) poolMap.get(node.getNodeType());
-        if (pool != null)
-            {pool.returnNode(node);}
+    public void returnNode(final NodeImpl node) {
+        final Pool pool = poolMap.get(node.getNodeType());
+        if (pool != null) {
+            pool.returnNode(node);
+        }
     }
 
-    public int getSize(short key) {
-        final Pool pool = (Pool) poolMap.get(key);
+    public int getSize(final short key) {
+        final Pool pool = poolMap.get(key);
         return pool.stack.size();
     }
-    
-    private NodeImpl makeObject(short key) {
+
+    private NodeImpl makeObject(final short key) {
         switch (key) {
             case Node.ELEMENT_NODE:
                 return new ElementImpl();
@@ -92,7 +86,7 @@ public class NodePool {
             case Node.ATTRIBUTE_NODE:
                 return new AttrImpl();
             case Node.CDATA_SECTION_NODE:
-            	return new CDATASectionImpl();
+                return new CDATASectionImpl();
             case Node.PROCESSING_INSTRUCTION_NODE:
                 return new ProcessingInstructionImpl();
             case Node.COMMENT_NODE:
@@ -101,21 +95,30 @@ public class NodePool {
         throw new IllegalStateException("Unable to create object of type " + key);
     }
 
+    private static class PoolThreadLocal extends ThreadLocal<NodePool> {
+
+        @Override
+        protected NodePool initialValue() {
+            return new NodePool(MAX_OBJECTS);
+        }
+    }
+
     private class Pool {
 
-        private LinkedList<NodeImpl> stack = new LinkedList<NodeImpl>();
+        private LinkedList<NodeImpl> stack = new LinkedList<>();
 
-        public NodeImpl borrowNode(short key) {
+        public NodeImpl borrowNode(final short key) {
             if (stack.isEmpty()) {
                 return makeObject(key);
             }
             return stack.removeLast();
         }
 
-        public void returnNode(NodeImpl node) {
+        public void returnNode(final NodeImpl node) {
             // Only cache up to maxActive nodes
-            if (stack.size() < maxActive)
-                {stack.addLast(node);}
+            if (stack.size() < maxActive) {
+                stack.addLast(node);
+            }
         }
     }
 }
