@@ -114,6 +114,42 @@ public class TextImplTest {
     }
 
     @Test
+    public void setData() {
+        final TextImpl text = new TextImpl("helloworld");
+        assertEquals("helloworld", text.getTextContent());
+
+        text.setData("worldhello");
+        assertEquals("worldhello", text.getTextContent());
+    }
+
+    @Test
+    public void setData_empty() {
+        final TextImpl text = new TextImpl("helloworld");
+        assertEquals("helloworld", text.getTextContent());
+
+        text.setData("");
+        assertEquals("", text.getTextContent());
+    }
+
+    @Test
+    public void setData_shrink() {
+        final TextImpl text = new TextImpl("helloworld");
+        assertEquals("helloworld", text.getTextContent());
+
+        text.setData("goodbye");
+        assertEquals("goodbye", text.getTextContent());
+    }
+
+    @Test
+    public void setData_expand() {
+        final TextImpl text = new TextImpl("helloworld");
+        assertEquals("helloworld", text.getTextContent());
+
+        text.setData("thanksandgoodbye");
+        assertEquals("thanksandgoodbye", text.getTextContent());
+    }
+
+    @Test
     public void insertData_start() {
         final TextImpl text = new TextImpl("hello");
         assertEquals("hello", text.getTextContent());
