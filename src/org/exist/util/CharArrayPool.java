@@ -20,6 +20,10 @@
  */
 package org.exist.util;
 
+import net.jcip.annotations.ThreadSafe;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * A pool for char arrays.
  * <p>
@@ -29,12 +33,13 @@ package org.exist.util;
  * <p>
  * The pool is bound to the current thread.
  */
+@ThreadSafe
 public class CharArrayPool {
 
     private static final int POOL_SIZE = 128;
     private static final int MAX = 128;
     private static final ThreadLocal<char[][]> pools_ = new PoolThreadLocal();
-    private static int slot_ = 0;
+    private static final AtomicInteger slot_ = new AtomicInteger();
 
     private CharArrayPool() {
     }
@@ -66,8 +71,7 @@ public class CharArrayPool {
             }
         }
 
-        // TODO(AR) I note that this ++ operation is not thread-safe, slot requires some form of synchronization
-        int s = slot_++;
+        int s = slot_.incrementAndGet();
         if (s < 0) {
             s = -s;
         }
