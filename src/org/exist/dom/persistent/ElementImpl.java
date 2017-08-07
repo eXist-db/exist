@@ -469,10 +469,34 @@ public class ElementImpl extends NamedNode implements Element {
     }
 
     @Override
-    public Node appendChild(final Node child) throws DOMException {
+    public Node appendChild(final Node newChild) throws DOMException {
+        if(newChild.getOwnerDocument() != ownerDocument) {
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Owning document IDs do not match");
+        }
+
+        if(newChild == this) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                    "Cannot append an element to itself");
+        }
+
+        if(newChild.getNodeType() == DOCUMENT_NODE) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                        "A Document Node may not be appended to an element");
+        }
+
+        if(newChild.getNodeType() == DOCUMENT_TYPE_NODE) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                    "A Document Type Node may not be appended to an element");
+        }
+
+        if(newChild instanceof IStoredNode && getNodeId().isDescendantOf(((IStoredNode)newChild).getNodeId())) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                    "The node to append is one of this node's ancestors");
+        }
+
         final TransactionManager transact = ownerDocument.getBrokerPool().getTransactionManager();
         final org.exist.dom.NodeListImpl nl = new org.exist.dom.NodeListImpl();
-        nl.add(child);
+        nl.add(newChild);
         try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker();
                 final Txn transaction = transact.beginTransaction()) {
             appendChildren(transaction, nl, 0);

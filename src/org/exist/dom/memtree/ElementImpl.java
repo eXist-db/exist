@@ -611,4 +611,37 @@ public class ElementImpl extends NodeImpl implements Element {
         }
         return result.toString();
     }
+
+    @Override
+    public Node appendChild(final Node newChild) throws DOMException {
+        if(newChild.getOwnerDocument() != document) {
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Owning document IDs do not match");
+        }
+
+        if(newChild == this) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                    "Cannot append an element to itself");
+        }
+
+        if(newChild.getNodeType() == DOCUMENT_NODE) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                    "A Document Node may not be appended to an element");
+        }
+
+        if(newChild.getNodeType() == DOCUMENT_TYPE_NODE) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                    "A Document Type Node may not be appended to an element");
+        }
+
+        if(newChild instanceof NodeImpl) {
+            final int treeLevel = document.treeLevel[nodeNumber];
+            final int newChildTreeLevel = document.treeLevel[((NodeImpl)newChild).nodeNumber];
+            if(newChildTreeLevel < treeLevel) {
+                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                        "The node to append is one of this node's ancestors");
+            }
+        }
+
+        throw unsupported();
+    }
 }

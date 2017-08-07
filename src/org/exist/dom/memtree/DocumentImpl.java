@@ -1410,4 +1410,33 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     public void selectAttributes(final NodeTest test, final Sequence result)
         throws XPathException {
     }
+
+    @Override
+    public Node appendChild(final Node newChild) throws DOMException {
+        if(newChild.getOwnerDocument() != document) {
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Owning document IDs do not match");
+        }
+
+        if(newChild == this) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                    "Cannot append a document to itself");
+        }
+
+        if(newChild.getNodeType() == DOCUMENT_NODE) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                    "A Document Node may not be appended to a Document Node");
+        }
+
+        if(newChild.getNodeType() == ELEMENT_NODE && getDocumentElement() != null) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                    "A Document Node may only have a single document element");
+        }
+
+        if(newChild.getNodeType() == DOCUMENT_TYPE_NODE && getDoctype() != null) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                    "A Document Node may only have a single document type");
+        }
+
+        throw unsupported();
+    }
 }

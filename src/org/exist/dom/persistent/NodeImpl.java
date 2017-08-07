@@ -47,7 +47,11 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     }
 
     @Override
-    public Node appendChild(final Node child) throws DOMException {
+    public Node appendChild(final Node newChild) throws DOMException {
+        if(newChild.getOwnerDocument() != getOwnerDocument()) {
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Owning document IDs do not match");
+        }
+
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "not implemented on class " + getClass().getName());
     }
