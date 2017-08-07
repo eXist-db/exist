@@ -26,6 +26,8 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.INode;
 import org.exist.dom.QName;
 import org.exist.storage.txn.Txn;
+import org.exist.util.sax.event.contenthandler.ProcessingInstruction;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -286,11 +288,33 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public String getLocalName() {
-        return getQName().getLocalPart();
+        return null;
     }
 
     @Override
-    public String getNodeName() {
-        return getQName().getStringValue();
+    public final String getNodeName() {
+        switch(getNodeType()) {
+            case Node.DOCUMENT_NODE:
+                return "#document";
+
+            case Node.ELEMENT_NODE:
+            case Node.ATTRIBUTE_NODE:
+                return getQName().getStringValue();
+
+            case Node.PROCESSING_INSTRUCTION_NODE:
+                return ((ProcessingInstructionImpl)this).getTarget();
+
+            case Node.TEXT_NODE:
+                return "#text";
+
+            case Node.COMMENT_NODE:
+                return "#comment";
+
+            case Node.CDATA_SECTION_NODE:
+                return "#cdata-section";
+
+            default:
+                return "#unknown";
+        }
     }
 }

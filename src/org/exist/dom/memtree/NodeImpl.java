@@ -151,23 +151,24 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public final String getNodeName() {
-        switch(getType()) {
-            case Type.DOCUMENT:
+        switch(getNodeType()) {
+            case Node.DOCUMENT_NODE:
                 return "#document";
 
-            case Type.ELEMENT:
-            case Type.ATTRIBUTE:
-            case Type.PROCESSING_INSTRUCTION:
-            case Type.NAMESPACE:
+            case Node.ELEMENT_NODE:
+            case Node.ATTRIBUTE_NODE:
                 return getQName().getStringValue();
 
-            case Type.TEXT:
+            case Node.PROCESSING_INSTRUCTION_NODE:
+                return ((ProcessingInstructionImpl)this).getTarget();
+
+            case Node.TEXT_NODE:
                 return "#text";
 
-            case Type.COMMENT:
+            case Node.COMMENT_NODE:
                 return "#comment";
 
-            case Type.CDATA_SECTION:
+            case Node.CDATA_SECTION_NODE:
                 return "#cdata-section";
 
             default:
@@ -456,6 +457,8 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public void normalize() {
+        // TODO(AR) do we need to implement something here? or is the tree already normalized?
+        throw unsupported();
     }
 
     @Override

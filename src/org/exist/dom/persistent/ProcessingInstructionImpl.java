@@ -84,16 +84,6 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
     }
 
     @Override
-    public String getNodeName() {
-        return target;
-    }
-
-    @Override
-    public String getLocalName() {
-        return target;
-    }
-
-    @Override
     public String getNamespaceURI() {
         return XMLConstants.NULL_NS_URI;
     }
