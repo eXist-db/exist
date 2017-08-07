@@ -150,6 +150,24 @@ public class TextImplTest {
     }
 
     @Test
+    public void appendData() {
+        final TextImpl text = new TextImpl("hello");
+        assertEquals("hello", text.getTextContent());
+
+        text.appendData("world");
+        assertEquals("helloworld", text.getTextContent());
+    }
+
+    @Test
+    public void appendData_empty() {
+        final TextImpl text = new TextImpl("hello");
+        assertEquals("hello", text.getTextContent());
+
+        text.appendData("");
+        assertEquals("hello", text.getTextContent());
+    }
+
+    @Test
     public void insertData_start() {
         final TextImpl text = new TextImpl("hello");
         assertEquals("hello", text.getTextContent());
