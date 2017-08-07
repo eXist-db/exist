@@ -161,7 +161,7 @@ public class ElementImpl extends NodeImpl implements Element {
 
     @Override
     public NamedNodeMap getAttributes() {
-        final NamedNodeMapImpl map = new NamedNodeMapImpl();
+        final NamedNodeMapImpl map = new NamedNodeMapImpl(document, true);
         int attr = document.alpha[nodeNumber];
         if(-1 < attr) {
             while(attr < document.nextAttr && document.attrParent[attr] == nodeNumber) {

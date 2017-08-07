@@ -779,7 +779,7 @@ public class ElementImpl extends NamedNode implements Element {
 
     @Override
     public NamedNodeMap getAttributes() {
-        final org.exist.dom.NamedNodeMapImpl map = new NamedNodeMapImpl();
+        final org.exist.dom.NamedNodeMapImpl map = new NamedNodeMapImpl(ownerDocument, true);
         if(hasAttributes()) {
             try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker();
                 final INodeIterator iterator = broker.getNodeIterator(this)) {

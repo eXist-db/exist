@@ -19,10 +19,9 @@
  */
 package org.exist.dom;
 
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.util.hashtable.Object2ObjectHashMap;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
+import org.w3c.dom.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,15 +36,36 @@ public class NamedNodeMapImpl implements NamedNodeMap {
     private static final int DEFAULT_SIZE = 10;
 
     private final IndexedHashMap<QName, Node> namedNodes = new IndexedHashMap<>(DEFAULT_SIZE);
+    private final Document ownerDocument;
+    private final boolean attributesOnly;
+
+    public NamedNodeMapImpl(final Document ownerDocument, final boolean attributesOnly) {
+        this.ownerDocument = ownerDocument;
+        this.attributesOnly = attributesOnly;
+    }
 
     @Override
     public Node getNamedItem(final String name) {
-        return namedNodes.get(new QName(name));
+        return getNamedItem(new QName(name));
+    }
+
+    @Override
+    public Node getNamedItemNS(final String namespaceURI, final String localName) throws DOMException {
+        return getNamedItem(new QName(localName, namespaceURI));
+    }
+
+    private Node getNamedItem(final QName qname) {
+        return namedNodes.get(qname);
     }
 
     @Override
     public Node setNamedItem(final Node arg) throws DOMException {
-        return namedNodes.put(new QName(arg.getNodeName()), arg);
+        return setNamedItem(new QName(arg.getNodeName()), arg);
+    }
+
+    @Override
+    public Node setNamedItemNS(final Node arg) throws DOMException {
+        return setNamedItem(new QName(arg.getLocalName(), arg.getNamespaceURI()), arg);
     }
 
     /**
@@ -57,46 +77,55 @@ public class NamedNodeMapImpl implements NamedNodeMap {
      * @return The previous node of the same name if it exists
      */
     public Node setNamedItem(final INode arg) throws DOMException {
-        return namedNodes.put(arg.getQName(), arg);
+        return setNamedItem(arg.getQName(), arg);
+    }
+
+    private Node setNamedItem(final QName qname, final Node arg) {
+        if(arg.getOwnerDocument() != ownerDocument) {
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Owning document IDs do not match");
+        }
+
+        // NOTE the Type.Namespace is needed below to cope with eXist-db's {@link org.exist.dom.memtree.NamespaceNode}
+        if(attributesOnly &&
+                (arg.getNodeType() != Node.ATTRIBUTE_NODE && arg.getNodeType() != NodeImpl.NAMESPACE_NODE)) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                    "This map is for attributes, but setNamedItem was called on a: " + arg.getClass().getName());
+        }
+
+        return namedNodes.put(qname, arg);
     }
 
     @Override
     public Node removeNamedItem(final String name) throws DOMException {
-        return remove(new QName(name));
-    }
-
-    @Override
-    public Node item(final int index) {
-        return namedNodes.get(index);
-    }
-
-    @Override
-    public int getLength() {
-        return namedNodes.size();
-    }
-
-    @Override
-    public Node getNamedItemNS(final String namespaceURI, final String localName) throws DOMException {
-        return namedNodes.get(new QName(localName, namespaceURI));
-    }
-
-    @Override
-    public Node setNamedItemNS(final Node arg) throws DOMException {
-        return namedNodes.put(new QName(arg.getLocalName(), arg.getNamespaceURI()), arg);
+        return removeNamedItem(new QName(name));
     }
 
     @Override
     public Node removeNamedItemNS(final String namespaceURI, final String localName) throws DOMException {
-        return remove(new QName(localName, namespaceURI));
+        return removeNamedItem(new QName(localName, namespaceURI));
     }
 
-    private Node remove(final QName qname) throws DOMException {
+    private Node removeNamedItem(final QName qname) throws DOMException {
         final Node previous = namedNodes.remove(qname);
         if(previous != null) {
             return previous;
         } else {
             throw new DOMException(DOMException.NOT_FOUND_ERR, "No such named value is present in the map");
         }
+    }
+
+    @Override
+    public Node item(final int index) {
+        if(index >= namedNodes.size()) {
+            return null;
+        }
+
+        return namedNodes.get(index);
+    }
+
+    @Override
+    public int getLength() {
+        return namedNodes.size();
     }
 
     private static final class IndexedHashMap<K, V> {
