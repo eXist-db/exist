@@ -155,6 +155,9 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
             case Node.DOCUMENT_NODE:
                 return "#document";
 
+            case Node.DOCUMENT_FRAGMENT_NODE:
+                return "#document-fragment";
+
             case Node.ELEMENT_NODE:
             case Node.ATTRIBUTE_NODE:
                 return getQName().getStringValue();

@@ -26,6 +26,7 @@ import org.exist.Resource;
 import org.exist.dom.QName;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
+import org.exist.dom.memtree.DocumentFragmentImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.ACLPermission;
 import org.exist.security.Account;
@@ -1010,8 +1011,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     }
 
     @Override
-    public EntityReference createEntityReference(final String name) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createEntityReference not implemented on class " + getClass().getName());
+    public DocumentFragment createDocumentFragment() throws DOMException {
+        return new DocumentFragmentImpl();
     }
 
     @Override

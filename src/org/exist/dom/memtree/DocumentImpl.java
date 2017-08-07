@@ -833,7 +833,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     @Override
     public DocumentFragment createDocumentFragment() {
-        return null;
+        return new DocumentFragmentImpl();
     }
 
     @Override
