@@ -45,6 +45,7 @@ import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.MultiReadReentrantLock;
 import org.exist.storage.txn.Txn;
+import org.exist.util.XMLString;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.Type;
@@ -997,17 +998,24 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @Override
     public CDATASection createCDATASection(final String data) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createCDATASection not implemented on class " + getClass().getName());
+        final CDATASectionImpl cdataSection = new CDATASectionImpl(new XMLString(data.toCharArray()));
+        cdataSection.setOwnerDocument(this);
+        return cdataSection;
     }
 
     @Override
     public Comment createComment(final String data) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createComment not implemented on class " + getClass().getName());
+        final CommentImpl comment = new CommentImpl(data);
+        comment.setOwnerDocument(this);
+        return comment;
     }
 
     @Override
-    public DocumentFragment createDocumentFragment() throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createDocumentFragment not implemented on class " + getClass().getName());
+    public ProcessingInstruction createProcessingInstruction(final String target, final String data)
+            throws DOMException {
+        final ProcessingInstructionImpl processingInstruction = new ProcessingInstructionImpl(target, data);
+        processingInstruction.setOwnerDocument(this);
+        return processingInstruction;
     }
 
     @Override
@@ -1016,9 +1024,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     }
 
     @Override
-    public ProcessingInstruction createProcessingInstruction(final String target, final String data)
-        throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createProcessingInstruction not implemented on class " + getClass().getName());
+    public EntityReference createEntityReference(final String name) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createEntityReference not implemented on class " + getClass().getName());
     }
 
     @Override

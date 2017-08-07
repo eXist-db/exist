@@ -46,7 +46,7 @@ public abstract class AbstractCharacterData extends StoredNode implements Charac
         cdata = new XMLString(data.toCharArray());
     }
 
-    public AbstractCharacterData(final short nodeType, String data) {
+    public AbstractCharacterData(final short nodeType, final String data) {
         super(nodeType);
         cdata = new XMLString(data.toCharArray());
     }

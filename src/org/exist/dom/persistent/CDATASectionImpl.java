@@ -51,6 +51,10 @@ public class CDATASectionImpl extends AbstractCharacterData implements CDATASect
         this.cdata = data;
     }
 
+    public CDATASectionImpl(final String data) {
+        super(Node.CDATA_SECTION_NODE, data);
+    }
+
     @Override
     /**
      * Serializes a (persistent DOM) CDATA Section to a byte array
