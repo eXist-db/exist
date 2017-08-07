@@ -1035,7 +1035,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @Override
     public org.w3c.dom.DOMImplementation getImplementation() {
-        return new StoredDOMImplementation();
+        return new DOMImplementationImpl();
     }
 
     @Override

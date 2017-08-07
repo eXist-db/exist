@@ -539,31 +539,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     @Override
     public DOMImplementation getImplementation() {
-        return new DOMImplementation() {
-
-                @Override
-                public Document createDocument(final String namespaceURI,
-                        final String qualifiedName, final DocumentType doctype) throws DOMException {
-                    return null;
-                }
-
-                @Override
-                public DocumentType createDocumentType(final String qualifiedName,
-                        final String publicId, final String systemId) throws DOMException {
-                    return null;
-                }
-
-                @Override
-                public Object getFeature(final String feature, final String version) {
-                    return null;
-                }
-
-                @Override
-                public boolean hasFeature(final String feature, final String version) {
-                    return ("XML".equals(feature) && ("1.0".equals(version) ||
-                        "2.0".equals(version)));
-                }
-            };
+        return new DOMImplementationImpl();
     }
 
     @Override
@@ -832,6 +808,17 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     }
 
     @Override
+    public Element createElementNS(final String namespaceURI, final String qualifiedName) throws DOMException {
+        try {
+            final QName qn = QName.parse(getContext(), qualifiedName, namespaceURI);
+            final int nodeNum = addNode(Node.ELEMENT_NODE, (short) 1, qn);
+            return new ElementImpl(this, nodeNum);
+        } catch(final XPathException e) {
+            throw new DOMException(DOMException.NAMESPACE_ERR, e.getMessage());
+        }
+    }
+
+    @Override
     public DocumentFragment createDocumentFragment() {
         return new DocumentFragmentImpl();
     }
@@ -869,11 +856,20 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     @Override
     public NodeList getElementsByTagName(final String tagname) {
+        return getElementsByTagName(new QName(tagname));
+    }
+
+    @Override
+    public NodeList getElementsByTagNameNS(final String namespaceURI, final String localName) {
+        return getElementsByTagName(new QName(localName, namespaceURI));
+    }
+
+    private NodeList getElementsByTagName(final QName qname) {
         final NodeListImpl nl = new NodeListImpl();
         for(int i = 1; i < size; i++) {
             if(nodeKind[i] == Node.ELEMENT_NODE) {
                 final QName qn = nodeName[i];
-                if(qn.getStringValue().equals(tagname)) {
+                if(qn.matches(qname)) {
                     nl.add(getNode(i));
                 }
             }
@@ -887,27 +883,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     }
 
     @Override
-    public Element createElementNS(final String namespaceURI, final String qualifiedName) throws DOMException {
-        return null;
-    }
-
-    @Override
     public Attr createAttributeNS(final String namespaceURI, final String qualifiedName) throws DOMException {
         return null;
-    }
-
-    @Override
-    public NodeList getElementsByTagNameNS(final String namespaceURI, final String localName) {
-        final NodeListImpl nl = new NodeListImpl();
-        for(int i = 1; i < size; i++) {
-            if(nodeKind[i] == Node.ELEMENT_NODE) {
-                final QName qn = nodeName[i];
-                if(qn.getNamespaceURI().equals(namespaceURI) && qn.getLocalPart().equals(localName)) {
-                    nl.add(getNode(i));
-                }
-            }
-        }
-        return nl;
     }
 
     @Override
