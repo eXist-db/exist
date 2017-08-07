@@ -293,7 +293,11 @@ public class AttrImpl extends NamedNode implements Attr {
 
     @Override
     public String getValue() {
-        return value.toString();
+        if(value == null) {
+            return "";
+        } else {
+            return value.toString();
+        }
     }
 
     @Override
