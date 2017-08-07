@@ -42,8 +42,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public Node cloneNode(final boolean deep) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
@@ -52,41 +51,34 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Owning document IDs do not match");
         }
 
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public Node removeChild(final Node oldChild) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public Node replaceChild(final Node newChild, final Node oldChild) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public Node insertBefore(final Node newChild, final Node refChild) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     public void appendChildren(final Txn transaction, final NodeList nodes, final int child) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     public Node removeChild(final Txn transaction, final Node oldChild) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     public Node replaceChild(final Txn transaction, final Node newChild, final Node oldChild) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     /**
@@ -98,8 +90,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
      * @throws DOMException
      */
     public IStoredNode updateChild(final Txn transaction, final Node oldChild, final Node newChild) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     /**
@@ -110,8 +101,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
      * want to insert nodes before.
      */
     public void insertBefore(final Txn transaction, final NodeList nodes,final  Node refChild) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     /**
@@ -122,20 +112,16 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
      * to insert nodes after.
      */
     public void insertAfter(final Txn transaction, final NodeList nodes, final Node refChild) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "insertAfter(Txn transaction, NodeList nodes, Node refChild) " +
-                "not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     public int getChildCount() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "getChildCount() not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public NodeList getChildNodes() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "getChildNodes() not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     /**
@@ -146,14 +132,12 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
      */
     @Override
     public Node getFirstChild() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "getFirstChild() not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public Node getLastChild() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "getLastChild() not implemented on class " + getClass().getName());
+        throw unsupported();
     }
     @Override
     public boolean hasAttributes() {
@@ -172,8 +156,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public void setNodeValue(final String value) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "setNodeValue(String value) not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
@@ -183,80 +166,67 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public boolean isSupported(final String key, final String value) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "isSupported(String key, String value) not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public void normalize() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "normalize() not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public String getBaseURI() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "getBaseURI() not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public short compareDocumentPosition(final Node other) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "compareDocumentPosition(Node other) not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public String getTextContent() throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "getTextContent() not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public void setTextContent(final String textContent) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "setTextContent(String textContent) not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public String lookupPrefix(final String namespaceURI) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "lookupPrefix(String namespaceURI) not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public boolean isDefaultNamespace(final String namespaceURI) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "isDefaultNamespace(String namespaceURI) not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public String lookupNamespaceURI(final String prefix) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "lookupNamespaceURI(String prefix) not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public boolean isEqualNode(final Node arg) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "isEqualNode(Node arg) not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public Object getFeature(final String feature, final String version) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "getFeature(String feature, String version) not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public Object getUserData(final String key) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "getUserData(String key) not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public Object setUserData(final String key, final Object data, final UserDataHandler handler) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "setUserData(String key, Object data, UserDataHandler handler) not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
@@ -323,5 +293,9 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
             default:
                 return "#unknown";
         }
+    }
+
+    protected DOMException unsupported() {
+        return new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class: " + getClass().getName());
     }
 }

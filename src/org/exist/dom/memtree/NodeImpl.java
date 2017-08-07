@@ -997,8 +997,8 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     }
 
 
-    private UnsupportedOperationException unsupported() {
-        return new UnsupportedOperationException("Operation is unsupported on node type: " + this.getNodeType());
+    protected DOMException unsupported() {
+        return new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class: " + getClass().getName());
     }
 
     private final static class SingleNodeIterator implements SequenceIterator {

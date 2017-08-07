@@ -1025,12 +1025,12 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @Override
     public EntityReference createEntityReference(final String name) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createEntityReference not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public Element getElementById(final String elementId) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getElementById not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
@@ -1040,42 +1040,42 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @Override
     public boolean getStrictErrorChecking() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getStrictErrorChecking not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public Node adoptNode(final Node node) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "adoptNode not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public Node importNode(final Node importedNode, final boolean deep) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "importNode not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public void setStrictErrorChecking(final boolean strict) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setStrictErrorChecking not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public String getInputEncoding() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "String getInputEncoding not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public String getXmlEncoding() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getXmlEncoding not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public boolean getXmlStandalone() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getXmlStandalone not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public void setXmlStandalone(final boolean xmlStandalone) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setXmlStandalone not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
@@ -1085,7 +1085,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @Override
     public void setXmlVersion(final String xmlVersion) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setXmlVersion not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
@@ -1095,23 +1095,22 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @Override
     public void setDocumentURI(final String documentURI) {
-        //TODO : non-writable -pb
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setDocumentURI not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public DOMConfiguration getDomConfig() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getDomConfig not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public void normalizeDocument() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "normalizeDocument not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public Node renameNode(final Node n, final String namespaceURI, final String qualifiedName) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "renameNode not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
@@ -1156,6 +1155,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
                     "A Document Node may only have a single document type");
         }
 
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "appendChild not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 }

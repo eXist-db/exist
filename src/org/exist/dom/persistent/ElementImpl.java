@@ -1803,27 +1803,22 @@ public class ElementImpl extends NamedNode implements Element {
 
     @Override
     public TypeInfo getSchemaTypeInfo() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "getSchemaTypeInfo() not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public void setIdAttribute(final String name, final boolean isId) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "setIdAttribute(String name, boolean isId) not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public void setIdAttributeNS(final String namespaceURI, final String localName, final boolean isId) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "setIdAttributeNS(String namespaceURI, String localName," +
-                " boolean isId) not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public void setIdAttributeNode(final Attr idAttr, final boolean isId) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "setIdAttributeNode(Attr idAttr, boolean isId) not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
