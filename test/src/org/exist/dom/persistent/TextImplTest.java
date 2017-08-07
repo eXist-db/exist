@@ -114,6 +114,50 @@ public class TextImplTest {
     }
 
     @Test
+    public void insertData_start() {
+        final TextImpl text = new TextImpl("hello");
+        assertEquals("hello", text.getTextContent());
+
+        text.insertData(0, "world");
+        assertEquals("worldhello", text.getTextContent());
+    }
+
+    @Test
+    public void insertData_middle() {
+        final TextImpl text = new TextImpl("hello");
+        assertEquals("hello", text.getTextContent());
+
+        text.insertData(3, "world");
+        assertEquals("helworldlo", text.getTextContent());
+    }
+
+    @Test
+    public void insertData_end() {
+        final TextImpl text = new TextImpl("hello");
+        assertEquals("hello", text.getTextContent());
+
+        text.insertData(5, "world");
+        assertEquals("helloworld", text.getTextContent());
+    }
+
+    @Test(expected=DOMException.class)
+    public void insertData_pastEnd() {
+        final TextImpl text = new TextImpl("hello");
+        assertEquals("hello", text.getTextContent());
+
+        text.insertData(10, "world");
+    }
+
+    @Test
+    public void insertData_empty() {
+        final TextImpl text = new TextImpl("hello");
+        assertEquals("hello", text.getTextContent());
+
+        text.insertData(2,"");
+        assertEquals("hello", text.getTextContent());
+    }
+
+    @Test
     public void replaceData_shrink() {
         final TextImpl text = new TextImpl("helloworld");
         assertEquals("helloworld", text.getTextContent());

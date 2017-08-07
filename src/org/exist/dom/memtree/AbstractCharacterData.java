@@ -125,7 +125,40 @@ public abstract class AbstractCharacterData extends NodeImpl implements Characte
             throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
         }
 
-        throw new UnsupportedOperationException("Operation is unsupported on node type: " + this.getNodeType());
+        final int existingDataLen = document.alphaLen[nodeNumber];
+        if(offset > existingDataLen) {
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+        }
+
+        final int len = arg.length();
+        final int existingDataOffset = document.alpha[nodeNumber];
+
+        // expand space for existing data and set
+
+        // 1) create a new array of the correct size for the data
+        final int existingCharactersLen = document.characters.length;
+        final int extraRequired = len;
+        final int newCharactersLen = existingCharactersLen + extraRequired;
+        final char newCharacters[] = new char[newCharactersLen];
+
+        // 2) copy everything from data to newData that is upto the end of our offset + provided offset
+        System.arraycopy(document.characters, 0, newCharacters, 0, existingDataOffset + offset);
+
+        // 3) insert our new data at the offset
+        System.arraycopy(arg.toCharArray(), 0, newCharacters, existingDataOffset + offset, len);
+
+        // 4) copy everything from data to newData that is after our our offset + provided offset
+        final int remainingExistingCharacters = existingCharactersLen - (existingDataOffset + existingDataLen);
+        System.arraycopy(document.characters, existingDataOffset + offset, newCharacters, existingDataOffset + offset + len, remainingExistingCharacters);
+
+        // 5) replace document.characters with our new characters
+        document.characters = newCharacters;
+        document.alphaLen[nodeNumber] = existingDataLen + len;
+
+        // 6) renumber all offsets following our offset
+        for(int i = nodeNumber + 1; i < document.alpha.length; i++) {
+            document.alpha[i] += extraRequired;
+        }
     }
 
     @Override
