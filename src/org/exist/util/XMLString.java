@@ -207,7 +207,34 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
         if (offset < 0 || count < 0 || offset >= length_ || offset + count > length_) {
             throw new StringIndexOutOfBoundsException();
         }
-        System.arraycopy(data.toCharArray(), 0, value_, start_ + offset, count);
+
+        // 1) create a new array of the correct size for the data
+        final int change = data.length() - count;
+        final int newValueLength = length_ + change;
+        final char newValue[] = CharArrayPool.getCharArray(newValueLength);
+
+        // 2) copy everything from value_ to newValue that is before our offset
+        System.arraycopy(value_, 0, newValue, 0, offset);
+
+        // 3) insert our replacement data at the offset
+        System.arraycopy(data.toCharArray(), 0, newValue, offset, data.length());
+
+        // 4) copy everything from value_ to newValue_ that is after our offset + count
+        final int remainingExistingCharacters;
+        if(data.length() > 0 && length_ < data.length()) {
+            // value_ is expanding or staying the same length
+            remainingExistingCharacters = length_ - count;
+        } else {
+            // empty `data` (i.e. replacement), or shrinking of value_
+            remainingExistingCharacters = length_ - offset - count;
+        }
+        System.arraycopy(value_, offset + count, newValue, offset + data.length(), remainingExistingCharacters);
+
+        // 5) replace value_ with newValue
+        CharArrayPool.releaseCharArray(value_);
+        value_ = newValue;
+        length_= newValueLength;
+
         return this;
     }
 

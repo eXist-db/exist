@@ -21,6 +21,7 @@
  */
 package org.exist.dom.memtree;
 
+import org.exist.util.CharArrayPool;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
@@ -66,11 +67,56 @@ public abstract class AbstractCharacterData extends NodeImpl implements Characte
     }
 
     @Override
-    public void replaceData(final int offset, final int count, final String arg) throws DOMException {
+    public void replaceData(final int offset, int count, final String arg) throws DOMException {
         if(offset < 0 || count < 0) {
             throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
         }
-        throw new UnsupportedOperationException("Operation is unsupported on node type: " + this.getNodeType());
+
+        final int existingDataLen = document.alphaLen[nodeNumber];
+        if(offset > existingDataLen) {
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+        }
+
+        if(offset + count > existingDataLen) {
+            count = existingDataLen - offset;
+        }
+
+        final int len = arg.length();
+        final int existingCharactersLen = document.characters.length;
+        final int existingDataOffset = document.alpha[nodeNumber];
+
+        // 1) create a new array of the correct size for the data
+        final int change = len - count;
+        final int newCharactersLength = existingCharactersLen + change;
+        final char newCharacters[] = new char[newCharactersLength];
+
+        // 2) copy everything from document.characters to newCharacters that is before our offset
+        System.arraycopy(document.characters, 0, newCharacters, 0, existingDataOffset + offset);
+
+        // 3) insert our replacement data at the offset
+        System.arraycopy(arg.toCharArray(), 0, newCharacters, existingDataOffset + offset, len);
+
+        // 4) copy everything from document.characters to newCharacters that is after our offset + count
+        final int remainingExistingCharacters;
+        if(len > 0 && existingDataLen < len) {
+            // document.characters is expanding or staying the same length
+            remainingExistingCharacters = existingCharactersLen - count;
+        } else {
+            // empty `data` (i.e. replacement), or shrinking of value_
+            remainingExistingCharacters = existingCharactersLen - existingDataOffset - offset - count;
+        }
+        System.arraycopy(document.characters, existingDataOffset + offset + count, newCharacters, existingDataOffset + offset + len, remainingExistingCharacters);
+
+        // 5) replace document.characters with our newCharacters
+        document.characters = newCharacters;
+        document.alphaLen[nodeNumber] = existingDataLen + change;
+
+        // 6) renumber all offsets following our offset
+        for(int i = nodeNumber + 1; i < document.alpha.length; i++) {
+            if(document.alpha[i] > -1) {
+                document.alpha[i] += change;
+            }
+        }
     }
 
     @Override

@@ -151,20 +151,32 @@ public abstract class AbstractCharacterData extends StoredNode implements Charac
         if(cdata == null) {
             cdata = new XMLString(arg.toCharArray());
         } else {
+            if(offset > cdata.length()) {
+                throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+            }
             cdata.insert(offset, arg);
         }
     }
 
     @Override
-    public void replaceData(final int offset, final int count, final String arg) throws DOMException {
+    public void replaceData(final int offset, int count, final String arg) throws DOMException {
         if(offset < 0 || count < 0) {
             throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
         }
 
         if(cdata == null) {
             throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, "string index out of bounds");
+        } else {
+            if (offset > cdata.length()) {
+                throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+            }
+
+            if(offset + count > cdata.length()) {
+                count = cdata.length() - offset;
+            }
+
+            cdata.replace(offset, count, arg);
         }
-        cdata.replace(offset, count, arg);
     }
 
     @Override
