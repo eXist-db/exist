@@ -117,10 +117,10 @@ public class NodeTest {
             Element rootNode = doc.getDocumentElement();
             Element child = (Element) rootNode.getFirstChild();
             assertNotNull(child);
-            assertEquals(child.getNodeName(), "a");
+            assertEquals("a", child.getNodeName(), "a");
             Node sibling = child.getNextSibling();
             assertNotNull(sibling);
-            assertEquals(sibling.getNodeName(), "b");
+            assertEquals("b", sibling.getNodeName());
             while (sibling != null) {
                 sibling = sibling.getNextSibling();
             }
@@ -136,7 +136,7 @@ public class NodeTest {
                 sibling = sibling.getPreviousSibling();
                 count++;
             }
-            assertEquals(count, 4);
+            assertEquals(4, count);
         } finally {
             if (doc != null) {
                 doc.getUpdateLock().release(LockMode.READ_LOCK);
@@ -152,38 +152,38 @@ public class NodeTest {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),LockMode.READ_LOCK);
             Element rootNode = doc.getDocumentElement();
             Element first = (Element) rootNode.getFirstChild();
-            assertEquals(first.getNodeName(), "a");
+            assertEquals("a", first.getNodeName());
             
-            assertEquals(first.getAttribute("ns:a"), "1");
-            assertEquals(first.getAttributeNS("http://foo.org", "a"), "1");
+            assertEquals("1", first.getAttribute("ns:a"));
+            assertEquals("1", first.getAttributeNS("http://foo.org", "a"));
             
             Attr attr = first.getAttributeNode("ns:a");
             assertNotNull(attr);
-            assertEquals(attr.getLocalName(), "a");
-            assertEquals(attr.getNamespaceURI(), "http://foo.org");
-            assertEquals(attr.getValue(), "1");
+            assertEquals("a", attr.getLocalName());
+            assertEquals("http://foo.org", attr.getNamespaceURI());
+            assertEquals("1", attr.getValue());
             
             Node parent = attr.getOwnerElement();
             assertNotNull(parent);
-            assertEquals(parent.getNodeName(), "a");
+            assertEquals("a", parent.getNodeName());
             
             parent = attr.getParentNode();
             assertNull(parent);
             
             attr = first.getAttributeNodeNS("http://foo.org", "a");
             assertNotNull(attr);
-            assertEquals(attr.getLocalName(), "a");
-            assertEquals(attr.getNamespaceURI(), "http://foo.org");
-            assertEquals(attr.getValue(), "1");
+            assertEquals("a", attr.getLocalName());
+            assertEquals("http://foo.org", attr.getNamespaceURI());
+            assertEquals("1", attr.getValue());
             
             NamedNodeMap map = first.getAttributes();
             assertEquals(2, map.getLength());
 
             attr = (Attr) map.getNamedItemNS("http://foo.org", "b");
             assertNotNull(attr);
-            assertEquals(attr.getLocalName(), "b");
-            assertEquals(attr.getNamespaceURI(), "http://foo.org");
-            assertEquals(attr.getValue(), "m");
+            assertEquals("b", attr.getLocalName());
+            assertEquals("http://foo.org", attr.getNamespaceURI());
+            assertEquals("m", attr.getValue());
         } finally {
         	if (doc != null) doc.getUpdateLock().release(LockMode.READ_LOCK);
         }
