@@ -856,12 +856,47 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     @Override
     public NodeList getElementsByTagName(final String tagname) {
-        return getElementsByTagName(new QName(tagname));
+        if(tagname != null && tagname.equals(QName.WILDCARD)) {
+            return getElementsByTagName(new QName.WildcardLocalPartQName(XMLConstants.DEFAULT_NS_PREFIX));
+        } else {
+            final QName qname;
+            if (document.getContext() != null) {
+                try {
+                    qname = QName.parse(document.context, tagname);
+                } catch (final XPathException e) {
+                    throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+                }
+            } else {
+                qname = new QName(tagname);
+            }
+            return getElementsByTagName(qname);
+        }
     }
 
     @Override
     public NodeList getElementsByTagNameNS(final String namespaceURI, final String localName) {
-        return getElementsByTagName(new QName(localName, namespaceURI));
+        final boolean wildcardNS = namespaceURI != null && namespaceURI.equals(QName.WILDCARD);
+        final boolean wildcardLocalPart = localName != null && localName.equals(QName.WILDCARD);
+
+        if(wildcardNS && wildcardLocalPart) {
+            return getElementsByTagName(QName.WildcardQName.getInstance());
+        } else if(wildcardNS) {
+            return getElementsByTagName(new QName.WildcardNamespaceURIQName(localName));
+        } else if(wildcardLocalPart) {
+            return getElementsByTagName(new QName.WildcardLocalPartQName(namespaceURI));
+        } else {
+            final QName qname;
+            if (document.getContext() != null) {
+                try {
+                    qname = QName.parse(document.context, localName, namespaceURI);
+                } catch (final XPathException e) {
+                    throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+                }
+            } else {
+                qname = new QName(localName, namespaceURI);
+            }
+            return getElementsByTagName(qname);
+        }
     }
 
     private NodeList getElementsByTagName(final QName qname) {

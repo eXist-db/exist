@@ -939,14 +939,31 @@ public class ElementImpl extends NamedNode implements Element {
     }
 
     @Override
-    public NodeList getElementsByTagName(final String tagName) {
-        final QName qname = new QName(tagName);
-        return getOwnerDocument().findElementsByTagName(this, qname);
+    public NodeList getElementsByTagName(final String name) {
+        if(name != null && name.equals(QName.WILDCARD)) {
+            return getElementsByTagName(new QName.WildcardLocalPartQName(XMLConstants.DEFAULT_NS_PREFIX));
+        } else {
+            return getElementsByTagName(new QName(name));
+        }
     }
 
     @Override
     public NodeList getElementsByTagNameNS(final String namespaceURI, final String localName) {
-        final QName qname = new QName(localName, namespaceURI);
+        final boolean wildcardNS = namespaceURI != null && namespaceURI.equals(QName.WILDCARD);
+        final boolean wildcardLocalPart = localName != null && localName.equals(QName.WILDCARD);
+
+        if(wildcardNS && wildcardLocalPart) {
+            return getElementsByTagName(QName.WildcardQName.getInstance());
+        } else if(wildcardNS) {
+            return getElementsByTagName(new QName.WildcardNamespaceURIQName(localName));
+        } else if(wildcardLocalPart) {
+            return getElementsByTagName(new QName.WildcardLocalPartQName(namespaceURI));
+        } else {
+            return getElementsByTagName(new QName(localName, namespaceURI));
+        }
+    }
+
+    private NodeList getElementsByTagName(final QName qname) {
         return getOwnerDocument().findElementsByTagName(this, qname);
     }
 

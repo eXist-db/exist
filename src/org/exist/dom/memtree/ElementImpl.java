@@ -312,13 +312,57 @@ public class ElementImpl extends NodeImpl implements Element {
 
     @Override
     public NodeList getElementsByTagName(final String name) {
+        if(name != null && name.equals(QName.WILDCARD)) {
+            return getElementsByTagName(new QName.WildcardLocalPartQName(XMLConstants.DEFAULT_NS_PREFIX));
+        } else {
+            final QName qname;
+            if (document.getContext() != null) {
+                try {
+                    qname = QName.parse(document.context, name);
+                } catch (final XPathException e) {
+                    throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+                }
+            } else {
+                qname = new QName(name);
+            }
+            return getElementsByTagName(qname);
+        }
+    }
+
+    @Override
+    public NodeList getElementsByTagNameNS(final String namespaceURI, final String localName) {
+        final boolean wildcardNS = namespaceURI != null && namespaceURI.equals(QName.WILDCARD);
+        final boolean wildcardLocalPart = localName != null && localName.equals(QName.WILDCARD);
+
+        if(wildcardNS && wildcardLocalPart) {
+            return getElementsByTagName(QName.WildcardQName.getInstance());
+        } else if(wildcardNS) {
+            return getElementsByTagName(new QName.WildcardNamespaceURIQName(localName));
+        } else if(wildcardLocalPart) {
+            return getElementsByTagName(new QName.WildcardLocalPartQName(namespaceURI));
+        } else {
+            final QName qname;
+            if (document.getContext() != null) {
+                try {
+                    qname = QName.parse(document.context, localName, namespaceURI);
+                } catch (final XPathException e) {
+                    throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+                }
+            } else {
+                qname = new QName(localName, namespaceURI);
+            }
+            return getElementsByTagName(qname);
+        }
+    }
+
+    private NodeList getElementsByTagName(final QName qname) {
         final NodeListImpl nl = new NodeListImpl();
         int nextNode = nodeNumber;
         final int treeLevel = document.treeLevel[nodeNumber];
         while(++nextNode < document.size && document.treeLevel[nextNode] > treeLevel) {
             if(document.nodeKind[nextNode] == Node.ELEMENT_NODE) {
                 final QName qn = document.nodeName[nextNode];
-                if(qn.getStringValue().equals(name)) {
+                if(qname.matches(qn)) {
                     nl.add(document.getNode(nextNode));
                 }
             }
@@ -387,25 +431,6 @@ public class ElementImpl extends NodeImpl implements Element {
     @Override
     public Attr setAttributeNodeNS(final Attr newAttr) throws DOMException {
         return setAttributeNode(newAttr, qname -> getAttributeNodeNS(qname.getNamespaceURI(), qname.getLocalPart()));
-    }
-
-    @Override
-    public NodeList getElementsByTagNameNS(final String namespaceURI, final String name) {
-        final QName qname = new QName(name, namespaceURI);
-        final NodeListImpl nl = new NodeListImpl();
-        int nextNode = nodeNumber;
-        while(++nextNode < document.size) {
-            if(document.nodeKind[nextNode] == Node.ELEMENT_NODE) {
-                final QName qn = document.nodeName[nextNode];
-                if(qname.compareTo(qn) == 0) {
-                    nl.add(document.getNode(nextNode));
-                }
-            }
-            if(document.next[nextNode] <= nodeNumber) {
-                break;
-            }
-        }
-        return nl;
     }
 
     @Override

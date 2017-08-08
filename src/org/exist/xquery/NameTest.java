@@ -17,7 +17,8 @@ public class NameTest extends TypeTest {
 
 	public NameTest(int type, QName name) throws XPathException {
 		super(type);
-		name.isValid();
+        name.isValid(true);
+
 		nodeName = name;
 	}
 
@@ -54,23 +55,18 @@ public class NameTest extends TypeTest {
         return matchesName(other);
 	}
 
-	public boolean matches(QName name) {
-		if(!(nodeName instanceof QName.WildcardNamespaceURIQName)) {
-            if (!nodeName.getNamespaceURI().equals(name.getNamespaceURI())) {
-                return false;
-            }
-		}
-
-		if(!(nodeName instanceof QName.WildcardLocalPartQName)) {
-			return nodeName.getLocalPart().equals(name.getLocalPart());
-		}
-
-		return true;
+	@Override
+	public boolean matches(final QName name) {
+		return nodeName.matches(name);
 	}
 	
     public boolean matchesName(final Node other) {
         if (other.getNodeType() == NodeImpl.REFERENCE_NODE) {
             return matchesName(((ReferenceNode)other).getReference().getNode());
+        }
+
+        if(nodeName == QName.WildcardQName.getInstance()) {
+            return true;
         }
 
         if(!(nodeName instanceof QName.WildcardNamespaceURIQName)) {
@@ -95,6 +91,10 @@ public class NameTest extends TypeTest {
         final int ev = reader.getEventType();
         if (!isOfEventType(ev)) {
             return false;
+        }
+
+        if(nodeName == QName.WildcardQName.getInstance()) {
+            return true;
         }
 
         switch (ev) {

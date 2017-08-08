@@ -735,11 +735,16 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     protected NodeList findElementsByTagName(final NodeHandle root, final QName qname) {
         try(final DBBroker broker = pool.getBroker()) {
+
             final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(this);
-            final NodeProxy p = new NodeProxy(this, root.getNodeId(), root.getInternalAddress());
-            final NodeSelector selector = new DescendantSelector(p, Expression.NO_CONTEXT_ID);
-            return broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector, null);
+
+            final NewArrayNodeSet contextSet = new NewArrayNodeSet();
+            contextSet.add(new NodeProxy(this, root.getNodeId(), root.getInternalAddress()));
+
+            return broker.getStructuralIndex().scanByType(ElementValue.ELEMENT, Constants.DESCENDANT_AXIS,
+                    new NameTest(Type.ELEMENT, qname), false, docs, contextSet, Expression.NO_CONTEXT_ID);
+
         } catch(final Exception e) {
             LOG.warn("Exception while finding elements: " + e.getMessage(), e);
         }
@@ -931,33 +936,45 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         return null;
     }
 
-    /**
-     * The method <code>getElementsByTagName</code>
-     *
-     * @param tagname a <code>String</code> value
-     * @return a <code>NodeList</code> value
-     */
     @Override
     public NodeList getElementsByTagName(final String tagname) {
-        return getElementsByTagNameNS(XMLConstants.NULL_NS_URI, tagname);
+        if(tagname != null && tagname.equals(QName.WILDCARD)) {
+            return getElementsByTagName(new QName.WildcardLocalPartQName(XMLConstants.DEFAULT_NS_PREFIX));
+        } else {
+            return getElementsByTagName(new QName(tagname));
+        }
     }
 
-    /**
-     * The method <code>getElementsByTagNameNS</code>
-     *
-     * @param namespaceURI a <code>String</code> value
-     * @param localName    a <code>String</code> value
-     * @return a <code>NodeList</code> value
-     */
     @Override
     public NodeList getElementsByTagNameNS(final String namespaceURI, final String localName) {
+        final boolean wildcardNS = namespaceURI != null && namespaceURI.equals(QName.WILDCARD);
+        final boolean wildcardLocalPart = localName != null && localName.equals(QName.WILDCARD);
+
+        if(wildcardNS && wildcardLocalPart) {
+            return getElementsByTagName(QName.WildcardQName.getInstance());
+        } else if(wildcardNS) {
+            return getElementsByTagName(new QName.WildcardNamespaceURIQName(localName));
+        } else if(wildcardLocalPart) {
+            return getElementsByTagName(new QName.WildcardLocalPartQName(namespaceURI));
+        } else {
+            return getElementsByTagName(new QName(localName, namespaceURI));
+        }
+    }
+
+    private NodeList getElementsByTagName(final QName qname) {
         try(final DBBroker broker = pool.getBroker()) {
+
             final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(this);
-            final QName qname = new QName(localName, namespaceURI);
-            return broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, null, null);
+
+            final NewArrayNodeSet contextSet = new NewArrayNodeSet();
+            final ElementImpl root = ((ElementImpl)getDocumentElement());
+            contextSet.add(new NodeProxy(this, root.getNodeId(), root.getInternalAddress()));
+
+            return broker.getStructuralIndex().scanByType(ElementValue.ELEMENT, Constants.DESCENDANT_SELF_AXIS,
+                    new NameTest(Type.ELEMENT, qname), false, docs, contextSet, Expression.NO_CONTEXT_ID);
         } catch(final Exception e) {
-            LOG.warn("Exception while finding elements: " + e.getMessage(), e);
+            LOG.error("Exception while finding elements: " + e.getMessage(), e);
             //TODO : throw exception ?
         }
         return NodeSet.EMPTY_SET;

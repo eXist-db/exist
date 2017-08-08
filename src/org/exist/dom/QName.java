@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  */
 public class QName implements Comparable<QName> {
 
-    private static final String WILDCARD = "*";
+    public static final String WILDCARD = "*";
     private static final char COLON = ':';
 
     public static final QName EMPTY_QNAME = new QName("", XMLConstants.NULL_NS_URI);
@@ -348,8 +348,20 @@ public class QName implements Comparable<QName> {
         return parse(context, qname, context.getURIForPrefix(XMLConstants.DEFAULT_NS_PREFIX));
     }
 
-    public final void isValid() throws XPathException {
-        if ((!(this instanceof WildcardLocalPartQName)) && !XMLChar.isValidNCName(localPart)) {
+    /**
+     * Determines if the local name and prefix of this QName are valid NCNames
+     *
+     * @param allowWildcards true if we should permit wildcards to be considered valid (not actually a valid NCName),
+     *     false otherwise for strict NCName adherence.
+     *
+     * @throws XPathException if the QName is invalid
+     */
+    public final void isValid(final boolean allowWildcards) throws XPathException {
+        if(allowWildcards && this == QName.WildcardQName.getInstance()) {
+            return;
+        }
+
+        if ((!(this instanceof WildcardLocalPartQName && allowWildcards)) && !XMLChar.isValidNCName(localPart)) {
             throw new XPathException(ErrorCodes.XPTY0004, "Invalid localPart '" +  localPart + "' for QName '" + this + "'.");
         }
 
