@@ -854,7 +854,18 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     @Override
     public Attr createAttribute(final String name) throws DOMException {
-        final AttrImpl attr = new AttrImpl(new QName(name), getBrokerPool().getSymbols());
+        final QName qname;
+        try {
+            qname = new QName(name);
+
+            // check the QName is valid for use
+            qname.isValid(false);
+
+        } catch (final XPathException e) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+        }
+
+        final AttrImpl attr = new AttrImpl(qname, getBrokerPool().getSymbols());
         attr.setOwnerDocument(this);
         return attr;
     }
@@ -869,7 +880,18 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     @Override
     public Attr createAttributeNS(final String namespaceURI, final String qualifiedName) throws DOMException {
-        final AttrImpl attr = new AttrImpl(QName.parse(namespaceURI, qualifiedName), getBrokerPool().getSymbols());
+        final QName qname;
+        try {
+            qname = QName.parse(namespaceURI, qualifiedName);
+
+            // check the QName is valid for use
+            qname.isValid(false);
+
+        } catch (final XPathException e) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+        }
+
+        final AttrImpl attr = new AttrImpl(qname, getBrokerPool().getSymbols());
         attr.setOwnerDocument(this);
         return attr;
     }
@@ -883,7 +905,18 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     @Override
     public Element createElement(final String tagName) throws DOMException {
-        final ElementImpl element = new ElementImpl(new QName(tagName), getBrokerPool().getSymbols());
+        final QName qname;
+        try {
+            qname = new QName(tagName);
+
+            // check the QName is valid for use
+            qname.isValid(false);
+
+        } catch (final XPathException e) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+        }
+
+        final ElementImpl element = new ElementImpl(qname, getBrokerPool().getSymbols());
         element.setOwnerDocument(this);
         return element;
     }
@@ -898,7 +931,18 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     @Override
     public Element createElementNS(final String namespaceURI, final String qualifiedName) throws DOMException {
-        final ElementImpl element = new ElementImpl(QName.parse(namespaceURI, qualifiedName), getBrokerPool().getSymbols());
+        final QName qname;
+        try {
+            qname = QName.parse(namespaceURI, qualifiedName);
+
+            // check the QName is valid for use
+            qname.isValid(false);
+
+        } catch (final XPathException e) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+        }
+
+        final ElementImpl element = new ElementImpl(qname, getBrokerPool().getSymbols());
         element.setOwnerDocument(this);
         return element;
     }

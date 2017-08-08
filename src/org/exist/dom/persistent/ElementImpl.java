@@ -42,6 +42,7 @@ import org.exist.util.UTF8;
 import org.exist.util.pool.NodePool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
@@ -1085,12 +1086,34 @@ public class ElementImpl extends NamedNode implements Element {
 
     @Override
     public void setAttribute(final String name, final String value) throws DOMException {
-        setAttribute(new QName(name), value, qname -> getAttributeNode(qname.getLocalPart()));
+        final QName qname;
+        try {
+            qname = new QName(name);
+
+            // check the QName is valid for use
+            qname.isValid(false);
+
+        } catch (final XPathException e) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+        }
+
+        setAttribute(qname, value, qn -> getAttributeNode(qn.getLocalPart()));
     }
 
     @Override
     public void setAttributeNS(final String namespaceURI, final String qualifiedName, final String value) throws DOMException {
-        setAttribute(QName.parse(namespaceURI, qualifiedName), value, qname -> getAttributeNodeNS(qname.getNamespaceURI(), qname.getLocalPart()));
+        final QName qname;
+        try {
+            qname = QName.parse(namespaceURI, qualifiedName);
+
+            // check the QName is valid for use
+            qname.isValid(false);
+
+        } catch (final XPathException e) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+        }
+
+        setAttribute(qname, value, qn -> getAttributeNodeNS(qn.getNamespaceURI(), qn.getLocalPart()));
     }
 
     private void setAttribute(final QName attrName, final String value, final Function<QName, Attr> getFn) {

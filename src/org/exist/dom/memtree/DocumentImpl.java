@@ -798,24 +798,44 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     @Override
     public Element createElement(final String tagName) throws DOMException {
+        final QName qname;
         try {
-            final QName qn = QName.parse(getContext(), tagName);
-            final int nodeNum = addNode(Node.ELEMENT_NODE, (short) 1, qn);
-            return new ElementImpl(this, nodeNum);
+            if (getContext() != null) {
+                qname = QName.parse(getContext(), tagName);
+            } else {
+                qname = new QName(tagName);
+            }
+
+            // check the QName is valid for use
+            qname.isValid(false);
+
         } catch(final XPathException e) {
-            throw new DOMException(DOMException.NAMESPACE_ERR, e.getMessage());
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
         }
+
+        final int nodeNum = addNode(Node.ELEMENT_NODE, (short) 1, qname);
+        return new ElementImpl(this, nodeNum);
     }
 
     @Override
     public Element createElementNS(final String namespaceURI, final String qualifiedName) throws DOMException {
+        final QName qname;
         try {
-            final QName qn = QName.parse(getContext(), qualifiedName, namespaceURI);
-            final int nodeNum = addNode(Node.ELEMENT_NODE, (short) 1, qn);
-            return new ElementImpl(this, nodeNum);
+            if (getContext() != null) {
+                qname = QName.parse(getContext(), qualifiedName, namespaceURI);
+            } else {
+                qname = QName.parse(namespaceURI, qualifiedName);
+            }
+
+            // check the QName is valid for use
+            qname.isValid(false);
+
         } catch(final XPathException e) {
-            throw new DOMException(DOMException.NAMESPACE_ERR, e.getMessage());
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
         }
+
+        final int nodeNum = addNode(Node.ELEMENT_NODE, (short) 1, qname);
+        return new ElementImpl(this, nodeNum);
     }
 
     @Override
@@ -846,7 +866,44 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     @Override
     public Attr createAttribute(final String name) throws DOMException {
-        return null;
+        final QName qname;
+        try {
+            if(getContext() != null) {
+                qname = QName.parse(getContext(), name);
+            } else {
+                qname = new QName(name);
+            }
+
+            // check the QName is valid for use
+            qname.isValid(false);
+
+        } catch (final XPathException e) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+        }
+
+        // TODO(AR) implement this!
+        throw unsupported();
+    }
+
+    @Override
+    public Attr createAttributeNS(final String namespaceURI, final String qualifiedName) throws DOMException {
+        final QName qname;
+        try {
+            if(getContext() != null) {
+                qname = QName.parse(getContext(), qualifiedName, namespaceURI);
+            } else {
+                qname = QName.parse(namespaceURI, qualifiedName);
+            }
+
+            // check the QName is valid for use
+            qname.isValid(false);
+
+        } catch (final XPathException e) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+        }
+
+        // TODO(AR) implement this!
+        throw unsupported();
     }
 
     @Override
@@ -914,11 +971,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     @Override
     public Node importNode(final Node importedNode, final boolean deep) throws DOMException {
-        return null;
-    }
-
-    @Override
-    public Attr createAttributeNS(final String namespaceURI, final String qualifiedName) throws DOMException {
         return null;
     }
 

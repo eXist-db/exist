@@ -125,18 +125,42 @@ public class ElementImpl extends NodeImpl implements Element {
 
     @Override
     public void setAttribute(final String name, final String value) throws DOMException {
+        final QName qname;
         try {
-            final QName attrName = QName.parse(document.context, name);
-            setAttribute(attrName, value, qname -> getAttributeNode(qname.getLocalPart()));
-        } catch(final XPathException e) {
-            throw new DOMException(DOMException.SYNTAX_ERR, e.getMessage());
+            if(document.context != null) {
+                qname = QName.parse(document.context, name);
+            } else {
+                qname = new QName(name);
+            }
+
+            // check the QName is valid for use
+            qname.isValid(false);
+
+        } catch (final XPathException e) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
         }
+
+        setAttribute(qname, value, qn -> getAttributeNode(qn.getLocalPart()));
     }
 
     @Override
     public void setAttributeNS(final String namespaceURI, final String qualifiedName, final String value) throws DOMException {
-        final QName name = QName.parse(namespaceURI, qualifiedName);
-        setAttribute(name, value, qname -> getAttributeNodeNS(qname.getNamespaceURI(), qname.getLocalPart()));
+        final QName qname;
+        try {
+            if(document.context != null) {
+                qname = QName.parse(document.context, qualifiedName, namespaceURI);
+            } else {
+                qname = QName.parse(namespaceURI, qualifiedName);
+            }
+
+            // check the QName is valid for use
+            qname.isValid(false);
+
+        } catch (final XPathException e) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+        }
+
+        setAttribute(qname, value, qn -> getAttributeNodeNS(qn.getNamespaceURI(), qn.getLocalPart()));
     }
 
     private void setAttribute(final QName name, final String value, final Function<QName, Attr> getFn) {
