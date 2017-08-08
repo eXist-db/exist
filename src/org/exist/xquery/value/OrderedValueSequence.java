@@ -31,6 +31,7 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.OrderSpec;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import java.util.Objects;
@@ -196,7 +197,7 @@ public class OrderedValueSequence extends AbstractSequence {
                     if (v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
 
                         // found an in-memory document
-                        final org.exist.dom.memtree.DocumentImpl doc = ((NodeImpl) v).getOwnerDocument();
+                        final org.exist.dom.memtree.DocumentImpl doc = v.getType() == Type.DOCUMENT ? (org.exist.dom.memtree.DocumentImpl)v : ((NodeImpl) v).getOwnerDocument();
                         if (doc == null) {
                             continue;
                         }
@@ -212,7 +213,9 @@ public class OrderedValueSequence extends AbstractSequence {
                                 v = (NodeValue) items[j].item;
                                 if (v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
                                     NodeImpl node = (NodeImpl) v;
-                                    if (node.getOwnerDocument() == doc) {
+                                    Document nodeOwnerDoc = node.getNodeType() == Node.DOCUMENT_NODE ? (org.exist.dom.memtree.DocumentImpl)v : ((NodeImpl) v).getOwnerDocument();
+
+                                    if (nodeOwnerDoc == doc) {
                                         node = expandedDoc.getNode(node.getNodeNumber());
                                         NodeId nodeId = node.getNodeId();
                                         if (nodeId == null) {

@@ -531,7 +531,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         return null;
     }
 
-
     @Override
     public DocumentType getDoctype() {
         return null;
@@ -981,7 +980,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     @Override
     public DocumentImpl getOwnerDocument() {
-        return this;
+        return null;
     }
 
     /**
@@ -1500,7 +1499,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     @Override
     public Node appendChild(final Node newChild) throws DOMException {
-        if(newChild.getOwnerDocument() != document) {
+        if(newChild.getNodeType() != Node.DOCUMENT_NODE && newChild.getOwnerDocument() != this) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Owning document IDs do not match");
         }
 

@@ -30,7 +30,11 @@ public class InMemoryNodeSet extends ValueSequence {
         final Set<DocumentImpl> docs = new HashSet<>();
         for(int i = 0; i <= size; i++) {
             final NodeImpl node = (NodeImpl) values[i];
-            docs.add(node.getOwnerDocument());
+            if(node.getNodeType() == Node.DOCUMENT_NODE) {
+                docs.add((DocumentImpl)node);
+            } else {
+                docs.add(node.getOwnerDocument());
+            }
         }
         for(final DocumentImpl doc : docs) {
             doc.expand();

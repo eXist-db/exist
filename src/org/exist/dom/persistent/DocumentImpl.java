@@ -777,14 +777,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         getMetadata().setDocType(docType);
     }
 
-    /**
-     * The method <code>getOwnerDocument</code>
-     *
-     * @return a <code>Document</code> value
-     */
     @Override
     public DocumentImpl getOwnerDocument() {
-        return this;
+        return null;
     }
 
     /**
@@ -1192,7 +1187,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @Override
     public Node appendChild(final Node newChild) throws DOMException {
-        if(newChild.getOwnerDocument() != this) {
+        if(newChild.getNodeType() != Node.DOCUMENT_NODE && newChild.getOwnerDocument() != this) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Owning document IDs do not match");
         }
 

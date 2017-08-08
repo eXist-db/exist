@@ -663,7 +663,7 @@ public class ElementImpl extends NodeImpl implements Element {
 
     @Override
     public Node appendChild(final Node newChild) throws DOMException {
-        if(newChild.getOwnerDocument() != document) {
+        if(newChild.getNodeType() != Node.DOCUMENT_NODE && newChild.getOwnerDocument() != document) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Owning document IDs do not match");
         }
 

@@ -471,7 +471,7 @@ public class ElementImpl extends NamedNode implements Element {
 
     @Override
     public Node appendChild(final Node newChild) throws DOMException {
-        if(newChild.getOwnerDocument() != ownerDocument) {
+        if(newChild.getNodeType() != Node.DOCUMENT_NODE && newChild.getOwnerDocument() != null && newChild.getOwnerDocument() != ownerDocument) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Owning document IDs do not match");
         }
 

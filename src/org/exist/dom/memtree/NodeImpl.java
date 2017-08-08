@@ -445,7 +445,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public Node appendChild(final Node newChild) throws DOMException {
-        if(newChild.getOwnerDocument() != document) {
+        if((newChild.getNodeType() == Node.DOCUMENT_NODE && newChild != document) || newChild.getOwnerDocument() != document) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Owning document IDs do not match");
         }
 

@@ -184,11 +184,17 @@ public class ElementBuilder<K> {
 	}
 	
 	private Node adopt(Node node) {
-		if (node.getOwnerDocument() == doc) return node;
-		if (node.getParentNode() == null) try {
-			Node result = doc.adoptNode(node);
-			if (result != null) return result;
-		} catch (DOMException e) {}
+		final org.w3c.dom.Document ownerDoc = node.getNodeType() == Node.DOCUMENT_NODE ? (org.w3c.dom.Document)node : node.getOwnerDocument();
+		if (ownerDoc == doc) {
+			return node;
+		}
+		if (node.getParentNode() == null) {
+			try {
+				Node result = doc.adoptNode(node);
+				if (result != null) return result;
+			} catch (DOMException e) {
+			}
+		}
 		return doc.importNode(node, true);
 	}
 	

@@ -216,7 +216,7 @@ public class FunId extends Function {
 	}
 
     private void getId(Sequence result, Sequence seq, String id) throws XPathException {
-        final Set<DocumentImpl> visitedDocs = new TreeSet<DocumentImpl>();
+        final Set<DocumentImpl> visitedDocs = new TreeSet<>();
         for (final SequenceIterator i = seq.iterate(); i.hasNext();) {
             final NodeImpl v = (NodeImpl) i.nextItem();
             final DocumentImpl doc = v.getOwnerDocument();

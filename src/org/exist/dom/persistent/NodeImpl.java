@@ -26,8 +26,6 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.INode;
 import org.exist.dom.QName;
 import org.exist.storage.txn.Txn;
-import org.exist.util.sax.event.contenthandler.ProcessingInstruction;
-import org.exist.xquery.value.Type;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -47,7 +45,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public Node appendChild(final Node newChild) throws DOMException {
-        if(newChild.getOwnerDocument() != getOwnerDocument()) {
+        if((newChild.getNodeType() == Node.DOCUMENT_NODE && newChild != getOwnerDocument()) || newChild.getOwnerDocument() != getOwnerDocument()) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Owning document IDs do not match");
         }
 

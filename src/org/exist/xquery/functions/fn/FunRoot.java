@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.fn;
 
+import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.persistent.ExtArrayNodeSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
@@ -130,6 +131,8 @@ public class FunRoot extends Function {
             } else {
                 if (seq.hasOne() && item.getType() == Type.ATTRIBUTE) {
                 	result.add(item);
+                } else if(item.getType() == Type.DOCUMENT) {
+                    result.add((DocumentImpl)item);
                 } else {
                 	result.add(((NodeImpl)item).getOwnerDocument());
                 }

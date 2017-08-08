@@ -83,6 +83,8 @@ import org.exist.xquery.value.*;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
+import org.w3c.dom.Node;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
@@ -1200,7 +1202,8 @@ public class XQueryContext implements BinaryValueManager, Context
 
         if( nv.getImplementationType() == NodeValue.IN_MEMORY_NODE ) {
             final NodeImpl node = (NodeImpl)nv;
-            reader = new InMemoryXMLStreamReader( node.getOwnerDocument(), node.getOwnerDocument() );
+            final org.exist.dom.memtree.DocumentImpl ownerDoc = node.getNodeType() == Node.DOCUMENT_NODE ? (org.exist.dom.memtree.DocumentImpl)node : node.getOwnerDocument();
+            reader = new InMemoryXMLStreamReader( ownerDoc, ownerDoc );
         } else {
             final NodeProxy proxy = (NodeProxy)nv;
             reader = getBroker().newXMLStreamReader( new NodeProxy( proxy.getOwnerDocument(), NodeId.DOCUMENT_NODE, proxy.getOwnerDocument().getFirstChildAddress() ), false );

@@ -81,7 +81,7 @@ public class NamedNodeMapImpl implements NamedNodeMap {
     }
 
     private Node setNamedItem(final QName qname, final Node arg) {
-        if(arg.getOwnerDocument() != ownerDocument) {
+        if((arg.getNodeType() == Node.DOCUMENT_NODE && arg != ownerDocument) || arg.getOwnerDocument() != ownerDocument) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Owning document IDs do not match");
         }
 
