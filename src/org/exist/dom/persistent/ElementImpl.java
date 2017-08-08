@@ -490,9 +490,12 @@ public class ElementImpl extends NamedNode implements Element {
                     "A Document Type Node may not be appended to an element");
         }
 
-        if(newChild instanceof IStoredNode && getNodeId().isDescendantOf(((IStoredNode)newChild).getNodeId())) {
-            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
-                    "The node to append is one of this node's ancestors");
+        if(newChild instanceof IStoredNode) {
+            final NodeId newChildId = ((IStoredNode)newChild).getNodeId();
+            if(newChildId != null && getNodeId().isDescendantOf(newChildId)) {
+                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                        "The node to append is one of this node's ancestors");
+            }
         }
 
         final TransactionManager transact = ownerDocument.getBrokerPool().getTransactionManager();
