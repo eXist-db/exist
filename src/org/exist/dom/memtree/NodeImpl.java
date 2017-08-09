@@ -231,7 +231,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public void setPrefix(final String prefix) throws DOMException {
-        if(prefix == null) {
+        if(prefix == null || getNodeType() == Node.DOCUMENT_NODE) {
             return;
         } else if(getOwnerDocument().getXmlVersion().equals("1.0") && !XMLChar.isValidNCName(prefix)) {
             throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "Prefix '" + prefix + "' in XML 1.0 contains invalid characters");

@@ -242,6 +242,10 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public void setPrefix(final String prefix) throws DOMException {
+        if(prefix == null || getNodeType() == Node.DOCUMENT_NODE) {
+            return;
+        }
+
         final QName nodeName = getQName();
         if(nodeName != null) {
             setQName(new QName(nodeName.getLocalPart(), nodeName.getNamespaceURI(), prefix));
