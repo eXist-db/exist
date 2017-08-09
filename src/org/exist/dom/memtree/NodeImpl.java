@@ -26,6 +26,7 @@ import org.apache.xml.utils.XMLChar;
 import org.apache.xml.utils.XML11Char;
 import org.exist.collections.Collection;
 import org.exist.dom.INode;
+import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.EmptyNodeSet;
@@ -382,17 +383,17 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public NodeList getChildNodes() {
-        throw unsupported();
+        return new NodeListImpl();
     }
 
     @Override
     public Node getFirstChild() {
-        throw unsupported();
+        return null;
     }
 
     @Override
     public Node getLastChild() {
-        throw unsupported();
+        return null;
     }
 
     @Override
@@ -420,7 +421,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public NamedNodeMap getAttributes() {
-        throw unsupported();
+        return null;
     }
 
     @Override

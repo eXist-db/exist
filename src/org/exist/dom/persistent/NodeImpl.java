@@ -24,6 +24,7 @@ package org.exist.dom.persistent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.INode;
+import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
 import org.exist.storage.txn.Txn;
 import org.w3c.dom.DOMException;
@@ -119,24 +120,19 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public NodeList getChildNodes() {
-        throw unsupported();
+        return new NodeListImpl();
     }
 
-    /**
-     * Note: Typically you should call {@link org.w3c.dom.Node#hasChildNodes()}
-     * first.
-     *
-     * @see org.w3c.dom.Node#getFirstChild()
-     */
     @Override
     public Node getFirstChild() {
-        throw unsupported();
+        return null;
     }
 
     @Override
     public Node getLastChild() {
-        throw unsupported();
+        return null;
     }
+
     @Override
     public boolean hasAttributes() {
         return false;
