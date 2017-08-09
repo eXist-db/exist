@@ -270,6 +270,9 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     @Override
     public final String getNodeName() {
         switch(getNodeType()) {
+            case Node.DOCUMENT_TYPE_NODE:
+                return ((DocumentTypeImpl)this).getName();
+
             case Node.DOCUMENT_NODE:
                 return "#document";
 
