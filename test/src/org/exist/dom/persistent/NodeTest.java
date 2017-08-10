@@ -14,11 +14,7 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -38,11 +34,12 @@ public class NodeTest {
 	private static final String XML =
 		"<!-- doc starts here -->" +
         "<test xmlns:ns=\"http://foo.org\">" +
-	"<a ns:a=\"1\" ns:b=\"m\">abc</a>" +
-	"<b ns:a=\"2\">def</b>" +
-        "<c>ghi</c>" +
-        "<d>jkl</d>" +
-	"</test>";
+            "<a ns:a=\"1\" ns:b=\"m\">abc</a>" +
+            "<b ns:a=\"2\">def</b>" +
+            "<c>ghi</c>" +
+            "<d>jkl</d>" +
+	    "</test>" +
+        "<!-- doc ends here -->";
 	private static Collection root = null;
 
     @Test
@@ -70,11 +67,15 @@ public class NodeTest {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),LockMode.READ_LOCK);
-            final Element rootNode = doc.getDocumentElement();
+
+            NodeList cl = doc.getChildNodes();
+            assertEquals(3, cl.getLength());
+
+            final Element docElement = doc.getDocumentElement();
             
             //Testing getChildNodes()
-            NodeList cl = rootNode.getChildNodes();
-            assertEquals(((IStoredNode<?>)rootNode).getChildCount(), cl.getLength());
+            cl = docElement.getChildNodes();
+            assertEquals(((IStoredNode<?>)docElement).getChildCount(), cl.getLength());
             assertEquals(4, cl.getLength());
         	assertEquals("a", cl.item(0).getNodeName());
         	assertEquals("b", cl.item(1).getNodeName());
@@ -114,8 +115,23 @@ public class NodeTest {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),LockMode.READ_LOCK);
-            Element rootNode = doc.getDocumentElement();
-            Element child = (Element) rootNode.getFirstChild();
+
+            final Comment firstNode = (Comment)doc.getFirstChild();
+            assertNotNull(firstNode);
+            assertNull(firstNode.getPreviousSibling());
+
+            final Element secondNode = (Element)firstNode.getNextSibling();
+            assertNotNull(secondNode);
+            assertEquals(firstNode, secondNode.getPreviousSibling());
+
+            final Comment thirdNode = (Comment)secondNode.getNextSibling();
+            assertNotNull(thirdNode);
+            assertEquals(secondNode, thirdNode.getPreviousSibling());
+            assertNull(thirdNode.getNextSibling());
+
+            final Element docElement = doc.getDocumentElement();
+            assertEquals(secondNode, docElement);
+            final Element child = (Element) docElement.getFirstChild();
             assertNotNull(child);
             assertEquals("a", child.getNodeName(), "a");
             Node sibling = child.getNextSibling();
@@ -125,7 +141,7 @@ public class NodeTest {
                 sibling = sibling.getNextSibling();
             }
             
-            NodeList cl = rootNode.getChildNodes();
+            final NodeList cl = docElement.getChildNodes();
             sibling = cl.item(2).getFirstChild();
             sibling = sibling.getNextSibling();
             // should be null - there's no following sibling
@@ -150,8 +166,8 @@ public class NodeTest {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),LockMode.READ_LOCK);
-            Element rootNode = doc.getDocumentElement();
-            Element first = (Element) rootNode.getFirstChild();
+            Element docElement = doc.getDocumentElement();
+            Element first = (Element) docElement.getFirstChild();
             assertEquals("a", first.getNodeName());
             
             assertEquals("1", first.getAttribute("ns:a"));
@@ -228,8 +244,7 @@ public class NodeTest {
             assertNotNull(root);
             broker.saveCollection(transaction, root);
             
-            IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), XML);
-            //TODO : unlock the collection here ?
+            final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), XML);
             assertNotNull(info);
             root.store(transaction, broker, info, XML);
             
