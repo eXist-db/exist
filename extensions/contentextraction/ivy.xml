@@ -8,7 +8,7 @@
 
     <dependencies>
 
-        <dependency org="org.apache.tika" name="tika-parsers" rev="1.15" conf="*->*,!sources,!javadoc"/>
+        <dependency org="org.apache.tika" name="tika-parsers" rev="1.16" conf="*->*,!sources,!javadoc"/>
 
         <!-- identified as provided by eXist-db -->
         <exclude module="asm"/>
@@ -34,6 +34,9 @@
         <exclude module="xml-apis"/>
         <exclude org="org.apache.httpcomponents"/>
         <exclude org="org.apache.lucene"/>
+
+        <exclude module="jul-to-slf4j"/>
+        <exclude module="jcl-over-slf4j"/>
 
         <!-- identified as not needed for pure parsing -->
         <exclude module="junit"/>
