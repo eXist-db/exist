@@ -75,8 +75,8 @@ public class NodeTest {
             
             //Testing getChildNodes()
             cl = docElement.getChildNodes();
-            assertEquals(((IStoredNode<?>)docElement).getChildCount(), cl.getLength());
             assertEquals(4, cl.getLength());
+            assertEquals(4, ((IStoredNode<?>)docElement).getChildCount());
         	assertEquals("a", cl.item(0).getNodeName());
         	assertEquals("b", cl.item(1).getNodeName());
         	
@@ -89,16 +89,16 @@ public class NodeTest {
             assertEquals(3, node.getChildCount());
             assertEquals(2, node.getAttributes().getLength());
         	cl = node.getChildNodes();
-        	assertEquals(3, cl.getLength());
-        	assertEquals("abc", cl.item(2).getNodeValue());
+            assertEquals(1, cl.getLength());
+            assertEquals("abc", cl.item(0).getNodeValue());
         	
         	//Testing getParentNode()
         	Node parent = cl.item(0).getParentNode();
-        	assertNull(parent);
+            assertNotNull(parent);
         	parent = node.getParentNode();
         	assertEquals("test", parent.getNodeName());
         	parent = parent.getParentNode();
-        	assertNotNull(parent);
+            assertNotNull(parent);
             parent = parent.getParentNode();
             assertNull(parent);
 

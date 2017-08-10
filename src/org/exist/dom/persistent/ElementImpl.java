@@ -572,7 +572,7 @@ public class ElementImpl extends NamedNode implements Element {
                     insertBefore(transaction, nodes, firstChild);
                 } else {
                     if(child > 1 && child <= children) {
-                        final NodeList cl = getChildNodes();
+                        final NodeList cl = getAttrsAndChildNodes();
                         final IStoredNode<?> last = (IStoredNode<?>) cl.item(child - 2);
                         insertAfter(transaction, nodes, last);
                     } else {
@@ -662,9 +662,7 @@ public class ElementImpl extends NamedNode implements Element {
                     final NodeList cl = child.getChildNodes();
                     for(int i = 0; i < cl.getLength(); i++) {
                         final Node n = cl.item(i);
-                        if(n.getNodeType() != Node.ATTRIBUTE_NODE) {
-                            ch.add(n);
-                        }
+                        ch.add(n);
                     }
                     elem.setChildCount(ch.getLength());
                     if(numActualAttribs != (short) numActualAttribs) {
@@ -927,6 +925,27 @@ public class ElementImpl extends NamedNode implements Element {
 
     @Override
     public NodeList getChildNodes() {
+        final org.exist.dom.NodeListImpl childList = new org.exist.dom.NodeListImpl(1);
+        try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
+            for(final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, false);
+                reader.hasNext(); ) {
+                final int status = reader.next();
+                if(status != XMLStreamConstants.END_ELEMENT && ((NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID)).isChildOf(nodeId)) {
+                    childList.add(reader.getNode());
+                }
+            }
+        } catch(final IOException | XMLStreamException | EXistException e) {
+            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+        }
+        return childList;
+    }
+
+    /**
+     * Similar to {@link #getChildNodes()} but also includes attributes
+     *
+     * @return Attributes and child nodes
+     */
+    private NodeList getAttrsAndChildNodes() {
         final org.exist.dom.NodeListImpl childList = new org.exist.dom.NodeListImpl(1);
         try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
             for(final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, true);
@@ -1262,7 +1281,7 @@ public class ElementImpl extends NamedNode implements Element {
      */
     @Override
     public String toString(final boolean top) {
-        return toString(top, new TreeSet<String>());
+        return toString(top, new TreeSet<>());
     }
 
     /**
@@ -1270,8 +1289,6 @@ public class ElementImpl extends NamedNode implements Element {
      */
     private String toString(final boolean top, final Set<String> namespaces) {
         final StringBuilder buf = new StringBuilder();
-        final StringBuilder attributes = new StringBuilder();
-        final StringBuilder children = new StringBuilder();
         buf.append('<');
         buf.append(nodeName);
         //Remove false to have a verbose output
@@ -1315,19 +1332,22 @@ public class ElementImpl extends NamedNode implements Element {
                 .append(nodeName.getNamespaceURI())
                 .append("\" ");
         }
+
+        final NamedNodeMap attrs = getAttributes();
+        for(int i = 0; i < attrs.getLength(); i++) {
+            final Attr attr = (Attr)attrs.item(i);
+            buf.append(' ')
+                    .append(attr.getName())
+                    .append("=\"")
+                    .append(escapeXml(attr))
+                    .append("\"");
+        }
+
+        final StringBuilder children = new StringBuilder();
         final NodeList childNodes = getChildNodes();
         for(int i = 0; i < childNodes.getLength(); i++) {
             final Node child = childNodes.item(i);
             switch(child.getNodeType()) {
-
-                case Node.ATTRIBUTE_NODE:
-                    attributes.append(' ')
-                        .append(((Attr) child).getName())
-                        .append("=\"")
-                        .append(escapeXml(child))
-                        .append("\"");
-                    break;
-
                 case Node.ELEMENT_NODE:
                     children.append(((ElementImpl) child).toString(false, namespaces));
                     break;
@@ -1337,16 +1357,10 @@ public class ElementImpl extends NamedNode implements Element {
             }
         }
 
-        if(attributes.length() > 0) {
-            buf.append(attributes.toString());
-        }
-
         if(childNodes.getLength() > 0) {
             buf.append(">");
             buf.append(children.toString());
-            buf.append("</");
-            buf.append(nodeName);
-            buf.append(">");
+            buf.append("</").append(nodeName).append(">");
         } else {
             buf.append("/>");
         }
@@ -1484,7 +1498,7 @@ public class ElementImpl extends NamedNode implements Element {
     public void update(final Txn transaction, final NodeList newContent) throws DOMException {
         final NodePath path = getPath();
         // remove old child nodes
-        final NodeList nodes = getChildNodes();
+        final NodeList nodes = getAttrsAndChildNodes();
         try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
             final IndexController indexes = broker.getIndexController();
             //May help getReindexRoot() to make some useful things

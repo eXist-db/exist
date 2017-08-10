@@ -81,7 +81,9 @@ public class ElementImpl extends NodeImpl implements Element {
         int nextNode = document.getFirstChildFor(nodeNumber);
         while(nextNode > nodeNumber) {
             final Node n = document.getNode(nextNode);
-            nl.add(n);
+            if(n.getNodeType() != Node.ATTRIBUTE_NODE) {
+                nl.add(n);
+            }
             nextNode = document.next[nextNode];
         }
         return nl;
