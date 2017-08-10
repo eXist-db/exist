@@ -48,7 +48,7 @@
         <fileset dir="${top.dir}/${lib.user}">
             <include name="*.jar"/>
         </fileset>
-        <fileset dir="${top.dir}/tools/ant/lib">
+        <fileset dir="${top.dir}/${lib.test}">
             <include name="*.jar"/>
         </fileset>
         <fileset dir="${top.dir}/extensions/modules/lib" erroronmissingdir="false">

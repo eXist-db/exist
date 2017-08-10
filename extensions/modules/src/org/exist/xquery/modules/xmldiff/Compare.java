@@ -24,7 +24,9 @@ package org.exist.xquery.modules.xmldiff;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.custommonkey.xmlunit.Diff;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.builder.Input;
+import org.xmlunit.diff.Diff;
 
 import org.exist.dom.QName;
 import org.exist.storage.serializers.Serializer;
@@ -33,6 +35,7 @@ import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
 import java.util.Properties;
 
 /**
@@ -116,10 +119,15 @@ public class Compare extends Function {
             } else {
                 v2.append(serialize((NodeValue) s2.itemAt(0)));
             }
-	    Diff d = new Diff(v1.toString(), v2.toString());
-            boolean identical = d.identical();
+
+		final Source expected = Input.fromString(v1.toString()).build();
+		final Source actual = Input.fromString(v2.toString()).build();
+		final Diff diff = DiffBuilder.compare(expected).withTest(actual)
+				.checkForIdentical()
+				.build();
+            boolean identical = !diff.hasDifferences();
             if (!identical) {
-                logger.warn("Diff result: " + d.toString());
+                logger.warn("Diff result: " + diff.toString());
             }
             result = new BooleanValue(identical);
         } catch (Exception e) {
