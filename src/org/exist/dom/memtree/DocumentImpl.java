@@ -62,6 +62,8 @@ import org.xml.sax.SAXException;
 import javax.xml.XMLConstants;
 import java.util.Arrays;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 
 /**
  * An in-memory implementation of Document.
@@ -1376,12 +1378,12 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     @Override
     public String getXmlEncoding() {
-        return null;
+        return UTF_8.name();    //TODO(AR) this should be recorded from the XML document and not hard coded
     }
 
     @Override
     public boolean getXmlStandalone() {
-        return false;
+        return false;   //TODO(AR) this should be recorded from the XML document and not hard coded
     }
 
     @Override
@@ -1390,7 +1392,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     @Override
     public String getXmlVersion() {
-        return "1.0";
+        return "1.0";   //TODO(AR) this should be recorded from the XML document and not hard coded
     }
 
     @Override

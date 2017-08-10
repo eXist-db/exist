@@ -68,6 +68,8 @@ import javax.xml.XMLConstants;
 import java.io.EOFException;
 import java.io.IOException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Represents a persistent document object in the database;
  * it can be an XML_FILE , a BINARY_FILE, or Xquery source code.
@@ -1101,27 +1103,25 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @Override
     public String getXmlEncoding() {
-        throw unsupported();
+        return UTF_8.name();    //TODO(AR) this should be recorded from the XML document and not hard coded
     }
 
     @Override
     public boolean getXmlStandalone() {
-        throw unsupported();
+        return false;   //TODO(AR) this should be recorded from the XML document and not hard coded
     }
 
     @Override
     public void setXmlStandalone(final boolean xmlStandalone) throws DOMException {
-        throw unsupported();
     }
 
     @Override
     public String getXmlVersion() {
-        return "1.0";
+        return "1.0";   //TODO(AR) this should be recorded from the XML document and not hard coded
     }
 
     @Override
     public void setXmlVersion(final String xmlVersion) throws DOMException {
-        throw unsupported();
     }
 
     @Override
