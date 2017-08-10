@@ -53,11 +53,6 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
     }
 
     @Override
-    public String getLocalName() {
-        return null;
-    }
-
-    @Override
     public String getStringValue() {
         return getData().replaceFirst("^\\s+", "");
     }

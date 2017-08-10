@@ -154,26 +154,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         return pool;
     }
 
-    /**
-     * The method <code>getLocalPart</code>
-     *
-     * @return a <code>String</code> value
-     */
-    @Override
-    public String getLocalName() {
-        return "";
-    }
-
-    /**
-     * The method <code>getNamespaceURI</code>
-     *
-     * @return a <code>String</code> value
-     */
-    @Override
-    public String getNamespaceURI() {
-        return null;
-    }
-
     /************************************************
      *
      * Document metadata

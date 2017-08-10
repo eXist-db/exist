@@ -85,11 +85,6 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
     }
 
     @Override
-    public String getNamespaceURI() {
-        return XMLConstants.NULL_NS_URI;
-    }
-
-    @Override
     public String getNodeValue() throws DOMException {
         return getData();
     }

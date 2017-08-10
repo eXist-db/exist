@@ -187,10 +187,6 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
             case Node.ATTRIBUTE_NODE:
                 return getQName().getLocalPart();
 
-            case Node.PROCESSING_INSTRUCTION_NODE:
-                final QName qname = getQName();
-                return qname != null ? qname.getLocalPart() : null;
-
             default:
                 return null;
         }
