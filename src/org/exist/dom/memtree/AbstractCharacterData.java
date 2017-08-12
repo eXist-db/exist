@@ -247,28 +247,8 @@ public abstract class AbstractCharacterData extends NodeImpl implements Characte
     }
 
     @Override
-    public void deleteData(final int offset, final int count) throws DOMException {
-        if(offset < 0 || count < 0) {
-            throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
-        }
-
-        final int length = document.alphaLen[nodeNumber];
-        if(offset > length) {
-            throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
-        }
-
-        final int inDocOffset = document.alpha[nodeNumber];
-        if(offset > length) {
-            throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
-        }
-
-        if(offset + count > length) {
-            document.alpha[nodeNumber] = inDocOffset + offset;
-            document.alphaLen[nodeNumber] = length - offset;
-        } else {
-            document.alpha[nodeNumber] = inDocOffset + offset;
-            document.alphaLen[nodeNumber] = count;
-        }
+    public void deleteData(final int offset, int count) throws DOMException {
+        replaceData(offset, count, "");
     }
 
     @Override

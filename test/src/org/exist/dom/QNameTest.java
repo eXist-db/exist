@@ -20,13 +20,13 @@
 
 package org.exist.dom;
 
-import org.exist.xquery.XPathException;
 import org.junit.Test;
 
 import javax.xml.XMLConstants;
 
 import static org.exist.dom.QName.Validity.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>

@@ -479,4 +479,21 @@ public class TextImplTest {
         text.replaceData(0, 50, "2600");
         assertEquals("2600", text.getTextContent());
     }
+
+    @Test
+    public void deleteData() {
+        final MemTreeBuilder builder = new MemTreeBuilder();
+        builder.startDocument();
+        builder.startElement(new QName("address", null, null), null);
+        builder.characters("1230 North Ave. Dallas, Texas 98551");
+        builder.endElement();
+        builder.endDocument();
+
+        final Document doc = builder.getDocument();
+        final Text text = (Text) doc.getDocumentElement().getFirstChild();
+        assertEquals("1230 North Ave. Dallas, Texas 98551", text.getTextContent());
+
+        text.deleteData(0, 16);
+        assertEquals("Dallas, Texas 98551", text.getTextContent());
+    }
 }
