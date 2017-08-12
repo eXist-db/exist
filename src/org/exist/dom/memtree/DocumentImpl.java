@@ -1388,7 +1388,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     @Override
     public NodeList getChildNodes() {
-        final NodeListImpl nl = new NodeListImpl(1);
+        final NodeListImpl nl = new NodeListImpl(getChildCount());
         final Element el = getDocumentElement();
         if(el != null) {
             nl.add(el);

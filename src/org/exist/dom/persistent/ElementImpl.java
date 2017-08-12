@@ -928,7 +928,7 @@ public class ElementImpl extends NamedNode implements Element {
 
     @Override
     public NodeList getChildNodes() {
-        final org.exist.dom.NodeListImpl childList = new org.exist.dom.NodeListImpl(1);
+        final org.exist.dom.NodeListImpl childList = new org.exist.dom.NodeListImpl(children);
         try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
             for(final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, false);
                 reader.hasNext(); ) {
@@ -949,7 +949,7 @@ public class ElementImpl extends NamedNode implements Element {
      * @return Attributes and child nodes
      */
     private NodeList getAttrsAndChildNodes() {
-        final org.exist.dom.NodeListImpl childList = new org.exist.dom.NodeListImpl(1);
+        final org.exist.dom.NodeListImpl childList = new org.exist.dom.NodeListImpl(children);
         try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
             for(final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, true);
                 reader.hasNext(); ) {
