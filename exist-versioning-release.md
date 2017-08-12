@@ -213,7 +213,9 @@ Once development on a new stable version is complete, the following steps will p
 
 7. Tweet about it using the `existdb` twitter account.
 
-8. Go to GitHub and move all issues and PRs which are still open for the release milestone to the next release milestone. Close the release milestone.
+8. Submit a news item to XML.com - https://www.xml.com/news/submit-news-item/.
+
+9. Go to GitHub and move all issues and PRs which are still open for the release milestone to the next release milestone. Close the release milestone.
 
 
 ### Preparing a Patch Release
