@@ -25,6 +25,7 @@ import org.exist.Namespaces;
 import org.exist.dom.NamedNodeMapImpl;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
+import org.exist.dom.QName.IllegalQNameException;
 import org.exist.storage.ElementValue;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.NodeTest;
@@ -47,6 +48,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+
+import static org.exist.dom.QName.Validity.ILLEGAL_FORMAT;
 
 
 public class ElementImpl extends NodeImpl implements Element {
@@ -134,12 +137,13 @@ public class ElementImpl extends NodeImpl implements Element {
             } else {
                 qname = new QName(name);
             }
-
-            // check the QName is valid for use
-            qname.isValid(false);
-
-        } catch (final XPathException e) {
+        } catch (final IllegalQNameException e) {
             throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+        }
+
+        // check the QName is valid for use
+        if(qname.isValid(false) != QName.Validity.VALID.val) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name is invalid");
         }
 
         setAttribute(qname, value, qn -> getAttributeNode(qn.getLocalPart()));
@@ -154,12 +158,22 @@ public class ElementImpl extends NodeImpl implements Element {
             } else {
                 qname = QName.parse(namespaceURI, qualifiedName);
             }
+        } catch (final IllegalQNameException e) {
+            final short errCode;
+            if(e.getValidity() == ILLEGAL_FORMAT.val || (e.getValidity() & QName.Validity.INVALID_NAMESPACE.val) == QName.Validity.INVALID_NAMESPACE.val) {
+                errCode = DOMException.NAMESPACE_ERR;
+            } else {
+                errCode = DOMException.INVALID_CHARACTER_ERR;
+            }
+            throw new DOMException(errCode, "qualified name is invalid");
+        }
 
-            // check the QName is valid for use
-            qname.isValid(false);
-
-        } catch (final XPathException e) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+        // check the QName is valid for use
+        final byte validity = qname.isValid(false);
+        if((validity & QName.Validity.INVALID_LOCAL_PART.val) == QName.Validity.INVALID_LOCAL_PART.val) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "qualified name is invalid");
+        } else if((validity & QName.Validity.INVALID_NAMESPACE.val) == QName.Validity.INVALID_NAMESPACE.val) {
+            throw new DOMException(DOMException.NAMESPACE_ERR, "qualified name is invalid");
         }
 
         setAttribute(qname, value, qn -> getAttributeNodeNS(qn.getNamespaceURI(), qn.getLocalPart()));
@@ -342,14 +356,14 @@ public class ElementImpl extends NodeImpl implements Element {
             return getElementsByTagName(new QName.WildcardLocalPartQName(XMLConstants.DEFAULT_NS_PREFIX));
         } else {
             final QName qname;
-            if (document.getContext() != null) {
-                try {
+            try {
+                if (document.getContext() != null) {
                     qname = QName.parse(document.context, name);
-                } catch (final XPathException e) {
-                    throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+                } else {
+                    qname = new QName(name);
                 }
-            } else {
-                qname = new QName(name);
+            } catch (final IllegalQNameException e) {
+                throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
             }
             return getElementsByTagName(qname);
         }
@@ -371,7 +385,7 @@ public class ElementImpl extends NodeImpl implements Element {
             if (document.getContext() != null) {
                 try {
                     qname = QName.parse(document.context, localName, namespaceURI);
-                } catch (final XPathException e) {
+                } catch (final IllegalQNameException e) {
                     throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
                 }
             } else {

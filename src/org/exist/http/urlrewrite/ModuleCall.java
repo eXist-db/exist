@@ -72,8 +72,8 @@ public class ModuleCall extends URLRewrite {
             else
                 {func = context.resolveFunction(fqn, arity);}
             call = new FunctionCall(context, func);
-            call.setArguments(new ArrayList<Expression>());
-        } catch (final XPathException e) {
+            call.setArguments(new ArrayList<>());
+        } catch (final XPathException | QName.IllegalQNameException e) {
             e.printStackTrace();
         }
     }

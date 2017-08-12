@@ -17,6 +17,9 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.xml.sax.helpers.AttributesImpl;
+
+import javax.xml.XMLConstants;
+
 /**
  * XPath and XQuery 3.0 F+O fn:analyze-string()
  * 
@@ -33,7 +36,7 @@ public class FunAnalyzeString extends BasicFunction {
 
     private final static QName QN_MATCH = new QName("match", Function.BUILTIN_FUNCTION_NS);
     private final static QName QN_GROUP = new QName("group", Function.BUILTIN_FUNCTION_NS);
-    private final static QName QN_NR = new QName("nr");
+    private final static QName QN_NR = new QName("nr", XMLConstants.NULL_NS_URI);
     private final static QName QN_NON_MATCH = new QName("non-match", Function.BUILTIN_FUNCTION_NS);
     
     public final static FunctionSignature signatures[] = {

@@ -66,9 +66,13 @@ public class UserDefinedFunction extends Function implements Cloneable {
         return body;
     }
     
-    public void addVariable(String varName) throws XPathException {
-		final QName qname = QName.parse(context, varName, null);
-		addVariable(qname);
+    public void addVariable(final String varName) throws XPathException {
+		try {
+			final QName qname = QName.parse(context, varName, null);
+			addVariable(qname);
+		} catch (final QName.IllegalQNameException e) {
+			throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + varName);
+		}
 	}
 	
     public void addVariable(QName varName) throws XPathException {

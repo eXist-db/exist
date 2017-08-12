@@ -8,6 +8,7 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.xml.sax.helpers.AttributesImpl;
 
+import javax.xml.XMLConstants;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,16 +32,16 @@ public class InspectFunction extends BasicFunction {
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the signature of the function"));
 
-    protected final static QName ARGUMENT_QNAME = new QName("argument");
-    protected final static QName DEPRECATED_QNAME = new QName("deprecated");
-    protected final static QName DESCRIPTION_QNAME = new QName("description");
-    protected final static QName RETURN_QNAME = new QName("returns");
-    protected final static QName FUNCTION_QNAME = new QName("function");
-    protected final static QName ANNOTATION_QNAME = new QName("annotation");
-    protected final static QName ANNOTATION_VALUE_QNAME = new QName("value");
-    protected static final QName VERSION_QNAME = new QName("version");
-    protected static final QName AUTHOR_QNAME = new QName("author");
-    protected static final QName CALLS_QNAME = new QName("calls");
+    protected final static QName ARGUMENT_QNAME = new QName("argument", XMLConstants.NULL_NS_URI);
+    protected final static QName DEPRECATED_QNAME = new QName("deprecated", XMLConstants.NULL_NS_URI);
+    protected final static QName DESCRIPTION_QNAME = new QName("description", XMLConstants.NULL_NS_URI);
+    protected final static QName RETURN_QNAME = new QName("returns", XMLConstants.NULL_NS_URI);
+    protected final static QName FUNCTION_QNAME = new QName("function", XMLConstants.NULL_NS_URI);
+    protected final static QName ANNOTATION_QNAME = new QName("annotation", XMLConstants.NULL_NS_URI);
+    protected final static QName ANNOTATION_VALUE_QNAME = new QName("value", XMLConstants.NULL_NS_URI);
+    protected static final QName VERSION_QNAME = new QName("version", XMLConstants.NULL_NS_URI);
+    protected static final QName AUTHOR_QNAME = new QName("author", XMLConstants.NULL_NS_URI);
+    protected static final QName CALLS_QNAME = new QName("calls", XMLConstants.NULL_NS_URI);
 
     public InspectFunction(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -94,7 +95,7 @@ public class InspectFunction extends BasicFunction {
         final Map<String, String> metadata = sig.getMetadata();
         if (metadata != null) {
             for (final Map.Entry<String, String> meta : metadata.entrySet()) {
-                builder.startElement(new QName(meta.getKey()), null);
+                builder.startElement(new QName(meta.getKey(), XMLConstants.NULL_NS_URI), null);
                 builder.characters(meta.getValue());
                 builder.endElement();
             }

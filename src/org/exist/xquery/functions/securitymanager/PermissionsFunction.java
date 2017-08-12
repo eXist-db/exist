@@ -48,6 +48,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
+import javax.xml.XMLConstants;
+
 /**
  *
  * @author Adam Retter <adam@existsolutions.com>
@@ -428,22 +430,22 @@ public class PermissionsFunction extends BasicFunction {
         builder.startDocument();
 
         builder.startElement(new QName("permission", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
-        builder.addAttribute(new QName("owner"), permission.getOwner().getName());
-        builder.addAttribute(new QName("group"), permission.getGroup().getName());
-        builder.addAttribute(new QName("mode"), permission.toString());
+        builder.addAttribute(new QName("owner", XMLConstants.NULL_NS_URI), permission.getOwner().getName());
+        builder.addAttribute(new QName("group", XMLConstants.NULL_NS_URI), permission.getGroup().getName());
+        builder.addAttribute(new QName("mode", XMLConstants.NULL_NS_URI), permission.toString());
 
         if(permission instanceof SimpleACLPermission) {
             final SimpleACLPermission aclPermission = (SimpleACLPermission)permission;
             builder.startElement(new QName("acl", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
-            builder.addAttribute(new QName("entries"), String.valueOf(aclPermission.getACECount()));
+            builder.addAttribute(new QName("entries", XMLConstants.NULL_NS_URI), String.valueOf(aclPermission.getACECount()));
 
             for(int i = 0; i < aclPermission.getACECount(); i++) {
                 builder.startElement(new QName("ace", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
-                builder.addAttribute(new QName("index"), String.valueOf(i));
-                builder.addAttribute(new QName("target"), aclPermission.getACETarget(i).name());
-                builder.addAttribute(new QName("who"), aclPermission.getACEWho(i));
-                builder.addAttribute(new QName("access_type"), aclPermission.getACEAccessType(i).name());
-                builder.addAttribute(new QName("mode"), aclPermission.getACEModeString(i));
+                builder.addAttribute(new QName("index", XMLConstants.NULL_NS_URI), String.valueOf(i));
+                builder.addAttribute(new QName("target", XMLConstants.NULL_NS_URI), aclPermission.getACETarget(i).name());
+                builder.addAttribute(new QName("who", XMLConstants.NULL_NS_URI), aclPermission.getACEWho(i));
+                builder.addAttribute(new QName("access_type", XMLConstants.NULL_NS_URI), aclPermission.getACEAccessType(i).name());
+                builder.addAttribute(new QName("mode", XMLConstants.NULL_NS_URI), aclPermission.getACEModeString(i));
                 builder.endElement();
             }
 

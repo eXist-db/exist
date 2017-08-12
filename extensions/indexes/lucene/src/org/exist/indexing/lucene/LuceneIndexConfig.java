@@ -318,7 +318,7 @@ public class LuceneIndexConfig {
                 qname = new QName(localName, namespaceURI, prefix);
             }
             return qname;
-        } catch (IllegalArgumentException e) {
+        } catch (QName.IllegalQNameException e) {
             throw new DatabaseConfigurationException("Lucene index configuration error: " + e.getMessage(), e);
         }
     }

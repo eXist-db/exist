@@ -20,6 +20,7 @@
 package org.exist.dom;
 
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.QName.IllegalQNameException;
 import org.exist.util.hashtable.Object2ObjectHashMap;
 import org.w3c.dom.*;
 
@@ -46,7 +47,11 @@ public class NamedNodeMapImpl implements NamedNodeMap {
 
     @Override
     public Node getNamedItem(final String name) {
-        return getNamedItem(new QName(name));
+        try {
+            return getNamedItem(new QName(name));
+        } catch (final QName.IllegalQNameException e) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "Invalid name");
+        }
     }
 
     @Override
@@ -60,7 +65,11 @@ public class NamedNodeMapImpl implements NamedNodeMap {
 
     @Override
     public Node setNamedItem(final Node arg) throws DOMException {
-        return setNamedItem(new QName(arg.getNodeName()), arg);
+        try {
+            return setNamedItem(new QName(arg.getNodeName()), arg);
+        } catch (final QName.IllegalQNameException e) {
+        throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "Invalid name");
+        }
     }
 
     @Override
@@ -97,7 +106,11 @@ public class NamedNodeMapImpl implements NamedNodeMap {
 
     @Override
     public Node removeNamedItem(final String name) throws DOMException {
-        return removeNamedItem(new QName(name));
+        try {
+            return removeNamedItem(new QName(name));
+        } catch (final IllegalQNameException e) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "Invalid name");
+        }
     }
 
     @Override

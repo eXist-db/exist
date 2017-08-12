@@ -53,7 +53,11 @@ public class QNameValue extends AtomicValue {
             throw new XPathException(ErrorCodes.FORG0001, "An empty string is not a valid lexical representation of xs:QName.");
         }
 
-        qname = QName.parse(context, name, context.getURIForPrefix(""));
+        try {
+            qname = QName.parse(context, name, context.getURIForPrefix(""));
+        } catch (final QName.IllegalQNameException iqe) {
+            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + name);
+        }
         stringValue = computeStringValue();
     }
 

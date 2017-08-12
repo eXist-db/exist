@@ -219,31 +219,35 @@ public class NodePath implements Comparable<NodePath> {
             isAttribute = true;
             component = component.substring(1);
         }
-        String prefix = QName.extractPrefix(component);
-        final String localName = QName.extractLocalName(component);
-        String namespaceURI = null;
+        try {
+            String prefix = QName.extractPrefix(component);
+            final String localName = QName.extractLocalName(component);
+            String namespaceURI = null;
 
-        //TODO simplify this code (AR)
-        if (prefix != null) {
-            namespaceURI = namespaces.get(prefix);
-            if(namespaceURI == null) {
-                LOG.error("No namespace URI defined for prefix: " + prefix);
-                //TODO : throw exception ? -pb
-                prefix = null;
-                namespaceURI = "";
+            //TODO simplify this code (AR)
+            if (prefix != null) {
+                namespaceURI = namespaces.get(prefix);
+                if (namespaceURI == null) {
+                    LOG.error("No namespace URI defined for prefix: " + prefix);
+                    //TODO : throw exception ? -pb
+                    prefix = null;
+                    namespaceURI = "";
+                }
+            } else if (namespaces != null) {
+                namespaceURI = namespaces.get(XMLConstants.DEFAULT_NS_PREFIX);
             }
-        } else if (namespaces != null) {
-            namespaceURI = namespaces.get(XMLConstants.DEFAULT_NS_PREFIX);
-        }
 
-        final QName qn;
-        if (isAttribute) {
-            qn = new QName(localName, namespaceURI, prefix, ElementValue.ATTRIBUTE);
-        } else {
-            qn = new QName(localName, namespaceURI, prefix);
+            final QName qn;
+            if (isAttribute) {
+                qn = new QName(localName, namespaceURI, prefix, ElementValue.ATTRIBUTE);
+            } else {
+                qn = new QName(localName, namespaceURI, prefix);
+            }
+            LOG.debug("URI = " + qn.getNamespaceURI());
+            addComponent(qn);
+        } catch (final QName.IllegalQNameException e) {
+            throw new IllegalArgumentException(e);
         }
-        LOG.debug("URI = " + qn.getNamespaceURI());
-        addComponent(qn);
     }
 
     private void init(final Map<String, String> namespaces, final String path) {

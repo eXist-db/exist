@@ -63,17 +63,17 @@ public class QuantifiedExpression extends BindingExpression {
         return mode == SOME ? ClauseType.SOME : ClauseType.EVERY;
     }
 
-    /* (non-Javadoc)
-         * @see org.exist.xquery.BindingExpression#analyze(org.exist.xquery.Expression, int, org.exist.xquery.OrderSpec[])
-         */
+    @Override
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		final LocalVariable mark = context.markLocalVariables(false);
 		try {
 			context.declareVariableBinding(new LocalVariable(QName.parse(context, varName, null)));
-			
+
 			contextInfo.setParent(this);
 			inputSequence.analyze(contextInfo);
 			returnExpr.analyze(contextInfo);
+		} catch (final QName.IllegalQNameException e) {
+			throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + varName);
 		} finally {
 			context.popLocalVariables(mark);
 		}
@@ -91,7 +91,12 @@ public class QuantifiedExpression extends BindingExpression {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }        
         
-		final LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
+		final LocalVariable var;
+        try {
+			var = new LocalVariable(QName.parse(context, varName, null));
+		} catch (final QName.IllegalQNameException e) {
+			throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + varName);
+		}
         
 		final Sequence inSeq = inputSequence.eval(contextSequence, contextItem);
         if (sequenceType != null) {

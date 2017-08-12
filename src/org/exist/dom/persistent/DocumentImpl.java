@@ -24,6 +24,7 @@ package org.exist.dom.persistent;
 import org.exist.EXistException;
 import org.exist.Resource;
 import org.exist.dom.QName;
+import org.exist.dom.QName.IllegalQNameException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.memtree.DocumentFragmentImpl;
@@ -69,6 +70,7 @@ import java.io.EOFException;
 import java.io.IOException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.dom.QName.Validity.ILLEGAL_FORMAT;
 
 /**
  * Represents a persistent document object in the database;
@@ -834,12 +836,13 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         final QName qname;
         try {
             qname = new QName(name);
+        } catch (final IllegalQNameException e) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name is invalid");
+        }
 
-            // check the QName is valid for use
-            qname.isValid(false);
-
-        } catch (final XPathException e) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+        // check the QName is valid for use
+        if(qname.isValid(false) != QName.Validity.VALID.val) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name is invalid");
         }
 
         final AttrImpl attr = new AttrImpl(qname, getBrokerPool().getSymbols());
@@ -858,14 +861,25 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     @Override
     public Attr createAttributeNS(final String namespaceURI, final String qualifiedName) throws DOMException {
         final QName qname;
+
         try {
             qname = QName.parse(namespaceURI, qualifiedName);
+        } catch (final IllegalQNameException e) {
+            final short errCode;
+            if(e.getValidity() == ILLEGAL_FORMAT.val || (e.getValidity() & QName.Validity.INVALID_NAMESPACE.val) == QName.Validity.INVALID_NAMESPACE.val) {
+                errCode = DOMException.NAMESPACE_ERR;
+            } else {
+                errCode = DOMException.INVALID_CHARACTER_ERR;
+            }
+            throw new DOMException(errCode, "qualified name is invalid");
+        }
 
-            // check the QName is valid for use
-            qname.isValid(false);
-
-        } catch (final XPathException e) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+        // check the QName is valid for use
+        final byte validity = qname.isValid(false);
+        if((validity & QName.Validity.INVALID_LOCAL_PART.val) == QName.Validity.INVALID_LOCAL_PART.val) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "qualified name is invalid");
+        } else if((validity & QName.Validity.INVALID_NAMESPACE.val) == QName.Validity.INVALID_NAMESPACE.val) {
+            throw new DOMException(DOMException.NAMESPACE_ERR, "qualified name is invalid");
         }
 
         final AttrImpl attr = new AttrImpl(qname, getBrokerPool().getSymbols());
@@ -883,14 +897,16 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     @Override
     public Element createElement(final String tagName) throws DOMException {
         final QName qname;
+
         try {
             qname = new QName(tagName);
+        } catch (final IllegalQNameException e) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name is invalid");
+        }
 
-            // check the QName is valid for use
-            qname.isValid(false);
-
-        } catch (final XPathException e) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+        // check the QName is valid for use
+        if(qname.isValid(false) != QName.Validity.VALID.val) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name is invalid");
         }
 
         final ElementImpl element = new ElementImpl(qname, getBrokerPool().getSymbols());
@@ -911,12 +927,22 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         final QName qname;
         try {
             qname = QName.parse(namespaceURI, qualifiedName);
+        } catch (final IllegalQNameException e) {
+            final short errCode;
+            if(e.getValidity() == ILLEGAL_FORMAT.val || (e.getValidity() & QName.Validity.INVALID_NAMESPACE.val) == QName.Validity.INVALID_NAMESPACE.val) {
+                errCode = DOMException.NAMESPACE_ERR;
+            } else {
+                errCode = DOMException.INVALID_CHARACTER_ERR;
+            }
+            throw new DOMException(errCode, "qualified name is invalid");
+        }
 
-            // check the QName is valid for use
-            qname.isValid(false);
-
-        } catch (final XPathException e) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+        // check the QName is valid for use
+        final byte validity = qname.isValid(false);
+        if((validity & QName.Validity.INVALID_LOCAL_PART.val) == QName.Validity.INVALID_LOCAL_PART.val) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "qualified name is invalid");
+        } else if((validity & QName.Validity.INVALID_NAMESPACE.val) == QName.Validity.INVALID_NAMESPACE.val) {
+            throw new DOMException(DOMException.NAMESPACE_ERR, "qualified name is invalid");
         }
 
         final ElementImpl element = new ElementImpl(qname, getBrokerPool().getSymbols());
@@ -962,7 +988,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         if(tagname != null && tagname.equals(QName.WILDCARD)) {
             return getElementsByTagName(new QName.WildcardLocalPartQName(XMLConstants.DEFAULT_NS_PREFIX));
         } else {
-            return getElementsByTagName(new QName(tagname));
+            try {
+                return getElementsByTagName(new QName(tagname));
+            } catch (final IllegalQNameException e) {
+                throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name is invalid");
+            }
         }
     }
 

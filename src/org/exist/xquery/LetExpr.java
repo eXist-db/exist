@@ -44,10 +44,8 @@ public class LetExpr extends BindingExpression {
         return ClauseType.LET;
     }
 
-    /* (non-Javadoc)
-         * @see org.exist.xquery.BindingExpression#analyze(org.exist.xquery.Expression, int, org.exist.xquery.OrderSpec[])
-         */
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    @Override
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(contextInfo);
         //Save the local variable stack
         final LocalVariable mark = context.markLocalVariables(false);
@@ -64,6 +62,8 @@ public class LetExpr extends BindingExpression {
             context.setContextSequencePosition(0, null);
 
             returnExpr.analyze(contextInfo);
+        } catch (final QName.IllegalQNameException e) {
+            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + varName);
         } finally {
             // restore the local variable stack
             context.popLocalVariables(mark);

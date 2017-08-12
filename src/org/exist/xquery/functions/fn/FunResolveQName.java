@@ -48,6 +48,8 @@ import org.exist.xquery.value.Type;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import static org.exist.dom.QName.Validity.VALID;
+
 public class FunResolveQName extends BasicFunction {
 
     public final static FunctionSignature signature = 
@@ -92,53 +94,59 @@ public class FunResolveQName extends BasicFunction {
         } else {
         	context.pushInScopeNamespaces();        	        	
             final String qnameString = args[0].getStringValue();
-            if (QName.isQName(qnameString)) {
-                String prefix = QName.extractPrefix(qnameString);
+            if (QName.isQName(qnameString) == VALID.val) {
+                try {
+                    String prefix = QName.extractPrefix(qnameString);
 
-                if (prefix == null) {
-                    prefix = "";
-                }
-
-                String uri = null;
-
-                final NodeValue node = (NodeValue) args[1].itemAt(0);
-                if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                    NodeProxy proxy = (NodeProxy) node;
-                    final NodeSet ancestors = proxy.getAncestors(contextId, true);
-                    for (final Iterator<NodeProxy> i = ancestors.iterator(); i.hasNext();) {
-                        proxy = i.next();
-                        final ElementImpl e = (ElementImpl) proxy.getNode(); 
-                        uri = findNamespaceURI(e, prefix);
-                        if (uri != null) {
-                            break;
-                        }
+                    if (prefix == null) {
+                        prefix = "";
                     }
-                } else {
-                    NodeImpl next = (NodeImpl) node;
-                    do {
-                        uri = findNamespaceURI((org.exist.dom.memtree.ElementImpl) next, prefix);
-                        if (uri != null) {
-                            break;
-                        } else {
-                            next = (NodeImpl) next.getParentNode();
-                        }
-                    } while (next != null && next.getNodeType() == Node.ELEMENT_NODE);
-                }
 
-                if (uri == null && prefix != null && !"".equals(prefix)) {
-                    throw new XPathException(this, ErrorCodes.FONS0004, "No namespace found for prefix. No binding for prefix '" + prefix
-                                             + "' was found.", args[0]);
+                    String uri = null;
+
+                    final NodeValue node = (NodeValue) args[1].itemAt(0);
+                    if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                        NodeProxy proxy = (NodeProxy) node;
+                        final NodeSet ancestors = proxy.getAncestors(contextId, true);
+                        for (final Iterator<NodeProxy> i = ancestors.iterator(); i.hasNext(); ) {
+                            proxy = i.next();
+                            final ElementImpl e = (ElementImpl) proxy.getNode();
+                            uri = findNamespaceURI(e, prefix);
+                            if (uri != null) {
+                                break;
+                            }
+                        }
+                    } else {
+                        NodeImpl next = (NodeImpl) node;
+                        do {
+                            uri = findNamespaceURI((org.exist.dom.memtree.ElementImpl) next, prefix);
+                            if (uri != null) {
+                                break;
+                            } else {
+                                next = (NodeImpl) next.getParentNode();
+                            }
+                        } while (next != null && next.getNodeType() == Node.ELEMENT_NODE);
+                    }
+
+                    if (uri == null && prefix != null && !"".equals(prefix)) {
+                        throw new XPathException(this, ErrorCodes.FONS0004, "No namespace found for prefix. No binding for prefix '" + prefix
+                                + "' was found.", args[0]);
+                    }
+                    final String localPart = QName.extractLocalName(qnameString);
+                    final QName qn = new QName(localPart, uri, prefix);
+
+                    final QNameValue result = new QNameValue(context, qn);
+                    if (context.getProfiler().isEnabled()) {
+                        context.getProfiler().end(this, "", result);
+                    }
+
+                    context.popInScopeNamespaces();
+
+                    return result;
+                } catch (final QName.IllegalQNameException e) {
+                    throw new XPathException(this, ErrorCodes.FOCA0002, "Invalid lexical value. '" + qnameString
+                            + "' is not a QName.", args[0]);
                 }
-                final String localPart = QName.extractLocalName(qnameString);
-                final QName qn = new QName(localPart, uri, prefix);
-        
-                final QNameValue result = new QNameValue(context, qn);
-                if (context.getProfiler().isEnabled()) 
-                    {context.getProfiler().end(this, "", result);} 
-                
-                context.popInScopeNamespaces();
-          
-                return result;
             } else {
                 throw new XPathException(this, ErrorCodes.FOCA0002, "Invalid lexical value. '" + qnameString
                                          + "' is not a QName.", args[0]);

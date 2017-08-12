@@ -27,6 +27,7 @@ import java.util.*;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.exist.dom.QName;
+import org.exist.dom.QName.IllegalQNameException;
 import org.exist.dom.memtree.ReferenceNode;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CharacterData;
@@ -219,7 +220,11 @@ public class DOMStreamer {
                     }
                     attrLocalName = nextAttr.getLocalName();
                     if (attrLocalName == null) {
-                        attrLocalName = QName.extractLocalName(nextAttr.getNodeName());
+                        try {
+                            attrLocalName = QName.extractLocalName(nextAttr.getNodeName());
+                        } catch (final IllegalQNameException e) {
+                            throw new SAXException(e);
+                        }
                     }
                     saxAttrs.addAttribute(
                             attrNS,
@@ -231,7 +236,11 @@ public class DOMStreamer {
                 }
                 String localName = node.getLocalName();
                 if (localName == null) {
-                    localName = QName.extractLocalName(node.getNodeName());
+                    try {
+                        localName = QName.extractLocalName(node.getNodeName());
+                    } catch (final IllegalQNameException e) {
+                        throw new SAXException(e);
+                    }
                 }
                 String namespaceURI = node.getNamespaceURI();
                 if (namespaceURI == null) {
@@ -283,7 +292,11 @@ public class DOMStreamer {
             nsSupport.popContext();
             String localName = node.getLocalName();
             if (localName == null) {
-                localName = QName.extractLocalName(node.getNodeName());
+                try {
+                    localName = QName.extractLocalName(node.getNodeName());
+                } catch (final IllegalQNameException e) {
+                    throw new SAXException(e);
+                }
             }
             String namespaceURI = node.getNamespaceURI();
             if (namespaceURI == null) {

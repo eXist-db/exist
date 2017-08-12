@@ -10,6 +10,7 @@ import javax.xml.transform.TransformerException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
+import org.exist.dom.QName.IllegalQNameException;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.XMLWriter;
 
@@ -132,7 +133,11 @@ public class JSONWriter extends XMLWriter {
         } else if(useNSPrefix) {
             processStartElement(qname.replace(':', '_'), false);
         } else {
-            processStartElement(QName.extractLocalName(qname), false);
+            try {
+                processStartElement(QName.extractLocalName(qname), false);
+            } catch (final IllegalQNameException e) {
+                throw new TransformerException(e);
+            }
         }
     }
 

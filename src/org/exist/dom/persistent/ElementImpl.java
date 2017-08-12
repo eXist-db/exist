@@ -24,6 +24,7 @@ import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.dom.NamedNodeMapImpl;
 import org.exist.dom.QName;
+import org.exist.dom.QName.IllegalQNameException;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.StreamListener;
 import org.exist.indexing.StreamListener.ReindexMode;
@@ -42,7 +43,6 @@ import org.exist.util.UTF8;
 import org.exist.util.pool.NodePool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
-import org.exist.xquery.XPathException;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
@@ -72,6 +72,9 @@ import java.util.function.Function;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+
+import static org.exist.dom.QName.Validity.ILLEGAL_FORMAT;
+import static org.exist.dom.QName.Validity.INVALID_NAMESPACE;
 
 /**
  * ElementImpl.java
@@ -966,7 +969,11 @@ public class ElementImpl extends NamedNode implements Element {
         if(name != null && name.equals(QName.WILDCARD)) {
             return getElementsByTagName(new QName.WildcardLocalPartQName(XMLConstants.DEFAULT_NS_PREFIX));
         } else {
-            return getElementsByTagName(new QName(name));
+            try {
+                return getElementsByTagName(new QName(name));
+            } catch (final IllegalQNameException e) {
+                throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name is invalid");
+            }
         }
     }
 
@@ -1111,12 +1118,13 @@ public class ElementImpl extends NamedNode implements Element {
         final QName qname;
         try {
             qname = new QName(name);
+        } catch (final IllegalQNameException e) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name is invalid");
+        }
 
-            // check the QName is valid for use
-            qname.isValid(false);
-
-        } catch (final XPathException e) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+        // check the QName is valid for use
+        if(qname.isValid(false) != QName.Validity.VALID.val) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name is invalid");
         }
 
         setAttribute(qname, value, qn -> getAttributeNode(qn.getLocalPart()));
@@ -1127,12 +1135,22 @@ public class ElementImpl extends NamedNode implements Element {
         final QName qname;
         try {
             qname = QName.parse(namespaceURI, qualifiedName);
+        } catch (final IllegalQNameException e) {
+            final short errCode;
+            if(e.getValidity() == ILLEGAL_FORMAT.val || (e.getValidity() & QName.Validity.INVALID_NAMESPACE.val) == QName.Validity.INVALID_NAMESPACE.val) {
+                errCode = DOMException.NAMESPACE_ERR;
+            } else {
+                errCode = DOMException.INVALID_CHARACTER_ERR;
+            }
+            throw new DOMException(errCode, "qualified name is invalid");
+        }
 
-            // check the QName is valid for use
-            qname.isValid(false);
-
-        } catch (final XPathException e) {
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, e.getMessage());
+        // check the QName is valid for use
+        final byte validity = qname.isValid(false);
+        if((validity & QName.Validity.INVALID_LOCAL_PART.val) == QName.Validity.INVALID_LOCAL_PART.val) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "qualified name is invalid");
+        } else if((validity & QName.Validity.INVALID_NAMESPACE.val) == QName.Validity.INVALID_NAMESPACE.val) {
+            throw new DOMException(DOMException.NAMESPACE_ERR, "qualified name is invalid");
         }
 
         setAttribute(qname, value, qn -> getAttributeNodeNS(qn.getNamespaceURI(), qn.getLocalPart()));

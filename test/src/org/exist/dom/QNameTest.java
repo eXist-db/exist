@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import javax.xml.XMLConstants;
 
+import static org.exist.dom.QName.Validity.*;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -33,54 +34,64 @@ import static org.junit.Assert.assertEquals;
 public class QNameTest {
 
     @Test
-    public void validLocalPart_1() throws XPathException {
-        final QName qName = new QName("valid-name");
+    public void validLocalPart_1() {
+        final QName qName = new QName("valid-name", XMLConstants.NULL_NS_URI);
         assertEquals("valid-name", qName.getLocalPart());
         assertEquals(XMLConstants.NULL_NS_URI, qName.getNamespaceURI());
         assertEquals(null, qName.getPrefix());  //TODO(AR) should this be XMLConstants.DEFAULT_NS_PREFIX
-        qName.isValid(false);
-    }
-
-    @Test(expected = XPathException.class)
-    public void invalidLocalPart_1() throws XPathException {
-       new QName("invalid^Name")
-               .isValid(false);
-    }
-
-    @Test(expected = XPathException.class)
-    public void invalidLocalPart_validNamespace_1() throws XPathException {
-        new QName("invalid^Name", "http://some/ns")
-                .isValid(false);
+        assertEquals(VALID.val, qName.isValid(false));
     }
 
     @Test
-    public void validWildcard_1() throws XPathException {
-        final QName qName = new QName.WildcardLocalPartQName("abc");
-        qName.isValid(true);
-    }
-
-    @Test(expected = XPathException.class)
-    public void invalidWildcard_1() throws XPathException {
-        final QName qName = new QName.WildcardLocalPartQName("abc");
-        qName.isValid(false);
+    public void invalidLocalPart_1() {
+        final QName qname = new QName("invalid^Name", XMLConstants.NULL_NS_URI);
+        assertEquals(INVALID_LOCAL_PART.val, qname.isValid(false));
     }
 
     @Test
-    public void validWildcard_2() throws XPathException {
+    public void invalidLocalPart_validNamespace_1() {
+        final QName qname = new QName("invalid^Name", "http://some/ns");
+        assertEquals(INVALID_LOCAL_PART.val, qname.isValid(false));
+    }
+
+    @Test
+    public void validWildcard_1() {
+        final QName qName = new QName.WildcardLocalPartQName("abc");
+        assertEquals(VALID.val, qName.isValid(true));
+    }
+
+    @Test
+    public void invalidWildcard_1() {
+        final QName qName = new QName.WildcardLocalPartQName("abc");
+        assertEquals(INVALID_LOCAL_PART.val, qName.isValid(false));
+    }
+
+    @Test
+    public void validWildcard_2() {
         final QName qName = new QName.WildcardNamespaceURIQName("xyz");
-        qName.isValid(true);
+        assertEquals(VALID.val, qName.isValid(true));
     }
 
     @Test
-    public void validWildcard_3() throws XPathException {
+    public void validWildcard_3() {
         final QName qName = QName.WildcardQName.getInstance();
-        qName.isValid(true);
+        assertEquals(VALID.val, qName.isValid(true));
     }
 
-    @Test(expected = XPathException.class)
-    public void invalidWildcard_3() throws XPathException {
+    @Test
+    public void invalidWildcard_3() {
         final QName qName = QName.WildcardQName.getInstance();
-        qName.isValid(false);
+        assertEquals(INVALID_LOCAL_PART.val ^ INVALID_PREFIX.val, qName.isValid(false));
+    }
+
+    @Test
+    public void isQName_illegalFormat1() {
+        assertEquals(ILLEGAL_FORMAT.val, QName.isQName("emp:"));
+    }
+
+    @Test
+    public void isQName_illegalFormat2() {
+        assertEquals(ILLEGAL_FORMAT.val, QName.isQName(":emp"));
     }
 }
 

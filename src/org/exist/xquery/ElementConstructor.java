@@ -92,7 +92,11 @@ public class ElementConstructor extends NodeConstructor {
             if(XMLConstants.XMLNS_ATTRIBUTE.equals(attr.getQName())) {
                 addNamespaceDecl("", attr.getLiteralValue());
             } else {
-                addNamespaceDecl(QName.extractLocalName(attr.getQName()), attr.getLiteralValue());
+                try {
+                    addNamespaceDecl(QName.extractLocalName(attr.getQName()), attr.getLiteralValue());
+                } catch (final QName.IllegalQNameException e) {
+                    throw new XPathException(ErrorCodes.XPST0081, "Invalid qname " + attr.getQName());
+                }
             }
         } else  if(attributes == null) {
             attributes = new AttributeConstructor[1];
@@ -219,7 +223,12 @@ public class ElementConstructor extends NodeConstructor {
                     context.proceed(this, builder);
                     final AttributeConstructor constructor = attributes[i];
                     final Sequence attrValues = constructor.eval(contextSequence, contextItem);
-                    QName attrQName = QName.parse(context, constructor.getQName(), XMLConstants.NULL_NS_URI);
+                    QName attrQName;
+                    try {
+                        attrQName = QName.parse(context, constructor.getQName(), XMLConstants.NULL_NS_URI);
+                    } catch (final QName.IllegalQNameException e) {
+                        throw new XPathException(this, ErrorCodes.XPTY0004, "'" + constructor.getQName() + "' is not a valid attribute name");
+                    }
                     
                     final String namespaceURI = attrQName.getNamespaceURI();
             		if (namespaceURI != null && !namespaceURI.isEmpty() && attrQName.getPrefix() == null) {
@@ -270,8 +279,8 @@ public class ElementConstructor extends NodeConstructor {
                 //Do we have the same result than Atomize there ? -pb
             	try {
             		qn = QName.parse(context, qnitem.getStringValue());
-            	} catch (final IllegalArgumentException e) {
-        			throw new XPathException(this, ErrorCodes.XPTY0004, "" + qnitem.getStringValue() + "' is not a valid element name");
+            	} catch (final QName.IllegalQNameException e) {
+        			throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qnitem.getStringValue() + "' is not a valid element name");
             	} catch (final XPathException e) {
             		e.setLocation(getLine(), getColumn(), getSource());
             		throw e;

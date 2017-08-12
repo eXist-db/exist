@@ -23,6 +23,7 @@ package org.exist.util.serializer;
 
 import org.exist.dom.QName;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 import java.nio.CharBuffer;
@@ -47,7 +48,7 @@ public class MicroXmlWriter extends IndentingXMLWriter {
     }
 
     private QName removePrefix(final QName qname) {
-        return new QName(qname.getLocalPart());
+        return new QName(qname.getLocalPart(),  XMLConstants.NULL_NS_URI);
     }
 
     private CharSequence removeRestrictedChars(final CharSequence charSeq) {

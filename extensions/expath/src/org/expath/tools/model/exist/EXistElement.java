@@ -201,7 +201,7 @@ public class EXistElement implements Element {
             final org.exist.dom.QName qn = org.exist.dom.QName.parse(context, value, element.getQName().getNamespaceURI());
             return qn.toJavaQName();
         }
-        catch ( final XPathException ex ) {
+        catch ( final org.exist.dom.QName.IllegalQNameException ex ) {
             throw new ToolsException("Error parsing the literal QName: " + value, ex);
         }
     }

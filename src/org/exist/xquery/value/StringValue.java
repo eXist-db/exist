@@ -30,9 +30,12 @@ import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
+import javax.xml.XMLConstants;
 import java.text.Collator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.exist.dom.QName.Validity.VALID;
 
 public class StringValue extends AtomicValue {
 
@@ -362,7 +365,7 @@ public class StringValue extends AtomicValue {
                 }
                 return;
             case Type.NAME:
-                if (!QName.isQName(value)) {
+                if (QName.isQName(value) != VALID.val) {
                     throw new XPathException("Type error: string " + value + " is not a valid xs:Name");
                 }
                 return;
@@ -506,7 +509,7 @@ public class StringValue extends AtomicValue {
             case Type.UNTYPED_ATOMIC:
                 return new UntypedAtomicValue(getStringValue());
             case Type.QNAME:
-                return new QNameValue(null, new QName(value));
+                return new QNameValue(null, new QName(value, XMLConstants.NULL_NS_URI));
             default:
                 throw new XPathException(ErrorCodes.FORG0001, "cannot cast '" +
                         Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +

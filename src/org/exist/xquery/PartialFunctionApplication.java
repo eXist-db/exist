@@ -11,6 +11,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import javax.xml.XMLConstants;
+
 public class PartialFunctionApplication extends AbstractExpression {
 
 	public final static String PARTIAL_FUN_PREFIX = "partial";
@@ -73,7 +75,7 @@ public class PartialFunctionApplication extends AbstractExpression {
 					// overloaded function: add last sequence type
 					{newParamTypes.add(paramTypes[paramTypes.length - 1]);}
 				// create local parameter variables
-				final QName varName = new QName("vp" + i);
+				final QName varName = new QName("vp" + i, XMLConstants.NULL_NS_URI);
 				variables.add(varName);
 				// the argument to the inner call is a variable ref
 				final VariableReference ref = new VariableReference(context, varName);
@@ -95,7 +97,7 @@ public class PartialFunctionApplication extends AbstractExpression {
 			}
 		}
 		final SequenceType[] newParamArray = newParamTypes.toArray(new SequenceType[newParamTypes.size()]);
-		final QName name = new QName(PARTIAL_FUN_PREFIX + hashCode());
+		final QName name = new QName(PARTIAL_FUN_PREFIX + hashCode(), XMLConstants.NULL_NS_URI);
 		final FunctionSignature newSignature = new FunctionSignature(name, newParamArray, signature.getReturnType());
 		final UserDefinedFunction func = new UserDefinedFunction(context, newSignature);
 		func.setLocation(staticCall.getLine(), staticCall.getColumn());

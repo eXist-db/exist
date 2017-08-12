@@ -20,6 +20,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.QName;
+import org.exist.dom.QName.IllegalQNameException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Item;
@@ -49,9 +50,13 @@ public class ArrowOperator extends AbstractExpression {
     }
 
     public void setArrowFunction(final String fname, final List<Expression> params) throws XPathException {
-        final QName name = QName.parse(context, fname, context.getDefaultFunctionNamespace());
-        this.fcall = NamedFunctionReference.lookupFunction(this, context, name, params.size() + 1);
-        this.parameters = params;
+        try {
+            final QName name = QName.parse(context, fname, context.getDefaultFunctionNamespace());
+            this.fcall = NamedFunctionReference.lookupFunction(this, context, name, params.size() + 1);
+            this.parameters = params;
+        } catch (final IllegalQNameException e) {
+            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + fname);
+        }
     }
 
     public void setArrowFunction(final PathExpr funcSpec, final List<Expression> params) {

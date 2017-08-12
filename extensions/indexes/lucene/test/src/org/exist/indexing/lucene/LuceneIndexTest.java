@@ -253,7 +253,7 @@ public class LuceneIndexTest {
     private Boolean savedConfig;
 
     @Test
-    public void simpleQueries() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
+    public void simpleQueries() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, LockException, IOException, XPathException, QName.IllegalQNameException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML1, "test.xml");
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -294,7 +294,7 @@ public class LuceneIndexTest {
     }
 
     @Test
-    public void configuration() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
+    public void configuration() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, LockException, IOException, XPathException, QName.IllegalQNameException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG4, XML4, "test.xml");
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -319,7 +319,7 @@ public class LuceneIndexTest {
     }
 
     @Test
-    public void inlineAndIgnore() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
+    public void inlineAndIgnore() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, LockException, IOException, XPathException, QName.IllegalQNameException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG5, XML5, "test.xml");
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -614,7 +614,7 @@ public class LuceneIndexTest {
     }
 
     @Test
-    public void analyzers() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
+    public void analyzers() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, LockException, IOException, XPathException, QName.IllegalQNameException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG3, XML3, "test.xml");
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -743,7 +743,7 @@ public class LuceneIndexTest {
     }
 
     @Test
-    public void reindex() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException {
+    public void reindex() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, LockException, IOException, QName.IllegalQNameException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML1, "dropDocument.xml");
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -767,7 +767,7 @@ public class LuceneIndexTest {
      * correctly updated.
      */
     @Test
-    public void xupdateRemove() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException, ParserConfigurationException {
+    public void xupdateRemove() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, LockException, IOException, XPathException, ParserConfigurationException, QName.IllegalQNameException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -846,7 +846,7 @@ public class LuceneIndexTest {
      * correctly updated.
      */
     @Test
-    public void xupdateInsert() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException, ParserConfigurationException {
+    public void xupdateInsert() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, LockException, IOException, XPathException, ParserConfigurationException, QName.IllegalQNameException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -1011,7 +1011,7 @@ public class LuceneIndexTest {
     }
 
     @Test
-    public void xupdateUpdate() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException, ParserConfigurationException {
+    public void xupdateUpdate() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, LockException, IOException, XPathException, ParserConfigurationException, QName.IllegalQNameException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -1089,7 +1089,7 @@ public class LuceneIndexTest {
     }
 
     @Test
-    public void xupdateReplace() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException, ParserConfigurationException {
+    public void xupdateReplace() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, LockException, IOException, XPathException, ParserConfigurationException, QName.IllegalQNameException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();

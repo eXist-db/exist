@@ -13,6 +13,8 @@ import org.exist.xquery.value.ValueSequence;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
+import javax.xml.XMLConstants;
+
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertEquals;
 
@@ -156,8 +158,8 @@ public class IntersectTest {
     private Document createInMemoryDocument() {
         final MemTreeBuilder memtree = new MemTreeBuilder();
         memtree.startDocument();
-            memtree.startElement(new QName("m1"), null);
-                memtree.startElement(new QName("m2"), null);
+            memtree.startElement(new QName("m1", XMLConstants.NULL_NS_URI), null);
+                memtree.startElement(new QName("m2", XMLConstants.NULL_NS_URI), null);
                     memtree.characters("test data");
                 memtree.endElement();
             memtree.endElement();
