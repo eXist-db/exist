@@ -38,6 +38,7 @@ import org.junit.Test;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,9 +54,10 @@ public class CleanupTest {
 
     private final static String MODULE_NS = "http://exist-db.org/test";
 
-    private final static String TEST_MODULE = "module namespace t=\"" + MODULE_NS + "\";" +
-            "declare variable $t:VAR := 123;" +
-            "declare function t:test($a) { $a };" +
+    private final static String TEST_MODULE = "module namespace t=\"" + MODULE_NS + "\";\n" +
+            "declare variable $t:VAR := 123;\n" +
+            "declare variable $t:VAR2 := 456;\n" +
+            "declare function t:test($a) { $a || $t:VAR };\n" +
             "declare function t:inline($a) { function() { $a } };";
 
     private final static String TEST_QUERY = "import module namespace t=\"" + MODULE_NS + "\" at " +
@@ -97,7 +99,9 @@ public class CleanupTest {
 
         final Module module = ((PathExpr) compiled).getContext().getModule(MODULE_NS);
         final java.util.Collection<VariableDeclaration> varDecls = ((ExternalModule) module).getVariableDeclarations();
-        final VariableDeclaration var = varDecls.iterator().next();
+        final Iterator<VariableDeclaration> vi = varDecls.iterator();
+        final VariableDeclaration var1 = vi.next();
+        final VariableDeclaration var2 = vi.next();
         final FunctionCall root = (FunctionCall) ((PathExpr) compiled).getFirst();
         final UserDefinedFunction calledFunc = root.getFunction();
         final Expression calledBody = calledFunc.getFunctionBody();
@@ -105,18 +109,20 @@ public class CleanupTest {
         // set some property so we can test if it gets cleared
         calledFunc.setContextDocSet(DocumentSet.EMPTY_DOCUMENT_SET);
         calledBody.setContextDocSet(DocumentSet.EMPTY_DOCUMENT_SET);
-        var.setContextDocSet(DocumentSet.EMPTY_DOCUMENT_SET);
+        var1.setContextDocSet(DocumentSet.EMPTY_DOCUMENT_SET);
+        var2.setContextDocSet(DocumentSet.EMPTY_DOCUMENT_SET);
 
         // execute query and check result
         final ResourceSet result = service.execute(compiled);
         assertEquals(result.getSize(), 1);
-        assertEquals(result.getResource(0).getContent(), "Hello world");
+        assertEquals(result.getResource(0).getContent(), "Hello world123");
 
         Sequence[] args = calledFunc.getCurrentArguments();
         assertNull(args);
         assertNull(calledFunc.getContextDocSet());
         assertNull(calledBody.getContextDocSet());
-        assertNull(var.getContextDocSet());
+        assertNull(var1.getContextDocSet());
+        assertNull(var2.getContextDocSet());
     }
 
     @Test

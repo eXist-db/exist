@@ -226,7 +226,6 @@ public class ModuleContext extends XQueryContext {
 	}
 	
 	protected void setRootModule(String namespaceURI, Module module) {
-		allModules.put(namespaceURI, module);
 		parentContext.setRootModule(namespaceURI, module);
 	}
 
@@ -235,46 +234,12 @@ public class ModuleContext extends XQueryContext {
 	}
 	
 	public Iterator<Module> getAllModules() {
-		return allModules.values().iterator();
+		return parentContext.getAllModules();
 	}
 	
 	public Module getRootModule(String namespaceURI) {
 		return parentContext.getRootModule(namespaceURI);
 	}
-	
-    /**
-     * Overwritten method: the module will be loaded by the parent context, but
-     * we need to declare its namespace in the module context. 
-     */
-    public Module loadBuiltInModule(String namespaceURI, String moduleClass) {
-        Module module = getModule(namespaceURI);
-        if (module == null)
-            {module = initBuiltInModule(namespaceURI, moduleClass);}
-        if (module != null) {
-            try {
-            	final String defaultPrefix = module.getDefaultPrefix();
-            	if (!"".equals(defaultPrefix))
-            		{declareNamespace(defaultPrefix, module.getNamespaceURI());}
-            } catch (final XPathException e) {
-                LOG.warn("error while loading builtin module class " + moduleClass, e);
-            }
-        }
-        return module;
-    }
-
-    public void updateModuleRefs(XQueryContext rootContext) {
-        HashMap<String, Module> newModules = new HashMap<String, Module>(modules.size());
-        for (Module module : modules.values()) {
-            if (module.isInternalModule()) {
-                Module updated = rootContext.getModule(module.getNamespaceURI());
-                if (updated == null)
-                    {updated = module;}
-                newModules.put(module.getNamespaceURI(), updated);
-            } else
-                {newModules.put(module.getNamespaceURI(), module);}
-        }
-        modules = newModules;
-    }
     
     @Override
     final protected XPathException moduleLoadException(final String message, final String moduleLocation) throws XPathException {
