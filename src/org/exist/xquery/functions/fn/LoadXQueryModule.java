@@ -23,13 +23,13 @@ package org.exist.xquery.functions.fn;
 import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
+import org.exist.xquery.Module;
 import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.*;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * Implements fn:load-xquery-module. Creates a temporary context for the imported module, so the

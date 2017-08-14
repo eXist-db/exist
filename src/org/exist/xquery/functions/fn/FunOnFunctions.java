@@ -2,6 +2,7 @@ package org.exist.xquery.functions.fn;
 
 import org.exist.dom.QName;
 import org.exist.xquery.*;
+import org.exist.xquery.Module;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.FunctionReturnSequenceType;

@@ -3,6 +3,7 @@ package org.exist.xquery.functions.inspect;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.*;
+import org.exist.xquery.Module;
 import org.exist.xquery.value.*;
 import org.exist.xquery.xqdoc.XQDocHelper;
 import org.xml.sax.helpers.AttributesImpl;
