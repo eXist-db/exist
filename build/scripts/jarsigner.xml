@@ -21,6 +21,9 @@
 <project name="Sign eXist jarfiles" default="jnlp-all" basedir="../..">
     
     <description>Sign jarfiles for eXist webstart application</description>
+
+    <property file="${basedir}/build.properties" />
+    <property file="${basedir}/local.build.properties" />
     
     <!-- Check wether the keystore already exists -->
     <available file="${keystore.file}" property="keystore.present"/>
