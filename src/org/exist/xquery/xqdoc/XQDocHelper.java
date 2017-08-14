@@ -21,29 +21,31 @@ import java.util.Map;
  */
 public class XQDocHelper {
 
-    public static void parse(FunctionSignature signature) {
+    public static void parse(final FunctionSignature signature) {
         final String desc = signature.getDescription();
         if (desc == null || !desc.startsWith("(:")) {
             return;
         }
         final XQDocHelper helper = parseComment(desc);
-        if (helper == null)
-            {return;}
+        if (helper == null) {
+            return;
+        }
         helper.enhance(signature);
     }
 
-    public static void parse(ExternalModule module) {
+    public static void parse(final ExternalModule module) {
         final String desc = module.getDescription();
         if (desc == null || !desc.startsWith("(:")) {
             return;
         }
         final XQDocHelper helper = parseComment(desc);
-        if (helper == null)
-            {return;}
+        if (helper == null) {
+            return;
+        }
         helper.enhance(module);
     }
 
-    private static XQDocHelper parseComment(String desc) {
+    private static XQDocHelper parseComment(final String desc) {
         final XQDocLexer lexer = new XQDocLexer(new StringReader(desc));
         final XQDocParser parser = new XQDocParser(lexer);
         try {
@@ -59,39 +61,37 @@ public class XQDocHelper {
     }
 
     private StringBuilder description = new StringBuilder();
-    private Map<String, String> parameters = new HashMap<String, String>();
+    private Map<String, String> parameters = new HashMap<>();
     private String returnValue = null;
-    private Map<String, String> meta = new HashMap<String, String>();
+    private Map<String, String> meta = new HashMap<>();
 
-    public XQDocHelper() {
+    public void addDescription(final CharSequence part) {
+        description.append(part.toString().trim());
     }
 
-    public void addDescription(CharSequence part) {
-        description.append(part);
-    }
-
-    public void setParameter(String comment) {
+    public void setParameter(final String comment) {
         final String components[] = comment.trim().split("\\s+", 2);
         if(components != null && components.length == 2) {
             String var = components[0];
-            if (var.length() > 0 && var.charAt(0) == '$')
-                {var = var.substring(1);}
-            parameters.put(var, components[1]);
+            if (var.length() > 0 && var.charAt(0) == '$') {
+                var = var.substring(1);
+            }
+            parameters.put(var, components[1].trim());
         }
     }
 
-    public void setTag(String tag, String content) {
+    public void setTag(final String tag, final String content) {
         if ("@param".equals(tag)) {
-            setParameter(content);
+            setParameter(content.trim());
         } else if ("@return".equals(tag)) {
-            returnValue = content;
+            returnValue = content.trim();
         } else {
             meta.put(tag, content);
         }
     }
 
-    protected void enhance(FunctionSignature signature) {
-        signature.setDescription(description.toString());
+    protected void enhance(final FunctionSignature signature) {
+        signature.setDescription(description.toString().trim());
         if (returnValue != null) {
             final SequenceType returnType = signature.getReturnType();
             final FunctionReturnSequenceType newType =
@@ -109,25 +109,28 @@ public class XQDocHelper {
         }
         for (final Map.Entry<String, String> entry: meta.entrySet()) {
             String key = entry.getKey();
-            if (key.length() > 1 && key.charAt(0) == '@')
-                {key = key.substring(1);}
+            if (key.length() > 1 && key.charAt(0) == '@') {
+                key = key.substring(1);
+            }
             signature.addMetadata(key, entry.getValue());
         }
     }
 
-    protected void enhance(ExternalModule module) {
-        module.setDescription(description.toString());
+    protected void enhance(final ExternalModule module) {
+        module.setDescription(description.toString().trim());
         for (final Map.Entry<String, String> entry: meta.entrySet()) {
             String key = entry.getKey();
-            if (key.length() > 1 && key.charAt(0) == '@')
-                {key = key.substring(1);}
+            if (key.length() > 1 && key.charAt(0) == '@') {
+                key = key.substring(1);
+            }
             module.addMetadata(key, entry.getValue());
         }
     }
 
+    @Override
     public String toString() {
         final StringBuilder out = new StringBuilder();
-        out.append(description).append("\n\n");
+        out.append(description.toString().trim()).append("\n\n");
         for (final Map.Entry<String, String> entry : meta.entrySet()) {
             out.append(String.format("%20s\t%s\n", entry.getKey(), entry.getValue()));
         }
