@@ -38,10 +38,12 @@ import org.junit.Test;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNull;
 
 /**
@@ -53,9 +55,10 @@ public class CleanupTest {
 
     private final static String MODULE_NS = "http://exist-db.org/test";
 
-    private final static String TEST_MODULE = "module namespace t=\"" + MODULE_NS + "\";" +
-            "declare variable $t:VAR := 123;" +
-            "declare function t:test($a) { $a };" +
+    private final static String TEST_MODULE = "module namespace t=\"" + MODULE_NS + "\";\n" +
+            "declare variable $t:VAR := 123;\n" +
+            "declare variable $t:VAR2 := 456;\n" +
+            "declare function t:test($a) { $a || $t:VAR };\n" +
             "declare function t:inline($a) { function() { $a } };";
 
     private final static String TEST_QUERY = "import module namespace t=\"" + MODULE_NS + "\" at " +
@@ -66,6 +69,15 @@ public class CleanupTest {
             "let $func := function() { $a }\n" +
             "return\n" +
             "   $func";
+
+    private final static String INTERNAL_MODULE_TEST = "import module namespace tt=\"" + MODULE_NS + "\" at " +
+            "\"java:org.exist.xquery.TestModule\";" +
+            "tt:test()";
+
+    private final static String INTERNAL_MODULE_EVAL_TEST = "import module namespace tt=\"" + MODULE_NS + "\" at " +
+            "\"java:org.exist.xquery.TestModule\";" +
+            "util:eval('123')," +
+            "tt:test()";
 
     private Collection collection;
 
@@ -97,7 +109,9 @@ public class CleanupTest {
 
         final Module module = ((PathExpr) compiled).getContext().getModule(MODULE_NS);
         final java.util.Collection<VariableDeclaration> varDecls = ((ExternalModule) module).getVariableDeclarations();
-        final VariableDeclaration var = varDecls.iterator().next();
+        final Iterator<VariableDeclaration> vi = varDecls.iterator();
+        final VariableDeclaration var1 = vi.next();
+        final VariableDeclaration var2 = vi.next();
         final FunctionCall root = (FunctionCall) ((PathExpr) compiled).getFirst();
         final UserDefinedFunction calledFunc = root.getFunction();
         final Expression calledBody = calledFunc.getFunctionBody();
@@ -105,18 +119,20 @@ public class CleanupTest {
         // set some property so we can test if it gets cleared
         calledFunc.setContextDocSet(DocumentSet.EMPTY_DOCUMENT_SET);
         calledBody.setContextDocSet(DocumentSet.EMPTY_DOCUMENT_SET);
-        var.setContextDocSet(DocumentSet.EMPTY_DOCUMENT_SET);
+        var1.setContextDocSet(DocumentSet.EMPTY_DOCUMENT_SET);
+        var2.setContextDocSet(DocumentSet.EMPTY_DOCUMENT_SET);
 
         // execute query and check result
         final ResourceSet result = service.execute(compiled);
         assertEquals(result.getSize(), 1);
-        assertEquals(result.getResource(0).getContent(), "Hello world");
+        assertEquals(result.getResource(0).getContent(), "Hello world123");
 
         Sequence[] args = calledFunc.getCurrentArguments();
         assertNull(args);
         assertNull(calledFunc.getContextDocSet());
         assertNull(calledBody.getContextDocSet());
-        assertNull(var.getContextDocSet());
+        assertNull(var1.getContextDocSet());
+        assertNull(var2.getContextDocSet());
     }
 
     @Test
@@ -133,4 +149,38 @@ public class CleanupTest {
             assertNull(closure);
         }
     }
+
+    @Test
+    public void preserveExternalVariable() throws XMLDBException, XPathException {
+        // see https://github.com/eXist-db/exist/pull/1512 and use of util:eval
+        final XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
+
+        final CompiledExpression compiled = service.compile(INTERNAL_MODULE_EVAL_TEST);
+        final Module module = ((PathExpr) compiled).getContext().getModule(MODULE_NS);
+        module.declareVariable(new QName("VAR", MODULE_NS, "t"), "TEST");
+
+        final ResourceSet result = service.execute(compiled);
+        assertEquals(result.getSize(), 2);
+        assertEquals(result.getResource(1).getContent(), "TEST");
+
+        final Variable var = module.resolveVariable(new QName("VAR", MODULE_NS, "t"));
+        assertNull(var);
+    }
+
+    @Test
+    public void resetStateofInternalModule() throws XMLDBException, XPathException {
+        final XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
+
+        final CompiledExpression compiled = service.compile(INTERNAL_MODULE_TEST);
+        final Module module = ((PathExpr) compiled).getContext().getModule(MODULE_NS);
+        module.declareVariable(new QName("VAR", MODULE_NS, "t"), "TEST");
+        final InternalFunctionCall root = (InternalFunctionCall) ((PathExpr) compiled).getFirst();
+        final TestModule.TestFunction func = (TestModule.TestFunction) root.getFunction();
+
+        final ResourceSet result = service.execute(compiled);
+        assertEquals(result.getSize(), 1);
+        assertEquals(result.getResource(0).getContent(), "TEST");
+        assertFalse(func.dummyProperty);
+    }
+
 }
