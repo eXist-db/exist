@@ -1,5 +1,7 @@
 package org.exist.util.io;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Arrays;
 import org.junit.runner.RunWith;
@@ -11,6 +13,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Random;
+
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
@@ -790,6 +794,42 @@ public class CachingFilterInputStreamTest {
         }
     }
 
+    @Test
+    public void tika116_like() throws IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        final byte testData[] = generateRandomBytes(2149);//Files.readAllBytes(Paths.get("/tmp/test2.pdf"));
+
+        final InputStream is = new ByteArrayInputStream(testData);
+
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        cfis.mark(0);
+
+        // Now do as Apache Tika 1.16 does...
+        cfis.mark(8);
+        int b = cfis.read();
+        assertEquals(testData[0], (byte)b);
+
+        cfis.reset();
+        cfis.mark(1024);
+        final byte[] buf1 = new byte[1024];
+        int read = cfis.read(buf1);
+        assertEquals(1024, read);
+        assertArrayEquals(subArray(testData, 1024), buf1);
+
+        cfis.reset();
+        cfis.mark(4);
+        b = cfis.read();
+        assertEquals(testData[0], (byte)b);
+
+        cfis.reset();
+        cfis.mark(65536);
+        final byte[] buf2 = new byte[65536];
+        read = cfis.read(buf2);
+        assertEquals(2149, read);
+        assertArrayEquals(subArray(testData, 2149), subArray(buf2, 2149));
+
+        cfis.reset();
+    }
+
     private byte[] subArray(byte data[], int len) {
         byte newData[] = new byte[len];
         System.arraycopy(data, 0, newData, 0, len);
@@ -800,5 +840,12 @@ public class CachingFilterInputStreamTest {
         byte newData[] = new byte[len];
         System.arraycopy(data, offset, newData, 0, len);
         return newData;
+    }
+
+    private byte[] generateRandomBytes(final int len) {
+        final byte bytes[] = new byte[len];
+        final Random random = new Random();
+        random.nextBytes(bytes);
+        return bytes;
     }
 }
