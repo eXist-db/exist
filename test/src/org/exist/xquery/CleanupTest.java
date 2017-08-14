@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNull;
 
 /**
@@ -68,6 +69,15 @@ public class CleanupTest {
             "let $func := function() { $a }\n" +
             "return\n" +
             "   $func";
+
+    private final static String INTERNAL_MODULE_TEST = "import module namespace tt=\"" + MODULE_NS + "\" at " +
+            "\"java:org.exist.xquery.TestModule\";" +
+            "tt:test()";
+
+    private final static String INTERNAL_MODULE_EVAL_TEST = "import module namespace tt=\"" + MODULE_NS + "\" at " +
+            "\"java:org.exist.xquery.TestModule\";" +
+            "util:eval('123')," +
+            "tt:test()";
 
     private Collection collection;
 
@@ -139,4 +149,38 @@ public class CleanupTest {
             assertNull(closure);
         }
     }
+
+    @Test
+    public void preserveExternalVariable() throws XMLDBException, XPathException {
+        // see https://github.com/eXist-db/exist/pull/1512 and use of util:eval
+        final XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
+
+        final CompiledExpression compiled = service.compile(INTERNAL_MODULE_EVAL_TEST);
+        final Module module = ((PathExpr) compiled).getContext().getModule(MODULE_NS);
+        module.declareVariable(new QName("VAR", MODULE_NS, "t"), "TEST");
+
+        final ResourceSet result = service.execute(compiled);
+        assertEquals(result.getSize(), 2);
+        assertEquals(result.getResource(1).getContent(), "TEST");
+
+        final Variable var = module.resolveVariable(new QName("VAR", MODULE_NS, "t"));
+        assertNull(var);
+    }
+
+    @Test
+    public void resetStateofInternalModule() throws XMLDBException, XPathException {
+        final XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
+
+        final CompiledExpression compiled = service.compile(INTERNAL_MODULE_TEST);
+        final Module module = ((PathExpr) compiled).getContext().getModule(MODULE_NS);
+        module.declareVariable(new QName("VAR", MODULE_NS, "t"), "TEST");
+        final InternalFunctionCall root = (InternalFunctionCall) ((PathExpr) compiled).getFirst();
+        final TestModule.TestFunction func = (TestModule.TestFunction) root.getFunction();
+
+        final ResourceSet result = service.execute(compiled);
+        assertEquals(result.getSize(), 1);
+        assertEquals(result.getResource(0).getContent(), "TEST");
+        assertFalse(func.dummyProperty);
+    }
+
 }
