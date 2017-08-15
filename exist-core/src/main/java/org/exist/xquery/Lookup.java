@@ -145,8 +145,8 @@ public class Lookup extends AbstractExpression {
 
     public interface LookupSupport {
 
-        public Sequence get(AtomicValue key) throws XPathException;
+        Sequence get(AtomicValue key) throws XPathException;
 
-        public Sequence keys() throws XPathException;
+        Sequence keys() throws XPathException;
     }
 }

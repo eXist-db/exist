@@ -407,6 +407,12 @@
         </dependency>
 
         <dependency>
+            <groupId>io.usethesource</groupId>
+            <artifactId>capsule</artifactId>
+            <version>0.6.3</version>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>compile</scope>
@@ -526,6 +532,13 @@
         </dependency>
 
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>usethesource</id>
+            <url>http://nexus.usethesource.io/content/repositories/public/</url>
+        </repository>
+    </repositories>
 
     <build>
 
