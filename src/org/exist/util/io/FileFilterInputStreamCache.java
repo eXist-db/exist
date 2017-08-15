@@ -105,7 +105,9 @@ public class FileFilterInputStreamCache extends AbstractFilterInputStreamCache {
             raf.seek(off);
             this.offset = off;
         }
-        return raf.readByte();
+        final byte b = raf.readByte();
+        this.offset++;
+        return b;
     }
 
     @Override
@@ -115,6 +117,7 @@ public class FileFilterInputStreamCache extends AbstractFilterInputStreamCache {
             this.offset = cacheOffset;
         }
         raf.readFully(b, off, len);
+        this.offset += len;
     }
 
     @Override
