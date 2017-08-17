@@ -293,12 +293,11 @@ public class AttrImpl extends NamedNode implements Attr {
 
     @Override
     public String getValue() {
-        return value.toString();
-    }
-
-    @Override
-    public String getNodeValue() {
-        return getValue();
+        if(value == null) {
+            return "";
+        } else {
+            return value.toString();
+        }
     }
 
     @Override
@@ -307,8 +306,28 @@ public class AttrImpl extends NamedNode implements Attr {
     }
 
     @Override
+    public String getNodeValue() {
+        return getValue();
+    }
+
+    @Override
+    public void setNodeValue(final String nodeValue) throws DOMException {
+       setValue(nodeValue);
+    }
+
+    @Override
     public Element getOwnerElement() {
         return (Element)getOwnerDocument().getNode(nodeId.getParentId());
+    }
+
+    @Override
+    public Node getParentNode() {
+        return null;
+    }
+
+    @Override
+    public StoredNode getParentStoredNode() {
+        return (StoredNode)getOwnerDocument().getNode(nodeId.getParentId());
     }
 
     @Override
@@ -343,6 +362,11 @@ public class AttrImpl extends NamedNode implements Attr {
     }
 
     @Override
+    public Node getNextSibling() {
+        return null;
+    }
+
+    @Override
     public TypeInfo getSchemaTypeInfo() {
         return null;
     }
@@ -368,11 +392,12 @@ public class AttrImpl extends NamedNode implements Attr {
 
     @Override
     public String getTextContent() throws DOMException {
-        return null;
+        return getNodeValue();
     }
 
     @Override
     public void setTextContent(final String textContent) throws DOMException {
+        setNodeValue(textContent);
     }
 
     @Override
@@ -407,6 +432,21 @@ public class AttrImpl extends NamedNode implements Attr {
     @Override
     public Object getUserData(final String key) {
         return null;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if(!super.equals(obj)) {
+            return false;
+        }
+
+        if(obj instanceof AttrImpl) {
+            final AttrImpl other = ((AttrImpl)obj);
+            return other.getQName().equals(getQName())
+                    && other.value.equals(value);
+        }
+
+        return false;
     }
 }
 

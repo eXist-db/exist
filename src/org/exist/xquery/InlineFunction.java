@@ -40,7 +40,7 @@ import org.exist.xquery.value.Type;
  */
 public class InlineFunction extends AbstractExpression {
 
-	public final static QName INLINE_FUNCTION_QNAME = new QName("", "");
+	public final static QName INLINE_FUNCTION_QNAME = QName.EMPTY_QNAME;
 	
 	private UserDefinedFunction function;
 	private ArrayDeque<FunctionCall> calls = new ArrayDeque<>();

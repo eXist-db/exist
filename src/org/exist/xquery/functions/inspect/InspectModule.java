@@ -7,6 +7,7 @@ import org.exist.xquery.value.*;
 import org.exist.xquery.xqdoc.XQDocHelper;
 import org.xml.sax.helpers.AttributesImpl;
 
+import javax.xml.XMLConstants;
 import java.util.Map;
 
 public class InspectModule extends BasicFunction {
@@ -37,8 +38,8 @@ public class InspectModule extends BasicFunction {
     );
 
 
-    private static final QName MODULE_QNAME = new QName("module");
-    private static final QName VARIABLE_QNAME = new QName("variable");
+    private static final QName MODULE_QNAME = new QName("module", XMLConstants.NULL_NS_URI);
+    private static final QName VARIABLE_QNAME = new QName("variable", XMLConstants.NULL_NS_URI);
 
     public InspectModule(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
@@ -81,7 +82,7 @@ public class InspectModule extends BasicFunction {
             final ExternalModule externalModule = (ExternalModule) module;
             if (externalModule.getMetadata() != null) {
                 for (final Map.Entry<String, String> entry : externalModule.getMetadata().entrySet()) {
-                    builder.startElement(new QName(entry.getKey()), null);
+                    builder.startElement(new QName(entry.getKey(), XMLConstants.NULL_NS_URI), null);
                     builder.characters(entry.getValue());
                     builder.endElement();
                 }

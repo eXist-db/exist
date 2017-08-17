@@ -22,6 +22,7 @@
 	import org.exist.dom.persistent.DocumentSet;
 	import org.exist.dom.persistent.DocumentImpl;
 	import org.exist.dom.QName;
+	import org.exist.dom.QName.IllegalQNameException;
 	import org.exist.security.PermissionDeniedException;
 	import org.exist.util.XMLChar;
 	import org.exist.xquery.*;

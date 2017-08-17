@@ -99,7 +99,7 @@ public class FunQName extends BasicFunction {
 		try {
 			prefix = QName.extractPrefix(param);
 			localName = QName.extractLocalName(param);
-        } catch (final IllegalArgumentException e) {
+        } catch (final QName.IllegalQNameException e) {
                 final ValueSequence argsSeq = new ValueSequence(args[0]);
                 argsSeq.addAll(args[1]);
         	throw new XPathException(this, ErrorCodes.FOCA0002, "Invalid lexical form of either prefix or local name.", argsSeq);

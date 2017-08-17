@@ -24,8 +24,10 @@ package org.exist.dom.persistent;
 import org.exist.EXistException;
 import org.exist.Resource;
 import org.exist.dom.QName;
+import org.exist.dom.QName.IllegalQNameException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
+import org.exist.dom.memtree.DocumentFragmentImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.ACLPermission;
 import org.exist.security.Account;
@@ -44,11 +46,10 @@ import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.MultiReadReentrantLock;
 import org.exist.storage.txn.Txn;
+import org.exist.util.XMLString;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Constants;
-import org.exist.xquery.DescendantSelector;
-import org.exist.xquery.Expression;
-import org.exist.xquery.NodeSelector;
+import org.exist.xquery.*;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -67,6 +68,9 @@ import org.w3c.dom.Text;
 import javax.xml.XMLConstants;
 import java.io.EOFException;
 import java.io.IOException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.dom.QName.Validity.ILLEGAL_FORMAT;
 
 /**
  * Represents a persistent document object in the database;
@@ -152,26 +156,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     //TODO document really should not hold a reference to the brokerpool
     public BrokerPool getBrokerPool() {
         return pool;
-    }
-
-    /**
-     * The method <code>getLocalPart</code>
-     *
-     * @return a <code>String</code> value
-     */
-    @Override
-    public String getLocalName() {
-        return "";
-    }
-
-    /**
-     * The method <code>getNamespaceURI</code>
-     *
-     * @return a <code>String</code> value
-     */
-    @Override
-    public String getNamespaceURI() {
-        return XMLConstants.NULL_NS_URI;
     }
 
     /************************************************
@@ -735,11 +719,16 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     protected NodeList findElementsByTagName(final NodeHandle root, final QName qname) {
         try(final DBBroker broker = pool.getBroker()) {
+
             final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(this);
-            final NodeProxy p = new NodeProxy(this, root.getNodeId(), root.getInternalAddress());
-            final NodeSelector selector = new DescendantSelector(p, Expression.NO_CONTEXT_ID);
-            return broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector, null);
+
+            final NewArrayNodeSet contextSet = new NewArrayNodeSet();
+            contextSet.add(new NodeProxy(this, root.getNodeId(), root.getInternalAddress()));
+
+            return broker.getStructuralIndex().scanByType(ElementValue.ELEMENT, Constants.DESCENDANT_AXIS,
+                    new NameTest(Type.ELEMENT, qname), false, docs, contextSet, Expression.NO_CONTEXT_ID);
+
         } catch(final Exception e) {
             LOG.warn("Exception while finding elements: " + e.getMessage(), e);
         }
@@ -772,14 +761,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         getMetadata().setDocType(docType);
     }
 
-    /**
-     * The method <code>getOwnerDocument</code>
-     *
-     * @return a <code>Document</code> value
-     */
     @Override
     public DocumentImpl getOwnerDocument() {
-        return this;
+        return null;
     }
 
     /**
@@ -849,7 +833,19 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     @Override
     public Attr createAttribute(final String name) throws DOMException {
-        final AttrImpl attr = new AttrImpl(new QName(name), getBrokerPool().getSymbols());
+        final QName qname;
+        try {
+            qname = new QName(name);
+        } catch (final IllegalQNameException e) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name is invalid");
+        }
+
+        // check the QName is valid for use
+        if(qname.isValid(false) != QName.Validity.VALID.val) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name is invalid");
+        }
+
+        final AttrImpl attr = new AttrImpl(qname, getBrokerPool().getSymbols());
         attr.setOwnerDocument(this);
         return attr;
     }
@@ -864,7 +860,29 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     @Override
     public Attr createAttributeNS(final String namespaceURI, final String qualifiedName) throws DOMException {
-        final AttrImpl attr = new AttrImpl(QName.parse(namespaceURI, qualifiedName), getBrokerPool().getSymbols());
+        final QName qname;
+
+        try {
+            qname = QName.parse(namespaceURI, qualifiedName);
+        } catch (final IllegalQNameException e) {
+            final short errCode;
+            if(e.getValidity() == ILLEGAL_FORMAT.val || (e.getValidity() & QName.Validity.INVALID_NAMESPACE.val) == QName.Validity.INVALID_NAMESPACE.val) {
+                errCode = DOMException.NAMESPACE_ERR;
+            } else {
+                errCode = DOMException.INVALID_CHARACTER_ERR;
+            }
+            throw new DOMException(errCode, "qualified name is invalid");
+        }
+
+        // check the QName is valid for use
+        final byte validity = qname.isValid(false);
+        if((validity & QName.Validity.INVALID_LOCAL_PART.val) == QName.Validity.INVALID_LOCAL_PART.val) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "qualified name is invalid");
+        } else if((validity & QName.Validity.INVALID_NAMESPACE.val) == QName.Validity.INVALID_NAMESPACE.val) {
+            throw new DOMException(DOMException.NAMESPACE_ERR, "qualified name is invalid");
+        }
+
+        final AttrImpl attr = new AttrImpl(qname, getBrokerPool().getSymbols());
         attr.setOwnerDocument(this);
         return attr;
     }
@@ -878,7 +896,20 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     @Override
     public Element createElement(final String tagName) throws DOMException {
-        final ElementImpl element = new ElementImpl(new QName(tagName), getBrokerPool().getSymbols());
+        final QName qname;
+
+        try {
+            qname = new QName(tagName);
+        } catch (final IllegalQNameException e) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name is invalid");
+        }
+
+        // check the QName is valid for use
+        if(qname.isValid(false) != QName.Validity.VALID.val) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name is invalid");
+        }
+
+        final ElementImpl element = new ElementImpl(qname, getBrokerPool().getSymbols());
         element.setOwnerDocument(this);
         return element;
     }
@@ -893,7 +924,28 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     @Override
     public Element createElementNS(final String namespaceURI, final String qualifiedName) throws DOMException {
-        final ElementImpl element = new ElementImpl(QName.parse(namespaceURI, qualifiedName), getBrokerPool().getSymbols());
+        final QName qname;
+        try {
+            qname = QName.parse(namespaceURI, qualifiedName);
+        } catch (final IllegalQNameException e) {
+            final short errCode;
+            if(e.getValidity() == ILLEGAL_FORMAT.val || (e.getValidity() & QName.Validity.INVALID_NAMESPACE.val) == QName.Validity.INVALID_NAMESPACE.val) {
+                errCode = DOMException.NAMESPACE_ERR;
+            } else {
+                errCode = DOMException.INVALID_CHARACTER_ERR;
+            }
+            throw new DOMException(errCode, "qualified name is invalid");
+        }
+
+        // check the QName is valid for use
+        final byte validity = qname.isValid(false);
+        if((validity & QName.Validity.INVALID_LOCAL_PART.val) == QName.Validity.INVALID_LOCAL_PART.val) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "qualified name is invalid");
+        } else if((validity & QName.Validity.INVALID_NAMESPACE.val) == QName.Validity.INVALID_NAMESPACE.val) {
+            throw new DOMException(DOMException.NAMESPACE_ERR, "qualified name is invalid");
+        }
+
+        final ElementImpl element = new ElementImpl(qname, getBrokerPool().getSymbols());
         element.setOwnerDocument(this);
         return element;
     }
@@ -931,33 +983,49 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         return null;
     }
 
-    /**
-     * The method <code>getElementsByTagName</code>
-     *
-     * @param tagname a <code>String</code> value
-     * @return a <code>NodeList</code> value
-     */
     @Override
     public NodeList getElementsByTagName(final String tagname) {
-        return getElementsByTagNameNS(XMLConstants.NULL_NS_URI, tagname);
+        if(tagname != null && tagname.equals(QName.WILDCARD)) {
+            return getElementsByTagName(new QName.WildcardLocalPartQName(XMLConstants.DEFAULT_NS_PREFIX));
+        } else {
+            try {
+                return getElementsByTagName(new QName(tagname));
+            } catch (final IllegalQNameException e) {
+                throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name is invalid");
+            }
+        }
     }
 
-    /**
-     * The method <code>getElementsByTagNameNS</code>
-     *
-     * @param namespaceURI a <code>String</code> value
-     * @param localName    a <code>String</code> value
-     * @return a <code>NodeList</code> value
-     */
     @Override
     public NodeList getElementsByTagNameNS(final String namespaceURI, final String localName) {
+        final boolean wildcardNS = namespaceURI != null && namespaceURI.equals(QName.WILDCARD);
+        final boolean wildcardLocalPart = localName != null && localName.equals(QName.WILDCARD);
+
+        if(wildcardNS && wildcardLocalPart) {
+            return getElementsByTagName(QName.WildcardQName.getInstance());
+        } else if(wildcardNS) {
+            return getElementsByTagName(new QName.WildcardNamespaceURIQName(localName));
+        } else if(wildcardLocalPart) {
+            return getElementsByTagName(new QName.WildcardLocalPartQName(namespaceURI));
+        } else {
+            return getElementsByTagName(new QName(localName, namespaceURI));
+        }
+    }
+
+    private NodeList getElementsByTagName(final QName qname) {
         try(final DBBroker broker = pool.getBroker()) {
+
             final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(this);
-            final QName qname = new QName(localName, namespaceURI);
-            return broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, null, null);
+
+            final NewArrayNodeSet contextSet = new NewArrayNodeSet();
+            final ElementImpl root = ((ElementImpl)getDocumentElement());
+            contextSet.add(new NodeProxy(this, root.getNodeId(), root.getInternalAddress()));
+
+            return broker.getStructuralIndex().scanByType(ElementValue.ELEMENT, Constants.DESCENDANT_SELF_AXIS,
+                    new NameTest(Type.ELEMENT, qname), false, docs, contextSet, Expression.NO_CONTEXT_ID);
         } catch(final Exception e) {
-            LOG.warn("Exception while finding elements: " + e.getMessage(), e);
+            LOG.error("Exception while finding elements: " + e.getMessage(), e);
             //TODO : throw exception ?
         }
         return NodeSet.EMPTY_SET;
@@ -998,88 +1066,92 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @Override
     public CDATASection createCDATASection(final String data) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createCDATASection not implemented on class " + getClass().getName());
+        final CDATASectionImpl cdataSection = new CDATASectionImpl(new XMLString(data.toCharArray()));
+        cdataSection.setOwnerDocument(this);
+        return cdataSection;
     }
 
     @Override
     public Comment createComment(final String data) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createComment not implemented on class " + getClass().getName());
-    }
-
-    @Override
-    public DocumentFragment createDocumentFragment() throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createDocumentFragment not implemented on class " + getClass().getName());
-    }
-
-    @Override
-    public EntityReference createEntityReference(final String name) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createEntityReference not implemented on class " + getClass().getName());
+        final CommentImpl comment = new CommentImpl(data);
+        comment.setOwnerDocument(this);
+        return comment;
     }
 
     @Override
     public ProcessingInstruction createProcessingInstruction(final String target, final String data)
-        throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createProcessingInstruction not implemented on class " + getClass().getName());
+            throws DOMException {
+        final ProcessingInstructionImpl processingInstruction = new ProcessingInstructionImpl(target, data);
+        processingInstruction.setOwnerDocument(this);
+        return processingInstruction;
+    }
+
+    @Override
+    public DocumentFragment createDocumentFragment() throws DOMException {
+        return new DocumentFragmentImpl();
+    }
+
+    @Override
+    public EntityReference createEntityReference(final String name) throws DOMException {
+        throw unsupported();
     }
 
     @Override
     public Element getElementById(final String elementId) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getElementById not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public org.w3c.dom.DOMImplementation getImplementation() {
-        return new StoredDOMImplementation();
+        return new DOMImplementationImpl();
     }
 
     @Override
     public boolean getStrictErrorChecking() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getStrictErrorChecking not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public Node adoptNode(final Node node) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "adoptNode not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public Node importNode(final Node importedNode, final boolean deep) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "importNode not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public void setStrictErrorChecking(final boolean strict) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setStrictErrorChecking not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public String getInputEncoding() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "String getInputEncoding not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public String getXmlEncoding() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getXmlEncoding not implemented on class " + getClass().getName());
+        return UTF_8.name();    //TODO(AR) this should be recorded from the XML document and not hard coded
     }
 
     @Override
     public boolean getXmlStandalone() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getXmlStandalone not implemented on class " + getClass().getName());
+        return false;   //TODO(AR) this should be recorded from the XML document and not hard coded
     }
 
     @Override
     public void setXmlStandalone(final boolean xmlStandalone) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setXmlStandalone not implemented on class " + getClass().getName());
     }
 
     @Override
     public String getXmlVersion() {
-        return "1.0";
+        return "1.0";   //TODO(AR) this should be recorded from the XML document and not hard coded
     }
 
     @Override
     public void setXmlVersion(final String xmlVersion) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setXmlVersion not implemented on class " + getClass().getName());
     }
 
     @Override
@@ -1089,23 +1161,22 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @Override
     public void setDocumentURI(final String documentURI) {
-        //TODO : non-writable -pb
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setDocumentURI not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public DOMConfiguration getDomConfig() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getDomConfig not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public void normalizeDocument() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "normalizeDocument not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
     public Node renameNode(final Node n, final String namespaceURI, final String qualifiedName) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "renameNode not implemented on class " + getClass().getName());
+        throw unsupported();
     }
 
     @Override
@@ -1122,5 +1193,34 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     @Override
     public NodeId getNodeId() {
         return null;
+    }
+
+    @Override
+    public Node appendChild(final Node newChild) throws DOMException {
+        if(newChild.getNodeType() != Node.DOCUMENT_NODE && newChild.getOwnerDocument() != this) {
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Owning document IDs do not match");
+        }
+
+        if(newChild == this) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                    "Cannot append a document to itself");
+        }
+
+        if(newChild.getNodeType() == DOCUMENT_NODE) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                    "A Document Node may not be appended to a Document Node");
+        }
+
+        if(newChild.getNodeType() == ELEMENT_NODE && getDocumentElement() != null) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                    "A Document Node may only have a single document element");
+        }
+
+        if(newChild.getNodeType() == DOCUMENT_TYPE_NODE && getDoctype() != null) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                    "A Document Node may only have a single document type");
+        }
+
+        throw unsupported();
     }
 }

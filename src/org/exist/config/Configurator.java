@@ -42,6 +42,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -1117,7 +1118,7 @@ public class Configurator {
         
         if (map != null) {
             final QName mapQName = new QName(mapName, Configuration.NS);
-            final QName attrQName = new QName("key");
+            final QName attrQName = new QName("key", XMLConstants.NULL_NS_URI);
             
             for (final Map.Entry<String, String> entry : map.entrySet()) {
                 serializer.startElement(mapQName, null);

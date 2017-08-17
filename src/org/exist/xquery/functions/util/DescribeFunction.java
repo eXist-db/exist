@@ -29,14 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.xquery.Annotation;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.LiteralValue;
-import org.exist.xquery.Module;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.functions.inspect.InspectFunction;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -45,6 +38,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.xml.sax.helpers.AttributesImpl;
+
+import javax.xml.XMLConstants;
 
 /**
  * Describe a built-in function identified by its QName.
@@ -66,23 +61,26 @@ public class DescribeFunction extends Function {
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the signature of the function"),
             InspectFunction.SIGNATURE);
 	
-	private final static QName ANNOTATION_QNAME = new QName("annotation");
-	private final static QName ANNOTATION_VALUE_QNAME = new QName("value");
+	private final static QName ANNOTATION_QNAME = new QName("annotation", XMLConstants.NULL_NS_URI);
+	private final static QName ANNOTATION_VALUE_QNAME = new QName("value", XMLConstants.NULL_NS_URI);
 	
 	public DescribeFunction(XQueryContext context) {
 		super(context, signature);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
+	@Override
 	public Sequence eval(
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
 		
 		final String fname = getArgument(0).eval(contextSequence, contextItem).getStringValue();
-		final QName qname = QName.parse(context, fname, context.getDefaultFunctionNamespace());
+		final QName qname;
+		try {
+			qname = QName.parse(context, fname, context.getDefaultFunctionNamespace());
+		} catch (final QName.IllegalQNameException e) {
+			throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + fname);
+		}
 		final String uri = qname.getNamespaceURI();
 		
 		final MemTreeBuilder builder = context.getDocumentBuilder();
@@ -113,7 +111,6 @@ public class DescribeFunction extends Function {
 	/**
 	 * @param signature
 	 * @param builder
-	 * @param attribs
 	 * @throws XPathException if an internal error occurs
 	 */
 	private void writeSignature(FunctionSignature signature, MemTreeBuilder builder) throws XPathException {

@@ -45,6 +45,7 @@ import javax.management.openmbean.TabularData;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+import javax.xml.XMLConstants;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 import org.apache.logging.log4j.LogManager;
@@ -121,11 +122,11 @@ public class JMXtoXML {
 
     private static final QName JMX_RESULT_TYPE_ATTR = new QName("class", JMX_NAMESPACE, JMX_PREFIX);
 
-    private static final QName JMX_CONNECTION_ATTR = new QName("connection");
+    private static final QName JMX_CONNECTION_ATTR = new QName("connection", XMLConstants.NULL_NS_URI);
 
     private static final QName JMX_ERROR = new QName("error", JMX_NAMESPACE, JMX_PREFIX);
 
-    private static final QName VERSION_ATTR = new QName("version");
+    private static final QName VERSION_ATTR = new QName("version", XMLConstants.NULL_NS_URI);
 
     public static final long PING_TIMEOUT = -99;
 
@@ -363,7 +364,7 @@ public class JMXtoXML {
 
             final QName qname = new QName(className, JMX_NAMESPACE, JMX_PREFIX);
             builder.startElement(qname, null);
-            builder.addAttribute(new QName("name"), name.toString());
+            builder.addAttribute(new QName("name",  XMLConstants.NULL_NS_URI), name.toString());
 
             final MBeanAttributeInfo[] beanAttribs = info.getAttributes();
             for (int i = 0; i < beanAttribs.length; i++) {

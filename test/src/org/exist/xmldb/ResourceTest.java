@@ -28,6 +28,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -389,7 +390,7 @@ public class ResourceTest {
         @Override
         public void startElement(final QName qname, final AttrList attribs) throws SAXException {
             if(qname.getLocalPart().equals(IMPORT_ELEM_NAME)) {
-                importDoc(attribs.getValue(new QName(HREF_ATTR_NAME)));
+                importDoc(attribs.getValue(new QName(HREF_ATTR_NAME, XMLConstants.NULL_NS_URI)));
             } else {
                 super.startElement(qname, attribs);
             }

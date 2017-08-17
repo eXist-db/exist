@@ -234,8 +234,9 @@ public class RewriteConfig {
         final Element root = doc.getDocumentElement();
         Node child = root.getFirstChild();
         while (child != null) {
-            if (child.getNodeType() == Node.ELEMENT_NODE &&
-                    child.getNamespaceURI().equals(Namespaces.EXIST_NS)) {
+            final String ns = child.getNamespaceURI();
+            if (child.getNodeType() == Node.ELEMENT_NODE && ns!= null &&
+                    ns.equals(Namespaces.EXIST_NS)) {
                 final Element elem = (Element) child;
                 final String pattern = elem.getAttribute(PATTERN_ATTRIBUTE);
                 if (pattern == null) {

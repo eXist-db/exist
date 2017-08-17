@@ -30,6 +30,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.xml.XMLConstants;
+
 /**
  * configuration -> element
  * property -> attribute
@@ -65,7 +67,7 @@ public class ConfigurationImpl implements Configuration {
 
     @Override
     public String getValue() {
-        return element.getNodeValue();
+        return element.getTextContent();
     }
 
     @Override
@@ -92,8 +94,9 @@ public class ConfigurationImpl implements Configuration {
             if (child.getNodeType() == Node.ELEMENT_NODE) {
 
                 final Element el = (Element)child;
-                
-                if (name.equals( el.getLocalName() ) && NS.equals( el.getNamespaceURI() )) {
+
+                final String ns = el.getNamespaceURI();
+                if (name.equals( el.getLocalName() ) && ns != null && NS.equals( ns )) {
                     
                     final Configuration config = new ConfigurationImpl(el);
                     list.add(config);
@@ -118,8 +121,9 @@ public class ConfigurationImpl implements Configuration {
         while (child != null) {
             
             if (child.getNodeType() == Node.ELEMENT_NODE) {
-                
-                if (NS.equals(child.getNamespaceURI())) {
+
+                final String ns = child.getNamespaceURI();
+                if (ns != null && NS.equals(ns)) {
                     
                     String name = child.getLocalName();
                     
@@ -129,7 +133,7 @@ public class ConfigurationImpl implements Configuration {
                             props.remove(name);
                         }
                     } else {
-                        props.put(name, child.getNodeValue());
+                        props.put(name, child.getTextContent());
                         names.add(name);
                     }
                 }
@@ -143,7 +147,7 @@ public class ConfigurationImpl implements Configuration {
             
             Node attr = attrs.item(i);
             
-            if ( !"xmlns".equals( attr.getPrefix() ) ) {
+            if ( !XMLConstants.XMLNS_ATTRIBUTE.equals( attr.getPrefix() ) ) {
                 
                 props.put(attr.getLocalName(), attr.getNodeValue());
             }
@@ -165,7 +169,7 @@ public class ConfigurationImpl implements Configuration {
 //            {return getAttribute(name);}
 //        final NodeList nodes = getElementsByTagNameNS(NS, name);
 //        if (nodes.getLength() == 1) {
-//            return nodes.item(0).getNodeValue();
+//            return nodes.item(0).getTextContent();
 //        }
 //        return null;
     }
@@ -193,8 +197,9 @@ public class ConfigurationImpl implements Configuration {
             if (child.getNodeType() == Node.ELEMENT_NODE) {
 
                 final Element el = (Element) child;
-                
-                if (name.equals( el.getLocalName() ) && NS.equals( el.getNamespaceURI() )) {
+
+                final String ns = el.getNamespaceURI();
+                if (name.equals( el.getLocalName() ) && ns != null && NS.equals( ns )) {
                     
                     if(!el.hasAttributes()){
                         continue;
@@ -212,7 +217,7 @@ public class ConfigurationImpl implements Configuration {
                         continue;
                     
                     final String key = attr.getNodeValue();
-                    final String value = el.getNodeValue();
+                    final String value = el.getTextContent();
 
                     if (key != null && !key.isEmpty() && value != null && !value.isEmpty()) {
                         map.put(key, value);
@@ -239,7 +244,7 @@ public class ConfigurationImpl implements Configuration {
 //                return null;
 //            }
 //            final String key = attrs.getNamedItem("key").getNodeValue();
-//            final String value = item.getNodeValue();
+//            final String value = item.getTextContent();
 //            if(value == null || value.isEmpty()){
 //                return null;
 //            }
@@ -365,7 +370,7 @@ public class ConfigurationImpl implements Configuration {
         final NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             //ignore namespace declarations
-            if ( !"xmlns".equals( attrs.item(i).getPrefix() ) )
+            if ( !XMLConstants.XMLNS_ATTRIBUTE.equals( attrs.item(i).getPrefix() ) )
                 {properties.add(attrs.item(i).getNodeName());}
         }
         final NodeList children = element.getChildNodes();

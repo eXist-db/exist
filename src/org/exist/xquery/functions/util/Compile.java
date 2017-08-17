@@ -51,6 +51,8 @@ import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
 
+import javax.xml.XMLConstants;
+
 public class Compile extends BasicFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(Compile.class);
@@ -88,12 +90,12 @@ public class Compile extends BasicFunction {
 			new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, "the results of the expression"))
 	};
 
-	private static final QName QNAME_INFO = new QName("info");
-	private static final QName ERROR_INFO = new QName("error");
-	private static final QName QNAME_RESULT_ATTR = new QName("result");
-	private static final QName QNAME_ERRCODE_ATTR = new QName("code");
-	private static final QName QNAME_LINE_ATTR = new QName("line");
-	private static final QName QNAME_COLUMN_ATTR = new QName("column");
+	private static final QName QNAME_INFO = new QName("info", XMLConstants.NULL_NS_URI);
+	private static final QName ERROR_INFO = new QName("error", XMLConstants.NULL_NS_URI);
+	private static final QName QNAME_RESULT_ATTR = new QName("result", XMLConstants.NULL_NS_URI);
+	private static final QName QNAME_ERRCODE_ATTR = new QName("code", XMLConstants.NULL_NS_URI);
+	private static final QName QNAME_LINE_ATTR = new QName("line", XMLConstants.NULL_NS_URI);
+	private static final QName QNAME_COLUMN_ATTR = new QName("column", XMLConstants.NULL_NS_URI);
 	
 	public Compile(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);

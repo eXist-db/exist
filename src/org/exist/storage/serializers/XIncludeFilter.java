@@ -58,6 +58,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -85,8 +86,8 @@ public class XIncludeFilter implements Receiver {
 
     private static final Logger LOG = LogManager.getLogger(XIncludeFilter.class);
 
-    private static final QName HREF_ATTRIB = new QName("href");
-    private static final QName XPOINTER_ATTRIB = new QName("xpointer");
+    private static final QName HREF_ATTRIB = new QName("href", XMLConstants.NULL_NS_URI);
+    private static final QName XPOINTER_ATTRIB = new QName("xpointer", XMLConstants.NULL_NS_URI);
     private static final String XI_INCLUDE = "include";
     private static final String XI_FALLBACK = "fallback";
 

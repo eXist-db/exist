@@ -58,7 +58,8 @@ public class ActionSequence extends AbstractAction {
             Node node = nl.item(i);
             if (node.getNodeType() == Node.ELEMENT_NODE) {
                 Element elem = (Element) node;
-                if (elem.getNamespaceURI().equals(Namespaces.EXIST_NS)) {
+                final String ns = elem.getNamespaceURI();
+                if (ns != null && ns.equals(Namespaces.EXIST_NS)) {
                 	if (elem.getLocalName().equals("map")) {
                 		String prefix = elem.getAttribute("prefix");
                 		String uri = elem.getAttribute("uri");

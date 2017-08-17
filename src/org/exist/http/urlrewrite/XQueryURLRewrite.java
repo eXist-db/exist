@@ -275,16 +275,19 @@ public class XQueryURLRewrite extends HttpServlet {
 	                        	return;
 	                        }
 	                        Element elem = (Element) node;
-	                        if (!(Namespaces.EXIST_NS.equals(elem.getNamespaceURI()))) {
+	                        final String ns = elem.getNamespaceURI();
+	                        if (ns == null || !(Namespaces.EXIST_NS.equals(ns))) {
 	                        	response(broker, response, outputProperties, result);
 	                        	return;
 	//                            throw new ServletException("Redirect XQuery should return an element in namespace " + Namespaces.EXIST_NS);
 	                        }
-	
-	                        if (Namespaces.EXIST_NS.equals(elem.getNamespaceURI()) && "dispatch".equals(elem.getLocalName())) {
+
+	                        final String nsUri = elem.getNamespaceURI();
+	                        if (nsUri != null && Namespaces.EXIST_NS.equals(nsUri) && "dispatch".equals(elem.getLocalName())) {
 	                            node = elem.getFirstChild();
 	                            while (node != null) {
-	                                if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(node.getNamespaceURI())) {
+	                                final String nodeNs = node.getNamespaceURI();
+	                                if (node.getNodeType() == Node.ELEMENT_NODE && nodeNs != null && Namespaces.EXIST_NS.equals(nodeNs)) {
 	                                    final Element action = (Element) node;
 	                                    if ("view".equals(action.getLocalName())) {
 	                                        parseViews(modifiedRequest, action, modelView);
@@ -303,7 +306,7 @@ public class XQueryURLRewrite extends HttpServlet {
 	                            }
 	                            if (modelView.getModel() == null)
 	                                {modelView.setModel(new PassThrough(config, elem, modifiedRequest));}
-	                        } else if (Namespaces.EXIST_NS.equals(elem.getNamespaceURI()) && "ignore".equals(elem.getLocalName())) {
+	                        } else if (nsUri != null && Namespaces.EXIST_NS.equals(elem.getNamespaceURI()) && "ignore".equals(elem.getLocalName())) {
 	                            modelView.setModel(new PassThrough(config, elem, modifiedRequest));
 	                            final NodeList nl = elem.getElementsByTagNameNS(Namespaces.EXIST_NS, "cache-control");
 	                            if (nl.getLength() > 0) {
@@ -564,7 +567,8 @@ public class XQueryURLRewrite extends HttpServlet {
     private void parseViews(HttpServletRequest request, Element view, ModelAndView modelView) throws ServletException {
         Node node = view.getFirstChild();
         while (node != null) {
-            if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(node.getNamespaceURI())) {
+            final String ns = node.getNamespaceURI();
+            if (node.getNodeType() == Node.ELEMENT_NODE && ns != null && Namespaces.EXIST_NS.equals(ns)) {
                 final URLRewrite urw = parseAction(request, (Element) node);
                 if (urw != null)
                     {modelView.addView(urw);}
@@ -576,7 +580,8 @@ public class XQueryURLRewrite extends HttpServlet {
     private void parseErrorHandlers(HttpServletRequest request, Element view, ModelAndView modelView) throws ServletException {
         Node node = view.getFirstChild();
         while (node != null) {
-            if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(node.getNamespaceURI())) {
+            final String ns = node.getNamespaceURI();
+            if (node.getNodeType() == Node.ELEMENT_NODE && ns != null && Namespaces.EXIST_NS.equals(ns)) {
                 final URLRewrite urw = parseAction(request, (Element) node);
                 if (urw != null)
                     {modelView.addErrorHandler(urw);}

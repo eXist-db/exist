@@ -15,6 +15,7 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
 
+import javax.xml.XMLConstants;
 import java.util.Optional;
 
 /**
@@ -34,8 +35,8 @@ public class ValueSequenceTest {
         //in-memory doc
         final MemTreeBuilder memtree = new MemTreeBuilder();
         memtree.startDocument();
-            memtree.startElement(new QName("m1"), null);
-                memtree.startElement(new QName("m2"), null);
+            memtree.startElement(new QName("m1", XMLConstants.NULL_NS_URI), null);
+                memtree.startElement(new QName("m2", XMLConstants.NULL_NS_URI), null);
                     memtree.characters("test data");
                 memtree.endElement();
             memtree.endElement();

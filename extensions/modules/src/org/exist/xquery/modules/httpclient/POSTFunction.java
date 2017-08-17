@@ -163,7 +163,8 @@ public class POSTFunction extends BaseHTTPClientFunction {
             post.setRequestEntity(entity);
         } else if (isCalledAs("post-form")) {
             final Node nPayload = ((NodeValue) payload).getNode();
-            if ((nPayload instanceof Element) && nPayload.getNamespaceURI().equals(HTTPClientModule.NAMESPACE_URI) && nPayload.getLocalName().equals("fields")) {
+            final String ns = nPayload.getNamespaceURI();
+            if ((nPayload instanceof Element) && ns != null && ns.equals(HTTPClientModule.NAMESPACE_URI) && nPayload.getLocalName().equals("fields")) {
                 final Part[] parts = parseFields((Element) nPayload);
                 post.setRequestEntity(new MultipartRequestEntity(parts, post.getParams()));
             } else {

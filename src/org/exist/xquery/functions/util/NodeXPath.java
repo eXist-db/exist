@@ -29,6 +29,8 @@ import org.exist.xquery.value.*;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import javax.xml.XMLConstants;
+
 
 public class NodeXPath extends Function
 {
@@ -107,9 +109,9 @@ public class NodeXPath extends Function
 	 * @param n The node to get the name for
 	 * @return The full name of the node
 	 */
-	public String getFullNodeName(Node n)
+	public String getFullNodeName(final Node n)
 	{
-		return n.getPrefix() != null && !"".equals(n.getPrefix()) ? n.getPrefix() + ":" + n.getLocalName() : n.getLocalName();
+		return n.getPrefix() != null && !XMLConstants.DEFAULT_NS_PREFIX.equals(n.getPrefix()) ? n.getPrefix() + ":" + n.getLocalName() : n.getLocalName();
 	}
 
 }

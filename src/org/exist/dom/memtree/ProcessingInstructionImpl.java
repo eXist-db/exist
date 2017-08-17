@@ -21,6 +21,7 @@
  */
 package org.exist.dom.memtree;
 
+import org.exist.dom.QName;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
@@ -47,7 +48,8 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
 
     @Override
     public String getTarget() {
-        return getLocalName();
+        final QName qname = getQName();
+        return qname != null ? qname.getLocalPart() : null;
     }
 
     @Override

@@ -72,6 +72,11 @@ public abstract class NamedNode<T extends NamedNode> extends StoredNode<T> {
         this.nodeName = qname;
     }
 
+    @Override
+    public String getLocalName() {
+        return getQName().getLocalPart();
+    }
+
     /**
      * @deprecated use #setQName(qname) instead
      */

@@ -366,7 +366,8 @@ public class ExecuteFunction extends BasicFunction
             if( stmt instanceof PreparedStatement ) {
                 Element parametersElement = (Element)args[2].itemAt( 0 );
 
-                if( parametersElement.getNamespaceURI().equals( SQLModule.NAMESPACE_URI ) && parametersElement.getLocalName().equals( PARAMETERS_ELEMENT_NAME ) ) {
+                final String ns = parametersElement.getNamespaceURI();
+                if(ns != null && ns.equals( SQLModule.NAMESPACE_URI ) && parametersElement.getLocalName().equals( PARAMETERS_ELEMENT_NAME ) ) {
                     NodeList paramElements = parametersElement.getElementsByTagNameNS( SQLModule.NAMESPACE_URI, PARAM_ELEMENT_NAME );
 
                     builder.startElement( new QName( PARAMETERS_ELEMENT_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );
@@ -428,7 +429,8 @@ public class ExecuteFunction extends BasicFunction
     
     private void setParametersOnPreparedStatement( Statement stmt, Element parametersElement ) throws SQLException, XPathException
     {
-        if (parametersElement.getNamespaceURI().equals(SQLModule.NAMESPACE_URI) && parametersElement.getLocalName().equals(PARAMETERS_ELEMENT_NAME)) {
+        final String ns = parametersElement.getNamespaceURI();
+        if (ns != null && ns.equals(SQLModule.NAMESPACE_URI) && parametersElement.getLocalName().equals(PARAMETERS_ELEMENT_NAME)) {
             NodeList paramElements = parametersElement.getElementsByTagNameNS(SQLModule.NAMESPACE_URI, PARAM_ELEMENT_NAME);
 
             for (int i = 0; i < paramElements.getLength(); i++) {

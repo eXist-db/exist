@@ -83,6 +83,8 @@ import org.exist.xquery.value.*;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
+import org.w3c.dom.Node;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
@@ -1200,7 +1202,8 @@ public class XQueryContext implements BinaryValueManager, Context
 
         if( nv.getImplementationType() == NodeValue.IN_MEMORY_NODE ) {
             final NodeImpl node = (NodeImpl)nv;
-            reader = new InMemoryXMLStreamReader( node.getOwnerDocument(), node.getOwnerDocument() );
+            final org.exist.dom.memtree.DocumentImpl ownerDoc = node.getNodeType() == Node.DOCUMENT_NODE ? (org.exist.dom.memtree.DocumentImpl)node : node.getOwnerDocument();
+            reader = new InMemoryXMLStreamReader( ownerDoc, ownerDoc );
         } else {
             final NodeProxy proxy = (NodeProxy)nv;
             reader = getBroker().newXMLStreamReader( new NodeProxy( proxy.getOwnerDocument(), NodeId.DOCUMENT_NODE, proxy.getOwnerDocument().getFirstChildAddress() ), false );
@@ -1839,9 +1842,13 @@ public class XQueryContext implements BinaryValueManager, Context
      * @throws  XPathException  if the value cannot be converted into a known XPath value or the variable QName references an unknown
      *                          namespace-prefix.
      */
-    public Variable declareVariable( String qname, Object value ) throws XPathException
-    {
-        return( declareVariable( QName.parse( this, qname, null ), value ) );
+    @Override
+    public Variable declareVariable(final String qname, final Object value) throws XPathException {
+        try {
+            return declareVariable(QName.parse(this, qname, null), value);
+        } catch (final QName.IllegalQNameException e) {
+            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix: " + qname);
+        }
     }
 
 
@@ -1911,10 +1918,14 @@ public class XQueryContext implements BinaryValueManager, Context
      *
      * @throws  XPathException  if the variable is unknown
      */
-    public Variable resolveVariable( String name ) throws XPathException
-    {
-        final QName qn = QName.parse( this, name, null );
-        return( resolveVariable( qn ) );
+    @Override
+    public Variable resolveVariable(final String name) throws XPathException {
+        try {
+            final QName qn = QName.parse(this, name, null);
+            return resolveVariable(qn);
+        } catch (final QName.IllegalQNameException e) {
+            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + name);
+        }
     }
 
     /**
@@ -3106,9 +3117,13 @@ public class XQueryContext implements BinaryValueManager, Context
     }
 
 
-    private void addOption( List<Option> options, String qnameString, String contents ) throws XPathException
-    {
-        final QName  qn     = QName.parse( this, qnameString, defaultFunctionNamespace );
+    private void addOption(final List<Option> options, final String qnameString, final String contents) throws XPathException {
+        final QName qn;
+        try {
+            qn = QName.parse(this, qnameString, defaultFunctionNamespace);
+        } catch (final QName.IllegalQNameException e) {
+            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + qnameString);
+        }
 
         final Option option = new Option( qn, contents );
 
@@ -3194,10 +3209,14 @@ public class XQueryContext implements BinaryValueManager, Context
         return( null );
     }
 
-
-    public Pragma getPragma( String name, String contents ) throws XPathException
-    {
-        final QName qname = QName.parse( this, name );
+    @Override
+    public Pragma getPragma(final String name, String contents) throws XPathException {
+        final QName qname;
+        try {
+            qname = QName.parse(this, name);
+        } catch (final QName.IllegalQNameException e) {
+            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + name);
+        }
 
         if( "".equals( qname.getNamespaceURI() ) ) {
             throw( new XPathException( "XPST0081: pragma's ('" + name + "') namespace URI is empty" ) );

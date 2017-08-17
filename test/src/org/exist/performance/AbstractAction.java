@@ -109,7 +109,7 @@ public abstract class AbstractAction implements Action {
         StringBuffer buf = new StringBuffer();
         Node next = config.getFirstChild();
         while (next != null) {
-            buf.append(next.getNodeValue());
+            buf.append(next.getTextContent());
             next = next.getNextSibling();
         }
         return buf.toString();

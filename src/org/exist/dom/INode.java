@@ -37,15 +37,15 @@ public interface INode<D extends org.w3c.dom.Document, T extends INode> extends 
     /**
      * The node is a <code>Namespace</code>.
      */
-    public static final short NAMESPACE_NODE              = 13;
+    short NAMESPACE_NODE              = 13;
 
     /**
      * Get the qualified name of the Node
      * 
      * @return The qualified name of the Node
      */
-    public QName getQName();
+    QName getQName();
 
     //TODO try and get rid of this after decoupling nameTyping from QName class (AR)?
-    public void setQName(QName qname);
+    void setQName(QName qname);
 }

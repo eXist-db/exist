@@ -72,7 +72,11 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             throw new DatabaseConfigurationException("Range index module: Empty or no attribute qname in condition");
         }
 
-        this.attribute = new QName(QName.extractLocalName(this.attributeName), XMLConstants.NULL_NS_URI, QName.extractPrefix(this.attributeName), ElementValue.ATTRIBUTE);
+        try {
+            this.attribute = new QName(QName.extractLocalName(this.attributeName), XMLConstants.NULL_NS_URI, QName.extractPrefix(this.attributeName), ElementValue.ATTRIBUTE);
+        } catch (final QName.IllegalQNameException e) {
+            throw new DatabaseConfigurationException("Rand index module error: " + e.getMessage(), e);
+        }
         this.value = elem.getAttribute("value");
 
 

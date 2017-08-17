@@ -53,6 +53,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.exist.storage.dom.INodeIterator;
 
+import javax.xml.XMLConstants;
+
 /**
  * Serializer implementation for the native database backend.
  * 
@@ -160,9 +162,9 @@ public class NativeSerializer extends Serializer {
 	        	String prefix, uri;
 	        	for (final Iterator<String> i = ((ElementImpl) node).getPrefixes(); i.hasNext();) {
 	        		prefix = i.next();
-	        		if (prefix.length() == 0) {
+	        		if (prefix.isEmpty()) {
 	        			defaultNS = ((ElementImpl) node).getNamespaceForPrefix(prefix);
-	        			receiver.startPrefixMapping("", defaultNS);
+	        			receiver.startPrefixMapping(XMLConstants.DEFAULT_NS_PREFIX, defaultNS);
 	        			namespaces.add(defaultNS);
 	        		} else {
 	        			uri = ((ElementImpl) node).getNamespaceForPrefix(prefix);
@@ -172,8 +174,13 @@ public class NativeSerializer extends Serializer {
 	        	}
 	        }
 	        final String ns = defaultNS == null ? node.getNamespaceURI() : defaultNS;
-	        if (ns.length() > 0 && (!namespaces.contains(ns)))
-	        	{receiver.startPrefixMapping(node.getPrefix(), ns);}
+	        if (ns != null && ns.length() > 0 && (!namespaces.contains(ns))) {
+                String prefix = node.getPrefix();
+                if(prefix == null) {
+                    prefix = XMLConstants.DEFAULT_NS_PREFIX;
+                }
+	            receiver.startPrefixMapping(prefix, ns);
+	        }
         	final AttrList attribs = new AttrList();
         	if ((first && showId == EXIST_ID_ELEMENT) || showId == EXIST_ID_ALL) {
                 attribs.addAttribute(ID_ATTRIB, node.getNodeId().toString());
@@ -272,14 +279,18 @@ public class NativeSerializer extends Serializer {
             receiver.setCurrentNode(node);
             receiver.endElement(node.getQName());
             if (((ElementImpl) node).declaresNamespacePrefixes()) {
-                String prefix;
                 for (final Iterator<String> i = ((ElementImpl) node).getPrefixes(); i.hasNext();) {
-                    prefix = i.next();
+                    final String prefix = i.next();
                     receiver.endPrefixMapping(prefix);
                 }
             }
-            if (ns.length() > 0 && (!namespaces.contains(ns)))
-                {receiver.endPrefixMapping(node.getPrefix());}
+            if (ns != null && ns.length() > 0 && (!namespaces.contains(ns))) {
+                String prefix = node.getPrefix();
+                if(prefix == null) {
+                    prefix = XMLConstants.DEFAULT_NS_PREFIX;
+                }
+                receiver.endPrefixMapping(prefix);
+            }
             node.release();
             break;
         case Node.TEXT_NODE:

@@ -130,7 +130,7 @@ public class PlainTextIndexConfig {
                     }
 
                     // Collect data
-                    CharSequence content = child.getNodeValue();
+                    CharSequence content = child.getTextContent();
                     field.setContent(content);
                 }
             }

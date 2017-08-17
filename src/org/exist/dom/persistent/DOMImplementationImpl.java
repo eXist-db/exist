@@ -26,8 +26,10 @@ import org.w3c.dom.DocumentType;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
 
-
-public class StoredDOMImplementation implements DOMImplementation {
+/**
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
+ */
+public class DOMImplementationImpl implements DOMImplementation {
 
     @Override
     public Document createDocument(final String namespaceURI,
@@ -49,7 +51,8 @@ public class StoredDOMImplementation implements DOMImplementation {
 
     @Override
     public boolean hasFeature(final String feature, final String version) {
-        return "XML".equals(feature) && ("1.0".equals(version) || "2.0".equals(version));
+        return ("Core".equalsIgnoreCase(feature) || "XML".equalsIgnoreCase(feature)) &&
+                (version == null || "".equals(version) || "1.0".equals(version) || "2.0".equals(version) || "3.0".equals(version));
     }
 }
 

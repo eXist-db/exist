@@ -21,15 +21,11 @@
  */
 package org.exist.xqj;
 
+import org.exist.dom.memtree.*;
 import org.exist.xquery.value.*;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.NameTest;
 import org.exist.storage.DBBroker;
-import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.dom.memtree.NodeImpl;
-import org.exist.dom.memtree.InMemoryNodeSet;
-import org.exist.dom.memtree.ElementImpl;
-import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.QName;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
@@ -204,8 +200,10 @@ public class Marshaller {
     }
 
     public static Sequence demarshall(NodeImpl node) throws XMLStreamException, XPathException {
-        if (!NAMESPACE.equals(node.getNamespaceURI()))
-            {throw new XMLStreamException("Root element is not in the correct namespace. Expected: " + NAMESPACE);}
+        final String ns = node.getNamespaceURI();
+        if (ns == null || !NAMESPACE.equals(ns)) {
+            throw new XMLStreamException("Root element is not in the correct namespace. Expected: " + NAMESPACE);
+        }
         if (!SEQ_ELEMENT.equals(node.getLocalName()))
             {throw new XMLStreamException("Root element should be a " + SEQ_ELEMENT_QNAME);}
         final ValueSequence result = new ValueSequence();
@@ -220,11 +218,11 @@ public class Marshaller {
                 if (Type.subTypeOf(type, Type.NODE)) {
                     item = (Item) child.getFirstChild();
                     if (type == Type.DOCUMENT) {
-                        final NodeImpl n = (NodeImpl) item;
+                        final DocumentImpl n = (DocumentImpl) item;
                         final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver();
                         try {
                             receiver.startDocument();
-                            n.getOwnerDocument().copyTo(n, receiver);
+                            n.copyTo(n, receiver);
                             receiver.endDocument();
                         } catch (final SAXException e) {
                             throw new XPathException("Error while demarshalling node: " + e.getMessage(), e);
@@ -235,8 +233,9 @@ public class Marshaller {
                     final StringBuilder data = new StringBuilder();
                     Node txt = child.getFirstChild();
                     while (txt != null) {
-                        if (!(txt.getNodeType() == Node.TEXT_NODE || txt.getNodeType() == Node.CDATA_SECTION_NODE))
-                            {throw new XMLStreamException("sx:value should only contain text if type is " + typeName);}
+                        if (!(txt.getNodeType() == Node.TEXT_NODE || txt.getNodeType() == Node.CDATA_SECTION_NODE)) {
+                            throw new XMLStreamException("sx:value should only contain text if type is " + typeName);
+                        }
                         data.append(txt.getNodeValue());
                         txt = txt.getNextSibling();
                     }

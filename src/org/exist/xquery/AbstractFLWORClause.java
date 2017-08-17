@@ -1,6 +1,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.QName;
+import org.exist.dom.QName.IllegalQNameException;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
@@ -18,10 +19,15 @@ public abstract class AbstractFLWORClause extends AbstractExpression implements 
         super(context);
     }
 
-    public LocalVariable createVariable(String name) throws XPathException {
-        final LocalVariable var = new LocalVariable(QName.parse(context, name, null));
-        firstVar = var;
-        return var;
+    @Override
+    public LocalVariable createVariable(final String name) throws XPathException {
+        try {
+            final LocalVariable var = new LocalVariable(QName.parse(context, name, null));
+            firstVar = var;
+            return var;
+        } catch (final IllegalQNameException e) {
+            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + name);
+        }
     }
 
     @Override

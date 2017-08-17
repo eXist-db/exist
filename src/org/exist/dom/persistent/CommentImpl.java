@@ -49,16 +49,6 @@ public class CommentImpl extends AbstractCharacterData implements Comment {
     }
 
     @Override
-    public String getLocalName() {
-        return "";
-    }
-
-    @Override
-    public String getNamespaceURI() {
-        return XMLConstants.NULL_NS_URI;
-    }
-
-    @Override
     public String toString() {
         return "<!-- " + cdata.toString() + " -->";
     }

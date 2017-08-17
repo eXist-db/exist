@@ -90,9 +90,8 @@ public class FunctionFunction extends BasicFunction {
 	    QName qname;
 	    try {
 	        qname = QName.parse(context, funcName, context.getDefaultFunctionNamespace());
-	    } catch(final XPathException e) {
-            e.setLocation(line, column);
-	        throw e;
+	    } catch(final QName.IllegalQNameException e) {
+			throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + funcName);
 	    }
 	    
 	    // check if the function is from a module 

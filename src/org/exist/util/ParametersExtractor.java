@@ -130,7 +130,7 @@ public class ParametersExtractor {
                     if(strings == null) {
                         strings = new ArrayList<>();
                     }
-                    strings.add(childParameter.getNodeValue());
+                    strings.add(childParameter.getTextContent());
                     results.put(name, strings);
                 }
             }

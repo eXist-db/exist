@@ -190,12 +190,17 @@ public class CastExpression extends AbstractExpression {
 	}
 
     public Function toFunction() throws XPathException {
-        final QName qname = QName.parse(context, Type.getTypeName(CastExpression.this.requiredType));
-        final FunctionSignature signature = new FunctionSignature(qname);
-        final SequenceType argType = new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE);
-        signature.setArgumentTypes(new SequenceType[] { argType });
-        signature.setReturnType(new SequenceType(CastExpression.this.requiredType, CastExpression.this.cardinality));
-        return new FunctionWrapper(context, signature);
+        final String typeName = Type.getTypeName(CastExpression.this.requiredType);
+	    try {
+            final QName qname = QName.parse(context, typeName);
+            final FunctionSignature signature = new FunctionSignature(qname);
+            final SequenceType argType = new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE);
+            signature.setArgumentTypes(new SequenceType[]{argType});
+            signature.setReturnType(new SequenceType(CastExpression.this.requiredType, CastExpression.this.cardinality));
+            return new FunctionWrapper(context, signature);
+        } catch (final QName.IllegalQNameException e) {
+            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + typeName);
+        }
     }
 
     private class FunctionWrapper extends Function {

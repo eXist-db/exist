@@ -46,7 +46,7 @@ public abstract class AbstractCharacterData extends StoredNode implements Charac
         cdata = new XMLString(data.toCharArray());
     }
 
-    public AbstractCharacterData(final short nodeType, String data) {
+    public AbstractCharacterData(final short nodeType, final String data) {
         super(nodeType);
         cdata = new XMLString(data.toCharArray());
     }
@@ -88,8 +88,20 @@ public abstract class AbstractCharacterData extends StoredNode implements Charac
 
     @Override
     public void deleteData(final int offset, final int count) throws DOMException {
+        if(offset < 0 || count < 0) {
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+        }
+
         if(cdata != null) {
-            cdata.delete(offset, count);
+            if(offset > cdata.length()) {
+                throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+            }
+
+            if(offset + count > cdata.length()) {
+                cdata.delete(offset, cdata.length() - offset);
+            } else {
+                cdata.delete(offset, count);
+            }
         }
     }
 
@@ -116,20 +128,55 @@ public abstract class AbstractCharacterData extends StoredNode implements Charac
     }
 
     @Override
+    public void setNodeValue(final String value) throws DOMException {
+        setData(value);
+    }
+
+    @Override
+    public String getTextContent() throws DOMException {
+        return getNodeValue();
+    }
+
+    @Override
+    public void setTextContent(final String textContent) throws DOMException {
+        setNodeValue(textContent);
+    }
+
+    @Override
     public void insertData(final int offset, final String arg) throws DOMException {
+        if(offset < 0) {
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+        }
+
         if(cdata == null) {
             cdata = new XMLString(arg.toCharArray());
         } else {
+            if(offset > cdata.length()) {
+                throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+            }
             cdata.insert(offset, arg);
         }
     }
 
     @Override
-    public void replaceData(final int offset, final int count, final String arg) throws DOMException {
+    public void replaceData(final int offset, int count, final String arg) throws DOMException {
+        if(offset < 0 || count < 0) {
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+        }
+
         if(cdata == null) {
             throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, "string index out of bounds");
+        } else {
+            if (offset > cdata.length()) {
+                throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+            }
+
+            if(offset + count > cdata.length()) {
+                count = cdata.length() - offset;
+            }
+
+            cdata.replace(offset, count, arg);
         }
-        cdata.replace(offset, count, arg);
     }
 
     @Override
@@ -154,10 +201,23 @@ public abstract class AbstractCharacterData extends StoredNode implements Charac
     }
 
     @Override
-    public String substringData(final int offset, final int count) throws DOMException {
+    public String substringData(final int offset, int count) throws DOMException {
+        if(offset < 0 || count < 0) {
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+        }
+
         if(cdata == null) {
             throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, "string index out of bounds");
         }
+
+        if(offset > cdata.length()) {
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, "offset is out of bounds");
+        }
+
+        if(offset + count > cdata.length()) {
+            count = cdata.length() - offset;
+        }
+
         return cdata.substring(offset, count);
     }
 

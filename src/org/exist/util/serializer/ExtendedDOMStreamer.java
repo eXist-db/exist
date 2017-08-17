@@ -37,15 +37,15 @@ import org.xml.sax.ext.LexicalHandler;
 public class ExtendedDOMStreamer extends DOMStreamer {
 
     private Serializer xmlSerializer;
-    
+
     public ExtendedDOMStreamer() {
         super();
     }
 
     /**
-     * 
+     *
      */
-    public ExtendedDOMStreamer(Serializer xmlSerializer) {
+    public ExtendedDOMStreamer(final Serializer xmlSerializer) {
         super();
         this.xmlSerializer = xmlSerializer;
     }
@@ -54,32 +54,28 @@ public class ExtendedDOMStreamer extends DOMStreamer {
      * @param contentHandler
      * @param lexicalHandler
      */
-    public ExtendedDOMStreamer(Serializer xmlSerializer, ContentHandler contentHandler,
-            LexicalHandler lexicalHandler) {
+    public ExtendedDOMStreamer(final Serializer xmlSerializer, final ContentHandler contentHandler,
+            final LexicalHandler lexicalHandler) {
         super(contentHandler, lexicalHandler);
         this.xmlSerializer = xmlSerializer;
     }
 
-    public void setSerializer(Serializer serializer) {
+    public void setSerializer(final Serializer serializer) {
         this.xmlSerializer = serializer;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.util.serializer.DOMStreamer#startNode(org.w3c.dom.Node)
-     */
     @Override
-    protected void startNode(Node node) throws SAXException {
-        if(node.getNodeType() == NodeImpl.REFERENCE_NODE) {
-            if(xmlSerializer == null)
-                {throw new SAXException("Cannot serialize node reference. Serializer is undefined.");}
-            xmlSerializer.toReceiver(((ReferenceNode)node).getReference(), true);
-        } else
-            {super.startNode(node);}
+    protected void startNode(final Node node) throws SAXException {
+        if (node.getNodeType() == NodeImpl.REFERENCE_NODE) {
+            if (xmlSerializer == null) {
+                throw new SAXException("Cannot serialize node reference. Serializer is undefined.");
+            }
+            xmlSerializer.toReceiver(((ReferenceNode) node).getReference(), true);
+        } else {
+            super.startNode(node);
+        }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.util.serializer.DOMStreamer#reset()
-     */
     @Override
     public void reset() {
         super.reset();

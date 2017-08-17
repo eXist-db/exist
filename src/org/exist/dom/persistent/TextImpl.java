@@ -54,16 +54,6 @@ public class TextImpl extends AbstractCharacterData implements Text {
         super(Node.TEXT_NODE, nodeId, data);
     }
 
-    @Override
-    public String getLocalName() {
-        return "";
-    }
-
-    @Override
-    public String getNamespaceURI() {
-        return XMLConstants.NULL_NS_URI;
-    }
-
     /**
      * Serializes a (persistent DOM) Text to a byte array
      *
@@ -159,15 +149,6 @@ public class TextImpl extends AbstractCharacterData implements Text {
     @Override
     public short compareDocumentPosition(final Node other) throws DOMException {
         return 0;
-    }
-
-    @Override
-    public String getTextContent() throws DOMException {
-        return null;
-    }
-
-    @Override
-    public void setTextContent(final String textContent) throws DOMException {
     }
 
     @Override

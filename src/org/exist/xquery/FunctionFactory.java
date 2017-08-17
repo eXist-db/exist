@@ -31,6 +31,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
+import javax.xml.XMLConstants;
+
 public class FunctionFactory {
 
     public static final String ENABLE_JAVA_BINDING_ATTRIBUTE = "enable-java-binding";
@@ -43,9 +45,8 @@ public class FunctionFactory {
     	QName qname = null;
         try {
             qname = QName.parse(context, ast.getText(), context.getDefaultFunctionNamespace());
-        } catch(final XPathException xpe) {
-            xpe.setLocation(ast.getLine(), ast.getColumn());
-            throw xpe;
+        } catch(final QName.IllegalQNameException xpe) {
+            throw new XPathException(ErrorCodes.XPST0081, "Invalid qname " +  ast.getText());
         }
         return createFunction(context, qname, ast, parent, params);
     }
@@ -383,16 +384,16 @@ public class FunctionFactory {
     public static FunctionCall wrap(XQueryContext context, Function call) throws XPathException {
 		final int argCount = call.getArgumentCount();
 		final QName[] variables = new QName[argCount];
-		final List<Expression> innerArgs = new ArrayList<Expression>(argCount);
-		final List<Expression> wrapperArgs = new ArrayList<Expression>(argCount);
+		final List<Expression> innerArgs = new ArrayList<>(argCount);
+		final List<Expression> wrapperArgs = new ArrayList<>(argCount);
 		final FunctionSignature signature = call.getSignature();
 		// the parameters of the newly created inline function:
-		final List<SequenceType> newParamTypes = new ArrayList<SequenceType>();
+		final List<SequenceType> newParamTypes = new ArrayList<>();
 		final SequenceType[] paramTypes = signature.getArgumentTypes();
 		for (int i = 0; i < argCount; i++) {
 			final Expression param = call.getArgument(i);
 			wrapperArgs.add(param);
-			QName varName = new QName("vp" + i);
+			QName varName = new QName("vp" + i, XMLConstants.NULL_NS_URI);
 			variables[i] = varName;
 			final VariableReference ref = new VariableReference(context, varName);
 			innerArgs.add(ref);

@@ -51,6 +51,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 
 /**
@@ -159,7 +160,7 @@ public class Update extends Modification {
                             parent.updateChild(transaction, node, text);
                             break;
                         case Node.ATTRIBUTE_NODE:
-                            parent = (ElementImpl) node.getParentNode();
+                            parent = (ElementImpl) ((Attr)node).getOwnerElement();
                             if (parent == null) {
                                 LOG.warn("parent node not found for " + node.getNodeId());
                                 break;

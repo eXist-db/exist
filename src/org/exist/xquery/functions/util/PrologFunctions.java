@@ -25,15 +25,7 @@ package org.exist.xquery.functions.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.ExternalModule;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
-import org.exist.xquery.Option;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -135,15 +127,19 @@ public class PrologFunctions extends BasicFunction {
 		context.addDynamicOption(qname, options);
 	}
 
-        private Sequence getOption(Sequence[] args) throws XPathException {
-            final String qnameString = args[0].getStringValue();
-            final QName qname = QName.parse(context, qnameString, context.getDefaultFunctionNamespace());
-            final Option option = context.getOption(qname);
+	private Sequence getOption(final Sequence[] args) throws XPathException {
+		final String qnameString = args[0].getStringValue();
+        try {
+			final QName qname = QName.parse(context, qnameString, context.getDefaultFunctionNamespace());
+			final Option option = context.getOption(qname);
 
-            if(option != null) {
-                return new StringValue(option.getContents());
-            } else {
-                return Sequence.EMPTY_SEQUENCE;
-            }
-        }
+			if (option != null) {
+				return new StringValue(option.getContents());
+			} else {
+				return Sequence.EMPTY_SEQUENCE;
+			}
+		} catch (final QName.IllegalQNameException e) {
+			throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + qnameString);
+		}
+	}
 }

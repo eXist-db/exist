@@ -32,6 +32,7 @@ import org.exist.storage.Signatures;
 import org.exist.storage.dom.INodeIterator;
 import org.exist.util.pool.NodePool;
 import org.exist.xquery.Constants;
+import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
@@ -261,11 +262,25 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
 
     @Override
     public Node getPreviousSibling() {
-        final StoredNode parent = getParentStoredNode();
-        if(parent == null) {
+        // if we are the root node, there is no sibling
+        if(nodeId.equals(NodeId.ROOT_NODE)) {
             return null;
         }
-        if(parent.isDirty()) {
+
+        // handle siblings of level 1, e.g. a comment before/after a document element
+        if(nodeId.getTreeLevel() == 1) {
+            final NodeId siblingId = nodeId.precedingSibling();
+            try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
+                return broker.objectWith(ownerDocument, siblingId);
+            } catch(final EXistException e) {
+                LOG.error("Internal error while reading previous sibling node: " + e.getMessage(), e);
+                //TODO : throw exception -pb
+            }
+        }
+
+        // handle siblings of level 1+n
+        final StoredNode parent = getParentStoredNode();
+        if(parent != null && parent.isDirty()) {
             try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
                 final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
                 final int level = nodeId.getTreeLevel();
@@ -280,22 +295,18 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
                         last = reader.getNode();
                     }
                 }
-            } catch(final IOException e) {
-                LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
-                //TODO : throw exception -pb
-            } catch(final XMLStreamException e) {
-                LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
-                //TODO : throw exception -pb
-            } catch(final EXistException e) {
+            } catch(final IOException | XMLStreamException | EXistException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
                 //TODO : throw exception -pb
             }
             return null;
         }
+
         final NodeId firstChild = parent.getNodeId().newChild();
         if(nodeId.equals(firstChild)) {
             return null;
         }
+
         final NodeId siblingId = nodeId.precedingSibling();
         return ownerDocument.getNode(siblingId);
     }
@@ -305,11 +316,21 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
         if(nodeId.getTreeLevel() == 2 && getOwnerDocument().getCollection().isTempCollection()) {
             return null;
         }
-        final StoredNode parent = getParentStoredNode();
-        if(parent == null) {
-            return null;
+
+        // handle siblings of level 1, e.g. a comment before/after a document element
+        if(nodeId.getTreeLevel() == 1) {
+            final NodeId siblingId = nodeId.nextSibling();
+            try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
+                return broker.objectWith(ownerDocument, siblingId);
+            } catch(final EXistException e) {
+                LOG.error("Internal error while reading next sibling node: " + e.getMessage(), e);
+                //TODO : throw exception -pb
+            }
         }
-        if(parent.isDirty()) {
+
+        // handle siblings of level 1+n
+        final StoredNode parent = getParentStoredNode();
+        if(parent != null && parent.isDirty()) {
             try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
                 final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
                 final int level = nodeId.getTreeLevel();
@@ -317,23 +338,19 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
                     final int status = reader.next();
                     final NodeId currentId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
                     if(status != XMLStreamConstants.END_ELEMENT
-                        && currentId.getTreeLevel() == level
-                        && currentId.compareTo(nodeId) > 0) {
+                            && currentId.getTreeLevel() == level
+                            && currentId.compareTo(nodeId) > 0) {
                         return reader.getNode();
                     }
                 }
-            } catch(final IOException e) {
-                LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
-                //TODO : throw exception -pb
-            } catch(final XMLStreamException e) {
-                LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
-                //TODO : throw exception -pb
-            } catch(final EXistException e) {
+            } catch(final IOException | XMLStreamException | EXistException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
                 //TODO : throw exception -pb
             }
             return null;
+
         }
+
         final NodeId siblingId = nodeId.nextSibling();
         return ownerDocument.getNode(siblingId);
     }
@@ -381,7 +398,14 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
         if(getNodeType() == Node.ELEMENT_NODE) {
             path.addComponent(getQName());
         }
-        NodeImpl parent = (NodeImpl) getParentNode();
+
+        NodeImpl parent;
+        if(getNodeType() == Node.ATTRIBUTE_NODE) {
+            parent = (NodeImpl) ((Attr)this).getOwnerElement();
+        } else {
+            parent = (NodeImpl) getParentNode();
+        }
+
         while(parent != null && parent.getNodeType() != Node.DOCUMENT_NODE) {
             path.addComponentAtStart(parent.getQName());
             parent = (NodeImpl) parent.getParentNode();

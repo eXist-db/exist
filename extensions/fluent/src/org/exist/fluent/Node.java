@@ -156,7 +156,10 @@ public class Node extends Item {
 			}
 		} else if (nv1.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
 			org.exist.dom.memtree.NodeImpl n1 = (org.exist.dom.memtree.NodeImpl) nv1, n2 = (org.exist.dom.memtree.NodeImpl) nv2;
-			if (n1.getOwnerDocument() != n2.getOwnerDocument())
+			final org.exist.dom.memtree.DocumentImpl n1Doc = n1.getNodeType() == org.w3c.dom.Node.DOCUMENT_NODE ? (org.exist.dom.memtree.DocumentImpl)n1 : n1.getOwnerDocument();
+			final org.exist.dom.memtree.DocumentImpl n2Doc = n2.getNodeType() == org.w3c.dom.Node.DOCUMENT_NODE ? (org.exist.dom.memtree.DocumentImpl)n2 : n2.getOwnerDocument();
+
+			if (n1Doc != n2Doc)
 				throw new DatabaseException("can't compare document order of in-memory nodes created separately");
 			try {
 				return n1.before(n2, false) ? -1 : +1;
@@ -198,7 +201,8 @@ public class Node extends Item {
 				public Node completed(org.w3c.dom.Node[] nodes) {
 					Transaction tx = db.requireTransactionWithBroker();
 					try {
-						tx.lockWrite(node.getOwnerDocument());
+						final DocumentImpl ownerDoc = node.getOwnerDocument();
+						tx.lockWrite(ownerDoc);
 						DocumentTrigger trigger = fireTriggerBefore(tx);
 						node.appendChildren(tx.tx, toNodeList(nodes), 0);
 						NodeHandle result = (NodeHandle) node.getLastChild();

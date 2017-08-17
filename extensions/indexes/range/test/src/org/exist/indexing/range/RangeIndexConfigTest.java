@@ -92,7 +92,7 @@ public class RangeIndexConfigTest {
         overrideLogger(RangeIndexConfig.class, mockLogger);
         final RangeIndexConfig config = new RangeIndexConfig(mockConfigNodes, namespaces);
 
-        assertTrue(errorMsgCapture.getValue().contains("'" + badCreateQName + "' not a valid local name"));
+        assertTrue(errorMsgCapture.getValue().contains("Illegal QName: '" + badCreateQName + "'.. QName is invalid: INVALID_LOCAL_PART"));
         assertTrue(errorMsgCapture.getValue().contains("(" + mockCollectionXConfUri + ")"));
 
         verify(mockConfigNodes, mockConfigNode, mockCreates, mockCreateDocument, mockCreate, mockEmptyNodeList, mockLogger);

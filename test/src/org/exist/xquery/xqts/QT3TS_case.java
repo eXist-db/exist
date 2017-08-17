@@ -231,7 +231,7 @@ public class QT3TS_case extends TestCase {
                     nodeName = ((ElementImpl) child).getLocalName();
                     if (nodeName.equals("test")) {
                         ElementImpl el = ((ElementImpl) child);
-                        caseScript = el.getNodeValue();
+                        caseScript = el.getTextContent();
 
                     } else if (nodeName.equals("environment")) {
                         ElementImpl el = ((ElementImpl) child);
@@ -382,7 +382,7 @@ public class QT3TS_case extends TestCase {
             for (int i = 0; i < expected.getLength(); i++) {
                 final Node node = expected.item(i);
 
-                final String expect = node.getNodeValue();
+                final String expect = node.getTextContent();
                 final int actual = result.itemAt(i).getType();
 
                 if (Type.subTypeOf(actual, Type.getType(expect)))
@@ -394,7 +394,7 @@ public class QT3TS_case extends TestCase {
         } else if ("assert-eq".equals(type)) {
             for (int i = 0; i < expected.getLength(); i++) {
                 final Node node = expected.item(i);
-                String expect = node.getNodeValue();
+                String expect = node.getTextContent();
                 // if ((expect.startsWith("\"") && expect.endsWith("\"")) ||
                 // (expect.startsWith("'") && expect.endsWith("'"))) {
                 // //? check is it xs:string ?
@@ -425,7 +425,7 @@ public class QT3TS_case extends TestCase {
         } else if ("assert-deep-eq".equals(type)) {
             Assert.assertEquals(1, expected.getLength());
             final Node node = expected.item(0);
-            String expect = node.getNodeValue();
+            String expect = node.getTextContent();
 
             StringBuilder got = new StringBuilder();
             for (int i = 0; i < result.getItemCount(); i++) {
@@ -450,7 +450,7 @@ public class QT3TS_case extends TestCase {
             }
             for (int i = 0; i < expected.getLength(); i++) {
                 final Node node = expected.item(i);
-                String expect = node.getNodeValue();
+                String expect = node.getTextContent();
 
                 Assert.assertEquals(expect, sb.toString());
             }
@@ -464,7 +464,7 @@ public class QT3TS_case extends TestCase {
         } else if ("assert-permutation".equals(type)) {
             Assert.assertEquals(1, expected.getLength());
             final Node node = expected.item(0);
-            String[] expect = node.getNodeValue().split(", ");
+            String[] expect = node.getTextContent().split(", ");
 
             for (int i = 0; i < result.getItemCount(); i++) {
                 String got = itemToString(result.itemAt(i));
@@ -490,10 +490,10 @@ public class QT3TS_case extends TestCase {
             }
 
         } else if ("assert-count".equals(type)) {
-            if (expected.getLength() == 1 && "1".equals(expected.item(0).getNodeValue()) && result != null) {
+            if (expected.getLength() == 1 && "1".equals(expected.item(0).getTextContent()) && result != null) {
                 return;
             }
-            Assert.assertEquals(expected.item(0).getNodeValue(), String.valueOf(result.getItemCount()));
+            Assert.assertEquals(expected.item(0).getTextContent(), String.valueOf(result.getItemCount()));
 
         } else if ("assert-empty".equals(type)) {
             Assert.assertTrue(result.isEmpty());
@@ -521,7 +521,7 @@ public class QT3TS_case extends TestCase {
                         return;
                     }
                 } else {
-                    exString = exNode.getNodeValue();
+                    exString = exNode.getTextContent();
                 }
 
                 final Item acNode = result.itemAt(ic);

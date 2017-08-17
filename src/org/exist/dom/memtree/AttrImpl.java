@@ -85,6 +85,11 @@ public class AttrImpl extends NodeImpl implements Attr {
     }
 
     @Override
+    public Node getNextSibling() {
+        return null;
+    }
+
+    @Override
     public boolean getSpecified() {
         return true;
     }
@@ -95,8 +100,20 @@ public class AttrImpl extends NodeImpl implements Attr {
     }
 
     @Override
+    public void setValue(final String value) throws DOMException {
+        document.attrValue[nodeNumber] = value;
+    }
+
+    @Override
     public String getNodeValue() throws DOMException {
-        return document.attrValue[nodeNumber];
+        return getValue();
+    }
+
+    @Override
+    public void setNodeValue(final String nodeValue) throws DOMException {
+        //This method was added to enable the SQL XQuery Extension Module
+        //to change the value of an attribute after the fact - Andrzej
+        setValue(nodeValue);
     }
 
     @Override
@@ -105,20 +122,23 @@ public class AttrImpl extends NodeImpl implements Attr {
     }
 
     @Override
-    public void setNodeValue(final String nodeValue) throws DOMException {
-        //This method was added to enable the SQL XQuery Extension Module
-        //to change the value of an attribute after the fact - Andrzej
-        document.attrValue[nodeNumber] = nodeValue;
+    public String getTextContent() throws DOMException {
+        return getNodeValue();
     }
 
     @Override
-    public void setValue(final String value) throws DOMException {
-        document.attrValue[nodeNumber] = value;
+    public void setTextContent(final String textContent) throws DOMException {
+        setNodeValue(textContent);
     }
 
     @Override
     public Element getOwnerElement() {
         return (Element) document.getNode(document.attrParent[nodeNumber]);
+    }
+
+    @Override
+    public Node getParentNode() {
+        return null;
     }
 
     @Override
@@ -129,17 +149,8 @@ public class AttrImpl extends NodeImpl implements Attr {
     }
 
     @Override
-    public Node getParentNode() {
-        final int parent = document.attrParent[nodeNumber];
-        if(parent > 0) {
-            return document.getNode(parent);
-        }
-        return null;
-    }
-
-    @Override
     public Node selectParentNode() {
-        return getParentNode();
+        return getOwnerElement();
     }
 
     @Override
@@ -180,5 +191,20 @@ public class AttrImpl extends NodeImpl implements Attr {
     public void selectChildren(final NodeTest test, final Sequence result)
             throws XPathException {
         //do nothing, which will return an empty sequence
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if(!super.equals(obj)) {
+            return false;
+        }
+
+        if(obj instanceof AttrImpl) {
+            final AttrImpl other = ((AttrImpl)obj);
+            return other.getQName().equals(getQName())
+                    && other.document.attrValue[nodeNumber].equals(document.attrValue[nodeNumber]);
+        }
+
+        return false;
     }
 }

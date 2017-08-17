@@ -24,9 +24,11 @@ import org.exist.TestUtils;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionException;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.FileUtils;
+import org.exist.util.LockException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.exist.collections.Collection;
@@ -53,6 +55,7 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.junit.ClassRule;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -200,7 +203,55 @@ public class BasicNodeSetTest {
         NodeSet result = ((AbstractNodeSet)scenes).selectAncestors(largeSet.toNodeSet(), false, -1);
         assertEquals(49, result.getLength());
     }
-    
+
+    @Test
+    public void getElementsByTagNameWildcard() throws LockException, PermissionDeniedException {
+        DocumentImpl doc = null;
+        try {
+            doc = root.getDocumentWithLock(broker, XmldbURI.create("hamlet.xml"), Lock.LockMode.READ_LOCK);
+            final NodeList elements = doc.getElementsByTagName(QName.WILDCARD);
+
+            assertEquals(6636, elements.getLength());
+
+        } finally {
+            if(doc != null) {
+                doc.getUpdateLock().release(Lock.LockMode.READ_LOCK);
+            }
+        }
+    }
+
+    @Test
+    public void getElementsByTagNameNSWildcard() throws LockException, PermissionDeniedException {
+        DocumentImpl doc = null;
+        try {
+            doc = root.getDocumentWithLock(broker, XmldbURI.create("hamlet.xml"), Lock.LockMode.READ_LOCK);
+            final NodeList elements = doc.getElementsByTagNameNS(QName.WILDCARD, QName.WILDCARD);
+
+            assertEquals(6636, elements.getLength());
+
+        } finally {
+            if(doc != null) {
+                doc.getUpdateLock().release(Lock.LockMode.READ_LOCK);
+            }
+        }
+    }
+
+    @Test
+    public void getElementsByTagNameWildcardNS() throws LockException, PermissionDeniedException {
+        DocumentImpl doc = null;
+        try {
+            doc = root.getDocumentWithLock(broker, XmldbURI.create("hamlet.xml"), Lock.LockMode.READ_LOCK);
+            final NodeList elements = doc.getElementsByTagNameNS(QName.WILDCARD, "SPEECH");
+
+            assertEquals(1138, elements.getLength());
+
+        } finally {
+            if(doc != null) {
+                doc.getUpdateLock().release(Lock.LockMode.READ_LOCK);
+            }
+        }
+    }
+
     @Test
     public void nodeProxy_getParents() throws XPathException, SAXException, PermissionDeniedException {
         Sequence smallSet = executeQuery(broker, "//SPEECH/LINE[fn:contains(., 'perturbed spirit')]/ancestor::SPEECH", 1, null);

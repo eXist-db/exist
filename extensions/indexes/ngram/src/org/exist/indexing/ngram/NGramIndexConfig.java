@@ -54,7 +54,7 @@ public class NGramIndexConfig {
             } else {
                 qname = new QName(localName, namespaceURI, prefix);
             }
-        } catch (IllegalArgumentException e) {
+        } catch (QName.IllegalQNameException e) {
             throw new DatabaseConfigurationException("NGram index configuration: " + e.getMessage(), e);
         }
     }

@@ -8,6 +8,7 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.xml.sax.helpers.AttributesImpl;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.*;
@@ -31,10 +32,10 @@ public class Execute extends BasicFunction {
             },
             new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, "the sequence of code points"));
 
-    public final static QName RESULT_QNAME = new QName("execution");
-    public final static QName COMMAND_LINE_QNAME = new QName("commandline");
-    public final static QName STDOUT_QNAME = new QName("stdout");
-    public final static QName LINE_QNAME = new QName("line");
+    public final static QName RESULT_QNAME = new QName("execution", XMLConstants.NULL_NS_URI);
+    public final static QName COMMAND_LINE_QNAME = new QName("commandline", XMLConstants.NULL_NS_URI);
+    public final static QName STDOUT_QNAME = new QName("stdout", XMLConstants.NULL_NS_URI);
+    public final static QName LINE_QNAME = new QName("line", XMLConstants.NULL_NS_URI);
 
     public Execute(final XQueryContext context) {
         super(context, signature);

@@ -513,8 +513,12 @@ public abstract class Serializer implements XMLReader {
 	}
 	
 	public void serialize(NodeValue n, Writer out) throws SAXException {
-        try {
-            setStylesheetFromProperties(n.getOwnerDocument());
+		try {
+			if(n.getItemType() == Type.DOCUMENT && !(n instanceof NodeProxy)) {
+				setStylesheetFromProperties((Document)n);
+			} else {
+				setStylesheetFromProperties(n.getOwnerDocument());
+			}
         } catch (final TransformerConfigurationException e) {
             throw new SAXException(e.getMessage(), e);
         }
@@ -865,7 +869,11 @@ public abstract class Serializer implements XMLReader {
 
 	public void toSAX(NodeValue n) throws SAXException {
         try {
-            setStylesheetFromProperties(n.getOwnerDocument());
+        	if(n.getType() == Type.DOCUMENT && !(n instanceof NodeProxy)) {
+				setStylesheetFromProperties((Document)n);
+			} else {
+				setStylesheetFromProperties(n.getOwnerDocument());
+			}
         } catch (final TransformerConfigurationException e) {
             throw new SAXException(e.getMessage(), e);
         }
@@ -1087,13 +1095,19 @@ public abstract class Serializer implements XMLReader {
 	
 	protected void serializeToReceiver(org.exist.dom.memtree.NodeImpl n, boolean generateDocEvents)
 	throws SAXException {
-		if (generateDocEvents)
-			{receiver.startDocument();}
+		if (generateDocEvents) {
+			receiver.startDocument();
+		}
         setDocument(null);
-        setXQueryContext(n.getOwnerDocument().getContext());
+		if(n.getNodeType() == Node.DOCUMENT_NODE) {
+			setXQueryContext(((org.exist.dom.memtree.DocumentImpl)n).getContext());
+		} else {
+			setXQueryContext(n.getOwnerDocument().getContext());
+		}
         n.streamTo(this, receiver);
-		if (generateDocEvents)
-			{receiver.endDocument();}
+		if (generateDocEvents) {
+			receiver.endDocument();
+		}
 	}
 	
 	/**
@@ -1181,13 +1195,13 @@ public abstract class Serializer implements XMLReader {
         switch(item.getType()) {
             case Type.DOCUMENT:
 
-                final String baseUri = item.getOwnerDocument().getBaseURI();
+                final String baseUri = ((Document)item).getBaseURI();
 
                 attrs = new AttrList();
                 if(baseUri != null && baseUri.length() > 0){
                     attrs.addAttribute(ATTR_URI_QNAME, baseUri);
                 }
-                if(item.getOwnerDocument().getDocumentElement() == null) {
+                if(((Document)item).getDocumentElement() == null) {
                     attrs.addAttribute(ATTR_HAS_ELEMENT_QNAME, "false");
                 }
 

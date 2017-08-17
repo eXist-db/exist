@@ -33,12 +33,7 @@ import org.exist.storage.NotificationService;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Expression;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XPathUtil;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.Messages;
@@ -65,9 +60,7 @@ public class Rename extends Modification {
         super(context, select, value);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-     */
+    @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
@@ -126,7 +119,11 @@ public class Rename extends Modification {
             if (item.getType() == Type.QNAME) {
                 newQName = ((QNameValue) item).getQName();
             } else {
-                newQName = QName.parse(context, item.getStringValue());
+                try {
+                    newQName = QName.parse(context, item.getStringValue());
+                } catch (final QName.IllegalQNameException iqe) {
+                    throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + item.getStringValue());
+                }
             }
 
             //start a transaction
@@ -141,16 +138,17 @@ public class Rename extends Modification {
                     }
 
                     //update the document
-                    parent = (NodeImpl) node.getParentNode();
                     switch (node.getNodeType()) {
                         case Node.ELEMENT_NODE:
                             final ElementImpl newElem = new ElementImpl((ElementImpl) node);
                             newElem.setNodeName(newQName, context.getBroker().getBrokerPool().getSymbols());
+                            parent = (NodeImpl) node.getParentNode();
                             parent.updateChild(transaction, node, newElem);
                             break;
                         case Node.ATTRIBUTE_NODE:
                             final AttrImpl newAttr = new AttrImpl((AttrImpl) node);
                             newAttr.setNodeName(newQName, context.getBroker().getBrokerPool().getSymbols());
+                            parent = (NodeImpl) ((AttrImpl) node).getOwnerElement();
                             parent.updateChild(transaction, node, newAttr);
                             break;
                         default:

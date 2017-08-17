@@ -117,7 +117,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
             else
             	try {
             		qn = QName.parse(context, nameSeq.getStringValue(), null);
-		    	} catch (final IllegalArgumentException e) {
+		    	} catch (final QName.IllegalQNameException e) {
 					throw new XPathException(this, ErrorCodes.XPTY0004, "'" + nameSeq.getStringValue() + "' is not a valid attribute name");
 				}
 

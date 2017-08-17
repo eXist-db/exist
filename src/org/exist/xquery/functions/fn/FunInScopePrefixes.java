@@ -51,6 +51,8 @@ import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import javax.xml.XMLConstants;
+
 public class FunInScopePrefixes extends BasicFunction {
 
 	public final static FunctionSignature signature =
@@ -200,11 +202,11 @@ public class FunInScopePrefixes extends BasicFunction {
 		return prefixes;
 	}
 
-	public static void collectNamespacePrefixes(Element element, Map<String, String> prefixes) {
+	public static void collectNamespacePrefixes(final Element element, final Map<String, String> prefixes) {
 		final String namespaceURI = element.getNamespaceURI();
-		if (namespaceURI != null && namespaceURI.length() > 0) {
+		if (namespaceURI != null && !namespaceURI.isEmpty()) {
 			final String prefix = element.getPrefix();
-			prefixes.put(prefix == null ? "" : prefix, namespaceURI);
+			prefixes.put(prefix == null ? XMLConstants.DEFAULT_NS_PREFIX : prefix, namespaceURI);
 		}		
 		
 		if (element instanceof org.exist.dom.memtree.ElementImpl) {
@@ -219,10 +221,10 @@ public class FunInScopePrefixes extends BasicFunction {
 				}
 			}
 		}
-		
-		if (namespaceURI == null && namespaceURI.isEmpty()) {
+
+		if (namespaceURI != null && namespaceURI.isEmpty()) {
 			final String prefix = element.getPrefix();
-			prefixes.remove(prefix == null ? "" : prefix);
+			prefixes.remove(prefix == null ? XMLConstants.DEFAULT_NS_PREFIX : prefix);
 		}		
     }
 

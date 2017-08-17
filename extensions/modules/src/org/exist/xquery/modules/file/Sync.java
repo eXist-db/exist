@@ -10,6 +10,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -186,11 +187,11 @@ public class Sync extends BasicFunction {
     	    boolean isRepoXML = Files.exists(targetFile) && FileUtils.fileName(targetFile).equals("repo.xml");
 
 			output.startElement(new QName("update", FileModule.NAMESPACE_URI), null);
-			output.addAttribute(new QName("file"), targetFile.toAbsolutePath().toString());
-			output.addAttribute(new QName("name"), doc.getFileURI().toString());
-			output.addAttribute(new QName("collection"), doc.getCollection().getURI().toString());
-			output.addAttribute(new QName("type"), "xml");
-			output.addAttribute(new QName("modified"), new DateTimeValue(new Date(doc.getMetadata().getLastModified())).getStringValue());
+			output.addAttribute(new QName("file", XMLConstants.NULL_NS_URI), targetFile.toAbsolutePath().toString());
+			output.addAttribute(new QName("name", XMLConstants.NULL_NS_URI), doc.getFileURI().toString());
+			output.addAttribute(new QName("collection", XMLConstants.NULL_NS_URI), doc.getCollection().getURI().toString());
+			output.addAttribute(new QName("type", XMLConstants.NULL_NS_URI), "xml");
+			output.addAttribute(new QName("modified", XMLConstants.NULL_NS_URI), new DateTimeValue(new Date(doc.getMetadata().getLastModified())).getStringValue());
             output.endElement();
 
             if (isRepoXML) {

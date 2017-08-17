@@ -2328,7 +2328,7 @@ public class InteractiveClient {
                 final StringBuilder value = new StringBuilder();
                 Node next = query.getFirstChild();
                 while (next != null) {
-                    value.append(next.getNodeValue());
+                    value.append(next.getTextContent());
                     next = next.getNextSibling();
                 }
                 queryHistory.addLast(value.toString());

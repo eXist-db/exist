@@ -27,12 +27,7 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
+import org.w3c.dom.*;
 
 /**
  * Collection of static methods operating on node sets.
@@ -684,11 +679,6 @@ public final class NodeSetHelper {
                     newNode.appendChild(newChild);
                     break;
                 }
-                case Node.ATTRIBUTE_NODE: {
-                    newChild = copyNode(newDoc, child);
-                    ((Element) newNode).setAttributeNode((Attr) newChild);
-                    break;
-                }
                 case Node.TEXT_NODE: {
                     newChild = copyNode(newDoc, child);
                     newNode.appendChild(newChild);
@@ -705,16 +695,18 @@ public final class NodeSetHelper {
 
             case Node.ELEMENT_NODE:
                 newNode = newDoc.createElementNS(node.getNamespaceURI(), node.getNodeName());
+                final NamedNodeMap attributes = node.getAttributes();
+                for(int i = 0; i < attributes.getLength(); i++) {
+                    final Attr attr = (Attr)attributes.item(i);
+                    final Attr newAttr = newDoc.createAttributeNS(attr.getNamespaceURI(), attr.getNodeName());
+                    newAttr.setValue(((Attr) node).getValue());
+                    ((Element) newNode).setAttributeNode(newAttr);
+                }
                 copyChildren(newDoc, node, newNode);
                 break;
 
             case Node.TEXT_NODE:
                 newNode = newDoc.createTextNode(((Text) node).getData());
-                break;
-
-            case Node.ATTRIBUTE_NODE:
-                newNode = newDoc.createAttributeNS(node.getNamespaceURI(), node.getNodeName());
-                ((Attr) newNode).setValue(((Attr) node).getValue());
                 break;
 
             default:

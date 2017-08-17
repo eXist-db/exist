@@ -28,9 +28,9 @@ import static org.junit.Assert.assertNotNull;
 
 public class DLNStorageTest {
 
-    private static XmldbURI TEST_COLLECTION = XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test");
+    private static final XmldbURI TEST_COLLECTION = XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test");
 
-    private static String TEST_XML =
+    private static final String TEST_XML =
             "<test>\n" +
                     "    <para>My first paragraph.</para>\n" +
                     "    <!-- A comment -->\n" +
@@ -50,11 +50,11 @@ public class DLNStorageTest {
                     null);
             assertEquals(3, seq.getItemCount());
             NodeProxy comment = (NodeProxy) seq.itemAt(0);
-            assertEquals(comment.getNodeId().toString(), "1.1");
+            assertEquals("1.1", comment.getNodeId().toString());
             comment = (NodeProxy) seq.itemAt(1);
-            assertEquals(comment.getNodeId().toString(), "1.3");
+            assertEquals("1.3", comment.getNodeId().toString());
             comment = (NodeProxy) seq.itemAt(2);
-            assertEquals(comment.getNodeId().toString(), "1.5");
+            assertEquals("1.5", comment.getNodeId().toString());
 
             seq = xquery.execute(broker, "doc('/db/test/test_string.xml')/test//a",
                     null);
@@ -73,11 +73,11 @@ public class DLNStorageTest {
             Attr attr = (Attr) href.getNode();
             StorageAddress.toString(((NodeHandle)attr));
             // test Attr fields
-            assertEquals(attr.getNodeName(), "href");
-            assertEquals(attr.getName(), "href");
-            assertEquals(attr.getValue(), "#");
+            assertEquals("href", attr.getNodeName());
+            assertEquals("href", attr.getName());
+            assertEquals("#", attr.getValue());
             // test DOMFile.getNodeValue()
-            assertEquals(href.getStringValue(), "#");
+            assertEquals("#", href.getStringValue());
 
             // test text node
             seq = xquery.execute(broker, "doc('/db/test/test_string.xml')/test//b/text()",
@@ -86,11 +86,11 @@ public class DLNStorageTest {
             NodeProxy text = (NodeProxy) seq.itemAt(0);
             assertEquals("1.5.2.1", text.getNodeId().toString());
             // test DOMFile.getNodeValue()
-            assertEquals(text.getStringValue(), "paragraph");
+            assertEquals("paragraph", text.getStringValue());
             // test Text deserialization
             Text node = (Text) text.getNode();
-            assertEquals(node.getNodeValue(), "paragraph");
-            assertEquals(node.getData(), "paragraph");
+            assertEquals("paragraph", node.getNodeValue());
+            assertEquals("paragraph", node.getData());
         }
     }
 

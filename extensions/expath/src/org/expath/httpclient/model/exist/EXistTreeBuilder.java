@@ -11,6 +11,8 @@ import org.expath.httpclient.HttpConstants;
 import org.expath.httpclient.model.TreeBuilder;
 import org.expath.tools.ToolsException;
 
+import javax.xml.XMLConstants;
+
 /**
  * @author Adam Retter <adam@existsolutions.com>
  */
@@ -34,7 +36,7 @@ public class EXistTreeBuilder implements TreeBuilder {
 
     @Override
     public void attribute(final String localname, final CharSequence value) throws ToolsException {
-        builder.addAttribute(new QName(localname), value.toString());
+        builder.addAttribute(new QName(localname, XMLConstants.NULL_NS_URI), value.toString());
     }
 
     @Override

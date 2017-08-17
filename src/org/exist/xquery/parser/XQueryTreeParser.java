@@ -22,6 +22,7 @@
 	import org.exist.dom.persistent.DocumentSet;
 	import org.exist.dom.persistent.DocumentImpl;
 	import org.exist.dom.QName;
+	import org.exist.dom.QName.IllegalQNameException;
 	import org.exist.security.PermissionDeniedException;
 	import org.exist.util.XMLChar;
 	import org.exist.xquery.*;
@@ -869,8 +870,12 @@ public XQueryTreeParser() {
 						match(_t,CATCH_ERROR_CODE);
 						_t = _t.getNextSibling();
 						
+											    try {
 						qncode = QName.parse(staticContext, code.getText());
 						catchVars.add(qncode);
+						} catch (final IllegalQNameException iqe) {
+						throw new XPathException(code.getLine(), code.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + code.getText());
+						}
 						
 						{
 						if (_t==null) _t=ASTNULL;
@@ -881,8 +886,12 @@ public XQueryTreeParser() {
 							match(_t,CATCH_ERROR_DESC);
 							_t = _t.getNextSibling();
 							
+							try {
 							qndesc = QName.parse(staticContext, desc.getText());
 							catchVars.add(qndesc);
+							} catch (final IllegalQNameException iqe) {
+							throw new XPathException(desc.getLine(), desc.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + desc.getText());
+							}
 							
 							{
 							if (_t==null) _t=ASTNULL;
@@ -893,8 +902,12 @@ public XQueryTreeParser() {
 								match(_t,CATCH_ERROR_VAL);
 								_t = _t.getNextSibling();
 								
+								try {
 								qnval = QName.parse(staticContext, val.getText());
 								catchVars.add(qnval);
+								} catch (final IllegalQNameException iqe) {
+								throw new XPathException(val.getLine(), val.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + val.getText());
+								}
 								
 								break;
 							}
@@ -2034,7 +2047,12 @@ public XQueryTreeParser() {
 							}
 							}
 							
-							QName groupKeyVar = QName.parse(staticContext, groupVarName.getText(), null);
+							final QName groupKeyVar;
+							try {
+							groupKeyVar = QName.parse(staticContext, groupVarName.getText(), null);
+							} catch (final IllegalQNameException iqe) {
+							throw new XPathException(groupVarName.getLine(), groupVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + groupVarName.getText());
+							}
 							
 							GroupSpec groupSpec= new GroupSpec(context, groupSpecExpr, groupKeyVar);
 							clause.groupSpecs.add(groupSpec);
@@ -2825,7 +2843,13 @@ public XQueryTreeParser() {
 						var = (org.exist.xquery.parser.XQueryAST)_t;
 						match(_t,VARIABLE_BINDING);
 						_t = _t.getNextSibling();
-						qn = QName.parse(staticContext, var.getText());
+						
+											    try {
+											        qn = QName.parse(staticContext, var.getText());
+						} catch (final IllegalQNameException iqe) {
+						throw new XPathException(var.getLine(), var.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + var.getText());
+						}
+											
 						break;
 					}
 					case FUNCTION_TEST:
@@ -2911,7 +2935,13 @@ public XQueryTreeParser() {
 				dvar = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,VARIABLE_BINDING);
 				_t = _t.getNextSibling();
-				qn = QName.parse(staticContext, dvar.getText());
+				
+								    try {
+								        qn = QName.parse(staticContext, dvar.getText());
+				} catch (final IllegalQNameException iqe) {
+				throw new XPathException(dvar.getLine(), dvar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + dvar.getText());
+				}
+								
 				break;
 			}
 			case EOF:
@@ -4404,7 +4434,12 @@ public XQueryTreeParser() {
 				
 								PathExpr enclosed= new PathExpr(context);
 								SequenceType type= null;
-								QName qn = QName.parse(staticContext, qname.getText(), null);
+								final QName qn;
+								try {
+								    qn = QName.parse(staticContext, qname.getText(), null);
+								} catch (final IllegalQNameException iqe) {
+								    throw new XPathException(qname.getLine(), qname.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + qname.getText());
+								}
 								if (declaredGlobalVars.contains(qn))
 									throw new XPathException(qname, "err:XQST0049: It is a " +
 										"static error if more than one variable declared or " +
@@ -4953,11 +4988,15 @@ public XQueryTreeParser() {
 			match(_t,ATOMIC_TYPE);
 			_t = _t.getFirstChild();
 			
-							QName qn= QName.parse(staticContext, t.getText());
-							int code= Type.getType(qn);
-							if(!Type.subTypeOf(code, Type.ATOMIC))
-								throw new XPathException(t, "Type " + qn.toString() + " is not an atomic type");
-							type.setPrimaryType(code);
+						    try {
+			QName qn= QName.parse(staticContext, t.getText());
+			int code= Type.getType(qn);
+			if(!Type.subTypeOf(code, Type.ATOMIC))
+			throw new XPathException(t, "Type " + qn.toString() + " is not an atomic type");
+			type.setPrimaryType(code);
+			} catch (final IllegalQNameException e) {
+			throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + t.getText());
+			}
 						
 			_t = __t92;
 			_t = _t.getNextSibling();
@@ -5240,10 +5279,9 @@ public XQueryTreeParser() {
 									try {
 										QName qname= QName.parse(staticContext, eq1.getText());
 										type.setNodeName(qname);
-									} catch (XPathException e) {
-										e.setLocation(lelement.getLine(), lelement.getColumn());
-					throw e;
-									}
+				} catch (final IllegalQNameException iqe) {
+				throw new XPathException(eq1.getLine(), eq1.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + eq1.getText());
+				}
 								
 				{
 				if (_t==null) _t=ASTNULL;
@@ -5257,10 +5295,9 @@ public XQueryTreeParser() {
 											try {
 						                        QName qname12= QName.parse(staticContext, eq12.getText());
 						                        TypeTest test = new TypeTest(Type.getType(qname12));
-						                    } catch (XPathException e) {
-												e.setLocation(lelement.getLine(), lelement.getColumn());
-						                    	throw e;
-											}
+					} catch (final IllegalQNameException iqe) {
+					throw new XPathException(eq12.getLine(), eq12.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + eq12.getText());
+					}
 										
 					break;
 				}
@@ -5310,10 +5347,9 @@ public XQueryTreeParser() {
 				QName qname = QName.parse(staticContext, eq2.getText(), XMLConstants.DEFAULT_NS_PREFIX);
 				qname = new QName(qname, ElementValue.ATTRIBUTE);
 										type.setNodeName(qname);
-									} catch (XPathException e) {
-										e.setLocation(lattr.getLine(), lattr.getColumn());
-					throw e;
-									}
+				} catch (final IllegalQNameException iqe) {
+				throw new XPathException(lattr.getLine(), lattr.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + eq2.getText());
+				}
 								
 				break;
 			}
@@ -5334,10 +5370,9 @@ public XQueryTreeParser() {
 											try {
 						                        QName qname21= QName.parse(staticContext, eq21.getText());
 						                        TypeTest test = new TypeTest(Type.getType(qname21));
-						                    } catch (XPathException e) {
-							                    e.setLocation(lattr.getLine(), lattr.getColumn());
-						                    	throw e;
-						                    }
+					} catch (final IllegalQNameException iqe) {
+					throw new XPathException(lattr.getLine(), lattr.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + eq21.getText());
+					}
 										
 					break;
 				}
@@ -5477,10 +5512,9 @@ public XQueryTreeParser() {
 											    QName qname= QName.parse(staticContext, dneq.getText());
 						                        type.setNodeName(qname);
 						                        NameTest test= new NameTest(Type.DOCUMENT, qname);
-						                    } catch(XPathException e) {
-						                    	e.setLocation(lelement2.getLine(), lelement2.getColumn());
-						                    	throw e;
-						                    }
+					} catch (final IllegalQNameException iqe) {
+					throw new XPathException(lelement2.getLine(), lelement2.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + dneq.getText());
+					}
 					
 					break;
 				}
@@ -5504,10 +5538,9 @@ public XQueryTreeParser() {
 							try {
 								                            QName qname = QName.parse(staticContext, dneq2.getText());
 								                            test = new TypeTest(Type.getType(qname));
-								                        } catch(XPathException e) {
-								                        	e.setLocation(lelement2.getLine(), lelement2.getColumn());
-							                    			throw e;
-								                        }
+						} catch (final IllegalQNameException iqe) {
+						throw new XPathException(lelement2.getLine(), lelement2.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + dneq2.getText());
+						}
 						
 						break;
 					}
@@ -5650,11 +5683,9 @@ public XQueryTreeParser() {
 					QName qn= null;
 					try {
 		qn = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
-					} catch(XPathException e) {
-						// throw exception with correct source location
-						e.setLocation(name.getLine(), name.getColumn());
-						throw e;
-					}
+					} catch (final IllegalQNameException iqe) {
+		throw new XPathException(name.getLine(), name.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + name.getText());
+		}
 					FunctionSignature signature= new FunctionSignature(qn);
 					signature.setDescription(name.getDoc());
 					UserDefinedFunction func= new UserDefinedFunction(context, signature);
@@ -6014,13 +6045,11 @@ public XQueryTreeParser() {
 		match(_t,ANNOT_DECL);
 		_t = _t.getFirstChild();
 		
-		QName qn= null;
+		final QName qn;
 		try {
 		qn = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
-		} catch(XPathException e) {
-		// throw exception with correct source location
-		e.setLocation(name.getLine(), name.getColumn());
-		throw e;
+		} catch (final IllegalQNameException iqe) {
+		throw new XPathException(name.getLine(), name.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + name.getText());
 		}
 		
 		String ns = qn.getNamespaceURI();
@@ -6430,7 +6459,11 @@ public XQueryTreeParser() {
 			match(_t,WILDCARD);
 			_t = _t.getNextSibling();
 			
+			try {
 			catchErrors.add(QName.WildcardLocalPartQName.parseFromPrefix(staticContext, ncwc.toString()));
+			} catch (final IllegalQNameException e) {
+			throw new XPathException(ncwc.getLine(), ncwc.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + ncwc.getText());
+			}
 			
 			_t = __t86;
 			_t = _t.getNextSibling();
@@ -6472,7 +6505,11 @@ public XQueryTreeParser() {
 			match(_t,EQNAME);
 			_t = _t.getFirstChild();
 			
-						catchErrors.add(QName.parse(staticContext, eq.toString()));
+			try {
+						    catchErrors.add(QName.parse(staticContext, eq.toString()));
+			} catch (final IllegalQNameException e) {
+			throw new XPathException(eq.getLine(), eq.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + eq.getText());
+			}
 					
 			_t = __t89;
 			_t = _t.getNextSibling();
@@ -6617,12 +6654,16 @@ public XQueryTreeParser() {
 			}
 			}
 			
-						QName qn= QName.parse(staticContext, t.getText());
-						int code= Type.getType(qn);
-						CastExpression castExpr= new CastExpression(context, expr, code, cardinality);
-						castExpr.setASTNode(castAST);
-						path.add(castExpr);
-						step = castExpr;
+					    try {
+			QName qn= QName.parse(staticContext, t.getText());
+			int code= Type.getType(qn);
+			CastExpression castExpr= new CastExpression(context, expr, code, cardinality);
+			castExpr.setASTNode(castAST);
+			path.add(castExpr);
+			step = castExpr;
+			} catch (final IllegalQNameException e) {
+			throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + t.getText());
+			}
 					
 			_t = __t350;
 			_t = _t.getNextSibling();
@@ -6665,12 +6706,16 @@ public XQueryTreeParser() {
 			}
 			}
 			
-						QName qn= QName.parse(staticContext, t2.getText());
-						int code= Type.getType(qn);
-						CastableExpression castExpr= new CastableExpression(context, expr, code, cardinality);
-						castExpr.setASTNode(castAST);
-						path.add(castExpr);
-						step = castExpr;
+					    try {
+			QName qn= QName.parse(staticContext, t2.getText());
+			int code= Type.getType(qn);
+			CastableExpression castExpr= new CastableExpression(context, expr, code, cardinality);
+			castExpr.setASTNode(castAST);
+			path.add(castExpr);
+			step = castExpr;
+			} catch (final IllegalQNameException e) {
+			throw new XPathException(t2.getLine(), t2.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + t2.getText());
+			}
 					
 			_t = __t352;
 			_t = _t.getNextSibling();
@@ -7284,7 +7329,12 @@ public XQueryTreeParser() {
 			match(_t,VARIABLE_REF);
 			_t = _t.getNextSibling();
 			
-				    final QName vrqn = QName.parse(staticContext, v.getText(), null);
+				    final QName vrqn;
+				    try {
+				        vrqn = QName.parse(staticContext, v.getText(), null);
+			} catch (final IllegalQNameException iqe) {
+			throw new XPathException(v.getLine(), v.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + v.getText());
+			}
 			step= new VariableReference(context, vrqn);
 			step.setASTNode(v);
 			
@@ -7644,10 +7694,9 @@ public XQueryTreeParser() {
 				test= new NameTest(Type.ELEMENT, qname);
 				}
 								ast = eq;
-							} catch(XPathException ex1) {
-								ex1.setLocation(eq.getLine(), eq.getColumn());
-								throw ex1;
-							}
+				} catch (final IllegalQNameException iqe) {
+				throw new XPathException(eq.getLine(), eq.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + eq.getText());
+				}
 						
 				break;
 			}
@@ -7764,8 +7813,12 @@ public XQueryTreeParser() {
 					match(_t,EQNAME);
 					_t = _t.getNextSibling();
 					
-										QName qname= QName.parse(staticContext, eq2.getText());
-										test= new NameTest(Type.ELEMENT, qname);
+									    try {
+										    QName qname= QName.parse(staticContext, eq2.getText());
+										    test= new NameTest(Type.ELEMENT, qname);
+					} catch (final IllegalQNameException iqe) {
+					throw new XPathException(eq2.getLine(), eq2.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + eq2.getText());
+					}
 									
 					break;
 				}
@@ -7783,8 +7836,12 @@ public XQueryTreeParser() {
 						match(_t,EQNAME);
 						_t = _t.getNextSibling();
 						
+											    try {
 						QName qname= QName.parse(staticContext, eq21.getText());
 						test = new TypeTest(Type.getType(qname));
+						} catch (final IllegalQNameException iqe) {
+						throw new XPathException(eq21.getLine(), eq21.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + eq21.getText());
+						}
 											
 						break;
 					}
@@ -7837,9 +7894,13 @@ public XQueryTreeParser() {
 					match(_t,EQNAME);
 					_t = _t.getNextSibling();
 					
-										QName qname = QName.parse(staticContext, eq3.getText());
-										qname = new QName(qname, ElementValue.ATTRIBUTE);
-										test= new NameTest(Type.ATTRIBUTE, qname);
+									    try {
+					QName qname = QName.parse(staticContext, eq3.getText());
+					qname = new QName(qname, ElementValue.ATTRIBUTE);
+					test= new NameTest(Type.ATTRIBUTE, qname);
+					} catch (final IllegalQNameException iqe) {
+					throw new XPathException(eq3.getLine(), eq3.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + eq3.getText());
+					}
 									
 					break;
 				}
@@ -7857,8 +7918,12 @@ public XQueryTreeParser() {
 						match(_t,EQNAME);
 						_t = _t.getNextSibling();
 						
+											    try {
 						QName qname= QName.parse(staticContext, eq31.getText());
 						test = new TypeTest(Type.getType(qname));
+						} catch (final IllegalQNameException iqe) {
+						throw new XPathException(eq31.getLine(), eq31.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + eq31.getText());
+						}
 											
 						break;
 					}
@@ -7992,8 +8057,12 @@ public XQueryTreeParser() {
 						match(_t,EQNAME);
 						_t = _t.getNextSibling();
 						
+						try {
 						QName qname= QName.parse(staticContext, dneq.getText());
 						test= new NameTest(Type.DOCUMENT, qname);
+						} catch (final IllegalQNameException iqe) {
+						throw new XPathException(dneq.getLine(), dneq.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + dneq.getText());
+						}
 						
 						break;
 					}
@@ -8011,8 +8080,12 @@ public XQueryTreeParser() {
 							match(_t,EQNAME);
 							_t = _t.getNextSibling();
 							
+							try {
 							QName qname= QName.parse(staticContext, dneq1.getText());
 							test= new TypeTest(Type.getType(qname));
+							} catch (final IllegalQNameException iqe) {
+							throw new XPathException(dneq1.getLine(), dneq1.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + dneq1.getText());
+							}
 							
 							break;
 						}
@@ -8104,8 +8177,12 @@ public XQueryTreeParser() {
 				match(_t,EQNAME);
 				_t = _t.getNextSibling();
 				
-				qname= QName.parse(staticContext, attr.getText(), "");
+						  try {
+				qname = QName.parse(staticContext, attr.getText(), "");
 				qname = new QName(qname, ElementValue.ATTRIBUTE);
+				} catch (final IllegalQNameException iqe) {
+				throw new XPathException(attr.getLine(), attr.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + attr.getText());
+				}
 				
 				break;
 			}
@@ -9323,10 +9400,14 @@ public XQueryTreeParser() {
 			qnameExpr=expr(_t,qnamePathExpr);
 			_t = _retTree;
 			
+			try {
 			QName qname = QName.parse(staticContext, qna.getText());
 			if (Namespaces.XMLNS_NS.equals(qname.getNamespaceURI())
 			|| ("".equals(qname.getNamespaceURI()) && qname.getLocalPart().equals(XMLConstants.XMLNS_ATTRIBUTE)))
 			throw new XPathException("err:XQDY0044: the node-name property of the node constructed by a computed attribute constructor is in the namespace http://www.w3.org/2000/xmlns/ (corresponding to namespace prefix xmlns), or is in no namespace and has local name xmlns.");
+			} catch (final IllegalQNameException iqe) {
+			throw new XPathException(qna.getLine(), qna.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + qna.getText());
+			}
 			
 			AST __t322 = _t;
 			org.exist.xquery.parser.XQueryAST tmp120_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
@@ -9679,9 +9760,13 @@ public XQueryTreeParser() {
 					}
 					c.addAttribute(attrib);
 					if (attrib.isNamespaceDeclaration()) {
+					try {
 					String nsPrefix = attrib.getQName().equals(XMLConstants.XMLNS_ATTRIBUTE) ?
 					"" : QName.extractLocalName(attrib.getQName());
 					staticContext.declareInScopeNamespace(nsPrefix,attrib.getLiteralValue());
+					} catch (final IllegalQNameException iqe) {
+					throw new XPathException(attrib.getLine(), attrib.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + attrib.getQName());
+					}
 					}
 					
 					
@@ -10379,11 +10464,9 @@ public XQueryTreeParser() {
 					QName qname;
 					try {
 						qname = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
-					} catch(XPathException e) {
-						// throw exception with correct source location
-						e.setLocation(name.getLine(), name.getColumn());
-						throw e;
-					}
+		} catch (final IllegalQNameException iqe) {
+		throw new XPathException(name.getLine(), name.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + name.getText());
+		}
 					NamedFunctionReference ref = new NamedFunctionReference(context, qname, Integer.parseInt(arity.getText()));
 					step = ref;
 				

@@ -22,14 +22,12 @@
  */
 package org.exist.util.serializer;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.exist.dom.QName;
+import org.exist.dom.QName.IllegalQNameException;
 import org.exist.dom.memtree.ReferenceNode;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CharacterData;
@@ -47,7 +45,7 @@ import javax.xml.XMLConstants;
 
 /**
  * General purpose class to stream a DOM node to SAX.
- * 
+ *
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class DOMStreamer {
@@ -57,31 +55,30 @@ public class DOMStreamer {
     private ContentHandler contentHandler = null;
     private LexicalHandler lexicalHandler = null;
     private NamespaceSupport nsSupport = new NamespaceSupport();
-    private HashMap<String, String> namespaceDecls = new HashMap<String, String>();
-    private Stack<ElementInfo> stack = new Stack<ElementInfo>();
+    private final Map<String, String> namespaceDecls = new HashMap<>();
+    private final Deque<ElementInfo> stack = new ArrayDeque<>();
 
     public DOMStreamer() {
         //TODUNDERSTAND : what is this class ? java.lang.Object ?
         super();
     }
 
-    public DOMStreamer(ContentHandler contentHandler, LexicalHandler lexicalHandler) {
+    public DOMStreamer(final ContentHandler contentHandler, final LexicalHandler lexicalHandler) {
         this.contentHandler = contentHandler;
         this.lexicalHandler = lexicalHandler;
     }
 
-    public void setContentHandler(ContentHandler handler) {
+    public void setContentHandler(final ContentHandler handler) {
         contentHandler = handler;
     }
 
-    public void setLexicalHandler(LexicalHandler handler) {
+    public void setLexicalHandler(final LexicalHandler handler) {
         lexicalHandler = handler;
     }
 
     /**
      * Reset internal state for reuse. Registered handlers will be set
      * to null.
-     *
      */
     public void reset() {
         nsSupport.reset();
@@ -93,11 +90,11 @@ public class DOMStreamer {
 
     /**
      * Serialize the given node and all its descendants to SAX.
-     * 
+     *
      * @param node
      * @throws SAXException
      */
-    public void serialize(Node node) throws SAXException {
+    public void serialize(final Node node) throws SAXException {
         serialize(node, false);
     }
 
@@ -105,25 +102,28 @@ public class DOMStreamer {
      * Serialize the given node and all its descendants to SAX. If
      * callDocumentEvents is set to false, startDocument/endDocument
      * events will not be fired.
-     * 
+     *
      * @param node
      * @param callDocumentEvents
      * @throws SAXException
      */
-    public void serialize(Node node, boolean callDocumentEvents) throws SAXException {
-        if(callDocumentEvents)
-            {contentHandler.startDocument();}
+    public void serialize(Node node, final boolean callDocumentEvents) throws SAXException {
+        if (callDocumentEvents) {
+            contentHandler.startDocument();
+        }
         final Node top = node;
         while (node != null) {
             startNode(node);
             Node nextNode = node.getFirstChild();
             //TODO : make it happy
-            if (node instanceof ReferenceNode)
-                {nextNode = null;}
+            if (node instanceof ReferenceNode) {
+                nextNode = null;
+            }
             while (nextNode == null) {
                 endNode(node);
-                if (top != null && top.equals(node))
-                    {break;}
+                if (top != null && top.equals(node)) {
+                    break;
+                }
                 nextNode = node.getNextSibling();
                 if (nextNode == null) {
                     node = node.getParentNode();
@@ -136,151 +136,175 @@ public class DOMStreamer {
             }
             node = nextNode;
         }
-        if(callDocumentEvents)
-            {contentHandler.endDocument();}
-    }
-
-    protected void startNode(Node node) throws SAXException {
-        String cdata;
-        switch (node.getNodeType()) {
-        case Node.DOCUMENT_NODE :
-        case Node.DOCUMENT_FRAGMENT_NODE :
-            break;
-        case Node.ELEMENT_NODE :
-            namespaceDecls.clear();
-            nsSupport.pushContext();
-            String uri = node.getNamespaceURI();
-            String prefix = node.getPrefix();
-            if (uri == null)
-                {uri = XMLConstants.XML_NS_URI;}
-            if (prefix == null)
-                {prefix = XMLConstants.DEFAULT_NS_PREFIX;}
-            if (nsSupport.getURI(prefix) == null) {
-                namespaceDecls.put(prefix, uri);
-                nsSupport.declarePrefix(prefix, uri);
-            }
-            // check attributes for required namespace declarations
-            final NamedNodeMap attrs = node.getAttributes();
-            Attr nextAttr;
-            String attrName;
-            for (int i = 0; i < attrs.getLength(); i++) {
-                nextAttr = (Attr) attrs.item(i);
-                attrName = nextAttr.getName();
-                if (XMLConstants.XMLNS_ATTRIBUTE.equals(attrName)) {
-                    if (nsSupport.getURI(XMLConstants.NULL_NS_URI) == null) {
-                        uri = nextAttr.getValue();
-                        namespaceDecls.put(XMLConstants.DEFAULT_NS_PREFIX, uri);
-                        nsSupport.declarePrefix(XMLConstants.DEFAULT_NS_PREFIX, uri);
-                    }
-                } else if (attrName.startsWith(XMLConstants.XMLNS_ATTRIBUTE + ":")) {
-                    prefix = attrName.substring(6);
-                    if (nsSupport.getURI(prefix) == null) {
-                        uri = nextAttr.getValue();
-                        namespaceDecls.put(prefix, uri);
-                        nsSupport.declarePrefix(prefix, uri);
-                    }
-                } else if (attrName.indexOf(':') > 0) {
-                    prefix = nextAttr.getPrefix();
-                    uri = nextAttr.getNamespaceURI();
-                    if (nsSupport.getURI(prefix) == null) {
-                        namespaceDecls.put(prefix, uri);
-                        nsSupport.declarePrefix(prefix, uri);
-                    }
-                }
-            }
-            final ElementInfo info = new ElementInfo(node);
-            String[] declaredPrefixes = null;
-            if(namespaceDecls.size() > 0)
-                {declaredPrefixes = new String[namespaceDecls.size()];}
-            // output all namespace declarations
-            Map.Entry<String, String> nsEntry;
-            int j = 0;
-            for (final Iterator<Map.Entry<String, String>> i = namespaceDecls.entrySet().iterator(); i.hasNext(); j++) {
-                nsEntry = i.next();
-                declaredPrefixes[j] = nsEntry.getKey();
-                contentHandler.startPrefixMapping(declaredPrefixes[j], nsEntry.getValue());
-            }
-            info.prefixes = declaredPrefixes;
-            stack.push(info);
-            // output attributes
-            final AttributesImpl saxAttrs = new AttributesImpl();
-            String attrNS, attrLocalName;
-            for (int i = 0; i < attrs.getLength(); i++) {
-                nextAttr = (Attr) attrs.item(i);
-                attrNS = nextAttr.getNamespaceURI();
-                if(attrNS == null)
-                    {attrNS = XMLConstants.NULL_NS_URI;}
-                attrLocalName = nextAttr.getLocalName();
-                if(attrLocalName == null)
-                    {attrLocalName = QName.extractLocalName(nextAttr.getNodeName());}
-                saxAttrs.addAttribute(
-                    attrNS,
-                    attrLocalName,
-                    nextAttr.getNodeName(),
-                    "CDATA",
-                    nextAttr.getValue()
-                );
-            }
-            String localName = node.getLocalName();
-            if(localName == null) {
-                localName = QName.extractLocalName(node.getNodeName());
-            }
-            String namespaceURI = node.getNamespaceURI();
-            if(namespaceURI == null) {
-                namespaceURI = XMLConstants.NULL_NS_URI;
-            }
-            contentHandler.startElement(namespaceURI, localName,
-                node.getNodeName(), saxAttrs);
-            break;
-        case Node.TEXT_NODE :
-            cdata = ((CharacterData) node).getData();
-            contentHandler.characters(cdata.toCharArray(), 0, cdata.length());
-            break;
-        case Node.CDATA_SECTION_NODE :
-            cdata = ((CharacterData) node).getData();
-            if(lexicalHandler != null)
-                {lexicalHandler.startCDATA();}
-            contentHandler.characters(cdata.toCharArray(), 0, cdata.length());
-            if(lexicalHandler != null)
-                {lexicalHandler.endCDATA();}
-            break;
-        case Node.ATTRIBUTE_NODE :
-            break;
-        case Node.PROCESSING_INSTRUCTION_NODE :
-            contentHandler.processingInstruction(
-                ((ProcessingInstruction) node).getTarget(),
-                ((ProcessingInstruction) node).getData());
-            break;
-        case Node.COMMENT_NODE :
-            if(lexicalHandler != null) {
-                cdata = ((Comment) node).getData();
-                lexicalHandler.comment(cdata.toCharArray(), 0, cdata.length());
-            }
-            break;
-        default :
-            //TODO : what kind of default here ? -pb
-            LOG.error("Unknown node type: " + node.getNodeType());
-            break;
+        if (callDocumentEvents) {
+            contentHandler.endDocument();
         }
     }
 
-    protected void endNode(Node node) throws SAXException {
-        if (node == null)
-            {return;}
+    protected void startNode(final Node node) throws SAXException {
+        String cdata;
+        switch (node.getNodeType()) {
+            case Node.DOCUMENT_NODE:
+            case Node.DOCUMENT_FRAGMENT_NODE:
+                break;
+            case Node.ELEMENT_NODE:
+                namespaceDecls.clear();
+                nsSupport.pushContext();
+                String uri = node.getNamespaceURI();
+                String prefix = node.getPrefix();
+                if (uri == null) {
+                    uri = XMLConstants.XML_NS_URI;
+                }
+                if (prefix == null) {
+                    prefix = XMLConstants.DEFAULT_NS_PREFIX;
+                }
+                if (nsSupport.getURI(prefix) == null) {
+                    namespaceDecls.put(prefix, uri);
+                    nsSupport.declarePrefix(prefix, uri);
+                }
+                // check attributes for required namespace declarations
+                final NamedNodeMap attrs = node.getAttributes();
+                Attr nextAttr;
+                String attrName;
+                for (int i = 0; i < attrs.getLength(); i++) {
+                    nextAttr = (Attr) attrs.item(i);
+                    attrName = nextAttr.getName();
+                    if (XMLConstants.XMLNS_ATTRIBUTE.equals(attrName)) {
+                        if (nsSupport.getURI(XMLConstants.NULL_NS_URI) == null) {
+                            uri = nextAttr.getValue();
+                            namespaceDecls.put(XMLConstants.DEFAULT_NS_PREFIX, uri);
+                            nsSupport.declarePrefix(XMLConstants.DEFAULT_NS_PREFIX, uri);
+                        }
+                    } else if (attrName.startsWith(XMLConstants.XMLNS_ATTRIBUTE + ":")) {
+                        prefix = attrName.substring(6);
+                        if (nsSupport.getURI(prefix) == null) {
+                            uri = nextAttr.getValue();
+                            namespaceDecls.put(prefix, uri);
+                            nsSupport.declarePrefix(prefix, uri);
+                        }
+                    } else if (attrName.indexOf(':') > 0) {
+                        prefix = nextAttr.getPrefix();
+                        if (prefix == null) {
+                            prefix = XMLConstants.DEFAULT_NS_PREFIX;
+                        }
+                        uri = nextAttr.getNamespaceURI();
+                        if (nsSupport.getURI(prefix) == null) {
+                            namespaceDecls.put(prefix, uri);
+                            nsSupport.declarePrefix(prefix, uri);
+                        }
+                    }
+                }
+                final ElementInfo info = new ElementInfo(node);
+                String[] declaredPrefixes = null;
+                if (namespaceDecls.size() > 0) {
+                    declaredPrefixes = new String[namespaceDecls.size()];
+                }
+                // output all namespace declarations
+                Map.Entry<String, String> nsEntry;
+                int j = 0;
+                for (final Iterator<Map.Entry<String, String>> i = namespaceDecls.entrySet().iterator(); i.hasNext(); j++) {
+                    nsEntry = i.next();
+                    declaredPrefixes[j] = nsEntry.getKey();
+                    contentHandler.startPrefixMapping(declaredPrefixes[j], nsEntry.getValue());
+                }
+                info.prefixes = declaredPrefixes;
+                stack.push(info);
+                // output attributes
+                final AttributesImpl saxAttrs = new AttributesImpl();
+                String attrNS, attrLocalName;
+                for (int i = 0; i < attrs.getLength(); i++) {
+                    nextAttr = (Attr) attrs.item(i);
+                    attrNS = nextAttr.getNamespaceURI();
+                    if (attrNS == null) {
+                        attrNS = XMLConstants.NULL_NS_URI;
+                    }
+                    attrLocalName = nextAttr.getLocalName();
+                    if (attrLocalName == null) {
+                        try {
+                            attrLocalName = QName.extractLocalName(nextAttr.getNodeName());
+                        } catch (final IllegalQNameException e) {
+                            throw new SAXException(e);
+                        }
+                    }
+                    saxAttrs.addAttribute(
+                            attrNS,
+                            attrLocalName,
+                            nextAttr.getNodeName(),
+                            "CDATA",
+                            nextAttr.getValue()
+                    );
+                }
+                String localName = node.getLocalName();
+                if (localName == null) {
+                    try {
+                        localName = QName.extractLocalName(node.getNodeName());
+                    } catch (final IllegalQNameException e) {
+                        throw new SAXException(e);
+                    }
+                }
+                String namespaceURI = node.getNamespaceURI();
+                if (namespaceURI == null) {
+                    namespaceURI = XMLConstants.NULL_NS_URI;
+                }
+                contentHandler.startElement(namespaceURI, localName,
+                        node.getNodeName(), saxAttrs);
+                break;
+            case Node.TEXT_NODE:
+                cdata = ((CharacterData) node).getData();
+                contentHandler.characters(cdata.toCharArray(), 0, cdata.length());
+                break;
+            case Node.CDATA_SECTION_NODE:
+                cdata = ((CharacterData) node).getData();
+                if (lexicalHandler != null) {
+                    lexicalHandler.startCDATA();
+                }
+                contentHandler.characters(cdata.toCharArray(), 0, cdata.length());
+                if (lexicalHandler != null) {
+                    lexicalHandler.endCDATA();
+                }
+                break;
+            case Node.ATTRIBUTE_NODE:
+                break;
+            case Node.PROCESSING_INSTRUCTION_NODE:
+                contentHandler.processingInstruction(
+                        ((ProcessingInstruction) node).getTarget(),
+                        ((ProcessingInstruction) node).getData());
+                break;
+            case Node.COMMENT_NODE:
+                if (lexicalHandler != null) {
+                    cdata = ((Comment) node).getData();
+                    lexicalHandler.comment(cdata.toCharArray(), 0, cdata.length());
+                }
+                break;
+            default:
+                //TODO : what kind of default here ? -pb
+                LOG.error("Unknown node type: " + node.getNodeType());
+                break;
+        }
+    }
+
+    protected void endNode(final Node node) throws SAXException {
+        if (node == null) {
+            return;
+        }
         if (node.getNodeType() == Node.ELEMENT_NODE) {
             final ElementInfo info = stack.pop();
             nsSupport.popContext();
             String localName = node.getLocalName();
-            if(localName == null) {
-                localName = QName.extractLocalName(node.getNodeName());
+            if (localName == null) {
+                try {
+                    localName = QName.extractLocalName(node.getNodeName());
+                } catch (final IllegalQNameException e) {
+                    throw new SAXException(e);
+                }
             }
             String namespaceURI = node.getNamespaceURI();
-            if(namespaceURI == null) {
+            if (namespaceURI == null) {
                 namespaceURI = XMLConstants.NULL_NS_URI;
             }
             contentHandler.endElement(namespaceURI, localName, node.getNodeName());
-            if(info.prefixes != null) {
-                for(int i = 0; i < info.prefixes.length; i++) {
+            if (info.prefixes != null) {
+                for (int i = 0; i < info.prefixes.length; i++) {
                     contentHandler.endPrefixMapping(info.prefixes[i]);
                 }
             }
@@ -288,10 +312,10 @@ public class DOMStreamer {
     }
 
     private static class ElementInfo {
-        Node element;
+        final Node element;
         String[] prefixes = null;
 
-        public ElementInfo(Node element) {
+        public ElementInfo(final Node element) {
             this.element = element;
         }
     }

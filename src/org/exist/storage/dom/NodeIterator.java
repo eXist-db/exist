@@ -227,12 +227,18 @@ public final class NodeIterator implements INodeIterator {
         //Position the iterator at the start of the first value
         if (node != null) {
             RecordPos rec = null;
-            if (StorageAddress.hasAddress(node.getInternalAddress()))
-                {rec = db.findRecord(node.getInternalAddress());}
+            if (StorageAddress.hasAddress(node.getInternalAddress())) {
+                rec = db.findRecord(node.getInternalAddress());
+            }
             if (rec == null) {
+                if(node.getNodeId() == null) {
+                    return false;
+                }
+
                 final long addr = db.findValue(broker, new NodeProxy(node));
-                if (addr == BTree.KEY_NOT_FOUND)
-                    {return false;}
+                if (addr == BTree.KEY_NOT_FOUND) {
+                    return false;
+                }
                 rec = db.findRecord(addr);
             }
             pageNum = rec.getPage().getPageNum();

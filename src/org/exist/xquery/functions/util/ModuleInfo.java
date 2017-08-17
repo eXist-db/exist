@@ -46,6 +46,8 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
+import javax.xml.XMLConstants;
+
 /**
  * @author wolf
  */
@@ -131,12 +133,12 @@ public class ModuleInfo extends BasicFunction {
                 InspectModule.FNS_INSPECT_MODULE_URI
         );
 	
-	private static final QName MODULE_QNAME = new QName("module");
-	private static final QName MODULE_URI_ATTR = new QName("uri");
-	private static final QName MODULE_PREFIX_ATTR = new QName("prefix");
-	private static final QName MODULE_SOURCE_ATTR = new QName("source");
-	private static final QName MODULE_DESC_QNAME = new QName("description");
-	private static final QName MODULES_QNAME = new QName("modules");
+	private static final QName MODULE_QNAME = new QName("module", XMLConstants.NULL_NS_URI);
+	private static final QName MODULE_URI_ATTR = new QName("uri", XMLConstants.NULL_NS_URI);
+	private static final QName MODULE_PREFIX_ATTR = new QName("prefix", XMLConstants.NULL_NS_URI);
+	private static final QName MODULE_SOURCE_ATTR = new QName("source", XMLConstants.NULL_NS_URI);
+	private static final QName MODULE_DESC_QNAME = new QName("description", XMLConstants.NULL_NS_URI);
+	private static final QName MODULES_QNAME = new QName("modules", XMLConstants.NULL_NS_URI);
 	
 	/**
 	 * @param context

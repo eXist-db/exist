@@ -26,6 +26,7 @@ import org.apache.xml.utils.XMLChar;
 import org.apache.xml.utils.XML11Char;
 import org.exist.collections.Collection;
 import org.exist.dom.INode;
+import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.EmptyNodeSet;
@@ -151,23 +152,27 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public final String getNodeName() {
-        switch(getType()) {
-            case Type.DOCUMENT:
+        switch(getNodeType()) {
+            case Node.DOCUMENT_NODE:
                 return "#document";
 
-            case Type.ELEMENT:
-            case Type.ATTRIBUTE:
-            case Type.PROCESSING_INSTRUCTION:
-            case Type.NAMESPACE:
+            case Node.DOCUMENT_FRAGMENT_NODE:
+                return "#document-fragment";
+
+            case Node.ELEMENT_NODE:
+            case Node.ATTRIBUTE_NODE:
                 return getQName().getStringValue();
 
-            case Type.TEXT:
+            case Node.PROCESSING_INSTRUCTION_NODE:
+                return ((ProcessingInstructionImpl)this).getTarget();
+
+            case Node.TEXT_NODE:
                 return "#text";
 
-            case Type.COMMENT:
+            case Node.COMMENT_NODE:
                 return "#comment";
 
-            case Type.CDATA_SECTION:
+            case Node.CDATA_SECTION_NODE:
                 return "#cdata-section";
 
             default:
@@ -182,10 +187,6 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
             case Node.ATTRIBUTE_NODE:
                 return getQName().getLocalPart();
 
-            case Node.PROCESSING_INSTRUCTION_NODE:
-                final QName qname = getQName();
-                return qname != null ? qname.getLocalPart() : null;
-
             default:
                 return null;
         }
@@ -196,7 +197,12 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
         switch(getNodeType()) {
             case Node.ELEMENT_NODE:
             case Node.ATTRIBUTE_NODE:
-                return getQName().getNamespaceURI();
+                final String nsUri = getQName().getNamespaceURI();
+                if(nsUri.equals(XMLConstants.NULL_NS_URI)) {
+                    return null;
+                } else {
+                    return nsUri;
+                }
 
             case NodeImpl.NAMESPACE_NODE:
                 return XMLConstants.XMLNS_ATTRIBUTE_NS_URI;
@@ -212,7 +218,8 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
             case Node.ELEMENT_NODE:
             case Node.ATTRIBUTE_NODE:
             case NodeImpl.NAMESPACE_NODE:
-                return getQName().getPrefix();
+                final String prefix = getQName().getPrefix();
+                return prefix == null ? null : prefix;
 
             default:
                 return null;
@@ -221,7 +228,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public void setPrefix(final String prefix) throws DOMException {
-        if(prefix == null) {
+        if(prefix == null || getNodeType() == Node.DOCUMENT_NODE) {
             return;
         } else if(getOwnerDocument().getXmlVersion().equals("1.0") && !XMLChar.isValidNCName(prefix)) {
             throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "Prefix '" + prefix + "' in XML 1.0 contains invalid characters");
@@ -260,7 +267,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public String getNodeValue() throws DOMException {
-        throw unsupported();
+        return null;
     }
 
     @Override
@@ -372,17 +379,17 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public NodeList getChildNodes() {
-        throw unsupported();
+        return new NodeListImpl();
     }
 
     @Override
     public Node getFirstChild() {
-        throw unsupported();
+        return null;
     }
 
     @Override
     public Node getLastChild() {
-        throw unsupported();
+        return null;
     }
 
     @Override
@@ -410,7 +417,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public NamedNodeMap getAttributes() {
-        throw unsupported();
+        return null;
     }
 
     @Override
@@ -435,6 +442,10 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public Node appendChild(final Node newChild) throws DOMException {
+        if((newChild.getNodeType() == Node.DOCUMENT_NODE && newChild != document) || newChild.getOwnerDocument() != document) {
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Owning document IDs do not match");
+        }
+
         throw unsupported();
     }
 
@@ -450,6 +461,8 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public void normalize() {
+        // TODO(AR) do we need to implement something here? or is the tree already normalized?
+        throw unsupported();
     }
 
     @Override
@@ -981,8 +994,8 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     }
 
 
-    private UnsupportedOperationException unsupported() {
-        return new UnsupportedOperationException("Operation is unsupported on node type: " + this.getNodeType());
+    protected DOMException unsupported() {
+        return new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class: " + getClass().getName());
     }
 
     private final static class SingleNodeIterator implements SequenceIterator {

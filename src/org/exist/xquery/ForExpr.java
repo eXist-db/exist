@@ -77,9 +77,10 @@ public class ForExpr extends BindingExpression {
             // Declare positional variable
             if (positionalVariable != null) {
                 //could probably be detected by the parser
-                if (varName.equals(positionalVariable))
-                    {throw new XPathException(this, ErrorCodes.XQST0089,
-                        "bound variable and positional variable have the same name");}
+                if (varName.equals(positionalVariable)) {
+                    throw new XPathException(this, ErrorCodes.XQST0089,
+                            "bound variable and positional variable have the same name");
+                }
                 final LocalVariable posVar = new LocalVariable(QName.parse(context, positionalVariable, null));
                 posVar.setSequenceType(POSITIONAL_VAR_TYPE);
                 posVar.setStaticType(Type.INTEGER);
@@ -89,6 +90,8 @@ public class ForExpr extends BindingExpression {
             final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
             newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
             returnExpr.analyze(newContextInfo);
+        } catch (final QName.IllegalQNameException e) {
+            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix");
         } finally {
             // restore the local variable stack
             context.popLocalVariables(mark);
@@ -163,17 +166,18 @@ public class ForExpr extends BindingExpression {
             }
 
             final IntegerValue atVal = new IntegerValue(1);
-            if(positionalVariable != null)
-                {at.setValue(atVal);}
+            if (positionalVariable != null) {
+                at.setValue(atVal);
+            }
             //Type.EMPTY is *not* a subtype of other types ;
             //the tests below would fail without this prior cardinality check
             if (in.isEmpty() && sequenceType != null &&
                     !Cardinality.checkCardinality(sequenceType.getCardinality(),
-                    Cardinality.EMPTY)) {
+                            Cardinality.EMPTY)) {
                 throw new XPathException(this, ErrorCodes.XPTY0004,
-                    "Invalid cardinality for variable $" + varName +
-                    ". Expected " + Cardinality.getDescription(sequenceType.getCardinality()) + 
-                    ", got " + Cardinality.getDescription(in.getCardinality()));
+                        "Invalid cardinality for variable $" + varName +
+                                ". Expected " + Cardinality.getDescription(sequenceType.getCardinality()) +
+                                ", got " + Cardinality.getDescription(in.getCardinality()));
             }
 
             // Loop through each variable binding
@@ -185,6 +189,8 @@ public class ForExpr extends BindingExpression {
                     processItem(var, i.nextItem(), in, resultSequence, at, p);
                 }
             }
+        } catch (final QName.IllegalQNameException e) {
+            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + positionalVariable);
         } finally {
             // restore the local variable stack 
             context.popLocalVariables(mark, resultSequence);

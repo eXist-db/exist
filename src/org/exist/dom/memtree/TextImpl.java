@@ -44,17 +44,6 @@ public class TextImpl extends AbstractCharacterData implements Text {
     }
 
     @Override
-    public String getNodeValue() throws DOMException {
-        return getData();
-    }
-
-    @Override
-    public String getStringValue() {
-        //Quick and (not so ?) dirty...
-        return getData();
-    }
-
-    @Override
     public boolean isElementContentWhitespace() {
         return false;
     }
