@@ -629,13 +629,15 @@ public class NativeBroker extends DBBroker {
      * @throws IOException
      * @throws TriggerException
      */
-    private Collection createTempCollection(final Txn transaction)
+    private Tuple2<Boolean, Collection> getOrCreateTempCollection(final Txn transaction)
         throws LockException, PermissionDeniedException, IOException, TriggerException {
         try {
             pushSubject(pool.getSecurityManager().getSystemSubject());
-            final Collection temp = getOrCreateCollection(transaction, XmldbURI.TEMP_COLLECTION_URI);
-            temp.setPermissions(0771);
-            saveCollection(transaction, temp);
+            final Tuple2<Boolean, Collection> temp = getOrCreateCollectionExplicit(transaction, XmldbURI.TEMP_COLLECTION_URI);
+            if (temp._1) {
+                temp._2.setPermissions(0771);
+                saveCollection(transaction, temp._2);
+            }
             return temp;
         } finally {
             popSubject();
@@ -1535,12 +1537,12 @@ public class NativeBroker extends DBBroker {
                     // remove from parent collection
                     //TODO : resolve URIs ! (uri.resolve(".."))
                     final Collection parentCollection = openCollection(collection.getParentURI(), LockMode.WRITE_LOCK);
-                    // keep the lock for the transaction
-                    if(transaction != null) {
-                        transaction.registerLock(parentCollection.getLock(), LockMode.WRITE_LOCK);
-                    }
-
                     if(parentCollection != null) {
+                        // keep the lock for the transaction
+                        if(transaction != null) {
+                            transaction.registerLock(parentCollection.getLock(), LockMode.WRITE_LOCK);
+                        }
+
                         try {
                             LOG.debug("Removing collection '" + collName + "' from its parent...");
                             //TODO : resolve from collection's base URI
@@ -1915,42 +1917,36 @@ public class NativeBroker extends DBBroker {
             final XmldbURI docName = XmldbURI.create(MessageDigester.md5(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis()), false) + ".xml");
 
             //get the temp collection
-            Collection temp = openCollection(XmldbURI.TEMP_COLLECTION_URI, LockMode.WRITE_LOCK);
-            boolean created = false;
             try (final Txn transaction = transact.beginTransaction()) {
-                //if no temp collection
-                if (temp == null) {
-                    //creates temp collection (with write lock)
-                    temp = createTempCollection(transaction);
-                    if (temp == null) {
-                        LOG.warn("Failed to create temporary collection");
-                        //TODO : emergency exit?
-                    }
-                    created = true;
+                Tuple2<Boolean, Collection> tuple = getOrCreateTempCollection(transaction);
+                Collection temp = tuple._2;
+                if (!tuple._1) {
+                    transaction.acquireLock(temp.getLock(), LockMode.WRITE_LOCK);
                 }
+
                 //create a temporary document
                 final DocumentImpl targetDoc = new DocumentImpl(pool, temp, docName);
                 targetDoc.getPermissions().setMode(Permission.DEFAULT_TEMPORARY_DOCUMENT_PERM);
+
                 final long now = System.currentTimeMillis();
                 final DocumentMetadata metadata = new DocumentMetadata();
                 metadata.setLastModified(now);
                 metadata.setCreated(now);
                 targetDoc.setMetadata(metadata);
                 targetDoc.setDocId(getNextResourceId(transaction, temp));
+
                 //index the temporary document
-                final DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
+                final DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc);
                 indexer.scan();
                 indexer.store();
+
                 //store the temporary document
-                temp.addDocument(transaction, this, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
-                // unlock the temp collection
-                if (transaction == null) {
-                    temp.getLock().release(LockMode.WRITE_LOCK);
-                } else if (!created) {
-                    transaction.registerLock(temp.getLock(), LockMode.WRITE_LOCK);
-                }
-                //NULL transaction, so temporary fragment is not journalled - AR
+                temp.addDocument(transaction, this, targetDoc);
+
                 storeXMLResource(transaction, targetDoc);
+
+                saveCollection(transaction, temp);
+
                 flush();
                 closeDocument();
                 //commit the transaction
