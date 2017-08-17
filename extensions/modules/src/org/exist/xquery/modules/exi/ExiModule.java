@@ -48,7 +48,7 @@ public class ExiModule extends AbstractInternalModule {
 		new FunctionDef(DecodeExiFunction.signatures[1], DecodeExiFunction.class)
 	};
 	
-	public ExiModule(Map<String, List<? extends Object>> parameters) {
+	public ExiModule(Map<String, List<?>> parameters) {
 		super(functions, parameters);
 	}
 

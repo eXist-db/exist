@@ -104,8 +104,7 @@ public class MailSessionFunctions extends BasicFunction
 		Session session = Session.getInstance( props, null );
 		
 		// store the session and return the handle of the session
-			
-		IntegerValue integerValue = new IntegerValue( MailModule.storeSession( context, session ) );
-		return integerValue;
+
+        return new IntegerValue( MailModule.storeSession( context, session ) );
 	}
 }

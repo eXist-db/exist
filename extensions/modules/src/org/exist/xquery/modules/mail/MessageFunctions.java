@@ -74,8 +74,7 @@ public class MessageFunctions extends BasicFunction {
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         if (isCalledAs("get-messages")) {
-            Sequence messages = getMessages(args, contextSequence);
-            return messages;
+            return getMessages(args, contextSequence);
         }
         throw (new XPathException(this, "Invalid function name"));
     }

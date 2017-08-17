@@ -62,7 +62,7 @@ public class ImageModule extends AbstractInternalModule {
         new FunctionDef(CropFunction.signature, CropFunction.class)
     };
 	
-    public ImageModule(Map<String, List<? extends Object>> parameters) {
+    public ImageModule(Map<String, List<?>> parameters) {
         super(functions, parameters);
     }
 

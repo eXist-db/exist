@@ -46,7 +46,7 @@ public class SimpleQLModule extends AbstractInternalModule {
         new FunctionDef(ParseSimpleQL.signature, ParseSimpleQL.class)
     };
     
-    public SimpleQLModule(Map<String, List<? extends Object>> parameters) {
+    public SimpleQLModule(Map<String, List<?>> parameters) {
         super(functions, parameters);
     }
 

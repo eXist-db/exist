@@ -63,7 +63,7 @@ public class CounterModule extends AbstractInternalModule {
     public final static QName EXCEPTION_MESSAGE_QNAME =
         new QName("exception-message", CounterModule.NAMESPACE_URI, CounterModule.PREFIX);
 
-	public CounterModule(Map<String, List<? extends Object>> parameters) throws XPathException {
+	public CounterModule(Map<String, List<?>> parameters) throws XPathException {
 		super(functions, parameters, true);
 		declareVariable(EXCEPTION_QNAME, null);
         declareVariable(EXCEPTION_MESSAGE_QNAME, null);

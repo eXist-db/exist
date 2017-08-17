@@ -327,9 +327,7 @@ public class GetThumbnailsFunction extends BasicFunction {
                 }
             }
             final Optional<JournalManager> journalManager = pool.getJournalManager();
-            if(journalManager.isPresent()) {
-                journalManager.get().flush(true, false);
-            }
+            journalManager.ifPresent(j -> j.flush(true, false));
             dbbroker.closeDocument();
         }
 		return result;

@@ -78,7 +78,7 @@ public class HTTPClientModule extends AbstractInternalModule
     };
 	
 
-    public HTTPClientModule(Map<String, List<? extends Object>> parameters)
+    public HTTPClientModule(Map<String, List<?>> parameters)
     {
         super( functions, parameters );
     }

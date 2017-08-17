@@ -8,23 +8,20 @@ import antlr.TokenStreamIOException;
 import antlr.TokenStreamRecognitionException;
 import antlr.CharStreamException;
 import antlr.CharStreamIOException;
-import antlr.ANTLRException;
+
 import java.io.Reader;
 import java.util.Hashtable;
-import antlr.CharScanner;
+
 import antlr.InputBuffer;
 import antlr.ByteBuffer;
 import antlr.CharBuffer;
 import antlr.Token;
-import antlr.CommonToken;
 import antlr.RecognitionException;
 import antlr.NoViableAltForCharException;
-import antlr.MismatchedCharException;
 import antlr.TokenStream;
 import antlr.ANTLRHashString;
 import antlr.LexerSharedInputState;
 import antlr.collections.impl.BitSet;
-import antlr.SemanticException;
 
 public class SimpleQLLexer extends antlr.CharScanner implements SimpleQLParserTokenTypes, TokenStream
  {
@@ -42,12 +39,12 @@ public SimpleQLLexer(LexerSharedInputState state) {
 	caseSensitiveLiterals = true;
 	setCaseSensitive(true);
 	literals = new Hashtable();
-	literals.put(new ANTLRHashString("NOT", this), Integer.valueOf(11));
-	literals.put(new ANTLRHashString("OR", this), Integer.valueOf(9));
-	literals.put(new ANTLRHashString("NICHT", this), Integer.valueOf(12));
-	literals.put(new ANTLRHashString("UND", this), Integer.valueOf(8));
-	literals.put(new ANTLRHashString("ODER", this), Integer.valueOf(10));
-	literals.put(new ANTLRHashString("AND", this), Integer.valueOf(7));
+	literals.put(new ANTLRHashString("NOT", this), 11);
+	literals.put(new ANTLRHashString("OR", this), 9);
+	literals.put(new ANTLRHashString("NICHT", this), 12);
+	literals.put(new ANTLRHashString("UND", this), 8);
+	literals.put(new ANTLRHashString("ODER", this), 10);
+	literals.put(new ANTLRHashString("AND", this), 7);
 }
 
 public Token nextToken() throws TokenStreamException {

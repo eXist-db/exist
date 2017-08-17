@@ -207,12 +207,7 @@ public class PersistentLogin {
 
         private void timeoutCheck() {
             long now = System.currentTimeMillis();
-            for (Iterator<Map.Entry<String, Long>> i = invalidatedTokens.entrySet().iterator(); i.hasNext(); ) {
-                Map.Entry<String, Long> entry = i.next();
-                if (entry.getValue() < now) {
-                    i.remove();
-                }
-            }
+            invalidatedTokens.entrySet().removeIf(entry -> entry.getValue() < now);
         }
 
         @Override

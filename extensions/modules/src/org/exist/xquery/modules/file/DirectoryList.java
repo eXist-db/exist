@@ -171,9 +171,7 @@ public class DirectoryList extends BasicFunction {
 
             builder.endElement();
 
-            Sequence xmlResponse = (NodeValue) builder.getDocument().getDocumentElement();
-
-            return (xmlResponse);
+            return (NodeValue) builder.getDocument().getDocumentElement();
         } catch (final IOException e) {
             throw new XPathException(this, e.getMessage());
         }

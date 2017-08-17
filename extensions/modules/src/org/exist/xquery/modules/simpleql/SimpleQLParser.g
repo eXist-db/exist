@@ -12,7 +12,7 @@ options {
 expr
 returns [String str]
 {
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 	String s1, s2;
 }:
 	s1=orExpr { buf.append(s1); }
@@ -28,7 +28,7 @@ returns [String str]
 orExpr
 returns [String str]
 {
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 	String s1, s2;
 }:
 	s1=notExpr { buf.append(s1); }
@@ -44,7 +44,7 @@ returns [String str]
 notExpr
 returns [String str]
 {
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 	String s;
 }:
 	s=queryArg { buf.append(s); }

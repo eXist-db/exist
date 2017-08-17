@@ -110,9 +110,8 @@ public class DecodeExiFunction extends BasicFunction {
 			SAXAdapter adapter = new AppendingSAXAdapter(builder);
             decoder.setContentHandler(adapter);
             decoder.parse(new InputSource(exiBinary.getInputStream()));
-		    
-		    NodeValue node  = (NodeValue)builder.getDocument().getDocumentElement();
-		    return node;
+
+			return (NodeValue)builder.getDocument().getDocumentElement();
 		}
 		catch(EXIException | SAXException | IOException exie) {
 			throw new XPathException(this, new JavaErrorCode(exie.getCause()), exie.getMessage());

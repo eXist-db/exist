@@ -1056,7 +1056,7 @@ public class SendEmailFunction extends BasicFunction
      */
     private String getDateRFC822() {
         
-        String dateString = new String();
+        String dateString = "";
         final Calendar rightNow = Calendar.getInstance();
 
         //Day of the week
@@ -1172,8 +1172,8 @@ public class SendEmailFunction extends BasicFunction
 
         //TimeZone Correction
         final String tzSign;
-        String tzHours = new String();
-        String tzMinutes = new String();
+        String tzHours = "";
+        String tzMinutes = "";
 
         final TimeZone thisTZ = rightNow.getTimeZone();
         int tzOffset = thisTZ.getOffset(rightNow.getTime().getTime()); //get timezone offset in milliseconds

@@ -28,7 +28,7 @@ public class PersistentLoginModule extends AbstractInternalModule {
         new FunctionDef(PersistentLoginFunctions.signatures[2], PersistentLoginFunctions.class)
     };
 
-    public PersistentLoginModule(Map<String, List<? extends Object>> parameters) {
+    public PersistentLoginModule(Map<String, List<?>> parameters) {
         super(functions, parameters);
     }
 
