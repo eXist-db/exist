@@ -1,47 +1,52 @@
-<!-- 
- Ivy module to retrieve the tika jars, including dependencies, 
+<!--
+ Ivy module to retrieve the tika jars, including dependencies,
  excluding jars that are provided by eXist-db already
 -->
 <ivy-module version="2.0">
- 
- <info organisation="org.exist" module="tika"/>
- 
- <dependencies>
-  
-  <dependency org="org.apache.tika" name="tika-parsers" rev="1.12" conf="*->*,!sources,!javadoc"/>
 
-  <!-- identified as provided by eXist-db -->
-  <exclude module="asm"/>
-  <exclude module="aspectjrt"/>
-  <exclude module="commons-codec"/>
-  <exclude module="commons-compress"/>
-  <exclude module="commons-httpclient"/>
-  <exclude module="commons-io"/>
-  <exclude module="commons-logging"/>
-  <exclude module="geronimo-stax-api_1.0_spec"/>
-  <exclude module="jdom"/>
-  <exclude module="log4j"/>
-  <exclude module="servlet-api"/>
-  <exclude module="slf4j-api"/>
-  <exclude module="stax"/>
-  <exclude module="stax-api"/>
-  <exclude module="xercesImpl"/>
-  <exclude module="xml-apis"/>
-  <exclude module="commons-logging-api"/>
-  <exclude module="ehcache-core"/>
-  <exclude module="quartz"/>
-  <exclude org="org.apache.httpcomponents"/>
-  <exclude org="org.apache.lucene"/>
+    <info organisation="org.exist" module="tika"/>
 
-  <!-- identified as not needed for pure parsing -->
-  <exclude module="junit"/>
-  <exclude module="sqlite-jdbc"/>
-  <exclude org="javax.annotation"/>
-  <exclude org="javax.ws.rs"/>
-  <exclude org="org.apache.cxf"/>
-  <exclude org="org.apache.felix"/>
-  <exclude org="org.apache.maven.scm"/>
-  <exclude org="org.osgi"/>
+    <dependencies>
 
- </dependencies>
+        <dependency org="org.apache.tika" name="tika-parsers" rev="1.16" conf="*->*,!sources,!javadoc"/>
+
+        <!-- identified as provided by eXist-db -->
+        <exclude module="asm"/>
+        <exclude module="aspectjrt"/>
+        <exclude module="commons-codec"/>
+        <exclude module="commons-compress"/>
+        <exclude module="commons-httpclient"/>
+        <exclude module="commons-io"/>
+        <exclude module="commons-lang"/>
+        <exclude module="commons-logging"/>
+        <exclude module="commons-logging-api"/>
+        <exclude module="ehcache-core"/>
+        <exclude module="geronimo-stax-api_1.0_spec"/>
+        <exclude module="jackson-core"/>
+        <exclude module="jdom"/>
+        <exclude module="log4j"/>
+        <exclude module="quartz"/>
+        <exclude module="servlet-api"/>
+        <exclude module="slf4j-api"/>
+        <exclude module="stax"/>
+        <exclude module="stax-api"/>
+        <exclude module="xercesImpl"/>
+        <exclude module="xml-apis"/>
+        <exclude org="org.apache.httpcomponents"/>
+        <exclude org="org.apache.lucene"/>
+
+        <exclude module="jul-to-slf4j"/>
+        <exclude module="jcl-over-slf4j"/>
+
+        <!-- identified as not needed for pure parsing -->
+        <exclude module="junit"/>
+        <exclude module="sqlite-jdbc"/>
+        <exclude org="javax.annotation"/>
+        <exclude org="javax.ws.rs"/>
+        <exclude org="org.apache.cxf"/>
+        <exclude org="org.apache.felix"/>
+        <exclude org="org.apache.maven.scm"/>
+        <exclude org="org.osgi"/>
+
+    </dependencies>
 </ivy-module>
