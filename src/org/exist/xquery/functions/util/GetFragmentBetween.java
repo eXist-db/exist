@@ -23,6 +23,7 @@ package org.exist.xquery.functions.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -352,7 +353,7 @@ public class GetFragmentBetween extends Function {
    */
   private String pathName2XmlTags(String pathName, String mode) {
     String result = "";
-    final ArrayList<String> elements = pathName2ElementsWithAttributes(pathName);
+    final List<String> elements = pathName2ElementsWithAttributes(pathName);
     if ("open".equals(mode)) {
 
         for (String element : elements) {
@@ -375,21 +376,24 @@ public class GetFragmentBetween extends Function {
     }
     return result;
   }
+
+  private static final String regExpr = "[a-zA-Z0-9:]+?\\[.+?\\]/" + "|" + "[a-zA-Z0-9:]+?/" + "|" + "[a-zA-Z0-9:]+?\\[.+\\]$" + "|" + "[a-zA-Z0-9:]+?$"; // pathName example: "/archimedes[@xmlns:xlink eq "http://www.w3.org/1999/xlink"]/text/body/chap/p[@type eq "main"]/s/foreign[@lang eq "en"]"
+  private static final Pattern p = Pattern.compile(regExpr, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // both flags enabled
   
-  private ArrayList<String> pathName2ElementsWithAttributes(String pathName) {
-    final ArrayList<String> result = new ArrayList<String>();
-    if (pathName.charAt(0) == '/')
-      {pathName = pathName.substring(1, pathName.length());}  // without first "/" character
-    final String regExpr = "[a-zA-Z0-9:]+?\\[.+?\\]/" + "|" + "[a-zA-Z0-9:]+?/" + "|" + "[a-zA-Z0-9:]+?\\[.+\\]$" + "|" + "[a-zA-Z0-9:]+?$"; // pathName example: "/archimedes[@xmlns:xlink eq "http://www.w3.org/1999/xlink"]/text/body/chap/p[@type eq "main"]/s/foreign[@lang eq "en"]"
-    final Pattern p = Pattern.compile(regExpr, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // both flags enabled
+  private List<String> pathName2ElementsWithAttributes(String pathName) {
+    final List<String> result = new ArrayList<>();
+    if (pathName.charAt(0) == '/') {
+      pathName = pathName.substring(1, pathName.length());
+    }  // without first "/" character
     final Matcher m = p.matcher(pathName);
     while (m.find()) {
       final int msBeginPos = m.start();
       final int msEndPos = m.end();
       String elementName = pathName.substring(msBeginPos, msEndPos);
       final int elemNameSize = elementName.length();
-      if (elemNameSize > 0 && elementName.charAt(elemNameSize - 1) == '/')
-        {elementName = elementName.substring(0, elemNameSize - 1);}  // without last "/" character
+      if (elemNameSize > 0 && elementName.charAt(elemNameSize - 1) == '/') {
+        elementName = elementName.substring(0, elemNameSize - 1);
+      }  // without last "/" character
       result.add(elementName);
     }
     return result;

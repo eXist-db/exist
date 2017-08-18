@@ -28,6 +28,7 @@ import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NativeValueIndex;
+import org.exist.util.PatternFactory;
 import org.exist.xquery.pragmas.Optimize;
 import org.exist.xquery.regex.JDK15RegexTranslator;
 import org.exist.xquery.regex.RegexSyntaxException;
@@ -499,7 +500,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
     private boolean match(String string, String pattern, int flags) throws XPathException {
         try {
 			if(pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
-				pat = Pattern.compile(pattern, flags);
+				pat = PatternFactory.getInstance().getPattern(pattern, flags);
 				//TODO : make matches('&#x212A;', '[A-Z]', 'i') work !
                 matcher = pat.matcher(string);
             } else {
