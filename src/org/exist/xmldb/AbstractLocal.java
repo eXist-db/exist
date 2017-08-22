@@ -192,9 +192,14 @@ public abstract class AbstractLocal {
     <R> R withDb(final LocalXmldbFunction<R> dbOperation) throws XMLDBException {
         try (final DBBroker broker = brokerPool.get(Optional.ofNullable(user));
              final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
-            final R result = dbOperation.apply(broker, transaction);
-            transaction.commit();
-            return result;
+            try {
+                final R result = dbOperation.apply(broker, transaction);
+                transaction.commit();
+                return result;
+            } catch (final XMLDBException e) {
+                transaction.abort();
+                throw e;
+            }
         } catch (final EXistException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
