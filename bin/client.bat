@@ -1,5 +1,5 @@
 @echo off
-rem $Id$
+
 rem
 rem In addition to the other parameter options for the interactive client 
 rem pass -j or --jmx to enable JMX agent.  The port for it can be specified 
@@ -53,9 +53,11 @@ rem @WINDOWS_INSTALLER_3@
 set JAVA_ENDORSED_DIRS="%EXIST_HOME%\lib\endorsed"
 set JAVA_OPTS="-Xms128m -Xmx%MX%m -Dfile.encoding=UTF-8 -Djava.endorsed.dirs=%JAVA_ENDORSED_DIRS%"
 
-set BATCH.D="%EXIST_HOME%\bin\batch.d"
-call %BATCH.D%\get_opts.bat %*
+:: copy the command line args preserving equals chars etc. for things like -ouri=http://something
+for /f "tokens=*" %%x IN ("%*") DO SET "CMD_LINE_ARGS=%%x"
+set BATCH.D=%EXIST_HOME%\bin\batch.d
+call %BATCH.D%\get_opts.bat %CMD_LINE_ARGS%
 call %BATCH.D%\check_jmx_status.bat
 
-%JAVA_RUN% "%JAVA_OPTS%"  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" client %JAVA_ARGS%
+%JAVA_RUN% "%JAVA_OPTS%" -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" client %JAVA_ARGS%
 :eof
