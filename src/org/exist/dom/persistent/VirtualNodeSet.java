@@ -690,17 +690,11 @@ public class VirtualNodeSet extends AbstractNodeSet {
         return this;
     }
 
-    /**
-     * The method <code>toString</code>
-     *
-     * @return a <code>String</code> value
-     */
     @Override
     public String toString() {
         if(realSet == null) {
             return "Virtual#unknown";
         }
-        //result.append("Virtual#").append(super.toString());
         return "";
     }
 }

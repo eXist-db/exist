@@ -61,11 +61,13 @@ public class IndexUtils {
                 final int childCount = node.getChildCount();
                 for (int i = 0; i < childCount; i++) {
                     final IStoredNode child = iterator.next();
-                    if (child.getNodeType() == Node.ELEMENT_NODE)
-                        {currentPath.addComponent(child.getQName());}
+                    if (child.getNodeType() == Node.ELEMENT_NODE) {
+                        currentPath.addComponent(child.getQName());
+                    }
                     scanNode(transaction, iterator, child, listener, currentPath);
-                    if (child.getNodeType() == Node.ELEMENT_NODE)
-                        {currentPath.removeLastComponent();}
+                    if (child.getNodeType() == Node.ELEMENT_NODE) {
+                        currentPath.removeLastComponent();
+                    }
                 }
             }
             if (listener != null) {
