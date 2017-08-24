@@ -57,7 +57,7 @@ public class IndexUtils {
             if (listener != null) {
                 listener.startElement(transaction, (ElementImpl) node, currentPath);
             }
-            if (node.hasChildNodes()) {
+            if (node.hasChildNodes() || node.hasAttributes()) {
                 final int childCount = node.getChildCount();
                 for (int i = 0; i < childCount; i++) {
                     final IStoredNode child = iterator.next();

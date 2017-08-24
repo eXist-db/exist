@@ -356,7 +356,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
     }
 
     protected IStoredNode getLastNode(final IStoredNode node) {
-        if(!node.hasChildNodes()) {
+        if(!(node.hasChildNodes() || node.hasAttributes())) {
             return node;
         }
         try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {

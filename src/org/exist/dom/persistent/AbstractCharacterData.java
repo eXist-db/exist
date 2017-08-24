@@ -62,11 +62,6 @@ public abstract class AbstractCharacterData extends StoredNode implements Charac
     }
 
     @Override
-    public final boolean hasChildNodes() {
-        return false;
-    }
-
-    @Override
     public final Node getFirstChild() {
         return null;
     }

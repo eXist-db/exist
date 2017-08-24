@@ -432,7 +432,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
      */
     private void addChildren(final NodeProxy contextNode, final NodeSet result,
             final IStoredNode node, final INodeIterator iter, final int recursions) {
-        if(node.hasChildNodes()) {
+        if(node.hasChildNodes() || node.hasAttributes()) {
             for(int i = 0; i < node.getChildCount(); i++) {
                 final IStoredNode child = iter.next();
                 if(child == null) {

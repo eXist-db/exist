@@ -3212,7 +3212,7 @@ public class NativeBroker extends DBBroker {
                     LOG.debug("Unhandled node type: " + node.getNodeType());
             }
         }
-        if(node.hasChildNodes()) {
+        if(node.hasChildNodes() || node.hasAttributes()) {
             final int count = node.getChildCount();
             NodeId nodeId = node.getNodeId();
             for(int i = 0; i < count; i++) {
@@ -3362,7 +3362,7 @@ public class NativeBroker extends DBBroker {
                 if(listener != null) {
                     listener.startElement(transaction, (ElementImpl) node, currentPath);
                 }
-                if(node.hasChildNodes()) {
+                if(node.hasChildNodes() || node.hasAttributes()) {
                     final int childCount = node.getChildCount();
                     for(int i = 0; i < childCount; i++) {
                         final IStoredNode child = iterator.next();
@@ -3421,7 +3421,7 @@ public class NativeBroker extends DBBroker {
             buf.append(node.getNodeId());
         }
         boolean docIsValid = true;
-        if(node.hasChildNodes()) {
+        if(node.hasChildNodes() || node.hasAttributes()) {
             final int count = node.getChildCount();
             if(buf != null) {
                 buf.append('[').append(count).append(']');
@@ -3489,7 +3489,7 @@ public class NativeBroker extends DBBroker {
                     LOG.debug("Unhandled node type: " + node.getNodeType());
             }
         }
-        if(node.hasChildNodes()) {
+        if(node.hasChildNodes() || node.hasAttributes()) {
             final int count = node.getChildCount();
             for(int i = 0; i < count; i++) {
                 final IStoredNode child = iterator.next();

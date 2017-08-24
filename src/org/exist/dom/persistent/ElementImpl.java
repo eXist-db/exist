@@ -927,6 +927,11 @@ public class ElementImpl extends NamedNode implements Element {
     }
 
     @Override
+    public boolean hasChildNodes() {
+        return children - attributes > 0;
+    }
+
+    @Override
     public NodeList getChildNodes() {
         final org.exist.dom.NodeListImpl childList = new org.exist.dom.NodeListImpl(children);
         try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
@@ -999,7 +1004,7 @@ public class ElementImpl extends NamedNode implements Element {
 
     @Override
     public Node getFirstChild() {
-        if(!hasChildNodes() || getChildCount() == attributes) {
+        if(!hasChildNodes()) {
             return null;
         }
 
@@ -1954,7 +1959,7 @@ public class ElementImpl extends NamedNode implements Element {
             return false;
         }
 
-        if(hasChildNodes()) {
+        if(hasChildNodes() || hasAttributes()) {
             final int childCount = getChildCount();
             for(int i = 0; i < childCount; i++) {
                 final IStoredNode next = iterator.next();
