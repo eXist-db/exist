@@ -25,7 +25,6 @@ import java.util.regex.PatternSyntaxException;
 
 import org.exist.dom.QName;
 import org.exist.util.PatternFactory;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
@@ -34,13 +33,13 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+
+import static org.exist.xquery.FunctionDSL.*;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -48,29 +47,30 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FunTokenize extends FunMatches {
 
-    public final static FunctionSignature signatures[] = {
-            new FunctionSignature(
-                    new QName("tokenize", Function.BUILTIN_FUNCTION_NS),
-                    "Breaks the input string $input into a sequence of strings, "
-                            + "treating any substring that matches pattern $pattern as a separator. The "
-                            + "separators themselves are not returned.",
-                    new SequenceType[]{
-                            new FunctionParameterSequenceType("input", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string"),
-                            new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "The tokenization pattern")},
-                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the token sequence")
-            ),
-            new FunctionSignature(
-                    new QName("tokenize", Function.BUILTIN_FUNCTION_NS),
-                    "Breaks the input string $input into a sequence of strings, "
-                            + "treating any substring that matches pattern $pattern as a separator using $flags, see http://www.w3.org/TR/xpath-functions/#flags. The "
-                            + "separators themselves are not returned.",
-                    new SequenceType[]{
-                            new FunctionParameterSequenceType("input", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string"),
-                            new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "The tokenization pattern"),
-                            new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, "The flags")},
-                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the token sequence")
+    private static final QName FS_TOKENIZE_NAME = new QName("tokenize", Function.BUILTIN_FUNCTION_NS);
+
+    private final static FunctionParameterSequenceType FS_TOKENIZE_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
+    private final static FunctionParameterSequenceType FS_TOKENIZE_PARAM_PATTERN = param("pattern", Type.STRING, "The tokenization pattern");
+
+    public final static FunctionSignature FS_TOKENIZE[] = functionSignatures(
+            FS_TOKENIZE_NAME,
+            "Breaks the input string $input into a sequence of strings, ",
+            returnsOptMany(Type.STRING, "the token sequence"),
+            arities(
+                arity(
+                    FS_TOKENIZE_PARAM_INPUT
+                ),
+                arity(
+                    FS_TOKENIZE_PARAM_INPUT,
+                    FS_TOKENIZE_PARAM_PATTERN
+                ),
+                arity(
+                    FS_TOKENIZE_PARAM_INPUT,
+                    FS_TOKENIZE_PARAM_PATTERN,
+                    param("flags", Type.STRING,"The flags")
+                )
             )
-    };
+    );
 
     public FunTokenize(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
@@ -94,11 +94,18 @@ public class FunTokenize extends FunMatches {
         if (stringArg.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
-            final String string = stringArg.getStringValue();
-            if (string.length() == 0) {
+            String string = stringArg.getStringValue();
+            if (string.isEmpty()) {
                 result = Sequence.EMPTY_SEQUENCE;
             } else {
-                final String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+                final String pattern;
+                if(getArgumentCount() == 1) {
+                    pattern = " ";
+                    string = FunNormalizeSpace.normalize(string);
+                } else {
+                    pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+                }
+
                 int flags = 0;
                 if (getSignature().getArgumentCount() == 3) {
                     flags = parseFlags(getArgument(2).eval(contextSequence, contextItem)

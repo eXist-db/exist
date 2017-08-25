@@ -58,8 +58,17 @@ function fnt:doc-available($filename as xs:string) {
 
 declare
     %test:assertEquals(0, 0)
-function fnt:tokenize-empty($filename as xs:string) {
+function fnt:tokenize-empty() {
      count(() => tokenize("\s")),
-     tokenize((), "\s")
+     count(tokenize((), "\s"))
+};
+
+declare
+    %test:args("hello adam")
+    %test:assertEquals("hello", "adam")
+    %test:args("hello   adam")
+    %test:assertEquals("hello", "adam")
+function fnt:tokenize-onearg($str as xs:string) {
+     tokenize($str)
 };
 

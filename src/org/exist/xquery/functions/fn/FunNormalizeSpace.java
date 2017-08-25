@@ -129,17 +129,7 @@ public class FunNormalizeSpace extends Function {
         if (value == null) {
             result = StringValue.EMPTY_STRING;
         } else {
-            final StringBuilder buf = new StringBuilder();
-            if (value.length() > 0) {
-                final StringTokenizer tok = new StringTokenizer(value);
-                while (tok.hasMoreTokens()) {
-                    buf.append(tok.nextToken());
-                    if (tok.hasMoreTokens()) {
-                        buf.append(' ');
-                    }
-                }
-            }
-            result = new StringValue(buf.toString());
+            result = new StringValue(normalize(value));
         }
 
         if (context.getProfiler().isEnabled()) {
@@ -147,5 +137,19 @@ public class FunNormalizeSpace extends Function {
         }
 
         return result;
+    }
+
+    protected static String normalize(final String str) {
+        final StringBuilder buf = new StringBuilder();
+        if (!str.isEmpty()) {
+            final StringTokenizer tok = new StringTokenizer(str);
+            while (tok.hasMoreTokens()) {
+                buf.append(tok.nextToken());
+                if (tok.hasMoreTokens()) {
+                    buf.append(' ');
+                }
+            }
+        }
+        return buf.toString();
     }
 }
