@@ -39,6 +39,11 @@ public class DocumentFragmentImpl extends NodeImpl<DocumentFragmentImpl> impleme
     }
 
     @Override
+    public boolean hasChildNodes() {
+        return document.hasChildNodes();
+    }
+
+    @Override
     public NodeList getChildNodes() {
         return document.getChildNodes();
     }

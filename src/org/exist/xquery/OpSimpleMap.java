@@ -55,10 +55,19 @@ public class OpSimpleMap extends AbstractExpression {
     }
 
     @Override
-    public void dump(ExpressionDumper dumper) {
+    public void dump(final ExpressionDumper dumper) {
         left.dump(dumper);
         dumper.display(" ! ");
         right.dump(dumper);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder result = new StringBuilder();
+        result.append(left.toString());
+        result.append(" ! ");
+        result.append(right.toString());
+        return result.toString();
     }
 
     public Expression getLeft() {

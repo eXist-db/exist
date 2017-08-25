@@ -155,7 +155,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public boolean hasChildNodes() {
-        return getChildCount() > 0;
+        return false;
     }
 
     @Override

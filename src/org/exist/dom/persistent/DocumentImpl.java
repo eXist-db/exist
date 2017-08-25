@@ -657,11 +657,12 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         return childAddress[0];
     }
 
-    /**
-     * The method <code>getChildNodes</code>
-     *
-     * @return a <code>NodeList</code> value
-     */
+
+    @Override
+    public boolean hasChildNodes() {
+        return children > 0;
+    }
+
     @Override
     public NodeList getChildNodes() {
         final org.exist.dom.NodeListImpl list = new org.exist.dom.NodeListImpl();

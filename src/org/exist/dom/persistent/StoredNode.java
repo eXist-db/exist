@@ -356,7 +356,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
     }
 
     protected IStoredNode getLastNode(final IStoredNode node) {
-        if(!node.hasChildNodes()) {
+        if(!(node.hasChildNodes() || node.hasAttributes())) {
             return node;
         }
         try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
@@ -365,13 +365,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
                 reader.next();
             }
             return reader.getPreviousNode();
-        } catch(final IOException e) {
-            LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
-            //TODO : throw exception -pb
-        } catch(final XMLStreamException e) {
-            LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
-            //TODO : throw exception -pb
-        } catch(final EXistException e) {
+        } catch(final IOException | XMLStreamException | EXistException e) {
             LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
             //TODO : throw exception -pb
         }

@@ -2768,13 +2768,11 @@ public class XQueryTest {
 
     @Test
     public void attributesSerialization() throws XMLDBException {
-        ResourceSet result;
-        String query;
-
-        XPathQueryService service =
+        final XPathQueryService service =
                 storeXMLStringAndGetQueryService(attributesSERIALIZATION, attributes);
 
-        query = "//@* \n";
+        String query = "//@* \n";
+        ResourceSet result = null;
         try {
             result = service.query(query);
         } catch (Exception e) {

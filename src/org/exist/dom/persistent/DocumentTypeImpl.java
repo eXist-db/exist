@@ -57,11 +57,6 @@ public class DocumentTypeImpl extends StoredNode implements DocumentType {
     }
 
     @Override
-    public boolean hasChildNodes() {
-        return false;
-    }
-
-    @Override
     public String getPublicId() {
         return publicId;
     }

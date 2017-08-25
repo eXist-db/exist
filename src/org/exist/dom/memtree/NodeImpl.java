@@ -472,7 +472,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public boolean hasAttributes() {
-        throw unsupported();
+        return false;
     }
 
     @Override

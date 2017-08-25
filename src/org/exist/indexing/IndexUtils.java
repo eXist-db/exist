@@ -57,15 +57,17 @@ public class IndexUtils {
             if (listener != null) {
                 listener.startElement(transaction, (ElementImpl) node, currentPath);
             }
-            if (node.hasChildNodes()) {
+            if (node.hasChildNodes() || node.hasAttributes()) {
                 final int childCount = node.getChildCount();
                 for (int i = 0; i < childCount; i++) {
                     final IStoredNode child = iterator.next();
-                    if (child.getNodeType() == Node.ELEMENT_NODE)
-                        {currentPath.addComponent(child.getQName());}
+                    if (child.getNodeType() == Node.ELEMENT_NODE) {
+                        currentPath.addComponent(child.getQName());
+                    }
                     scanNode(transaction, iterator, child, listener, currentPath);
-                    if (child.getNodeType() == Node.ELEMENT_NODE)
-                        {currentPath.removeLastComponent();}
+                    if (child.getNodeType() == Node.ELEMENT_NODE) {
+                        currentPath.removeLastComponent();
+                    }
                 }
             }
             if (listener != null) {

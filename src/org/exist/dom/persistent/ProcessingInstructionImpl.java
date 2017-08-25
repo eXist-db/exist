@@ -209,11 +209,6 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
     }
 
     @Override
-    public boolean hasChildNodes() {
-        return false;
-    }
-
-    @Override
     public int getChildCount() {
         return 0;
     }
