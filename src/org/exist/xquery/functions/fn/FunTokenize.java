@@ -57,7 +57,7 @@ public class FunTokenize extends FunMatches {
                     new SequenceType[]{
                             new FunctionParameterSequenceType("input", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string"),
                             new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "The tokenization pattern")},
-                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the token sequence")
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the token sequence")
             ),
             new FunctionSignature(
                     new QName("tokenize", Function.BUILTIN_FUNCTION_NS),
@@ -68,7 +68,7 @@ public class FunTokenize extends FunMatches {
                             new FunctionParameterSequenceType("input", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string"),
                             new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "The tokenization pattern"),
                             new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, "The flags")},
-                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the token sequence")
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the token sequence")
             )
     };
 
