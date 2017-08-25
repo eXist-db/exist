@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.exist.dom.QName;
@@ -100,10 +99,6 @@ public class FunTokenize extends FunMatches {
                 result = Sequence.EMPTY_SEQUENCE;
             } else {
                 final String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
-                if (Pattern.matches(pattern, "")) {
-                    throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
-                }
-
                 int flags = 0;
                 if (getSignature().getArgumentCount() == 3) {
                     flags = parseFlags(getArgument(2).eval(contextSequence, contextItem)
@@ -113,6 +108,11 @@ public class FunTokenize extends FunMatches {
                     if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
                         pat = PatternFactory.getInstance().getPattern(pattern, flags);
                     }
+
+                    if(pat.matcher("").matches()) {
+                        throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
+                    }
+
                     final String[] tokens = pat.split(string, -1);
                     result = new ValueSequence();
 
