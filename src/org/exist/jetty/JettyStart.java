@@ -29,7 +29,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.Servlet;
 
@@ -145,6 +149,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
             logger.info("[Operating System : {} {} {}]", System.getProperty("os.name"), System.getProperty("os.version"), System.getProperty("os.arch"));
             logger.info("[log4j.configurationFile : {}]", System.getProperty("log4j.configurationFile"));
+            logger.info("[jetty Version: {}]", getJettyVersion(configProperties.get(JETTY_BASE_PROP)));
             logger.info("[{} : {}]", JETTY_HOME_PROP, configProperties.get(JETTY_HOME_PROP));
             logger.info("[{} : {}]", JETTY_BASE_PROP, configProperties.get(JETTY_BASE_PROP));
             logger.info("[jetty configuration : {}]", jettyConfig.toAbsolutePath().toString());
@@ -360,6 +365,34 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             setChanged();
             notifyObservers(SIGNAL_ERROR);
         }
+    }
+
+    private static String getJettyVersion(final String jettyBase) {
+        final Path jettyLib = Paths.get(jettyBase, "lib");
+        try(final Stream<Path> children = Files.list(jettyLib)) {
+            final Optional<Path> jettyServerJar = children.filter(child -> {
+                final String fileName = FileUtils.fileName(child);
+                return fileName.startsWith("jetty-server") && fileName.endsWith(".jar");
+            }).findFirst();
+
+            if(jettyServerJar.isPresent()) {
+                final JarFile jarFile = new JarFile(jettyServerJar.get().toFile());
+                final Manifest manifest = jarFile.getManifest();
+                if(manifest != null) {
+                    final Attributes mainAttributes = manifest.getMainAttributes();
+                    if(mainAttributes != null) {
+                        final String jettyVersion = mainAttributes.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+                        if(jettyVersion != null) {
+                            return jettyVersion;
+                        }
+                    }
+                }
+            }
+        } catch (final IOException ioe) {
+            logger.error(ioe.getMessage(), ioe);
+        }
+
+        return "<UNKNOWN>";
     }
 
     private LinkedHashSet<Handler> getAllHandlers(final Handler handler) {
