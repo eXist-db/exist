@@ -1,6 +1,5 @@
 @echo off
 
-rem $Id$
 rem
 rem In addition to the other parameter options for the Jetty container 
 rem pass -j or --jmx to enable JMX agent.  The port for it can be specified 
@@ -11,9 +10,9 @@ set JMX_ENABLED=0
 set JMX_PORT=1099
 set JAVA_ARGS=
 
-::remove any quotes from JAVA_HOME and EXIST_HOME env var, will be re-added below
-for /f "delims=" %%G IN (%JAVA_HOME%) DO SET JAVA_HOME=%%G
-for /f "delims=" %%G IN (%EXIST_HOME%) DO SET EXIST_HOME=%%G
+::remove any quotes from JAVA_HOME and EXIST_HOME env vars if present
+for /f "delims=" %%G IN ("%JAVA_HOME%") DO SET "JAVA_HOME=%%~G"
+for /f "delims=" %%G IN ("%EXIST_HOME%") DO SET "EXIST_HOME=%%~G"
 
 set JAVA_RUN="java"
 
@@ -55,8 +54,10 @@ rem @WINDOWS_INSTALLER_3@
 set JAVA_ENDORSED_DIRS="%EXIST_HOME%\lib\endorsed"
 set JAVA_OPTS="-Xms128m -Xmx%MX%m -Dfile.encoding=UTF-8 -Djava.endorsed.dirs=%JAVA_ENDORSED_DIRS%"
 
+:: copy the command line args preserving equals chars etc. for things like --ouri=http://something
+for /f "tokens=*" %%x IN ("%*") DO SET "CMD_LINE_ARGS=%%x"
 set BATCH.D="%EXIST_HOME%\bin\batch.d"
-call %BATCH.D%\get_opts.bat %*
+call %BATCH.D%\get_opts.bat %CMD_LINE_ARGS%
 call %BATCH.D%\check_jmx_status.bat
 
 %JAVA_RUN% "%JAVA_OPTS%"  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" jetty %JAVA_ARGS%

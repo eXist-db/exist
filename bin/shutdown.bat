@@ -1,22 +1,11 @@
 @echo off
 
-rem $Id$
+::remove any quotes from JAVA_HOME and EXIST_HOME env vars if present
+for /f "delims=" %%G IN ("%JAVA_HOME%") DO SET "JAVA_HOME=%%~G"
+for /f "delims=" %%G IN ("%EXIST_HOME%") DO SET "EXIST_HOME=%%~G"
 
-::remove any quotes from JAVA_HOME and EXIST_HOME env var, will be re-added below
-for /f "delims=" %%G IN (%JAVA_HOME%) DO SET JAVA_HOME=%%G
-for /f "delims=" %%G IN (%EXIST_HOME%) DO SET EXIST_HOME=%%G
-
-rem Slurp the command line arguments. This loop allows for an unlimited number
-rem of arguments (up to the command line limit, anyway).
-
-set CMD_LINE_ARGS=%1
-if ""%1""=="""" goto doneStart
-shift
-:setupArgs
-if ""%1""=="""" goto doneStart
-set CMD_LINE_ARGS=%CMD_LINE_ARGS% %1
-shift
-goto setupArgs
+:: copy the command line args preserving equals chars etc. for things like -ouri=http://something
+for /f "tokens=" %%x IN ("%*") DO SET "CMD_LINE_ARGS=%%x"
 
 rem This label provides a place for the argument list loop to break out
 rem and for NT handling to skip to.
