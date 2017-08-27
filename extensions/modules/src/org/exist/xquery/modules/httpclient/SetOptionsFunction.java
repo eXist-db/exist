@@ -14,8 +14,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-import org.apache.commons.httpclient.HttpState;
-
 /**
  * Set default options for the NekoHtml parser for all subsequent requests in
  * the same XQuery context

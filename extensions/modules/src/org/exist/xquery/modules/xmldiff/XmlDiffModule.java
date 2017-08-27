@@ -43,7 +43,7 @@ public class XmlDiffModule extends AbstractInternalModule {
        new FunctionDef(Compare.signature, Compare.class),       
     };
 
-    public XmlDiffModule(Map<String, List<? extends Object>> parameters) throws XPathException {
+    public XmlDiffModule(Map<String, List<?>> parameters) throws XPathException {
         super(functions, parameters);
     }
     

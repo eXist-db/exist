@@ -77,13 +77,11 @@ public class RemoveFunction extends BasicFunction {
 		} else {
 		    throw new XPathException("expath repository not available");
 		}
-	    } catch (PackageException pe) {
+	    } catch (PackageException | XPathException pe) {
 		return BooleanValue.FALSE;
 		// /TODO: _repo.removePackage seems to throw PackageException
 		// throw new XPathException("Problem removing package " + pkg + " in expath repository, check that eXist-db has access permissions to expath repository file directory  ", pe);
-	    } catch (XPathException xpe) {
-		return BooleanValue.FALSE;
 	    }
-	    return removed;
+        return removed;
 	}
 }

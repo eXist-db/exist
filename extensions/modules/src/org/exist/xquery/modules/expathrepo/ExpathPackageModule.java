@@ -24,8 +24,6 @@ package org.exist.xquery.modules.expathrepo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.*;
-import org.exist.xquery.ErrorCodes.EXistErrorCode;
-import org.exist.xquery.ErrorCodes.ErrorCode;
 
 import java.util.List;
 import java.util.Map;
@@ -65,7 +63,7 @@ public class ExpathPackageModule extends AbstractInternalModule {
         new FunctionDef(GetAppRoot.signature, GetAppRoot.class)
     };
 
-    public ExpathPackageModule(Map<String, List<? extends Object>> parameters) throws XPathException {
+    public ExpathPackageModule(Map<String, List<?>> parameters) throws XPathException {
         super(functions, parameters);
     }
 

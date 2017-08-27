@@ -63,7 +63,7 @@ public class MathModule extends AbstractInternalModule {
         new FunctionDef(TwoParamFunctions.signature[1], TwoParamFunctions.class)
     };
     
-    public MathModule(Map<String, List<? extends Object>> parameters) {
+    public MathModule(Map<String, List<?>> parameters) {
         super(functions, parameters);
     }
     

@@ -22,7 +22,6 @@
 package org.exist.xquery.modules.jndi;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,7 +83,7 @@ public class JNDIModule extends AbstractInternalModule
 	private static long 		currentContextID 		= System.currentTimeMillis();
 
 
-	public JNDIModule(Map<String, List<? extends Object>> parameters)
+	public JNDIModule(Map<String, List<?>> parameters)
 	{
 		super( functions, parameters );
 	}

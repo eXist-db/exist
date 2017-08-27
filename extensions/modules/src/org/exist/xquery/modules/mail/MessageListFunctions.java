@@ -177,17 +177,13 @@ public class MessageListFunctions extends BasicFunction
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
 		if( isCalledAs( "get-message-list" ) ) {
-			Sequence messageList = getMessageList( args, contextSequence );
-			return messageList;
+            return getMessageList( args, contextSequence );
 		} else if( isCalledAs( "search-message-list" ) ) {
-			Sequence searchMessageList = searchMessageList( args, contextSequence );
-			return searchMessageList;
+            return searchMessageList( args, contextSequence );
 		} else if( isCalledAs( "get-message-list-as-xml" ) ) {
-			Sequence messageListAsXML = getMessageListAsXML( args, contextSequence );
-			return messageListAsXML;
+            return getMessageListAsXML( args, contextSequence );
 		} else if( isCalledAs( "close-message-list" ) ) {
-			Sequence closeMessageList = closeMessageList( args, contextSequence );
-			return closeMessageList;
+            return closeMessageList( args, contextSequence );
 		} 
 			
 		throw( new XPathException(this, "Invalid function name" ) );	

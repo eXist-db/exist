@@ -185,7 +185,7 @@ public class MetadataFunctions extends BasicFunction {
                 //make sure process is complete
                 p.waitFor();
 
-                return ModuleUtils.inputSourceToXML(context, new InputSource(new ByteArrayInputStream(baos.toByteArray())));
+                return ModuleUtils.inputSourceToXML(context, new InputSource(baos.toInputStream()));
             }
 
         } catch (final IOException ex) {

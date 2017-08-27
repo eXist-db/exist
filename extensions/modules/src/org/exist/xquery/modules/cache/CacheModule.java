@@ -60,7 +60,7 @@ public class CacheModule extends AbstractInternalModule {
 
     static final Map<String, Cache> caches = new ConcurrentHashMap<>();
 
-    public CacheModule(final Map<String, List<? extends Object>> parameters) {
+    public CacheModule(final Map<String, List<?>> parameters) {
         super(functions, parameters);
     }
 

@@ -129,8 +129,8 @@ public class GetScheduledJobs extends BasicFunction
                 for (ScheduledJobInfo scheduledJob : scheduledJobs) {
 
                     if (scheduledJob.getGroup().equals(group)) {
-                        xmlBuf.append("<" + SchedulerModule.PREFIX + ":job name=\"" + scheduledJob.getName() + "\">");
-                        xmlBuf.append("<" + SchedulerModule.PREFIX + ":trigger name=\"" + scheduledJob.getTriggerName() + "\">");
+                        xmlBuf.append("<" + SchedulerModule.PREFIX + ":job name=\"").append(scheduledJob.getName()).append("\">");
+                        xmlBuf.append("<" + SchedulerModule.PREFIX + ":trigger name=\"").append(scheduledJob.getTriggerName()).append("\">");
                         xmlBuf.append("<expression>");
                         xmlBuf.append(scheduledJob.getTriggerExpression());
                         xmlBuf.append("</expression>");

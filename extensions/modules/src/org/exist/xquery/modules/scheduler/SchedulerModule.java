@@ -63,7 +63,7 @@ public class SchedulerModule extends AbstractInternalModule
         new FunctionDef( ResumeScheduledJob.signature, ResumeScheduledJob.class )
     };
 
-    public SchedulerModule(Map<String, List<? extends Object>> parameters)
+    public SchedulerModule(Map<String, List<?>> parameters)
     {
         super( functions, parameters );
     }

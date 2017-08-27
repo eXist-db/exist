@@ -97,7 +97,7 @@ public class MailModule extends AbstractInternalModule {
     private static long currentSessionHandle = System.currentTimeMillis();
 	
 	
-    public MailModule(Map<String, List<? extends Object>> parameters) {
+    public MailModule(Map<String, List<?>> parameters) {
         super(functions, parameters);
     }
 	
@@ -187,12 +187,7 @@ public class MailModule extends AbstractInternalModule {
      */
     static void removeStore(XQueryContext context, final long storeHandle) {
         
-        ModuleUtils.modifyContextMap(context, MailModule.STORES_CONTEXTVAR, new ContextMapModifier<Store>(){
-            @Override
-            public void modify(Map<Long, Store> map) {
-                map.remove(storeHandle);
-            }
-        });
+        ModuleUtils.modifyContextMap(context, MailModule.STORES_CONTEXTVAR, (ContextMapModifier<Store>) map -> map.remove(storeHandle));
         
         //update the context
         //context.setXQueryContextVar(MailModule.STORES_CONTEXTVAR, stores);
@@ -264,32 +259,21 @@ public class MailModule extends AbstractInternalModule {
      */
     static void removeFolder(final XQueryContext context, final long folderHandle) {
             
-        ModuleUtils.modifyContextMap(context, MailModule.FOLDERS_CONTEXTVAR, new ContextMapModifier<Folder>(){
-            @Override
-            public void modify(Map<Long, Folder> map) {
+        ModuleUtils.modifyContextMap(context, MailModule.FOLDERS_CONTEXTVAR, (ContextMapModifier<Folder>) map -> {
 
-                //remove the message lists for the folder
-                ModuleUtils.modifyContextMap(context, MailModule.FOLDERMSGLISTS_CONTEXTVAR, new ContextMapModifier<Map<Long, Message[]>>(){
-                    @Override
-                    public void modify(Map<Long, Map<Long, Message[]>> map) {
-                        
-                        final Map<Long, Message[]> folderMsgList = map.get(folderHandle);
-                        
-                        ModuleUtils.modifyContextMap(context, MailModule.MSGLISTS_CONTEXTVAR, new ContextMapModifier<Message[]>(){
-                            @Override
-                            public void modify(Map<Long, Message[]> map) {
-                                folderMsgList.keySet().forEach(map::remove);
-                            }
-                        });
-                        
-                        //remove the folder message kist
-                        map.remove(folderHandle);
-                    }
-                });
+            //remove the message lists for the folder
+            ModuleUtils.modifyContextMap(context, MailModule.FOLDERMSGLISTS_CONTEXTVAR, (ContextMapModifier<Map<Long, Message[]>>) map12 -> {
 
-                //remove the folder
-                map.remove(folderHandle);
-            }
+                final Map<Long, Message[]> folderMsgList = map12.get(folderHandle);
+
+                ModuleUtils.modifyContextMap(context, MailModule.MSGLISTS_CONTEXTVAR, (ContextMapModifier<Message[]>) map1 -> folderMsgList.keySet().forEach(map1::remove));
+
+                //remove the folder message kist
+                map12.remove(folderHandle);
+            });
+
+            //remove the folder
+            map.remove(folderHandle);
         });
     }
 	
@@ -357,18 +341,10 @@ public class MailModule extends AbstractInternalModule {
             
         final long msgListHandle = ModuleUtils.storeObjectInContextMap(context, MailModule.MSGLISTS_CONTEXTVAR, msgList);
 
-        ModuleUtils.modifyContextMap(context, MailModule.FOLDERMSGLISTS_CONTEXTVAR, new ContextMapModifier<Map<Long, Message[]>>(){
+        ModuleUtils.modifyContextMap(context, MailModule.FOLDERMSGLISTS_CONTEXTVAR, (ContextMapModifier<Map<Long, Message[]>>) map -> {
+            Map<Long, Message[]> folderMsgList = map.computeIfAbsent(folderHandle, k -> new HashMap<>());
 
-            @Override
-            public void modify(Map<Long, Map<Long, Message[]>> map) {
-                Map<Long, Message[]> folderMsgList = map.get(folderHandle);
-                if(folderMsgList == null) {
-                    folderMsgList = new HashMap<>();
-                    map.put(folderHandle, folderMsgList);
-                }
-
-                folderMsgList.put(msgListHandle, msgList);
-            }
+            folderMsgList.put(msgListHandle, msgList);
         });
 
         return msgListHandle;
@@ -381,12 +357,7 @@ public class MailModule extends AbstractInternalModule {
      * @param context The context to remove the MessageList for
      */
     static void removeMessageList(XQueryContext context, final long msgListHandle) {
-        ModuleUtils.modifyContextMap(context, MailModule.MSGLISTS_CONTEXTVAR, new ContextMapModifier<Message[]>(){
-            @Override
-            public void modify(Map<Long, Message[]> map) {
-                map.remove(msgListHandle);
-            }
-        });
+        ModuleUtils.modifyContextMap(context, MailModule.MSGLISTS_CONTEXTVAR, (ContextMapModifier<Message[]>) map -> map.remove(msgListHandle));
         
         // update the context
         //context.setXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR, msgLists );
@@ -398,12 +369,7 @@ public class MailModule extends AbstractInternalModule {
      * @param context The context to close MessageLists for
      */
     private static void closeAllMessageLists(XQueryContext context) {
-        ModuleUtils.modifyContextMap(context, MailModule.MSGLISTS_CONTEXTVAR, new ContextMapModifier<Message[]>(){
-            @Override
-            public void modify(Map<Long, Message[]> map) {
-                map.clear();
-            }
-        });
+        ModuleUtils.modifyContextMap(context, MailModule.MSGLISTS_CONTEXTVAR, (ContextMapModifier<Message[]>) Map::clear);
         
         // update the context
         //context.setXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR, msgLists );

@@ -43,7 +43,7 @@ public class ExampleModule extends AbstractInternalModule {
 		new FunctionDef(EchoFunction.signature, EchoFunction.class)
 	};
 	
-	public ExampleModule(Map<String, List<? extends Object>> parameters) {
+	public ExampleModule(Map<String, List<?>> parameters) {
 		super(functions, parameters);
 	}
 

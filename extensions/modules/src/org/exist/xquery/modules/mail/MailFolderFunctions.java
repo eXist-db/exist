@@ -105,11 +105,9 @@ public class MailFolderFunctions extends BasicFunction
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
 		if( isCalledAs( "get-mail-folder" ) ) {
-			Sequence mailFolder = getMailFolder( args, contextSequence );
-			return mailFolder;
+            return getMailFolder( args, contextSequence );
 		} else if( isCalledAs( "close-mail-folder" ) ) {
-			Sequence closeMailFolder = closeMailFolder( args, contextSequence );
-			return closeMailFolder;
+            return closeMailFolder( args, contextSequence );
 		} 
 			
 		throw( new XPathException(this, "Invalid function name" ) );	

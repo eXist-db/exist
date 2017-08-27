@@ -19,7 +19,6 @@
  */
 package org.exist.xquery.modules.exi;
 
-import java.io.ByteArrayInputStream;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -106,7 +105,7 @@ public class EncodeExiFunction extends BasicFunction {
 			exiSerializer.startDocument();
 	        inputNode.toSAX(context.getBroker(), exiSerializer, new Properties());
 	        exiSerializer.endDocument();
-	        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
+	        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream());
 		}
 		catch(IOException ioex) {
 			// TODO - test!

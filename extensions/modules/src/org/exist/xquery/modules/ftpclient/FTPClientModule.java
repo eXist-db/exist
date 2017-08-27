@@ -37,7 +37,7 @@ public class FTPClientModule extends AbstractInternalModule {
         new FunctionDef(GetFileFunction.signature, GetFileFunction.class)
     };
 
-    public FTPClientModule(Map<String, List<? extends Object>> parameters) {
+    public FTPClientModule(Map<String, List<?>> parameters) {
         super(functions, parameters);
     }
 

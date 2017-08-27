@@ -227,8 +227,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction {
 
         builder.endElement();
 
-        final Sequence xmlResponse = (NodeValue) builder.getDocument().getDocumentElement();
-        return xmlResponse;
+        return (NodeValue) builder.getDocument().getDocumentElement();
     }
 
     /**
@@ -263,8 +262,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction {
 
         builder.endElement();
 
-        final Sequence xmlResponse = (NodeValue) builder.getDocument().getDocumentElement();
-        return xmlResponse;
+        return (NodeValue) builder.getDocument().getDocumentElement();
     }
 
     /**
@@ -296,12 +294,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction {
             try {
 
                 //we have to cache the input stream, so we can reread it, as we may use it twice (once for xml attempt and once for string attempt)
-                cache = FilterInputStreamCacheFactory.getCacheInstance(new FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration() {
-                    @Override
-                    public String getCacheClass() {
-                        return (String) context.getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
-                    }
-                }, bodyAsStream);
+                cache = FilterInputStreamCacheFactory.getCacheInstance(() -> (String) context.getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY), bodyAsStream);
 
                 cfis = new CachingFilterInputStream(cache);
 

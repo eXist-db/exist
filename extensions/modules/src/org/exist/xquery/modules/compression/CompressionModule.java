@@ -62,7 +62,7 @@ public class CompressionModule extends AbstractInternalModule {
         new FunctionDef(UnTarFunction.signatures[1], UnTarFunction.class)
     };
 
-    public CompressionModule(Map<String, List<? extends Object>> parameters) {
+    public CompressionModule(Map<String, List<?>> parameters) {
         super(functions, parameters);
     }
 

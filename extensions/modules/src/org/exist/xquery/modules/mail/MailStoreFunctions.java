@@ -102,11 +102,9 @@ public class MailStoreFunctions extends BasicFunction
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
 		if( isCalledAs( "get-mail-store" ) ) {
-			Sequence mailStore = getMailStore( args, contextSequence );
-			return mailStore;
+			return getMailStore( args, contextSequence );
 		} else if( isCalledAs( "close-mail-store" ) ) {
-			Sequence closeMailStore = closeMailStore( args, contextSequence );
-			return closeMailStore;
+			return closeMailStore( args, contextSequence );
 		}
 	
 		throw( new XPathException( this, "Invalid function name" ) );	

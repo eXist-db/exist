@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.modules.compression;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.zip.GZIPInputStream;
 
@@ -86,7 +85,7 @@ public class UnGZipFunction extends BasicFunction
                 baos.write(b, 0, read);
             }
 
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream());
         } catch(final IOException ioe) {
             throw new XPathException(this, ioe.getMessage(), ioe);
         }

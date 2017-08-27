@@ -16,7 +16,7 @@ public class ProcessModule extends AbstractInternalModule {
         new FunctionDef(Execute.signature, Execute.class)
     };
 
-    public ProcessModule(Map<String, List<? extends Object>> parameters) {
+    public ProcessModule(Map<String, List<?>> parameters) {
         super(functions, parameters, true);
     }
 

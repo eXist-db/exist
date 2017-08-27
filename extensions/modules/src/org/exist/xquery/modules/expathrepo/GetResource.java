@@ -20,17 +20,8 @@
  */
 package org.exist.xquery.modules.expathrepo;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.OpenOption;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 
-import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
 import org.exist.dom.QName;

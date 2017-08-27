@@ -8,7 +8,6 @@ import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
-import org.exist.xquery.value.StringValue;
 
 /**
  * Functions to access the persistent login module.
