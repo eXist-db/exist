@@ -40,7 +40,6 @@ public class PatternFactory {
     private PatternFactory() {
         this.cache = Caffeine.newBuilder()
                 .maximumSize(1_000)
-                .weakValues()
                 .build();
     }
 
