@@ -21,12 +21,10 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.exist.dom.QName;
 import org.exist.util.PatternFactory;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
@@ -35,104 +33,111 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
-/** 
- * @see <a href="http://www.w3.org/TR/xpath-functions/#func-tokenize">http://www.w3.org/TR/xpath-functions/#func-tokenize</a>
+import static org.exist.xquery.FunctionDSL.*;
+
+/**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @see <a href="https://www.w3.org/TR/xpath-functions-31/#func-tokenize">https://www.w3.org/TR/xpath-functions-31/#func-tokenize</a>
  */
 public class FunTokenize extends FunMatches {
 
-	public final static FunctionSignature signatures[] = {
-		new FunctionSignature(
-			new QName("tokenize", Function.BUILTIN_FUNCTION_NS),
-			"Breaks the input string $input into a sequence of strings, "
-				+ "treating any substring that matches pattern $pattern as a separator. The "
-				+ "separators themselves are not returned.",
-			new SequenceType[] {
-				new FunctionParameterSequenceType("input", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string"),
-				new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "The tokenization pattern")},
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the token sequence")
-		),
-		new FunctionSignature(
-			new QName("tokenize", Function.BUILTIN_FUNCTION_NS),
-			"Breaks the input string $input into a sequence of strings, "
-			+ "treating any substring that matches pattern $pattern as a separator using $flags, see http://www.w3.org/TR/xpath-functions/#flags. The "
-			+ "separators themselves are not returned.",
-			new SequenceType[] {
-				new FunctionParameterSequenceType("input", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string"),
-				new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "The tokenization pattern"),
-				new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, "The flags")},
-				new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the token sequence")
-		)
-	};
+    private static final QName FS_TOKENIZE_NAME = new QName("tokenize", Function.BUILTIN_FUNCTION_NS);
 
-	/**
-	 * @param context
-	 */
-	public FunTokenize(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+    private final static FunctionParameterSequenceType FS_TOKENIZE_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
+    private final static FunctionParameterSequenceType FS_TOKENIZE_PARAM_PATTERN = param("pattern", Type.STRING, "The tokenization pattern");
 
-	/**
-	 * @see org.exist.xquery.Expression#eval(Sequence, Item)
-	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    public final static FunctionSignature FS_TOKENIZE[] = functionSignatures(
+            FS_TOKENIZE_NAME,
+            "Breaks the input string $input into a sequence of strings, ",
+            returnsOptMany(Type.STRING, "the token sequence"),
+            arities(
+                arity(
+                    FS_TOKENIZE_PARAM_INPUT
+                ),
+                arity(
+                    FS_TOKENIZE_PARAM_INPUT,
+                    FS_TOKENIZE_PARAM_PATTERN
+                ),
+                arity(
+                    FS_TOKENIZE_PARAM_INPUT,
+                    FS_TOKENIZE_PARAM_PATTERN,
+                    param("flags", Type.STRING,"The flags")
+                )
+            )
+    );
+
+    public FunTokenize(final XQueryContext context, final FunctionSignature signature) {
+        super(context, signature);
+    }
+
+    @Override
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
-        }
-        
-        Sequence result;
-		final Sequence stringArg = getArgument(0).eval(contextSequence, contextItem);
-		if (stringArg.isEmpty())
-            {result = Sequence.EMPTY_SEQUENCE;}
-        else {
-            final String string = stringArg.getStringValue();
-            if (string.length() == 0 )
-                {result = Sequence.EMPTY_SEQUENCE;}
-
-            else {
-                final String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
-                if (Pattern.matches(pattern, "")) {
-                	throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
-                }
-		
-        		int flags = 0;
-        		if (getSignature().getArgumentCount() == 3)
-        			{flags = parseFlags(getArgument(2).eval(contextSequence, contextItem)
-        						.getStringValue());}
-        		try {
-        			if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
-						pat = PatternFactory.getInstance().getPattern(pattern, flags);
-                    }
-                    final String[] tokens = pat.split(string, -1);
-                    result = new ValueSequence();
-
-					for (String token : tokens) {
-                        result.add(new StringValue(token));
-                    }
-
-        		} catch (final PatternSyntaxException e) {
-        			throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), new StringValue(pattern), e);
-        		}
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
             }
         }
 
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", result);}        
-        
-        return result;    
-	}
+        final Sequence result;
+        final Sequence stringArg = getArgument(0).eval(contextSequence, contextItem);
+        if (stringArg.isEmpty()) {
+            result = Sequence.EMPTY_SEQUENCE;
+        } else {
+            String string = stringArg.getStringValue();
+            if (string.isEmpty()) {
+                result = Sequence.EMPTY_SEQUENCE;
+            } else {
+                final String pattern;
+                if(getArgumentCount() == 1) {
+                    pattern = " ";
+                    string = FunNormalizeSpace.normalize(string);
+                } else {
+                    pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+                }
+
+                int flags = 0;
+                if (getSignature().getArgumentCount() == 3) {
+                    flags = parseFlags(getArgument(2).eval(contextSequence, contextItem)
+                            .getStringValue());
+                }
+                try {
+                    if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
+                        pat = PatternFactory.getInstance().getPattern(pattern, flags);
+                    }
+
+                    if(pat.matcher("").matches()) {
+                        throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
+                    }
+
+                    final String[] tokens = pat.split(string, -1);
+                    result = new ValueSequence();
+
+                    for (final String token : tokens) {
+                        result.add(new StringValue(token));
+                    }
+
+                } catch (final PatternSyntaxException e) {
+                    throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), new StringValue(pattern), e);
+                }
+            }
+        }
+
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", result);
+        }
+
+        return result;
+    }
 
 }

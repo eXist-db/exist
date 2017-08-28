@@ -40,105 +40,116 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
-/**
- * xpath-library function: string(object)
- *
- */
 public class FunNormalizeSpace extends Function {
-	
-	protected static final String FUNCTION_DESCRIPTION_0_PARAM =
 
-		"Returns the calculated string value of the context item with whitespace normalized by stripping leading ";
-	protected static final String FUNCTION_DESCRIPTION_1_PARAM =
-		"Returns the value of $arg with whitespace normalized by stripping leading ";
-	protected static final String FUNCTION_DESCRIPTION_COMMON_1 =
-		"and trailing whitespace and replacing sequences of one or more than one " +
-		"whitespace character with a single space, #x20.\n\n" +
-		"The whitespace characters are defined in the metasymbol S (Production 3) " +
-		"of [Extensible Markup Language (XML) 1.0 Recommendation (Third Edition)].\n\n" +
-		"Note:\n\n" +
-		"The definition of the metasymbol S (Production 3), is " +
-		"unchanged in [Extensible Markup Language (XML) 1.1 Recommendation].\n\n";
+    private static final String FUNCTION_DESCRIPTION_0_PARAM =
 
-	protected static final String FUNCTION_DESCRIPTION_1_PARAM_1 =
-		"If the value of $arg is the empty sequence, returns the zero-length string.\n\n";
-	protected static final String FUNCTION_DESCRIPTION_COMMON_2 =
-		"If no argument is supplied, $arg defaults to the string value (calculated " +
-		"using fn:string()) of the context item (.). If no argument is supplied or " +
-		"if the argument is the context item and the context item is undefined an " +
-		"error is raised: [err:XPDY0002].";
-	
-	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the normalized text");
-	
-	public final static FunctionSignature signatures[] = {
-			new FunctionSignature(
-				new QName("normalize-space", Function.BUILTIN_FUNCTION_NS),
-				FUNCTION_DESCRIPTION_0_PARAM + FUNCTION_DESCRIPTION_COMMON_1 +
-                FUNCTION_DESCRIPTION_COMMON_2,
-				new SequenceType[0],
-				RETURN_TYPE
-			),
-			new FunctionSignature(
-				new QName("normalize-space", Function.BUILTIN_FUNCTION_NS),
-				FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_COMMON_1 +
-                FUNCTION_DESCRIPTION_1_PARAM_1 + FUNCTION_DESCRIPTION_COMMON_2,
-				new SequenceType[] { new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to normalize") },
-				RETURN_TYPE
-			)
-	};
-				
-	public FunNormalizeSpace(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+            "Returns the calculated string value of the context item with whitespace normalized by stripping leading ";
+    protected static final String FUNCTION_DESCRIPTION_1_PARAM =
+            "Returns the value of $arg with whitespace normalized by stripping leading ";
+    private static final String FUNCTION_DESCRIPTION_COMMON_1 =
+            "and trailing whitespace and replacing sequences of one or more than one " +
+                    "whitespace character with a single space, #x20.\n\n" +
+                    "The whitespace characters are defined in the metasymbol S (Production 3) " +
+                    "of [Extensible Markup Language (XML) 1.0 Recommendation (Third Edition)].\n\n" +
+                    "Note:\n\n" +
+                    "The definition of the metasymbol S (Production 3), is " +
+                    "unchanged in [Extensible Markup Language (XML) 1.1 Recommendation].\n\n";
 
-	public int returnsType() {
-		return Type.STRING;
-	}
-		
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    private static final String FUNCTION_DESCRIPTION_1_PARAM_1 =
+            "If the value of $arg is the empty sequence, returns the zero-length string.\n\n";
+    private static final String FUNCTION_DESCRIPTION_COMMON_2 =
+            "If no argument is supplied, $arg defaults to the string value (calculated " +
+                    "using fn:string()) of the context item (.). If no argument is supplied or " +
+                    "if the argument is the context item and the context item is undefined an " +
+                    "error is raised: [err:XPDY0002].";
+
+    private static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the normalized text");
+
+    public static final FunctionSignature signatures[] = {
+            new FunctionSignature(
+                    new QName("normalize-space", Function.BUILTIN_FUNCTION_NS),
+                    FUNCTION_DESCRIPTION_0_PARAM + FUNCTION_DESCRIPTION_COMMON_1 +
+                            FUNCTION_DESCRIPTION_COMMON_2,
+                    new SequenceType[0],
+                    RETURN_TYPE
+            ),
+            new FunctionSignature(
+                    new QName("normalize-space", Function.BUILTIN_FUNCTION_NS),
+                    FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_COMMON_1 +
+                            FUNCTION_DESCRIPTION_1_PARAM_1 + FUNCTION_DESCRIPTION_COMMON_2,
+                    new SequenceType[]{new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to normalize")},
+                    RETURN_TYPE
+            )
+    };
+
+    public FunNormalizeSpace(final XQueryContext context, final FunctionSignature signature) {
+        super(context, signature);
+    }
+
+    @Override
+    public int returnsType() {
+        return Type.STRING;
+    }
+
+    @Override
+    public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+            }
         }
-        
-		if(contextItem != null)
-			{contextSequence = contextItem.toSequence();}		
-		
-		String value = null;
-		if (getSignature().getArgumentCount() == 0) {
-			if (contextSequence == null)
-				{throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");}
-			value = !contextSequence.isEmpty() ? contextSequence.itemAt(0).getStringValue() : "";
-		} else {
-			final Sequence seq = getArgument(0).eval(contextSequence);
-			if (seq == null)
-				{throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");}			
-			if (!seq.isEmpty())
-                {value = seq.getStringValue();}
-		}
-        
-        Sequence result;
-        if (value == null)
-            {result = StringValue.EMPTY_STRING;}
-        else {            
-    		final StringBuilder buf = new StringBuilder();
-    		if (value.length() > 0) {
-    			final StringTokenizer tok = new StringTokenizer(value);
-    			while (tok.hasMoreTokens()) {
-                    buf.append(tok.nextToken());
-    				if (tok.hasMoreTokens()) {buf.append(' ');}
-    			}
-    		}
-            result = new StringValue(buf.toString());
+
+        if (contextItem != null) {
+            contextSequence = contextItem.toSequence();
         }
-        
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", result);} 
-        
+
+        String value = null;
+        if (getSignature().getArgumentCount() == 0) {
+            if (contextSequence == null) {
+                throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
+            }
+            value = !contextSequence.isEmpty() ? contextSequence.itemAt(0).getStringValue() : "";
+        } else {
+            final Sequence seq = getArgument(0).eval(contextSequence);
+            if (seq == null) {
+                throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
+            }
+            if (!seq.isEmpty()) {
+                value = seq.getStringValue();
+            }
+        }
+
+        final Sequence result;
+        if (value == null) {
+            result = StringValue.EMPTY_STRING;
+        } else {
+            result = new StringValue(normalize(value));
+        }
+
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", result);
+        }
+
         return result;
-	}
+    }
+
+    protected static String normalize(final String str) {
+        final StringBuilder buf = new StringBuilder();
+        if (!str.isEmpty()) {
+            final StringTokenizer tok = new StringTokenizer(str);
+            while (tok.hasMoreTokens()) {
+                buf.append(tok.nextToken());
+                if (tok.hasMoreTokens()) {
+                    buf.append(' ');
+                }
+            }
+        }
+        return buf.toString();
+    }
 }

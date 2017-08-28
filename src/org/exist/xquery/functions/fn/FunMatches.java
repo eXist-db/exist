@@ -128,27 +128,29 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 		super(context, signature);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Function#setArguments(java.util.List)
-	 */
+	@Override
 	public void setArguments(List<Expression> arguments) throws XPathException {
         steps.clear();
         final Expression path = arguments.get(0);
         steps.add(path);
         
-        Expression arg = arguments.get(1);
-        arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
-                new Error(Error.FUNC_PARAM_CARDINALITY, "2", mySignature)); 
-        if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
-            {arg = new Atomize(context, arg);}
-        steps.add(arg);
+        if(arguments.size() >= 2) {
+            Expression arg = arguments.get(1);
+            arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
+                    new Error(Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
+            if (!Type.subTypeOf(arg.returnsType(), Type.ATOMIC)) {
+                arg = new Atomize(context, arg);
+            }
+            steps.add(arg);
+        }
         
-        if (arguments.size() == 3) {
-            arg = arguments.get(2);
+        if (arguments.size() >= 3) {
+            Expression arg = arguments.get(2);
             arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
                     new Error(Error.FUNC_PARAM_CARDINALITY, "3", mySignature)); 
-            if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
-                {arg = new Atomize(context, arg);}
+            if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC)) {
+                arg = new Atomize(context, arg);
+            }
             steps.add(arg);
         }
 
@@ -237,15 +239,19 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         return preselectResult;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Function#getDependencies()
-     */
+    @Override
     public int getDependencies() {
         final Expression stringArg = getArgument(0);
-        final Expression patternArg = getArgument(1);
+        final Expression patternArg;
+        if(getArgumentCount() >= 2) {
+            patternArg = getArgument(1);
+        } else {
+            patternArg = null;
+        }
+
         if (Type.subTypeOf(stringArg.returnsType(), Type.NODE) &&
             !Dependency.dependsOn(stringArg, Dependency.CONTEXT_ITEM) &&
-            !Dependency.dependsOn(patternArg, Dependency.CONTEXT_ITEM)) {
+                (patternArg == null || !Dependency.dependsOn(patternArg, Dependency.CONTEXT_ITEM))) {
             return Dependency.CONTEXT_SET;
         } else {
             return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
