@@ -173,11 +173,11 @@ public class EXistElement implements Element {
             final String attr_name = attr.getLocalName();
             final String ns = attr.getNamespaceURI();
 
-            if( Arrays.binarySearch(sorted_ns, ns) >= 0 ) {
-                if(ns != null && ns.equals(HttpConstants.HTTP_CLIENT_NS_URI)) {
+            if( ns != null && Arrays.binarySearch(sorted_ns, ns) >= 0 ) {
+                if(ns.equals(HttpConstants.HTTP_CLIENT_NS_URI)) {
                     throw new ToolsException("@" + attr_name + " in namespace " + ns + " not allowed on " + getDisplayName());
                 }
-            } else if ( ! "".equals(ns) ) {
+            } else if (ns!= null && ! ns.isEmpty() ) {
                 // ignore other-namespace-attributes
             } else if ( Arrays.binarySearch(sorted_names, attr.getLocalName()) < 0 ) {
                 throw new ToolsException("@" + attr_name + " not allowed on " + getDisplayName());
