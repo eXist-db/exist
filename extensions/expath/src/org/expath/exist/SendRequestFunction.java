@@ -152,9 +152,9 @@ public class SendRequestFunction extends BasicFunction {
             return result.getResult();
                 
         } catch(final URISyntaxException ex ) {
-            throw new XPathException("Href is not valid: " + req != null ? req.getHref() : "" + ". " + ex.getMessage(), ex);
+            throw new XPathException(this, "Href is not valid: " + req != null ? req.getHref() : "" + ". " + ex.getMessage(), ex);
         } catch(final HttpClientException hce) {
-            throw new XPathException(hce.getMessage(), hce);
+            throw new XPathException(this, hce.getMessage(), hce);
         }
     }
     
