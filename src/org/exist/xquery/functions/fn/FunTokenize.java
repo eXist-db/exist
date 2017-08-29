@@ -111,9 +111,14 @@ public class FunTokenize extends FunMatches {
                     pattern = " ";
                     string = FunNormalizeSpace.normalize(string);
                 } else {
-                    final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
-                    final boolean caseBlind = !hasCaseInsensitive(flags);
-                    pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
+                    if(hasLiteral(flags)) {
+                        // no need to change anything
+                        pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+                    } else {
+                        final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
+                        final boolean caseBlind = !hasCaseInsensitive(flags);
+                        pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
+                    }
                 }
 
                 try {

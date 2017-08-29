@@ -225,9 +225,15 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 		if(isCalledAs("matches-regex")) {
 			pattern = getArgument(1).eval(contextSequence).getStringValue();
 		} else {
-            final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
-            final boolean caseBlind = !caseSensitive;
-			pattern = translateRegexp(getArgument(1).eval(contextSequence).getStringValue(), ignoreWhitespace, caseBlind);
+            final boolean literal = hasLiteral(flags);
+            if(literal) {
+                // no need to change anything
+                pattern = getArgument(1).eval(contextSequence).getStringValue();
+            } else {
+                final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
+                final boolean caseBlind = !caseSensitive;
+                pattern = translateRegexp(getArgument(1).eval(contextSequence).getStringValue(), ignoreWhitespace, caseBlind);
+            }
 		}
 
         try {
@@ -242,6 +248,10 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
             {context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
                 PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start);}
         return preselectResult;
+    }
+
+    protected boolean hasLiteral(final int flags) {
+        return (flags & Pattern.LITERAL) != 0;
     }
 
     protected boolean hasCaseInsensitive(final int flags) {
@@ -389,9 +399,15 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 		if(isCalledAs("matches-regex")) {
 			pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
 		} else {
-            final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
-            final boolean caseBlind = !caseSensitive;
-			pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
+            final boolean literal = hasLiteral(flags);
+            if(literal) {
+                // no need to change anything
+                pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+            } else {
+                final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
+                final boolean caseBlind = !caseSensitive;
+                pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
+            }
 		}
 		
         final NodeSet nodes = input.toNodeSet();
@@ -506,9 +522,15 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 		if( isCalledAs( "matches-regex" ) ) {
 			pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
 		} else {
-            final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
-            final boolean caseBlind = hasCaseInsensitive(flags);
-			pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
+            final boolean literal = hasLiteral(flags);
+            if(literal) {
+                // no need to change anything
+                pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+            } else {
+                final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
+                final boolean caseBlind = hasCaseInsensitive(flags);
+                pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
+            }
 		}
         
 		return BooleanValue.valueOf(match(string, pattern, flags));
@@ -554,6 +576,9 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
                     break;
                 case 's':
                     flags |= Pattern.DOTALL;
+                    break;
+                case 'q' :
+                    flags |= Pattern.LITERAL;
                     break;
 				default:
 					throw new XPathException("err:FORX0001: Invalid regular expression flag: " + ch);
