@@ -98,19 +98,29 @@ public class FunTokenize extends FunMatches {
             if (string.isEmpty()) {
                 result = Sequence.EMPTY_SEQUENCE;
             } else {
+                final int flags;
+                if (getSignature().getArgumentCount() == 3) {
+                    flags = parseFlags(getArgument(2).eval(contextSequence, contextItem)
+                            .getStringValue());
+                } else {
+                    flags = 0;
+                }
+
                 final String pattern;
                 if(getArgumentCount() == 1) {
                     pattern = " ";
                     string = FunNormalizeSpace.normalize(string);
                 } else {
-                    pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+                    if(hasLiteral(flags)) {
+                        // no need to change anything
+                        pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+                    } else {
+                        final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
+                        final boolean caseBlind = !hasCaseInsensitive(flags);
+                        pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
+                    }
                 }
 
-                int flags = 0;
-                if (getSignature().getArgumentCount() == 3) {
-                    flags = parseFlags(getArgument(2).eval(contextSequence, contextItem)
-                            .getStringValue());
-                }
                 try {
                     if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
                         pat = PatternFactory.getInstance().getPattern(pattern, flags);

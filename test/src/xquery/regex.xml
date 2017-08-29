@@ -26,17 +26,62 @@
         <code>fn:matches('exist', '[a-z]{5}')</code>
         <expected>true</expected>
     </test>
+    <test output="text">
+        <task>fn:matches-xflag-1</task>
+        <code>fn:matches('helloworld', 'hello world', 'x')</code>
+        <expected>true</expected>
+    </test>
+    <test output="text">
+        <task>fn:matches-xflag-2</task>
+        <code>fn:matches('helloworld', 'hello[ ]world', 'x')</code>
+        <expected>false</expected>
+    </test>
+    <test output="text">
+        <task>fn:matches-xflag-3</task>
+        <code>fn:matches('hello world', 'hello\ sworld', 'x')</code>
+        <expected>true</expected>
+    </test>
+    <test output="text">
+        <task>fn:matches-xflag-4</task>
+        <code>fn:matches('hello world', 'hello world', 'x')</code>
+        <expected>false</expected>
+    </test>
+    <test output="text">
+        <task>fn:matches-qflag-1</task>
+        <code>fn:matches("abcd", ".*", "q")</code>
+        <expected>false</expected>
+    </test>
+    <test output="text">
+        <task>fn:matches-iqflags-1</task>
+        <code>fn:matches("Mr. B. Obama", "B. OBAMA", "iq")</code>
+        <expected>true</expected>
+    </test>
 
     <test output="text">
         <task>fn:replace1</task>
         <code>fn:replace('eximtdb', 'm', 's')</code>
         <expected>existdb</expected>
     </test>
-
     <test output="text">
-        <task>fn:replac2</task>
+        <task>fn:replace2</task>
         <code>fn:replace('aaaah', 'a{2,3}?', 'X')</code>
         <expected>XXh</expected>
+    </test>
+    <test output="text">
+        <task>fn:replace-qflag-1</task>
+        <code>fn:replace("a\b\c", "\", "\\", "q")</code>
+        <expected>a\\b\\c</expected>
+    </test>
+    <test output="text">
+        <task>fn:replace-qflag-2</task>
+        <code>fn:replace("a/b/c", "/", "$", "q")</code>
+        <expected>a$b$c</expected>
+    </test>
+
+    <test output="text">
+        <task>fn:tokenize-qflag-1</task>
+        <code>fn:tokenize("12.3.5.6", ".", "q")</code>
+        <expected>12 3 5 6</expected>
     </test>
 
 </TestSet>
