@@ -201,6 +201,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         return axis;
     }
 
+    @Override
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
         final long start = System.currentTimeMillis();
         // the expression can be called multiple times, so we need to clear the previous preselectResult
@@ -209,22 +210,26 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         final int indexType = Optimize.getQNameIndexType(context, contextSequence, contextQName);
         if (LOG.isTraceEnabled())
             {LOG.trace("Using QName index on type " + Type.getTypeName(indexType));}
-		
-        String pattern;
-		
-		if( isCalledAs( "matches-regex" ) ) {
-			pattern = getArgument(1).eval(contextSequence).getStringValue();
-		} else {
-			pattern = translateRegexp(getArgument(1).eval(contextSequence).getStringValue());
-		}
-		
-        boolean caseSensitive = true;
-        int flags = 0;
+
+        final int flags;
         if(getSignature().getArgumentCount() == 3) {
             final String flagsArg = getArgument(2).eval(contextSequence).getStringValue();
-            caseSensitive = (flagsArg.indexOf('i') == Constants.STRING_NOT_FOUND);
             flags = parseFlags(flagsArg);
+        } else {
+            flags = 0;
         }
+
+        final boolean caseSensitive = !hasCaseInsensitive(flags);
+
+        final String pattern;
+		if(isCalledAs("matches-regex")) {
+			pattern = getArgument(1).eval(contextSequence).getStringValue();
+		} else {
+            final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
+            final boolean caseBlind = !caseSensitive;
+			pattern = translateRegexp(getArgument(1).eval(contextSequence).getStringValue(), ignoreWhitespace, caseBlind);
+		}
+
         try {
             preselectResult = context.getBroker().getValueIndex().match(context.getWatchDog(), contextSequence.getDocumentSet(),
                     useContext ? contextSequence.toNodeSet() : null, NodeSet.DESCENDANT, pattern,
@@ -237,6 +242,14 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
             {context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
                 PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start);}
         return preselectResult;
+    }
+
+    protected boolean hasCaseInsensitive(final int flags) {
+        return (flags & Pattern.CASE_INSENSITIVE) != 0 || (flags & Pattern.UNICODE_CASE) != 0;
+    }
+
+    protected boolean hasIgnoreWhitespace(final int flags) {
+        return (flags & Pattern.COMMENTS) != 0;
     }
 
     @Override
@@ -287,9 +300,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         }
     }
     
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
+	@Override
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         final long start = System.currentTimeMillis();
         if (context.getProfiler().isEnabled()) {
@@ -361,23 +372,26 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
             if (contextItem != null)
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }  
-        
-        boolean caseSensitive = true;
-        int flags = 0;       
+
+        final int flags;
         if(getSignature().getArgumentCount() == 3) {
             final String flagsArg = getArgument(2).eval(contextSequence, contextItem).getStringValue();
-            caseSensitive = (flagsArg.indexOf('i') == Constants.STRING_NOT_FOUND);
             flags = parseFlags(flagsArg);
+        } else {
+            flags = 0;
         }
+
+        final boolean caseSensitive = !hasCaseInsensitive(flags);
         
         Sequence result = null;
 		
-        String pattern;
-		
-		if( isCalledAs( "matches-regex" ) ) {
+        final String pattern;
+		if(isCalledAs("matches-regex")) {
 			pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
 		} else {
-			pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+            final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
+            final boolean caseBlind = !caseSensitive;
+			pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
 		}
 		
         final NodeSet nodes = input.toNodeSet();
@@ -453,23 +467,22 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
     /**
 	 * Translates the regular expression from XPath2 syntax to java regex
 	 * syntax.
-	 * 
-	 * @param pattern
+	 *
+     * @param pattern a String containing a regular expression in the syntax of XML Schemas Part 2
+     * @param ignoreWhitespace true if whitespace is to be ignored ('x' flag)
+     * @param caseBlind true if case is to be ignored ('i' flag)
 	 * @return The translated regexp
 	 * @throws XPathException
 	 */
-	protected String translateRegexp(String pattern) throws XPathException {
+	protected String translateRegexp(final String pattern, final boolean ignoreWhitespace, final boolean caseBlind) throws XPathException {
 		// convert pattern to Java regex syntax
         try {
         	final int xmlVersion = 11;
-        	final boolean ignoreWhitespace = false;
-        	final boolean caseBlind = false;
-			pattern = JDK15RegexTranslator.translate(pattern, xmlVersion, true, ignoreWhitespace, caseBlind);
+			return JDK15RegexTranslator.translate(pattern, xmlVersion, true, ignoreWhitespace, caseBlind);
 		} catch (final RegexSyntaxException e) {
 			throw new XPathException(this, "Conversion from XPath2 to Java regular expression " +
 					"syntax failed: " + e.getMessage(), e);
 		}
-		return pattern;
 	}
 
     /**
@@ -481,17 +494,22 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
      */
     private Sequence evalGeneric(Sequence contextSequence, Item contextItem, Sequence stringArg) throws XPathException {
         final String string = stringArg.getStringValue();
-		String pattern;
-		
+
+        final int flags;
+        if(getSignature().getArgumentCount() == 3) {
+            flags = parseFlags(getArgument(2).eval(contextSequence, contextItem).getStringValue());
+        } else {
+            flags = 0;
+        }
+
+        final String pattern;
 		if( isCalledAs( "matches-regex" ) ) {
 			pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
 		} else {
-			pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+            final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
+            final boolean caseBlind = hasCaseInsensitive(flags);
+			pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
 		}
-        
-		int flags = 0;
-        if(getSignature().getArgumentCount() == 3)
-            {flags = parseFlags(getArgument(2).eval(contextSequence, contextItem).getStringValue());}
         
 		return BooleanValue.valueOf(match(string, pattern, flags));
     }
@@ -520,7 +538,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 		}
     }
 
-    protected final static int parseFlags(String s) throws XPathException {
+    protected final static int parseFlags(final String s) throws XPathException {
 		int flags = 0;
 		for(int i = 0; i < s.length(); i++) {
 			final char ch = s.charAt(i);

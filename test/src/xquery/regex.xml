@@ -26,6 +26,26 @@
         <code>fn:matches('exist', '[a-z]{5}')</code>
         <expected>true</expected>
     </test>
+    <test output="text">
+        <task>fn:matches-xflag-1</task>
+        <code>fn:matches('helloworld', 'hello world', 'x')</code>
+        <expected>true</expected>
+    </test>
+    <test output="text">
+        <task>fn:matches-xflag-2</task>
+        <code>fn:matches('helloworld', 'hello[ ]world', 'x')</code>
+        <expected>false</expected>
+    </test>
+    <test output="text">
+        <task>fn:matches-xflag-3</task>
+        <code>fn:matches('hello world', 'hello\ sworld', 'x')</code>
+        <expected>true</expected>
+    </test>
+    <test output="text">
+        <task>fn:matches-xflag-4</task>
+        <code>fn:matches('hello world', 'hello world', 'x')</code>
+        <expected>false</expected>
+    </test>
 
     <test output="text">
         <task>fn:replace1</task>

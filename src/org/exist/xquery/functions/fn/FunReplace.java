@@ -22,7 +22,6 @@
 package org.exist.xquery.functions.fn;
 
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.exist.dom.QName;
@@ -149,28 +148,35 @@ public class FunReplace extends FunMatches {
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
-        }
+		if (context.getProfiler().isEnabled()) {
+			context.getProfiler().start(this);
+			context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+			if (contextSequence != null) {
+				context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+			}
+			if (contextItem != null) {
+				context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+			}
+		}
 
-        Sequence result;
+		Sequence result;
 		final Sequence stringArg = getArgument(0).eval(contextSequence, contextItem);
-		if (stringArg.isEmpty())
-            {result = StringValue.EMPTY_STRING;}
-        else {        
+		if (stringArg.isEmpty()) {
+			result = StringValue.EMPTY_STRING;
+		} else {
+			final int flags;
+			if (getSignature().getArgumentCount() == 4) {
+				flags =	parseFlags(getArgument(3).eval(contextSequence, contextItem).getStringValue());
+			} else {
+				flags = 0;
+			}
+
     		final String string = stringArg.getStringValue();
     		final Sequence patternSeq = getArgument(1).eval(contextSequence, contextItem);
-                final String pattern =
-    			translateRegexp(patternSeq.getStringValue());
-            
-                final Sequence replaceSeq = getArgument(2).eval(contextSequence, contextItem);
-                final String replace =
-    			replaceSeq.getStringValue();
+			final String pattern = translateRegexp(patternSeq.getStringValue(), hasIgnoreWhitespace(flags), hasCaseInsensitive(flags));
+
+			final Sequence replaceSeq = getArgument(2).eval(contextSequence, contextItem);
+			final String replace = replaceSeq.getStringValue();
             //An error is raised [err:FORX0004] if the value of $replacement contains a "$" character that is not immediately followed by a digit 0-9 and not immediately preceded by a "\".
             //An error is raised [err:FORX0004] if the value of $replacement contains a "\" character that is not part of a "\\" pair, unless it is immediately followed by a "$" character.            
             for (int i = 0 ; i < replace.length() ; i++) {
@@ -199,9 +205,6 @@ public class FunReplace extends FunMatches {
             	
             }
 
-            int flags = 0;
-    		if (getSignature().getArgumentCount() == 4)
-    			{flags =	parseFlags(getArgument(3).eval(contextSequence, contextItem).getStringValue());}
     		try {
     			if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
     				pat = PatternFactory.getInstance().getPattern(pattern, flags);
