@@ -29,6 +29,7 @@ import org.exist.dom.persistent.*;
 import org.exist.numbering.NodeId;
 import org.exist.util.FastQSort;
 import org.exist.xquery.*;
+import org.exist.xquery.NodeTest; // Needed by Eclipse to disambiguate
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
