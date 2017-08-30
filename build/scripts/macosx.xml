@@ -186,8 +186,10 @@
         </copy>
         <copy file="${basedir}/conf.xml.tmpl" tofile="${app.exist}/conf.xml" filtering="true">
             <filterset>
-                <filter token="dataDir" value="webapp/WEB-INF/data"/>
-                <filter token="cacheSize" value="256"/>
+                <filter token="dataDir" value="${config.dataDir}"/>
+		<filter token="journalDir" value="${config.journalDir}"/>
+                <filter token="cacheSize" value="${config.cacheSize}"/>
+		<filter token="collectionCacheSize" value="${config.collectionCacheSize}"/>
             </filterset>
         </copy>
         <chmod perm="+x">

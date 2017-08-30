@@ -37,8 +37,8 @@
     <property name="jvmarg" value="-Xmx128000k -Xms32000k -Djetty.home=${jetty.dir} -Dexist.home=${basedir}"/>
     <property name="xmldb.src" value="undefined"/>
     <property name="dist.dir" value="${dist}/${project.name}-${project.version}"/>
-    
-   
+
+
 
     <!-- import common targets -->
     <!-- <import file="../../build.xml"/> -->
@@ -149,17 +149,21 @@
             filtering="true" failonerror="false"/>
 
         <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/conf.xml" filtering="true">
-			<filterset>
-				<filter token="dataDir" value="webapp/WEB-INF/data"/>
-                <filter token="cacheSize" value="256"/>
-			</filterset>
-		</copy>
+		<filterset>
+			<filter token="dataDir" value="${config.dataDir}"/>
+			<filter token="journalDir" value="${config.journalDir}"/>
+			<filter token="cacheSize" value="${config.cacheSize}"/>
+			<filter token="collectionCacheSize" value="${config.collectionCacheSize}"/>
+		</filterset>
+	</copy>
         <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/installer/conf.xml" filtering="true">
-			<filterset>
-				<filter token="dataDir" value="$dataDir"/>
-                <filter token="cacheSize" value="${cacheSize}"/>
-			</filterset>
-		</copy>
+		<filterset>
+			<filter token="dataDir" value="${config.dataDir}"/>
+			<filter token="journalDir" value="${config.journalDir}"/>
+			<filter token="cacheSize" value="${config.cacheSize}"/>
+			<filter token="collectionCacheSize" value="${config.collectionCacheSize}"/>
+		</filterset>
+	</copy>
         <copy file="${basedir}/client.properties.tmpl" tofile="${basedir}/client.properties"
             filtering="true"/>
         <copy file="${basedir}/descriptor.xml.tmpl" tofile="${basedir}/descriptor.xml"
