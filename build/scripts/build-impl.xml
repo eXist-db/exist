@@ -149,17 +149,17 @@
             filtering="true" failonerror="false"/>
 
         <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/conf.xml" filtering="true">
-			<filterset>
-                <filter token="dataDir" value="${dataDir}"/>
-                <filter token="cacheSize" value="${cacheSize}"/>
-			</filterset>
-		</copy>
+		<filterset>
+			<filter token="dataDir" value="${config.dataDir}"/>
+			<filter token="cacheSize" value="${config.cacheSize}"/>
+		</filterset>
+	</copy>
         <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/installer/conf.xml" filtering="true">
-			<filterset>
-				<filter token="dataDir" value="${dataDir}"/>
-                <filter token="cacheSize" value="${cacheSize}"/>
-			</filterset>
-		</copy>
+		<filterset>
+			<filter token="dataDir" value="${config.dataDir}"/>
+			<filter token="cacheSize" value="${config.cacheSize}"/>
+		</filterset>
+	</copy>
         <copy file="${basedir}/client.properties.tmpl" tofile="${basedir}/client.properties"
             filtering="true"/>
         <copy file="${basedir}/descriptor.xml.tmpl" tofile="${basedir}/descriptor.xml"
