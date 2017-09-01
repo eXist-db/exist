@@ -186,8 +186,8 @@
         </copy>
         <copy file="${basedir}/conf.xml.tmpl" tofile="${app.exist}/conf.xml" filtering="true">
             <filterset>
-                <filter token="dataDir" value="${dataDir}"/>
-                <filter token="cacheSize" value="${cacheSize}"/>
+                <filter token="dataDir" value="${config.dataDir}"/>
+                <filter token="cacheSize" value="${config.cacheSize}"/>
             </filterset>
         </copy>
         <chmod perm="+x">
