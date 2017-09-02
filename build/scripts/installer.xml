@@ -103,7 +103,7 @@
         </fetch>
     </target>
 
-    <target name="xars" description="Scan apps directory and include all .xar files into installer">
+    <target name="xars" depends="download-xars" description="Scan apps directory and include all .xar files into installer">
         <echo message="Processing xar packages ..."/>
         <foreach target="process-xar" param="app">
             <path>
