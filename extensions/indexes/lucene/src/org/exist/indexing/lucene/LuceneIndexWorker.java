@@ -75,6 +75,8 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.NamedNodeMap;
 import org.xml.sax.helpers.AttributesImpl;
 
+import javax.xml.XMLConstants;
+
 
 /**
  * Class for handling all Lucene operations.
@@ -241,6 +243,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             NamedNodeMap attributes = parentStoredNode.getAttributes();
             for (int i = 0; i < attributes.getLength(); ++i) {
                 IStoredNode<?> attr = (IStoredNode<?>) attributes.item(i);
+                if (attr.getPrefix() != null && XMLConstants.XMLNS_ATTRIBUTE.equals(attr.getPrefix())) {
+                    continue;
+                }
                 configIt = config.getConfig(attr.getPath());
                 while (configIt.hasNext()) {
                     LuceneIndexConfig idxConfig = configIt.next();

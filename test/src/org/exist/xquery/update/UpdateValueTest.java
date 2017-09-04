@@ -23,4 +23,15 @@ public class UpdateValueTest extends AbstractTestUpdate {
         queryResource(service, docName, "//t[@xml:id eq 'id2']", 1);
         queryResource(service, docName, "id('id2', /test)", 1);
     }
+
+    @Test
+    public void updateAttributeInNamespacedElement() throws XMLDBException {
+        final String docName = "docNs.xml";
+        final XQueryService service =
+            storeXMLStringAndGetQueryService(docName, "<test xmlns=\"http://test.com\" id=\"id1\"/>");
+
+        queryResource(service, docName, "declare namespace t=\"http://test.com\"; update value /t:test/@id with " +
+                "'id2'", 0);
+        queryResource(service, docName, "declare namespace t=\"http://test.com\"; /t:test[@id = 'id2']", 1);
+    }
 }
