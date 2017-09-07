@@ -26,6 +26,7 @@ import org.exist.dom.memtree.ReferenceNode;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
+import org.w3c.dom.ProcessingInstruction;
 
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamReader;
@@ -104,7 +105,11 @@ public class NameTest extends TypeTest {
         }
 
         if (!(nodeName instanceof QName.WildcardLocalPartQName)) {
-            return nodeName.getLocalPart().equals(other.getLocalName());
+            if (other.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE) {
+                return nodeName.getLocalPart().equals(((ProcessingInstruction)other).getTarget());
+            } else {
+                return nodeName.getLocalPart().equals(other.getLocalName());
+            }
         }
 
         return true;
