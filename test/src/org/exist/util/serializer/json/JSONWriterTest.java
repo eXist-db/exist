@@ -111,6 +111,58 @@ public class JSONWriterTest {
         }
     }
 
+    @Test
+    public void serializesMixedContent_whenAttrsPresent() throws IOException, TransformerException, ParserConfigurationException, SAXException {
+        final Node xmlDoc = parseXml(
+                "<a x='y' xx='yy'>" + EOL +
+                            "\tbefore-b" + EOL +
+                            "\t<b y='z'>before-c <c>c-value</c> after-c</b>" + EOL +
+                            "\tafter-b" + EOL +
+                        "</a>");
+
+        final Properties properties = new Properties();
+        properties.setProperty(OutputKeys.METHOD, "json");
+        properties.setProperty(OutputKeys.INDENT, "no");
+
+        final SAXSerializer serializer = new SAXSerializer();
+        try(final StringWriter writer = new StringWriter()) {
+            serializer.setOutput(writer, properties);
+            final Transformer transformer = transformerFactory.newTransformer();
+            final SAXResult saxResult = new SAXResult(serializer);
+            transformer.transform(new DOMSource(xmlDoc), saxResult);
+
+            final String result = writer.toString();
+
+            assertEquals("{\"x\":\"y\",\"xx\":\"yy\",\"#text\":[\"\\n\\tbefore-b\\n\\t\",\"\\n\\tafter-b\\n\"],\"b\":{\"y\":\"z\",\"#text\":[\"before-c \",\" after-c\"],\"c\":\"c-value\"}}", result);
+        }
+    }
+
+    @Test
+    public void serializesMixedContent() throws IOException, TransformerException, ParserConfigurationException, SAXException {
+        final Node xmlDoc = parseXml(
+                "<a>" + EOL +
+                            "\tbefore-b" + EOL +
+                            "\t<b>before-c <c>c-value</c> after-c</b>" + EOL +
+                            "\tafter-b" + EOL +
+                        "</a>");
+
+        final Properties properties = new Properties();
+        properties.setProperty(OutputKeys.METHOD, "json");
+        properties.setProperty(OutputKeys.INDENT, "no");
+
+        final SAXSerializer serializer = new SAXSerializer();
+        try(final StringWriter writer = new StringWriter()) {
+            serializer.setOutput(writer, properties);
+            final Transformer transformer = transformerFactory.newTransformer();
+            final SAXResult saxResult = new SAXResult(serializer);
+            transformer.transform(new DOMSource(xmlDoc), saxResult);
+
+            final String result = writer.toString();
+
+            assertEquals("{\"#text\":[\"\\n\\tbefore-b\\n\\t\",\"\\n\\tafter-b\\n\"],\"b\":{\"#text\":[\"before-c \",\" after-c\"],\"c\":\"c-value\"}}", result);
+        }
+    }
+
     private Document parseXml(final String xmlStr) throws ParserConfigurationException, IOException, SAXException {
         final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
         try(final InputStream is = new ByteArrayInputStream(xmlStr.getBytes(UTF_8))) {
