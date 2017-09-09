@@ -24,7 +24,7 @@
 	<classpathentry kind="src" path="extensions/commands/src"/>
 	<classpathentry kind="lib" path="lib/core/j8fu-1.4.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/pkg-java-fork.jar"/>
-	<classpathentry kind="lib" path="lib/core/caffeine-2.5.3.jar"/>
+	<classpathentry kind="lib" path="lib/core/caffeine-2.5.5.jar"/>
 	<classpathentry kind="lib" path="lib/core/rsyntaxtextarea-2.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xml-apis-1.4.01.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xercesImpl-2.11.0.jar"/>
