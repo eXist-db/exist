@@ -144,8 +144,8 @@ public class JSONObject extends JSONNode {
             }
 
             JSONNode next = firstChild;
-            boolean allowText = false;
-            boolean skipMixedContentText = false;
+//            boolean allowText = false;
+//            boolean skipMixedContentText = false;
             while(next != null) {
                 if(next.getType() == Type.VALUE_TYPE) {
                     /*
@@ -153,7 +153,7 @@ public class JSONObject extends JSONNode {
                      node is serialized as property "#text". 
                      Text in mixed content nodes is ignored though.
                     */
-                    if(allowText) {
+//                    if(allowText) {
                         writer.write("\"" + next.getName() + "\"");     // next.getName() returns "#text"
                         if(isIndent()) {
                             writer.write(' ');
@@ -163,29 +163,29 @@ public class JSONObject extends JSONNode {
                             writer.write(' ');
                         }
                         next.serialize(writer, false);
-                        allowText = false;
-                    } else {
-                        //writer.write("\"#mixed-content-text\" : ");
-                        skipMixedContentText = true;
-                    }
+//                        allowText = false;
+//                    } else {
+//                        //writer.write("\"#mixed-content-text\" : ");
+//                        skipMixedContentText = true;
+//                    }
                 } else {
                     next.serialize(writer, false);
                 }
 
-                if(next.getType() == Type.SIMPLE_PROPERTY_TYPE) {
-                    allowText = true;
-                }
+//                if(next.getType() == Type.SIMPLE_PROPERTY_TYPE) {
+//                    allowText = true;
+//                }
 
                 next = next.getNext();
 
-                if(next != null && !skipMixedContentText && !isMixedContentTextLast(next, allowText)) {
+                if(next != null /*&& !skipMixedContentText && !isMixedContentTextLast(next, allowText)*/) {
                     writer.write(',');
                     if(isIndent()) {
                         writer.write(' ');
                     }
                 }
 
-                skipMixedContentText = false;
+//                skipMixedContentText = false;
             }
             if(isIndent()) {
                 writer.write(' ');
@@ -194,9 +194,9 @@ public class JSONObject extends JSONNode {
         }
     }
  
-    private boolean isMixedContentTextLast(final JSONNode node, final boolean allowText) {
-        return node.getType() == Type.VALUE_TYPE && !allowText && node.equals(getLastChild());
-    }
+//    private boolean isMixedContentTextLast(final JSONNode node, final boolean allowText) {
+//        return node.getType() == Type.VALUE_TYPE && !allowText && node.equals(getLastChild());
+//    }
 
     @Override
     public String toString() {
