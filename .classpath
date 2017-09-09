@@ -101,7 +101,7 @@
 	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-xquery3-1.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.5.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-lang3-3.5.jar"/>
-	<classpathentry kind="lib" path="lib/core/quartz-2.2.3.jar"/>
+	<classpathentry kind="lib" path="lib/core/quartz-2.3.0.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-analyzers-common-4.10.4.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-4.10.4.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-queries-4.10.4.jar"/>
