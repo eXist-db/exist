@@ -707,6 +707,7 @@
         <delete>
             <fileset dir="installer" includes="eXist-*.jar,install.xml"/>
         </delete>
+        <delete failonerror="no" dir="installer/scripts/eXist-db.app"/>
 
         <delete failonerror="no" dir="${dist}"/>
 
