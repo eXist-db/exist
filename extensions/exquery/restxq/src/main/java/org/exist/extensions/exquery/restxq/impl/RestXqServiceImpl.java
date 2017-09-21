@@ -173,7 +173,7 @@ class RestXqServiceImpl extends AbstractRestXqService {
                     }
                     MimeType mimeType = MimeTable.getInstance().getContentType(contentType);
 
-                    if(contentType.toLowerCase().equals("multipart/related")){
+                    if(contentType.equalsIgnoreCase("multipart/related")){
                     	
                     	// multipart/related request
                     	String encoding = request.getCharacterEncoding();
@@ -472,7 +472,7 @@ class RestXqServiceImpl extends AbstractRestXqService {
      * 
      * @see <a href="http://expath.org/spec/http-client">HTTP Client Module</a>
      */
-    private String buildBodyPartAsXmlStr(final Pattern typePtn, final Pattern transEncPtn, final String headers, String content) throws RestXqServiceException{
+    private String buildBodyPartAsXmlStr(final Pattern typePtn, final Pattern transEncPtn, final String headers, final String content) throws RestXqServiceException{
     	// find content type
     	final Matcher typeMtc = typePtn.matcher(headers);
 		String contentType = null;
@@ -492,11 +492,11 @@ class RestXqServiceImpl extends AbstractRestXqService {
 		}
 		// if the transfer encoding is BASE64 then return the the content in a http:body node
 		// and declare the media-type as binary
-		if(transferEncodeing != null && transferEncodeing.toLowerCase().equals("base64")){
+		if(transferEncodeing != null && transferEncodeing.equalsIgnoreCase("base64")){
 			return String.format("<http:body media-type=\"%s\">%s</http:body>", contentType, content);
 		}else{
-			content = Base64.getEncoder().encodeToString(content.getBytes());
-			return String.format("<http:body media-type=\"%s\">%s</http:body>", contentType, content);
+			final String encodedContent = Base64.getEncoder().encodeToString(content.getBytes());
+			return String.format("<http:body media-type=\"%s\">%s</http:body>", contentType, encodedContent);
 		}
     }
     
