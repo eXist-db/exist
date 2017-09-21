@@ -33,10 +33,13 @@ import java.io.Writer;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+
 import org.exist.EXistException;
+import org.exist.dom.memtree.ElementImpl;
 import org.exist.extensions.exquery.restxq.impl.adapters.SequenceAdapter;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.BinaryValue;
@@ -48,6 +51,8 @@ import org.exquery.serialization.annotation.MethodAnnotation.SupportedMethod;
 import org.exquery.xquery.Sequence;
 import org.exquery.xquery.Type;
 import org.exquery.xquery.TypedValue;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
@@ -82,10 +87,55 @@ class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer {
             }
         }
     }
-
+    
     @Override
     protected void serializeNodeBody(final Sequence result, final HttpResponse response, final Map<SerializationProperty, String> serializationProperties) throws RestXqServiceException {
-        try(final DBBroker broker = getBrokerPool().getBroker();
+    	// multipart/related serialization 
+    	if(serializationProperties.get(SerializationProperty.MEDIA_TYPE).equals("multipart/related")){
+    		
+    		final SequenceAdapter sequence = (SequenceAdapter)result;
+    		final org.exist.xquery.value.Sequence existSeq = sequence.getExistSequence();
+    		
+    		if(existSeq.hasOne() && ((Node)existSeq.itemAt(0)).getLocalName().toLowerCase().equals("multipart")){
+    			// get boundary
+    			final Node multipart = (Node)existSeq.itemAt(0);
+    			final Node boundaryAttr = multipart.getAttributes().getNamedItem("boundary");
+    			String boundary = null;
+    			if(boundaryAttr != null){
+    				boundary = boundaryAttr.getNodeValue();
+    			}else{
+    				throw new RestXqServiceException("Multipart boundary could not be found");
+    			}
+    			 
+    			String rootId = "";
+    			final NodeList nodeList = multipart.getChildNodes();
+    			// get root part id, where the first content-id header is the root id
+    			for(int i = 0; i < nodeList.getLength(); i++){
+    				final Node node = nodeList.item(i);
+    				final Node nameAttr = node.getAttributes().getNamedItem("name");
+    				if(nameAttr != null && nameAttr.getNodeValue().toLowerCase().equals("content-id")){
+    					rootId = node.getAttributes().getNamedItem("value").getNodeValue();
+    					break;
+    				}
+    			}
+    			// set http content-type header by root id and boundary
+    			response.setContentType("multipart/related; start=" + rootId + "; boundary=" + boundary);
+    			
+    			final String httpMultiparts;
+    			// parse parts to string and write to output stream
+    			try(final Writer writer = new OutputStreamWriter(response.getOutputStream(), serializationProperties.get(SerializationProperty.ENCODING))){
+    				httpMultiparts = parseMultipart(multipart, boundary);
+					writer.write(httpMultiparts);
+					writer.flush();
+				} catch (IOException | EXistException | SAXException e) {
+					throw new RestXqServiceException("Error while serializing xml: " + e.toString(), e);
+				}
+    			
+    			return;
+    		}
+    	}
+    	
+    	try(final DBBroker broker = getBrokerPool().getBroker();
                 final Writer writer = new OutputStreamWriter(response.getOutputStream(), serializationProperties.get(SerializationProperty.ENCODING))) {
             final Properties outputProperties = serializationPropertiesToProperties(serializationProperties);
             final XQuerySerializer xqSerializer = new XQuerySerializer(broker, outputProperties, writer);
@@ -116,4 +166,51 @@ class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer {
         
         return props;
     }
+    
+    private String parseMultipart(final Node multipart, final String boundary) throws EXistException, SAXException, RestXqServiceException{
+ 		final NodeList childNodes = multipart.getChildNodes();
+ 		final StringBuilder strBuilder = new StringBuilder();
+ 		strBuilder.append("--").append(boundary);
+ 		
+ 		for(int i = 0; i < childNodes.getLength(); i++){
+ 			final Node node = childNodes.item(i);
+ 			strBuilder.append("\n");
+ 			
+ 			if(node.getLocalName().equals("header")){
+ 				final String headerName;
+ 				final String headerValue;
+ 				try{
+ 					headerName = node.getAttributes().getNamedItem("name").getNodeValue();
+ 					headerValue = node.getAttributes().getNamedItem("value").getNodeValue();
+ 				}catch(NullPointerException e){
+ 					throw new RestXqServiceException("Header musst include name and value attributes");
+ 				}
+ 				strBuilder.append(headerName).append(": ").append(headerValue);	
+ 			}else{
+ 				strBuilder.append("\n");
+ 				
+ 				final Serializer ser = getBrokerPool().getBroker().getSerializer();
+ 				// if part content is XML then serialize
+ 				final NodeList partNodes = node.getChildNodes();
+ 				for(int j = 0; j < partNodes.getLength(); j++ ){
+ 					final Node pNode = partNodes.item(j);
+ 					switch(pNode.getNodeType()){
+ 					case Node.ELEMENT_NODE:
+ 						strBuilder.append(ser.serialize((ElementImpl)pNode));
+ 						break;
+ 					case Node.TEXT_NODE:
+ 						strBuilder.append(pNode.getNodeValue());
+ 						break;
+ 					}
+ 				}
+ 				strBuilder.append("\n");
+ 				strBuilder.append("--").append(boundary);
+ 			}
+ 		}
+ 		
+ 		// append ending to the last part
+ 		strBuilder.append("--");
+ 		
+ 		return strBuilder.toString();
+     }
 }
