@@ -96,7 +96,7 @@ class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer {
     		final SequenceAdapter sequence = (SequenceAdapter)result;
     		final org.exist.xquery.value.Sequence existSeq = sequence.getExistSequence();
     		
-    		if(existSeq.hasOne() && ((Node)existSeq.itemAt(0)).getLocalName().toLowerCase().equals("multipart")){
+    		if(existSeq.hasOne() && ((Node)existSeq.itemAt(0)).getLocalName().equalsIgnoreCase("multipart")){
     			// get boundary
     			final Node multipart = (Node)existSeq.itemAt(0);
     			final Node boundaryAttr = multipart.getAttributes().getNamedItem("boundary");
@@ -113,7 +113,7 @@ class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer {
     			for(int i = 0; i < nodeList.getLength(); i++){
     				final Node node = nodeList.item(i);
     				final Node nameAttr = node.getAttributes().getNamedItem("name");
-    				if(nameAttr != null && nameAttr.getNodeValue().toLowerCase().equals("content-id")){
+    				if(nameAttr != null && nameAttr.getNodeValue().equalsIgnoreCase("content-id")){
     					rootId = node.getAttributes().getNamedItem("value").getNodeValue();
     					break;
     				}
@@ -201,6 +201,8 @@ class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer {
  					case Node.TEXT_NODE:
  						strBuilder.append(pNode.getNodeValue());
  						break;
+					default:
+ 						throw new RestXqServiceException(pNode.getNodeType() + " node type is not supported");
  					}
  				}
  				strBuilder.append("\n");
