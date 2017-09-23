@@ -43,7 +43,7 @@ public class NamedFunctionReference extends AbstractExpression {
         if (fun == null)
             {throw new XPathException(self, ErrorCodes.XPST0017, "Function not found: " + funcName);}
         try {
-            context.resolveForwardReferences();
+            context.resolveForwardReferences(false);
         } catch (final XPathException e) {
             return null;
         }

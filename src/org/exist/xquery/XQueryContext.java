@@ -172,7 +172,7 @@ public class XQueryContext implements BinaryValueManager, Context
     protected int                                      variableStackSize                                = 0;
 
     // Unresolved references to user defined functions
-    protected Stack<FunctionCall>                      forwardReferences                                = new Stack<FunctionCall>();
+    protected Deque<FunctionCall>                      forwardReferences                                = new ArrayDeque<>();
 
     // List of options declared for this query at compile time - i.e. declare option
     protected List<Option>                             staticOptions                                    = null;
@@ -2971,26 +2971,38 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     public void addForwardReference( FunctionCall call )
     {
-        forwardReferences.push( call );
+        forwardReferences.add( call );
     }
 
+
+    public void resolveForwardReferences() throws XPathException {
+        resolveForwardReferences(true);
+    }
 
     /**
      * Resolve all forward references to previously undeclared functions.
      *
      * @throws  XPathException
      */
-    public void resolveForwardReferences() throws XPathException
+    public void resolveForwardReferences(boolean raiseError) throws XPathException
     {
-        while( !forwardReferences.empty() ) {
+        final Deque<FunctionCall> unresolved = new ArrayDeque<>();
+        while( !forwardReferences.isEmpty() ) {
             final FunctionCall        call = forwardReferences.pop();
             final UserDefinedFunction func = call.getContext().resolveFunction( call.getQName(), call.getArgumentCount() );
 
             if( func == null ) {
-                throw( new XPathException( call, ErrorCodes.XPST0017, "Call to undeclared function: " + call.getQName().getStringValue() ) );
+                // either raise an error or push the FunctionCall to be resolved later
+                if (raiseError) {
+                    throw (new XPathException(call, ErrorCodes.XPST0017, "Call to undeclared function: " + call.getQName().getStringValue()));
+                } else {
+                    unresolved.push(call);
+                }
+            } else {
+                call.resolveForwardReference(func);
             }
-            call.resolveForwardReference( func );
         }
+        forwardReferences = unresolved;
     }
     
     /**

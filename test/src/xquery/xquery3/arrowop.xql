@@ -103,3 +103,17 @@ function ao:func-as-input2() {
             $k || "=" || $v
         } => $me()
 };
+
+declare function ao:foo($x) {
+    ao:foo($x, "bar")
+};
+
+declare function ao:foo($x, $y) {
+    $x => string-length()
+};
+
+declare
+    %test:assertEquals(3)
+function ao:forward-reference() {
+    ao:foo("foo")
+};
