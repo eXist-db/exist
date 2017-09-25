@@ -42,18 +42,21 @@ public class NamedFunctionReference extends AbstractExpression {
 		final Expression fun = FunctionFactory.createFunction(context, funcName, ast, null, args, false);
         if (fun == null)
             {throw new XPathException(self, ErrorCodes.XPST0017, "Function not found: " + funcName);}
-        try {
-            context.resolveForwardReferences();
-        } catch (final XPathException e) {
-            return null;
-        }
         if (fun instanceof FunctionCall) {
+        	if (((FunctionCall) fun).getFunction() == null) {
+				throw new XPathException(self, ErrorCodes.XPST0017, "Function not found: " + funcName);
+			}
             // clear line and column as it will be misleading. should be set later to point
             // to the location from where the function is called.
             fun.setLocation(-1, -1);
             return (FunctionCall) fun;
         } else if (fun instanceof Function) {
-        	final InternalFunctionCall funcCall = new InternalFunctionCall((Function)fun);
+        	final InternalFunctionCall funcCall;
+        	if (fun instanceof InternalFunctionCall) {
+				funcCall = (InternalFunctionCall)fun;
+			} else {
+        		funcCall = new InternalFunctionCall((Function)fun);
+			}
             funcCall.setLocation(-1, -1);
 	        return FunctionFactory.wrap(context, funcCall);
         } else if (fun instanceof CastExpression) {

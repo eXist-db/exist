@@ -380,7 +380,7 @@ return
         </code>
         <expected>70</expected>
     </test>
-    <test output="text">
+    <test output="text" id="lookup-unknown">
         <task>fn:function-lookup on unknown function</task>
         <code><![CDATA[xquery version "3.0";
 
@@ -388,7 +388,7 @@ declare namespace ex="http://exist-db.org/xquery/ex";
 
 let $f1 := function-lookup(xs:QName("ex:add"), 2)
 return
-    if ($f1) then
+    if (exists($f1)) then
        $f1(20, 50)
     else
         ()

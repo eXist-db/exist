@@ -161,7 +161,7 @@ public class ArrowOperator extends AbstractExpression {
         }
     }
 
-    private class ContextParam extends AbstractExpression {
+    private class ContextParam extends Function.Placeholder {
 
         private Sequence sequence;
 
