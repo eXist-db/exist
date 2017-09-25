@@ -99,32 +99,29 @@ public class FunName extends Function {
             if (contextItem != null)
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
-        
-        Sequence seq;
-        Sequence result;
-        
-        if (contextItem != null)
-        	{contextSequence = contextItem.toSequence();}
- 
-        /*
-		if (contextSequence == null || contextSequence.isEmpty()) 
-			result = Sequence.EMPTY_SEQUENCE;	
-		*/	          
-        
-		//If we have one argument, we take it into account
-		if (getSignature().getArgumentCount() > 0) 
-			{seq = getArgument(0).eval(contextSequence, contextItem);}
-		//Otherwise, we take the context sequence and we iterate over it
-		else
-			{seq = contextSequence;} 
-		
-		if (seq == null)
-			{throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");}
 
-        if (seq.isEmpty())
-        	//Bloody specs !
-            {result = StringValue.EMPTY_STRING;}
-        else {
+        if (contextItem != null) {
+            contextSequence = contextItem.toSequence();
+        }
+
+        //If we have one argument, we take it into account
+        final Sequence seq;
+        if (getSignature().getArgumentCount() > 0) {
+            seq = getArgument(0).eval(contextSequence, contextItem);
+
+        } else {
+            //Otherwise, we take the context sequence and we iterate over it
+            seq = contextSequence;
+        }
+
+        if (seq == null) {
+            throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
+        }
+
+        final Sequence result;
+        if (seq.isEmpty()) {
+            result = StringValue.EMPTY_STRING;
+        } else {
             final Item item = seq.itemAt(0);
             if (!Type.subTypeOf(item.getType(), Type.NODE))
             	{throw new XPathException(this, ErrorCodes.XPTY0004, "item is not a node; got '" + Type.getTypeName(item.getType()) + "'");}

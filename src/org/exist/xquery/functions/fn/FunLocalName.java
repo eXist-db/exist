@@ -90,20 +90,25 @@ public class FunLocalName extends Function {
             if (contextItem != null)
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
-        
-        if(contextItem != null)
-            {contextSequence = contextItem.toSequence();}
-                
-        Item item = null;
+
+        if (contextItem != null) {
+            contextSequence = contextItem.toSequence();
+        }
+
+        final Item item;
         // check if the node is passed as an argument or should be taken from
         // the context sequence
         if(getArgumentCount() > 0) {
             final Sequence seq = getArgument(0).eval(contextSequence);
-            if (!seq.isEmpty())
-                {item = seq.itemAt(0);}
-        } else { 
-        	if (contextSequence == null || contextSequence.isEmpty())
-        		{throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");}
+            if (!seq.isEmpty()) {
+                item = seq.itemAt(0);
+            } else {
+                item = null;
+            }
+        } else {
+            if (contextSequence == null) {
+                throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
+            }
             item = contextSequence.itemAt(0);
         }
         

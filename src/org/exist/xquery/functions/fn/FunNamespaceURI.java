@@ -92,31 +92,43 @@ public class FunNamespaceURI extends Function {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+            }
         }
-        
-        Item item = null;
-        // check if the node is passed as an argument or should be taken from the context sequence
-        if(getArgumentCount() > 0) {
-            final Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-            if(!seq.isEmpty())
-                {item = seq.itemAt(0);}
-        } else { 
-        	if (contextItem == null)
-            	{throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");}
-        	item = contextItem;
+
+        if (contextItem != null) {
+            contextSequence = contextItem.toSequence();
         }
-        
-        Sequence result;
-        if(item == null)
-            {result = AnyURIValue.EMPTY_URI;}
-        else {        	
-            if(!Type.subTypeOf(item.getType(), Type.NODE))
-                {throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node; got: " +
-                        Type.getTypeName(item.getType()));}
+
+        //If we have one argument, we take it into account
+        final Sequence seq;
+        if (getSignature().getArgumentCount() > 0) {
+            seq = getArgument(0).eval(contextSequence, contextItem);
+
+        } else {
+            //Otherwise, we take the context sequence and we iterate over it
+            seq = contextSequence;
+        }
+
+
+        if (seq == null) {
+            throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
+        }
+
+        final Sequence result;
+        if (seq.isEmpty()) {
+            result = AnyURIValue.EMPTY_URI;
+        } else {
+            final Item item = seq.itemAt(0);
+            if (!Type.subTypeOf(item.getType(), Type.NODE)) {
+                throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node; got: " +
+                        Type.getTypeName(item.getType()));
+            }
+
             //TODO : how to improve performance ?
             final Node n = ((NodeValue)item).getNode();
             String ns = n.getNamespaceURI();
