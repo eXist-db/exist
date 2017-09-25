@@ -62,7 +62,7 @@ public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
         ),
         new FunctionSignature(
 			new QName("clear-lock", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the user-id of the user that holds a write lock on the " + 
+			"Removes the user lock on the " +
             "resource $resource in the collection $collection-uri.  " +
 			"If no lock is in place, the empty sequence is returned. " +
             XMLDBModule.COLLECTION_URI,
@@ -70,7 +70,7 @@ public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
                 new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
                 new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource")
 			},
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the user id of the lock owner, otherwise if not locked the empty sequence")
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the user id of the previous lock owner, otherwise if not locked the empty sequence")
         )
 	};
 	
