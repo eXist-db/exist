@@ -45,7 +45,7 @@ import org.w3c.dom.Node;
 
 /**
  * Implements the fn:node-name library function.
- * 
+ *
  * @author wolf
  */
 public class FunNodeName extends Function {
@@ -74,14 +74,17 @@ public class FunNodeName extends Function {
         super(context, signature);
     }
 
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    @Override
+    public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+            }
         }
 
         if (contextItem != null) {
@@ -107,26 +110,30 @@ public class FunNodeName extends Function {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
             final Item item = seq.itemAt(0);
-            if (!Type.subTypeOf(item.getType(), Type.NODE))
-            	{throw new XPathException(this, ErrorCodes.XPTY0004, "item is not a node; got '" + Type.getTypeName(item.getType()) + "'");}
+            if (!Type.subTypeOf(item.getType(), Type.NODE)) {
+                throw new XPathException(this, ErrorCodes.XPTY0004, "item is not a node; got '" + Type.getTypeName(item.getType()) + "'");
+            }
+
             //TODO : how to improve performance ?
-            final Node n = ((NodeValue)item).getNode(); 
+            final Node n = ((NodeValue) item).getNode();
             //Returns an expanded-QName for node kinds that can have names.
             if (n instanceof INode) {
-            	final QName qn= ((INode)n).getQName();
-            	if (qn.equals(QName.EMPTY_QNAME))
-            		{result = Sequence.EMPTY_SEQUENCE;}
-            	else            		
-            		{result = new QNameValue(context, qn);}
-            //For other kinds of nodes it returns the empty sequence.
-            } else
-            	{result = Sequence.EMPTY_SEQUENCE;}
+                final QName qn = ((INode) n).getQName();
+                if (qn.equals(QName.EMPTY_QNAME)) {
+                    result = Sequence.EMPTY_SEQUENCE;
+                } else {
+                    result = new QNameValue(context, qn);
+                }
+                //For other kinds of nodes it returns the empty sequence.
+            } else {
+                result = Sequence.EMPTY_SEQUENCE;
+            }
         }
-        
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", result);} 
-        
-        return result;   
-        
+
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", result);
+        }
+
+        return result;
     }
 }

@@ -41,54 +41,58 @@ import org.w3c.dom.Node;
 
 /**
  * Built-in function fn:local-name().
- *
  */
 public class FunLocalName extends Function {
-	
-	protected static final String FUNCTION_DESCRIPTION =
-		"Returns the local part of the name of $arg as an xs:string that " +
-		"will either be the zero-length string or will have the lexical form of an xs:NCName.\n\n" +
-		"If the argument is omitted, it defaults to the context item (.). " +
-		"The behavior of the function if the argument is omitted is exactly " +
-		"the same as if the context item had been passed as the argument.\n\n" +
-		"The following errors may be raised: if the context item is undefined " +
-		"[err:XPDY0002]XP; if the context item is not a node [err:XPTY0004]XP.\n\n" +
-		"If the argument is supplied and is the empty sequence, the function " +
-		"returns the zero-length string.\n\n" +
-		"If the target node has no name (that is, if it is a document node, a " +
-		"comment, or a text node), the function returns the zero-length string.\n\n" +
-		"Otherwise, the value returned will be the local part of the expanded-QName " +
-		"of the target node (as determined by the dm:node-name accessor in Section " +
-		"5.11 node-name AccessorDM. This will be an xs:string whose lexical form is an xs:NCName." ;
+
+    private static final String FUNCTION_DESCRIPTION =
+            "Returns the local part of the name of $arg as an xs:string that " +
+                    "will either be the zero-length string or will have the lexical form of an xs:NCName.\n\n" +
+                    "If the argument is omitted, it defaults to the context item (.). " +
+                    "The behavior of the function if the argument is omitted is exactly " +
+                    "the same as if the context item had been passed as the argument.\n\n" +
+                    "The following errors may be raised: if the context item is undefined " +
+                    "[err:XPDY0002]XP; if the context item is not a node [err:XPTY0004]XP.\n\n" +
+                    "If the argument is supplied and is the empty sequence, the function " +
+                    "returns the zero-length string.\n\n" +
+                    "If the target node has no name (that is, if it is a document node, a " +
+                    "comment, or a text node), the function returns the zero-length string.\n\n" +
+                    "Otherwise, the value returned will be the local part of the expanded-QName " +
+                    "of the target node (as determined by the dm:node-name accessor in Section " +
+                    "5.11 node-name AccessorDM. This will be an xs:string whose lexical form is an xs:NCName.";
 
 
-	public final static FunctionSignature signatures[] = {
-		new FunctionSignature(
-			new QName("local-name", Function.BUILTIN_FUNCTION_NS),
-			FUNCTION_DESCRIPTION,
-			new SequenceType[0],
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the local name")
-		),
-		new FunctionSignature(
-			new QName("local-name", Function.BUILTIN_FUNCTION_NS),
-			FUNCTION_DESCRIPTION,
-			new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "The node to retrieve the local name from") },
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the local name")
-		)
-	};
+    public static final FunctionSignature signatures[] = {
+            new FunctionSignature(
+                    new QName("local-name", Function.BUILTIN_FUNCTION_NS),
+                    FUNCTION_DESCRIPTION,
+                    null,
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the local name")
+            ),
+            new FunctionSignature(
+                    new QName("local-name", Function.BUILTIN_FUNCTION_NS),
+                    FUNCTION_DESCRIPTION,
+                    new SequenceType[] {
+                            new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "The node to retrieve the local name from")
+                    },
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the local name")
+            )
+    };
 
-    public FunLocalName(XQueryContext context, FunctionSignature signature) {
+    public FunLocalName(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
-	
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+
+    @Override
+    public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+            }
         }
 
         if (contextItem != null) {
@@ -98,7 +102,7 @@ public class FunLocalName extends Function {
         final Item item;
         // check if the node is passed as an argument or should be taken from
         // the context sequence
-        if(getArgumentCount() > 0) {
+        if (getArgumentCount() > 0) {
             final Sequence seq = getArgument(0).eval(contextSequence);
             if (!seq.isEmpty()) {
                 item = seq.itemAt(0);
@@ -111,26 +115,29 @@ public class FunLocalName extends Function {
             }
             item = contextSequence.itemAt(0);
         }
-        
+
         final Sequence result;
-        if (item == null)
-            {result = StringValue.EMPTY_STRING;}
-        else {
-            if (!Type.subTypeOf(item.getType(), Type.NODE))
-            	{throw new XPathException(this, ErrorCodes.XPTY0004, "item is not a node; got '" + Type.getTypeName(item.getType()) + "'");}          
+        if (item == null) {
+            result = StringValue.EMPTY_STRING;
+        } else {
+            if (!Type.subTypeOf(item.getType(), Type.NODE)) {
+                throw new XPathException(this, ErrorCodes.XPTY0004, "item is not a node; got '" + Type.getTypeName(item.getType()) + "'");
+            }
+
             //TODO : how to improve performance ?
-            final Node n = ((NodeValue)item).getNode();
+            final Node n = ((NodeValue) item).getNode();
             final String localName = n.getLocalName();
-            if(localName != null) {
+            if (localName != null) {
                 result = new StringValue(localName);
             } else {
                 result = StringValue.EMPTY_STRING;
             }
         }
-        
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", result);} 
-        
-        return result;          
+
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", result);
+        }
+
+        return result;
     }
 }
