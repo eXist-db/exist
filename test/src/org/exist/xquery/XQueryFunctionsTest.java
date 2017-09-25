@@ -804,6 +804,23 @@ public class XQueryFunctionsTest {
     }
 
     @Test
+    public void nodeName_contextItem() throws XPathException, XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                "let $a := <a><b/></a>" +
+                        "return $a/b/fn:node-name()");
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("b", r);
+    }
+
+    @Test
+    public void nodeName_contextItem_empty() throws XPathException, XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                "let $a := <a><b/></a>" +
+                        "return $a/b/c/fn:node-name()");
+        assertEquals(0, result.getSize());
+    }
+
+    @Test
     public void data0() throws XMLDBException {
         final String query = "let $a := <a><b>1</b><b>1</b></a> " +
                 "for $b in $a/b[data() = '1'] return $b";

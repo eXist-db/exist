@@ -50,19 +50,27 @@ import org.w3c.dom.Node;
  */
 public class FunNodeName extends Function {
 
-    public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("node-name", Function.BUILTIN_FUNCTION_NS),
-			"Returns an expanded-QName for node kinds that can have names. For other kinds " +
-			"of nodes it returns the empty sequence. If $arg is the empty sequence, the " +
-			"empty sequence is returned.",
-			new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "The input node") },
-			new FunctionReturnSequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE, "the expanded QName"));
-    
-    /**
-     * @param context
-     */
-    public FunNodeName(XQueryContext context) {
+    public final static FunctionSignature signatures[] = {
+            new FunctionSignature(
+                    new QName("node-name", Function.BUILTIN_FUNCTION_NS),
+                    "Returns an expanded-QName for node kinds that can have names. For other kinds " +
+                            "of nodes it returns the empty sequence. If the context item is the empty sequence, the " +
+                            "empty sequence is returned.",
+                    new SequenceType[0],
+                    new FunctionReturnSequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE, "the expanded QName")),
+
+            new FunctionSignature(
+                    new QName("node-name", Function.BUILTIN_FUNCTION_NS),
+                    "Returns an expanded-QName for node kinds that can have names. For other kinds " +
+                            "of nodes it returns the empty sequence. If $arg is the empty sequence, the " +
+                            "empty sequence is returned.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "The input node")
+                    },
+                    new FunctionReturnSequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE, "the expanded QName"))
+    };
+
+    public FunNodeName(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
@@ -75,12 +83,29 @@ public class FunNodeName extends Function {
             if (contextItem != null)
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
-        
-        Sequence result;
-        final Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-        if(seq.isEmpty())
-            {result = Sequence.EMPTY_SEQUENCE;}
-        else {
+
+        if (contextItem != null) {
+            contextSequence = contextItem.toSequence();
+        }
+
+        //If we have one argument, we take it into account
+        final Sequence seq;
+        if (getSignature().getArgumentCount() > 0) {
+            seq = getArgument(0).eval(contextSequence, contextItem);
+
+        } else {
+            //Otherwise, we take the context sequence and we iterate over it
+            seq = contextSequence;
+        }
+
+        if (seq == null) {
+            throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
+        }
+
+        final Sequence result;
+        if (seq.isEmpty()) {
+            result = Sequence.EMPTY_SEQUENCE;
+        } else {
             final Item item = seq.itemAt(0);
             if (!Type.subTypeOf(item.getType(), Type.NODE))
             	{throw new XPathException(this, ErrorCodes.XPTY0004, "item is not a node; got '" + Type.getTypeName(item.getType()) + "'");}
