@@ -104,11 +104,11 @@ function ao:func-as-input2() {
         } => $me()
 };
 
-declare function ao:foo($x) {
+declare %private function ao:foo($x) {
     ao:foo($x, "bar")
 };
 
-declare function ao:foo($x, $y) {
+declare %private function ao:foo($x, $y) {
     $x => string-length()
 };
 
@@ -116,4 +116,20 @@ declare
     %test:assertEquals(3)
 function ao:forward-reference() {
     ao:foo("foo")
+};
+
+declare
+    %test:assertEquals("1-2-3")
+function ao:type-checks-internal-func() {
+    (1, 2, 3) => string-join("-")
+};
+
+declare %private function ao:string-join($s as xs:string*, $sep as xs:string) {
+    string-join($s, $sep)
+};
+
+declare
+    %test:assertEquals("1-2-3")
+function ao:type-checks-user-func() {
+    (1, 2, 3) => ao:string-join("-")
 };

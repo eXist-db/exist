@@ -457,7 +457,7 @@ public abstract class Function extends PathExpr {
         return this;
     }
 
-    public final static class Placeholder extends AbstractExpression {
+    public static class Placeholder extends AbstractExpression {
 
         public Placeholder(final XQueryContext context) {
             super(context);

@@ -2974,35 +2974,23 @@ public class XQueryContext implements BinaryValueManager, Context
         forwardReferences.add( call );
     }
 
-
-    public void resolveForwardReferences() throws XPathException {
-        resolveForwardReferences(true);
-    }
-
     /**
      * Resolve all forward references to previously undeclared functions.
      *
      * @throws  XPathException
      */
-    public void resolveForwardReferences(boolean raiseError) throws XPathException
+    public void resolveForwardReferences() throws XPathException
     {
-        final Deque<FunctionCall> unresolved = new ArrayDeque<>();
         while( !forwardReferences.isEmpty() ) {
             final FunctionCall        call = forwardReferences.pop();
             final UserDefinedFunction func = call.getContext().resolveFunction( call.getQName(), call.getArgumentCount() );
 
             if( func == null ) {
-                // either raise an error or push the FunctionCall to be resolved later
-                if (raiseError) {
-                    throw (new XPathException(call, ErrorCodes.XPST0017, "Call to undeclared function: " + call.getQName().getStringValue()));
-                } else {
-                    unresolved.push(call);
-                }
+                throw (new XPathException(call, ErrorCodes.XPST0017, "Call to undeclared function: " + call.getQName().getStringValue()));
             } else {
                 call.resolveForwardReference(func);
             }
         }
-        forwardReferences = unresolved;
     }
     
     /**
