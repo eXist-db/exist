@@ -841,7 +841,7 @@
         <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
         <echo message="!! Signing jar files ..."/>
         <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
-        <ant antfile="build/scripts/jarsigner.xml" dir="." target="jnlp-sign-exist"/>
+        <ant antfile="build/scripts/jarsigner.xml" dir="." target="jnlp-all"/>
 
     </target>
 

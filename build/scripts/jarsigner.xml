@@ -52,6 +52,18 @@
             </fileset>
         </signjar>
     </target>
+
+    <!-- Sign Jar files of eXist extensions -->
+    <target name="jnlp-sign-exist-extensions" description="Sign all EXTENSION jar files in lib/extensions."
+            depends="jnlp-prepare,jnlp-keygen">
+
+        <signjar alias="${keystore.alias}" storepass="${keystore.password}"
+                 keystore="${keystore.file}">
+            <fileset dir="lib/extensions">
+                <include name="*.jar"/>
+            </fileset>
+        </signjar>
+    </target>
     
     <!-- Sign Jar files used by eXist -->
     <target name="jnlp-sign-core" description="Sign all CORE jar files in lib/core."
@@ -95,7 +107,7 @@
     
     <!-- All tasks, in the best sequence -->
     <target name="jnlp-all"
-            depends="jnlp-prepare,jnlp-keygen,jnlp-sign-exist,jnlp-sign-core"
+            depends="jnlp-prepare,jnlp-keygen,jnlp-sign-exist,jnlp-sign-core,jnlp-sign-exist-extensions"
             description="Create keystore file and sign all EXIST and CORE jar files."/>
     
     <target name="jnlp-sign-all" depends="jnlp-all">
@@ -120,11 +132,7 @@
                 <include name="*.jar"/>
             </fileset>
             <fileset dir="lib/extensions" erroronmissingdir="false">
-                <include name="exist-netedit.jar"/>
-            </fileset>
-            <fileset dir="lib/optional">
-                <include name="commons-codec-*.jar"/>
-                <include name="commons-httpclient-*.jar"/>
+                <include name="*.jar"/>
             </fileset>
         </unsignjar>
     </target>
@@ -157,6 +165,7 @@
         <!-- Sign all jars -->
         <antcall target="jnlp-sign-exist"/>
         <antcall target="jnlp-sign-core"/>
+        <antcall target="jnlp-sign-exist-extensions"/>
         
         <!-- Create jar.pack.gz files -->
         <taskdef name="pack" 
