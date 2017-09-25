@@ -527,14 +527,16 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 } else {
                     query = toQuery(field, qname, keys[0], operator, docs);
                 }
+                final short nodeType = qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node
+                        .ELEMENT_NODE;
 
                 if (contextSet != null && contextSet.hasOne() && contextSet.getItemType() != Type.DOCUMENT) {
                     NodesFilter filter = new NodesFilter(contextSet);
                     filter.init(searcher.getIndexReader());
                     FilteredQuery filtered = new FilteredQuery(query, filter, FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
-                    resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, null, filtered, null));
+                    resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, nodeType, filtered, null));
                 } else {
-                    resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, null, query, null));
+                    resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, nodeType, query, null));
                 }
             }
             return resultSet;
@@ -571,9 +573,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 NodesFilter filter = new NodesFilter(contextSet);
                 filter.init(searcher.getIndexReader());
                 FilteredQuery filtered = new FilteredQuery(qu, filter, FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
-                resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, null, filtered, null));
+                resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, Node.ELEMENT_NODE, filtered, null));
             } else {
-                resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, null, qu, null));
+                resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, Node.ELEMENT_NODE, qu, null));
             }
             return resultSet;
         });
@@ -594,8 +596,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 //    }
 
     private NodeSet doQuery(final int contextId, final DocumentSet docs, final NodeSet contextSet, final int axis,
-                            IndexSearcher searcher, final QName qname, Query query, Filter filter) throws IOException {
-        SearchCollector collector = new SearchCollector(docs, contextSet, qname, axis, contextId);
+                            IndexSearcher searcher, final short nodeType, Query query, Filter filter) throws
+            IOException {
+        SearchCollector collector = new SearchCollector(docs, contextSet, nodeType, axis, contextId);
         searcher.search(query, filter, collector);
         return collector.getResultSet();
     }
@@ -603,7 +606,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private class SearchCollector extends Collector {
         private final NodeSet resultSet;
         private final NodeSet contextSet;
-        private final QName qname;
+        private final short nodeType;
         private final int axis;
         private final int contextId;
         private final DocumentSet docs;
@@ -613,11 +616,11 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private BinaryDocValues addressValues;
         private final byte[] buf = new byte[1024];
 
-        public SearchCollector(DocumentSet docs, NodeSet contextSet, QName qname, int axis, int contextId) {
+        public SearchCollector(DocumentSet docs, NodeSet contextSet, short nodeType, int axis, int contextId) {
             this.resultSet = new NewArrayNodeSet();
             this.docs = docs;
             this.contextSet = contextSet;
-            this.qname = qname;
+            this.nodeType = nodeType;
             this.axis = axis;
             this.contextId = contextId;
         }
@@ -651,8 +654,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);
                 if (parentNode != null) {
                     NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
-                    if (qname != null)
-                        storedNode.setNodeType(qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
+                    storedNode.setNodeType(nodeType);
                     getAddress(doc, storedNode);
                     if (axis == NodeSet.ANCESTOR) {
                         resultSet.add(parentNode, sizeHint);
@@ -666,8 +668,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
             } else {
                 NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
-                if (qname != null)
-                    storedNode.setNodeType(qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
+                storedNode.setNodeType(nodeType);
                 getAddress(doc, storedNode);
                 resultSet.add(storedNode);
             }

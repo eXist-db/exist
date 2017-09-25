@@ -155,7 +155,7 @@
         you have some more memory to waste. If you deal with lots of 
         collections, you can also increase the collectionCacheSize value 
     -->
-    <db-connection cacheSize="@cacheSize@M" checkMaxCacheSize="true" collectionCache="64M" database="@database@"
+    <db-connection cacheSize="@cacheSize@M" checkMaxCacheSize="true" collectionCache="@collectionCacheSize@M" database="@database@"
         files="@dataDir@" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
         doc-ids="default" minDiskSpace="128M">
 
@@ -330,7 +330,7 @@
                 and if inconsistencies are found in the db, it writes an emergency
                 backup to the same directory.
         -->
-        <recovery enabled="yes"  group-commit="no"   journal-dir="@dataDir@" 
+        <recovery enabled="yes"  group-commit="no"   journal-dir="@journalDir@"
                   size="100M" sync-on-commit="no"  force-restart="no"  consistency-check="yes"/>
 
         <!--

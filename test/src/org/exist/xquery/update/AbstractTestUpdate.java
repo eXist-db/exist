@@ -1,9 +1,11 @@
 package org.exist.xquery.update;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.xmldb.IndexQueryService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -20,7 +22,17 @@ public abstract class AbstractTestUpdate {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
-    private Collection testCollection;
+    // required for updateAttributeInNamespacedElement
+    private final static String XCONF =
+        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+        "   <index xmlns:t=\"http://test.com\">" +
+        "       <lucene>" +
+        "           <text qname=\"t:test\"/>" +
+        "       </lucene>" +
+        "   </index>" +
+        "</collection>";
+
+    protected Collection testCollection;
 
     @Before
     public void setUp() throws Exception {
@@ -29,6 +41,9 @@ public abstract class AbstractTestUpdate {
                 "CollectionManagementService",
                 "1.0");
         testCollection = service.createCollection("test");
+
+        final IndexQueryService idx = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+        idx.configureCollection(XCONF);
     }
 
     @After
@@ -37,6 +52,9 @@ public abstract class AbstractTestUpdate {
                 (CollectionManagementService) existEmbeddedServer.getRoot().getService(
                         "CollectionManagementService",
                         "1.0");
+        service.removeCollection("test");
+        Collection confColl = DatabaseManager.getCollection("xmldb:exist:///db/system/config/db", "admin", null);
+        service = (CollectionManagementService) confColl.getService("CollectionManagementService", "1.0");
         service.removeCollection("test");
         testCollection = null;
     }

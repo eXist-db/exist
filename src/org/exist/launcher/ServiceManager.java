@@ -21,7 +21,8 @@
 package org.exist.launcher;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.util.ConfigurationHelper;
 
 import javax.swing.*;
@@ -42,7 +43,7 @@ import java.util.regex.Pattern;
 
 public class ServiceManager {
 
-    private final static Logger LOG = Logger.getLogger(ServiceManager.class);
+    private final static Logger LOG = LogManager.getLogger(ServiceManager.class);
 
     private final static Pattern STATUS_REGEX = Pattern.compile("Installed\\s*:\\s*(.*)\n\\s*Running\\s*:\\s*(.*)\n", Pattern.MULTILINE);
 

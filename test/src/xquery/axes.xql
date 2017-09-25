@@ -44,16 +44,23 @@ declare variable $axes:in-mem-doc2 :=
         </root>
     };
 
-declare 
+declare variable $axes:pi-doc :=
+    document {
+        <?testpi?>,
+        <root/>
+    };
+
+declare
     %test:setUp
 function axes:setup() {
     xmldb:create-collection("/db", "axes-test"),
     xmldb:store("/db/axes-test", "test.xml", $axes:NESTED_DIVS),
     xmldb:store("/db/axes-test", "doc1.xml", $axes:in-mem-doc1),
-    xmldb:store("/db/axes-test", "doc2.xml", $axes:in-mem-doc2)
+    xmldb:store("/db/axes-test", "doc2.xml", $axes:in-mem-doc2),
+    xmldb:store("/db/axes-test", "pi.xml", $axes:pi-doc)
 };
 
-declare 
+declare
     %test:tearDown
 function axes:cleanup() {
     xmldb:remove("/db/axes-test")
@@ -64,7 +71,7 @@ function axes:cleanup() {
  : Wrong evaluation may lead to duplicate nodes being returned.
    --------------------------------------------------------------- :)
 
-declare 
+declare
     %test:assertEquals(6, 6)
 function axes:descendant-axis-nested() {
     let $node := doc("/db/axes-test/test.xml")/body
@@ -74,7 +81,7 @@ function axes:descendant-axis-nested() {
     )
 };
 
-declare 
+declare
     %test:assertEquals("<head>1</head>")
 function axes:descendant-axis-except-nested1() {
     let $node := doc("/db/axes-test/test.xml")/body
@@ -82,7 +89,7 @@ function axes:descendant-axis-except-nested1() {
         ($node//div except $node//div//div)/head
 };
 
-declare 
+declare
     %test:assertEquals("<head>2</head>", "<head>4</head>")
 function axes:descendant-axis-except-nested2() {
     let $node := doc("/db/axes-test/test.xml")/body/div
@@ -150,4 +157,16 @@ util:eval("
         return
             $b
     ")
+};
+
+declare
+    %test:assertEquals(1)
+function axes:child-pi() {
+    count(doc("/db/axes-test/pi.xml")/processing-instruction())
+};
+
+declare
+    %test:assertEquals(1)
+function axes:child-pi-named() {
+    count(doc("/db/axes-test/pi.xml")/processing-instruction(testpi))
 };
