@@ -63,9 +63,10 @@ public class IPRangeServlet extends HttpServlet {
 
 
         // Get reverse proxy header when available, otherwise use regular IP address
-        String ipAddress = request.getHeader("X-Forwarded-For").replaceAll("\\s","");
+        String ipAddress = request.getHeader("X-Forwarded-For");
         // there may be a comma-separated chain of proxies
-        if (!ipAddress.isEmpty()) {
+        if(ipAddress != null && !ipAddress.isEmpty()) {
+            ipAddress = ipAddress.replaceAll("\\s","");
             String[] xFFs = ipAddress.split(",");
             if(xFFs.length > 1) ipAddress = xFFs[xFFs.length - 1];
         } else {
