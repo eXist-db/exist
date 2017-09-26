@@ -576,6 +576,24 @@ public class XQueryFunctionsTest {
     }
 
     @Test
+    public void localName_contextItem() throws XPathException, XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                "let $a := <a><b/></a>" +
+                        "return $a/b/fn:local-name()");
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("b", r);
+    }
+
+    @Test
+    public void localName_contextItem_empty() throws XPathException, XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                "let $a := <a><b/></a>" +
+                        "return $a/b/c/fn:local-name()");
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("", r);
+    }
+
+    @Test
     public void name() throws XPathException, XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $a := <a><b></b></a>" +
@@ -604,6 +622,24 @@ public class XQueryFunctionsTest {
     public void name_emptyText() throws XPathException, XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "<a>b</a>/fn:local-name(text())");
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("", r);
+    }
+
+    @Test
+    public void name_contextItem() throws XPathException, XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                "let $a := <a><b/></a>" +
+                        "return $a/b/fn:name()");
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("b", r);
+    }
+
+    @Test
+    public void name_contextItem_empty() throws XPathException, XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                "let $a := <a><b/></a>" +
+                        "return $a/b/c/fn:name()");
         final String r = (String) result.getResource(0).getContent();
         assertEquals("", r);
     }
@@ -701,6 +737,24 @@ public class XQueryFunctionsTest {
     }
 
     @Test
+    public void namespaceURI_contextItem() throws XPathException, XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                "let $a := <a><exist:b/></a>" +
+                        "return $a/exist:b/fn:namespace-uri()");
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("http://exist.sourceforge.net/NS/exist", r);
+    }
+
+    @Test
+    public void namespaceURI_contextItem_empty() throws XPathException, XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                "let $a := <a><b/></a>" +
+                        "return $a/exist:b/c/fn:namespace-uri()");
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("", r);
+    }
+
+    @Test
     public void prefixFromQName() throws XMLDBException {
         String query = "declare namespace foo = \"http://example.org\"; " +
                 "declare namespace FOO = \"http://example.org\"; " +
@@ -746,6 +800,23 @@ public class XQueryFunctionsTest {
     public void nodeName_emptyText() throws XPathException, XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "<a>b</a>/fn:node-name(text())");
+        assertEquals(0, result.getSize());
+    }
+
+    @Test
+    public void nodeName_contextItem() throws XPathException, XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                "let $a := <a><b/></a>" +
+                        "return $a/b/fn:node-name()");
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("b", r);
+    }
+
+    @Test
+    public void nodeName_contextItem_empty() throws XPathException, XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                "let $a := <a><b/></a>" +
+                        "return $a/b/c/fn:node-name()");
         assertEquals(0, result.getSize());
     }
 

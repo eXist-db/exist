@@ -44,91 +44,104 @@ import javax.xml.XMLConstants;
 
 /**
  * xpath-library function: namespace-uri()
- *
  */
 public class FunNamespaceURI extends Function {
 
-	protected static final String FUNCTION_DESCRIPTION_0_PARAM =
-		"Returns the namespace URI of the xs:QName of the context item.\n\n";
-	protected static final String FUNCTION_DESCRIPTION_1_PARAM =
-		"Returns the namespace URI of the xs:QName of $arg.\n\n" +
-		"If the argument is omitted, it defaults to the context node (.). ";
+    private static final String FUNCTION_DESCRIPTION_0_PARAM =
+            "Returns the namespace URI of the xs:QName of the context item.\n\n";
+    private static final String FUNCTION_DESCRIPTION_1_PARAM =
+            "Returns the namespace URI of the xs:QName of $arg.\n\n" +
+                    "If the argument is omitted, it defaults to the context node (.). ";
 
-	protected static final String FUNCTION_DESCRIPTION_COMMON =
-		"The behavior of the function if the argument is omitted is exactly " + 
-		"the same as if the context item had been passed as the argument.\n\n" +
+    private static final String FUNCTION_DESCRIPTION_COMMON =
+            "The behavior of the function if the argument is omitted is exactly " +
+                    "the same as if the context item had been passed as the argument.\n\n" +
 
-		"The following errors may be raised: if the context item is undefined " +
-		"[err:XPDY0002]XP; if the context item is not a node [err:XPTY0004]XP.\n\n" +
+                    "The following errors may be raised: if the context item is undefined " +
+                    "[err:XPDY0002]XP; if the context item is not a node [err:XPTY0004]XP.\n\n" +
 
-		"If $arg is neither an element nor an attribute node, or if it is an " +
-		"element or attribute node whose expanded-QName (as determined by the " +
-		"dm:node-name accessor in the Section 5.11 node-name AccessorDM) is " +
-		"in no namespace, then the function returns the xs:anyURI " +
-		"corresponding to the zero-length string.";
+                    "If $arg is neither an element nor an attribute node, or if it is an " +
+                    "element or attribute node whose expanded-QName (as determined by the " +
+                    "dm:node-name accessor in the Section 5.11 node-name AccessorDM) is " +
+                    "in no namespace, then the function returns the xs:anyURI " +
+                    "corresponding to the zero-length string.";
 
-	public final static FunctionSignature signatures[] = {
-		new FunctionSignature(
-			new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
-			FUNCTION_DESCRIPTION_0_PARAM + FUNCTION_DESCRIPTION_COMMON,
-			new SequenceType[0],
-			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the namespace URI"),
-			false),
-		new FunctionSignature(
-			new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
-			FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_COMMON,
-			new SequenceType[] { 
-				new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "The input node") 
-			},
-			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the namespace URI"),
-			false)
-	};
+    public final static FunctionSignature signatures[] = {
+            new FunctionSignature(
+                    new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
+                    FUNCTION_DESCRIPTION_0_PARAM + FUNCTION_DESCRIPTION_COMMON,
+                    new SequenceType[0],
+                    new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the namespace URI"),
+                    false),
+            new FunctionSignature(
+                    new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
+                    FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_COMMON,
+                    new SequenceType[] {
+                            new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "The input node")
+                    },
+                    new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the namespace URI"),
+                    false)
+    };
 
-	public FunNamespaceURI(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+    public FunNamespaceURI(final XQueryContext context, final FunctionSignature signature) {
+        super(context, signature);
+    }
 
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    @Override
+    public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+            }
         }
-        
-        Item item = null;
-        // check if the node is passed as an argument or should be taken from the context sequence
-        if(getArgumentCount() > 0) {
-            final Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-            if(!seq.isEmpty())
-                {item = seq.itemAt(0);}
-        } else { 
-        	if (contextItem == null)
-            	{throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");}
-        	item = contextItem;
+
+        if (contextItem != null) {
+            contextSequence = contextItem.toSequence();
         }
-        
-        Sequence result;
-        if(item == null)
-            {result = AnyURIValue.EMPTY_URI;}
-        else {        	
-            if(!Type.subTypeOf(item.getType(), Type.NODE))
-                {throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node; got: " +
-                        Type.getTypeName(item.getType()));}
+
+        //If we have one argument, we take it into account
+        final Sequence seq;
+        if (getSignature().getArgumentCount() > 0) {
+            seq = getArgument(0).eval(contextSequence, contextItem);
+
+        } else {
+            //Otherwise, we take the context sequence and we iterate over it
+            seq = contextSequence;
+        }
+
+
+        if (seq == null) {
+            throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
+        }
+
+        final Sequence result;
+        if (seq.isEmpty()) {
+            result = AnyURIValue.EMPTY_URI;
+        } else {
+            final Item item = seq.itemAt(0);
+            if (!Type.subTypeOf(item.getType(), Type.NODE)) {
+                throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node; got: " +
+                        Type.getTypeName(item.getType()));
+            }
+
             //TODO : how to improve performance ?
-            final Node n = ((NodeValue)item).getNode();
+            final Node n = ((NodeValue) item).getNode();
             String ns = n.getNamespaceURI();
-            if(ns == null) {
-            	ns = XMLConstants.NULL_NS_URI;
-			}
+            if (ns == null) {
+                ns = XMLConstants.NULL_NS_URI;
+            }
             result = new AnyURIValue(ns);
         }
-        
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", result);} 
-        
-        return result;          
-	}
+
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", result);
+        }
+
+        return result;
+    }
 }
