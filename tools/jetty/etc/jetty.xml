@@ -148,12 +148,4 @@
       </Call>
     </Ref -->
 
-    <!-- =========================================================== -->
-    <!-- change java.io.tmpdir default value                         -->
-    <!-- =========================================================== -->
-    <Call class="java.lang.System" name="setProperty">
-        <Arg>java.io.tmpdir</Arg>
-        <Arg><Property name="jetty.base" default="."/>/tmp</Arg>
-    </Call>
-
 </Configure>
