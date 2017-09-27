@@ -97,6 +97,7 @@ class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer {
     		final org.exist.xquery.value.Sequence existSeq = sequence.getExistSequence();
     		
     		final Node multipart = getMultipartElem(existSeq);
+    		validatePartsHeaders(multipart);
     		
 			// get boundary
 			final Node boundaryAttr = multipart.getAttributes().getNamedItem("boundary");
@@ -186,7 +187,7 @@ class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer {
 				throw new RestXqServiceException("Incompatible multipart response node type");
 			}
 		}else{
-			throw new RestXqServiceException("Multipart response must be of one multipart nodet");
+			throw new RestXqServiceException("Multipart response must be only one multipart node");
 		}
 		
 		if(!multipart.getLocalName().equalsIgnoreCase("multipart")){
@@ -195,6 +196,48 @@ class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer {
 			throw new RestXqServiceException("Invalid namespace for multipart");
 		}
 		return multipart;
+    }
+    
+    /**
+     * Verifies that part headers include attributes name and value,
+     * and checks if content-type header if present for each part.
+     * 
+     * @param multipart {@link Node}
+     * @return boolean
+     * @throws RestXqServiceException
+     */
+    private boolean validatePartsHeaders(final Node multipart) throws RestXqServiceException{
+    	final NodeList childNodes = multipart.getChildNodes();
+    	
+    	boolean ctHeaderFound = false;
+    	for(int i = 0; i < childNodes.getLength(); i++){
+    		final Node node = childNodes.item(i);
+    		
+    		if(node.getLocalName().equals("header")){
+    			final String headerName;
+ 				final String headerValue;
+    			
+ 				try{
+ 					headerName = node.getAttributes().getNamedItem("name").getNodeValue();
+ 					headerValue = node.getAttributes().getNamedItem("value").getNodeValue();
+ 				}catch(NullPointerException e){
+ 					throw new RestXqServiceException("Header musst include name and value attributes");
+ 				}
+    			
+    			if(headerName.equalsIgnoreCase("content-type") && !headerValue.isEmpty()){
+    				ctHeaderFound = true;
+    			}
+    			
+    	    	// throw error if body element is found before a content-type header could not be found
+    		}else if(node.getLocalName().equals("body")){
+    			if(!ctHeaderFound){
+    				throw new RestXqServiceException("A multipart entity must have a Content-Type header");
+    			}else{
+    				ctHeaderFound = false;
+    			}
+    		}
+    	}
+    	return false;
     }
     
     private String parseMultipart(final Node multipart, final String boundary) throws EXistException, SAXException, RestXqServiceException{
@@ -207,14 +250,8 @@ class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer {
  			strBuilder.append("\n");
  			
  			if(node.getLocalName().equals("header")){
- 				final String headerName;
- 				final String headerValue;
- 				try{
- 					headerName = node.getAttributes().getNamedItem("name").getNodeValue();
- 					headerValue = node.getAttributes().getNamedItem("value").getNodeValue();
- 				}catch(NullPointerException e){
- 					throw new RestXqServiceException("Header musst include name and value attributes");
- 				}
+ 				final String headerName = node.getAttributes().getNamedItem("name").getNodeValue();
+ 				final String headerValue = node.getAttributes().getNamedItem("value").getNodeValue();
  				strBuilder.append(headerName).append(": ").append(headerValue);	
  			}else{
  				strBuilder.append("\n");
