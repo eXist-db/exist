@@ -96,43 +96,43 @@ class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer {
     		final SequenceAdapter sequence = (SequenceAdapter)result;
     		final org.exist.xquery.value.Sequence existSeq = sequence.getExistSequence();
     		
-    		if(existSeq.hasOne() && ((Node)existSeq.itemAt(0)).getLocalName().equalsIgnoreCase("multipart")){
-    			// get boundary
-    			final Node multipart = (Node)existSeq.itemAt(0);
-    			final Node boundaryAttr = multipart.getAttributes().getNamedItem("boundary");
-    			String boundary = null;
-    			if(boundaryAttr != null){
-    				boundary = boundaryAttr.getNodeValue();
-    			}else{
-    				throw new RestXqServiceException("Multipart boundary could not be found");
-    			}
-    			 
-    			String rootId = "";
-    			final NodeList nodeList = multipart.getChildNodes();
-    			// get root part id, where the first content-id header is the root id
-    			for(int i = 0; i < nodeList.getLength(); i++){
-    				final Node node = nodeList.item(i);
-    				final Node nameAttr = node.getAttributes().getNamedItem("name");
-    				if(nameAttr != null && nameAttr.getNodeValue().equalsIgnoreCase("content-id")){
-    					rootId = node.getAttributes().getNamedItem("value").getNodeValue();
-    					break;
-    				}
-    			}
-    			// set http content-type header by root id and boundary
-    			response.setContentType("multipart/related; start=" + rootId + "; boundary=" + boundary);
-    			
-    			final String httpMultiparts;
-    			// parse parts to string and write to output stream
-    			try(final Writer writer = new OutputStreamWriter(response.getOutputStream(), serializationProperties.get(SerializationProperty.ENCODING))){
-    				httpMultiparts = parseMultipart(multipart, boundary);
-					writer.write(httpMultiparts);
-					writer.flush();
-				} catch (IOException | EXistException | SAXException e) {
-					throw new RestXqServiceException("Error while serializing xml: " + e.toString(), e);
+    		final Node multipart = getMultipartElem(existSeq);
+    		
+			// get boundary
+			final Node boundaryAttr = multipart.getAttributes().getNamedItem("boundary");
+			String boundary = null;
+			if(boundaryAttr != null){
+				boundary = boundaryAttr.getNodeValue();
+			}else{
+				throw new RestXqServiceException("Multipart boundary could not be found");
+			}
+			 
+			String rootId = "";
+			final NodeList nodeList = multipart.getChildNodes();
+			// get root part id, where the first content-id header is the root id
+			for(int i = 0; i < nodeList.getLength(); i++){
+				final Node node = nodeList.item(i);
+				final Node nameAttr = node.getAttributes().getNamedItem("name");
+				if(nameAttr != null && nameAttr.getNodeValue().equalsIgnoreCase("content-id")){
+					rootId = node.getAttributes().getNamedItem("value").getNodeValue();
+					break;
 				}
-    			
-    			return;
-    		}
+			}
+			// set http content-type header by root id and boundary
+			response.setContentType("multipart/related; start=" + rootId + "; boundary=" + boundary);
+			
+			final String httpMultiparts;
+			// parse parts to string and write to output stream
+			try(final Writer writer = new OutputStreamWriter(response.getOutputStream(), serializationProperties.get(SerializationProperty.ENCODING))){
+				httpMultiparts = parseMultipart(multipart, boundary);
+				writer.write(httpMultiparts);
+				writer.flush();
+			} catch (IOException | EXistException | SAXException e) {
+				throw new RestXqServiceException("Error while serializing xml: " + e.toString(), e);
+			}
+			
+			return;
+
     	}
     	
     	try(final DBBroker broker = getBrokerPool().getBroker();
@@ -165,6 +165,36 @@ class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer {
         }
         
         return props;
+    }
+    
+    /**
+     * validate the multipart element response and returns a multipart node.
+     * 
+     * @param existSeq {@link org.exist.xquery.value.Sequence}
+     * @return {@link Node}
+     * @throws RestXqServiceException
+     */
+    private Node getMultipartElem(final org.exist.xquery.value.Sequence existSeq) throws RestXqServiceException{
+    	final Node multipart;
+    	if(existSeq.hasOne()){
+			final Node rootNode = (Node)existSeq.itemAt(0);
+			if(rootNode.getNodeType() == Node.DOCUMENT_NODE){
+				multipart = rootNode.getFirstChild();
+			}else if(rootNode.getNodeType() == Node.ELEMENT_NODE){
+				multipart = rootNode;
+			}else{
+				throw new RestXqServiceException("Incompatible multipart response node type");
+			}
+		}else{
+			throw new RestXqServiceException("Multipart response must be of one multipart nodet");
+		}
+		
+		if(!multipart.getLocalName().equalsIgnoreCase("multipart")){
+			throw new RestXqServiceException("Multipart response must have a multipart root node");
+		}else if(!multipart.getNamespaceURI().equals("http://expath.org/ns/http-client")){
+			throw new RestXqServiceException("Invalid namespace for multipart");
+		}
+		return multipart;
     }
     
     private String parseMultipart(final Node multipart, final String boundary) throws EXistException, SAXException, RestXqServiceException{
