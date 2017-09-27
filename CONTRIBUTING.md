@@ -4,6 +4,7 @@ We welcome all contributions to eXist!
 
 We strongly suggest that you join the [eXist-development mailing](https://lists.sourceforge.net/lists/listinfo/exist-development "eXist Development Mailing List") list and also subscribe to the [eXist-commits mailing list](https://lists.sourceforge.net/lists/listinfo/exist-commits "eXist SCM Commits Mailing List"), so that you can collaborate with the eXist team and be kept up to date with changes to the codebase.
 
+### General Issues
 eXist uses the [GitFlow](http://nvie.com/git-model) branching model for development. Specifically, we're using the [AVH Edition of GitFlow tools](https://github.com/petervanderdoes/gitflow) version.
 
 If you're not familiar with GitFlow, check out some of the good tutorials linked in ["Getting Started"](https://github.com/petervanderdoes/gitflow#getting-started) of the GitFlow AVH Edition page. There's also a very good [git-flow cheatsheet](http://danielkummer.github.io/git-flow-cheatsheet/).
@@ -32,6 +33,18 @@ Although the following are taken from our [Developer Manifesto](http://www.exist
 - **Test.** If you fix something prove it, write a test that illustrates the issue before you fix the issue and validate the test. If you add a new feature it needs tests, so that we can understand its intent and try to avoid regressions in future as much as possible.
 - **Make sure the appropriate licence header appears at the top of your source code file.** We use [LGPL v2.1](http://opensource.org/licenses/LGPL-2.1 "The GNU Lesser General Public License, version 2.1") for eXist and *strongly* encourage that, but ultimately any compatible [OSI approved license](http://opensource.org/licenses "Open Source Licenses") without further restrictions may be used.
 - **Run the full eXist test suite.** We don't accept code that causes regressions.
+
+
+### Security Issues
+
+***If you find a security vulnerability, do NOT open an issue.***
+
+Any security issues should be submitted directly to <security@exist-db.org>.  In order to determine whether you are dealing with a security issue, ask yourself these two questions:
+
+*   Can I access something that's not mine, or something I shouldn't have access to?
+*   Can I disable something for other people?
+
+If the answer to either of those two questions are "yes", then you're probably dealing with a security issue. Note that even if you answer "no" to both questions, you may still be dealing with a security issue, so if you're unsure, just email us at <security@exist-db.org>.
 
 Versions and Releases
 ---------------------
