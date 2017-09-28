@@ -30,7 +30,7 @@ public abstract class MultipartTest extends RESTTest {
     protected static final String DRIVER = "org.exist.xmldb.DatabaseImpl";
     
     protected static final String USER = "admin";
-    protected static final String PW = "admin";
+    protected static final String PW = "";
     
     protected static final String RESTXQ_TEST_FOLDER = "extensions/exquery/restxq/src/test";
     protected static final String MULTIPART_IMPL_FOLDER = "java/org/exist/extensions/exquery/restxq/impl/multipart";
