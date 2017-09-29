@@ -26,17 +26,10 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.commons.io.output.ByteArrayOutputStream;
