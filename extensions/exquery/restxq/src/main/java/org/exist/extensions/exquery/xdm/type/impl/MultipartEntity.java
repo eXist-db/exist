@@ -19,7 +19,7 @@ public class MultipartEntity{
 		final TreeMap<String, String> headersMap = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
 		String line;
         while ((line = reader.readLine()) != null) {
-        	if(!line.equals("")){
+        	if(!line.isEmpty()){
         		final String[] headerSplit = line.split(": ");
         		headersMap.put(headerSplit[0], headerSplit[1]);
         	}else{
