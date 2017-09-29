@@ -26,27 +26,29 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Base64;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 import org.apache.commons.io.input.CloseShieldInputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.extensions.exquery.xdm.type.impl.BinaryTypedValue;
-import org.exist.extensions.exquery.xdm.type.impl.DocumentTypedValue;
-import org.exist.extensions.exquery.xdm.type.impl.StringTypedValue;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.extensions.exquery.xdm.type.impl.BinaryTypedValue;
+import org.exist.extensions.exquery.xdm.type.impl.DocumentTypedValue;
+import org.exist.extensions.exquery.xdm.type.impl.Multipart;
+import org.exist.extensions.exquery.xdm.type.impl.StringTypedValue;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
@@ -174,17 +176,15 @@ class RestXqServiceImpl extends AbstractRestXqService {
                     MimeType mimeType = MimeTable.getInstance().getContentType(contentType);
 
                     if(contentType.equalsIgnoreCase("multipart/related")){
-                    	
                     	// multipart/related request
                     	String encoding = request.getCharacterEncoding();
                     	if (encoding == null) {
                             encoding = "UTF-8";
                         }
-                    	
-                    	final byte[] partsNodeAsBytes = extractBodyParts(request, is, encoding).getBytes(encoding);
-                		final InputStream partsNodeAsIs = new ByteArrayInputStream(partsNodeAsBytes);
-                		final DocumentImpl doc = parseAsXml(partsNodeAsIs);
-                		if(doc != null){
+
+                    	final Multipart multipart = new Multipart(request.getContentType(), is, encoding);
+                    	final DocumentImpl doc = multipart.getDocument();
+                    	if(doc != null){
                 			result = new SequenceImpl<>(new DocumentTypedValue(doc));
                 		}
                     	
@@ -319,185 +319,4 @@ class RestXqServiceImpl extends AbstractRestXqService {
         final String s = new String(bos.toByteArray(), encoding);
         return new StringValue(s);
     }
-    
-    /**
-     * Extract parts from multipart/related request and build XML http:multipart Node as String including body parts and headers
-     * The first body element is the root part.
-	 * Body content is represented as BASE64
-	 * 
-     * <http:multipart>
-  	 * 		<http:header name="content-id" value="..." />
-  	 *		<http:body media-type="...">...</http:body>
-	 *		.
-	 *		. 
-	 * 	</http:multipart>
-	 * 
-     */
-    private String extractBodyParts(final HttpRequest request, final InputStream is, final String encoding) throws RestXqServiceException, IOException{
-    	
-    	final String requestContentType = request.getContentType();
-    	final String boundary = getMultiPartBoundary(requestContentType);
-    	final String rootId = getRootPartId(requestContentType);
-		final String content = getRequestContent(is, encoding);
-		
-		// build http:header and http:body for each body part within a http:mulitpart as XML String
-		// @see <a href="http://expath.org/spec/http-client">HTTP Client Module</a>
-		final StringBuilder xmlPartsAsStr = new StringBuilder();
-		
-		// compile part Content-Type pattern before going through the parts
-		final Pattern contentTypePtn = Pattern.compile("(?i:Content-Type): (.*?)(;|\\s|$)");
-		final Pattern contentIdPtn = Pattern.compile("(?i:Content-ID): (.*?)(;|\\s|$)");
-		final Pattern contTransEncPtn = Pattern.compile("(?i:Content-Transfer-Encoding): (.*?)(;|\\s|$)");
-		
-		// split the content by boundary and try to extract part headers for each split.
-		// Its a valid part if headers contain a content-type 
-		// and the are followed by an empty line then part contents
-		final String[] parts = content.split("--" + boundary);
-		boolean isRootFound = false;
-		for(int i = 0; i < parts.length; i++){
-			
-			final int seperatorIndex = parts[i].indexOf("\n\n");
-			// not a valid part
-			if(seperatorIndex <= 0){
-				continue;
-			}
-			final String partHeaders = parts[i].substring(0, seperatorIndex);
-			
-			// find content ID
-			final Matcher mtc = contentIdPtn.matcher(partHeaders);
-			String partContentId = "";
-			// leave content id empty if it is not present
-			// @see <a href="https://tools.ietf.org/html/rfc2387#section-6.1">RFC 2387</a>
-			if(mtc.find()){
-				partContentId = mtc.group(1);
-			}
-			
-			// determine whether current body part is a root part
-			boolean isRoot = false;
-			if(!isRootFound){
-				if(rootId != null && !rootId.isEmpty()){
-    				if(rootId.equals(partContentId)){
-    					isRoot = true;
-    					isRootFound = true;
-    				}
-    			}else{
-    				isRoot = true;
-					isRootFound = true;
-    			}
-			}
-			
-			// remove first and last <> from part content id
-			if(partContentId.startsWith("<") && partContentId.endsWith(">")){
-				partContentId = partContentId.substring(1, partContentId.length() - 1);
-			}
-			// content-id as part http:headers
-			// @see <a href="http://expath.org/spec/http-client">HTTP Client Module</a>
-			final String contIdAsHeaderElem = String.format("<http:header name=\"content-id\" value=\"%s\"/>", partContentId);
-			
-			// extract content and remove last character (line break)
-			// @see <a href="https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html">RFC 1341 (MIME)</a>
-			String partContent = parts[i].substring(seperatorIndex + 2);
-			partContent = partContent.substring(0, partContent.length() -1);
-			final String contAsBodyElem = buildBodyPartAsXmlStr(contentTypePtn, contTransEncPtn, partHeaders, partContent);
-			
-			// if current part is a root one then insert at the begin of the list
-			if(isRoot){
-				xmlPartsAsStr.insert(0, contAsBodyElem);
-				xmlPartsAsStr.insert(0, contIdAsHeaderElem); 
-			}else{
-				xmlPartsAsStr.append(contIdAsHeaderElem);
-				xmlPartsAsStr.append(contAsBodyElem);
-			}
-		}
-		
-		final String httpNs = "http://expath.org/ns/http-client";
-		xmlPartsAsStr.insert(0, String.format("<http:multipart xmlns:http=\"%s\">", httpNs));
-		xmlPartsAsStr.append("</http:multipart>");
-		
-		return xmlPartsAsStr.toString();
-    }
-    
-    /**
-     * Get Multipart Boundary from request content-type header
-     */
-    private String getMultiPartBoundary(final String contentType) throws RestXqServiceException{
-    	
-    	final String boundaryRegExp = "boundary=['\"]{0,1}(.*?)('|\"|;|\\s|$)";
-    	final Pattern ptn = Pattern.compile(boundaryRegExp);
-		final Matcher mtc = ptn.matcher(contentType);
-		String boundary = null;
-		if(mtc.find()){
-			boundary = mtc.group(1);
-		}
-		if(boundary == null || boundary.isEmpty()){
-			throw new RestXqServiceException("No multipart boundary could be found");
-		}
-		return boundary;
-    }
-    
-    /**
-     * Get root part ID
-     * If start parameter not present in Content-Type then
-     * the first body part is root part
-     * @see <a href="https://tools.ietf.org/html/rfc2387#section-3.2">RFC 2387</a>
-     */
-    private String getRootPartId(final String contentType){
-    	
-    	final String rootIdRegExp = "start=['\"]{0,1}(.*?)('|\"|;|\\s|$)";
-		final Pattern ptn = Pattern.compile(rootIdRegExp);
-		final Matcher mtc = ptn.matcher(contentType);
-		if(mtc.find()){
-			return mtc.group(1);
-		}else{
-			return null;
-		}
-    }
-    
-    /**
-     * Get request body as String from InputStream
-     */
-    private String getRequestContent(final InputStream is, final String encoding) throws RestXqServiceException, IOException{
-    	final String content;
-    	try (BufferedReader buffer = new BufferedReader(new InputStreamReader(is, encoding))) {
-    		content = buffer.lines().collect(Collectors.joining("\n"));
-    	}
-    	if(content == null || content.isEmpty()){
-    		throw new RestXqServiceException("Request content could not be readed");
-    	}
-    	return content;
-    }
-    
-    /**
-     * Build a http:body xml node as String including a media-type attribute 
-     * 
-     * @see <a href="http://expath.org/spec/http-client">HTTP Client Module</a>
-     */
-    private String buildBodyPartAsXmlStr(final Pattern typePtn, final Pattern transEncPtn, final String headers, final String content) throws RestXqServiceException{
-    	// find content type
-    	final Matcher typeMtc = typePtn.matcher(headers);
-		String contentType = null;
-		if(typeMtc.find()){
-			contentType = typeMtc.group(1);
-		}
-		// not a valid part if content-type is not present
-		if(contentType == null || contentType.isEmpty()){
-			throw new RestXqServiceException("No body part Content-Type could be found");
-		}
-    	
-    	// find transfer encoding
-    	final Matcher transEncMtc = transEncPtn.matcher(headers);
-		String transferEncodeing = null;
-		if(transEncMtc.find()){
-			transferEncodeing = transEncMtc.group(1);
-		}
-		// if the transfer encoding is BASE64 then return the the content in a http:body node
-		// and declare the media-type as binary
-		if(transferEncodeing != null && transferEncodeing.equalsIgnoreCase("base64")){
-			return String.format("<http:body media-type=\"%s\">%s</http:body>", contentType, content);
-		}else{
-			final String encodedContent = Base64.getEncoder().encodeToString(content.getBytes());
-			return String.format("<http:body media-type=\"%s\">%s</http:body>", contentType, encodedContent);
-		}
-    }
-    
 }
