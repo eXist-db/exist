@@ -126,15 +126,63 @@ public class MultipartRelatedRequestTest extends MultipartTest {
     	final Node multipartNode = getMultipartFromPostResponse(post);
     	assertEquals(200, post.getStatusCode());
     	
+    	/*
+    	 * Multipart childs
+    	 * 
+    	 * <http:header name="Content-ID" value="test1"/>
+    	 * <http:body media-type="text/plain">VEVTVCBDT05URU5UIDE=</http:body>
+    	 * <http:header name="Content-ID" value="test2"/>
+    	 * <http:body media-type="text/xml">PGRhdGE+VEVTVCBDT05URU5UIDI8L2RhdGE+</http:body>
+    	 */
 		final Node firstHeader = multipartNode.getChildNodes().item(0);
 		assertEquals(2, firstHeader.getAttributes().getLength());
 		assertEquals("name", firstHeader.getAttributes().item(0).getNodeName());
-		assertEquals("content-id", firstHeader.getAttributes().item(0).getNodeValue());
+		assertEquals("Content-ID", firstHeader.getAttributes().item(0).getNodeValue());
 		
 		final Node secondHeader = multipartNode.getChildNodes().item(2);
 		assertEquals(2, secondHeader.getAttributes().getLength());
 		assertEquals("name", secondHeader.getAttributes().item(0).getNodeName());
-		assertEquals("content-id", secondHeader.getAttributes().item(0).getNodeValue());
+		assertEquals("Content-ID", secondHeader.getAttributes().item(0).getNodeValue());
+    }
+    
+    @Test
+    public void partsAdditionalHeadersTest() throws IOException, ParserConfigurationException, SAXException{
+    	final String contentTypeHeader = "multipart/related; boundary='TEST_BOUNDARY'";
+    	final String customHeader = "Custom-Header";
+    	final String customHeaderValue = "header-content";
+    	final String request = 
+    			"--TEST_BOUNDARY\n"+
+    			"Content-Type: text/plain\n"+
+    			"Content-Transfer-Encoding: 8bit\n"+
+    			"Content-ID: test1\n"+
+    			customHeader + ": " + customHeaderValue + "\n"+ 
+    			"\n"+
+    			"TEST CONTENT 1\n"+
+    			"--TEST_BOUNDARY--";
+    	
+    	final PostMethod post = sendPostRequest(TEST_URL, request, contentTypeHeader);
+    	final Node multipartNode = getMultipartFromPostResponse(post);
+    	assertEquals(200, post.getStatusCode());
+    	
+    	/*
+    	 * Multipart childs
+    	 * 
+    	 * <http:header name="Content-ID" value="test1"/>
+    	 * <http:header name="Custom-Header" value="header-content"/>
+    	 * <http:body media-type="text/xml">VEVTVCBDT05URU5UIDE=</http:body>
+    	 */
+    	
+		final Node firstHeader = multipartNode.getChildNodes().item(0);
+		assertEquals(2, firstHeader.getAttributes().getLength());
+		assertEquals("name", firstHeader.getAttributes().item(0).getNodeName());
+		assertEquals("Content-ID", firstHeader.getAttributes().item(0).getNodeValue());
+		
+		final Node secondHeader = multipartNode.getChildNodes().item(1);
+		assertEquals(2, secondHeader.getAttributes().getLength());
+		assertEquals("name", secondHeader.getAttributes().item(0).getNodeName());
+		assertEquals(customHeader, secondHeader.getAttributes().item(0).getNodeValue());
+		assertEquals("value", secondHeader.getAttributes().item(1).getNodeName());
+		assertEquals(customHeaderValue, secondHeader.getAttributes().item(1).getNodeValue());
     }
     
     @Test
