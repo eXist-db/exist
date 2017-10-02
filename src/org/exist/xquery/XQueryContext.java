@@ -246,6 +246,11 @@ public class XQueryContext implements BinaryValueManager, Context
     /** Should empty order greatest or least? */
     private boolean                                    orderEmptyGreatest            = true;
 
+    /**
+     * XQuery 3.0 - declare context item :=
+     */
+    private ContextItemDeclaration                     contextItemDeclaration        = null;
+
     /** The context item set in the query prolog or externally */
     private Sequence                                   contextItem                   = Sequence.EMPTY_SEQUENCE;
 
@@ -354,7 +359,7 @@ public class XQueryContext implements BinaryValueManager, Context
     // TODO: end of expath repo manager, may change
 
 
-    protected XQueryContext( )
+    public XQueryContext( )
     {
         profiler = new Profiler( null );
     }
@@ -536,6 +541,14 @@ public class XQueryContext implements BinaryValueManager, Context
 
     public void setContextItem(Sequence contextItem) {
         this.contextItem = contextItem;
+    }
+
+    public void setContextItemDeclaration(final ContextItemDeclaration contextItemDeclaration) {
+        this.contextItemDeclaration = contextItemDeclaration;
+    }
+
+    public ContextItemDeclaration getContextItemDeclartion() {
+        return contextItemDeclaration;
     }
 
     public Sequence getContextItem() {

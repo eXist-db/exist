@@ -251,7 +251,7 @@ throws PermissionDeniedException, EXistException, XPathException
                 } else if (version.equals("1.0")) {
                     context.setXQueryVersion(10);
                 } else {
-                    throw new XPathException(v, "err:XQST0031: Wrong XQuery version: require 1.0 or 3.0");
+                    throw new XPathException(v, "err:XQST0031: Wrong XQuery version: require 1.0, 3.0 or 3.1");
                 }
             }
             ( enc:STRING_LITERAL )?
@@ -547,6 +547,56 @@ throws PermissionDeniedException, EXistException, XPathException
                     throw e2;
 				}
 			}
+		)
+		|
+		#(
+		    c:CONTEXT_ITEM_DECL
+		    {
+		        PathExpr enclosed= new PathExpr(context);
+		        SequenceType type= null;
+		    }
+		    (
+                #(
+                    "as"
+                    { type= new SequenceType(); }
+                    sequenceType [type]
+                )
+            )?
+            (
+                step=cidExpr:expr [enclosed]
+                {
+
+                    final ContextItemDeclaration cid = new ContextItemDeclaration(context, type, false, enclosed);
+                    cid.setASTNode(cidExpr);
+                    //path.add(cid);
+                    staticContext.setContextItemDeclaration(cid);
+                    context.setContextItemDeclaration(cid);
+                    if(myModule != null) {
+                        if(myModule.getContext() != null) {
+                            myModule.getContext().setContextItemDeclaration(cid);
+                        }
+                    }
+                }
+                |
+                "external"
+                { PathExpr defaultValue = null; }
+                (
+                    { defaultValue = new PathExpr(context); }
+                    step=cidExtDefExpr:expr [defaultValue]
+                )?
+                {
+                    final ContextItemDeclaration cid = new ContextItemDeclaration(context, type, true, defaultValue);
+                    cid.setASTNode(cidExtDefExpr);
+                    //path.add(cid);
+                    staticContext.setContextItemDeclaration(cid);
+                    context.setContextItemDeclaration(cid);
+                    if(myModule != null) {
+                        if(myModule.getContext() != null) {
+                            myModule.getContext().setContextItemDeclaration(cid);
+                        }
+                    }
+                }
+            )
 		)
 		|
         functionDecl [path]

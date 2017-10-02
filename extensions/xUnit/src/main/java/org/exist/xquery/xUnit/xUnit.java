@@ -27,19 +27,14 @@ import java.util.Iterator;
 import java.util.Optional;
 
 import org.exist.Database;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.source.ClassLoaderSource;
 import org.exist.source.Source;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Annotation;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.FunctionCall;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.UserDefinedFunction;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.Sequence;
 import org.junit.After;
 import org.junit.Before;
@@ -78,7 +73,16 @@ public class xUnit {
     //						System.out.println(ann.getName().getLocalPart());
 
                             FunctionCall call = new FunctionCall(context, func);
-                            call.eval(Sequence.EMPTY_SEQUENCE);
+
+                            final Sequence contextSequence;
+                            final ContextItemDeclaration cid = context.getContextItemDeclartion();
+                            if(cid != null) {
+                                contextSequence = cid.eval(null);
+                            } else {
+                                contextSequence = Sequence.EMPTY_SEQUENCE;
+                            }
+
+                            call.eval(contextSequence);
                         }
                     }
                 }

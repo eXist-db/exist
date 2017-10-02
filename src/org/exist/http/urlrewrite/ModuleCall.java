@@ -21,14 +21,8 @@
  */
 package org.exist.http.urlrewrite;
 
+import org.exist.xquery.*;
 import org.w3c.dom.Element;
-import org.exist.xquery.Expression;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.Module;
-import org.exist.xquery.UserDefinedFunction;
-import org.exist.xquery.ExternalModule;
-import org.exist.xquery.FunctionCall;
 import org.exist.xquery.value.Sequence;
 import org.exist.dom.QName;
 import org.apache.logging.log4j.LogManager;
@@ -87,7 +81,15 @@ public class ModuleCall extends URLRewrite {
     public void doRewrite(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            final Sequence result = call.eval(null);
+            final Sequence contextSequence;
+            final ContextItemDeclaration cid = call.getContext().getContextItemDeclartion();
+            if(cid != null) {
+                contextSequence = cid.eval(null);
+            } else {
+                contextSequence = null;
+            }
+
+            final Sequence result = call.eval(contextSequence);
             LOG.debug("Found: " + result.getItemCount());
             request.setAttribute(XQueryURLRewrite.RQ_ATTR_RESULT, result);
             

@@ -384,7 +384,14 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
 
         } else if (expr instanceof VariableReference || expr instanceof Function) {
             try {
-                final Sequence result = expr.eval(null);
+                final Sequence contextSequence;
+                final ContextItemDeclaration cid = expr.getContext().getContextItemDeclartion();
+                if(cid != null) {
+                    contextSequence = cid.eval(null);
+                } else {
+                    contextSequence = null;
+                }
+                final Sequence result = expr.eval(contextSequence);
                 if (result instanceof AtomicValue) {
                     return (AtomicValue) result;
                 }
