@@ -6,14 +6,17 @@ import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.*;
+import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Properties;
+
+import static org.exist.Namespaces.XSLT_XQUERY_SERIALIZATION_NS;
 
 public class FunSerialize extends BasicFunction {
 
@@ -33,7 +36,7 @@ public class FunSerialize extends BasicFunction {
                         "serialized representation of the sequence as a string.",
                 new SequenceType[] {
                         new FunctionParameterSequenceType("args", Type.ITEM, Cardinality.ZERO_OR_MORE, "The node set to serialize"),
-                        new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The serialization parameters")
+                        new FunctionParameterSequenceType("parameters", Type.ITEM, Cardinality.ZERO_OR_ONE, "The serialization parameters as either a output:serialization-parameters element or a map")
                 },
                 new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "the string containing the serialized node set.")
         )
@@ -45,9 +48,19 @@ public class FunSerialize extends BasicFunction {
 
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        final Properties outputProperties = new Properties();
+        final Properties outputProperties;
         if (getArgumentCount() == 2 && !args[1].isEmpty()) {
+            final Item parametersItem = args[1].itemAt(0);
+            if(parametersItem.getType() == Type.MAP) {
+                outputProperties = SerializerUtils.getSerializationOptions(this, (MapType) args[1].itemAt(0));
+            } else if(isSerializationParametersElement(parametersItem)) {
+                outputProperties = new Properties();
                 SerializerUtils.getSerializationOptions(this, (NodeValue) args[1].itemAt(0), outputProperties);
+            } else {
+                throw new XPathException(this, ErrorCodes.XPTY0004, "The parameters element must be either a output:serialization-parameters element or a map");
+            }
+        } else {
+            outputProperties = new Properties();
         }
 
         try(final StringWriter writer = new StringWriter()) {
@@ -62,6 +75,23 @@ public class FunSerialize extends BasicFunction {
             return new StringValue(writer.toString());
         } catch (final IOException | SAXException e) {
             throw new XPathException(this, FnModule.SENR0001, e.getMessage());
+        }
+    }
+
+    /**
+     * Returns true if the item is an element named output:serialization-parameter
+     *
+     * @param item An item to test
+     *
+     * @return true if this is a serialization parameters element
+     */
+    private static boolean isSerializationParametersElement(final Item item) {
+        if(item.getType() == Type.ELEMENT) {
+            final Element element = (Element)item;
+            return XSLT_XQUERY_SERIALIZATION_NS.equals(element.getNamespaceURI())
+                    && "serialization-parameters".equals(element.getLocalName());
+        } else {
+            return false;
         }
     }
 

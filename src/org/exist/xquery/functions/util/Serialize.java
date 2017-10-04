@@ -95,7 +95,8 @@ public class Serialize extends BasicFunction {
                                     "The serialization parameters: either a sequence of key=value pairs or an output:serialization-parameters " +
                                             "element as defined by the standard fn:serialize function.")
                     },
-                    new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ZERO_OR_ONE, "the string containing the serialized node set.")
+                    new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ZERO_OR_ONE, "the string containing the serialized node set."),
+                    "Use the fn:serialize() function instead!"
             )
     };
 
