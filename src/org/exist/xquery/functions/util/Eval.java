@@ -115,7 +115,7 @@ public class Eval extends BasicFunction {
     private static final String contextArgumentText = "The query inherits the context described by the XML fragment in this parameter. " +
         "It should have the format:\n" +
         "<static-context>\n" +
-        "\t<output-size-limit value=\"-1\">\n" +
+        "\t<output-size-limit value=\"-1\"/>\n" +
         "\t<unbind-namespace uri=\"http://exist.sourceforge.net/NS/exist\"/>\n" +
         "\t<current-dateTime value=\"dateTime\"/>\n" +
         "\t<implicit-timezone value=\"duration\"/>\n" +
