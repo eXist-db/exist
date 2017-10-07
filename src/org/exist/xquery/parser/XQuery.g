@@ -141,6 +141,7 @@ imaginaryTokenDefinitions
 	DEF_NAMESPACE_DECL
 	DEF_COLLATION_DECL
 	DEF_FUNCTION_NS_DECL
+	CONTEXT_ITEM_DECL
 	ANNOT_DECL
 	GLOBAL_VAR
 	FUNCTION_DECL
@@ -255,6 +256,9 @@ prolog throws XPathException
 			|
 			( "declare" "variable" )
 			=> varDeclUp { inSetters = false; }
+			|
+            ( "declare" "context" "item" )
+            => contextItemDeclUp { inSetters = false; }
 			|
 			( "declare" MOD )
 			=> annotateDecl { inSetters = false; }
@@ -413,6 +417,26 @@ annotateDecl! throws XPathException
 	| 	("variable")=> v:varDecl[#decl, #ann] { #annotateDecl = #v; }
 	)
 ;
+
+contextItemDeclUp! throws XPathException
+:
+	decl:"declare"! c:contextItemDecl[#decl] { #contextItemDeclUp = #c; }
+;
+
+contextItemDecl [XQueryAST decl] throws XPathException
+:
+	"context"! "item"! ( typeDeclaration )?
+	(
+	    COLON! EQ! e1:expr
+	    |
+	    "external" ( COLON! EQ! e2:expr )?
+	)
+    {
+        #contextItemDecl= #(#[CONTEXT_ITEM_DECL, "context item"], #contextItemDecl);
+        #contextItemDecl.copyLexInfo(decl);
+    }
+    ;
+
 
 annotations
 :       (annotation)*
@@ -2013,6 +2037,8 @@ reservedKeywords returns [String name]
 	"ordering" { name = "ordering"; }
 	|
 	"construction" { name = "construction"; }
+	|
+	"context" { name = "context"; }
 	|
 	"ordered" { name = "ordered"; }
 	|

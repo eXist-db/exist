@@ -43,15 +43,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.ProcessMonitor;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.Expression;
-import org.exist.xquery.FunctionCall;
-import org.exist.xquery.LiteralValue;
-import org.exist.xquery.UserDefinedFunction;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
@@ -490,7 +482,15 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 	            final FunctionCall call = new FunctionCall(context, function);
 	            call.setArguments(args);
 	            call.analyze(new AnalyzeContextInfo());
-	    		call.eval(NodeSet.EMPTY_SET);
+
+				final Sequence contextSequence;
+				final ContextItemDeclaration cid = call.getContext().getContextItemDeclartion();
+				if(cid != null) {
+					contextSequence = cid.eval(null);
+				} else {
+					contextSequence = NodeSet.EMPTY_SET;
+				}
+	    		call.eval(contextSequence);
     		}
         } catch(final XPathException e) {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);

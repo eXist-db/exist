@@ -194,7 +194,7 @@ public class XQuery {
     	return execute(broker, expression, contextSequence, null, resetContext);
     }
     
-    public Sequence execute(final DBBroker broker, final CompiledXQuery expression, final Sequence contextSequence, final Properties outputProperties, final boolean resetContext) throws XPathException, PermissionDeniedException {
+    public Sequence execute(final DBBroker broker, final CompiledXQuery expression, Sequence contextSequence, final Properties outputProperties, final boolean resetContext) throws XPathException, PermissionDeniedException {
     	
         //check execute permissions
         expression.getContext().getSource().validate(broker.getCurrentSubject(), Permission.EXECUTE);
@@ -250,6 +250,14 @@ public class XQuery {
             context.getProfiler().traceQueryStart();
             broker.getBrokerPool().getProcessMonitor().queryStarted(context.getWatchDog());
             try {
+
+                // support for XQuery 3.0 - declare context item :=
+                if(contextSequence == null) {
+                    if(context.getContextItemDeclartion() != null) {
+                        contextSequence = context.getContextItemDeclartion().eval(null, null);
+                    }
+                }
+
                 final Sequence result = expression.eval(contextSequence);
                 if(LOG.isDebugEnabled()) {
                     final NumberFormat nf = NumberFormat.getNumberInstance();

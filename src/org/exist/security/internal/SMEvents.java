@@ -45,14 +45,8 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.ProcessMonitor;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.Expression;
-import org.exist.xquery.FunctionCall;
-import org.exist.xquery.UserDefinedFunction;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
+import org.exist.xquery.value.Sequence;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -124,10 +118,20 @@ public class SMEvents implements Configurable {
     	            pm.queryStarted(context.getWatchDog());
     	            
     	            final FunctionCall call = new FunctionCall(context, function);
-    	            if (args != null)
-    	            	{call.setArguments(args);}
+    	            if (args != null) {
+    	            	call.setArguments(args);
+    	            }
+
+					final Sequence contextSequence;
+					final ContextItemDeclaration cid = context.getContextItemDeclartion();
+					if(cid != null) {
+						contextSequence = cid.eval(null);
+					} else {
+						contextSequence = NodeSet.EMPTY_SET;
+					}
+
     	            call.analyze(new AnalyzeContextInfo());
-    	    		call.eval(NodeSet.EMPTY_SET);
+    	    		call.eval(contextSequence);
         		}
             } catch(final XPathException e) {
             	//XXX: log
