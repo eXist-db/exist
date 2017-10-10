@@ -1,7 +1,6 @@
 package org.exist.interpreter;
 
 import java.io.IOException;
-import java.text.Collator;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -10,6 +9,7 @@ import java.util.TimeZone;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.stream.XMLStreamException;
 
+import com.ibm.icu.text.Collator;
 import org.exist.debuggee.DebuggeeJoint;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;

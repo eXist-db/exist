@@ -19,19 +19,15 @@
  */
 package org.exist.storage;
 
+import com.evolvedbinary.j8fu.function.FunctionE;
+import com.ibm.icu.text.Collator;
 import net.jcip.annotations.GuardedBy;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.EXistException;
 import org.exist.dom.TypedQNameComparator;
 import org.exist.dom.persistent.*;
 import org.exist.dom.QName;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import org.exist.util.*;
-import com.evolvedbinary.j8fu.function.FunctionE;
-import org.exist.xquery.XQueryWatchDog;
-import org.w3c.dom.Node;
-
-import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.IndexUtils;
@@ -55,13 +51,16 @@ import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.Constants.StringTruncationOperator;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryWatchDog;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.util.*;
+
+import org.w3c.dom.Node;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.text.Collator;
 import java.util.*;
 
 /**

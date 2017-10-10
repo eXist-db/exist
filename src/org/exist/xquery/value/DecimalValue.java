@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.value;
 
+import com.ibm.icu.text.Collator;
 import org.exist.util.FastStringBuffer;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
@@ -31,7 +32,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.text.Collator;
 import java.util.regex.Pattern;
 
 /**

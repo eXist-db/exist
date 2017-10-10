@@ -21,8 +21,7 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.text.Collator;
-
+import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;
@@ -32,7 +31,6 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.fn.CollatingFunction;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -114,7 +112,7 @@ public class FunEquals extends CollatingFunction {
             // Make sure we have a collator!
             if (collator == null) {
                 //TODO : raise exception ? -pb
-                collator = Collations.getCollationFromURI(context, "?strength=identical");
+                collator = Collations.getCollationFromURI("?strength=identical");
             }
             if (Collations.equals(collator, s1, s2)) {
                 result = BooleanValue.TRUE;

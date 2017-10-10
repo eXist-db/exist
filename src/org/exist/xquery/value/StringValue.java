@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.value;
 
+import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.util.UTF8;
@@ -31,7 +32,6 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 import javax.xml.XMLConstants;
-import java.text.Collator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

@@ -23,14 +23,13 @@ package org.exist.util;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.CollationElementIterator;
-import java.text.Collator;
-import java.text.ParseException;
-import java.text.RuleBasedCollator;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
+import com.ibm.icu.text.CollationElementIterator;
+import com.ibm.icu.text.Collator;
+import com.ibm.icu.text.RuleBasedCollator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.Constants;
@@ -111,15 +110,15 @@ public class Collations {
             }
         } else if (uri.startsWith("java:")) {
             // java class specified: this should be a subclass of
-            // java.text.RuleBasedCollator
+            // com.ibm.icu.text.RuleBasedCollator
             uri = uri.substring("java:".length());
             try {
                 final Class<?> collatorClass = Class.forName(uri);
                 if (!Collator.class.isAssignableFrom(collatorClass)) {
-                    logger.error("The specified collator class is not a subclass of java.text.Collator");
+                    logger.error("The specified collator class is not a subclass of com.ibm.icu.text.Collator");
                     throw new XPathException(
                             ErrorCodes.FOCH0002,
-                            "The specified collator class is not a subclass of java.text.Collator");
+                            "The specified collator class is not a subclass of com.ibm.icu.text.Collator");
                 }
                 return (Collator) collatorClass.newInstance();
             } catch (final Exception e) {
@@ -309,7 +308,8 @@ public class Collations {
                     + "< v,V< z,Z< \u017e,\u017d";
             try {
                 collator = new RuleBasedCollator(Samisk);
-            } catch (final ParseException pe) {
+            } catch (final Exception pe) {
+                logger.error(pe.getMessage(), pe);
                 return null;
             }
         } else {

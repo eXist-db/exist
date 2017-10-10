@@ -22,9 +22,9 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.text.Collator;
 import java.util.Locale;
 
+import com.ibm.icu.text.Collator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -64,9 +64,7 @@ public class Collations extends BasicFunction {
 		super(context, signature);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
+	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		final ValueSequence result = new ValueSequence();

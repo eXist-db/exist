@@ -20,12 +20,11 @@
  *   
  *  $Id$ 
  */ 
-package org.exist.xquery; 
- 
+package org.exist.xquery;
+
+import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
-
-import java.text.Collator;
 
 /** 
  * A XQuery grouping specifier as specified in an "group by" clause (based on 

@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.value;
 
+import com.ibm.icu.text.Collator;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
@@ -31,7 +32,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.text.Collator;
 import java.util.BitSet;
 
 /**

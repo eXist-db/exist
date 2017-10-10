@@ -22,8 +22,7 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.text.Collator;
-
+import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;

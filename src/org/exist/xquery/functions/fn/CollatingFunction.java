@@ -21,8 +21,7 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.text.Collator;
-
+import com.ibm.icu.text.Collator;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;

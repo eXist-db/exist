@@ -106,6 +106,7 @@
 	<classpathentry kind="lib" path="lib/optional/commons-lang3-3.6.jar"/>
 	<classpathentry kind="lib" path="lib/core/quartz-2.3.0.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-analyzers-common-4.10.4.jar"/>
+        <classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-analyzers-icu-4.10.4.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-4.10.4.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-queries-4.10.4.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-queryparser-4.10.4.jar"/>

@@ -1,10 +1,10 @@
 package org.exist.xquery;
 
+import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
-import java.text.Collator;
 import java.util.*;
 import java.util.stream.Stream;
 

@@ -1,11 +1,11 @@
 package org.exist.xquery.functions.map;
 
+import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.fn.FunDistinctValues;
 import org.exist.xquery.value.*;
 
-import java.text.Collator;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;

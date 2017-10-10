@@ -21,10 +21,10 @@
  */
 package org.exist.xquery;
 
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ibm.icu.text.Collator;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.xquery.functions.fn.FunDeepEqual;
 import org.exist.xquery.util.ExpressionDumper;

@@ -21,9 +21,8 @@
  */
 package org.exist.xquery;
 
+import com.ibm.icu.text.Collator;
 import org.exist.xquery.util.ExpressionDumper;
-
-import java.text.Collator;
 
 /**
  * An XQuery order specifier as specified in an "order by" clause.
