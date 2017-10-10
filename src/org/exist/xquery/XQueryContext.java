@@ -231,7 +231,7 @@ public class XQueryContext implements BinaryValueManager, Context
     protected AnyURIValue                              defaultElementNamespaceSchema = AnyURIValue.EMPTY_URI;
 
     /** The default collation URI. */
-    private String                                     defaultCollation              = Collations.CODEPOINT;
+    private String                                     defaultCollation              = Collations.UNICODE_CODEPOINT_COLLATION_URI;
 
     /** Default Collator. Will be null for the default unicode codepoint collation. */
     private Collator                                   defaultCollator               = null;
@@ -1028,8 +1028,8 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     public void setDefaultCollation( String uri ) throws XPathException
     {
-        if( uri.equals( Collations.CODEPOINT ) || uri.equals( Collations.CODEPOINT_SHORT ) ) {
-            defaultCollation = Collations.CODEPOINT;
+        if( uri.equals( Collations.UNICODE_CODEPOINT_COLLATION_URI) || uri.equals( Collations.CODEPOINT_SHORT ) ) {
+            defaultCollation = Collations.UNICODE_CODEPOINT_COLLATION_URI;
             defaultCollator  = null;
         }
 

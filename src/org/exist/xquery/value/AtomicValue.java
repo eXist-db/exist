@@ -119,7 +119,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
      * @param other
      * @throws XPathException if this is not a string.
      */
-    public boolean contains(Collator collator, AtomicValue other) throws XPathException {
+    public boolean contains(final Collator collator, final AtomicValue other) throws XPathException {
         throw new XPathException("Cannot call contains on value of type " +
                 Type.getTypeName(getType()));
     }

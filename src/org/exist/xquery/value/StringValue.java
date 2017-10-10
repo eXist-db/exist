@@ -657,11 +657,9 @@ public class StringValue extends AtomicValue {
         return Collations.endsWith(collator, value, other.getStringValue());
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AtomicValue#contains(org.exist.xquery.value.AtomicValue)
-     */
-    public boolean contains(Collator collator, AtomicValue other) throws XPathException {
-        return Collations.indexOf(collator, value, other.getStringValue()) != Constants.STRING_NOT_FOUND;
+    @Override
+    public boolean contains(final Collator collator, final AtomicValue other) throws XPathException {
+        return Collations.contains(collator, value, other.getStringValue());
     }
 
     /* (non-Javadoc)
