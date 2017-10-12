@@ -26,7 +26,6 @@ import java.util.Map;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
@@ -39,6 +38,7 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.xml.sax.SAXException;
@@ -55,10 +55,8 @@ public class STXTransformerTrigger extends SAXTrigger implements DocumentTrigger
 
     protected Logger LOG = LogManager.getLogger(getClass());
     
-    private SAXTransformerFactory factory = (SAXTransformerFactory)TransformerFactory.newInstance("net.sf.joost.trax.TransformerFactoryImpl", getClass().getClassLoader());
+    private final SAXTransformerFactory factory = (SAXTransformerFactory)TransformerFactory.newInstance("net.sf.joost.trax.TransformerFactoryImpl", getClass().getClassLoader());
     private TransformerHandler handler = null;
-
-    private static STXTemplatesCache templatesCache = new STXTemplatesCache();
 
     @Override
     public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws TriggerException {
@@ -103,12 +101,8 @@ public class STXTransformerTrigger extends SAXTrigger implements DocumentTrigger
                 if(doc instanceof BinaryDocument) {
                     throw new TriggerException("stylesheet " + stylesheetUri + " must be stored as an xml document and not a binary document!");
                 }
-                handler = factory.newTransformerHandler(templatesCache.getOrUpdateTemplate(broker, doc));
-            } catch (final TransformerConfigurationException e) {
-                    throw new TriggerException(e.getMessage(), e);
-            } catch (final PermissionDeniedException e) {
-                    throw new TriggerException(e.getMessage(), e);
-            } catch (final SAXException e) {
+                handler = factory.newTransformerHandler(STXTemplatesCache.getInstance().getOrUpdateTemplate(broker, doc));
+            } catch (final TransformerConfigurationException | PermissionDeniedException | SAXException | LockException e) {
                     throw new TriggerException(e.getMessage(), e);
             }
         } else {
