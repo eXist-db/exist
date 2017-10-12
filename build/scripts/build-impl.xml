@@ -742,20 +742,21 @@
 
     <target name="clean-default-data-dir" description="Remove contents in default data directory">
         <!-- valuable data? -->
-        <delete dir="${src.webapp}/WEB-INF/data/backup"/>
-        <delete dir="${src.webapp}/WEB-INF/data/journal"/>
-        <delete dir="${src.webapp}/WEB-INF/data/fs"/>
-        <delete dir="${src.webapp}/WEB-INF/data/fs.journal"/>
-        <delete dir="${src.webapp}/WEB-INF/data/lucene"/>
-        <delete dir="${src.webapp}/WEB-INF/data/metadata"/>
-        <delete dir="${src.webapp}/WEB-INF/data/range"/>
-        <delete dir="${src.webapp}/WEB-INF/data/sanity"/>
-        <delete>
+        <delete failonerror="no">
+            <fileset dir="${src.webapp}/WEB-INF/data/journal"/>
+        </delete>
+        <delete failonerror="no" dir="${src.webapp}/WEB-INF/data/fs"/>
+        <delete failonerror="no" dir="${src.webapp}/WEB-INF/data/fs.journal"/>
+        <delete failonerror="no" dir="${src.webapp}/WEB-INF/data/lucene"/>
+        <delete failonerror="no" dir="${src.webapp}/WEB-INF/data/metadata"/>
+        <delete failonerror="no" dir="${src.webapp}/WEB-INF/data/range"/>
+        <delete failonerror="no" dir="${src.webapp}/WEB-INF/data/sanity"/>
+        <delete failonerror="no">
             <fileset dir="${src.webapp}/WEB-INF/data" includes="*.dbx,*.log,*.lck,spatial_index.*,counters,restxq.registry"
                 excludes=".DO_NOT_DELETE"/>
         </delete>
-        <delete dir="${src.webapp}/WEB-INF/expathrepo"/>
-        <delete dir="${src.webapp}/WEB-INF/data/expathrepo"/>
+        <delete failonerror="no" dir="${src.webapp}/WEB-INF/expathrepo"/>
+        <delete failonerror="no" dir="${src.webapp}/WEB-INF/data/expathrepo"/>
     </target>
 
     <target name="clean-all" depends="clean-default-data-dir" description="Cleanup deeper, data is removed">
@@ -768,7 +769,7 @@
         <delete failonerror="no" file="mime-types.xml"/>
         <delete failonerror="no" file="${src.webapp}/WEB-INF/web.xml"/>
 
-        <delete>
+        <delete failonerror="no">
             <fileset dir="installer" includes="install.xml"/>
             <fileset dir="webapp" includes="header.xml"/>
             <fileset dir="webapp/xqts" includes="config.xml"/>
