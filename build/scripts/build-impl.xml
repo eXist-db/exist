@@ -78,9 +78,9 @@
             <include name="*.jar"/>
         </fileset>
         <pathelement path="tools/yajsw/wrapper.jar"/>
-	<fileset dir="tools/yajsw/lib/core/commons">
-	    <include name="commons-configuration*.jar"/>
-	</fileset>
+        <fileset dir="tools/yajsw/lib/core/commons">
+            <include name="commons-configuration*.jar"/>
+        </fileset>
     </path>
 
     <!-- setup class path -->
@@ -149,21 +149,21 @@
             filtering="true" failonerror="false"/>
 
         <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/conf.xml" filtering="true">
-		<filterset>
-			<filter token="dataDir" value="${config.dataDir}"/>
-			<filter token="journalDir" value="${config.journalDir}"/>
-			<filter token="cacheSize" value="${config.cacheSize}"/>
-			<filter token="collectionCacheSize" value="${config.collectionCacheSize}"/>
-		</filterset>
-	</copy>
+            <filterset>
+                <filter token="dataDir" value="${config.dataDir}"/>
+                <filter token="journalDir" value="${config.journalDir}"/>
+                <filter token="cacheSize" value="${config.cacheSize}"/>
+                <filter token="collectionCacheSize" value="${config.collectionCacheSize}"/>
+            </filterset>
+        </copy>
         <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/installer/conf.xml" filtering="true">
-		<filterset>
-			<filter token="dataDir" value="${config.dataDir}"/>
-			<filter token="journalDir" value="${config.journalDir}"/>
-			<filter token="cacheSize" value="${config.cacheSize}"/>
-			<filter token="collectionCacheSize" value="${config.collectionCacheSize}"/>
-		</filterset>
-	</copy>
+            <filterset>
+                <filter token="dataDir" value="${config.dataDir}"/>
+                <filter token="journalDir" value="${config.journalDir}"/>
+                <filter token="cacheSize" value="${config.cacheSize}"/>
+                <filter token="collectionCacheSize" value="${config.collectionCacheSize}"/>
+            </filterset>
+        </copy>
         <copy file="${basedir}/client.properties.tmpl" tofile="${basedir}/client.properties"
             filtering="true"/>
         <copy file="${basedir}/descriptor.xml.tmpl" tofile="${basedir}/descriptor.xml"
@@ -194,9 +194,9 @@
             <include name="org/**"/>
 
             <!-- Do not compile Aspects here, compiled below by iajc -->
-	    <exclude name="org/exist/security/PermissionRequiredAspect.java"/>
+        <exclude name="org/exist/security/PermissionRequiredAspect.java"/>
 
-	    <classpath>
+        <classpath>
                 <path refid="classpath.core"/>
                 <path refid="classpath.jetty"/>
                 <path refid="classpath.aspectj"/>
@@ -237,19 +237,19 @@
 
     <!-- =================================================================== -->
     <!-- Check if aspectj needs to be called. If no source file is newer     -->
-	<!-- than the last build of exist.jar, aspectj should not run.           -->
+    <!-- than the last build of exist.jar, aspectj should not run.           -->
     <!-- =================================================================== -->
-	<target name="check.aspects.uptodate">
-    	<uptodate property="aspectj.uptodate" targetfile="exist.jar">
-			<srcfiles dir= "${src}" includes="org/exist/security/PermissionRequiredAspect.java"/>
-    	</uptodate>
-  	</target>
+    <target name="check.aspects.uptodate">
+        <uptodate property="aspectj.uptodate" targetfile="exist.jar">
+            <srcfiles dir= "${src}" includes="org/exist/security/PermissionRequiredAspect.java"/>
+        </uptodate>
+    </target>
 
-	<!-- =================================================================== -->
+    <!-- =================================================================== -->
     <!-- Compiles the aspects                                                -->
     <!-- =================================================================== -->
     <target name="compile-aspectj" depends="compile,check.aspects.uptodate" description="Compiles the aspects"
-		unless="aspectj.uptodate">
+        unless="aspectj.uptodate">
 
         <echo
             message="Compiling aspects with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
@@ -272,8 +272,8 @@
     </target>
 
     <!-- =================================================================== -->
-    <!-- Run antlr parser generator									   	   -->
-    <!-- needs antlr distribution-directory in the classpath			   -->
+    <!-- Run antlr parser generator                                          -->
+    <!-- needs antlr distribution-directory in the classpath                 -->
     <!-- =================================================================== -->
     <target depends="prepare" name="antlr">
         <echo message="Running ANTLR to generate XQuery parser"/>
@@ -315,7 +315,7 @@
     <target depends="XQueryTreeParser,jar" name="xquery-ng"/>
 
     <!-- ================================================================== -->
-    <!-- Create jar files                    				    -->
+    <!-- Create jar files                                                   -->
     <!-- ================================================================== -->
     <target name="jar" depends="git.details,compile,compile-testkit,compile-aspectj"
         description="Create eXist-db unsigned jar files">
@@ -327,7 +327,7 @@
         <!--copy file="${src}/CatalogManager.properties" todir="${build.classes}"/-->
         <copy todir="${build.classes}/org/exist/client">
             <fileset dir="${src}/org/exist/client">
-		<include name="*.tmpl"/>
+        <include name="*.tmpl"/>
                 <include name="icons/**.png"/>
                 <include name="icons/**.gif"/>
                 <include name="*.xsl"/>
@@ -792,7 +792,7 @@
                 <exclude name=".DO_NOT_DELETE"/>
             </fileset>
         </delete>
-		<ant antfile="build.xml" dir="extensions/modules" target="clean-all" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/modules" target="clean-all" inheritall="false"/>
     </target>
 
     <target name="wrapper" depends="jar">
