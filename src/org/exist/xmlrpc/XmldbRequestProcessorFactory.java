@@ -45,8 +45,6 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
     private final BrokerPool brokerPool;
     protected final QueryResultCache resultSets = new QueryResultCache();
 
-    private long lastCheck = System.currentTimeMillis();
-
     /**
      * id of the database registered against the BrokerPool
      */
@@ -62,7 +60,6 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
 
     @Override
     public Object getRequestProcessor(final XmlRpcRequest pRequest) throws XmlRpcException {
-        checkResultSets();
         final XmlRpcHttpRequestConfig config = (XmlRpcHttpRequestConfig) pRequest.getConfig();
         final Subject user = authenticate(config.getBasicUserName(), config.getBasicPassword());
         return new RpcConnection(this, user);
@@ -92,13 +89,6 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
 
     protected BrokerPool getBrokerPool() {
         return brokerPool;
-    }
-
-    protected void checkResultSets() {
-        if (System.currentTimeMillis() - lastCheck > CHECK_INTERVAL) {
-            resultSets.checkTimestamps();
-            lastCheck = System.currentTimeMillis();
-        }
     }
 
     public synchronized void shutdown() {
