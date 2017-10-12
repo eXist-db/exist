@@ -186,7 +186,7 @@ public class RESTServer {
         this.containerEncoding = containerEncoding;
         this.useDynamicContentType = useDynamicContentType;
         this.safeMode = safeMode;
-        this.sessionManager = new SessionManager(pool);
+        this.sessionManager = new SessionManager();
         this.xquerySubmission = xquerySubmission;
         this.xupdateSubmission = xupdateSubmission;
         

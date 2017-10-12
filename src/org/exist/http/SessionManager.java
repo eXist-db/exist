@@ -16,141 +16,78 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * $Id$
  */
 package org.exist.http;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.scheduler.JobException;
-import org.exist.scheduler.JobException.JobExceptionAction;
-import org.exist.scheduler.ScheduledJobInfo;
-import org.exist.scheduler.Scheduler;
-import org.exist.scheduler.UserJavaJob;
-import org.exist.storage.BrokerPool;
 import org.exist.xquery.value.Sequence;
 
-import java.util.Map;
-import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
+ */
+@ThreadSafe
 public class SessionManager {
 
-    public static final String SESSION_MANAGER = "session-manager";
+    private static final Logger LOG = LogManager.getLogger(SessionManager.class);
+    private static final long TIMEOUT = 120_000;  // ms (e.g. 2 minutes)
 
-    public final static long TIMEOUT = 120000;
+    private final AtomicInteger sessionIdCounter = new AtomicInteger();
+    private final Cache<Integer, QueryResult> cache;
 
-    public final static long TIMEOUT_CHECK_PERIOD = 2000;
-
-    public final static int NO_SESSION = -1;
-    
-    private final static Logger LOG = LogManager.getLogger(SessionManager.class);
-    
     private static class QueryResult {
-
-        long lastAccess;
-        final String queryString;
+        final String query;
         final Sequence sequence;
 
         private QueryResult(final String query, final Sequence sequence) {
-            this.queryString = query;
+            this.query = query;
             this.sequence = sequence;
-            this.lastAccess = System.currentTimeMillis();
-        }
-        
-        protected Sequence sequence() {
-            lastAccess = System.currentTimeMillis();
-            return sequence;
         }
     }
 
-    public static class TimeoutCheck extends UserJavaJob {
-
-        public TimeoutCheck() {
+    public SessionManager() {
+        final Caffeine<Object, Object> cacheBuilder = Caffeine.newBuilder()
+                .expireAfterAccess(TIMEOUT, TimeUnit.MILLISECONDS);
+        if(LOG.isDebugEnabled()) {
+            cacheBuilder.removalListener((key, value, cause) -> LOG.debug("Removing cached query result for session: " + key));
         }
-
-        public String getName() {
-            return "REST_TimeoutCheck";
-        }
-
-        public void setName(final String name) {
-        }
-
-        public void execute(final BrokerPool brokerpool, final Map<String, ?> params) throws JobException {
-            final SessionManager manager = (SessionManager)params.get(SESSION_MANAGER);
-            if (manager == null) {
-                throw new JobException(JobExceptionAction.JOB_ABORT, "parameter 'session-manager' is not set");
-            }
-            manager.timeoutCheck();
-        }
-    }
-
-    private QueryResult[] slots = new QueryResult[32];
-
-    public SessionManager(final BrokerPool pool) {
-        final TimeoutCheck task = new TimeoutCheck();
-        final Scheduler scheduler = pool.getScheduler();
-
-        for (final ScheduledJobInfo job : scheduler.getScheduledJobs()) {
-            if (task.getName().equals(job.getName())) {
-                 return;
-            }
-        }
-
-        final Properties props = new Properties();
-        props.put(SESSION_MANAGER, this);
-        scheduler.createPeriodicJob(TIMEOUT_CHECK_PERIOD, task, 2000, props);
+        cache = cacheBuilder.build();
     }
 
     public int add(final String query, final Sequence sequence) {
-        final int len = slots.length;
-        for (int i = 0; i < len; i++) {
-            if (slots[i] == null) {
-                slots[i] = new QueryResult(query, sequence);
-                return i;
-            }
-        }
-        // no free slots, resize
-        final QueryResult[] t = new QueryResult[(len * 3) / 2];
-        System.arraycopy(slots, 0, t, 0, len);
-        t[len] = new QueryResult(query, sequence);
-        slots = t;
-        return len;
+        final int sessionId = sessionIdCounter.getAndIncrement();
+        cache.put(sessionId, new QueryResult(query, sequence));
+        return sessionId;
     }
 
     public Sequence get(final String query, final int sessionId) {
-        if (sessionId < 0 || sessionId >= slots.length) {
+        if (sessionId < 0 || sessionId >= sessionIdCounter.get()) {
             return null; // out of scope
         }
 
-        final QueryResult cached = slots[sessionId];
+        final QueryResult cached = cache.getIfPresent(sessionId);
         if (cached == null) {
             return null;
         }
-        if (cached.queryString.equals(query)) {
-            return cached.sequence();
-        }
 
-        // wrong query
-        return null;
+        if (cached.query.equals(query)) {
+            return cached.sequence;
+        } else {
+            // wrong query
+            return null;
+        }
     }
 
     public void release(final int sessionId) {
-        if (sessionId < 0 || sessionId >= slots.length) {
+        if (sessionId < 0 || sessionId >= sessionIdCounter.get()) {
             return; // out of scope
         }
-        slots[sessionId] = null;
-    }
-
-    protected void timeoutCheck() {
-        final long now = System.currentTimeMillis();
-        for (int i = 0; i < slots.length; i++) {
-            if (slots[i] != null && now - slots[i].lastAccess > TIMEOUT) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Removing cached query result for session " + i);
-                }
-                slots[i] = null;
-            }
-        }
+        cache.invalidate(sessionId);
     }
 }
