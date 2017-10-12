@@ -1259,8 +1259,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 // Cleanup the state of activeBrokers
                 for(final Entry<Thread, DBBroker> activeBroker : activeBrokers.entrySet()) {
                     if(activeBroker.getValue() == broker) {
-                        final EXistException ex = new EXistException();
-                        LOG.error("release() has been called from '" + Thread.currentThread() + "', but occupied at '" + activeBroker.getKey() + "'.", ex);
+                        final String msg = "release() has been called from '" + Thread.currentThread() + "', but occupied at '" + activeBroker.getKey() + "'.";
+                        final EXistException ex = new EXistException(msg);
+                        LOG.error(msg, ex);
                         activeBrokers.remove(activeBroker.getKey());
                         break;
                     }
