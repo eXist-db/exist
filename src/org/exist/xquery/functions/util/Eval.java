@@ -370,7 +370,7 @@ public class Eval extends BasicFunction {
         try {
 
             if(this.getArgumentCount() == 4) {
-                final NodeValue contextItem = (NodeValue)args[3].itemAt(0);
+                final Item contextItem = (Item)args[3].itemAt(0);
                 if (contextItem != null) {
                     //TODO : sort this out
                     if (exprContext != null) {
