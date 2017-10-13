@@ -289,7 +289,7 @@ public class ConsistencyCheck
                 try {
                     final ElementImpl root = (ElementImpl)doc.getDocumentElement();
                     if (root == null) {
-                        return new ErrorReport.ResourceError(ErrorReport.RESOURCE_ACCESS_FAILED, "Failed to access document data");
+                        return new ErrorReport.ResourceError(ErrorReport.RESOURCE_ACCESS_FAILED, "Failed to access data of document " + doc.getDocumentURI() );
                     }
                 } catch( final Exception e ) {
                     e.printStackTrace();
@@ -324,6 +324,10 @@ public class ConsistencyCheck
                         EmbeddedXMLStreamReader reader = null;
                         try {
                             final ElementImpl             root            = (ElementImpl)doc.getDocumentElement();
+                            if (root == null) {
+                                return new ErrorReport.ResourceError(ErrorReport.RESOURCE_ACCESS_FAILED, "Failed to access data of document " + doc.getDocumentURI() );
+                            }
+
                             reader = (EmbeddedXMLStreamReader)broker.getXMLStreamReader( root, true );
                             NodeId                  nodeId;
                             boolean                 attribsAllowed  = false;
