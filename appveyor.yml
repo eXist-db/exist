@@ -1,0 +1,7 @@
+version: '{branch}-{build}'
+environment:
+  EXIST_HOME: c:\projects\exist
+build_script:
+- cmd: build.bat
+test_script:
+- cmd: build.bat -Dexist.autodeploy=off -Dtest.haltonerror=true -Dtest.haltonfailure=true travis
