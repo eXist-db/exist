@@ -139,6 +139,17 @@ public class EvalTest {
     }
     
     @Test
+    public void testEvalSupplyingContextItem() throws XPathException, XMLDBException {
+        final String query = "let $context := 'London'\n" +
+                "let $query := '.'\n" +
+                "return\n" +
+                "util:eval-with-context($query, (), false(), $context)";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("London", r);
+    }
+    
+    @Test
     public void evalInContextWithPreDeclaredNamespace() throws XMLDBException {
         createCollection("testEvalInContextWithPreDeclaredNamespace");
         final String query =
