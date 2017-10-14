@@ -31,12 +31,14 @@ public class BinarySource extends AbstractSource {
         return data;
     }
 
-    public int isValid(DBBroker broker) {
-        return Source.VALID;
+    @Override
+    public Validity isValid(final DBBroker broker) {
+        return Source.Validity.VALID;
     }
 
-    public int isValid(Source other) {
-        return Source.VALID;
+    @Override
+    public Validity isValid(final Source other) {
+        return Source.Validity.VALID;
     }
 
     public Reader getReader() throws IOException {
