@@ -24,6 +24,8 @@ package org.exist.source;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -77,8 +79,8 @@ public class SourceFactory {
             resolvedURL = resolvedURL.replaceFirst("file://", ClassLoaderSource.PROTOCOL);
             source = new ClassLoaderSource(resolvedURL);
         }
-        /* file:// or location without scheme is assumed to be a file */
-        else if (location.startsWith("file:") || !location.contains(":")) {
+        /* file:// or location without scheme (:/) is assumed to be a file */
+        else if (location.startsWith("file:/") || !location.contains(":/")) {
             location = location.replaceAll("^(file:)?/*(.*)$", "$2");
 
             try {
@@ -150,7 +152,19 @@ public class SourceFactory {
                  * Try to load from the folder of the contextPath URL
                  */
                 try {
-                    final Path p6 = Paths.get(contextPath.replaceFirst("^file:/*(/.*)$", "$1")).resolveSibling(location);
+                    Path p6 = null;
+                    if(contextPath.startsWith("file:/")) {
+                        try {
+                            p6 = Paths.get(new URI(contextPath)).resolveSibling(location);
+                        } catch (final URISyntaxException e) {
+                            // continue trying
+                        }
+                    }
+
+                    if(p6 == null) {
+                        p6 = Paths.get(contextPath.replaceFirst("^file:/*(/.*)$", "$1")).resolveSibling(location);
+                    }
+
                     if (Files.isReadable(p6)) {
                         location = p6.toUri().toASCIIString();
                         source = new FileSource(p6, checkXQEncoding);
