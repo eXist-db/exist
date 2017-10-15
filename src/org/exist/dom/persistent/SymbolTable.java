@@ -26,10 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
 import org.exist.dom.QName;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.BrokerPoolService;
-import org.exist.storage.BrokerPoolServiceException;
-import org.exist.storage.ElementValue;
+import org.exist.storage.*;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteInputStream;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -40,10 +37,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -61,7 +55,7 @@ import java.util.Iterator;
  * @author wolf
  * @author Adam Retter <adam@exist-db.org>
  */
-public class SymbolTable implements BrokerPoolService {
+public class SymbolTable implements BrokerPoolService, Closeable {
 
     private static final Logger LOG = LogManager.getLogger(SymbolTable.class);
 
@@ -135,6 +129,15 @@ public class SymbolTable implements BrokerPoolService {
                 loadSymbols();
             }
         } catch(final EXistException e) {
+            throw new BrokerPoolServiceException(e);
+        }
+    }
+
+    @Override
+    public void stop(final DBBroker systemBroker) throws BrokerPoolServiceException {
+        try {
+            close();
+        } catch (final IOException e) {
             throw new BrokerPoolServiceException(e);
         }
     }

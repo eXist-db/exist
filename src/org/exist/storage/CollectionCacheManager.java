@@ -62,6 +62,11 @@ public class CollectionCacheManager implements CacheManager, BrokerPoolService {
     }
 
     @Override
+    public void shutdown() {
+        deregisterCache(collectionCache);
+    }
+
+    @Override
     public void registerCache(final Cache cache) {
     }
 

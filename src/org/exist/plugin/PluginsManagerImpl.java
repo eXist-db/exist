@@ -105,7 +105,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
 		}
 	}
 
-	@Override
+    @Override
 	public void start(DBBroker broker) throws EXistException {
         final TransactionManager transaction = broker.getBrokerPool().getTransactionManager();
 
@@ -177,7 +177,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
     }
 
 	@Override
-	public void stop(DBBroker broker) throws EXistException {
+	public void stop(final DBBroker broker) {
 		for (final Plug plugin : jacks.values()) {
 			try {
 				plugin.stop(broker);

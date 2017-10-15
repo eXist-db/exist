@@ -109,13 +109,27 @@ public interface BrokerPoolService {
     }
 
     /**
-     * Stop this service
+     * Stop this service.
      *
      * By default there is nothing to stop
      *
-     * @param brokerPool The BrokerPool instance that is stopping
+     * As this point the database is not generally available
+     * and the only system broker is passed to this function
+     *
+     * @param systemBroker The system mode broker
+     *
+     * @throws BrokerPoolServiceException if an error occurs when stopping the service
      */
-    default void stop(final BrokerPool brokerPool) {
+    default void stop(final DBBroker systemBroker) throws BrokerPoolServiceException {
         //nothing to actually stop
+    }
+
+    /**
+     * Shutdown this service.
+     *
+     * By default there is nothing to shutdown
+     */
+    default void shutdown() {
+        //nothing to actually shutdown
     }
 }

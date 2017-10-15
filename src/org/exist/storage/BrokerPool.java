@@ -1583,19 +1583,23 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                     }
                     LOG.debug("Calling shutdown ...");
 
-                    if (pluginManager != null)
-                        try {
-                            pluginManager.stop((DBBroker)null);
-                        } catch (final EXistException e) {
-                            LOG.warn("Error during plugin manager shutdown: " + e.getMessage(), e);
-                        }
-
-                    // closing down external indexes
-                    try {
-                        indexManager.shutdown();
-                    } catch (final DBException e) {
-                        LOG.warn("Error during index shutdown: " + e.getMessage(), e);
-                    }
+//                    if (pluginManager != null) {
+//                        try {
+//                            pluginManager.stop((DBBroker) null);
+//                        } catch (final EXistException e) {
+//                            LOG.warn("Error during plugin manager shutdown: " + e.getMessage(), e);
+//                        }
+//                    }
+//
+//                    // stop all services
+//                    servicesManager.shutdown(this);
+//
+//                    // closing down external indexes
+//                    try {
+//                        indexManager.shutdown();
+//                    } catch (final DBException e) {
+//                        LOG.warn("Error during index shutdown: " + e.getMessage(), e);
+//                    }
 
                     //TODO : replace the following code by get()/release() statements ?
                     // WM: deadlock risk if not all brokers returned properly.
@@ -1615,17 +1619,32 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                         broker = inactiveBrokers.peek();
                     }
 
-                    //TOUNDERSTAND (pb) : shutdown() is called on only *one* broker ?
-                    // WM: yes, the database files are shared, so only one broker is needed to close them for all
-                    if (broker != null) {
-                        broker.pushSubject(securityManager.getSystemSubject());
-                        broker.shutdown();
-                    }
-                    collectionCacheMgr.deregisterCache(collectionCache);
+                    try {
+                        if (broker != null) {
+                            broker.pushSubject(securityManager.getSystemSubject());
+                        }
 
-                    // do not write a checkpoint if some threads did not return before shutdown
-                    // there might be dirty transactions
-                    transactionManager.shutdown();
+                        try {
+                            // instruct all database services to stop
+                            servicesManager.stopServices(broker);
+                        } catch(final BrokerPoolServicesManagerException e) {
+                           for(final BrokerPoolServiceException bpse : e.getServiceExceptions()) {
+                               LOG.error(bpse.getMessage(), bpse);
+                           }
+                        }
+
+                        //TOUNDERSTAND (pb) : shutdown() is called on only *one* broker ?
+                        // WM: yes, the database files are shared, so only one broker is needed to close them for all
+                        broker.shutdown();
+
+                    } finally {
+                        if(broker != null) {
+                            broker.popSubject();
+                        }
+                    }
+
+                    // final notification to database services to shutdown
+                    servicesManager.shutdown();
 
                     // deregister JMX MBeans
                     AgentFactory.getInstance().closeDBInstance(this);
