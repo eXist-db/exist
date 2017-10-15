@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AjcSettings">
+    <option name="ajcPath" value="$PROJECT_DIR$/tools/aspectj/lib/aspectjtools-1.8.9.jar" />
+    <option name="delegateToJavac" value="true" />
+  </component>
   <component name="CompilerConfiguration">
+    <option name="DEFAULT_COMPILER" value="ajc" />
     <excludeFromCompile>
       <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/xquery/modules/spatial/FunGeometricProperties.java" />
       <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/indexing/spatial/GMLHSQLIndexWorker.java" />
