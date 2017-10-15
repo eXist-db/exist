@@ -163,6 +163,9 @@ public class DocumentNameOrId extends BasicFunction {
                     final int collectionId = absoluteId.and(BigInteger.valueOf(0xFFFFFFFF)).intValue();
                     
                     doc = context.getBroker().getResourceById(collectionId, resourceType, documentId);
+                    if (doc == null) {
+                        return Sequence.EMPTY_SEQUENCE;
+                    }
                     if(doc instanceof BinaryDocument) {
                         final BinaryDocument bin = (BinaryDocument) doc;
                         final InputStream is = context.getBroker().getBinaryResource(bin);
