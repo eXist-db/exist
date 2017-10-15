@@ -568,95 +568,105 @@ public class RemoteCollection extends AbstractRemote implements CollectionImpl {
     private void uploadAndStore(final Resource res) throws XMLDBException {
         InputStream is = null;
         String descString = "<unknown>";
-        if (res instanceof RemoteBinaryResource) {
-            is = ((RemoteBinaryResource) res).getStreamContent();
-            descString = ((RemoteBinaryResource) res).getStreamSymbolicPath();
-        } else {
-            final Object content = res.getContent();
-            if (content instanceof File) {
-                final File file = (File) content;
-                try {
-                    is = new BufferedInputStream(new FileInputStream(file));
-                } catch (final FileNotFoundException e) {
-                    throw new XMLDBException(
-                            ErrorCodes.INVALID_RESOURCE,
-                            "could not read resource from file " + file.getAbsolutePath(),
-                            e);
-                }
-            } else if (content instanceof InputSource) {
-                is = ((InputSource) content).getByteStream();
-                if (content instanceof EXistInputSource) {
-                    descString = ((EXistInputSource) content).getSymbolicPath();
-                }
-            }
-        }
-
-        final byte[] chunk = new byte[MAX_UPLOAD_CHUNK];
         try {
-            int len;
-            String fileName = null;
-            List<Object> params;
-            byte[] compressed;
-            while ((len = is.read(chunk)) > -1) {
-                compressed = Compressor.compress(chunk, len);
-                params = new ArrayList<>();
-                if (fileName != null) {
-                    params.add(fileName);
-                }
-                params.add(compressed);
-                params.add(len);
-                fileName = (String) rpcClient.execute("uploadCompressed", params);
-            }
-            // Zero length stream? Let's get a fileName!
-            if (fileName == null) {
-                compressed = Compressor.compress(new byte[0], 0);
-                params = new ArrayList<>();
-                params.add(compressed);
-                params.add(0);
-                fileName = (String) rpcClient.execute("uploadCompressed", params);
-            }
-            params = new ArrayList<>();
-            final List<Object> paramsEx = new ArrayList<>();
-            params.add(fileName);
-            paramsEx.add(fileName);
-            try {
-                final String resURI = getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString();
-                params.add(resURI);
-                paramsEx.add(resURI);
-            } catch (final URISyntaxException e) {
-                throw new XMLDBException(ErrorCodes.INVALID_URI, e);
-            }
-            params.add(Boolean.TRUE);
-            paramsEx.add(Boolean.TRUE);
-            if (res instanceof EXistResource) {
-                final EXistResource rxres = (EXistResource) res;
-                params.add(rxres.getMimeType());
-                paramsEx.add(rxres.getMimeType());
-                // This one is only for the new style!!!!
-                paramsEx.add((BinaryResource.RESOURCE_TYPE.equals(res.getResourceType()))
-                        ? Boolean.FALSE : Boolean.TRUE);
-                if (rxres.getCreationTime() != null) {
-                    params.add(rxres.getCreationTime());
-                    paramsEx.add(rxres.getCreationTime());
-                    params.add(rxres.getLastModificationTime());
-                    paramsEx.add(rxres.getLastModificationTime());
+            if (res instanceof RemoteBinaryResource) {
+                is = ((RemoteBinaryResource) res).getStreamContent();
+                descString = ((RemoteBinaryResource) res).getStreamSymbolicPath();
+            } else {
+                final Object content = res.getContent();
+                if (content instanceof File) {
+                    final File file = (File) content;
+                    try {
+                        is = new BufferedInputStream(new FileInputStream(file));
+                    } catch (final FileNotFoundException e) {
+                        throw new XMLDBException(
+                                ErrorCodes.INVALID_RESOURCE,
+                                "could not read resource from file " + file.getAbsolutePath(),
+                                e);
+                    }
+                } else if (content instanceof InputSource) {
+                    is = ((InputSource) content).getByteStream();
+                    if (content instanceof EXistInputSource) {
+                        descString = ((EXistInputSource) content).getSymbolicPath();
+                    }
                 }
             }
+
+            final byte[] chunk = new byte[MAX_UPLOAD_CHUNK];
             try {
-                rpcClient.execute("parseLocalExt", paramsEx);
+                int len;
+                String fileName = null;
+                List<Object> params;
+                byte[] compressed;
+                while ((len = is.read(chunk)) > -1) {
+                    compressed = Compressor.compress(chunk, len);
+                    params = new ArrayList<>();
+                    if (fileName != null) {
+                        params.add(fileName);
+                    }
+                    params.add(compressed);
+                    params.add(len);
+                    fileName = (String) rpcClient.execute("uploadCompressed", params);
+                }
+                // Zero length stream? Let's get a fileName!
+                if (fileName == null) {
+                    compressed = Compressor.compress(new byte[0], 0);
+                    params = new ArrayList<>();
+                    params.add(compressed);
+                    params.add(0);
+                    fileName = (String) rpcClient.execute("uploadCompressed", params);
+                }
+                params = new ArrayList<>();
+                final List<Object> paramsEx = new ArrayList<>();
+                params.add(fileName);
+                paramsEx.add(fileName);
+                try {
+                    final String resURI = getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString();
+                    params.add(resURI);
+                    paramsEx.add(resURI);
+                } catch (final URISyntaxException e) {
+                    throw new XMLDBException(ErrorCodes.INVALID_URI, e);
+                }
+                params.add(Boolean.TRUE);
+                paramsEx.add(Boolean.TRUE);
+                if (res instanceof EXistResource) {
+                    final EXistResource rxres = (EXistResource) res;
+                    params.add(rxres.getMimeType());
+                    paramsEx.add(rxres.getMimeType());
+                    // This one is only for the new style!!!!
+                    paramsEx.add((BinaryResource.RESOURCE_TYPE.equals(res.getResourceType()))
+                            ? Boolean.FALSE : Boolean.TRUE);
+                    if (rxres.getCreationTime() != null) {
+                        params.add(rxres.getCreationTime());
+                        paramsEx.add(rxres.getCreationTime());
+                        params.add(rxres.getLastModificationTime());
+                        paramsEx.add(rxres.getLastModificationTime());
+                    }
+                }
+                try {
+                    rpcClient.execute("parseLocalExt", paramsEx);
+                } catch (final XmlRpcException e) {
+                    // Identifying old versions
+                    final String excMsg = e.getMessage();
+                    if (excMsg.contains("No such handler") || excMsg.contains("No method matching")) {
+                        rpcClient.execute("parseLocal", params);
+                    } else {
+                        throw e;
+                    }
+                }
+            } catch (final IOException e) {
+                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "failed to read resource from " + descString, e);
             } catch (final XmlRpcException e) {
-                // Identifying old versions
-                final String excMsg = e.getMessage();
-                if (excMsg.contains("No such handler") || excMsg.contains("No method matching")) {
-                    rpcClient.execute("parseLocal", params);
-                } else {
-                    throw e;
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "networking error", e);
+            }
+        } finally {
+            if(is != null) {
+                try {
+                    is.close();
+                } catch (final IOException ioe) {
+                    LOG.warn(ioe.getMessage(), ioe);
                 }
             }
-        } catch (final IOException e) {
-            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "failed to read resource from " + descString, e);
-        } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "networking error", e);
         }
     }
 

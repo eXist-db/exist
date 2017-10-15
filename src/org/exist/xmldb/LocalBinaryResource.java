@@ -80,7 +80,11 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
             } else if(res instanceof InputSource) {
                 return readFile((InputSource)res);
             } else if(res instanceof InputStream) {
-                return readFile((InputStream)res);
+                try(final InputStream is = (InputStream)res) {
+                    return readFile(is);
+                } catch (final IOException e) {
+                    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+                }
             }
         }
 
@@ -139,7 +143,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
     public void getContentIntoAStream(final OutputStream os) throws XMLDBException {
         read((document, broker, transaction) -> {
             if(os instanceof FileOutputStream) {
-                try(final OutputStream bos = new BufferedOutputStream(os, 655360)) {
+                try(final OutputStream bos = new BufferedOutputStream(os, 65536)) {
                     broker.readBinaryResource((BinaryDocument) document, bos);
                 }
             } else {
