@@ -60,7 +60,7 @@ public class FunDoc extends Function {
                 new FunctionParameterSequenceType("document-uri", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The document URI")
             },
-            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE,
+            new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ZERO_OR_ONE,
                 "the document node of $document-uri")
         );
 

@@ -16,7 +16,7 @@ function fnt:store() {
     let $col := xmldb:create-collection("/db", "fn-test")
     return
         (
-            xmldb:store($col, "test.xml", <something/>),
+            xmldb:store($col, "test.xml", <books><book/></books>),
             xmldb:store($col, "test.bin", "some binary", "application/octet-stream")
         )
 };
@@ -54,6 +54,20 @@ declare
     %test:assertEquals("false")
 function fnt:doc-available($filename as xs:string) {
     fn:doc-available("/db/fn-test/" || $filename)
+};
+
+declare
+    %test:args("test.xml")
+    %test:assertEquals("true")
+function fnt:doc($filename as xs:string) {
+    fn:doc("/db/fn-test/" || $filename) instance of document-node()
+};
+
+declare
+    %test:args("test.xml")
+    %test:assertEmpty
+function fnt:doc($filename as xs:string) {
+    fn:doc("/db/fn-test/" || $filename)/book
 };
 
 declare
