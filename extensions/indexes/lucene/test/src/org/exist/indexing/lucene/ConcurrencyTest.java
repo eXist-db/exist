@@ -25,7 +25,6 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,8 +37,8 @@ import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
+import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.IndexQueryService;
-import org.exist.xmldb.XQueryService;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -138,7 +137,7 @@ public class ConcurrencyTest {
     private void storeRemoveDocs(final String collectionName) throws XMLDBException, IOException {
         storeDocs(collectionName);
 
-        final XQueryService xqs = (XQueryService) test.getService("XQueryService", "1.0");
+        final EXistXQueryService xqs = (EXistXQueryService) test.getService("XQueryService", "1.0");
         ResourceSet result = xqs.query("//SPEECH[ft:query(LINE, 'king')]");
         assertEquals(98, result.getSize());
 
@@ -160,7 +159,7 @@ public class ConcurrencyTest {
     private void xupdateDocs(final String collectionName) throws XMLDBException, IOException {
         storeDocs(collectionName);
 
-        final XQueryService xqs = (XQueryService) test.getService("XQueryService", "1.0");
+        final EXistXQueryService xqs = (EXistXQueryService) test.getService("XQueryService", "1.0");
         ResourceSet result = xqs.query("//SPEECH[ft:query(SPEAKER, 'juliet')]");
         assertEquals(118, result.getSize());
 

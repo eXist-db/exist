@@ -31,7 +31,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
-public class LocalCollectionManagementService extends AbstractLocalService implements CollectionManagementServiceImpl {
+public class LocalCollectionManagementService extends AbstractLocalService implements EXistCollectionManagementService {
 
     public LocalCollectionManagementService(final Subject user, final BrokerPool pool, final LocalCollection parent) {
     	super(user, pool, parent);

@@ -2,7 +2,7 @@ package org.exist.examples.xmldb;
 
 import javax.xml.transform.OutputKeys;
 
-import org.exist.xmldb.XPathQueryServiceImpl;
+import org.exist.xmldb.EXistXPathQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -39,8 +39,8 @@ public class NestedExample {
 		col.storeResource(res);
 		
 		// get query-service
-		XPathQueryServiceImpl service =
-			(XPathQueryServiceImpl) col.getService( "XPathQueryService", "1.0" );
+		EXistXPathQueryService service =
+			(EXistXPathQueryService) col.getService( "XPathQueryService", "1.0" );
 		
 		// set pretty-printing on
 		service.setProperty( OutputKeys.INDENT, "yes" );

@@ -30,7 +30,7 @@ import org.xmldb.api.modules.XPathQueryService;
  *
  * @author Wolfgang <wolfgang@exist-db.org>
  */
-public interface XPathQueryServiceImpl extends XPathQueryService {
+public interface EXistXPathQueryService extends XPathQueryService {
 
     /**
      * Process an XPath query based on the result of a previous query.

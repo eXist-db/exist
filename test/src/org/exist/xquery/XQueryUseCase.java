@@ -31,7 +31,7 @@ import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.FileUtils;
 import org.exist.util.XMLFilenameFilter;
-import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.EXistXQueryService;
 
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -86,7 +86,7 @@ public class XQueryUseCase {
 			String query = readQuery(path);
 			System.out.println(query);
 			System.out.println("_________________________________________________________________________________");
-			XQueryService service = (XQueryService)root.getService("XQueryService", "1.0");
+			EXistXQueryService service = (EXistXQueryService)root.getService("XQueryService", "1.0");
 			ResourceSet results;
 			try {
 				results = service.query(query);

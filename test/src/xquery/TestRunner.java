@@ -26,7 +26,7 @@ import org.exist.source.Source;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.FileUtils;
 import org.exist.util.XMLFilenameFilter;
-import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.EXistXQueryService;
 import org.exist.xquery.value.Sequence;
 import org.junit.*;
 import org.w3c.dom.Document;
@@ -77,7 +77,7 @@ public abstract class TestRunner {
         }
 
         final List<TestSuite> all = new ArrayList<>();
-        final XQueryService xqs = (XQueryService) existEmbeddedServer.getRoot().getService("XQueryService", "1.0");
+        final EXistXQueryService xqs = (EXistXQueryService) existEmbeddedServer.getRoot().getService("XQueryService", "1.0");
         final Source query = new FileSource(Paths.get("test/src/xquery/runTests.xql"), false);
 
         if(files != null) {
@@ -115,7 +115,7 @@ public abstract class TestRunner {
 
         if(suites != null) {
             for (final Path suite : suites) {
-                final XQueryService xqs = (XQueryService) existEmbeddedServer.getRoot().getService("XQueryService", "1.0");
+                final EXistXQueryService xqs = (EXistXQueryService) existEmbeddedServer.getRoot().getService("XQueryService", "1.0");
                 xqs.setModuleLoadPath(getDirectory());
                 final Source query = new FileSource(suite, false);
 

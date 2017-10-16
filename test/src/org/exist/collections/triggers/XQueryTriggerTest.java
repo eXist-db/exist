@@ -29,7 +29,7 @@ import javax.xml.transform.OutputKeys;
 import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.Base64Decoder;
-import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
@@ -516,7 +516,7 @@ public class XQueryTriggerTest {
         final XmldbURI srcURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test");
         final XmldbURI dstURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test-dst");
 
-        final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) testCollection.getService("CollectionManagementService", "1.0");
+        final EXistCollectionManagementService service = (EXistCollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
         final Collection src = service.createCollection("test");
         assertNotNull(src);
 
@@ -559,7 +559,7 @@ public class XQueryTriggerTest {
         final XmldbURI srcURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test");
         final XmldbURI dstURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test-dst");
 
-        final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) testCollection.getService("CollectionManagementService", "1.0");
+        final EXistCollectionManagementService service = (EXistCollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
         final Collection src = service.createCollection("test");
         assertNotNull(src);
 

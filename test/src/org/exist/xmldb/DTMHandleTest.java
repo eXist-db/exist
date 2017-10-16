@@ -58,7 +58,7 @@ public class DTMHandleTest {
         xmlDocument.append("</survey>");
 
         // Obtain XQuery service
-        XQueryService service = getXQueryService();
+        EXistXQueryService service = getXQueryService();
         assertNotNull("Failed to obtain xquery service instance!", service);
         // write document to the database
         store(xmlDocument.toString(), service, document);
@@ -99,7 +99,7 @@ public class DTMHandleTest {
      * @param service the xquery service
      * @param document the document name
      */
-    private final void store(String xml, XQueryService service, String document) throws XMLDBException {
+    private final void store(String xml, EXistXQueryService service, String document) throws XMLDBException {
         StringBuilder query = new StringBuilder();
         query.append("xquery version \"1.0\";");
         query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
@@ -119,7 +119,7 @@ public class DTMHandleTest {
      * @param service the xquery service
      * @param document the document to load
      */
-    private final Node load(XQueryService service, String document) throws XMLDBException {
+    private final Node load(EXistXQueryService service, String document) throws XMLDBException {
         StringBuilder query = new StringBuilder();
         query.append("xquery version \"1.0\";");
         query.append("let $survey := xmldb:document(concat('" + XmldbURI.ROOT_COLLECTION + "', '/', $document))");
@@ -139,8 +139,8 @@ public class DTMHandleTest {
      *
      * @return the xquery service
      */
-    private final XQueryService getXQueryService() throws XMLDBException {
-        XQueryService service = (XQueryService) root.getService("XQueryService", "1.0");
+    private final EXistXQueryService getXQueryService() throws XMLDBException {
+        EXistXQueryService service = (EXistXQueryService) root.getService("XQueryService", "1.0");
         return service;
     }
 

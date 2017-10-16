@@ -3,7 +3,7 @@ package org.exist.examples.xmldb;
 import java.nio.file.Paths;
 
 import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xupdate.XUpdateProcessor;
 import org.xmldb.api.DatabaseManager;
@@ -71,7 +71,7 @@ public class MultipleDatabases {
 	}
 
 	private static void doQuery(Collection collection, String query) throws XMLDBException {
-		XQueryService service = (XQueryService)
+		EXistXQueryService service = (EXistXQueryService)
 			collection.getService("XQueryService", "1.0");
 		ResourceSet result = service.query(query);
 		System.out.println("Found " + result.getSize() + " results.");

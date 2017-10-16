@@ -21,7 +21,7 @@
 */
 package org.exist.xmldb.concurrent.action;
 
-import org.exist.xmldb.XPathQueryServiceImpl;
+import org.exist.xmldb.EXistXPathQueryService;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -57,7 +57,7 @@ public class XQueryAction extends Action {
 	    
 		Collection col = DatabaseManager.getCollection(collectionPath);
 		
-		XPathQueryServiceImpl service = (XPathQueryServiceImpl)
+		EXistXPathQueryService service = (EXistXPathQueryService)
 			col.getService("XPathQueryService", "1.0");
 		
 //		service.beginProtected();

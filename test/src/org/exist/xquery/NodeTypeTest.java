@@ -1,6 +1,6 @@
 package org.exist.xquery;
 
-import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.Test;
 import org.w3c.dom.Node;
@@ -42,7 +42,7 @@ public class NodeTypeTest {
 	 */
 	@Test
 	public final void removeAndReload() throws XMLDBException, InstantiationException, IllegalAccessException, ClassNotFoundException {
-		XQueryService service = setupDatabase();
+		EXistXQueryService service = setupDatabase();
 		
 		// write "live" document to the database
 		store(createDocument(), service, "live.xml");
@@ -58,7 +58,7 @@ public class NodeTypeTest {
 	 * @param service the xquery service
 	 * @param document the document name	 
 	 */
-	private final void store(String xml, XQueryService service, String document) throws XMLDBException {
+	private final void store(String xml, EXistXQueryService service, String document) throws XMLDBException {
 		StringBuilder query = new StringBuilder();
 		query.append("xquery version \"1.0\";");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
@@ -77,7 +77,7 @@ public class NodeTypeTest {
 	 * 
 	 * @param service the xquery service	
 	 */
-	private final void prepareWorkVersion(XQueryService service) throws XMLDBException {
+	private final void prepareWorkVersion(EXistXQueryService service) throws XMLDBException {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";\n");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";\n");
@@ -119,7 +119,7 @@ public class NodeTypeTest {
 	 * @param service the xquery service	 
 	 */
 	@SuppressWarnings("unused")
-	private final void xupdateRemove(String doc, XQueryService service) throws XMLDBException {
+	private final void xupdateRemove(String doc, EXistXQueryService service) throws XMLDBException {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
@@ -138,7 +138,7 @@ public class NodeTypeTest {
 	 * @param document the document to load	 
 	 */
 	@SuppressWarnings("unused")
-	private final Node load(XQueryService service, String document) throws XMLDBException {
+	private final Node load(EXistXQueryService service, String document) throws XMLDBException {
 		StringBuilder query = new StringBuilder();
 		query.append("xquery version \"1.0\";");
 		query.append("let $result := xmldb:document(string-join(('" + XmldbURI.ROOT_COLLECTION + "', $document), '/'))");
@@ -173,10 +173,10 @@ public class NodeTypeTest {
 	 * @param db the database
 	 * @return the xquery service	
 	 */
-	private final XQueryService getXQueryService() throws XMLDBException {
+	private final EXistXQueryService getXQueryService() throws XMLDBException {
         Collection collection = DatabaseManager.getCollection(eXistUrl + XmldbURI.ROOT_COLLECTION, "admin", "");
         if (collection != null) {
-            XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
+            EXistXQueryService service = (EXistXQueryService)collection.getService("XQueryService", "1.0");
             collection.close();
             return service;
         }
@@ -222,10 +222,10 @@ public class NodeTypeTest {
 	 * 
 	 * @return the xquery service
 	 */
-	private XQueryService setupDatabase() throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
+	private EXistXQueryService setupDatabase() throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
         Database  eXist = registerDatabase();
         // Obtain XQuery service
-        XQueryService service = null;
+        EXistXQueryService service = null;
         service = getXQueryService();
         return service;
 	}

@@ -37,7 +37,7 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
-import org.exist.xmldb.XPathQueryServiceImpl;
+import org.exist.xmldb.EXistXPathQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
 
@@ -160,7 +160,7 @@ public class CollectionRemovalTest {
         if (testCollection == null) {
             return;
         }
-        final XPathQueryServiceImpl service = (XPathQueryServiceImpl)
+        final EXistXPathQueryService service = (EXistXPathQueryService)
                 testCollection.getService("XQueryService", "1.0");
         ResourceSet result = service.query(QUERY1);
         assertEquals(expected, result.getSize());

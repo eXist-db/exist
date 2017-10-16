@@ -32,7 +32,7 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
 
-public class RemoteCollectionManagementService extends AbstractRemote implements CollectionManagementServiceImpl {
+public class RemoteCollectionManagementService extends AbstractRemote implements EXistCollectionManagementService {
 
     final XmlRpcClient client;
 

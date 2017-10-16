@@ -39,7 +39,7 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
-import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
@@ -213,7 +213,7 @@ public class CopyCollectionTest {
     private void xmldbStore(final BrokerPool pool) throws DatabaseConfigurationException, XMLDBException, EXistException {
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         assertNotNull(root);
-        CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl)
+        EXistCollectionManagementService mgr = (EXistCollectionManagementService)
             root.getService("CollectionManagementService", "1.0");
         assertNotNull(mgr);
 
@@ -252,7 +252,7 @@ public class CopyCollectionTest {
 
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         assertNotNull(root);
-        final CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl)
+        final EXistCollectionManagementService mgr = (EXistCollectionManagementService)
             root.getService("CollectionManagementService", "1.0");
         assertNotNull(mgr);
         mgr.removeCollection("destination");

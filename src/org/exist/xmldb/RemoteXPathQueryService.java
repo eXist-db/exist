@@ -39,7 +39,7 @@ import javax.xml.XMLConstants;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class RemoteXPathQueryService extends AbstractRemote implements XPathQueryServiceImpl, XQueryService {
+public class RemoteXPathQueryService extends AbstractRemote implements EXistXPathQueryService, EXistXQueryService {
 
     private final Map<String, String> namespaceMappings = new HashMap<>();
     private final Map<String, Object> variableDecls = new HashMap<>();

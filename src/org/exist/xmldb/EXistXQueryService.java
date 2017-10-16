@@ -30,6 +30,7 @@ import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.modules.XQueryService;
 
 /**
  * Execute XQuery expressions on the database.
@@ -41,7 +42,7 @@ import org.xmldb.api.modules.XMLResource;
  *
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public interface XQueryService extends org.xmldb.api.modules.XQueryService {
+public interface EXistXQueryService extends XQueryService {
 
     /**
      * Execute the specified query and return the results as a {@link ResourceSet}.
@@ -88,7 +89,7 @@ public interface XQueryService extends org.xmldb.api.modules.XQueryService {
      * Execute a compiled XQuery.
      * <p>
      * The implementation should pass all namespaces and variables declared through
-     * {@link XQueryService} to the compiled XQuery code.
+     * {@link EXistXQueryService} to the compiled XQuery code.
      * <p>
      * Note: {@link CompiledExpression} is not thread safe. Please make sure you don't
      * call the same compiled expression from two threads at the same time.

@@ -123,7 +123,7 @@ public class RemoteQueryTest extends RemoteDBTest {
 
 	@After
 	public void tearDown() throws Exception {
-        if (!((CollectionImpl) testCollection).isRemoteCollection()) {
+        if (!((EXistCollection) testCollection).isRemoteCollection()) {
             DatabaseInstanceManager dim =
                 (DatabaseInstanceManager) testCollection.getService(
                         "DatabaseInstanceManager", "1.0");

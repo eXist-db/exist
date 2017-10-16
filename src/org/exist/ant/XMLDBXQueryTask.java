@@ -40,7 +40,7 @@ import org.exist.source.StringSource;
 import org.exist.source.URLSource;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
-import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
 
 import java.io.File;
@@ -108,7 +108,7 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
                 }
 
             } else {
-                final XQueryService service = (XQueryService) base.getService("XQueryService", "1.0");
+                final EXistXQueryService service = (EXistXQueryService) base.getService("XQueryService", "1.0");
 
                 // set pretty-printing on
                 service.setProperty(OutputKeys.INDENT, "yes");

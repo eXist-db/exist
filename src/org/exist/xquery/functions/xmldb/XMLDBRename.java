@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.net.URISyntaxException;
 import org.exist.dom.QName;
-import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -89,7 +89,7 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 					throw new XPathException(this, "Resource " + doc + " not found");
                 }
                final String newName = args[2].itemAt(0).getStringValue();
-			   final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
+			   final EXistCollectionManagementService service = (EXistCollectionManagementService)
 					collection.getService("CollectionManagementService", "1.0");
 				service.moveResource(doc, (XmldbURI) null, 
                         XmldbURI.xmldbUriFor(newName));
@@ -107,7 +107,7 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 		} else {
 			try {
                 final String newName = args[1].itemAt(0).getStringValue();
-				final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
+				final EXistCollectionManagementService service = (EXistCollectionManagementService)
 					collection.getService("CollectionManagementService", "1.0");
 				service.move(XmldbURI.xmldbUriFor(collection.getName()), null,
                         XmldbURI.xmldbUriFor(newName));

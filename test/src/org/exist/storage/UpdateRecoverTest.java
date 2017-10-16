@@ -36,7 +36,7 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
-import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
@@ -309,7 +309,7 @@ public class UpdateRecoverTest {
     private void xmldbStore(final BrokerPool pool) throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException {
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         assertNotNull(root);
-        final CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl)
+        final EXistCollectionManagementService mgr = (EXistCollectionManagementService)
             root.getService("CollectionManagementService", "1.0");
         assertNotNull(mgr);
         org.xmldb.api.base.Collection test = root.getChildCollection("test");
@@ -440,7 +440,7 @@ public class UpdateRecoverTest {
 
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         assertNotNull(root);
-        final CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl)
+        final EXistCollectionManagementService mgr = (EXistCollectionManagementService)
             root.getService("CollectionManagementService", "1.0");
         assertNotNull(mgr);
         mgr.removeCollection("test");

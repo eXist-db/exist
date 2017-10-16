@@ -4,13 +4,13 @@ import org.exist.TestUtils;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
-import org.exist.xmldb.CollectionImpl;
+import org.exist.xmldb.EXistCollection;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.rules.ExternalResource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
-import org.exist.xmldb.XQueryService;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
@@ -33,7 +33,7 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
     private String prevAutoDeploy = "off";
     private Database database = null;
     private Collection root = null;
-    private XQueryService xpathQueryService = null;
+    private EXistXQueryService xpathQueryService = null;
 
     public ExistXmldbEmbeddedServer() {
         this(false, false);
@@ -79,7 +79,7 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
             } else {
                 root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
             }
-            xpathQueryService = (XQueryService) root.getService("XQueryService", "1.0");
+            xpathQueryService = (EXistXQueryService) root.getService("XQueryService", "1.0");
         } else {
             throw new IllegalStateException("ExistXmldbEmbeddedServer already running");
         }
@@ -116,7 +116,7 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
             collectionManagementService.createCollection(collectionName);
         }
 
-        final XmldbURI uri = XmldbURI.LOCAL_DB_URI.resolveCollectionPath(((CollectionImpl) collection).getPathURI().append(collectionName));
+        final XmldbURI uri = XmldbURI.LOCAL_DB_URI.resolveCollectionPath(((EXistCollection) collection).getPathURI().append(collectionName));
         if (asGuest) {
             newCollection = DatabaseManager.getCollection(uri.toString(), TestUtils.GUEST_DB_USER, TestUtils.GUEST_DB_PWD);
         } else {

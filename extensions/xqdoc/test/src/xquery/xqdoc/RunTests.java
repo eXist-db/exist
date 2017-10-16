@@ -12,7 +12,7 @@ import org.exist.source.Source;
 import org.exist.util.FileUtils;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -40,7 +40,8 @@ public class RunTests {
 	@Test
 	public void run() {
 		try {
-			XQueryService xqs = (XQueryService) testCollection.getService("XQueryService", "1.0");
+			EXistXQueryService xqs =
+					(EXistXQueryService) testCollection.getService("XQueryService", "1.0");
 			Source query = new FileSource(Paths.get(TEST_QUERY), false);
 			for (Path file : files) {
 				xqs.declareVariable("doc", FileUtils.fileName(file));

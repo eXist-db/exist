@@ -26,7 +26,7 @@ import org.exist.source.ClassLoaderSource;
 import org.exist.util.FileUtils;
 import org.exist.util.SystemExitCodes;
 import org.exist.util.XMLFilenameFilter;
-import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.EXistXQueryService;
 import org.w3c.dom.Document;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -173,7 +173,7 @@ public class Main {
                 resource.setContent(file);
                 collection.storeResource(resource);
             }
-            XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
+            EXistXQueryService service = (EXistXQueryService) collection.getService("XQueryService", "1.0");
             ResourceSet result = service.execute(new ClassLoaderSource("/org/exist/performance/log2html.xql"));
 
             if (directory == null) {

@@ -41,8 +41,8 @@ import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
 import org.exist.security.SecurityManager;
 import org.exist.util.EXistInputSource;
-import org.exist.xmldb.CollectionImpl;
-import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.EXistCollection;
+import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
@@ -84,7 +84,7 @@ public class RestoreHandler extends DefaultHandler {
     
     //handler state
     private int version = 0;
-    private CollectionImpl currentCollection;
+    private EXistCollection currentCollection;
     private Stack<DeferredPermission> deferredPermissions = new Stack<DeferredPermission>();
     
     
@@ -493,7 +493,7 @@ public class RestoreHandler extends DefaultHandler {
         return date_created;
     }
     
-    private CollectionImpl mkcol(final XmldbURI collPath, final Date created) throws XMLDBException, URISyntaxException {
+    private EXistCollection mkcol(final XmldbURI collPath, final Date created) throws XMLDBException, URISyntaxException {
         final XmldbURI[] allSegments = collPath.getPathSegments();
         final XmldbURI[] segments = Arrays.copyOfRange(allSegments, 1, allSegments.length); //drop the first 'db' segment
         final XmldbURI dbUri;
@@ -504,17 +504,17 @@ public class RestoreHandler extends DefaultHandler {
             dbUri = XmldbURI.xmldbUriFor(dbBaseUri);
         }
         
-        CollectionImpl current = (CollectionImpl)DatabaseManager.getCollection(dbUri.toString(), dbUsername, dbPassword);
+        EXistCollection current = (EXistCollection)DatabaseManager.getCollection(dbUri.toString(), dbUsername, dbPassword);
         XmldbURI p = XmldbURI.ROOT_COLLECTION_URI;
         
         for(final XmldbURI segment : segments) {
             p = p.append(segment);
             final XmldbURI xmldbURI = dbUri.resolveCollectionPath(p);
-            CollectionImpl c = (CollectionImpl)DatabaseManager.getCollection(xmldbURI.toString(), dbUsername, dbPassword);
+            EXistCollection c = (EXistCollection)DatabaseManager.getCollection(xmldbURI.toString(), dbUsername, dbPassword);
             if(c == null) {
             	current.setTriggersEnabled(false);
-                final CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl)current.getService("CollectionManagementService", "1.0");
-                c = (CollectionImpl)mgtService.createCollection(segment, created);
+                final EXistCollectionManagementService mgtService = (EXistCollectionManagementService)current.getService("CollectionManagementService", "1.0");
+                c = (EXistCollection)mgtService.createCollection(segment, created);
                 current.setTriggersEnabled(true);
             }
             current = c;

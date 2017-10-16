@@ -29,7 +29,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
-import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.XmldbURI;
 
 import java.net.URISyntaxException;
@@ -77,7 +77,7 @@ public class XMLDBMoveTask extends AbstractXMLDBTask
             }
 
             log( "Create collection management service for collection " + base.getName(), Project.MSG_DEBUG );
-            final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)base.getService( "CollectionManagementService", "1.0" );
+            final EXistCollectionManagementService service = (EXistCollectionManagementService)base.getService( "CollectionManagementService", "1.0" );
 
             if( resource != null ) {
                 log( "Moving resource: " + resource, Project.MSG_INFO );
