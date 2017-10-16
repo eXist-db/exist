@@ -676,7 +676,7 @@ public class NativeBrokerTest {
 
         verify(broker);
 
-        assertEquals(tmpFolder.toAbsolutePath() + collectionUri.toString(),  collectionFile.toAbsolutePath().toString());
+        assertEquals(expectedPath(tmpFolder, collectionUri), collectionFile.toAbsolutePath().toString());
         assertEquals(create, Files.exists(collectionFile.getParent()));
     }
 
@@ -699,7 +699,7 @@ public class NativeBrokerTest {
 
         verify(broker);
 
-        assertEquals(tmpFolder.toAbsolutePath() + collectionUri.toString(), collectionFile.toAbsolutePath().toString());
+        assertEquals(expectedPath(tmpFolder, collectionUri), collectionFile.toAbsolutePath().toString());
         assertEquals(create, Files.exists(collectionFile.getParent()));
     }
 
@@ -724,7 +724,15 @@ public class NativeBrokerTest {
 
         verify(broker);
 
-        assertEquals(tmpFolder.toAbsolutePath() + collectionUri.toString(), collectionFile.toAbsolutePath().toString());
+        assertEquals(expectedPath(tmpFolder, collectionUri), collectionFile.toAbsolutePath().toString());
+    }
+
+    private static String expectedPath(final Path folder, final XmldbURI xmldbUri) {
+        String collectionPath = xmldbUri.getCollectionPath();
+        if(collectionPath.startsWith("/") || collectionPath.startsWith("\\")) {
+            collectionPath = collectionPath.substring(1);
+        }
+        return folder.resolve(collectionPath).toAbsolutePath().toString();
     }
 
     class ArrayIterator<T> implements Iterator<T> {
