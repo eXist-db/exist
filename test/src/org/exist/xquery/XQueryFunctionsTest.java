@@ -989,7 +989,7 @@ public class XQueryFunctionsTest {
 
         //store the eXist logo in the test collection
         BinaryResource br = (BinaryResource) testCollection.createResource(BINARY_RESOURCE_FILENAME, "BinaryResource");
-        br.setContent(fLogo.toFile());
+        br.setContent(fLogo);
         testCollection.storeResource(br);
 
         //create an XML resource with the logo base64 embedded in it

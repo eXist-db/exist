@@ -1350,6 +1350,7 @@ public class RESTServer {
                 writeResults(response, broker, resultSequence, howmany, start, typed, outputProperties, wrap, compilationTime, executionTime);
 
             } finally {
+                context.runCleanupTasks();
                 pool.returnCompiledXQuery(source, compiled);
             }
 
@@ -1613,6 +1614,7 @@ public class RESTServer {
             final Sequence result = xquery.execute(broker, compiled, null, outputProperties);
             writeResults(response, broker, result, -1, 1, false, outputProperties, false, compilationTime, System.currentTimeMillis() - executeStart);
         } finally {
+            context.runCleanupTasks();
             pool.returnCompiledXQuery(source, compiled);
         }
     }

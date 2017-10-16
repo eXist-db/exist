@@ -95,6 +95,7 @@ public class Conditional extends Modification {
 		try {
 			seq = xquery.execute(broker, compiled, null);
 		} finally {
+			context.runCleanupTasks();
 			pool.returnCompiledXQuery(source, compiled);
 		}
 		if(seq.effectiveBooleanValue()) {

@@ -1,6 +1,5 @@
 package org.exist.xquery;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.exist.xmldb.XmldbURI;

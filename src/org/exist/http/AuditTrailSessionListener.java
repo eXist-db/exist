@@ -150,6 +150,7 @@ public class AuditTrailSessionListener implements HttpSessionListener {
                             LOG.trace("XQuery execution results: " + result.toString() + " in " + queryTime + "ms.");
                         }
                     } finally {
+                        context.runCleanupTasks();
                         xqpool.returnCompiledXQuery(source, compiled);
                     }
                 } finally {

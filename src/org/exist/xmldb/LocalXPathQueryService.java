@@ -258,6 +258,7 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
                 }
                 return result != null ? new LocalResourceSet(user, brokerPool, collection, properties, result, null) : null;
             } finally {
+                compiled.getContext().runCleanupTasks();
                 pool.returnCompiledXQuery(source, compiled);
             }
         });

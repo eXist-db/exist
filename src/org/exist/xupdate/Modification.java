@@ -157,6 +157,7 @@ public abstract class Modification {
 		try {
 			resultSeq = xquery.execute(broker, compiled, null);
 		} finally {
+			context.runCleanupTasks();
 			pool.returnCompiledXQuery(source, compiled);
 		}
 

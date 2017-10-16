@@ -386,6 +386,9 @@ public class Query extends AtomModuleBase implements Atom {
 			throw new EXistException("Cannot execute xquery "
 					+ config.querySource.getURL(), ex);
 		} finally {
+			if (context != null) {
+				context.runCleanupTasks();
+			}
 			broker.getBrokerPool().getXQueryPool().returnCompiledXQuery(config.querySource,
 					feedQuery);
 		}

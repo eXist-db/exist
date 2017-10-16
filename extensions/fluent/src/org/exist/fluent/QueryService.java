@@ -330,7 +330,10 @@ public class QueryService implements Cloneable {
 					t4 = System.currentTimeMillis();
 				}
 			} finally {
-				if (compiledQuery != null) pool.returnCompiledXQuery(source, compiledQuery);
+				if (compiledQuery != null) {
+					compiledQuery.getContext().runCleanupTasks();
+					pool.returnCompiledXQuery(source, compiledQuery);
+				}
 			}
 		} catch (XPathException e) {
 			LOG.debug("query execution failed --  " + query + "  -- " + (params == null ? "" : " with params " + Arrays.asList(params)) + (bindings.isEmpty() ? "" : " and bindings " + bindings));
@@ -553,7 +556,10 @@ public class QueryService implements Cloneable {
 				return new QueryAnalysis(
 						compiledQuery, Collections.unmodifiableSet(context.requiredVariables), Collections.unmodifiableSet(context.requiredFunctions));
 			} finally {
-				if (compiledQuery != null) pool.returnCompiledXQuery(source, compiledQuery);				
+				if (compiledQuery != null) {
+					compiledQuery.getContext().runCleanupTasks();
+					pool.returnCompiledXQuery(source, compiledQuery);
+				}
 			}
 		} catch (XPathException e) {
 			LOG.warn("query compilation failed --  " + query + "  -- " + (params == null ? "" : " with params " + Arrays.asList(params)) + (bindings.isEmpty() ? "" : " and bindings " + bindings));

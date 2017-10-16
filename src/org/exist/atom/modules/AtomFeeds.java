@@ -281,6 +281,9 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 					+ entryByIdSource.getURL(), ex);
 
 		} finally {
+			if (context != null) {
+				context.runCleanupTasks();
+			}
 			xqueryPool.returnCompiledXQuery(entryByIdSource, feedQuery);
 		}
 
@@ -355,6 +358,9 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 			throw new EXistException("Cannot execute xquery " + getFeedSource.getURL(), ex);
 
 		} finally {
+			if (context != null) {
+				context.runCleanupTasks();
+			}
 			xqueryPool.returnCompiledXQuery(getFeedSource, feedQuery);
 		}
 	}
