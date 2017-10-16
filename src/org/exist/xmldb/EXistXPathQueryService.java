@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2015 The eXist Project
+ * Copyright (C) 2001-2017 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -37,8 +37,12 @@ public interface EXistXPathQueryService extends XPathQueryService {
      * The XMLResource contains the result received from a previous
      * query.
      *
-     * @param res   an XMLResource as obtained from a previous query.
+     * @param res an XMLResource as obtained from a previous query.
      * @param query the XPath query
+     *
+     * @return the results of the query
+     *
+     * @throws XMLDBException if an error occurs whilst executing the query
      */
     ResourceSet query(XMLResource res, String query)
             throws XMLDBException;
@@ -48,12 +52,15 @@ public interface EXistXPathQueryService extends XPathQueryService {
      * results using the second XPath expression. The XMLResource contains
      * the result received from a previous query.
      *
-     * @param res      an XMLResource as obtained from a previous query
-     * @param query    the XPath query
+     * @param res an XMLResource as obtained from a previous query
+     * @param query the XPath query
      * @param sortExpr another XPath expression, which is executed relative to
-     *                 the results of the primary expression. The result of applying sortExpr is converted
-     *                 to a string value, which is then used to sort the results.
-     * @throws XMLDBException
+     *     the results of the primary expression. The result of applying sortExpr is converted
+     *     to a string value, which is then used to sort the results.
+     *
+     * @return the results of the query
+     *
+     * @throws XMLDBException if an error occurs whilst executing the query
      */
     ResourceSet query(XMLResource res, String query, String sortExpr)
             throws XMLDBException;
@@ -63,10 +70,13 @@ public interface EXistXPathQueryService extends XPathQueryService {
      * to each of the search results. The result of applying the sort expression is converted
      * into a string, which is then used to sort the set of results.
      *
-     * @param query    the XPath query
+     * @param query the XPath query
      * @param sortExpr another XPath expression, which is executed relative to the
-     *                 results of the primary expression.
-     * @throws XMLDBException
+     *     results of the primary expression.
+     *
+     * @return the results of the query
+     *
+     * @throws XMLDBException if an error occurs whilst executing the query
      */
     ResourceSet query(String query, String sortExpr)
             throws XMLDBException;
@@ -75,37 +85,42 @@ public interface EXistXPathQueryService extends XPathQueryService {
      * Executes a query which is already stored in the database
      *
      * @param uri The URI of the query in the database
-     * @throws XMLDBException
+     *
+     * @return the results of the query
+     *
+     * @throws XMLDBException if an error occurs whilst executing the stored query
      */
     ResourceSet executeStoredQuery(String uri) throws XMLDBException;
 
     /**
      * Declare an external XPath variable and assign a value to it.
-     * <p>
+     *
      * A variable can be referenced inside an XPath expression as
      * <b>$variable</b>. For example, if you declare a variable with
-     * <p>
+     *
      * <pre>
      * 	declareVariable("name", "HAMLET");
      * </pre>
-     * <p>
+     *
      * you may use the variable in an XPath expression as follows:
-     * <p>
+     *
      * <pre>
      * 	//SPEECH[SPEAKER=$name]
      * </pre>
-     * <p>
+     *
      * Any Java object may be passed as initial value. The query engine will try
      * to map this into a corresponding XPath value. You may also pass an
      * XMLResource as obtained from another XPath expression. This will be
      * converted into a node.
      *
-     * @param qname        a valid QName by which the variable is identified. Any
-     *                     prefix should have been mapped to a namespace, i.e. if a variable is called
-     *                     <b>x:name</b>, there should be a prefix/namespace mapping for the prefix
-     *                     x
+     * @param qname a valid QName by which the variable is identified. Any
+     *     prefix should have been mapped to a namespace, i.e. if a variable is called
+     *     <b>x:name</b>, there should be a prefix/namespace mapping for the prefix
+     *     <pre>x</pre>
      * @param initialValue the initial value, which is assigned to the variable
-     * @throws XMLDBException
+     *
+     *
+     * @throws XMLDBException if an error occurs whilst declaring the variable
      */
     void declareVariable(String qname, Object initialValue) throws XMLDBException;
 
@@ -120,7 +135,7 @@ public interface EXistXPathQueryService extends XPathQueryService {
      * was obtained) before executing the query. If a query spans multiple collections,
      * call beginProtected on the outer collection which contains all the other
      * collections.
-     * <p>
+     *
      * It is thus guaranteed that documents referenced by the
      * query or the result set are not modified by other threads
      * until {@link #endProtected} is called.
@@ -131,7 +146,7 @@ public interface EXistXPathQueryService extends XPathQueryService {
      * Close the protected environment. All locks held
      * by the current thread are released. The query result set
      * is no longer guaranteed to be stable.
-     * <p>
+     *
      * Note: if beginProtected was used, you have to make sure
      * endProtected is called in ALL cases. Otherwise some resource
      * locks may not be released properly.
