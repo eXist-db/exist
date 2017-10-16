@@ -456,7 +456,7 @@ public class Collations {
                 default:
                     final String msg = "eXist-db only supports Collation strengths of 'identical', 'primary', 'secondary', 'tertiary' or 'quaternary', requested: " + strength;
                     logger.error(msg);
-                    throw new XPathException(msg);
+                    throw new XPathException(ErrorCodes.FOCH0002, msg);
 
             }
         }
@@ -482,7 +482,7 @@ public class Collations {
                 default:
                     final String msg = "eXist-db only supports Collation maxVariables of 'space', 'punct', 'symbol', or 'currency', requested: " + maxVariable;
                     logger.error(msg);
-                    throw new XPathException(msg);
+                    throw new XPathException(ErrorCodes.FOCH0002, msg);
             }
         }
 
@@ -500,7 +500,7 @@ public class Collations {
                 default:
                     final String msg = "Collation alternate should be either 'non-ignorable', 'shifted' or 'blanked', but received: " + caseFirst;
                     logger.error(msg);
-                    throw new XPathException(msg);
+                    throw new XPathException(ErrorCodes.FOCH0002, msg);
             }
         }
 
@@ -531,7 +531,7 @@ public class Collations {
                 default:
                     final String msg = "Collation case first should be either 'upper' or 'lower', but received: " + caseFirst;
                     logger.error(msg);
-                    throw new XPathException(msg);
+                    throw new XPathException(ErrorCodes.FOCH0002, msg);
             }
         }
 
@@ -575,7 +575,7 @@ public class Collations {
                 default:
                     final String msg = "Collation decomposition should be either 'none', 'full' or 'standard', but received: " + decomposition;
                     logger.error(msg);
-                    throw new XPathException(msg);
+                    throw new XPathException(ErrorCodes.FOCH0002, msg);
             }
         }
 
@@ -640,7 +640,7 @@ public class Collations {
                     return new ULocale(components[0]);
 
                 default:
-                    throw new XPathException("Unrecognized lang=" + lang);
+                    throw new XPathException(ErrorCodes.FOCH0002, "Unrecognized lang=" + lang);
             }
         }
     }
