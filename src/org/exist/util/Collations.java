@@ -236,6 +236,8 @@ public class Collations {
      *
      * @return a negative integer, zero, or a positive integer if the
      *     {@code s1} is less than, equal to, or greater than {@code s2}.
+     *
+     * @throws UnsupportedOperationException if ICU4J does not support collation
      */
     public static int compare(@Nullable final Collator collator, final String s1,final  String s2) {
         if (collator == null) {
@@ -253,6 +255,8 @@ public class Collations {
      * @param s2 The second string to compare against the first.
      *
      * @return true if {@code s1} starts with {@code @s2}.
+     *
+     * @throws UnsupportedOperationException if ICU4J does not support collation
      */
     public static boolean startsWith(@Nullable final Collator collator, final String s1, final String s2) {
         if (collator == null) {
@@ -272,6 +276,8 @@ public class Collations {
      * @param s2 The second string to compare against the first.
      *
      * @return true if {@code s1} ends with {@code @s2}.
+     *
+     * @throws UnsupportedOperationException if ICU4J does not support collation
      */
     public static boolean endsWith(@Nullable final Collator collator, final String s1, final String s2) {
         if (collator == null) {
@@ -299,6 +305,8 @@ public class Collations {
      * @param s2 The second string to compare against the first.
      *
      * @return true if {@code s1} contains {@code @s2}.
+     *
+     * @throws UnsupportedOperationException if ICU4J does not support collation
      */
     public static boolean contains(@Nullable final Collator collator, final String s1, final String s2) {
         if (collator == null) {
