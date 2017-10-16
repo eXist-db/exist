@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # $Id$
 
 JAVA_RUN="$JAVA_HOME/bin/java"
