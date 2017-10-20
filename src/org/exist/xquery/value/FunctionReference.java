@@ -21,12 +21,12 @@
  */
 package org.exist.xquery.value;
 
+import com.ibm.icu.text.Collator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.*;
 import org.exist.xquery.Constants.Comparison;
 
-import java.text.Collator;
 import java.util.List;
 
 /**
@@ -136,25 +136,16 @@ public class FunctionReference extends AtomicValue {
         throw new XPathException("cannot compare function reference to " + Type.getTypeName(other.getType()));
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AtomicValue#compareTo(java.text.Collator, org.exist.xquery.value.AtomicValue)
-     */
     public int compareTo(Collator collator, AtomicValue other)
             throws XPathException {
         throw new XPathException("cannot compare function reference to " + Type.getTypeName(other.getType()));
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AtomicValue#max(java.text.Collator, org.exist.xquery.value.AtomicValue)
-     */
     public AtomicValue max(Collator collator, AtomicValue other)
             throws XPathException {
         throw new XPathException("Invalid argument to aggregate function: cannot compare function references");
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AtomicValue#min(java.text.Collator, org.exist.xquery.value.AtomicValue)
-     */
     public AtomicValue min(Collator collator, AtomicValue other)
             throws XPathException {
         throw new XPathException("Invalid argument to aggregate function: cannot compare function references");

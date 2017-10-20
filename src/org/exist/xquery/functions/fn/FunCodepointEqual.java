@@ -80,7 +80,7 @@ public class FunCodepointEqual extends BasicFunction {
             {result =  Sequence.EMPTY_SEQUENCE;}
         else {
             result = new BooleanValue(Collations.compare(
-                //TODO : how ugly ! We should be able to use Collations.CODEPOINT here ! -pb
+                //TODO : how ugly ! We should be able to use Collations.UNICODE_CODEPOINT_COLLATION_URI here ! -pb
                 context.getDefaultCollator(),
                 getArgument(0).eval(contextSequence).getStringValue(), 
                 getArgument(1).eval(contextSequence).getStringValue())

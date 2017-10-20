@@ -850,17 +850,7 @@
     <!-- ============================================================================ -->
     <!-- Download additional files                                                    -->
     <!-- ============================================================================ -->
-    <target name="download-additional-jars" description="Download optional third-party jar files."
-            depends="download-icu4j"/>
-
-
-    <target name="download-icu4j" description="Download optional third-party jar files.">
-        <!-- International Components for Unicode  http://www.icu-project.org/          -->
-        <property name="icu4j.version" value="${lib.user}/saxon.zip"/>
-        <get src="http://download.icu-project.org/files/icu4j/4.8.1.1/icu4j-4_8_1_1.jar"
-            dest="${lib.user}" verbose="true" usetimestamp="true"/>
-    </target>
-
+    <target name="download-additional-jars" description="Download optional third-party jar files."/>
 
 
 </project>

@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.value;
 
+import com.ibm.icu.text.Collator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.util.DatatypeMessageFormatter;
@@ -35,7 +36,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.text.Collator;
 import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.Date;

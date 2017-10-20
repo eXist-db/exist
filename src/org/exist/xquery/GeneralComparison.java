@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import com.ibm.icu.text.Collator;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.ContextItem;
@@ -46,8 +47,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-
-import java.text.Collator;
 
 import java.util.Iterator;
 import java.util.List;

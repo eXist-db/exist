@@ -21,12 +21,12 @@
  */
 package org.exist.xquery.value;
 
+import com.ibm.icu.text.Collator;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.text.Collator;
 
 /**
  * [Definition:]   integer is <i>derived</i> from decimal by fixing the value of <i>fractionDigits<i> to be 0.

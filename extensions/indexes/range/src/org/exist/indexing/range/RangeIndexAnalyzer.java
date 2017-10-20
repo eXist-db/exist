@@ -1,12 +1,13 @@
 package org.exist.indexing.range;
 
+import com.ibm.icu.text.Collator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.core.KeywordTokenizer;
-import org.apache.lucene.collation.CollationAttributeFactory;
+import org.apache.lucene.collation.ICUCollationAttributeFactory;
 import org.apache.lucene.util.AttributeFactory;
 import org.exist.util.Collations;
 import org.exist.util.DatabaseConfigurationException;
@@ -17,7 +18,6 @@ import org.w3c.dom.Element;
 import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,7 +66,7 @@ public class RangeIndexAnalyzer extends Analyzer {
 
     public void addCollation(String uri) throws DatabaseConfigurationException {
         try {
-            collator = Collations.getCollationFromURI(null, uri);
+            collator = Collations.getCollationFromURI(uri);
         } catch (XPathException e) {
             throw new DatabaseConfigurationException(e.getMessage(), e);
         }
@@ -76,7 +76,7 @@ public class RangeIndexAnalyzer extends Analyzer {
     protected TokenStreamComponents createComponents(final String fieldName, final Reader reader) {
         AttributeFactory factory = AttributeFactory.DEFAULT_ATTRIBUTE_FACTORY;
         if (collator != null) {
-            factory = new CollationAttributeFactory(collator);
+            factory = new ICUCollationAttributeFactory(collator);
         }
         Tokenizer src = new KeywordTokenizer(factory, reader, 256);
         TokenStream tok = src;

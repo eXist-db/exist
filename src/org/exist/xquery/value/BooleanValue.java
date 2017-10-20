@@ -20,12 +20,11 @@
  */
 package org.exist.xquery.value;
 
+import com.ibm.icu.text.Collator;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
-
-import java.text.Collator;
 
 public class BooleanValue extends AtomicValue {
 

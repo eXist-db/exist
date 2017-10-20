@@ -23,6 +23,7 @@
 
 package org.exist.xquery.value;
 
+import com.ibm.icu.text.Collator;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
@@ -32,7 +33,6 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.text.Collator;
 
 /**
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>

@@ -21,13 +21,13 @@
  */
 package org.exist.xquery.value;
 
+import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
-import java.text.Collator;
 
 /**
  * Wrapper class around a {@link org.exist.dom.QName} value which extends

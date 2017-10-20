@@ -21,12 +21,10 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.text.Collator;
-
+import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
@@ -110,10 +108,7 @@ public class FunContains extends CollatingFunction {
                 result = BooleanValue.FALSE;
             } else {
                 final Collator collator = getCollator(contextSequence, contextItem, 3);
-                if (Collations.indexOf(collator, s1, s2) != Constants.STRING_NOT_FOUND)
-                    {return BooleanValue.TRUE;}
-                else
-                    {return BooleanValue.FALSE;}
+                return BooleanValue.valueOf(Collations.contains(collator, s1, s2));
             }
         }
         if (context.getProfiler().isEnabled()) 

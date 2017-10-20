@@ -20,6 +20,7 @@
  */
 package org.exist.xquery.value;
 
+import com.ibm.icu.text.Collator;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
@@ -40,7 +41,6 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import java.text.Collator;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -119,7 +119,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
      * @param other
      * @throws XPathException if this is not a string.
      */
-    public boolean contains(Collator collator, AtomicValue other) throws XPathException {
+    public boolean contains(final Collator collator, final AtomicValue other) throws XPathException {
         throw new XPathException("Cannot call contains on value of type " +
                 Type.getTypeName(getType()));
     }

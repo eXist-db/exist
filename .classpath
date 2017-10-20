@@ -23,8 +23,11 @@
 	<classpathentry kind="src" path="extensions/webdav/src"/>
 	<classpathentry kind="src" path="extensions/commands/src"/>
 	<classpathentry kind="lib" path="lib/core/j8fu-1.8.jar"/>
+	<classpathentry kind="lib" path="lib/core/icu4j-59_1.jar"/>
+	<classpathentry kind="lib" path="lib/core/icu4j-localespi-59_1.jar"/>
 	<classpathentry kind="lib" path="lib/core/pkg-java-fork.jar"/>
 	<classpathentry kind="lib" path="lib/core/caffeine-2.5.5.jar"/>
+	<classpathentry kind="lib" path="lib/core/jsr305-3.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/rsyntaxtextarea-2.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xml-apis-1.4.01.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xercesImpl-2.11.0.jar"/>
@@ -103,6 +106,7 @@
 	<classpathentry kind="lib" path="lib/optional/commons-lang3-3.6.jar"/>
 	<classpathentry kind="lib" path="lib/core/quartz-2.3.0.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-analyzers-common-4.10.4.jar"/>
+        <classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-analyzers-icu-4.10.4.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-4.10.4.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-queries-4.10.4.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-queryparser-4.10.4.jar"/>

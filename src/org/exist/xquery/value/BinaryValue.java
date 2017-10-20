@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.value;
 
+import com.ibm.icu.text.Collator;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.apache.logging.log4j.LogManager;
@@ -29,7 +30,6 @@ import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
 
 import java.io.*;
-import java.text.Collator;
 
 /**
  * @author Adam Retter <adam@existsolutions.com>

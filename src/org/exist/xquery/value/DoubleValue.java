@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.value;
 
+import com.ibm.icu.text.Collator;
 import org.exist.util.FastStringBuffer;
 import org.exist.util.FloatingPointConverter;
 import org.exist.xquery.Constants;
@@ -28,7 +29,6 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 import java.math.BigDecimal;
-import java.text.Collator;
 
 public class DoubleValue extends NumericValue {
     // m × 2^e, where m is an integer whose absolute value is less than 2^53,

@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.value;
 
+import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.util.UTF8;
@@ -31,7 +32,6 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 import javax.xml.XMLConstants;
-import java.text.Collator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -604,22 +604,26 @@ public class StringValue extends AtomicValue {
             other = other.convertTo(Type.STRING);
         }
         if (Type.subTypeOf(other.getType(), Type.STRING)) {
-            final int cmp = Collations.compare(collator, value, other.getStringValue());
-            switch (operator) {
-                case EQ:
-                    return cmp == 0;
-                case NEQ:
-                    return cmp != 0;
-                case LT:
-                    return cmp < 0;
-                case LTEQ:
-                    return cmp <= 0;
-                case GT:
-                    return cmp > 0;
-                case GTEQ:
-                    return cmp >= 0;
-                default:
-                    throw new XPathException("Type error: cannot apply operand to string value");
+            try {
+                final int cmp = Collations.compare(collator, value, other.getStringValue());
+                switch (operator) {
+                    case EQ:
+                        return cmp == 0;
+                    case NEQ:
+                        return cmp != 0;
+                    case LT:
+                        return cmp < 0;
+                    case LTEQ:
+                        return cmp <= 0;
+                    case GT:
+                        return cmp > 0;
+                    case GTEQ:
+                        return cmp >= 0;
+                    default:
+                        throw new XPathException("Type error: cannot apply operand to string value");
+                }
+            } catch (final UnsupportedOperationException e) {
+                throw new XPathException(ErrorCodes.FOCH0004, e.getMessage());
             }
         }
         throw new XPathException(ErrorCodes.XPTY0004,
@@ -627,9 +631,7 @@ public class StringValue extends AtomicValue {
                         Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "')");
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
-     */
+    @Override
     public int compareTo(Collator collator, AtomicValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.NUMBER)) {
             //No possible comparisons
@@ -640,28 +642,38 @@ public class StringValue extends AtomicValue {
                 return Constants.INFERIOR;
             }
         }
-        return Collations.compare(collator, value, other.getStringValue());
+        try {
+            return Collations.compare(collator, value, other.getStringValue());
+        } catch (final UnsupportedOperationException e) {
+            throw new XPathException(ErrorCodes.FOCH0004, e.getMessage());
+        }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AtomicValue#startsWith(org.exist.xquery.value.AtomicValue)
-     */
+    @Override
     public boolean startsWith(Collator collator, AtomicValue other) throws XPathException {
-        return Collations.startsWith(collator, value, other.getStringValue());
+        try {
+            return Collations.startsWith(collator, value, other.getStringValue());
+        } catch (final UnsupportedOperationException e) {
+            throw new XPathException(ErrorCodes.FOCH0004, e.getMessage());
+        }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AtomicValue#endsWith(org.exist.xquery.value.AtomicValue)
-     */
+    @Override
     public boolean endsWith(Collator collator, AtomicValue other) throws XPathException {
-        return Collations.endsWith(collator, value, other.getStringValue());
+        try {
+            return Collations.endsWith(collator, value, other.getStringValue());
+        } catch (final UnsupportedOperationException e) {
+            throw new XPathException(ErrorCodes.FOCH0004, e.getMessage());
+        }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AtomicValue#contains(org.exist.xquery.value.AtomicValue)
-     */
-    public boolean contains(Collator collator, AtomicValue other) throws XPathException {
-        return Collations.indexOf(collator, value, other.getStringValue()) != Constants.STRING_NOT_FOUND;
+    @Override
+    public boolean contains(final Collator collator, final AtomicValue other) throws XPathException {
+        try {
+            return Collations.contains(collator, value, other.getStringValue());
+        } catch (final UnsupportedOperationException e) {
+            throw new XPathException(ErrorCodes.FOCH0004, e.getMessage());
+        }
     }
 
     /* (non-Javadoc)

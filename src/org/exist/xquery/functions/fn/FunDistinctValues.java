@@ -21,13 +21,12 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import java.text.Collator;
 import java.util.Comparator;
 import java.util.TreeSet;
 
+import com.ibm.icu.text.Collator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;

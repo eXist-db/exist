@@ -22,9 +22,9 @@
  */
 package org.exist.xquery;
 
-import java.text.Collator;
 import java.util.Iterator;
 
+import com.ibm.icu.text.Collator;
 import org.exist.dom.persistent.ContextItem;
 import org.exist.dom.persistent.ExtArrayNodeSet;
 import org.exist.dom.persistent.NodeProxy;

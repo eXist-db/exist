@@ -19,9 +19,7 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Arrays;
+import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.xquery.*;
@@ -36,6 +34,9 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class FunSort extends BasicFunction {
 

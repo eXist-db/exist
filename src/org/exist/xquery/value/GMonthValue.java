@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.value;
 
+import com.ibm.icu.text.Collator;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
@@ -28,7 +29,6 @@ import org.exist.xquery.XPathException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-import java.text.Collator;
 import java.util.GregorianCalendar;
 
 public class GMonthValue extends AbstractDateTimeValue {

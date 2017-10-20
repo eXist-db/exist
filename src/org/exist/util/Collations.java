@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2004-2009 The eXist Project
+ * Copyright (C) 2001-2017 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -16,48 +16,54 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
- *  $Id$
  */
 package org.exist.util;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.CollationElementIterator;
-import java.text.Collator;
-import java.text.ParseException;
-import java.text.RuleBasedCollator;
+import java.text.StringCharacterIterator;
+import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Locale;
+import java.util.List;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
+import com.ibm.icu.text.*;
+import com.ibm.icu.util.ULocale;
+import com.ibm.icu.util.VersionInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+
+import javax.annotation.Nullable;
 
 /**
  * Utility methods dealing with collations.
- * 
+ *
  * @author wolf
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class Collations {
 
     private final static Logger logger = LogManager.getLogger(Collations.class);
 
     /**
-     * The default unicode codepoint collation URI as defined by the XQuery
+     * The default Unicode Codepoint Collation URI as defined by the XQuery
      * spec.
      */
-    //public final static String CODEPOINT = "http://www.w3.org/2004/07/xpath-functions/collation/codepoint";
-    public final static String CODEPOINT = "http://www.w3.org/2005/xpath-functions/collation/codepoint";
+    public final static String UNICODE_CODEPOINT_COLLATION_URI = "http://www.w3.org/2005/xpath-functions/collation/codepoint";
 
     /**
      * Short string to select the default codepoint collation
      */
     public final static String CODEPOINT_SHORT = "codepoint";
+
+    /**
+     * The UCA (Unicode Collation Algorithm) Codepoint URI as defined by the XQuery
+     * spec.
+     */
+    public final static String UCA_COLLATION_URI = "http://www.w3.org/2013/collation/UCA";
 
     /**
      * The URI used to select collations in eXist.
@@ -66,240 +72,318 @@ public class Collations {
 
     /**
      * Get a {@link Comparator}from the specified URI.
-     * 
+     * <p>
      * The original code is from saxon (@linkplain http://saxon.sf.net).
-     * 
-     * @param uri
-     * @throws XPathException
+     *
+     * @param uri The URI describing the collation and settings
+     *
+     * @return The Collator for the URI, or null.
+     *
+     * @throws XPathException If an error occurs whilst constructing the Collator
      */
-    public final static Collator getCollationFromURI(XQueryContext context,
-            String uri)
-        throws XPathException {
-        if (uri.startsWith(EXIST_COLLATION_URI) || uri.startsWith("?")) {
-            URI u = null;
+    public static @Nullable Collator getCollationFromURI(final String uri) throws XPathException {
+        if (uri.startsWith(EXIST_COLLATION_URI) || uri.startsWith(UCA_COLLATION_URI) || uri.startsWith("?")) {
+            URI u;
             try {
                 u = new URI(uri);
             } catch (final URISyntaxException e) {
                 return null;
             }
             final String query = u.getQuery();
-            String strength = null;
-            /*
-             * Check if the db broker is configured to be case insensitive. If
-             * yes, we assume "primary" strength unless the user specified
-             * something different.
-             * 
-             * TODO: bad idea: using primary strength as default also ignores
-             * German Umlaute.
-             */
-            // if(!context.getBroker().isCaseSensitive())
-            // strength = "primary";
             if (query == null) {
-                return getCollationFromParams(null, strength, null);
+                return Collator.getInstance();
+
             } else {
+
+                boolean fallback = true;                // default is "yes"
                 String lang = null;
+                String version = null;
+                String strength = null;
+                String maxVariable = "punct";           // default is punct
+                String alternate = "non-ignorable";     // default is non-ignorable
+                boolean backwards = false;              // default is "no"
+                boolean normalization = false;          // default is "no"
+                boolean caseLevel = false;              // default is "no"
+                String caseFirst = null;
+                boolean numeric = false;                // default is "no"
+                String reorder = null;
                 String decomposition = null;
-                final StringTokenizer queryTokenizer = new StringTokenizer(query,
-                        ";&");
+
+                final StringTokenizer queryTokenizer = new StringTokenizer(query, ";&");
                 while (queryTokenizer.hasMoreElements()) {
                     final String param = queryTokenizer.nextToken();
                     final int eq = param.indexOf('=');
                     if (eq > 0) {
                         final String kw = param.substring(0, eq);
-                        String val = param.substring(eq + 1);
-                        if ("lang".equals(kw)) {
-                            lang = val;
-                        } else if ("strength".equals(kw)) {
-                            strength = val;
-                        } else if ("decomposition".equals(kw)) {
-                            decomposition = val;
+                        if(kw != null) {
+                            final String val = param.substring(eq + 1);
+
+                            switch(kw) {
+                                case "fallback":
+                                    fallback = "yes".equals(val);
+                                    break;
+
+                                case "lang":
+                                    lang = val;
+                                    break;
+
+                                case "version":
+                                    version = val;
+                                    break;
+
+                                case "strength":
+                                    strength = val;
+                                    break;
+
+                                case "maxVariable":
+                                    maxVariable = val;
+                                    break;
+
+                                case "alternate":
+                                    alternate = val;
+                                    break;
+
+                                case "backwards":
+                                    backwards = "yes".equals(val);
+                                    break;
+
+                                case "normalization":
+                                    normalization = "yes".equals(val);
+                                    break;
+
+                                case "caseLevel":
+                                    caseLevel = "yes".equals(val);
+                                    break;
+
+                                case "caseFirst":
+                                    caseFirst = val;
+                                    break;
+
+                                case "numeric":
+                                    numeric = "yes".equals(val);
+                                    break;
+
+                                case "reorder":
+                                    reorder = val;
+                                    break;
+
+                                case "decomposition":
+                                    decomposition = val;
+                                    break;
+
+                                default:
+                                    logger.warn("Unrecognized Collation parameter: " + kw);
+                                    break;
+                            }
                         }
                     }
                 }
-                return getCollationFromParams(lang, strength, decomposition);
+
+                return getCollationFromParams(fallback, lang, version,
+                        strength, maxVariable, alternate, backwards,
+                        normalization, caseLevel, caseFirst, numeric,
+                        reorder, decomposition);
             }
         } else if (uri.startsWith("java:")) {
             // java class specified: this should be a subclass of
-            // java.text.RuleBasedCollator
-            uri = uri.substring("java:".length());
+            // com.ibm.icu.text.RuleBasedCollator
+            final String uriClassName = uri.substring("java:".length());
             try {
-                final Class<?> collatorClass = Class.forName(uri);
+                final Class<?> collatorClass = Class.forName(uriClassName);
                 if (!Collator.class.isAssignableFrom(collatorClass)) {
-                    logger.error("The specified collator class is not a subclass of java.text.Collator");
-                    throw new XPathException(
-                            "The specified collator class is not a subclass of java.text.Collator");
+                    final String msg = "The specified collator class '" + collatorClass.getName() + "' is not a subclass of com.ibm.icu.text.Collator";
+                    logger.error(msg);
+                    throw new XPathException(ErrorCodes.FOCH0002, msg);
                 }
                 return (Collator) collatorClass.newInstance();
             } catch (final Exception e) {
-                logger.error("The specified collator class " + uri + " could not be found");
-                throw new XPathException(
-                        ErrorCodes.FOCH0002, 
-                        "The specified collator class " + uri + " could not be found", e);
+                final String msg = "The specified collator class " + uriClassName + " could not be found";
+                logger.error(msg);
+                throw new XPathException(ErrorCodes.FOCH0002, msg, e);
             }
-        } else if (CODEPOINT.equals(uri)) {
-        	return null;
+        } else if (UNICODE_CODEPOINT_COLLATION_URI.equals(uri)) {
+            return null;
         } else {
-            logger.error("Unknown collation : '" + uri + "'");
-            throw new XPathException(ErrorCodes.FOCH0002, "Unknown collation : '" + uri + "'");
+            final String msg = "Unknown collation : '" + uri + "'";
+            logger.error(msg);
+            throw new XPathException(ErrorCodes.FOCH0002, msg);
         }
-    }
-
-    public final static boolean equals(Collator collator, String s1, String s2) {
-        if (collator == null)
-            {return s1.equals(s2);}
-        else
-            {return collator.equals(s1, s2);}
-    }
-
-    public final static int compare(Collator collator, String s1, String s2) {
-        if (collator == null)
-            {return s1==null ? (s2==null ? 0 : -1)  : s1.compareTo(s2);}
-        else
-            {return collator.compare(s1, s2);}
-    }
-
-    public final static boolean startsWith(Collator collator, String s1, String s2) {
-        if (collator == null)
-            {return s1.startsWith(s2);}
-        else {
-            final RuleBasedCollator rbc = (RuleBasedCollator) collator;
-            final CollationElementIterator i1 = rbc.getCollationElementIterator(s1);
-            final CollationElementIterator i2 = rbc.getCollationElementIterator(s2);
-            return collationStartsWith(i1, i2);
-        }
-    }
-
-    public final static boolean endsWith(Collator collator, String s1, String s2) {
-        if (collator == null)
-            {return s1.endsWith(s2);}
-        else {
-            final RuleBasedCollator rbc = (RuleBasedCollator) collator;
-            final CollationElementIterator i1 = rbc.getCollationElementIterator(s1);
-            final CollationElementIterator i2 = rbc.getCollationElementIterator(s2);
-            return collationContains(i1, i2, null, true);
-        }
-    }
-
-    public final static boolean contains(Collator collator, String s1, String s2) {
-        if (collator == null)
-            {return s1.indexOf(s2) != Constants.STRING_NOT_FOUND;}
-        else {
-            final RuleBasedCollator rbc = (RuleBasedCollator) collator;
-            final CollationElementIterator i1 = rbc.getCollationElementIterator(s1);
-            final CollationElementIterator i2 = rbc.getCollationElementIterator(s2);
-            return collationContains(i1, i2, null, false);
-        }
-    }
-
-    public final static int indexOf(Collator collator, String s1, String s2) {
-        if (collator == null)
-            {return s1.indexOf(s2);}
-        else {
-            final int offsets[] = new int[2];
-            final RuleBasedCollator rbc = (RuleBasedCollator) collator;
-            final CollationElementIterator i1 = rbc.getCollationElementIterator(s1);
-            final CollationElementIterator i2 = rbc.getCollationElementIterator(s2);           
-            if (collationContains(i1, i2, offsets, false))
-                {return offsets[0];}
-            else
-                {return Constants.STRING_NOT_FOUND;}
-        }
-    }
-
-    private final static boolean collationStartsWith(CollationElementIterator s0, 
-            CollationElementIterator s1) {
-    	//Copied from Saxon
-        while (true) {
-            int e0, e1;
-            do {
-                e1 = s1.next();
-            } while (e1 == 0);
-            if (e1 == -1) {
-                return true;
-            }
-            do {
-                e0 = s0.next();
-            } while (e0 == 0);
-            if (e0 != e1) {
-                return false;
-            }
-        }
-        //End of copy
-    }
-
-    private final static boolean collationContains(CollationElementIterator s0,
-            CollationElementIterator s1, int[] offsets, boolean matchAtEnd) {
-    	//Copy from Saxon
-        int e0, e1;
-        do {
-            e1 = s1.next();
-        } while (e1 == 0);
-        if (e1 == -1) {
-            return true;
-        }
-        e0 = -1;
-        while (true) {
-            // scan the first string to find a matching character
-            while (e0 != e1) {
-                do {
-                    e0 = s0.next();
-                } while (e0 == 0);
-                if (e0 == -1) {
-                    // hit the end, no match
-                    return false;
-                }
-            }
-            // matched first character, note the position of the possible match
-            final int start = s0.getOffset();
-            if (collationStartsWith(s0, s1)) {
-                if (matchAtEnd) {
-                    do {
-                        e0 = s0.next();
-                    } while (e0 == 0);
-                    if (e0 == -1) {
-                        // the match is at the end
-                        return true;
-                    }
-                    // else ignore this match and keep looking
-                } else {
-                    if (offsets != null) {
-                        offsets[0] = start-1;
-                        offsets[1] = s0.getOffset();
-                    }
-                    return true;
-                }
-            }
-            // reset the position and try again
-            s0.setOffset(start);
-
-            // workaround for a difference between JDK 1.4.0 and JDK 1.4.1
-            if (s0.getOffset() != start) {
-                // JDK 1.4.0 takes this path
-                s0.next();
-            }
-            s1.reset();
-            e0 = -1;
-            do {
-                e1 = s1.next();
-            } while (e1 == 0);
-            // loop round to try again
-        }
-        //End of copy
     }
 
     /**
-     * @param lang
-     * @param strength
-     * @param decomposition
-     * @return The collator
+     * Determines if the two strings are equal with regards to a Collation.
+     *
+     * @param collator The collation, or null if no collation should be used.
+     * @param s1 The first string to compare against the second.
+     * @param s2 The second string to compare against the first.
+     *
+     * @return true if the Strings are equal.
      */
-    private static Collator getCollationFromParams(String lang,
-            String strength, String decomposition)
-        throws XPathException {
-        Collator collator = null;
-        if (lang == null) {
-            collator = Collator.getInstance();
-        } else if ("sme-SE".equals(lang)) {
+    public static boolean equals(@Nullable final Collator collator, final String s1, final String s2) {
+        if (collator == null) {
+            return s1.equals(s2);
+        } else {
+            return collator.equals(s1, s2);
+        }
+    }
+
+    /**
+     * Compares two strings with regards to a Collation.
+     *
+     * @param collator The collation, or null if no collation should be used.
+     * @param s1 The first string to compare against the second.
+     * @param s2 The second string to compare against the first.
+     *
+     * @return a negative integer, zero, or a positive integer if the
+     *     {@code s1} is less than, equal to, or greater than {@code s2}.
+     *
+     * @throws UnsupportedOperationException if ICU4J does not support collation
+     */
+    public static int compare(@Nullable final Collator collator, final String s1,final  String s2) {
+        if (collator == null) {
+            return s1 == null ? (s2 == null ? 0 : -1) : s1.compareTo(s2);
+        } else {
+            return collator.compare(s1, s2);
+        }
+    }
+
+    /**
+     * Determines if one string starts with another with regards to a Collation.
+     *
+     * @param collator The collation, or null if no collation should be used.
+     * @param s1 The first string to compare against the second.
+     * @param s2 The second string to compare against the first.
+     *
+     * @return true if {@code s1} starts with {@code @s2}.
+     *
+     * @throws UnsupportedOperationException if ICU4J does not support collation
+     */
+    public static boolean startsWith(@Nullable final Collator collator, final String s1, final String s2) {
+        if (collator == null) {
+            return s1.startsWith(s2);
+        } else {
+            final SearchIterator searchIterator =
+                    new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator)collator);
+            return searchIterator.first() == 0;
+        }
+    }
+
+    /**
+     * Determines if one string ends with another with regards to a Collation.
+     *
+     * @param collator The collation, or null if no collation should be used.
+     * @param s1 The first string to compare against the second.
+     * @param s2 The second string to compare against the first.
+     *
+     * @return true if {@code s1} ends with {@code @s2}.
+     *
+     * @throws UnsupportedOperationException if ICU4J does not support collation
+     */
+    public static boolean endsWith(@Nullable final Collator collator, final String s1, final String s2) {
+        if (collator == null) {
+            return s1.endsWith(s2);
+        } else {
+            final SearchIterator searchIterator =
+                    new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator)collator);
+            int lastPos = SearchIterator.DONE;
+            int lastLen = 0;
+            for (int pos = searchIterator.first(); pos != SearchIterator.DONE;
+                 pos = searchIterator.next()) {
+                lastPos = pos;
+                lastLen = searchIterator.getMatchLength();
+            }
+
+            return lastPos > SearchIterator.DONE && lastPos + lastLen == s1.length();
+        }
+    }
+
+    /**
+     * Determines if one string contains another with regards to a Collation.
+     *
+     * @param collator The collation, or null if no collation should be used.
+     * @param s1 The first string to compare against the second.
+     * @param s2 The second string to compare against the first.
+     *
+     * @return true if {@code s1} contains {@code @s2}.
+     *
+     * @throws UnsupportedOperationException if ICU4J does not support collation
+     */
+    public static boolean contains(@Nullable final Collator collator, final String s1, final String s2) {
+        if (collator == null) {
+            return s1.contains(s2);
+        } else {
+            final SearchIterator searchIterator =
+                    new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator)collator);
+            return searchIterator.first() >= 0;
+        }
+    }
+
+    /**
+     * Finds the index of one string within another string with regards to a Collation.
+     *
+     * @param collator The collation, or null if no collation should be used.
+     * @param s1 The string to look for {@code s2} in
+     * @param s2 The substring to look for in {@code s1}.
+     *
+     * @return the index of the first occurrence of the specified substring,
+     *          or {@code -1} if there is no such occurrence.
+     */
+    public static int indexOf(@Nullable final Collator collator, final String s1, final String s2) {
+        if (collator == null) {
+            return s1.indexOf(s2);
+        } else {
+            final SearchIterator searchIterator =
+                    new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator)collator);
+            return searchIterator.first();
+        }
+    }
+
+    /**
+     * Get a Collator with the provided settings.
+     *
+     * @param fallback Determines whether the processor uses a fallback
+     *     collation if a conformant collation is not available.
+     * @param lang language code: a string in the lexical space of xs:language.
+     * @param strength The collation strength as defined in UCA.
+     * @param maxVariable Indicates that all characters in the specified group
+     *     and earlier groups are treated as "noise" characters to be handled
+     *     as defined by the alternate parameter. "space" | "punct" | "symbol".
+     *     | "currency".
+     * @param alternate Controls the handling of characters such as spaces and
+     *     hyphens; specifically, the "noise" characters in the groups selected
+     *     by the maxVariable parameter. "non-ignorable" | "shifted" |
+     *     "blanked".
+     * @param backwards indicates that the last accent in the string is the
+     *     most significant.
+     * @param normalization Indicates whether strings are converted to
+     *     normalization form D.
+     * @param caseLevel When used with primary strength, setting caseLevel has
+     *     the effect of ignoring accents while taking account of case.
+     * @param caseFirst Indicates whether upper-case precedes lower-case or
+     *     vice versa.
+     * @param numeric When numeric is specified, a sequence of consecutive
+     *     digits is interpreted as a number, for example chap2 sorts before
+     *     chap12.
+     * @param reorder Determines the relative ordering of text in different
+     *     scripts; for example the value digit,Grek,Latn indicates that
+     *     digits precede Greek letters, which precede Latin letters.
+     * @param decomposition The decomposition
+     *
+     * @return The collator of null if a Collator could not be retrieved
+     *
+     * @throws XPathException if an error occurs whilst getting the Collator
+     */
+    private static @Nullable Collator getCollationFromParams(
+            final boolean fallback, @Nullable final String lang,
+            @Nullable final String version, @Nullable final String strength,
+            final String maxVariable, final String alternate,
+            final boolean backwards, final boolean normalization,
+            final boolean caseLevel, @Nullable final String caseFirst,
+            final boolean numeric, @Nullable final String reorder,
+            @Nullable final String decomposition) throws XPathException {
+
+        final Collator collator;
+        if ("sme-SE".equals(lang)) {
             // Collation rules contained in a String object.
             // Codes for the representation of names of languages:
             // http://www.loc.gov/standards/iso639-2/englangn.html
@@ -313,63 +397,251 @@ public class Collations {
                     + "< v,V< z,Z< \u017e,\u017d";
             try {
                 collator = new RuleBasedCollator(Samisk);
-            } catch (final ParseException pe) {
+            } catch (final Exception pe) {
+                logger.error(pe.getMessage(), pe);
                 return null;
             }
         } else {
-            final Locale locale = getLocale(lang);
+            final ULocale locale = getLocale(lang);
             collator = Collator.getInstance(locale);
         }
 
-        if (strength != null) {
-            if ("primary".equals(strength))
-                {collator.setStrength(Collator.PRIMARY);}
-            else if ("secondary".equals(strength))
-                {collator.setStrength(Collator.SECONDARY);}
-            else if ("tertiary".equals(strength))
-                {collator.setStrength(Collator.TERTIARY);}
-            else if (strength.length() == 0 || "identical".equals(strength))
-                // the default setting
-                {collator.setStrength(Collator.IDENTICAL);}
-            else {
-                logger.error("Collation strength should be either 'primary', 'secondary', 'tertiary' or 'identical");
-                throw new XPathException(
-                        "Collation strength should be either 'primary', 'secondary', 'tertiary' or 'identical");
+        if(!fallback) {
+            //TODO(AR) how to disable fallback in ICU?
+            logger.warn("eXist-db does not yet support disabling collation fallback");
+        }
 
+        if(version != null) {
+            final VersionInfo versionInfo;
+            try {
+                versionInfo = VersionInfo.getInstance(version);
+            } catch (final IllegalArgumentException iae) {
+                logger.error(iae.getMessage(), iae);
+                throw new XPathException(iae.getMessage(), iae);
             }
 
+            if(collator.getVersion().compareTo(versionInfo) < 0) {
+                throw new XPathException("Requested UCA Collation version: " + version + ", however eXist-db only has ICU UCA: " + collator.getVersion().toString());
+            }
+        }
+
+        if (strength != null) {
+            switch(strength) {
+
+                case "identical":
+                    // the default setting
+                    collator.setStrength(Collator.IDENTICAL);
+                    break;
+
+                case "1":
+                case "primary":
+                    collator.setStrength(Collator.PRIMARY);
+                    break;
+
+                case "2":
+                case "secondary":
+                    collator.setStrength(Collator.SECONDARY);
+                    break;
+
+                case "3":
+                case "tertiary":
+                    collator.setStrength(Collator.TERTIARY);
+                    break;
+
+                case "4":
+                case "quaternary":
+                    collator.setStrength(Collator.QUATERNARY);
+                    break;
+
+                default:
+                    final String msg = "eXist-db only supports Collation strengths of 'identical', 'primary', 'secondary', 'tertiary' or 'quaternary', requested: " + strength;
+                    logger.error(msg);
+                    throw new XPathException(ErrorCodes.FOCH0002, msg);
+
+            }
+        }
+
+        if(maxVariable != null) {
+            switch(maxVariable) {
+                case "space":
+                    collator.setMaxVariable(Collator.ReorderCodes.SPACE);
+                    break;
+
+                case "punct":
+                    collator.setMaxVariable(Collator.ReorderCodes.PUNCTUATION);
+                    break;
+
+                case "symbol":
+                    collator.setMaxVariable(Collator.ReorderCodes.SYMBOL);
+                    break;
+
+                case "currency":
+                    collator.setMaxVariable(Collator.ReorderCodes.CURRENCY);
+                    break;
+
+                default:
+                    final String msg = "eXist-db only supports Collation maxVariables of 'space', 'punct', 'symbol', or 'currency', requested: " + maxVariable;
+                    logger.error(msg);
+                    throw new XPathException(ErrorCodes.FOCH0002, msg);
+            }
+        }
+
+        if(alternate != null) {
+            switch(alternate) {
+                case "non-ignorable":
+                    ((RuleBasedCollator)collator).setAlternateHandlingShifted(false);
+                    break;
+
+                case "shifted":
+                case "blanked":
+                    ((RuleBasedCollator)collator).setAlternateHandlingShifted(true);
+                    break;
+
+                default:
+                    final String msg = "Collation alternate should be either 'non-ignorable', 'shifted' or 'blanked', but received: " + caseFirst;
+                    logger.error(msg);
+                    throw new XPathException(ErrorCodes.FOCH0002, msg);
+            }
+        }
+
+        if(backwards) {
+            ((RuleBasedCollator)collator).setFrenchCollation(true);
+        }
+
+        if(normalization) {
+            collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+        } else {
+            collator.setDecomposition(Collator.NO_DECOMPOSITION);
+        }
+
+        if(caseLevel && collator.getStrength() == Collator.PRIMARY) {
+            ((RuleBasedCollator)collator).setCaseLevel(true);
+        }
+
+        if(caseFirst != null) {
+            switch(caseFirst) {
+                case "upper":
+                    ((RuleBasedCollator)collator).setUpperCaseFirst(true);
+                    break;
+
+                case "lower":
+                    ((RuleBasedCollator)collator).setLowerCaseFirst(true);
+                    break;
+
+                default:
+                    final String msg = "Collation case first should be either 'upper' or 'lower', but received: " + caseFirst;
+                    logger.error(msg);
+                    throw new XPathException(ErrorCodes.FOCH0002, msg);
+            }
+        }
+
+        if(numeric) {
+            ((RuleBasedCollator)collator).setNumericCollation(true);
+        }
+
+        if(reorder != null) {
+            final String reorderCodes[] = reorder.split(",");
+            final List<Integer> icuCollatorReorderCodes =
+                    Arrays.stream(reorderCodes)
+                    .map(Collations::toICUCollatorReorderCode)
+                    .filter(i -> i > -1)
+                    .collect(Collectors.toList());
+
+            if(!icuCollatorReorderCodes.isEmpty()) {
+                final int[] codes = new int[icuCollatorReorderCodes.size()];
+                for(int i = 0; i < codes.length; i++) {
+                    codes[i] = icuCollatorReorderCodes.get(i);
+                }
+                collator.setReorderCodes(codes);
+            }
         }
 
         if (decomposition != null) {
-            if ("none".equals(decomposition))
-                {collator.setDecomposition(Collator.NO_DECOMPOSITION);}
-            else if ("full".equals(decomposition))
-                {collator.setDecomposition(Collator.FULL_DECOMPOSITION);}
-            else if (decomposition.length() == 0
-                    || "standard".equals(decomposition))
-                // the default setting
-                {collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);}
-            else {
-                logger.error("Collation decomposition should be either 'none', 'full' or 'standard");
-                throw new XPathException(
-                        "Collation decomposition should be either 'none', 'full' or 'standard");
-            }
+            switch(decomposition) {
+                case "none":
+                    collator.setDecomposition(Collator.NO_DECOMPOSITION);
+                    break;
 
+                case "full":
+                    collator.setDecomposition(Collator.FULL_DECOMPOSITION);
+                    break;
+
+                case "standard":
+                case "":
+                    // the default setting
+                    collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+                    break;
+
+                default:
+                    final String msg = "Collation decomposition should be either 'none', 'full' or 'standard', but received: " + decomposition;
+                    logger.error(msg);
+                    throw new XPathException(ErrorCodes.FOCH0002, msg);
+            }
         }
 
         return collator;
     }
 
-    /**
-     * @param lang
-     * @return The locale
-     */
-    private static Locale getLocale(String lang) {
-        final int dashPos = lang.indexOf('-');
-        if (dashPos == Constants.STRING_NOT_FOUND)
-            {return new Locale(lang);}
-        else
-            {return new Locale(lang.substring(0, dashPos), lang.substring(dashPos + 1));}
+    private static int toICUCollatorReorderCode(final String reorderCode) {
+        switch(reorderCode.toLowerCase()) {
+            case "default":
+                return Collator.ReorderCodes.DEFAULT;
+
+            case "none":
+                return Collator.ReorderCodes.NONE;
+
+            case "others":
+                return Collator.ReorderCodes.OTHERS;
+
+            case "space":
+                return Collator.ReorderCodes.SPACE;
+
+            case "first":
+                return Collator.ReorderCodes.FIRST;
+
+            case "punctuation":
+                return Collator.ReorderCodes.PUNCTUATION;
+
+            case "symbol":
+                return Collator.ReorderCodes.SYMBOL;
+
+            case "currency":
+                return Collator.ReorderCodes.CURRENCY;
+
+            case "digit":
+                return Collator.ReorderCodes.DIGIT;
+
+            default:
+                logger.warn("eXist-db does not support the collation reorderCode: " + reorderCode);
+                return -1;
+        }
     }
 
+    /**
+     * Get a locale for the provided language.
+     *
+     * @param lang The language
+     *
+     * @return The locale
+     */
+    private static ULocale getLocale(@Nullable final String lang) throws XPathException {
+        if(lang == null) {
+            return ULocale.getDefault();
+        } else {
+            final String[] components = lang.split("-");
+            switch (components.length) {
+                case 3:
+                    return new ULocale(components[0], components[1], components[2]);
+
+                case 2:
+                    return new ULocale(components[0], components[1]);
+
+                case 1:
+                    return new ULocale(components[0]);
+
+                default:
+                    throw new XPathException(ErrorCodes.FOCH0002, "Unrecognized lang=" + lang);
+            }
+        }
+    }
 }
