@@ -19,99 +19,82 @@
  */
 package org.exist.xmlrpc;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Used by {@link XmldbRequestProcessorFactory} to cache query results. Each query result
  * is identified by a unique integer id.
+ *
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
+@ThreadSafe
 public class QueryResultCache {
 
-    public final static int TIMEOUT = 180000;
-
-    private static final int INITIAL_SIZE = 254;
-
-    private AbstractCachedResult[] results;
-
     private static final Logger LOG = LogManager.getLogger(QueryResultCache.class);
+    private static final int TIMEOUT = 180_000;  // ms (e.g. 2 minutes)
+
+    private final AtomicInteger cacheIdCounter = new AtomicInteger();
+    private final Cache<Integer, AbstractCachedResult> cache;
 
     public QueryResultCache() {
-        results = new AbstractCachedResult[INITIAL_SIZE];
+        this.cache = Caffeine.newBuilder()
+                .expireAfterAccess(TIMEOUT, TimeUnit.MILLISECONDS)
+                .removalListener((key, value, cause) -> {
+                    final AbstractCachedResult qr = (AbstractCachedResult)value;
+                    qr.free();  // must free associated resources
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("Removing cached result set: " + new Date(qr.getTimestamp()).toString());
+                    }
+                }).build();
     }
 
     public int add(final AbstractCachedResult qr) {
-        for (int i = 0; i < results.length; i++) {
-            if (results[i] == null) {
-                results[i] = qr;
-                return i;
-            }
-        }
-        // no empty bucket. need to resize.
-        final AbstractCachedResult[] temp = new AbstractCachedResult[(results.length * 3) / 2];
-        System.arraycopy(results, 0, temp, 0, results.length);
-        final int pos = results.length;
-        temp[pos] = qr;
-        results = temp;
-        return pos;
+        final int cacheId = cacheIdCounter.getAndIncrement();
+        cache.put(cacheId, qr);
+        return cacheId;
     }
 
-    public AbstractCachedResult get(final int pos) {
-        if (pos < 0 || pos >= results.length) {
+    public AbstractCachedResult get(final int cacheId) {
+        if (cacheId < 0 || cacheId >= cacheIdCounter.get()) {
             return null;
         }
-        return results[pos];
+        return cache.getIfPresent(cacheId);
     }
 
-    public QueryResult getResult(final int pos) {
-        final AbstractCachedResult acr = get(pos);
+    public QueryResult getResult(final int cacheId) {
+        final AbstractCachedResult acr = get(cacheId);
         return (acr != null && acr instanceof QueryResult) ? (QueryResult) acr : null;
     }
 
-    public SerializedResult getSerializedResult(final int pos) {
-        final AbstractCachedResult acr = get(pos);
+    public SerializedResult getSerializedResult(final int cacheId) {
+        final AbstractCachedResult acr = get(cacheId);
         return (acr != null && acr instanceof SerializedResult) ? (SerializedResult) acr : null;
     }
 
-    public void remove(final int pos) {
-        if (pos > -1 && pos < results.length) {
-            // Perhaps we should not free resources here
-            // but an explicit remove implies you want
-            // to free resources
-
-            if (results[pos] != null) { // Prevent NPE
-                results[pos].free();
-                results[pos] = null;
-            }
+    public void remove(final int cacheId) {
+        if (cacheId < 0 || cacheId >= cacheIdCounter.get()) {
+            return; // out of scope
         }
+
+        cache.invalidate(cacheId);
     }
 
-    public void remove(final int pos, final int hash) {
-        if (pos > -1 && pos < results.length && (results[pos] != null && results[pos].hashCode() == hash)) {
-            // Perhaps we should not free resources here
-            // but an explicit remove implies you want
-            // to free resources
-            results[pos].free();
-            results[pos] = null;
+    public void remove(final int cacheId, final int hash) {
+        if (cacheId < 0 || cacheId >= cacheIdCounter.get()) {
+            return; // out of scope
         }
-    }
 
-    public void checkTimestamps() {
-        final long now = System.currentTimeMillis();
-        for (int i = 0; i < results.length; i++) {
-            final AbstractCachedResult result = results[i];
-            if (result != null) {
-                if (now - result.getTimestamp() > TIMEOUT) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Removing result set " + new Date(result.getTimestamp()).toString());
-                    }
-                    // Here we should not free resources, because they could be still in use
-                    // by other threads, so leave the work to the garbage collector
-                    results[i] = null;
-                }
-            }
+        final AbstractCachedResult qr = cache.getIfPresent(cacheId);
+        if(qr != null && qr.hashCode() == hash) {
+            cache.invalidate(cacheId);
         }
     }
 }
