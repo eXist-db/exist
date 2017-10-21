@@ -65,6 +65,12 @@ public class Collations {
      */
     public final static String UCA_COLLATION_URI = "http://www.w3.org/2013/collation/UCA";
 
+
+    /**
+     * The HTML ASCII Case-Insensitive Collation as defined by the XPath F&O spec.
+     */
+    public final static String HTML_ASCII_CASE_INSENSITIVE_COLLATION_URI = "http://www.w3.org/2005/xpath-functions/collation/html-ascii-case-insensitive";
+
     /**
      * The URI used to select collations in eXist.
      */
@@ -115,10 +121,10 @@ public class Collations {
                     final int eq = param.indexOf('=');
                     if (eq > 0) {
                         final String kw = param.substring(0, eq);
-                        if(kw != null) {
+                        if (kw != null) {
                             final String val = param.substring(eq + 1);
 
-                            switch(kw) {
+                            switch (kw) {
                                 case "fallback":
                                     fallback = "yes".equals(val);
                                     break;
@@ -183,6 +189,12 @@ public class Collations {
                         strength, maxVariable, alternate, backwards,
                         normalization, caseLevel, caseFirst, numeric,
                         reorder, decomposition);
+            }
+        } else if(HTML_ASCII_CASE_INSENSITIVE_COLLATION_URI.equals(uri)) {
+            try {
+                return getHtmlAsciiCaseInsensitiveCollator();
+            } catch (final Exception e) {
+                throw new XPathException("Unable to instantiate HTML ASCII Case Insensitive Collator: "+ e.getMessage(), e);
             }
         } else if (uri.startsWith("java:")) {
             // java class specified: this should be a subclass of
@@ -643,5 +655,11 @@ public class Collations {
                     throw new XPathException(ErrorCodes.FOCH0002, "Unrecognized lang=" + lang);
             }
         }
+    }
+
+    private static Collator getHtmlAsciiCaseInsensitiveCollator() throws Exception {
+        return new RuleBasedCollator("&a=A, b=B, c=C, d=D, e=E, f=F, g=G, h=H, "
+                + "i=I, j=J, k=K, l=L, m=M, n=N, o=O, p=P, q=Q, r=R, s=S, t=T, "
+                + "u=U, v=V, u=U, v=V, w=W, x=X, y=Y, z=Z");
     }
 }
