@@ -63,6 +63,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -335,7 +336,7 @@ public class XIncludeFilter implements Receiver {
             try {
                 URI externalUri = new URI(href);
                 final String scheme = externalUri.getScheme();
-                // If the URI has no scheme is specified,
+                // If the URI has no scheme specified,
                 // we have to check if it is a relative path, and if yes, try to
                 // interpret it relative to the moduleLoadPath property of the current
                 // XQuery context.
@@ -366,8 +367,8 @@ public class XIncludeFilter implements Receiver {
                 }
             } catch (final PermissionDeniedException e) {
                 return Optional.of(new ResourceError("Permission denied on XInclude'd resource", e));
-            } catch (final IOException | ParserConfigurationException | URISyntaxException e) {
-                throw new SAXException("XInclude: failed to read document at URI: " + href + ": " + e.getMessage(), e);
+            } catch (final ParserConfigurationException | URISyntaxException e) {
+                throw new SAXException("XInclude: failed to parse document at URI: " + href + ": " + e.getMessage(), e);
             }
         }
 
@@ -489,31 +490,34 @@ public class XIncludeFilter implements Receiver {
         return Optional.empty();
     }
 
-    private Either<ResourceError, org.exist.dom.memtree.DocumentImpl> parseExternal(final URI externalUri) throws IOException, PermissionDeniedException, ParserConfigurationException, SAXException {
-        final URLConnection con = externalUri.toURL().openConnection();
-        if (con instanceof HttpURLConnection) {
-            final HttpURLConnection httpConnection = (HttpURLConnection) con;
-            if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
-                // Special case: '404'
-                return Either.Left(new ResourceError("XInclude: no document found at URI: " + externalUri.toString()));
-            } else if (httpConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                //TODO : return another type
-                throw new PermissionDeniedException("Server returned code " + httpConnection.getResponseCode());
+    private Either<ResourceError, org.exist.dom.memtree.DocumentImpl> parseExternal(final URI externalUri) throws ParserConfigurationException, SAXException {
+        try {
+            final URLConnection con = externalUri.toURL().openConnection();
+            if (con instanceof HttpURLConnection) {
+                final HttpURLConnection httpConnection = (HttpURLConnection) con;
+                if (httpConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    return Either.Left(new ResourceError("XInclude: unable to retrieve from URI: " + externalUri.toString() + ", server returned response code: " + httpConnection.getResponseCode()));
+                }
             }
-        }
 
-        // we use eXist's in-memory DOM implementation
-        final SAXParserFactory factory = SAXParserFactory.newInstance();
-        factory.setNamespaceAware(true);
-        final InputSource src = new InputSource(con.getInputStream());
-        final SAXParser parser = factory.newSAXParser();
-        final XMLReader reader = parser.getXMLReader();
-        final SAXAdapter adapter = new SAXAdapter();
-        reader.setContentHandler(adapter);
-        reader.parse(src);
-        final org.exist.dom.memtree.DocumentImpl doc = adapter.getDocument();
-        doc.setDocumentURI(externalUri.toString());
-        return Either.Right(doc);
+            // we use eXist's in-memory DOM implementation
+            final SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setNamespaceAware(true);
+
+            try (final InputStream is = con.getInputStream()) {
+                final InputSource src = new InputSource(is);
+                final SAXParser parser = factory.newSAXParser();
+                final XMLReader reader = parser.getXMLReader();
+                final SAXAdapter adapter = new SAXAdapter();
+                reader.setContentHandler(adapter);
+                reader.parse(src);
+                final org.exist.dom.memtree.DocumentImpl doc = adapter.getDocument();
+                doc.setDocumentURI(externalUri.toString());
+                return Either.Right(doc);
+            }
+        } catch (final IOException e) {
+            return Either.Left(new ResourceError("XInclude: unable to retrieve and parse document from URI: " + externalUri.toString(), e));
+        }
     }
 
     @Override
