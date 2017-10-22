@@ -118,8 +118,6 @@ public class LauncherWrapper {
             args.add("-Dapple.awt.UIElement=true");
         }
         args.add("-Dexist.home=\"" + home + '"');
-
-        args.add("-Djava.endorsed.dirs=\"" + home + "/lib/endorsed\"");
     }
 
     protected void getVMOpts(List<String> args, PropertiesConfiguration vmProperties) {

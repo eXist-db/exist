@@ -50,8 +50,7 @@ goto :eof
 set MX=2048
 rem @WINDOWS_INSTALLER_3@
 
-set JAVA_ENDORSED_DIRS="%EXIST_HOME%\lib\endorsed"
-set JAVA_OPTS="-Xms128m -Xmx%MX%m -Dfile.encoding=UTF-8 -Djava.endorsed.dirs=%JAVA_ENDORSED_DIRS%"
+set JAVA_OPTS="-Xms128m -Xmx%MX%m -Dfile.encoding=UTF-8"
 
 :: copy the command line args preserving equals chars etc. for thinks like -ouri=http://something
 for /f "tokens=*" %%x IN ("%*") DO SET "CMD_LINE_ARGS=%%x"
