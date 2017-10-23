@@ -34,6 +34,10 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import static org.junit.Assert.assertNotNull;
 
 public class QueryPoolTest {
@@ -44,9 +48,27 @@ public class QueryPoolTest {
     private Collection testCollection;
 
     @Test
-    public void differentQueries() throws XMLDBException {
+    public void differentQueries() throws InterruptedException {
+        final ExecutorService executorService = Executors.newFixedThreadPool(20);
+        for (int i = 0; i < 100; i++) {
+            executorService.submit(() -> {
+                try {
+                    processDifferentQueries();
+                } catch (XMLDBException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+
+        executorService.shutdown();
+        if (!executorService.awaitTermination(5, TimeUnit.MINUTES)) {
+            executorService.shutdownNow();
+        }
+    }
+
+    private void processDifferentQueries() throws XMLDBException {
         XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 100; i++) {
             String query = "update insert <node id='id" + Integer.toHexString(i) + "'>" +
                     "<p>Some longer text <b>content</b> in this node. Some longer text <b>content</b> in this node. " +
                     "Some longer text <b>content</b> in this node. Some longer text <b>content</b> in this node.</p>" +

@@ -94,18 +94,7 @@ public interface Source {
     public InputStream getInputStream() throws IOException;
 
     public String getContent() throws IOException;
-    
-    /**
-     * Set a timestamp for this source. This is used
-     * by {@link org.exist.storage.XQueryPool} to
-     * check if a source has timed out.
-     * 
-     * @param timestamp
-     */
-    public void setCacheTimestamp(long timestamp);
-    
-    public long getCacheTimestamp();
-    
+
     /**
      * Check: has subject requested permissions for this resource?
      *

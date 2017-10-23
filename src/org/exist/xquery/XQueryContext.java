@@ -195,13 +195,6 @@ public class XQueryContext implements BinaryValueManager, Context
     /** Used to save current state when modules are imported dynamically */
     protected SavedState		   					   savedState										= new SavedState();
     
-    /**
-     * Whether some modules were rebound to new instances since the last time this context's query was analyzed. (This assumes that each context is
-     * attached to at most one query.)
-     */
-    @SuppressWarnings( "unused" )
-    private boolean                                    modulesChanged                = true;
-
     /** The set of statically known documents specified as an array of paths to documents and collections. */
     protected XmldbURI[]                               staticDocumentPaths           = null;
 
@@ -1576,36 +1569,54 @@ public class XQueryContext implements BinaryValueManager, Context
             return;
         }
 
-        if( allModules.get( namespaceURI ) != module ) {
-            setModulesChanged();
-        }
         allModules.put( namespaceURI, module );
     }
 
+    /**
+     * For compiled expressions: check if the source of current script or the source of any module imported
+     * has changed since compilation.
+     */
+    public boolean isSourceAndModulesValid() {
 
-    void setModulesChanged()
-    {
-        this.modulesChanged = true;
+        DBBroker broker = getBroker();
+
+        if (source == null || source.isValid(broker) != Source.VALID) {
+            return false;
+        }
+
+        for (final Module module : allModules.values() ) {
+            if( !module.isInternalModule() ) {
+                if( !( (ExternalModule)module ).moduleIsValid( broker ) ) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Module with URI " + module.getNamespaceURI() + " has changed and needs to be reloaded");
+                    }
+                    return false;
+                }
+            }
+        }
+        return true;
     }
-
 
     /**
      * For compiled expressions: check if the source of any module imported by the current
      * query has changed since compilation.
+     *
+     * @Deprecated use isSourceAndModulesValid()
      */
-    public boolean checkModulesValid()
-    {
-    	for (final Module module : allModules.values() ) {
-    		if( !module.isInternalModule() ) {
-    			if( !( (ExternalModule)module ).moduleIsValid( getBroker() ) ) {
-                    LOG.debug( "Module with URI " + module.getNamespaceURI() + " has changed and needs to be reloaded" );
-                    return( false );
-                }
-    		}
-    	}
-        return( true );
-    }
+    public boolean checkModulesValid() {
 
+        for (final Module module : allModules.values() ) {
+            if( !module.isInternalModule() ) {
+                if( !( (ExternalModule)module ).moduleIsValid( getBroker() ) ) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Module with URI " + module.getNamespaceURI() + " has changed and needs to be reloaded");
+                    }
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     public void analyzeAndOptimizeIfModulesChanged( Expression expr ) throws XPathException
     {
@@ -1630,7 +1641,6 @@ public class XQueryContext implements BinaryValueManager, Context
                 expr.analyze( new AnalyzeContextInfo() );
             }
         }
-        modulesChanged = false;
     }
 
 
