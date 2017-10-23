@@ -52,7 +52,6 @@
 	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-xquery-1.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="extensions/exquery/restxq/lib/exquery-restxq-api-1.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="extensions/exquery/restxq/lib/exquery-restxq-1.0-SNAPSHOT.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/core/antlr-2.7.7.jar"/>
 	<classpathentry kind="lib" path="lib/core/jline-0.9.94.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-api-2.9.0.jar"/>
@@ -68,7 +67,7 @@
 	<classpathentry kind="lib" path="lib/optional/wsdl4j-1.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/jta-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/commons-collections-3.2.2.jar"/>
-        <classpathentry kind="lib" path="lib/core/commons-configuration2-2.0.jar"/>
+	<classpathentry kind="lib" path="lib/core/commons-configuration2-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-discovery-0.5.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jing-20151127.jar"/>
 	<classpathentry kind="lib" path="extensions/xqdoc/lib/xqdoc_conv.jar"/>
@@ -80,15 +79,15 @@
 	<classpathentry kind="lib" path="lib/optional/xqjapi-1.0-fr.jar"/>
 	<classpathentry kind="lib" path="lib/core/gnu-crypto-2.0.1.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/existdb-favicon.jar"/>
-    <classpathentry kind="lib" path="tools/jetty/lib/asm-5.1.jar"/>
-    <classpathentry kind="lib" path="tools/jetty/lib/asm-commons-5.1.jar"/>
-    <classpathentry kind="lib" path="tools/jetty/lib/javax.annotation-api-1.2.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/asm-5.1.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/asm-commons-5.1.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/javax.annotation-api-1.2.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/javax.transaction-api-1.2.jar"/>
-    <classpathentry kind="lib" path="tools/jetty/lib/jetty-annotations-9.4.6.v20170531.jar"/>
-    <classpathentry kind="lib" path="tools/jetty/lib/jetty-deploy-9.4.6.v20170531.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-annotations-9.4.6.v20170531.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-deploy-9.4.6.v20170531.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-http-9.4.6.v20170531.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-io-9.4.6.v20170531.jar"/>
-    <classpathentry kind="lib" path="tools/jetty/lib/jetty-jaas-9.4.6.v20170531.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-jaas-9.4.6.v20170531.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-jndi-9.4.6.v20170531.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-jmx-9.4.6.v20170531.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-plus-9.4.6.v20170531.jar"/>
@@ -140,6 +139,7 @@
 	<classpathentry kind="lib" path="lib/test/xmlunit-core-2.4.0.jar"/>
 	<classpathentry kind="lib" path="lib/test/xmlunit-legacy-2.4.0.jar"/>
 	<classpathentry kind="lib" path="lib/test/xmlunit-matchers-2.4.0.jar"/>
-	<classpathentry kind="output" path="test/classes"/>
 	<classpathentry kind="lib" path="lib/core/jcip-annotations-1.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="test/classes"/>
 </classpath>
