@@ -87,26 +87,23 @@ public class DBSource extends AbstractSource {
     public long getLastModified() {
         return lastModified;
     }
-    
-    /* (non-Javadoc)
-     * @see org.exist.source.Source#isValid()
-     */
+
     @Override
-    public int isValid(final DBBroker broker) {
+    public Validity isValid(final DBBroker broker) {
         DocumentImpl d = null;
-        int result;
+        Validity result;
         try {
             d = broker.getXMLResource(key, LockMode.READ_LOCK);
             
             if(d == null) {
-                result = INVALID;
+                result = Validity.INVALID;
             } else if(d.getMetadata().getLastModified() > lastModified) {
-                result = INVALID;
+                result = Validity.INVALID;
             } else {
-                result = VALID;
+                result = Validity.VALID;
             }
         } catch(final PermissionDeniedException pde) {
-            result = INVALID;
+            result = Validity.INVALID;
         } finally {
             if(d != null) {
                 d.getUpdateLock().release(LockMode.READ_LOCK);
@@ -116,18 +113,15 @@ public class DBSource extends AbstractSource {
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.source.Source#isValid(org.exist.source.Source)
-     */
     @Override
-    public int isValid(final Source other) {
-        final int result;
+    public Validity isValid(final Source other) {
+        final Validity result;
         if(!(other instanceof DBSource)) {
-            result = INVALID;
+            result = Validity.INVALID;
         } else if(((DBSource)other).getLastModified() > lastModified) {
-            result = INVALID;
+            result = Validity.INVALID;
         } else {
-            result = VALID;
+            result = Validity.VALID;
         }
         
         return result;

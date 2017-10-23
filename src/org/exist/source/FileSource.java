@@ -90,18 +90,18 @@ public class FileSource extends AbstractSource {
     }
 
     @Override
-    public int isValid(final DBBroker broker) {
+    public Validity isValid(final DBBroker broker) {
         final long currentLastModified = lastModifiedSafe(path);
         if(currentLastModified == -1 || currentLastModified > lastModified) {
-            return INVALID;
+            return Validity.INVALID;
         } else {
-            return VALID;
+            return Validity.VALID;
         }
     }
 
     @Override
-    public int isValid(final Source other) {
-        return INVALID;
+    public Validity isValid(final Source other) {
+        return Validity.INVALID;
     }
 
     @Override

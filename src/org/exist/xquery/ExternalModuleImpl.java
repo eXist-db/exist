@@ -263,11 +263,9 @@ public class ExternalModuleImpl implements ExternalModule {
         return mContext;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.ExternalModule#moduleIsValid()
-     */
-    public boolean moduleIsValid(DBBroker broker) {
-        return mSource != null && mSource.isValid(broker) == Source.VALID;
+    @Override
+    public boolean moduleIsValid(final DBBroker broker) {
+        return mSource != null && mSource.isValid(broker) == Source.Validity.VALID;
     }
 
     @Override

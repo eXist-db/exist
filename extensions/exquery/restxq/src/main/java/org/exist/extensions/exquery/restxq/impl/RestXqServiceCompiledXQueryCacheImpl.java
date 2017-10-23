@@ -27,101 +27,117 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.exist.extensions.exquery.restxq.impl;
 
 import java.net.URI;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.Iterator;
+import java.util.Queue;
+import java.util.function.Function;
+
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.exist.extensions.exquery.restxq.RestXqServiceCompiledXQueryCache;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.CompiledXQuery;
 import org.exquery.restxq.RestXqService;
 import org.exquery.restxq.RestXqServiceException;
+import org.jctools.queues.atomic.MpmcAtomicArrayQueue;
 
 /**
+ * Compiled XQuery Cache for RESTXQ Resource Functions.
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class RestXqServiceCompiledXQueryCacheImpl implements RestXqServiceCompiledXQueryCache {
     
-    private final static RestXqServiceCompiledXQueryCacheImpl instance = new RestXqServiceCompiledXQueryCacheImpl();
-    
-    //TODO could introduce a MAX stack size, i.e. you can only have N compiled main.xqy's in the cache
-    private final Map<URI, Deque<CompiledXQuery>> cache = new HashMap<>();
-    private final ReentrantReadWriteLock cacheLock = new ReentrantReadWriteLock();
-    
+    private static final RestXqServiceCompiledXQueryCacheImpl INSTANCE = new RestXqServiceCompiledXQueryCacheImpl();
+
+    // TODO(AR) make configurable?
+    private static final int DEFAULT_MAX_POOL_SIZE = 256;
+    private static final int DEFAULT_MAX_QUERY_STACK_SIZE = 64;
+
+    private final Cache<URI, Queue<CompiledXQuery>> cache;
+
+    private RestXqServiceCompiledXQueryCacheImpl() {
+        this.cache = Caffeine.newBuilder()
+                .maximumSize(DEFAULT_MAX_POOL_SIZE)
+                .build();
+    }
+
     public static RestXqServiceCompiledXQueryCacheImpl getInstance() {
-        return instance;
+        return INSTANCE;
     }
 
     @Override
-    public CompiledXQuery getCompiledQuery(final DBBroker broker, final URI xqueryLocation) throws RestXqServiceException {
-        
-        CompiledXQuery xquery = null;
-        cacheLock.writeLock().lock();
-        try {
-            final Deque<CompiledXQuery> queries = cache.get(xqueryLocation);
-            
-            if(queries != null && !queries.isEmpty()) {
-                xquery = queries.pop();
-            }
-        } finally {
-            cacheLock.writeLock().unlock();
-        }
-        
+    public CompiledXQuery getCompiledQuery(final DBBroker broker, final URI xqueryLocation)
+            throws RestXqServiceException {
+        final Queue<CompiledXQuery> queue =
+                cache.get(xqueryLocation,
+                        key -> new MpmcAtomicArrayQueue<>(DEFAULT_MAX_QUERY_STACK_SIZE));
+
+        CompiledXQuery xquery = queue.poll();
         if(xquery == null) {
             xquery = XQueryCompiler.compile(broker, xqueryLocation);
         }
-        
+
         //reset the state of the query
         xquery.reset();
         xquery.getContext().getWatchDog().reset();
         xquery.getContext().prepareForExecution();
-        
+
         return xquery;
     }
     
     @Override
     public void returnCompiledQuery(final URI xqueryLocation, final CompiledXQuery xquery) {
-        cacheLock.writeLock().lock();
-        try {
-            Deque<CompiledXQuery> queries = cache.get(xqueryLocation);
-            if(queries == null) {
-                queries = new ArrayDeque<>();
-            }
-            
-            //reset the query and context
-            xquery.reset();
-            xquery.getContext().reset();
-            
-            queries.push(xquery);
-            
-            cache.put(xqueryLocation, queries);
-            
-        } finally {
-            cacheLock.writeLock().unlock();
-        }
+        //reset the query and context
+        xquery.reset();
+        xquery.getContext().reset();
+
+        // place in the cache
+        final Queue<CompiledXQuery> queue =
+                cache.get(xqueryLocation,
+                        key -> new MpmcAtomicArrayQueue<>(DEFAULT_MAX_QUERY_STACK_SIZE));
+        queue.offer(xquery);
     }
     
     @Override
     public void removeService(final RestXqService service) {
-        cacheLock.writeLock().lock();
-        try {        
-            cache.remove(service.getResourceFunction().getXQueryLocation());
-        } finally {
-            cacheLock.writeLock().unlock();
-        }
+        final URI xqueryLocation = service.getResourceFunction().getXQueryLocation();
+        cache.invalidate(xqueryLocation);
     }
     
     @Override
     public void removeServices(final Iterable<RestXqService> services) {
-        cacheLock.writeLock().lock();
-        try {
-            for(final RestXqService service : services) {
-                cache.remove(service.getResourceFunction().getXQueryLocation());
+        cache.invalidateAll(mapIterable(services,
+                restXqService -> restXqService.getResourceFunction().getXQueryLocation()));
+    }
+
+    /**
+     * Utility function that given an Iterable<T> and a function of T -> U, returns an Iterable<U>.
+     *
+     * @param <T> The input type.
+     * @param <U> The mapped result type.
+     *
+     * @param input The input iterable.
+     * @param mapper The mapping function.
+     *
+     * @return The mapped iterable.
+     */
+    private static <T, U> Iterable<U> mapIterable(final Iterable<T> input, final Function<T, U> mapper) {
+        return new Iterable<U>() {
+            @Override
+            public Iterator<U> iterator() {
+                final Iterator<T> it = input.iterator();
+                return new Iterator<U>() {
+                    @Override
+                    public boolean hasNext() {
+                        return it.hasNext();
+                    }
+
+                    @Override
+                    public U next() {
+                        return mapper.apply(it.next());
+                    }
+                };
             }
-        } finally {
-            cacheLock.writeLock().unlock();
-        }
+        };
     }
 }

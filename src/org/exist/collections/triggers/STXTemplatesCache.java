@@ -21,71 +21,95 @@
  */
 package org.exist.collections.triggers;
 
-import java.util.HashMap;
-import java.util.Map;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TemplatesHandler;
+
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
 
 /**
- * Cache for STX Templates
+ * Cache for STX Templates.
  *
- * @author aretter
+ * The cache is concurrent, however requests
+ * for each stylesheet use a READ_LOCK per document.
+ *
+ * @author Adam Retter <adam@exist-db.org>
  */
+@ThreadSafe
 public class STXTemplatesCache {
 
-    protected Logger LOG = LogManager.getLogger(getClass());
+    private static final  Logger LOG = LogManager.getLogger(STXTemplatesCache.class);
+    private static final STXTemplatesCache INSTANCE = new STXTemplatesCache();
 
-    private Map<XmldbURI, CachedTemplate> cache = new HashMap<XmldbURI, CachedTemplate>();
+    private final SAXTransformerFactory factory;
+    private final Cache<XmldbURI, CachedTemplate> cache;
 
-    private final SAXTransformerFactory factory = (SAXTransformerFactory)TransformerFactory.newInstance("net.sf.joost.trax.TransformerFactoryImpl", getClass().getClassLoader());
+    private STXTemplatesCache() {
+        this.factory = (SAXTransformerFactory)TransformerFactory.newInstance("net.sf.joost.trax.TransformerFactoryImpl", getClass().getClassLoader());
+        this.cache = Caffeine.newBuilder()
+                .maximumSize(250)
+                .build();
+    }
+
+    public static STXTemplatesCache getInstance() {
+        return INSTANCE;
+    }
 
     /**
-     * Will get the compiled stylesheet from the cache
+     * Will get the compiled stylesheet from the cache.
      *
-     * If the stylesheet is not present in the cache it will be compiled and added to the cache
-     *
-     * If the stylesheet is in the cache but older than the current stylesheet it will be re-compiled and cached
+     * If the stylesheet is not present in the cache it will be compiled and added to the cache.
+     * If the stylesheet is in the cache, but older than the current stylesheet it will be re-compiled and cached.
      *
      * @param broker Database broker for accessing the serializer pool
+     * @param stylesheet The stylesheet document
+     *
      * @return The compiled stylesheet
      */
-    public synchronized Templates getOrUpdateTemplate(DBBroker broker, DocumentImpl stylesheet) throws TransformerConfigurationException, SAXException {
-        //is it already in the cache
-        final XmldbURI stylesheetUri = stylesheet.getURI();
-        final long lastModified = stylesheet.getMetadata().getLastModified();
-        CachedTemplate cachedTemplate = cache.get(stylesheetUri);
-        if(cachedTemplate == null) {
-             cachedTemplate = storeInCache(broker, stylesheetUri, stylesheet, lastModified);
-        } else {
-            //has it been modified since it was cached?
-            if(lastModified > cachedTemplate.getLastUpdated()) {
-                //refresh the entry in the cache
-                cachedTemplate = storeInCache(broker, stylesheetUri, stylesheet, lastModified);
+    public Templates getOrUpdateTemplate(final DBBroker broker, final DocumentImpl stylesheet) throws TransformerConfigurationException, SAXException, LockException {
+        try {
+            stylesheet.getUpdateLock().acquire(Lock.LockMode.READ_LOCK);
+
+            final XmldbURI stylesheetUri = stylesheet.getURI();
+            final long lastModified = stylesheet.getMetadata().getLastModified();
+
+            CachedTemplate cachedTemplate = cache.getIfPresent(stylesheetUri);
+            if (cachedTemplate != null && lastModified > cachedTemplate.getLastUpdated()) {
+                // template has been modified since the version in the cache
+                cachedTemplate = null;  // invalidate the cached template
+                LOG.trace("Invalidating cached STX Template '" + stylesheetUri.toString() + "' as it is outdated.");
+            } else {
+                LOG.trace("Retrieved STX Template '" + stylesheetUri.toString() + "' from cache.");
             }
+
+            if(cachedTemplate == null) {
+                // compile and cache the template
+                final Templates compiled = compileTemplate(broker, stylesheet);
+                cachedTemplate = new CachedTemplate(compiled, lastModified);
+                cache.put(stylesheetUri, cachedTemplate);
+                LOG.trace("Compiled and cached STX Template '" + stylesheetUri.toString() + "'.");
+            }
+
+            return cachedTemplate.templates;
+        } finally {
+            stylesheet.getUpdateLock().release(Lock.LockMode.READ_LOCK);
         }
-        LOG.debug("Retrieved STX Template '" + stylesheetUri.toString() + "' from cache.");
-        return cachedTemplate.getTemplate();
     }
 
-    private CachedTemplate storeInCache(DBBroker broker, XmldbURI stylesheetUri, DocumentImpl stylesheet, long lastModified) throws TransformerConfigurationException, SAXException {
-        final Templates compiled = compileTemplate(broker, stylesheet);
-        final CachedTemplate cachedTemplate = new CachedTemplate(compiled, lastModified);
-        cache.put(stylesheetUri, cachedTemplate);
-        LOG.debug("Compiled and Stored STX Template '" + stylesheetUri.toString() + "' in cache.");
-        return cachedTemplate;
-    }
-
-    private Templates compileTemplate(DBBroker broker, DocumentImpl stylesheet) throws TransformerConfigurationException, SAXException {
+    private Templates compileTemplate(final DBBroker broker, final DocumentImpl stylesheet) throws TransformerConfigurationException, SAXException {
         final Serializer serializer = broker.getSerializer();
         final TemplatesHandler thandler = factory.newTemplatesHandler();
         serializer.setSAXHandlers(thandler, null);
@@ -94,11 +118,10 @@ public class STXTemplatesCache {
     }
 
     private static class CachedTemplate {
-
         private final Templates templates;
         private final long lastUpdated;
 
-        public CachedTemplate(Templates templates, long lastUpdated) {
+        public CachedTemplate(final Templates templates, final long lastUpdated) {
             this.templates = templates;
             this.lastUpdated = lastUpdated;
         }

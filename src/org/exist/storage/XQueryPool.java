@@ -1,256 +1,212 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2017 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
- *  $Id$
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.storage;
 
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.Queue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.Source;
 import org.exist.util.Configuration;
-import org.exist.util.hashtable.Object2ObjectHashMap;
 import org.exist.xquery.*;
+import org.jctools.queues.atomic.MpmcAtomicArrayQueue;
 
 /**
- * Global pool for pre-compiled XQuery expressions. Expressions are stored and
- * retrieved from the pool by comparing the {@link org.exist.source.Source}
- * objects from which they were created. For each XQuery, a maximum of
- * {@link #MAX_STACK_SIZE} compiled expressions are kept in the pool. An XQuery
- * expression will be removed from the pool if it has not been used for a
- * pre-defined timeout. These settings can be configured in conf.xml.
+ * Global pool for compiled XQuery expressions.
  *
- * @author wolf
+ * Expressions are stored and retrieved from the pool by comparing the
+ * {@link org.exist.source.Source} objects from which they were created.
+ *
+ * For each XQuery, a maximum of {@link #DEFAULT_MAX_QUERY_STACK_SIZE} compiled
+ * expressions are kept in the pool.
+ * An XQuery expression will be removed from the pool if it has not been
+ * used for a pre-defined timeout (default is {@link #DEFAULT_TIMEOUT}); these
+ * settings can be configured in conf.xml.
+ *
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-@ConfigurationClass("query-pool")
 @ThreadSafe
-public class XQueryPool extends Object2ObjectHashMap implements BrokerPoolService {
+public class XQueryPool implements BrokerPoolService {
 
-    private final static int MAX_POOL_SIZE = 128;
-    private final static int MAX_STACK_SIZE = 5;
-    private final static long TIMEOUT = 120000L;
-    private final static long TIMEOUT_CHECK_INTERVAL = 30000L;
-
-    private final static Logger LOG = LogManager.getLogger(XQueryPool.class);
-
-    private long lastTimeOutCheck;
-    private long lastTimeOfCleanup;
-
-    @ConfigurationFieldAsAttribute("size")
-    private int maxPoolSize;
-
-    @ConfigurationFieldAsAttribute("max-stack-size")
-    private int maxStackSize;
-
-    @ConfigurationFieldAsAttribute("timeout")
-    private long timeout;
-
-    @ConfigurationFieldAsAttribute("timeout-check-interval")
-    private long timeoutCheckInterval;
+    private static final Logger LOG = LogManager.getLogger(XQueryPool.class);
 
     public static final String CONFIGURATION_ELEMENT_NAME = "query-pool";
     public static final String MAX_STACK_SIZE_ATTRIBUTE = "max-stack-size";
     public static final String POOL_SIZE_ATTTRIBUTE = "size";
     public static final String TIMEOUT_ATTRIBUTE = "timeout";
-    public static final String TIMEOUT_CHECK_INTERVAL_ATTRIBUTE = "timeout-check-interval";
 
     public static final String PROPERTY_MAX_STACK_SIZE = "db-connection.query-pool.max-stack-size";
     public static final String PROPERTY_POOL_SIZE = "db-connection.query-pool.size";
     public static final String PROPERTY_TIMEOUT = "db-connection.query-pool.timeout";
-    public static final String PROPERTY_TIMEOUT_CHECK_INTERVAL = "db-connection.query-pool.timeout-check-interval";
 
-    private final static int DEFAULT_SIZE = 27;
+    private static final int DEFAULT_MAX_POOL_SIZE = 128;
+    private static final int DEFAULT_MAX_QUERY_STACK_SIZE = 64;
+    private static final long DEFAULT_TIMEOUT = 120_000L;   // ms (i.e. 2 mins)
 
-    public XQueryPool() {
-        super(DEFAULT_SIZE);
-        this.lastTimeOutCheck = lastTimeOfCleanup = System.currentTimeMillis();
-    }
+    private int maxPoolSize = DEFAULT_MAX_POOL_SIZE;
+    private int maxQueryStackSize = DEFAULT_MAX_QUERY_STACK_SIZE;
+    private long timeout = DEFAULT_TIMEOUT;
+
+    private final AtomicBoolean configured = new AtomicBoolean();
+    private Cache<Source, Queue<CompiledXQuery>> cache;
 
     @Override
     public void configure(final Configuration configuration) {
-        final Integer maxStSz = (Integer) configuration.getProperty(PROPERTY_MAX_STACK_SIZE);
-        final Integer maxPoolSz = (Integer) configuration.getProperty(PROPERTY_POOL_SIZE);
-        final Long t = (Long) configuration.getProperty(PROPERTY_TIMEOUT);
-        final Long tci = (Long) configuration.getProperty(PROPERTY_TIMEOUT_CHECK_INTERVAL);
-        final NumberFormat nf = NumberFormat.getNumberInstance();
+        if(configured.compareAndSet(false, true)) {
 
-        if (maxPoolSz != null) {
-            maxPoolSize = maxPoolSz;
-        } else {
-            maxPoolSize = MAX_POOL_SIZE;
-        }
+            final Integer maxStSz = (Integer) configuration.getProperty(PROPERTY_MAX_STACK_SIZE);
+            final Integer maxPoolSz = (Integer) configuration.getProperty(PROPERTY_POOL_SIZE);
+            final Long t = (Long) configuration.getProperty(PROPERTY_TIMEOUT);
+            final NumberFormat nf = NumberFormat.getNumberInstance();
 
-        if (maxStSz != null) {
-            maxStackSize = maxStSz;
-        } else {
-            maxStackSize = MAX_STACK_SIZE;
-        }
-
-        if (t != null) {
-            timeout = t;
-        } else {
-            timeout = TIMEOUT;
-        }
-
-        if (tci != null) {
-            timeoutCheckInterval = tci;
-        } else {
-            timeoutCheckInterval = TIMEOUT_CHECK_INTERVAL;
-        }
-
-        LOG.info("QueryPool: " +
-                "size = " + nf.format(maxPoolSize) + "; " +
-                "maxStackSize = " + nf.format(maxStackSize) + "; " +
-                "timeout = " + nf.format(timeout) + "; " +
-                "timeoutCheckInterval = " + nf.format(timeoutCheckInterval));
-    }
-
-    public void returnCompiledXQuery(final Source source, final CompiledXQuery xquery) {
-        returnObject(source, xquery);
-    }
-
-    private synchronized void returnObject(final Source source, final CompiledXQuery xquery) {
-        final long ts = source.getCacheTimestamp();
-        if (ts == 0 || ts > lastTimeOfCleanup) {
-            if (size() >= maxPoolSize) {
-                timeoutCheck();
+            if (maxPoolSz != null) {
+                this.maxPoolSize = maxPoolSz;
+            } else {
+                this.maxPoolSize = DEFAULT_MAX_POOL_SIZE;
             }
 
-            if (size() < maxPoolSize) {
-                Deque<CompiledXQuery> stack = (Deque<CompiledXQuery>)get(source);
-                if (stack == null) {
-                    stack = new ArrayDeque<>();
-                    source.setCacheTimestamp(System.currentTimeMillis());
-                    put(source, stack);
+            if (maxStSz != null) {
+                this.maxQueryStackSize = maxStSz;
+            } else {
+                this.maxQueryStackSize = DEFAULT_MAX_QUERY_STACK_SIZE;
+            }
+
+            if (t != null) {
+                this.timeout = t;
+            } else {
+                this.timeout = DEFAULT_TIMEOUT;
+            }
+
+            this.cache = Caffeine.newBuilder()
+                    .maximumSize(maxPoolSize)
+                    .expireAfterAccess(timeout, TimeUnit.MILLISECONDS)
+                    .build();
+
+            LOG.info("QueryPool: " +
+            "size = " + nf.format(maxPoolSize) + "; " +
+            "maxQueryStackSize = " + nf.format(maxQueryStackSize) + "; " +
+            "timeout = " + nf.format(timeout) + "; ");
+        } else {
+            throw new IllegalStateException("XQuery Pool has already been configured");
+        }
+    }
+
+    /**
+     * Returns a compiled XQuery to the XQuery pool.
+     *
+     * @param source The source of the compiled XQuery.
+     * @param compiledXQuery The compiled XQuery to add to the XQuery pool.
+     */
+    public void returnCompiledXQuery(final Source source, final CompiledXQuery compiledXQuery) {
+        if (compiledXQuery == null) {
+            return;
+        }
+
+        cache.asMap().compute(source, (key, value) -> {
+            final Queue<CompiledXQuery> queue;
+            if (value != null) {
+                queue = value;
+            } else {
+                queue = new MpmcAtomicArrayQueue<>(maxQueryStackSize);
+            }
+
+            queue.offer(compiledXQuery);
+
+            return queue;
+        });
+    }
+
+    /**
+     * Borrows a compiled XQuery from the XQuery pool.
+     *
+     * @param broker A database broker.
+     * @param source The source identifying the XQuery to borrow.
+     *
+     * @return The compiled XQuery identified by the source, or null if
+     *     there is no valid compiled representation in the XQuery pool.
+     *
+     * @throws PermissionDeniedException if the caller does not have execute
+     *     permission for the compiled XQuery.
+     */
+    public CompiledXQuery borrowCompiledXQuery(final DBBroker broker, final Source source)
+            throws PermissionDeniedException {
+        if(broker == null || source == null) {
+            return null;
+        }
+
+        // get (compute by checking validity) the stack of compiled XQuerys for the source
+        final Queue<CompiledXQuery> queue = cache.asMap().computeIfPresent(source, (key, value) -> {
+            if(!value.isEmpty()) {
+
+                // remove any stack of compiled queries which are now invalid
+                final CompiledXQuery firstCompiledXQuery = value.peek();
+                final Source cachedSource = firstCompiledXQuery.getSource();
+                Source.Validity validity = cachedSource.isValid(broker);
+                if (validity == Source.Validity.UNKNOWN) {
+                    validity = cachedSource.isValid(source);
                 }
 
-                if (stack.size() < maxStackSize) {
-                    // check if the query is already in pool before adding,
-                    // may happen for modules, don't add it a second time!
-                    if(!stack.contains(xquery)) {
-                        stack.push(xquery);
+                if (validity == Source.Validity.INVALID || validity == Source.Validity.UNKNOWN) {
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug(source.getKey() + " is invalid, removing from XQuery Pool...");
                     }
+                    return null;    // returning null will remove the entry from the cache
                 }
-            }
-        }
-    }
 
-    private Object borrowObject(final DBBroker broker, final Source source) {
-        final Source key;
-        final CompiledXQuery query;
-        synchronized (this) {
-            final int idx = getIndex(source);
-            if (idx < 0) {
-                return null;
-            }
-            key = (Source) keys[idx];
-            int validity = key.isValid(broker);
-            if (validity == Source.UNKNOWN) {
-                validity = key.isValid(source);
-            }
-
-            if (validity == Source.INVALID || validity == Source.UNKNOWN) {
-                keys[idx] = REMOVED;
-                values[idx] = null;
-                LOG.debug(source.getKey() + " is invalid");
-                return null;
-            }
-            final Deque<CompiledXQuery> stack = (Deque<CompiledXQuery>)values[idx];
-            if (stack == null || stack.isEmpty()) {
-                return null;
-            }
-
-            // now check if the compiled expression is valid
-            // it might become invalid if an imported module has changed.
-            query = stack.pop();
-            final XQueryContext context = query.getContext();
-            //context.setBroker(broker);
-        }
-
-        // query.isValid() may open collections which in turn tries to acquire
-        // org.exist.storage.lock.ReentrantReadWriteLock. In order to avoid
-        // deadlocks with concurrent queries holding that lock while borrowing
-        // we must not hold onto the XQueryPool while calling isValid().
-
-        if (!query.isValid()) {
-            synchronized (this) {
                 // the compiled query is no longer valid: one of the imported
                 // modules may have changed
-                remove(key);
-                return null;
+                if(!firstCompiledXQuery.isValid()) {
+                    return null;    // returning null will remove the entry from the cache
+                }
             }
-        } else {
-            return query;
-        }
-    }
 
-    public synchronized CompiledXQuery borrowCompiledXQuery(final DBBroker broker, final Source source) throws PermissionDeniedException {
-        final CompiledXQuery query = (CompiledXQuery) borrowObject(broker, source);
-        if (query == null) {
+            return value;
+        });
+
+        if(queue == null) {
+            return null;
+        }
+
+        final CompiledXQuery query = queue.poll();
+        if(query == null) {
             return null;
         }
 
         //check execution permission
         source.validate(broker.getCurrentSubject(), Permission.EXECUTE);
 
-        // now check if the compiled expression is valid
-        // it might become invalid if an imported module has changed.
-        //final XQueryContext context = query.getContext();
-        //context.setBroker(broker);
         return query;
     }
 
-    public synchronized void clear() {
-        lastTimeOfCleanup = System.currentTimeMillis();
-
-        for (final Iterator i = iterator(); i.hasNext(); ) {
-            final Source next = (Source) i.next();
-            remove(next);
-        }
-    }
-
-    private void timeoutCheck() {
-        if (timeoutCheckInterval < 0L) {
-            return;
-        }
-
-        final long currentTime = System.currentTimeMillis();
-        if (currentTime - lastTimeOutCheck < timeoutCheckInterval) {
-            return;
-        }
-
-        for (final Iterator i = iterator(); i.hasNext(); ) {
-            final Source next = (Source) i.next();
-            if (currentTime - next.getCacheTimestamp() > timeout) {
-                remove(next);
-            }
-        }
-
-        lastTimeOutCheck = currentTime;
+    /**
+     * Removes all entries from the XQuery Pool.
+     */
+    public void clear() {
+        cache.invalidateAll();
     }
 }

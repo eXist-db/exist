@@ -67,18 +67,14 @@ public class StringSource extends AbstractSource {
         return data;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.source.Source#isValid()
-     */
-    public int isValid(DBBroker broker) {
-        return Source.VALID;
+    @Override
+    public Validity isValid(final DBBroker broker) {
+        return Source.Validity.VALID;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.source.Source#isValid(org.exist.source.Source)
-     */
-    public int isValid(Source other) {
-        return Source.VALID;
+    @Override
+    public Validity isValid(final Source other) {
+        return Source.Validity.VALID;
     }
 
     /* (non-Javadoc)

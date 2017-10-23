@@ -483,7 +483,7 @@ public class XQueryURLRewrite extends HttpServlet {
 
 			model.getSourceInfo().source.validate(broker.getCurrentSubject(), Permission.EXECUTE);
 			
-			if (model.getSourceInfo().source.isValid(broker) != Source.VALID) {
+			if (model.getSourceInfo().source.isValid(broker) != Source.Validity.VALID) {
                 urlCache.remove(url);
 				return null;
 			}

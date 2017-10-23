@@ -41,8 +41,17 @@ public class StringSourceWithMapKey extends AbstractSource {
 	}
 
 	public Object getKey() {return map;}
-	public int isValid(DBBroker broker) {return Source.VALID;}
-	public int isValid(Source other) {return Source.VALID;}
+
+	@Override
+	public Validity isValid(final DBBroker broker) {
+		return Validity.VALID;
+	}
+
+	@Override
+	public Validity isValid(final Source other) {
+		return Validity.VALID;
+	}
+
 	public Reader getReader() throws IOException {return new StringReader(map.get("<query>"));}
 
     public InputStream getInputStream() throws IOException {

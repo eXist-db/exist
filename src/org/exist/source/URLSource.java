@@ -105,22 +105,19 @@ public class URLSource extends AbstractSource {
 		return url;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.source.Source#isValid()
-	 */
-	public int isValid(DBBroker broker) {
+	@Override
+	public Validity isValid(final DBBroker broker) {
 		final long modified = getLastModification();
-		if(modified == 0 && modified > lastModified)
-			{return INVALID;}
-		else
-			{return VALID;}
+		if(modified == 0 && modified > lastModified) {
+			return Validity.INVALID;
+		} else {
+			return Validity.VALID;
+		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.source.Source#isValid(org.exist.source.Source)
-	 */
-	public int isValid(Source other) {
-		return INVALID;
+	@Override
+	public Validity isValid(final Source other) {
+		return Validity.INVALID;
 	}
 
 	/* (non-Javadoc)

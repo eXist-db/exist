@@ -41,9 +41,11 @@ import org.exist.storage.DBBroker;
  */
 public interface Source {
 
-    public final static int VALID = 1;
-    public final static int INVALID = -1;
-    public final static int UNKNOWN = 0;
+    enum Validity {
+        VALID,
+        INVALID,
+        UNKNOWN
+    }
 
     String path();
 
@@ -54,12 +56,12 @@ public interface Source {
      * an URI.
      * 
      */
-    public Object getKey();
+    Object getKey();
     
     /**
      * Is this source object still valid?
      * 
-     * Returns {@link #UNKNOWN} if the validity of
+     * Returns {@link Validity#UNKNOWN} if the validity of
      * the source cannot be determined.
      * 
      * The {@link DBBroker} parameter is required by
@@ -68,7 +70,7 @@ public interface Source {
      * 
      * @param broker
      */
-    public int isValid(DBBroker broker);
+    Validity isValid(DBBroker broker);
     
     /**
      * Checks if the source object is still valid
@@ -77,11 +79,11 @@ public interface Source {
      * implementation how the sources are compared.
      * 
      * Use this method if {@link #isValid(DBBroker)}
-     * return {@link #UNKNOWN}.
+     * return {@link Validity#UNKNOWN}.
      * 
      * @param other
      */
-    public int isValid(Source other);
+    Validity isValid(Source other);
     
     /**
      * Returns a {@link Reader} to read the contents
@@ -89,11 +91,11 @@ public interface Source {
      * 
      * @throws IOException
      */
-    public Reader getReader() throws IOException;
+    Reader getReader() throws IOException;
 
-    public InputStream getInputStream() throws IOException;
+    InputStream getInputStream() throws IOException;
 
-    public String getContent() throws IOException;
+    String getContent() throws IOException;
     
     /**
      * Set a timestamp for this source. This is used
@@ -102,9 +104,9 @@ public interface Source {
      * 
      * @param timestamp
      */
-    public void setCacheTimestamp(long timestamp);
+    void setCacheTimestamp(long timestamp);
     
-    public long getCacheTimestamp();
+    long getCacheTimestamp();
     
     /**
      * Check: has subject requested permissions for this resource?
@@ -112,8 +114,7 @@ public interface Source {
      * @param  subject The subject
      * @param  perm The requested permissions
      */
-    public void validate(Subject subject, int perm) throws PermissionDeniedException;
+    void validate(Subject subject, int perm) throws PermissionDeniedException;
 
-    public QName isModule() throws IOException;
-
+    QName isModule() throws IOException;
 }
