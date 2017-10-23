@@ -1,24 +1,21 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
- *  http://exist.sourceforge.net
- *  
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xquery;
 
@@ -34,6 +31,10 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import static org.junit.Assert.assertNotNull;
 
 public class QueryPoolTest {
@@ -44,9 +45,27 @@ public class QueryPoolTest {
     private Collection testCollection;
 
     @Test
-    public void differentQueries() throws XMLDBException {
+    public void differentQueries() throws InterruptedException {
+        final ExecutorService executorService = Executors.newFixedThreadPool(20);
+        for (int i = 0; i < 100; i++) {
+            executorService.submit(() -> {
+                try {
+                    processDifferentQueries();
+                } catch (XMLDBException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+
+        executorService.shutdown();
+        if (!executorService.awaitTermination(5, TimeUnit.MINUTES)) {
+            executorService.shutdownNow();
+        }
+    }
+
+    private void processDifferentQueries() throws XMLDBException {
         XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 100; i++) {
             String query = "update insert <node id='id" + Integer.toHexString(i) + "'>" +
                     "<p>Some longer text <b>content</b> in this node. Some longer text <b>content</b> in this node. " +
                     "Some longer text <b>content</b> in this node. Some longer text <b>content</b> in this node.</p>" +

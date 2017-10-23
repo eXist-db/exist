@@ -517,7 +517,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     @Override
     public boolean isValid() {
-        return context.checkModulesValid();
+        return context.isSourceAndModulesValid();
     }
 
     @Override
