@@ -19,6 +19,8 @@
  */
 package org.exist.xmldb;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
 
 import org.exist.Namespaces;
@@ -66,6 +68,8 @@ import java.util.Optional;
 public class RemoteXMLResource
         extends AbstractRemoteResource
         implements XMLResource {
+
+    protected final static Logger LOG = LogManager.getLogger(RemoteXMLResource.class);
 
     /**
      * Use external XMLReader to parse XML.
@@ -166,7 +170,7 @@ public class RemoteXMLResource
                 try {
                     cis.close();
                 } catch (final IOException ioe) {
-                    // IgnoreIT(R)
+                    LOG.warn(ioe.getMessage(), ioe);
                 }
             }
         }
@@ -206,7 +210,7 @@ public class RemoteXMLResource
                 try {
                     cis.close();
                 } catch (final IOException ioe) {
-                    // IgnoreIT(R)
+                    LOG.warn(ioe.getMessage(), ioe);
                 }
             }
         }
@@ -252,7 +256,7 @@ public class RemoteXMLResource
                 try {
                     vtmpfile.close();
                 } catch (final IOException ioe) {
-                    // IgnoreIT(R)
+                    LOG.warn(ioe.getMessage(), ioe);
                 }
             }
             setContent(vtmpfile);

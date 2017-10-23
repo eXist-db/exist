@@ -6,7 +6,6 @@
     <Set name="contextPath">/</Set>
     <Set name="war"><Property name="jetty.home" default="."/>/etc/standalone</Set>
     <Set name="defaultsDescriptor"><Property name="jetty.home" default="."/>/etc/webdefault.xml</Set>
-    <Set name="tempDirectory"><Property name="jetty.base" default="."/>/tmp</Set>
     <Set name="securityHandler">
         <New class="org.eclipse.jetty.security.ConstraintSecurityHandler">
             <Set name="loginService">

@@ -25,6 +25,7 @@ import com.evolvedbinary.j8fu.fsm.AtomicFSM;
 import com.evolvedbinary.j8fu.fsm.FSM;
 
 import static com.evolvedbinary.j8fu.fsm.TransitionTable.transitionTable;
+import static org.exist.security.UnixStylePermission.LOG;
 
 
 import java.util.ArrayList;
@@ -53,7 +54,9 @@ class BrokerPoolServicesManager {
         PREPARATION,
         SYSTEM,
         PRE_MULTI_USER,
-        MULTI_USER
+        MULTI_USER,
+        STOPPING,
+        SHUTTING_DOWN
     }
 
     private enum ManagerEvent {
@@ -61,7 +64,9 @@ class BrokerPoolServicesManager {
         PREPARE,
         ENTER_SYSTEM_MODE,
         PREPARE_ENTER_MULTI_USER_MODE,
-        ENTER_MULTI_USER_MODE
+        ENTER_MULTI_USER_MODE,
+        STOP,
+        SHUTDOWN
     }
 
     @SuppressWarnings("unchecked")
@@ -72,6 +77,8 @@ class BrokerPoolServicesManager {
                 .on(ManagerEvent.ENTER_SYSTEM_MODE).switchTo(ManagerState.SYSTEM)
                 .on(ManagerEvent.PREPARE_ENTER_MULTI_USER_MODE).switchTo(ManagerState.PRE_MULTI_USER)
                 .on(ManagerEvent.ENTER_MULTI_USER_MODE).switchTo(ManagerState.MULTI_USER)
+                .on(ManagerEvent.STOP).switchTo(ManagerState.STOPPING)
+                .on(ManagerEvent.SHUTDOWN).switchTo(ManagerState.SHUTTING_DOWN)
             .build()
     );
 
@@ -98,6 +105,9 @@ class BrokerPoolServicesManager {
         }
 
         brokerPoolServices.add(brokerPoolService);
+        if(LOG.isTraceEnabled()) {
+            LOG.trace("Registered service: " + brokerPoolService.getClass().getSimpleName() + "...");
+        }
         return brokerPoolService;
     }
 
@@ -117,6 +127,9 @@ class BrokerPoolServicesManager {
         states.process(ManagerEvent.CONFIGURE);
 
         for(final BrokerPoolService brokerPoolService : brokerPoolServices) {
+            if(LOG.isTraceEnabled()) {
+                LOG.trace("Configuring service: " + brokerPoolService.getClass().getSimpleName() + "...");
+            }
             brokerPoolService.configure(configuration);
         }
     }
@@ -137,6 +150,9 @@ class BrokerPoolServicesManager {
         states.process(ManagerEvent.PREPARE);
 
         for(final BrokerPoolService brokerPoolService : brokerPoolServices) {
+            if(LOG.isTraceEnabled()) {
+                LOG.trace("Preparing service: " + brokerPoolService.getClass().getSimpleName() + "...");
+            }
             brokerPoolService.prepare(brokerPool);
         }
     }
@@ -162,6 +178,9 @@ class BrokerPoolServicesManager {
         states.process(ManagerEvent.ENTER_SYSTEM_MODE);
 
         for(final BrokerPoolService brokerPoolService : brokerPoolServices) {
+            if(LOG.isTraceEnabled()) {
+                LOG.trace("Notifying service: " + brokerPoolService.getClass().getSimpleName() + " of start system...");
+            }
             brokerPoolService.startSystem(systemBroker);
         }
     }
@@ -187,6 +206,9 @@ class BrokerPoolServicesManager {
         states.process(ManagerEvent.PREPARE_ENTER_MULTI_USER_MODE);
 
         for(final BrokerPoolService brokerPoolService : brokerPoolServices) {
+            if(LOG.isTraceEnabled()) {
+                LOG.trace("Notifying service: " + brokerPoolService.getClass().getSimpleName() + " of start pre-multi-user...");
+            }
             brokerPoolService.startPreMultiUserSystem(systemBroker);
         }
     }
@@ -206,7 +228,71 @@ class BrokerPoolServicesManager {
         states.process(ManagerEvent.ENTER_MULTI_USER_MODE);
 
         for(final BrokerPoolService brokerPoolService : brokerPoolServices) {
+            if(LOG.isTraceEnabled()) {
+                LOG.trace("Notifying service: " + brokerPoolService.getClass().getSimpleName() + " of start multi-user...");
+            }
             brokerPoolService.startMultiUser(brokerPool);
+        }
+    }
+
+    /**
+     * Stops any services which were previously started.
+     *
+     * At this point the broker pool is likely back in system (single user) mode
+     * and not generally available for access, only a single
+     * system broker is available.
+     *
+     * @param systemBroker The System Broker which is available for
+     *   services to use to access the database
+     *
+     * @throws BrokerPoolServiceException if any service causes an error when stopping
+     *
+     * @throws IllegalStateException Thrown if there is an attempt to stop a service
+     * before we have completed starting multi-user mode
+     */
+    void stopServices(final DBBroker systemBroker) throws BrokerPoolServicesManagerException {
+        states.process(ManagerEvent.STOP);
+
+        List<BrokerPoolServiceException> serviceExceptions = null;
+
+        // we stop in the reverse order to starting up
+        for(int i = brokerPoolServices.size() - 1; i >= 0; i--) {
+            final BrokerPoolService brokerPoolService = brokerPoolServices.get(i);
+            if(LOG.isTraceEnabled()) {
+                LOG.trace("Stopping service: " + brokerPoolService.getClass().getSimpleName() + "...");
+            }
+
+            try {
+                brokerPoolService.stop(systemBroker);
+            } catch (final BrokerPoolServiceException e) {
+                if(serviceExceptions == null) {
+                    serviceExceptions = new ArrayList<>();
+                }
+                serviceExceptions.add(e);
+            }
+        }
+
+        if(serviceExceptions != null) {
+            throw new BrokerPoolServicesManagerException(serviceExceptions);
+        }
+    }
+
+    /**
+     * Shutdown any services which were previously configured.
+     *
+     * @throws IllegalStateException Thrown if there is an attempt to shutdown a service
+     * before we have completed stopping services
+     */
+    void shutdown() {
+        states.process(ManagerEvent.SHUTDOWN);
+
+        // we shutdown in the reverse order to starting up
+        for(int i = brokerPoolServices.size() - 1; i >= 0; i--) {
+            final BrokerPoolService brokerPoolService = brokerPoolServices.get(i);
+            if(LOG.isTraceEnabled()) {
+                LOG.trace("Shutting down service: " + brokerPoolService.getClass().getSimpleName() + "...");
+            }
+            brokerPoolService.shutdown();
         }
     }
 }

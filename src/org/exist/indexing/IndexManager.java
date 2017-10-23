@@ -203,10 +203,15 @@ public class IndexManager implements BrokerPoolService {
      *
      * @throws DBException
      */
-    public void shutdown() throws DBException {
+    @Override
+    public void stop(final DBBroker systemBroker) throws BrokerPoolServiceException {
         for (final Iterator<Index> i = iterator(); i.hasNext(); ) {
             final Index index = i.next();
-            index.close();
+            try {
+                index.close();
+            } catch(final DBException e) {
+                throw new BrokerPoolServiceException(e);
+            }
         }
     }
 

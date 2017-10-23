@@ -193,6 +193,8 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
         } catch (final Exception e) {
             // need to catch all runtime exceptions here to be able to release locked documents
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        } finally {
+            context.runCleanupTasks();
         }
         LOG.debug("query took " + (System.currentTimeMillis() - start) + " ms.");
         if(result != null) {
@@ -258,6 +260,7 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
                 }
                 return result != null ? new LocalResourceSet(user, brokerPool, collection, properties, result, null) : null;
             } finally {
+                compiled.getContext().runCleanupTasks();
                 pool.returnCompiledXQuery(source, compiled);
             }
         });

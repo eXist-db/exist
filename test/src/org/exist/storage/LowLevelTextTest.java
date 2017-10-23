@@ -24,7 +24,7 @@ import static org.junit.Assert.assertNotNull;
  * Currently, tests for the {@link org.exist.storage.XQueryPool}
  * with the {@link StringSource}. 
  */
-public class LowLevelText {
+public class LowLevelTextTest {
 
 	private static final String TEST_XQUERY_SOURCE = "/test";
 

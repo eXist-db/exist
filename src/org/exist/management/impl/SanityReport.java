@@ -186,6 +186,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
 				try {
 					xquery.execute(broker, compiled, null);
 				} finally {
+    			    compiled.getContext().runCleanupTasks();
 					xqPool.returnCompiledXQuery(TEST_XQUERY, compiled);
 				}
     		}

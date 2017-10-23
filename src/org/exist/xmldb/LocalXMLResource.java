@@ -107,15 +107,18 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 
         // Case 1: content is an external DOM node
         else if (root != null && !(root instanceof NodeValue)) {
-            final StringWriter writer = new StringWriter();
-            final DOMSerializer serializer = new DOMSerializer(writer, getProperties());
-            try {
+            try(final StringWriter writer = new StringWriter()) {
+                final DOMSerializer serializer = new DOMSerializer(writer, getProperties());
+                try {
                     serializer.serialize(root);
                     content = writer.toString();
-            } catch (final TransformerException e) {
+                } catch (final TransformerException e) {
                     throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
+                }
+                return content;
+            } catch(final IOException e) {
+                throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
             }
-            return content;
 
         // Case 2: content is an atomic value
         } else if (value != null) {

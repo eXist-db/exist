@@ -247,6 +247,7 @@ public class TransactionManager implements BrokerPoolService {
         }
     }
 
+    @Override
     public void shutdown() {
         if(LOG.isDebugEnabled()) {
             LOG.debug("Shutting down transaction manager. Uncommitted transactions: " + transactions.size());
