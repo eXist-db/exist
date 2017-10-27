@@ -59,14 +59,14 @@ function fnt:doc-available($filename as xs:string) {
 declare
     %test:args("test.xml")
     %test:assertEquals("true")
-function fnt:doc($filename as xs:string) {
+function fnt:doc-returns-document-node($filename as xs:string) {
     fn:doc("/db/fn-test/" || $filename) instance of document-node()
 };
 
 declare
     %test:args("test.xml")
     %test:assertEmpty
-function fnt:doc($filename as xs:string) {
+function fnt:doc-does-not-return-element-node($filename as xs:string) {
     fn:doc("/db/fn-test/" || $filename)/book
 };
 
