@@ -53,8 +53,7 @@ goto :eof
 set MX=2048
 rem @WINDOWS_INSTALLER_3@
 
-set JAVA_ENDORSED_DIRS="%EXIST_HOME%\lib\endorsed"
-set JAVA_OPTS="-Xms128m -Xmx%MX%m -Dfile.encoding=UTF-8 -Djava.endorsed.dirs=%JAVA_ENDORSED_DIRS%"
+set JAVA_OPTS="-Xms128m -Xmx%MX%m -Dfile.encoding=UTF-8"
 
 :gotJavaOpts
 %JAVA_RUN% "%JAVA_OPTS%"  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" %CMD_LINE_ARGS%

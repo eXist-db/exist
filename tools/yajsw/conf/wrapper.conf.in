@@ -94,15 +94,14 @@ wrapper.java.classpath.2=start.jar
 wrapper.java.library.path.1=lib
 
 # Java Additional Parameters
-wrapper.java.additional.1=-Djava.endorsed.dirs=lib/endorsed
-wrapper.java.additional.2=-Dfile.encoding=UTF-8
-wrapper.java.additional.3=-Dexist.home=.
-wrapper.java.additional.4=-Djetty.home=@jetty.dir@
+wrapper.java.additional.1=-Dfile.encoding=UTF-8
+wrapper.java.additional.2=-Dexist.home=.
+wrapper.java.additional.3=-Djetty.home=@jetty.dir@
 # log4j configuration is read from the conf directory of the wrapper
-wrapper.java.additional.5=-Dlog4j.configurationFile=file:tools/yajsw/conf/log4j2.xml
+wrapper.java.additional.4=-Dlog4j.configurationFile=file:tools/yajsw/conf/log4j2.xml
 
 # force headless mode
-wrapper.java.additional.6=-Djava.awt.headless=true
+wrapper.java.additional.5=-Djava.awt.headless=true
 
 # Application parameters.  Add parameters as needed starting from 1
 wrapper.app.parameter.1=jetty

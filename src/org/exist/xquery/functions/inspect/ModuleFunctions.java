@@ -2,6 +2,7 @@ package org.exist.xquery.functions.inspect;
 
 import org.exist.dom.QName;
 import org.exist.xquery.*;
+import org.exist.xquery.Module;
 import org.exist.xquery.functions.fn.FunOnFunctions;
 import org.exist.xquery.functions.fn.LoadXQueryModule;
 import org.exist.xquery.parser.XQueryAST;

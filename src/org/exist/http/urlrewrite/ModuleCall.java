@@ -22,6 +22,7 @@
 package org.exist.http.urlrewrite;
 
 import org.exist.xquery.*;
+import org.exist.xquery.Module;
 import org.w3c.dom.Element;
 import org.exist.xquery.value.Sequence;
 import org.exist.dom.QName;
@@ -30,7 +31,6 @@ import org.apache.logging.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;

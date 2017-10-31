@@ -598,11 +598,11 @@ public class ConfigurationDialog extends JDialog {
             maxCache = (max / 2);
         }
         cacheModel.setMaximum(maxCache - 48);
-        if (cacheModel.getMaximum().compareTo(cacheModel.getValue()) < 0) {
+        if (((Integer)cacheModel.getMaximum()).compareTo((Integer)cacheModel.getValue()) < 0) {
             cacheModel.setValue(cacheModel.getMaximum());
         }
         collectionCacheModel.setMaximum(maxCache - (Integer)cacheModel.getValue());
-        if (collectionCacheModel.getMaximum().compareTo(collectionCacheModel.getValue()) < 0) {
+        if (((Integer)collectionCacheModel.getMaximum()).compareTo((Integer)collectionCacheModel.getValue()) < 0) {
             collectionCacheModel.setValue(collectionCacheModel.getMaximum());
         }
     }
