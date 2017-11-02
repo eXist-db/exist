@@ -24,6 +24,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.start.EXistClassLoader;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BrokerPoolService;
 import org.exist.storage.BrokerPoolServiceException;
@@ -120,7 +121,8 @@ public class ExistRepository extends Observable implements BrokerPoolService {
     private Module getModule(final String name, final String namespace, final XQueryContext ctxt)
             throws XPathException {
         try {
-            final Class<Module> clazz = (Class<Module>)Class.forName(name);
+            final ClassLoader existClassLoader = ctxt.getBroker().getBrokerPool().getClassLoader();
+            final Class<Module> clazz = (Class<Module>)Class.forName(name, false, existClassLoader);
             final Module module = instantiateModule(clazz);
             final String ns = module.getNamespaceURI();
             if (!ns.equals(namespace)) {
