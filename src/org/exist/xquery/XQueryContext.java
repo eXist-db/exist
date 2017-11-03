@@ -1666,7 +1666,8 @@ public class XQueryContext implements BinaryValueManager, Context
         try {
 
             // lookup the class
-            final Class<?> mClass = Class.forName( moduleClass );
+            final ClassLoader existClassLoader = getBroker().getBrokerPool().getClassLoader();
+            final Class<?> mClass = Class.forName(moduleClass, false, existClassLoader);
 
             if( !( Module.class.isAssignableFrom( mClass ) ) ) {
                 LOG.info( "failed to load module. " + moduleClass + " is not an instance of org.exist.xquery.Module." );

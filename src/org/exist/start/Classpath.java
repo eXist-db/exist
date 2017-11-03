@@ -7,6 +7,9 @@
 
 package org.exist.start;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -23,6 +26,8 @@ import java.util.function.Supplier;
  * @author Jan Hlavat�
  */
 public class Classpath implements Iterable<Path> {
+
+    private final static Logger LOG = LogManager.getLogger(Classpath.class);
 
     final List<Path> _elements = new ArrayList<>();
 
@@ -47,6 +52,7 @@ public class Classpath implements Iterable<Path> {
                     }
                 }
             } catch (final InvalidPathException e) {
+                LOG.error(e.getMessage(), e);
             }
         }
         return false;
@@ -63,6 +69,7 @@ public class Classpath implements Iterable<Path> {
                     }
                 }
             } catch (final InvalidPathException e) {
+                LOG.error(e.getMessage(), e);
             }
         }
         return false;
@@ -124,7 +131,7 @@ public class Classpath implements Iterable<Path> {
     }
 
     /**
-     * Copied from {@link org.exist.util.function.OptionalUtil#or(Optional, Supplier)}
+     * Copied from {@link com.evolvedbinary.j8fu.OptionalUtil#or(Optional, Supplier)}
      * as org.exist.start is compiled into a separate Jar and doesn't have
      * the rest of eXist available on the classpath
      */
