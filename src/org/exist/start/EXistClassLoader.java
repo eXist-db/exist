@@ -1,8 +1,5 @@
 package org.exist.start;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -16,8 +13,6 @@ import java.nio.file.Path;
  */
 public class EXistClassLoader extends URLClassLoader {
 
-    private final static Logger LOG = LogManager.getLogger(EXistClassLoader.class);
-
     public EXistClassLoader(final URL[] urls, final ClassLoader classLoader) {
         super(urls, classLoader);
     }
@@ -27,7 +22,7 @@ public class EXistClassLoader extends URLClassLoader {
             try {
                 addURL(path.toUri().toURL());
             } catch (final MalformedURLException e) {
-                LOG.error(e.getMessage(), e);
+                e.printStackTrace();
             }
         }
     }
