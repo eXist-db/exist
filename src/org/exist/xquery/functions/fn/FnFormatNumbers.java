@@ -28,372 +28,383 @@ import org.exist.xquery.value.*;
 import java.lang.String;
 import java.math.BigDecimal;
 
+
 /**
- * fn:format-number($value as numeric?, $picture as xs:string) as xs:string 
- * fn:format-number($value as numeric?, $picture as xs:string, $decimal-format-name as xs:string) as xs:string 
- * 
- * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
+ * fn:format-number($value as numeric?, $picture as xs:string) as xs:string
+ * fn:format-number($value as numeric?, $picture as xs:string, $decimal-format-name as xs:string) as xs:string
  *
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public class FnFormatNumbers extends BasicFunction {
 
-	private static final SequenceType NUMBER_PARAMETER = new FunctionParameterSequenceType("value", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The number to format");
+    private static final char DECIMAL_SEPARATOR_SIGN = '.';
+    private static final char GROUPING_SEPARATOR_SIGN = ',';
+    private static final String INFINITY = "Infinity";
+    private static final char MINUS_SIGN = '-';
+    private static final String NaN = "NaN";
+    private static final char PERCENT_SIGN = '%';
+    private static final char PER_MILLE_SIGN = '\u2030';
+    private static final char MANDATORY_DIGIT_SIGN = '0';
+    private static final char OPTIONAL_DIGIT_SIGN = '#';
+    private static final char PATTERN_SEPARATOR_SIGN = ';';
 
-	private static final SequenceType PICTURE = new FunctionParameterSequenceType("picture", Type.STRING, Cardinality.EXACTLY_ONE, "The format pattern string.  Please see the JavaDoc for java.text.DecimalFormat to get the specifics of this format string.");
-	private static final String PICTURE_DESCRIPTION = "The formatting of a number is controlled by a picture string. The picture string is a sequence of ·characters·, in which the characters assigned to the variables decimal-separator-sign, grouping-sign, decimal-digit-family, optional-digit-sign and pattern-separator-sign are classified as active characters, and all other characters (including the percent-sign and per-mille-sign) are classified as passive characters.";
+    private static final SequenceType NUMBER_PARAMETER = new FunctionParameterSequenceType("value", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The number to format");
+    private static final SequenceType PICTURE = new FunctionParameterSequenceType("picture", Type.STRING, Cardinality.EXACTLY_ONE, "The format pattern string.  Please see the JavaDoc for java.text.DecimalFormat to get the specifics of this format string.");
+    private static final String PICTURE_DESCRIPTION = "The formatting of a number is controlled by a picture string. The picture string is a sequence of ·characters·, in which the characters assigned to the variables decimal-separator-sign, grouping-sign, decimal-digit-family, optional-digit-sign and pattern-separator-sign are classified as active characters, and all other characters (including the percent-sign and per-mille-sign) are classified as passive characters.";
+    private static final SequenceType DECIMAL_FORMAT = new FunctionParameterSequenceType("decimal-format-name", Type.STRING, Cardinality.EXACTLY_ONE, "The decimal-format name must be a QName, which is expanded as described in [2.4 Qualified Names]. It is an error if the stylesheet does not contain a declaration of the decimal-format with the specified expanded-name.");
+    private static final String DECIMAL_FORMAT_DESCRIPTION = "";
+    private static final FunctionReturnSequenceType FUNCTION_RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "the formatted string");
 
-	private static final SequenceType DECIMAL_FORMAT = new FunctionParameterSequenceType("decimal-format-name", Type.STRING, Cardinality.EXACTLY_ONE, "The decimal-format name must be a QName, which is expanded as described in [2.4 Qualified Names]. It is an error if the stylesheet does not contain a declaration of the decimal-format with the specified expanded-name.");
-	private static final String DECIMAL_FORMAT_DESCRIPTION = "";
+    public static final FunctionSignature signatures[] = {
+            new FunctionSignature(
+                    new QName("format-number", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
+                    PICTURE_DESCRIPTION,
+                    new SequenceType[]{NUMBER_PARAMETER, PICTURE},
+                    FUNCTION_RETURN_TYPE
+            ),
+            new FunctionSignature(
+                    new QName("format-number", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
+                    DECIMAL_FORMAT_DESCRIPTION,
+                    new SequenceType[]{NUMBER_PARAMETER, PICTURE, DECIMAL_FORMAT},
+                    FUNCTION_RETURN_TYPE
+            )
+    };
 
-	private static final FunctionReturnSequenceType FUNCTION_RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "the formatted string");
+    public FnFormatNumbers(final XQueryContext context, final FunctionSignature signature) {
+        super(context, signature);
+    }
 
-	public final static FunctionSignature signatures[] = {
-		new FunctionSignature(
-				new QName("format-number", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
-				PICTURE_DESCRIPTION,
-				new SequenceType[] {NUMBER_PARAMETER, PICTURE},
-				FUNCTION_RETURN_TYPE
-		),
-		new FunctionSignature(
-				new QName("format-number", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
-				DECIMAL_FORMAT_DESCRIPTION,
-				new SequenceType[] {NUMBER_PARAMETER, PICTURE, DECIMAL_FORMAT},
-				FUNCTION_RETURN_TYPE
-		)
-	};
-	
-	/**
-	 * @param context
-	 */
-	public FnFormatNumbers(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+    @Override
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence)
+            throws XPathException {
 
-	@Override
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException {
+        if (args[0].isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
 
-		if (args[0].isEmpty()) {
-			return Sequence.EMPTY_SEQUENCE;
-		}
-		
-		final NumericValue numericValue = (NumericValue)args[0].itemAt(0);
-		
-		try {
-			final Formatter[] formatters = prepare(args[1].getStringValue());
-			final String value = format(formatters[0], numericValue);
-			return new StringValue(value);
-		} catch (final java.lang.IllegalArgumentException e) {
-			e.printStackTrace();
-			throw new XPathException(e.getMessage());
-		}
-	}
-	
-	private String format(Formatter f, NumericValue numericValue) throws XPathException {
-		if (numericValue.isNaN()) {
-			return NaN;
-		}
+        final NumericValue numericValue = (NumericValue) args[0].itemAt(0);
 
-		final String minuSign = numericValue.isNegative()? String.valueOf(MINUS_SIGN) : "";
-		if (numericValue.isInfinite()) {
-			return minuSign + f.prefix + INFINITY + f.suffix;
-		}
-		
-		NumericValue factor = null;
-		if (f.isPercent) {
-			factor = new IntegerValue(100);
-		} else if (f.isPerMille) {
-			factor = new IntegerValue(1000);
-		}
-		
-		if (factor != null) {
-			try {
-				numericValue = (NumericValue) numericValue.mult(factor);
-			} catch (final XPathException e) {
-				e.printStackTrace();
-				throw e;
-			}
-		}
-		
-		int pl = 0;
-		
-		final StringBuilder sb = new StringBuilder();
-		
-		if (numericValue.hasFractionalPart()) {
-			
-			BigDecimal val = ((DecimalValue)numericValue.convertTo(Type.DECIMAL)).getValue();
+        try {
+            final Formatter[] formatters = prepare(args[1].getStringValue());
+            final String value = format(formatters[0], numericValue);
+            return new StringValue(value);
+        } catch (final java.lang.IllegalArgumentException e) {
+            throw new XPathException(this, e.getMessage(), e);
+        }
+    }
 
-			val = val.setScale(f.flMAX, BigDecimal.ROUND_HALF_EVEN);
-			
-			final String number = val.toPlainString();
-				
-			sb.append(number);
-			
-			pl = number.indexOf('.');
-			if (pl < 0) {
-				sb.append('.');
-				for (int i = 0; i < f.flMIN; i++) {
-					sb.append('0');
-				}
-			} else {
-				
-			}
+    private String format(final Formatter f, NumericValue numericValue) throws XPathException {
+        if (numericValue.isNaN()) {
+            return NaN;
+        }
 
-		} else {
-			final String str = numericValue.getStringValue();
-			pl = str.length();
-			formatInt(str, sb, f);
-		}
-		
-		if (f.mg != 0) {
-			int pos = pl - f.mg;
-			while (pos > 0) {
-				sb.insert(pos, ',');
-				pos -= f.mg;
-			}
-		}
+        // perform the formatting
+        f.format();
 
-		return sb.toString();
-	}
-	
-	private void formatInt(String number, StringBuilder sb, Formatter f) {
-		final int leadingZ = f.mlMIN - number.length();
-		for (int i = 0; i < leadingZ; i++) {
-			sb.append('0');
-		}
-		sb.append(number);
-		if (f.flMIN > 0) {
-			sb.append(".");
-			for (int i = 0; i < f.mlMIN; i++) {
-				sb.append('0');
-			}
-		}
-	}
+        final String minuSign = numericValue.isNegative() ? String.valueOf(MINUS_SIGN) : "";
+        if (numericValue.isInfinite()) {
+            return minuSign + f.prefix + INFINITY + f.suffix;
+        }
 
-	private final char DECIMAL_SEPARATOR_SIGN = '.';
-	private final char GROUPING_SEPARATOR_SIGN = ',';
-	private final String INFINITY = "Infinity";
-	private final char MINUS_SIGN = '-';
-	private final String NaN = "NaN";
-	private final char PERCENT_SIGN = '%';
-	private final char PER_MILLE_SIGN = '\u2030';
-	private final char MANDATORY_DIGIT_SIGN = '0';
-	private final char OPTIONAL_DIGIT_SIGN = '#';
-	private final char PATTERN_SEPARATOR_SIGN = ';';
-	
-	private Formatter[] prepare(String picture) throws XPathException {
-		if (picture.length() == 0)
-			{throw new XPathException(this, ErrorCodes.XTDE1310, "format-number() picture is zero-length");}
-		
-		final String[] pics = picture.split(String.valueOf(PATTERN_SEPARATOR_SIGN));
-		
-		final Formatter[] formatters = new Formatter[2];
-		for (int i = 0; i < pics.length; i++) {
-			formatters[i] = new Formatter(pics[i]);
-		}
-		
-		return formatters;
-	}
-	
-	class Formatter {
+        final NumericValue factor;
+        if (f.isPercent) {
+            factor = new IntegerValue(100);
+        } else if (f.isPerMille) {
+            factor = new IntegerValue(1000);
+        } else {
+            factor = null;
+        }
 
-		String prefix = "", suffix = "";
+        if (factor != null) {
+            try {
+                numericValue = (NumericValue) numericValue.mult(factor);
+            } catch (final XPathException e) {
+                throw e;
+            }
+        }
 
-		boolean ds = false, isPercent = false, isPerMille = false;
-		int mlMAX = 0, flMAX = 0;
-		int mlMIN = 0, flMIN = 0;
-		
-		int mg = 0, fg = 0;
+        int pl = 0;
 
-		public Formatter(String picture) throws XPathException {
-			if ( ! ( 
-					picture.contains(String.valueOf(OPTIONAL_DIGIT_SIGN)) 
-					|| picture.contains(String.valueOf(MANDATORY_DIGIT_SIGN))
-					)
-				) {
-				
-				throw new XPathException(FnFormatNumbers.this, ErrorCodes.XTDE1310, 
-					"A sub-picture must contain at least one character that is an optional-digit-sign or a member of the decimal-digit-family.");
-			}
-			
-			int bmg = -1, bfg = -1;
+        final StringBuilder sb = new StringBuilder();
 
-			// 0 - beginning passive-chars
-			// 1 - digit signs
-			// 2 - zero signs
-			// 3 - fractional zero signs
-			// 4 - fractional digit signs
-			// 5 - ending passive-chars
-			short phase = 0;
-			
-			for (int i = 0; i < picture.length(); i++) {
-				char ch = picture.charAt(i);
-				
-				switch (ch) {
-				case OPTIONAL_DIGIT_SIGN:
-					
-					switch (phase) {
-					case 0:
-					case 1:
-						mlMAX++;
-						phase = 1;
-						break;
+        if (numericValue.hasFractionalPart()) {
 
-					case 2:
-						throw new XPathException(FnFormatNumbers.this, ErrorCodes.XTDE1310,
-							"");
+            BigDecimal val = ((DecimalValue) numericValue.convertTo(Type.DECIMAL)).getValue();
+            val = val.setScale(f.flMAX, BigDecimal.ROUND_HALF_EVEN);
 
-					case 3:
-					case 4:
-						flMAX++;
-						phase = 4;
-						break;
+            final String number = val.toPlainString();
+            sb.append(number);
 
-					case 5:
-						throw new XPathException(FnFormatNumbers.this, ErrorCodes.XTDE1310, 
-							"A sub-picture must not contain a passive character that is preceded by an active character and that is followed by another active character. " +
-							"Found at optional-digit-sign.");
-					}
-					
-					break;
+            pl = number.indexOf('.');
+            if (pl < 0) {
+                sb.append('.');
+                for (int i = 0; i < f.flMIN; i++) {
+                    sb.append('0');
+                }
+            }
 
-				case MANDATORY_DIGIT_SIGN:
-					
-					switch (phase) {
-					case 0:
-					case 1:
-					case 2:
-						mlMIN++;
-						mlMAX++;
-						phase = 2;
-						break;
+        } else {
+            final String str = numericValue.getStringValue();
+            pl = str.length();
+            formatInt(str, sb, f);
+        }
 
-					case 3:
-						flMIN++;
-						flMAX++;
-						break;
+        if (f.mg != 0) {
+            int pos = pl - f.mg;
+            while (pos > 0) {
+                sb.insert(pos, ',');
+                pos -= f.mg;
+            }
+        }
 
-					case 4:
-						throw new XPathException(FnFormatNumbers.this, ErrorCodes.XTDE1310,
-							"");
+        return sb.toString();
+    }
 
-					case 5:
-						throw new XPathException(FnFormatNumbers.this, ErrorCodes.XTDE1310, 
-							"A sub-picture must not contain a passive character that is preceded by an active character and that is followed by another active character. " +
-							"Found at mandatory-digit-sign.");
-					}
+    private void formatInt(final String number, final StringBuilder sb, final Formatter f) {
+        final int leadingZ = f.mlMIN - number.length();
+        for (int i = 0; i < leadingZ; i++) {
+            sb.append('0');
+        }
+        sb.append(number);
+        if (f.flMIN > 0) {
+            sb.append(".");
+            for (int i = 0; i < f.mlMIN; i++) {
+                sb.append('0');
+            }
+        }
+    }
 
-					break;
+    private Formatter[] prepare(final String picture) throws XPathException {
+        if (picture.length() == 0) {
+            throw new XPathException(this, ErrorCodes.XTDE1310, "format-number() picture is zero-length");
+        }
 
-				case GROUPING_SEPARATOR_SIGN:
-					
-					switch (phase) {
-					case 0:
-					case 1:
-					case 2:
-						if (bmg == -1) {
-							bmg = i;
-						} else {
-							mg = i - bmg;
-							bmg = -1;
-						}
-						break;
+        final String[] pics = picture.split(String.valueOf(PATTERN_SEPARATOR_SIGN));
+        final Formatter[] formatters = new Formatter[pics.length];
+        for (int i = 0; i < pics.length; i++) {
+            formatters[i] = new Formatter(this, pics[i]);
+        }
 
-					case 3:
-					case 4:
-						if (bfg == -1) {
-							bfg = i;
-						} else {
-							fg = i - bfg;
-							bfg = -1;
-						}
-						break;
-					case 5:
-						throw new XPathException(FnFormatNumbers.this, ErrorCodes.XTDE1310, 
-							"A sub-picture must not contain a passive character that is preceded by an active character and that is followed by another active character. " +
-							"Found at grouping-separator-sign.");
-					}
+        return formatters;
+    }
 
-					break;
+    private static class Formatter {
 
-				case DECIMAL_SEPARATOR_SIGN:
-					
-					switch (phase) {
-					case 0:
-					case 1:
-					case 2:
-						if (bmg != -1) {
-							mg = i - bmg - 1;
-							bmg = -1;
-						}
-						ds = true;
-						phase = 3;
-						break;
+        enum ParsePhase {
+            BEGINNING_PASSIVE_CHARS,
+            DIGIT_SIGNS,
+            ZERO_SIGNS,
+            FRACTIONAL_ZERO_SIGNS,
+            FRACTIONAL_DIGIT_SIGNS,
+            ENDING_PASSIVE_CHARS
+        }
 
-					case 3:
-					case 4:
-					case 5:
-						if (ds)
-							{throw new XPathException(FnFormatNumbers.this, ErrorCodes.XTDE1310, 
-								"A sub-picture must not contain more than one decimal-separator-sign.");}
+        private final Expression xqueryExpr;
+        private final String picture;
 
-						throw new XPathException(FnFormatNumbers.this, ErrorCodes.XTDE1310, 
-							"A sub-picture must not contain a passive character that is preceded by an active character and that is followed by another active character. " +
-							"Found at decimal-separator-sign.");
-					}
+        private String prefix = "";
+        private String suffix = "";
 
-					break;
+        private boolean ds = false;
+        private boolean isPercent = false;
+        private boolean isPerMille = false;
 
-				case PERCENT_SIGN:
-				case PER_MILLE_SIGN:
-					if (isPercent || isPerMille)
-						{throw new XPathException(FnFormatNumbers.this, ErrorCodes.XTDE1310, 
-							"A sub-picture must not contain more than one percent-sign or per-mille-sign, and it must not contain one of each.");}
-					
-					isPercent = ch == PERCENT_SIGN;
-					isPerMille = ch == PER_MILLE_SIGN;
-					
-					switch (phase) {
-					case 0:
-						prefix += ch;
-						break;
-					case 1:
-					case 2:
-					case 3:
-					case 4:
-					case 5:
-						phase = 5;
-						suffix += ch;
-						break;
-					}
+        private int mlMAX = 0;
+        private int flMAX = 0;
+        private int mlMIN = 0;
+        private int flMIN = 0;
 
-					break;
+        private int mg = 0;
+        private int fg = 0;
 
-				default:
-					//passive chars
-					switch (phase) {
-					case 0:
-						prefix += ch;
-						break;
-					case 1:
-					case 2:
-					case 3:
-					case 4:
-					case 5:
-						if (bmg != -1) {
-							mg = i - bmg - 1;
-							bmg = -1;
-						}
-						suffix += ch;
-						phase = 5;
-						break;
-					}
-					break;
-				}
-			}
-			
-			if (mlMIN == 0 && !ds) {mlMIN = 1;}
-			
+        public Formatter(final Expression xqueryExpr, final String picture) {
+            this.xqueryExpr = xqueryExpr;
+            this.picture = picture;
+        }
+
+        public void format() throws XPathException {
+            if (!(picture.contains(String.valueOf(OPTIONAL_DIGIT_SIGN)) || picture.contains(String.valueOf(MANDATORY_DIGIT_SIGN)))) {
+                throw new XPathException(xqueryExpr, ErrorCodes.XTDE1310,
+                        "A sub-picture must contain at least one character that is an optional-digit-sign or a member of the decimal-digit-family.");
+            }
+
+            int bmg = -1, bfg = -1;
+
+            ParsePhase phase = ParsePhase.BEGINNING_PASSIVE_CHARS;
+
+            for (int i = 0; i < picture.length(); i++) {
+                final char ch = picture.charAt(i);
+
+                switch (ch) {
+                    case OPTIONAL_DIGIT_SIGN:
+
+                        switch (phase) {
+                            case BEGINNING_PASSIVE_CHARS:
+                            case DIGIT_SIGNS:
+                                mlMAX++;
+                                phase = ParsePhase.BEGINNING_PASSIVE_CHARS;
+                                break;
+
+                            case ZERO_SIGNS:
+                                throw new XPathException(xqueryExpr, ErrorCodes.XTDE1310,
+                                        "");
+
+                            case FRACTIONAL_ZERO_SIGNS:
+                            case FRACTIONAL_DIGIT_SIGNS:
+                                flMAX++;
+                                phase = ParsePhase.FRACTIONAL_DIGIT_SIGNS;
+                                break;
+
+                            case ENDING_PASSIVE_CHARS:
+                                throw new XPathException(xqueryExpr, ErrorCodes.XTDE1310,
+                                        "A sub-picture must not contain a passive character that is preceded by an active character and that is followed by another active character. " +
+                                                "Found at optional-digit-sign.");
+                        }
+
+                        break;
+
+                    case MANDATORY_DIGIT_SIGN:
+
+                        switch (phase) {
+                            case BEGINNING_PASSIVE_CHARS:
+                            case DIGIT_SIGNS:
+                            case ZERO_SIGNS:
+                                mlMIN++;
+                                mlMAX++;
+                                phase = ParsePhase.ZERO_SIGNS;
+                                break;
+
+                            case FRACTIONAL_ZERO_SIGNS:
+                                flMIN++;
+                                flMAX++;
+                                break;
+
+                            case FRACTIONAL_DIGIT_SIGNS:
+                                throw new XPathException(xqueryExpr, ErrorCodes.XTDE1310,
+                                        "");
+
+                            case ENDING_PASSIVE_CHARS:
+                                throw new XPathException(xqueryExpr, ErrorCodes.XTDE1310,
+                                        "A sub-picture must not contain a passive character that is preceded by an active character and that is followed by another active character. " +
+                                                "Found at mandatory-digit-sign.");
+                        }
+
+                        break;
+
+                    case GROUPING_SEPARATOR_SIGN:
+
+                        switch (phase) {
+                            case BEGINNING_PASSIVE_CHARS:
+                            case DIGIT_SIGNS:
+                            case ZERO_SIGNS:
+                                if (bmg == -1) {
+                                    bmg = i;
+                                } else {
+                                    mg = i - bmg;
+                                    bmg = -1;
+                                }
+                                break;
+
+                            case FRACTIONAL_ZERO_SIGNS:
+                            case FRACTIONAL_DIGIT_SIGNS:
+                                if (bfg == -1) {
+                                    bfg = i;
+                                } else {
+                                    fg = i - bfg;
+                                    bfg = -1;
+                                }
+                                break;
+
+                            case ENDING_PASSIVE_CHARS:
+                                throw new XPathException(xqueryExpr, ErrorCodes.XTDE1310,
+                                        "A sub-picture must not contain a passive character that is preceded by an active character and that is followed by another active character. " +
+                                                "Found at grouping-separator-sign.");
+                        }
+
+                        break;
+
+                    case DECIMAL_SEPARATOR_SIGN:
+
+                        switch (phase) {
+                            case BEGINNING_PASSIVE_CHARS:
+                            case DIGIT_SIGNS:
+                            case ZERO_SIGNS:
+                                if (bmg != -1) {
+                                    mg = i - bmg - 1;
+                                    bmg = -1;
+                                }
+                                ds = true;
+                                phase = ParsePhase.FRACTIONAL_ZERO_SIGNS;
+                                break;
+
+                            case FRACTIONAL_ZERO_SIGNS:
+                            case FRACTIONAL_DIGIT_SIGNS:
+                            case ENDING_PASSIVE_CHARS:
+                                if (ds) {
+                                    throw new XPathException(xqueryExpr, ErrorCodes.XTDE1310,
+                                            "A sub-picture must not contain more than one decimal-separator-sign.");
+                                }
+
+                                throw new XPathException(xqueryExpr, ErrorCodes.XTDE1310,
+                                        "A sub-picture must not contain a passive character that is preceded by an active character and that is followed by another active character. " +
+                                                "Found at decimal-separator-sign.");
+                        }
+
+                        break;
+
+                    case PERCENT_SIGN:
+                    case PER_MILLE_SIGN:
+                        if (isPercent || isPerMille) {
+                            throw new XPathException(xqueryExpr, ErrorCodes.XTDE1310,
+                                    "A sub-picture must not contain more than one percent-sign or per-mille-sign, and it must not contain one of each.");
+                        }
+
+                        isPercent = ch == PERCENT_SIGN;
+                        isPerMille = ch == PER_MILLE_SIGN;
+
+                        switch (phase) {
+                            case BEGINNING_PASSIVE_CHARS:
+                                prefix += ch;
+                                break;
+                            case DIGIT_SIGNS:
+                            case ZERO_SIGNS:
+                            case FRACTIONAL_ZERO_SIGNS:
+                            case FRACTIONAL_DIGIT_SIGNS:
+                            case ENDING_PASSIVE_CHARS:
+                                phase = ParsePhase.ENDING_PASSIVE_CHARS;
+                                suffix += ch;
+                                break;
+                        }
+
+                        break;
+
+                    default:
+                        //passive chars
+                        switch (phase) {
+                            case BEGINNING_PASSIVE_CHARS:
+                                prefix += ch;
+                                break;
+                            case DIGIT_SIGNS:
+                            case ZERO_SIGNS:
+                            case FRACTIONAL_ZERO_SIGNS:
+                            case FRACTIONAL_DIGIT_SIGNS:
+                            case ENDING_PASSIVE_CHARS:
+                                if (bmg != -1) {
+                                    mg = i - bmg - 1;
+                                    bmg = -1;
+                                }
+                                suffix += ch;
+                                phase = ParsePhase.ENDING_PASSIVE_CHARS;
+                                break;
+                        }
+                        break;
+                }
+            }
+
+            if (mlMIN == 0 && !ds) {
+                mlMIN = 1;
+            }
+
 //			System.out.println("prefix = "+prefix);
 //			System.out.println("suffix = "+suffix);
 //			System.out.println("ds = "+ds);
@@ -403,6 +414,6 @@ public class FnFormatNumbers extends BasicFunction {
 //			System.out.println("fl = "+flMAX);
 //			System.out.println("mg = "+mg);
 //			System.out.println("fg = "+fg);
-		}
-	}
+        }
+    }
 }
