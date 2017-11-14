@@ -197,7 +197,7 @@ public class ErrorCodes {
     public static final ErrorCode FOFD1340 = new W3CErrorCode("FOFD1340", "Invalid date/time formatting picture string");
     public static final ErrorCode FOFD1350 = new W3CErrorCode("FOFD1350", " Invalid date/time formatting component");
 
-    public static final ErrorCode XTDE1310 = new W3CErrorCode("XTDE1310", " Invalid decimal format picture string.");
+    public static final ErrorCode FODF1310 = new W3CErrorCode("FODF1310", " Invalid decimal format picture string.");
 	public static final ErrorCode FTDY0020 = new W3CErrorCode("FTDY0020", "");
 	
 	public static final ErrorCode FODC0006 = new W3CErrorCode("FODC0006", "String passed to fn:parse-xml is not a well-formed XML document.");

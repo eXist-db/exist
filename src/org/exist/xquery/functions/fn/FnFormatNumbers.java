@@ -176,7 +176,7 @@ public class FnFormatNumbers extends BasicFunction {
 
     private Formatter[] prepare(final String picture) throws XPathException {
         if (picture.length() == 0) {
-            throw new XPathException(this, ErrorCodes.XTDE1310, "format-number() picture is zero-length");
+            throw new XPathException(this, ErrorCodes.FODF1310, "format-number() picture is zero-length");
         }
 
         final String[] pics = picture.split(String.valueOf(PATTERN_SEPARATOR_SIGN));
@@ -224,7 +224,7 @@ public class FnFormatNumbers extends BasicFunction {
 
         public void format() throws XPathException {
             if (!(picture.contains(String.valueOf(OPTIONAL_DIGIT_SIGN)) || picture.contains(String.valueOf(MANDATORY_DIGIT_SIGN)))) {
-                throw new XPathException(xqueryExpr, ErrorCodes.XTDE1310,
+                throw new XPathException(xqueryExpr, ErrorCodes.FODF1310,
                         "A sub-picture must contain at least one character that is an optional-digit-sign or a member of the decimal-digit-family.");
             }
 
@@ -246,7 +246,7 @@ public class FnFormatNumbers extends BasicFunction {
                                 break;
 
                             case ZERO_SIGNS:
-                                throw new XPathException(xqueryExpr, ErrorCodes.XTDE1310,
+                                throw new XPathException(xqueryExpr, ErrorCodes.FODF1310,
                                         "");
 
                             case FRACTIONAL_ZERO_SIGNS:
@@ -256,7 +256,7 @@ public class FnFormatNumbers extends BasicFunction {
                                 break;
 
                             case ENDING_PASSIVE_CHARS:
-                                throw new XPathException(xqueryExpr, ErrorCodes.XTDE1310,
+                                throw new XPathException(xqueryExpr, ErrorCodes.FODF1310,
                                         "A sub-picture must not contain a passive character that is preceded by an active character and that is followed by another active character. " +
                                                 "Found at optional-digit-sign.");
                         }
@@ -280,11 +280,11 @@ public class FnFormatNumbers extends BasicFunction {
                                 break;
 
                             case FRACTIONAL_DIGIT_SIGNS:
-                                throw new XPathException(xqueryExpr, ErrorCodes.XTDE1310,
+                                throw new XPathException(xqueryExpr, ErrorCodes.FODF1310,
                                         "");
 
                             case ENDING_PASSIVE_CHARS:
-                                throw new XPathException(xqueryExpr, ErrorCodes.XTDE1310,
+                                throw new XPathException(xqueryExpr, ErrorCodes.FODF1310,
                                         "A sub-picture must not contain a passive character that is preceded by an active character and that is followed by another active character. " +
                                                 "Found at mandatory-digit-sign.");
                         }
@@ -316,7 +316,7 @@ public class FnFormatNumbers extends BasicFunction {
                                 break;
 
                             case ENDING_PASSIVE_CHARS:
-                                throw new XPathException(xqueryExpr, ErrorCodes.XTDE1310,
+                                throw new XPathException(xqueryExpr, ErrorCodes.FODF1310,
                                         "A sub-picture must not contain a passive character that is preceded by an active character and that is followed by another active character. " +
                                                 "Found at grouping-separator-sign.");
                         }
@@ -341,11 +341,11 @@ public class FnFormatNumbers extends BasicFunction {
                             case FRACTIONAL_DIGIT_SIGNS:
                             case ENDING_PASSIVE_CHARS:
                                 if (ds) {
-                                    throw new XPathException(xqueryExpr, ErrorCodes.XTDE1310,
+                                    throw new XPathException(xqueryExpr, ErrorCodes.FODF1310,
                                             "A sub-picture must not contain more than one decimal-separator-sign.");
                                 }
 
-                                throw new XPathException(xqueryExpr, ErrorCodes.XTDE1310,
+                                throw new XPathException(xqueryExpr, ErrorCodes.FODF1310,
                                         "A sub-picture must not contain a passive character that is preceded by an active character and that is followed by another active character. " +
                                                 "Found at decimal-separator-sign.");
                         }
@@ -355,7 +355,7 @@ public class FnFormatNumbers extends BasicFunction {
                     case PERCENT_SIGN:
                     case PER_MILLE_SIGN:
                         if (isPercent || isPerMille) {
-                            throw new XPathException(xqueryExpr, ErrorCodes.XTDE1310,
+                            throw new XPathException(xqueryExpr, ErrorCodes.FODF1310,
                                     "A sub-picture must not contain more than one percent-sign or per-mille-sign, and it must not contain one of each.");
                         }
 
