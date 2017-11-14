@@ -18,3 +18,18 @@ declare
 function fd:simple-number($number as numeric) {
     format-number($number, "#,###.##")
 };
+
+declare
+    %test:args("#0")
+    %test:assertEquals("0")
+    %test:args("#0.0")
+    %test:assertEquals("0.0")
+    %test:args("#0.00")
+    %test:assertEquals("0.00")
+    %test:args("#0.000")
+    %test:assertEquals("0.000")
+    %test:args("#0.0#")
+    %test:assertEquals("0.0")
+function fd:decimal-zeros($picture as xs:string) {
+    format-number(0, $picture)
+};

@@ -168,7 +168,7 @@ public class FnFormatNumbers extends BasicFunction {
         sb.append(number);
         if (f.flMIN > 0) {
             sb.append(".");
-            for (int i = 0; i < f.mlMIN; i++) {
+            for (int i = 0; i < f.flMIN; i++) {
                 sb.append('0');
             }
         }
