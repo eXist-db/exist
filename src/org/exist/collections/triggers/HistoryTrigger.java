@@ -68,7 +68,10 @@ import org.exist.xquery.value.DateTimeValue;
  */
 public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger {
 
-    protected XmldbURI rootPath = XmldbURI.ROOT_COLLECTION_URI.append("history");
+    public static final String PARAM_ROOT_NAME = "root";
+    public static final XmldbURI DEFAULT_ROOT_PATH = XmldbURI.ROOT_COLLECTION_URI.append("history");
+
+    private XmldbURI rootPath = DEFAULT_ROOT_PATH;
 
     public void configure(DBBroker broker, Collection parent,
             Map<String, List<?>> parameters) throws TriggerException {
