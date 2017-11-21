@@ -579,7 +579,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
         if (!manager.hasAdminPrivileges(user)) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, " This operation is restricted to Admin users");
         } else {
-            return op -> op.andThen(this::withDb).apply(manager);
+            return op -> op.andThen((FunctionE<LocalXmldbFunction<R>, R, XMLDBException>)this::withDb).apply(manager);
         }
     }
 
