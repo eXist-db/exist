@@ -30,12 +30,12 @@ public class SessionCountListener implements HttpSessionListener {
     private static AtomicLong activeSessions = new AtomicLong();
 
     @Override
-    public void sessionCreated(HttpSessionEvent httpSessionEvent) {
+    public void sessionCreated(final HttpSessionEvent httpSessionEvent) {
         activeSessions.incrementAndGet();
     }
 
     @Override
-    public void sessionDestroyed(HttpSessionEvent httpSessionEvent) {
+    public void sessionDestroyed(final HttpSessionEvent httpSessionEvent) {
         activeSessions.decrementAndGet();
     }
 
