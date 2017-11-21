@@ -141,7 +141,7 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger 
     @Override
     public void beforeCopyDocument(final DBBroker broker, final Txn txn,
             final DocumentImpl document, final XmldbURI newUri) throws TriggerException {
-        makeCopy(broker, txn, document);
+        //Nothing to do
     }
 
     @Override
