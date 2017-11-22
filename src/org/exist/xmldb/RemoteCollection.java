@@ -561,10 +561,6 @@ public class RemoteCollection extends AbstractRemote implements CollectionImpl {
         }
     }
 
-    //TODO this function never closes the InputStream, there may be a valid reason
-    //for this if it is taken from an InputSource, but this needs to be checked!
-    //Regardless, the XML:DB Remote API leaks file and/or stream handles under certain
-    //conditions - Noted by AR 2015-03-26
     private void uploadAndStore(final Resource res) throws XMLDBException {
         InputStream is = null;
         String descString = "<unknown>";
