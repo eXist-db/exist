@@ -71,7 +71,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
     public boolean hasMatches(final NodeProxy proxy) {
         Match nextMatch = proxy.getMatches();
         while (nextMatch != null) {
-            if (nextMatch.getIndexId() == LuceneIndex.ID) {
+            if (nextMatch.getIndexId().equals(LuceneIndex.ID)) {
                 return true;
             }
             nextMatch = nextMatch.getNextMatch();
@@ -335,7 +335,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
                 termMap = new TreeMap<>();
                 Match nextMatch = this.match;
                 while (nextMatch != null) {
-                    if (nextMatch.getIndexId() == LuceneIndex.ID) {
+                    if (nextMatch.getIndexId().equals(LuceneIndex.ID)) {
                         final Query query = ((LuceneIndexWorker.LuceneMatch) nextMatch).getQuery();
                         if (!queries.contains(query)) {
                             queries.add(query);

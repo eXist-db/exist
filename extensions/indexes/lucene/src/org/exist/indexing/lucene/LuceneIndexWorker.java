@@ -300,7 +300,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         boolean needToFilter = false;
         Match nextMatch = proxy.getMatches();
         while (nextMatch != null) {
-            if (nextMatch.getIndexId() == LuceneIndex.ID) {
+            if (nextMatch.getIndexId().equals(LuceneIndex.ID)) {
                 needToFilter = true;
                 break;
             }
