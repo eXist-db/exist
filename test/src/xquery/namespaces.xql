@@ -260,3 +260,15 @@ function nt:ns-default-constructor() {
         }/stuff
     )
 };
+
+declare
+    %test:assertError("XPTY0004")
+function nt:qname-rhs-compare() {
+    'test' eq xs:QName('test')
+};
+
+declare
+    %test:assertError("XPTY0004")
+function nt:qname-lhs-compare() {
+    xs:QName('test') eq 'test'
+};

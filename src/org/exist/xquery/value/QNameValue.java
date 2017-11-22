@@ -154,9 +154,8 @@ public class QNameValue extends AtomicValue {
                     throw new XPathException(ErrorCodes.XPTY0004, "cannot apply operator to QName");
             }
         } else {
-            throw new XPathException(
-                    "Type error: cannot compare QName to "
-                            + Type.getTypeName(other.getType()));
+            throw new XPathException(ErrorCodes.XPTY0004, "Type error: cannot compare QName to "
+                    + Type.getTypeName(other.getType()));
         }
     }
 
