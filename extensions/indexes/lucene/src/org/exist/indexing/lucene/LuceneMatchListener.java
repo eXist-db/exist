@@ -45,6 +45,7 @@ import org.xml.sax.SAXException;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.StringReader;
 import java.util.*;
 
@@ -225,7 +226,8 @@ public class LuceneMatchListener extends AbstractMatchListener {
         }
 
         final String str = extractor.getText().toString();
-        try (final TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(str))) {
+        try (final Reader reader = new StringReader(str);
+                final TokenStream tokenStream = analyzer.tokenStream(null, reader)) {
             tokenStream.reset();
             final MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream);
             while (stream.incrementToken()) {
