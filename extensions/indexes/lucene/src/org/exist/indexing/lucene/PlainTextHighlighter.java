@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -39,10 +40,9 @@ import org.exist.dom.memtree.MemTreeBuilder;
 
 public class PlainTextHighlighter {
 
-    private final TreeMap<Object, Query> termMap;
+    private final Map<Object, Query> termMap = new TreeMap<>();
 	
 	public PlainTextHighlighter(Query query, IndexReader reader) throws IOException {
-		this.termMap = new TreeMap<>();
 		LuceneUtil.extractTerms(query, termMap, reader, false);
 	}
 	

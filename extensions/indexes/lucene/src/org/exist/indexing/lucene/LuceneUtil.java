@@ -52,22 +52,22 @@ public class LuceneUtil {
     public static final String FIELD_DOC_ID = "docId";
     public static final String FIELD_DOC_URI = "docUri";
 
-    public static byte[] createId(int docId, NodeId nodeId) {
+    public static byte[] createId(final int docId, final NodeId nodeId) {
         // build id from nodeId and docId
-        byte[] data = new byte[nodeId.size() + 4];
+        final byte[] data = new byte[nodeId.size() + 4];
         ByteConversion.intToByteH(docId, data, 0);
         nodeId.serialize(data, 4);
 
         return data;
     }
 
-    public static byte[] createId(NodeId nodeId) {
-        byte[] data = new byte[nodeId.size()];
+    public static byte[] createId(final NodeId nodeId) {
+        final byte[] data = new byte[nodeId.size()];
         nodeId.serialize(data, 0);
         return data;
     }
 
-    public static NodeId readNodeId(int doc, BinaryDocValues nodeIdValues, BrokerPool pool) {
+    public static NodeId readNodeId(final int doc, final BinaryDocValues nodeIdValues, final BrokerPool pool) {
         final BytesRef ref = nodeIdValues.get(doc);
         final int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
         return pool.getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
@@ -80,10 +80,10 @@ public class LuceneUtil {
      * @param qname
      * @return encoded qname
      */
-    public static String encodeQName(QName qname, SymbolTable symbols) {
-        short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
-        short localNameId = symbols.getSymbol(qname.getLocalPart());
-        long nameId = qname.getNameType() | (namespaceId & 0xFFFF) << 16 | (localNameId & 0xFFFFFFFFL) << 32;
+    public static String encodeQName(final QName qname, final SymbolTable symbols) {
+        final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
+        final short localNameId = symbols.getSymbol(qname.getLocalPart());
+        final long nameId = qname.getNameType() | (namespaceId & 0xFFFF) << 16 | (localNameId & 0xFFFFFFFFL) << 32;
         return Long.toHexString(nameId);
     }
 
@@ -93,106 +93,108 @@ public class LuceneUtil {
      * @param s
      * @return the qname
      */
-    public static QName decodeQName(String s, SymbolTable symbols) {
+    public static QName decodeQName(final String s, final SymbolTable symbols) {
         try {
-            long l = Long.parseLong(s, 16);
-            short namespaceId = (short) ((l >>> 16) & 0xFFFFL);
-            short localNameId = (short) ((l >>> 32) & 0xFFFFL);
-            byte type = (byte) (l & 0xFFL);
-            String namespaceURI = symbols.getNamespace(namespaceId);
-            String localName = symbols.getName(localNameId);
+            final long l = Long.parseLong(s, 16);
+            final short namespaceId = (short) ((l >>> 16) & 0xFFFFL);
+            final short localNameId = (short) ((l >>> 32) & 0xFFFFL);
+            final byte type = (byte) (l & 0xFFL);
+            final String namespaceURI = symbols.getNamespace(namespaceId);
+            final String localName = symbols.getName(localNameId);
             return new QName(localName, namespaceURI, XMLConstants.DEFAULT_NS_PREFIX, type);
-        } catch (NumberFormatException e) {
+        } catch (final NumberFormatException e) {
             return null;
         }
     }
 
-	public static String[] extractFields(Query query, IndexReader reader) throws IOException {
-		Map<Object, Query> map = new TreeMap<>();
-		extractTerms(query, map, reader, true);
-		Set<String> fields = new TreeSet<>();
-		for (Object term : map.keySet()) {
-			fields.add(((Term)term).field());
-		}
-		String[] fieldArray = new String[fields.size()];
-		return fields.toArray(fieldArray);
-	}
-	
+    public static String[] extractFields(final Query query, final IndexReader reader) throws IOException {
+        final Map<Object, Query> map = new TreeMap<>();
+        extractTerms(query, map, reader, true);
+        final Set<String> fields = new TreeSet<>();
+        for (final Object term : map.keySet()) {
+            fields.add(((Term)term).field());
+        }
+        final String[] fieldArray = new String[fields.size()];
+        return fields.toArray(fieldArray);
+    }
+
     /**
      * Extract all terms which would be matched by a given query.
      * The terms are put into a map with the term as key and the
      * corresponding query object as value.
-     *
+     * <p>
      * This method is used by {@link LuceneMatchListener}
      * to highlight matches in the search results.
      *
      * @param query
      * @param terms
-     * @throws IOException in case of an error
+     * @throws IOException                   in case of an error
      * @throws UnsupportedOperationException in case of an error
      */
-    public static void extractTerms(Query query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException, UnsupportedOperationException {
-        if (query instanceof BooleanQuery)
-            extractTermsFromBoolean((BooleanQuery)query, terms, reader, includeFields);
-        else if (query instanceof TermQuery)
+    public static void extractTerms(final Query query, final Map<Object, Query> terms, final IndexReader reader, final boolean includeFields) throws IOException, UnsupportedOperationException {
+        if (query instanceof BooleanQuery) {
+            extractTermsFromBoolean((BooleanQuery) query, terms, reader, includeFields);
+        } else if (query instanceof TermQuery) {
             extractTermsFromTerm((TermQuery) query, terms, includeFields);
-        else if (query instanceof WildcardQuery)
-            extractTermsFromWildcard((WildcardQuery) query,terms, reader, includeFields);
-        else if (query instanceof RegexpQuery)
-        	extractTermsFromRegex((RegexpQuery) query, terms, reader, includeFields);
-        else if (query instanceof FuzzyQuery)
+        } else if (query instanceof WildcardQuery) {
+            extractTermsFromWildcard((WildcardQuery) query, terms, reader, includeFields);
+        } else if (query instanceof RegexpQuery) {
+            extractTermsFromRegex((RegexpQuery) query, terms, reader, includeFields);
+        } else if (query instanceof FuzzyQuery) {
             extractTermsFromFuzzy((FuzzyQuery) query, terms, reader, includeFields);
-        else if (query instanceof PrefixQuery)
+        } else if (query instanceof PrefixQuery) {
             extractTermsFromPrefix((PrefixQuery) query, terms, reader, includeFields);
-        else if (query instanceof PhraseQuery)
+        } else if (query instanceof PhraseQuery) {
             extractTermsFromPhrase((PhraseQuery) query, terms, includeFields);
-        else {
+        } else {
             // fallback to Lucene's Query.extractTerms if none of the
             // above matches
-            Set<Term> tempSet = new TreeSet<>();
+            final Set<Term> tempSet = new TreeSet<>();
             query.extractTerms(tempSet);
-            for (Term t : tempSet) {
-            	if (includeFields)
-            		terms.put(t, query);
-            	else
-            		terms.put(t.text(), query);
+            for (final Term t : tempSet) {
+                if (includeFields) {
+                    terms.put(t, query);
+                } else {
+                    terms.put(t.text(), query);
+                }
             }
         }
     }
 
-    private static void extractTermsFromBoolean(BooleanQuery query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException {
-        BooleanClause clauses[] = query.getClauses();
-        for (BooleanClause clause : clauses) {
+    private static void extractTermsFromBoolean(final BooleanQuery query, final Map<Object, Query> terms, final IndexReader reader, final boolean includeFields) throws IOException {
+        final BooleanClause clauses[] = query.getClauses();
+        for (final BooleanClause clause : clauses) {
             extractTerms(clause.getQuery(), terms, reader, includeFields);
         }
     }
 
-    private static void extractTermsFromTerm(TermQuery query, Map<Object, Query> terms, boolean includeFields) {
-    	if (includeFields)
-    		terms.put(query.getTerm(), query);
-    	else
-    		terms.put(query.getTerm().text(), query);
+    private static void extractTermsFromTerm(final TermQuery query, final Map<Object, Query> terms, final boolean includeFields) {
+        if (includeFields) {
+            terms.put(query.getTerm(), query);
+        } else {
+            terms.put(query.getTerm().text(), query);
+        }
     }
 
-    private static void extractTermsFromWildcard(WildcardQuery query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException {
+    private static void extractTermsFromWildcard(final WildcardQuery query, final Map<Object, Query> terms, final IndexReader reader, final boolean includeFields) throws IOException {
         extractTermsFromMultiTerm(query, terms, reader, includeFields);
     }
 
-    private static void extractTermsFromRegex(RegexpQuery query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException {
+    private static void extractTermsFromRegex(final RegexpQuery query, final Map<Object, Query> terms, final IndexReader reader, final boolean includeFields) throws IOException {
         extractTermsFromMultiTerm(query, terms, reader, includeFields);
     }
 
-    private static void extractTermsFromFuzzy(FuzzyQuery query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException {
+    private static void extractTermsFromFuzzy(final FuzzyQuery query, final Map<Object, Query> terms, final IndexReader reader, final boolean includeFields) throws IOException {
         extractTermsFromMultiTerm(query, terms, reader, includeFields);
     }
 
-    private static void extractTermsFromPrefix(PrefixQuery query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException {
+    private static void extractTermsFromPrefix(final PrefixQuery query, final Map<Object, Query> terms, final IndexReader reader, final boolean includeFields) throws IOException {
         extractTermsFromMultiTerm(query, terms, reader, includeFields);
     }
 
-    private static void extractTermsFromPhrase(PhraseQuery query, Map<Object, Query> terms, boolean includeFields) {
-        Term[] t = query.getTerms();
-        for (Term t1 : t) {
+    private static void extractTermsFromPhrase(final PhraseQuery query, final Map<Object, Query> terms, boolean includeFields) {
+        final Term[] t = query.getTerms();
+        for (final Term t1 : t) {
             if (includeFields) {
                 terms.put(t1, query);
             } else {
@@ -201,12 +203,12 @@ public class LuceneUtil {
         }
     }
 
-    private static Query rewrite(MultiTermQuery query, IndexReader reader) throws IOException {
+    private static Query rewrite(final MultiTermQuery query, final IndexReader reader) throws IOException {
         query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_AUTO_REWRITE_DEFAULT);
         return query.rewrite(reader);
     }
 
-    private static void extractTermsFromMultiTerm(MultiTermQuery query, Map<Object, Query> termsMap, IndexReader reader, boolean includeFields) throws IOException {
+    private static void extractTermsFromMultiTerm(final MultiTermQuery query, final Map<Object, Query> termsMap, final IndexReader reader, final boolean includeFields) throws IOException {
         TERM_EXTRACTOR.extractTerms(query, termsMap, reader, includeFields);
     }
 
@@ -219,9 +221,9 @@ public class LuceneUtil {
      */
     private static class MultiTermExtractor extends MultiTermQuery.RewriteMethod {
 
-        public void extractTerms(MultiTermQuery query, Map<Object, Query> termsMap, IndexReader reader, boolean includeFields) throws IOException {
-            IndexReaderContext topReaderContext = reader.getContext();
-            for (AtomicReaderContext context : topReaderContext.leaves()) {
+        public void extractTerms(final MultiTermQuery query, final Map<Object, Query> termsMap, final IndexReader reader, final boolean includeFields) throws IOException {
+            final IndexReaderContext topReaderContext = reader.getContext();
+            for (final AtomicReaderContext context : topReaderContext.leaves()) {
                 final Fields fields = context.reader().fields();
                 if (fields == null) {
                     // reader has no fields
@@ -234,29 +236,28 @@ public class LuceneUtil {
                     continue;
                 }
 
-                TermsEnum termsEnum = getTermsEnum(query, terms, new AttributeSource());
+                final TermsEnum termsEnum = getTermsEnum(query, terms, new AttributeSource());
                 assert termsEnum != null;
 
                 if (termsEnum == TermsEnum.EMPTY) {
                     continue;
-		}
+                }
 
                 BytesRef bytes;
                 while ((bytes = termsEnum.next()) != null) {
-                    Term term = new Term(query.getField(), BytesRef.deepCopyOf(bytes));
+                    final Term term = new Term(query.getField(), BytesRef.deepCopyOf(bytes));
                     if (includeFields) {
                         termsMap.put(term, query);
                     } else {
                         termsMap.put(term.text(), query);
-		    }
+                    }
                 }
             }
         }
 
         @Override
-        public Query rewrite(IndexReader reader, MultiTermQuery query) throws IOException {
+        public Query rewrite(final IndexReader reader, final MultiTermQuery query) throws IOException {
             throw new UnsupportedOperationException();
         }
-    };
-
+    }
 }
