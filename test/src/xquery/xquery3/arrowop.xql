@@ -133,3 +133,19 @@ declare
 function ao:type-checks-user-func() {
     (1, 2, 3) => ao:string-join("-")
 };
+
+declare function ao:A($x) { 
+    let $y := $x || $x 
+    return 
+        $y => ao:B()
+};
+
+declare function ao:B($x) {
+    string-length($x)
+};
+
+declare 
+    %test:assertEquals(10)
+function ao:function-declared-later() {
+    ao:A("hello")
+};
