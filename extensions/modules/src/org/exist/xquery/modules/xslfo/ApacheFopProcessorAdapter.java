@@ -53,7 +53,7 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
                     //in-memory documents don't have a BaseURI
                     defaultBaseURI = new URI(DEFAULT_BASE_URI);
                 } else {
-                    defaultBaseURI = new URI(configFile.getOwnerDocument().getBaseURI());
+                    defaultBaseURI = new URI("exist://localhost" + configFile.getOwnerDocument().getBaseURI());
                 }
                 final EnvironmentProfile environment = EnvironmentalProfileFactory.createDefault(defaultBaseURI, getResourceResolver(broker, defaultBaseURI.toString()));
                 builder = new FopFactoryBuilder(environment).setConfiguration(cfg);
