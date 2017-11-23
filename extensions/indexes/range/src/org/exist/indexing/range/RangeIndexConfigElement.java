@@ -73,7 +73,7 @@ public class RangeIndexConfigElement {
             usesCollation = true;
         }
         String nested = node.getAttribute("nested");
-        includeNested = (nested == null || nested.equalsIgnoreCase("yes"));
+        includeNested = (nested == null || nested.length() == 0 || nested.equalsIgnoreCase("yes"));
 
         // normalize whitespace if whitespace="normalize"
         String whitespace = node.getAttribute("whitespace");
