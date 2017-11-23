@@ -9,6 +9,8 @@ declare variable $tt:COLLECTION_CONFIG :=
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema"
             xmlns:tei="http://www.tei-c.org/ns/1.0">
             <range>
+                <create qname="word" type="xs:string"/>
+                <create qname="word2" type="xs:string" nested="no"/>
                 <create qname="date" type="xs:date"/>
                 <create qname="date4" type="xs:date" converter="org.exist.indexing.range.conversion.DateConverter"/>
                 <create qname="time" type="xs:time"/>
@@ -72,6 +74,14 @@ declare variable $tt:XML :=
         </entry>
     </test>;
 
+declare variable $tt:WORDS :=
+    <latin>
+        <!-- b -->
+        <word>b<stress>ee</stress>f</word>
+        <!-- c -->
+        <word2>ch<stress>i</stress>ld</word2>
+    </latin>;
+
 declare variable $tt:COLLECTION_NAME := "typestest";
 declare variable $tt:COLLECTION := "/db/" || $tt:COLLECTION_NAME;
 
@@ -81,7 +91,8 @@ function tt:setup() {
     xmldb:create-collection("/db/system/config/db", $tt:COLLECTION_NAME),
     xmldb:store("/db/system/config/db/" || $tt:COLLECTION_NAME, "collection.xconf", $tt:COLLECTION_CONFIG),
     xmldb:create-collection("/db", $tt:COLLECTION_NAME),
-    xmldb:store($tt:COLLECTION, "test.xml", $tt:XML)
+    xmldb:store($tt:COLLECTION, "test.xml", $tt:XML),
+    xmldb:store($tt:COLLECTION, "words.xml", $tt:WORDS)
 };
 
 declare
@@ -517,4 +528,16 @@ declare
     %test:assertEquals("E1")
 function tt:date-field-normalized-bc($date as xs:date) {
     collection($tt:COLLECTION)//entry[date6 = $date]/id/string()
+};
+
+declare 
+    %test:assertEquals("<word>b<stress>ee</stress>f</word>")
+function tt:include-nested() {
+    collection($tt:COLLECTION)/latin/word[. = 'beef']
+};
+
+declare 
+    %test:assertEquals("<word2>ch<stress>i</stress>ld</word2>")
+function tt:exclude-nested() {
+    collection($tt:COLLECTION)/latin/word2[. = 'chld']
 };
