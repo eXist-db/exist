@@ -25,11 +25,13 @@
             <exclude module="log4j" />
         </dependency>
         <dependency org="org.infinispan" name="infinispan-commons" rev="6.0.0.Final" conf="*->*,!sources,!javadoc">
+            <exclude module="jcip-annotations"/>
             <exclude module="org.osgi.core"/>
             <exclude module="slf4j-api" />
             <exclude module="log4j" />
         </dependency>
         <dependency org="org.infinispan" name="infinispan-core" rev="6.0.0.Final" conf="*->*,!sources,!javadoc">
+            <exclude module="jcip-annotations"/>
             <exclude module="slf4j-api" />
             <exclude module="log4j" />
         </dependency>

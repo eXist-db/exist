@@ -143,7 +143,7 @@ public class TestUtils {
      * @return The content of the file
      */
     public static byte[] readHamletSampleXml() throws IOException {
-        return readSample("shakespeare/hamlet.xml");
+        return readFile(resolveHamletSample());
     }
 
     /**
@@ -152,7 +152,7 @@ public class TestUtils {
      * @return The content of the file
      */
     public static byte[] readRomeoAndJulietSampleXml() throws IOException {
-        return readSample("shakespeare/r_and_j.xml");
+        return readFile(resolveRomeoAndJulietSample());
     }
 
     /**
@@ -197,5 +197,23 @@ public class TestUtils {
      */
     public static Path resolveShakespeareSample(final String relativePath) {
         return shakespeareSamples().resolve(relativePath);
+    }
+
+    /**
+     * Gets the path of the Shakespeare Hamlet sample
+     *
+     * @return The path to the Shakespeare Hamlet sample
+     */
+    public static Path resolveHamletSample() {
+        return resolveShakespeareSample("hamlet.xml");
+    }
+
+    /**
+     * Gets the path of the Shakespeare Romeo and Juliet sample
+     *
+     * @return The path to the Shakespeare Romeo and Juliet sample
+     */
+    public static Path resolveRomeoAndJulietSample() {
+        return resolveShakespeareSample("r_and_j.xml");
     }
 }

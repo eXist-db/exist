@@ -23,6 +23,7 @@
         <exclude module="ehcache-core"/>
         <exclude module="geronimo-stax-api_1.0_spec"/>
         <exclude module="jackson-core"/>
+        <exclude module="jcip-annotations"/>
         <exclude module="jdom"/>
         <exclude module="log4j"/>
         <exclude module="quartz"/>
