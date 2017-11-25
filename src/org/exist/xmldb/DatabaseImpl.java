@@ -303,6 +303,9 @@ public class DatabaseImpl implements Database {
         final String key = user + "@" + url.toString();
         final XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
         config.setEnabledForExtensions(true);
+        config.setContentLengthOptional(true);
+        config.setGzipCompressing(true);
+        config.setGzipRequesting(true);
         config.setServerURL(url);
         config.setBasicUserName(user);
         config.setBasicPassword(password);
