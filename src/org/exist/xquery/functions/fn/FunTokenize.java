@@ -40,6 +40,7 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
 import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.regex.RegexUtil.*;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -100,7 +101,7 @@ public class FunTokenize extends FunMatches {
             } else {
                 final int flags;
                 if (getSignature().getArgumentCount() == 3) {
-                    flags = parseFlags(getArgument(2).eval(contextSequence, contextItem)
+                    flags = parseFlags(this, getArgument(2).eval(contextSequence, contextItem)
                             .getStringValue());
                 } else {
                     flags = 0;
@@ -117,7 +118,7 @@ public class FunTokenize extends FunMatches {
                     } else {
                         final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
                         final boolean caseBlind = !hasCaseInsensitive(flags);
-                        pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
+                        pattern = translateRegexp(this, getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
                     }
                 }
 
