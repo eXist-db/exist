@@ -33,7 +33,9 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.xml.sax.SAXParseException;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * Implements the XQuery's fn:doc-available() function.
@@ -88,17 +90,17 @@ public class FunDocAvailable extends Function {
         final Sequence arg = getArgument(0).eval(contextSequence, contextItem);
         if (!arg.isEmpty()) {
             final String path = arg.itemAt(0).getStringValue();
+
+            try {
+                new URI(path);
+            } catch (final URISyntaxException e) {
+                throw new XPathException(this, ErrorCodes.FODC0005, e.getMessage(), arg, e);
+            }
+
             try {
                 result = BooleanValue.valueOf(DocUtils.isDocumentAvailable(this.context, path));
             } catch (final XPathException e) {
-                if (e.getCause() instanceof SAXParseException) {
-                    result = BooleanValue.FALSE;
-                } else if(e.getMessage().contains("is a binary resource, not an XML document")) {
-                    result = BooleanValue.FALSE;
-                } else {
-                    e.prependMessage(ErrorCodes.FODC0005, "");
-                    throw e;
-                }
+                result = BooleanValue.FALSE;
             }
         }
 
@@ -110,7 +112,7 @@ public class FunDocAvailable extends Function {
     }
 
     @Override
-    public void resetState(boolean postOptimization) {
+    public void resetState(final boolean postOptimization) {
         super.resetState(postOptimization);
         getArgument(0).resetState(postOptimization);
     }
