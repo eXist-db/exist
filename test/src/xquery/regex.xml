@@ -77,6 +77,21 @@
         <code>fn:replace("a/b/c", "/", "$", "q")</code>
         <expected>a$b$c</expected>
     </test>
+    <test output="text">
+        <task>fn:replace-capturing-1</task>
+        <code>fn:replace("hello", "hel(lo)", "$1")</code>
+        <expected>lo</expected>
+    </test>
+    <test output="text">
+        <task>fn:replace-non-capturing-1</task>
+        <code>fn:replace("hello", "hel(?:lo)", "$1")</code>
+        <error>FORX0001</error>
+    </test>
+    <test output="text">
+        <task>fn:replace-non-capturing-2</task>
+        <code>fn:replace("hello", "h(?:el(lo))", "$1")</code>
+        <expected>lo</expected>
+    </test>
 
     <test output="text">
         <task>fn:tokenize-qflag-1</task>

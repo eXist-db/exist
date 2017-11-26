@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.exist.util.FastStringBuffer;
 import org.exist.util.UTF16CharacterSet;
@@ -28,7 +29,7 @@ public abstract class RegexTranslator {
     protected char curChar;
     protected boolean eos = false;
     protected int currentCapture = 0;
-    protected HashSet captures = new HashSet(); //IntHashSet
+    protected Set<Integer> captures = new HashSet<>();
     protected final FastStringBuffer result = new FastStringBuffer(64);
 
     protected void translateTop() throws RegexSyntaxException {

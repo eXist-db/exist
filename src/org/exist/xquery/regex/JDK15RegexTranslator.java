@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.exist.util.FastStringBuffer;
 import org.exist.util.UTF16CharacterSet;
+import org.exist.util.XMLString;
 import org.exist.xquery.value.StringValue;
 
 /**
@@ -18,6 +19,8 @@ import org.exist.xquery.value.StringValue;
  * characters, since JDK 1.5 handles these natively.
  * 
  * Copied from Saxon-HE 9.2 package net.sf.saxon.regex.
+ *
+ * Updated for Non-capturing Groups in XQuery 3.0 by Adam Retter
  */
 public class JDK15RegexTranslator extends RegexTranslator {
 	
@@ -450,11 +453,20 @@ public class JDK15RegexTranslator extends RegexTranslator {
                 return false;
             case '(':
                 copyCurChar();
-                final int thisCapture = ++currentCapture;
-                translateRegExp();
-                expect(')');
-                captures.add(thisCapture);
-                copyCurChar();
+                final boolean nonCapturing = isNonCapturing();
+                if(nonCapturing) {
+                    copyCurChar(); // ?
+                    copyCurChar(); // :
+                    translateRegExp();
+                    expect(')');
+                    copyCurChar();
+                } else {
+                    final int thisCapture = ++currentCapture;
+                    translateRegExp();
+                    expect(')');
+                    captures.add(thisCapture);
+                    copyCurChar();
+                }
                 return true;
             case '\\':
                 advance();
@@ -504,6 +516,46 @@ public class JDK15RegexTranslator extends RegexTranslator {
         }
         copyCurChar();
         return true;
+    }
+
+    private boolean isNonCapturing() {
+        int localPos = pos;
+        if (localPos + 1 < length) {
+            char localChar = curChar;
+
+            if (ignoreWhitespace) {
+                while (XMLString.isWhiteSpace(localChar)) {
+                    if (localPos + 1 < length) {
+                        localChar = regExp.charAt(localPos++);
+                    } else {
+                        return false;
+                    }
+                }
+            }
+
+            if(localChar == '?') {
+
+                if (localPos + 1 < length) {
+                    localChar = regExp.charAt(localPos++);
+
+                    if (ignoreWhitespace) {
+                        while (XMLString.isWhiteSpace(localChar)) {
+                            if (localPos + 1 < length) {
+                                localChar = regExp.charAt(localPos++);
+                            } else {
+                                return false;
+                            }
+                        }
+                    }
+
+                    if(localChar == ':') {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     private static CharClass makeNameCharClass(byte mask) {
