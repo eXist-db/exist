@@ -11,6 +11,8 @@ import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.regex.JDK15RegexTranslator;
+import org.exist.xquery.regex.RegexSyntaxException;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
@@ -19,6 +21,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.xml.sax.helpers.AttributesImpl;
 
+import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 
 /**
@@ -103,14 +106,15 @@ public class FunAnalyzeString extends BasicFunction {
         return (NodeValue)builder.getDocument().getDocumentElement();
     }
 
-    private void analyzeString(final MemTreeBuilder builder, final String input, final String pattern, final String flags) throws XPathException {
-        final Pattern ptn;
-        if (flags != null) {
-            final int iFlags = parseStringFlags(flags);
-            ptn = PatternFactory.getInstance().getPattern(pattern, iFlags);
-        } else {
-            ptn = PatternFactory.getInstance().getPattern(pattern);
+    private void analyzeString(final MemTreeBuilder builder, final String input, String pattern, final String flags) throws XPathException {
+
+        final int iFlags = parseStringFlags(flags);
+
+        if(!hasLiteral(iFlags)) {
+            pattern = translateRegexp(pattern, hasIgnoreWhitespace(iFlags), hasCaseInsensitive(iFlags));
         }
+
+        final Pattern ptn = PatternFactory.getInstance().getPattern(pattern, iFlags);
         
         final Matcher matcher = ptn.matcher(input);
         
@@ -182,31 +186,66 @@ public class FunAnalyzeString extends BasicFunction {
         builder.endElement();
     }
 
-    private int parseStringFlags(final String flags) {
+    private int parseStringFlags(@Nullable final String flags) {
         int iFlags = 0;
-        for (final char c : flags.toCharArray()) {
-            switch(c) {
-            case 's':
-                iFlags |= Pattern.DOTALL;
-                break;
-            
-            case 'm':
-                iFlags |= Pattern.MULTILINE;
-                break;
-                
-            case 'i':
-                iFlags |= Pattern.CASE_INSENSITIVE;
-                break;
-                
-            case 'x' :
-                iFlags |= Pattern.COMMENTS;
-                break;
-                
-            case 'q' :
-                iFlags |= Pattern.LITERAL;
-                break;
+        if(flags != null) {
+            for (final char c : flags.toCharArray()) {
+                switch (c) {
+                    case 's':
+                        iFlags |= Pattern.DOTALL;
+                        break;
+
+                    case 'm':
+                        iFlags |= Pattern.MULTILINE;
+                        break;
+
+                    case 'i':
+                        iFlags |= Pattern.CASE_INSENSITIVE;
+                        break;
+
+                    case 'x':
+                        iFlags |= Pattern.COMMENTS;
+                        break;
+
+                    case 'q':
+                        iFlags |= Pattern.LITERAL;
+                        break;
+                }
             }
         }
         return iFlags;
+    }
+
+    private boolean hasLiteral(final int flags) {
+        return (flags & Pattern.LITERAL) != 0;
+    }
+
+    private boolean hasCaseInsensitive(final int flags) {
+        return (flags & Pattern.CASE_INSENSITIVE) != 0 || (flags & Pattern.UNICODE_CASE) != 0;
+    }
+
+    private boolean hasIgnoreWhitespace(final int flags) {
+        return (flags & Pattern.COMMENTS) != 0;
+    }
+
+    /**
+     * Translates the regular expression from XPath2 syntax to java regex
+     * syntax.
+     *
+     * @param pattern a String containing a regular expression in the syntax of XML Schemas Part 2
+     * @param ignoreWhitespace true if whitespace is to be ignored ('x' flag)
+     * @param caseBlind true if case is to be ignored ('i' flag)
+     * @return The translated regexp
+     * @throws XPathException
+     */
+    protected String translateRegexp(final String pattern, final boolean ignoreWhitespace, final boolean caseBlind) throws XPathException {
+        // convert pattern to Java regex syntax
+        try {
+            final int xmlVersion = 11;
+            return JDK15RegexTranslator.translate(pattern, xmlVersion, true, ignoreWhitespace, caseBlind);
+        } catch (final RegexSyntaxException e) {
+            throw new XPathException(this, "Conversion from XPath2 to Java regular expression " +
+                    "syntax failed: " + e.getMessage(), e);
+        }
     }
 }
