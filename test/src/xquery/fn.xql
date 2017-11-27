@@ -56,6 +56,25 @@ function fnt:doc-available($filename as xs:string) {
     fn:doc-available("/db/fn-test/" || $filename)
 };
 
+(:
+  Intentionally marked as pending as it has
+  an external dependency
+:)
+declare
+    %test:pending
+    %test:args("https://www.kingjamesbibleonline.org/Genesis-Chapter-1_Original-1611-KJV/")
+    %test:assertEquals("false")
+function fnt:doc-available-remote($uri as xs:string) {
+    fn:doc-available($uri)
+};
+
+declare
+    %test:args("\adamretter")
+    %test:assertError("FODC0005")
+function fnt:doc-available-invalid-uri($uri as xs:string) {
+    fn:doc-available($uri)
+};
+
 declare
     %test:args("test.xml")
     %test:assertEquals("true")
