@@ -51,7 +51,6 @@ public class RpcServlet extends XmlRpcServlet {
 
 	private static final long serialVersionUID = -1003413291835771186L;
     private static final Logger LOG = LogManager.getLogger(RpcServlet.class);
-    private static final AtomicReference<RequestProcessorFactoryFactory> XMLDB_REQUEST_PROCESSOR_FACTORY_FACTORY = new AtomicReference<>();
     private static final boolean DEFAULT_USE_DEFAULT_USER = true;
 
     private boolean useDefaultUser = DEFAULT_USE_DEFAULT_USER;
@@ -101,9 +100,7 @@ public class RpcServlet extends XmlRpcServlet {
     protected XmlRpcHandlerMapping newXmlRpcHandlerMapping() throws XmlRpcException {
         final DefaultHandlerMapping mapping = new DefaultHandlerMapping();
         mapping.setVoidMethodEnabled(true);
-        mapping.setRequestProcessorFactoryFactory(
-                XMLDB_REQUEST_PROCESSOR_FACTORY_FACTORY.updateAndGet(prev -> prev != null ? prev : new XmldbRequestProcessorFactoryFactory(useDefaultUser))
-        );
+        mapping.setRequestProcessorFactoryFactory(new XmldbRequestProcessorFactoryFactory(useDefaultUser));
         mapping.loadDefault(RpcConnection.class);
         return mapping;
     }
