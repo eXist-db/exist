@@ -170,3 +170,75 @@ declare
 function axes:child-pi-named() {
     count(doc("/db/axes-test/pi.xml")/processing-instruction(testpi))
 };
+
+declare
+    %test:assertEquals("false")
+function axes:abbrevForwardStep-at-wildcard() {
+    document {
+    	<e1 a1="hello"/>
+    }/e1/empty(@*)
+};
+
+declare
+    %test:assertEquals("true")
+function axes:abbrevForwardStep-at-document-test() {
+    document {
+    	<e1 a1="hello"/>
+    }/e1/empty(@document-node())
+};
+
+declare
+    %test:assertEquals("true")
+function axes:abbrevForwardStep-at-element-test() {
+    document {
+    	<e1 a1="hello"/>
+    }/e1/empty(@element())
+};
+
+declare
+    %test:assertEquals("false")
+function axes:abbrevForwardStep-at-attribute() {
+    document {
+    	<e1 a1="hello"/>
+    }/e1/empty(@attribute())
+};
+
+declare
+    %test:assertEquals("true")
+function axes:abbrevForwardStep-at-pi-test() {
+    document {
+    	<e1 a1="hello"/>
+    }/e1/empty(@processing-instruction())
+};
+
+declare
+    %test:assertEquals("true")
+function axes:abbrevForwardStep-at-comment-test() {
+    document {
+    	<e1 a1="hello"/>
+    }/e1/empty(@comment())
+};
+
+declare
+    %test:assertEquals("true")
+function axes:abbrevForwardStep-at-text-test() {
+    document {
+    	<e1 a1="hello"/>
+    }/e1/empty(@text())
+};
+
+declare
+    %test:assertEquals("true")
+function axes:abbrevForwardStep-at-namespace-node-test() {
+    document {
+    	<e1 a1="hello"/>
+    }/e1/empty(@namespace-node())
+};
+
+declare
+    %test:assertEquals("false")
+function axes:abbrevForwardStep-at-any-kind-test() {
+    document {
+    	<e1 a1="hello"/>
+    }/e1/empty(@node())
+};

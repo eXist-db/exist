@@ -2363,13 +2363,14 @@ throws PermissionDeniedException, EXistException, XPathException
 	( predicate [(LocationStep) step] )*
 	|
 	at:AT
-	{ QName qname= null; }
+	{ NodeTest test = null; }
 	(
 		attr:EQNAME
 		{
 		  try {
-            qname = QName.parse(staticContext, attr.getText(), "");
+            QName qname = QName.parse(staticContext, attr.getText(), "");
             qname = new QName(qname, ElementValue.ATTRIBUTE);
+            test = new NameTest(Type.ATTRIBUTE, qname);
           } catch (final IllegalQNameException iqe) {
               throw new XPathException(attr.getLine(), attr.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + attr.getText());
           }
@@ -2377,22 +2378,126 @@ throws PermissionDeniedException, EXistException, XPathException
 		|
 		#( PREFIX_WILDCARD nc2:NCNAME )
 		{
-          qname = new QName.WildcardNamespaceURIQName(nc2.getText(), ElementValue.ATTRIBUTE);
+          final QName qname = new QName.WildcardNamespaceURIQName(nc2.getText(), ElementValue.ATTRIBUTE);
+          test = new NameTest(Type.ATTRIBUTE, qname);
 		}
 		|
 		#( nc3:NCNAME WILDCARD )
 		{
-			String namespaceURI= staticContext.getURIForPrefix(nc3.getText());
-			if (namespaceURI == null)
+			final String namespaceURI = staticContext.getURIForPrefix(nc3.getText());
+			if (namespaceURI == null) {
 				throw new EXistException("No namespace defined for prefix " + nc3.getText());
-			qname= new QName.WildcardLocalPartQName(namespaceURI, ElementValue.ATTRIBUTE);
+            }
+			final QName qname = new QName.WildcardLocalPartQName(namespaceURI, ElementValue.ATTRIBUTE);
+			test = new NameTest(Type.ATTRIBUTE, qname);
 		}
 		|
 		WILDCARD
+		{
+		    test = new TypeTest(Type.ATTRIBUTE);
+		}
+		|
+        adn:"document-node"
+        {
+        	test = FailTest.INSTANCE;
+        	// ast = adn;
+        }
+            (
+                #( "element"
+                    (
+                    adneq:EQNAME
+                    |
+                    WILDCARD
+                    ( adneq1:EQNAME)?
+                    )?
+                )
+                |
+                #( "schema-element" EQNAME )
+            )?
+        |
+        #( ae:"element"
+        	{
+        		test = FailTest.INSTANCE;
+        		// ast = ae;
+        	}
+        	(
+        		aeq2:EQNAME
+        		|
+        		WILDCARD
+        		( aeq21:EQNAME )?
+        	)?
+        )
+        |
+        #( aatt:ATTRIBUTE_TEST
+        	{
+        		test = new TypeTest(Type.ATTRIBUTE);
+        		// ast = aatt;
+        	}
+        	(
+        		aeq3:EQNAME
+        		{
+        		    try {
+                        QName qname = QName.parse(staticContext, eq3.getText());
+                        qname = new QName(qname, ElementValue.ATTRIBUTE);
+                        test = new NameTest(Type.ATTRIBUTE, qname);
+                    } catch (final IllegalQNameException iqe) {
+                        throw new XPathException(eq3.getLine(), eq3.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + eq3.getText());
+                    }
+        		}
+        		|
+        		WILDCARD
+        		( aeq31:EQNAME
+        			{
+        			    try {
+                            QName qname = QName.parse(staticContext, eq31.getText());
+                            qname = new QName(qname, ElementValue.ATTRIBUTE);
+                            test = new TypeTest(Type.getType(qname));
+                        } catch (final IllegalQNameException iqe) {
+                            throw new XPathException(eq31.getLine(), eq31.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + eq31.getText());
+                        }
+        			}
+        		)?
+        	)?
+        )
+        |
+        #( aapi:"processing-instruction"
+        {
+        	test = FailTest.INSTANCE;
+        	// ast = aapi;
+        }
+            (
+                ancpi:NCNAME
+                |
+                aslpi:STRING_LITERAL
+            )?
+        )
+        |
+        acom:"comment"
+        {
+        	test = FailTest.INSTANCE;
+        	// ast = acom;
+        }
+        |
+        aat:"text"
+        {
+        	test = FailTest.INSTANCE;
+        	// ast = aat;
+        }
+        |
+        ant:"namespace-node"
+        {
+            test = FailTest.INSTANCE;
+            // ast = ant;
+        }
+        |
+        an:"node"
+        {
+        	test = new TypeTest(Type.ATTRIBUTE);
+        	// ast = an;
+        }
 	)
 	{
-		NodeTest test= qname == null ? new TypeTest(Type.ATTRIBUTE) : new NameTest(Type.ATTRIBUTE, qname);
-		step= new LocationStep(context, Constants.ATTRIBUTE_AXIS, test);
+		step = new LocationStep(context, Constants.ATTRIBUTE_AXIS, test);
 		step.setASTNode(at);
 		path.add(step);
 	}
