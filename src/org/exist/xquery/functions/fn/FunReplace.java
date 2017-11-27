@@ -46,6 +46,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
+import static org.exist.xquery.regex.RegexUtil.*;
+
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
@@ -166,7 +168,7 @@ public class FunReplace extends FunMatches {
 		} else {
 			final int flags;
 			if (getSignature().getArgumentCount() == 4) {
-				flags =	parseFlags(getArgument(3).eval(contextSequence, contextItem).getStringValue());
+				flags =	parseFlags(this, getArgument(3).eval(contextSequence, contextItem).getStringValue());
 			} else {
 				flags = 0;
 			}
@@ -187,7 +189,7 @@ public class FunReplace extends FunMatches {
 						.replace("\\", "\\\\")
 						.replace("$", "\\$");
 			} else {
-				pattern = translateRegexp(patternSeq.getStringValue(), hasIgnoreWhitespace(flags), hasCaseInsensitive(flags));
+				pattern = translateRegexp(this, patternSeq.getStringValue(), hasIgnoreWhitespace(flags), hasCaseInsensitive(flags));
 			}
 
             //An error is raised [err:FORX0004] if the value of $replacement contains a "$" character that is not immediately followed by a digit 0-9 and not immediately preceded by a "\".

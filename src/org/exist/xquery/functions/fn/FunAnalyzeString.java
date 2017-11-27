@@ -21,6 +21,8 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import javax.xml.XMLConstants;
 
+import static org.exist.xquery.regex.RegexUtil.*;
+
 /**
  * XPath and XQuery 3.0 F+O fn:analyze-string()
  * 
@@ -103,14 +105,15 @@ public class FunAnalyzeString extends BasicFunction {
         return (NodeValue)builder.getDocument().getDocumentElement();
     }
 
-    private void analyzeString(final MemTreeBuilder builder, final String input, final String pattern, final String flags) throws XPathException {
-        final Pattern ptn;
-        if (flags != null) {
-            final int iFlags = parseStringFlags(flags);
-            ptn = PatternFactory.getInstance().getPattern(pattern, iFlags);
-        } else {
-            ptn = PatternFactory.getInstance().getPattern(pattern);
+    private void analyzeString(final MemTreeBuilder builder, final String input, String pattern, final String flags) throws XPathException {
+
+        final int iFlags = parseFlags(this, flags);
+
+        if(!hasLiteral(iFlags)) {
+            pattern = translateRegexp(this, pattern, hasIgnoreWhitespace(iFlags), hasCaseInsensitive(iFlags));
         }
+
+        final Pattern ptn = PatternFactory.getInstance().getPattern(pattern, iFlags);
         
         final Matcher matcher = ptn.matcher(input);
         
@@ -180,33 +183,5 @@ public class FunAnalyzeString extends BasicFunction {
         builder.startElement(QN_NON_MATCH, null);
         builder.characters(nonMatch);
         builder.endElement();
-    }
-
-    private int parseStringFlags(final String flags) {
-        int iFlags = 0;
-        for (final char c : flags.toCharArray()) {
-            switch(c) {
-            case 's':
-                iFlags |= Pattern.DOTALL;
-                break;
-            
-            case 'm':
-                iFlags |= Pattern.MULTILINE;
-                break;
-                
-            case 'i':
-                iFlags |= Pattern.CASE_INSENSITIVE;
-                break;
-                
-            case 'x' :
-                iFlags |= Pattern.COMMENTS;
-                break;
-                
-            case 'q' :
-                iFlags |= Pattern.LITERAL;
-                break;
-            }
-        }
-        return iFlags;
     }
 }

@@ -30,8 +30,6 @@ import org.exist.storage.ElementValue;
 import org.exist.storage.NativeValueIndex;
 import org.exist.util.PatternFactory;
 import org.exist.xquery.pragmas.Optimize;
-import org.exist.xquery.regex.JDK15RegexTranslator;
-import org.exist.xquery.regex.RegexSyntaxException;
 import org.exist.xquery.*;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.value.BooleanValue;
@@ -47,6 +45,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
+import static org.exist.xquery.regex.RegexUtil.*;
 
 /**
  * Implements the fn:matches() function.
@@ -214,7 +214,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         final int flags;
         if(getSignature().getArgumentCount() == 3) {
             final String flagsArg = getArgument(2).eval(contextSequence).getStringValue();
-            flags = parseFlags(flagsArg);
+            flags = parseFlags(this, flagsArg);
         } else {
             flags = 0;
         }
@@ -232,7 +232,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
             } else {
                 final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
                 final boolean caseBlind = !caseSensitive;
-                pattern = translateRegexp(getArgument(1).eval(contextSequence).getStringValue(), ignoreWhitespace, caseBlind);
+                pattern = translateRegexp(this, getArgument(1).eval(contextSequence).getStringValue(), ignoreWhitespace, caseBlind);
             }
 		}
 
@@ -248,18 +248,6 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
             {context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
                 PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start);}
         return preselectResult;
-    }
-
-    protected boolean hasLiteral(final int flags) {
-        return (flags & Pattern.LITERAL) != 0;
-    }
-
-    protected boolean hasCaseInsensitive(final int flags) {
-        return (flags & Pattern.CASE_INSENSITIVE) != 0 || (flags & Pattern.UNICODE_CASE) != 0;
-    }
-
-    protected boolean hasIgnoreWhitespace(final int flags) {
-        return (flags & Pattern.COMMENTS) != 0;
     }
 
     @Override
@@ -386,7 +374,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         final int flags;
         if(getSignature().getArgumentCount() == 3) {
             final String flagsArg = getArgument(2).eval(contextSequence, contextItem).getStringValue();
-            flags = parseFlags(flagsArg);
+            flags = parseFlags(this, flagsArg);
         } else {
             flags = 0;
         }
@@ -406,7 +394,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
             } else {
                 final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
                 final boolean caseBlind = !caseSensitive;
-                pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
+                pattern = translateRegexp(this, getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
             }
 		}
 		
@@ -481,27 +469,6 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
     }
 
     /**
-	 * Translates the regular expression from XPath2 syntax to java regex
-	 * syntax.
-	 *
-     * @param pattern a String containing a regular expression in the syntax of XML Schemas Part 2
-     * @param ignoreWhitespace true if whitespace is to be ignored ('x' flag)
-     * @param caseBlind true if case is to be ignored ('i' flag)
-	 * @return The translated regexp
-	 * @throws XPathException
-	 */
-	protected String translateRegexp(final String pattern, final boolean ignoreWhitespace, final boolean caseBlind) throws XPathException {
-		// convert pattern to Java regex syntax
-        try {
-        	final int xmlVersion = 11;
-			return JDK15RegexTranslator.translate(pattern, xmlVersion, true, ignoreWhitespace, caseBlind);
-		} catch (final RegexSyntaxException e) {
-			throw new XPathException(this, "Conversion from XPath2 to Java regular expression " +
-					"syntax failed: " + e.getMessage(), e);
-		}
-	}
-
-    /**
      * @param contextSequence
      * @param contextItem
      * @param stringArg
@@ -513,7 +480,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 
         final int flags;
         if(getSignature().getArgumentCount() == 3) {
-            flags = parseFlags(getArgument(2).eval(contextSequence, contextItem).getStringValue());
+            flags = parseFlags(this, getArgument(2).eval(contextSequence, contextItem).getStringValue());
         } else {
             flags = 0;
         }
@@ -529,7 +496,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
             } else {
                 final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
                 final boolean caseBlind = hasCaseInsensitive(flags);
-                pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
+                pattern = translateRegexp(this, getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
             }
 		}
         
@@ -560,43 +527,13 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 		}
     }
 
-    protected final static int parseFlags(final String s) throws XPathException {
-		int flags = 0;
-		for(int i = 0; i < s.length(); i++) {
-			final char ch = s.charAt(i);
-			switch(ch) {
-				case 'm':
-					flags |= Pattern.MULTILINE;
-					break;
-				case 'i':
-					flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-					break;
-                case 'x':
-                    flags |= Pattern.COMMENTS;
-                    break;
-                case 's':
-                    flags |= Pattern.DOTALL;
-                    break;
-                case 'q' :
-                    flags |= Pattern.LITERAL;
-                    break;
-				default:
-					throw new XPathException("err:FORX0001: Invalid regular expression flag: " + ch);
-			}
-		}
-		return flags;
-	}
-    
+    @Override
     public void reset() { 
     	super.reset();
 		hasUsedIndex = false;
 	}
 
-    /*
-    * (non-Javadoc)
-    *
-    * @see org.exist.xquery.AbstractExpression#resetState()
-    */
+    @Override
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         if (!postOptimization)
