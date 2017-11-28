@@ -147,15 +147,15 @@ public class MemTreeBuilder {
 
             // parse attributes
             for(int i = 0; i < attributes.getLength(); i++) {
-                final String attrNS = attributes.getURI(i);
-                final String attrLocalName = attributes.getLocalName(i);
                 final String attrQName = attributes.getQName(i);
 
                 // skip xmlns-attributes and attributes in eXist's namespace
                 if(!(attrQName.startsWith(XMLConstants.XMLNS_ATTRIBUTE))) {
 //                  || attrNS.equals(Namespaces.EXIST_NS))) {
                     final int p = attrQName.indexOf(':');
+                    final String attrNS = attributes.getURI(i);
                     final String attrPrefix = (p != Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
+                    final String attrLocalName = attributes.getLocalName(i);
                     final QName attrQn = new QName(attrLocalName, attrNS, attrPrefix);
                     final int type = getAttribType(attrQn, attributes.getType(i));
                     doc.addAttribute(nodeNr, attrQn, attributes.getValue(i), type);
@@ -409,17 +409,15 @@ public class MemTreeBuilder {
         return nodeNr;
     }
 
-
     public int namespaceNode(final String prefix, final String uri) {
         return namespaceNode(new QName(prefix, uri, XMLConstants.XMLNS_ATTRIBUTE));
     }
-
 
     public int namespaceNode(final QName qname) {
         return namespaceNode(qname, false);
     }
 
-    public int namespaceNode(final QName qname, boolean checkNS) {
+    public int namespaceNode(final QName qname, final boolean checkNS) {
         final int lastNode = doc.getLastNode();
         boolean addNode = true;
         if(doc.nodeName != null) {
