@@ -929,7 +929,7 @@ public class Deployment {
      */
     private static class UpdatingDocumentReceiver extends DocumentBuilderReceiver {
         private final String time;
-        private final Stack<String> stack = new Stack<>();
+        private final Deque<String> stack = new ArrayDeque<>();
 
         public UpdatingDocumentReceiver(final MemTreeBuilder builder, final String time) {
             super(builder, false);

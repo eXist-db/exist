@@ -221,20 +221,22 @@ public class ElementImpl extends NamedNode implements Element {
 
         try {
             final SymbolTable symbols = ownerDocument.getBrokerPool().getSymbols();
-            byte[] prefixData = null;
+            final byte[] prefixData;
             // serialize namespace prefixes declared in this element
             if(declaresNamespacePrefixes()) {
-                final ByteArrayOutputStream bout = new ByteArrayOutputStream();
-                final DataOutputStream out = new DataOutputStream(bout);
-                out.writeShort(namespaceMappings.size());
-                for(final Iterator<Map.Entry<String, String>> i =
-                        namespaceMappings.entrySet().iterator(); i.hasNext(); ) {
-                    final Map.Entry<String, String> entry = i.next();
-                    out.writeUTF(entry.getKey());
-                    final short nsId = symbols.getNSSymbol(entry.getValue());
-                    out.writeShort(nsId);
+                try(final ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                        final DataOutputStream out = new DataOutputStream(bout)) {
+                    out.writeShort(namespaceMappings.size());
+                    for (final Map.Entry<String, String> namespaceMapping : namespaceMappings.entrySet()) {
+                        //TODO(AR) could store the prefix from the symbol table
+                        out.writeUTF(namespaceMapping.getKey());
+                        final short nsId = symbols.getNSSymbol(namespaceMapping.getValue());
+                        out.writeShort(nsId);
+                    }
+                    prefixData = bout.toByteArray();
                 }
-                prefixData = bout.toByteArray();
+            } else {
+                prefixData = null;
             }
 
             final short id = symbols.getSymbol(this);
@@ -248,6 +250,7 @@ public class ElementImpl extends NamedNode implements Element {
             int prefixLen = 0;
             if(hasNamespace) {
                 if(nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0) {
+                    //TODO(AR) could store the prefix from the symbol table
                     prefixLen = UTF8.encoded(nodeName.getPrefix());
                 }
                 signature |= 0x10;
