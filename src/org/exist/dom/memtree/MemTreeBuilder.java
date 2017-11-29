@@ -414,7 +414,13 @@ public class MemTreeBuilder {
     }
 
     public int namespaceNode(final String prefix, final String uri) {
-        return namespaceNode(new QName(prefix, uri, XMLConstants.XMLNS_ATTRIBUTE));
+        final QName qname;
+        if(prefix == null || prefix.isEmpty()) {
+            qname = new QName(XMLConstants.XMLNS_ATTRIBUTE, uri);
+        } else {
+            qname = new QName(prefix, uri, XMLConstants.XMLNS_ATTRIBUTE);
+        }
+        return namespaceNode(qname);
     }
 
     public int namespaceNode(final QName qname) {
@@ -428,10 +434,13 @@ public class MemTreeBuilder {
             final QName elemQN = doc.nodeName[lastNode];
             if(elemQN != null) {
                 final String elemPrefix = (elemQN.getPrefix() == null) ? XMLConstants.DEFAULT_NS_PREFIX : elemQN.getPrefix();
+                final String elemNs = (elemQN.getNamespaceURI() == null) ? XMLConstants.NULL_NS_URI : elemQN.getNamespaceURI();
+                final String qnPrefix = (qname.getPrefix() == null) ? XMLConstants.DEFAULT_NS_PREFIX : qname.getPrefix();
                 if (checkNS
                     && XMLConstants.DEFAULT_NS_PREFIX.equals(elemPrefix)
-                    && XMLConstants.XMLNS_ATTRIBUTE.equals(qname.getPrefix())
-                    && "".equals(qname.getLocalPart())) {
+                    && XMLConstants.NULL_NS_URI.equals(elemNs)
+                    && XMLConstants.DEFAULT_NS_PREFIX.equals(qnPrefix)
+                    && XMLConstants.XMLNS_ATTRIBUTE.equals(qname.getLocalPart())) {
 
                     throw new DOMException(
                         DOMException.NAMESPACE_ERR,
