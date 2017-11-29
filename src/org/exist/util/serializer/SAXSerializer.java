@@ -250,19 +250,10 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
                         }
                     } else if (attrQName.getPrefix() != null && attrQName.getPrefix().length() > 0) {
                         prefix = attrQName.getPrefix();
-                        if((XMLConstants.XMLNS_ATTRIBUTE + ":").equals(prefix)) {
-                            if (nsSupport.getURI(prefix) == null) {
-                                uri = attribs.getValue(i);
-                                prefix = attrQName.getLocalPart();
-                                namespaceDecls.put(prefix, uri);
-                                nsSupport.declarePrefix(prefix, uri);
-                            }
-                        } else {
-                            if (nsSupport.getURI(prefix) == null) {
-                                uri = attrQName.getNamespaceURI();
-                                namespaceDecls.put(prefix, uri);
-                                nsSupport.declarePrefix(prefix, uri);
-                            }
+                        if (nsSupport.getURI(prefix) == null) {
+                            uri = attrQName.getNamespaceURI();
+                            namespaceDecls.put(prefix, uri);
+                            nsSupport.declarePrefix(prefix, uri);
                         }
                     }
                 }
