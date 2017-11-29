@@ -161,6 +161,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
             case Node.ELEMENT_NODE:
             case Node.ATTRIBUTE_NODE:
+            case NAMESPACE_NODE:
                 return getQName().getStringValue();
 
             case Node.PROCESSING_INSTRUCTION_NODE:
@@ -185,6 +186,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
         switch(getNodeType()) {
             case Node.ELEMENT_NODE:
             case Node.ATTRIBUTE_NODE:
+            case NAMESPACE_NODE:
                 return getQName().getLocalPart();
 
             default:
@@ -218,8 +220,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
             case Node.ELEMENT_NODE:
             case Node.ATTRIBUTE_NODE:
             case NodeImpl.NAMESPACE_NODE:
-                final String prefix = getQName().getPrefix();
-                return prefix == null ? null : prefix;
+                return getQName().getPrefix();
 
             default:
                 return null;
