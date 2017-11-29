@@ -116,7 +116,7 @@ public class MemTreeBuilder {
      * @param attributes   DOCUMENT ME!
      * @return the node number of the created element
      */
-    public int startElement(final String namespaceURI, final String localName, final String qname, final Attributes attributes) {
+    public int startElement(final String namespaceURI, String localName, final String qname, final Attributes attributes) {
         final int prefixIdx = qname.indexOf(':');
 
         String prefix = null;
@@ -126,6 +126,10 @@ public class MemTreeBuilder {
 
         if (prefix == null) {
             prefix = (prefixIdx != Constants.STRING_NOT_FOUND) ? qname.substring(0, prefixIdx) : null;
+        }
+
+        if(localName.isEmpty() && prefixIdx > -1) {
+            localName = qname.substring(prefixIdx + 1);
         }
 
         final QName qn = new QName(localName, namespaceURI, prefix);
