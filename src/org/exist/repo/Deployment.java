@@ -625,8 +625,8 @@ public class Deployment {
             collection.store(transaction, broker, info, updatedXML);
 
             mgr.commit(transaction);
-        } catch (final Exception e) {
-            LOG.warn(e);
+        } catch (final PermissionDeniedException | IOException | SAXException | LockException | EXistException e) {
+            throw new PackageException("Error while storing updated repo.xml: " + e.getMessage(), e);
         }
     }
 
