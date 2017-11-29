@@ -36,6 +36,7 @@ import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.source.FileSource;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
@@ -368,7 +369,7 @@ public class Deployment {
                 if (userTarget != null) {
                     try {
                         targetCollection = XmldbURI.create(userTarget);
-                    } catch (final Exception e) {
+                    } catch (final IllegalArgumentException e) {
                         throw new PackageException("Bad collection URI: " + userTarget, e);
                     }
                 } else {
@@ -379,7 +380,7 @@ public class Deployment {
                         // determine target collection
                         try {
                             targetCollection = XmldbURI.create(getTargetCollection(targetPath.get()));
-                        } catch (final Exception e) {
+                        } catch (final IllegalArgumentException e) {
                             throw new PackageException("Bad collection URI for <target> element: " + targetPath.get(), e);
                         }
                     }
@@ -587,7 +588,7 @@ public class Deployment {
                 }
             }
             mgr.commit(transaction);
-        } catch (final Exception e) {
+        } catch (final PermissionDeniedException | IOException | TriggerException | TransactionException e) {
             LOG.error("Exception occurred while removing package.", e);
         }
     }
@@ -609,7 +610,7 @@ public class Deployment {
         try {
             repoXML.copyTo(broker, receiver);
         } catch (final SAXException e) {
-            throw new PackageException("Error while updating repo.xml: " + e.getMessage());
+            throw new PackageException("Error while updating repo.xml in-memory: " + e.getMessage(), e);
         }
         builder.endDocument();
         final DocumentImpl updatedXML = builder.getDocument();
@@ -706,7 +707,7 @@ public class Deployment {
             setPermissions(requestedPerms, true, null, collection.getPermissionsNoLock());
             broker.saveCollection(transaction, collection);
             mgr.commit(transaction);
-        } catch (final Exception e) {
+        } catch (final PermissionDeniedException | TriggerException | IOException | TransactionException e) {
             LOG.warn(e);
             errors.add(e.getMessage());
         }
@@ -813,7 +814,7 @@ public class Deployment {
                         }
                     }
                     mgr.commit(transaction);
-                } catch (final Exception e) {
+                } catch (final EXistException | PermissionDeniedException | LockException | TriggerException | IOException e) {
                     LOG.error(e.getMessage(), e);
                     errors.add(FileUtils.fileName(file) + ": " + e.getMessage());
                 }
