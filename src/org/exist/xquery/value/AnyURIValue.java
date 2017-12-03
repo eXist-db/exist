@@ -37,7 +37,7 @@ import java.util.BitSet;
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class AnyURIValue extends AtomicValue {
+public class    AnyURIValue extends AtomicValue {
 
     public static final AnyURIValue EMPTY_URI = new AnyURIValue();
     static final int caseDiff = ('a' - 'A');
@@ -288,13 +288,24 @@ public class AnyURIValue extends AtomicValue {
                 case LTEQ:
                     return cmp <= 0;
                 default:
-                    throw new XPathException(
-                            "XPTY0004: cannot apply operator "
-                                    + operator.generalComparisonSymbol
-                                    + " to xs:anyURI");
+                    throw new XPathException(ErrorCodes.XPTY0004,
+                            "cannot apply operator " + operator.generalComparisonSymbol + " to xs:anyURI");
             }
         } else {
-            return compareTo(collator, operator, other.convertTo(Type.ANY_URI));
+            AtomicValue atomicValue = null;
+
+            try {
+                atomicValue = other.convertTo(Type.ANY_URI);
+
+            } catch (XPathException ex) {
+
+                if (ex.getErrorCode() == ErrorCodes.FORG0001) {
+                    throw new XPathException(ErrorCodes.XPTY0004, "cannot apply operator " + operator.generalComparisonSymbol + " to xs:anyURI");
+                }
+                throw ex;
+            }
+
+            return compareTo(collator, operator, atomicValue);
         }
     }
 

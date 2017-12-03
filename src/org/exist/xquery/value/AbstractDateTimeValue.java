@@ -359,9 +359,8 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
             }
             return r;
         }
-        throw new XPathException(
-                "Type error: cannot compare " + Type.getTypeName(getType()) + " to "
-                        + Type.getTypeName(other.getType()));
+        throw new XPathException(ErrorCodes.XPTY0004, "Type error: cannot compare " + Type.getTypeName(getType())
+                + " to " + Type.getTypeName(other.getType()));
     }
 
     public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {

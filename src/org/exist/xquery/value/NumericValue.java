@@ -3,6 +3,7 @@ package org.exist.xquery.value;
 import com.ibm.icu.text.Collator;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 public abstract class NumericValue extends ComputableValue {
@@ -75,7 +76,7 @@ public abstract class NumericValue extends ComputableValue {
                     throw new XPathException("Type error: cannot apply operator to numeric value");
             }
         }
-        throw new XPathException("Type error: cannot compare operands: " +
+        throw new XPathException(ErrorCodes.XPTY0004, "Type error: cannot compare operands: " +
                 Type.getTypeName(getType()) + " and " +
                 Type.getTypeName(other.getType()));
     }
