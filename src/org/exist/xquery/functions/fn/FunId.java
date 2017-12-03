@@ -23,43 +23,19 @@ package org.exist.xquery.functions.fn;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import org.exist.dom.persistent.DefaultDocumentSet;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.ExtArrayNodeSet;
-import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.persistent.*;
 import org.exist.util.XMLChar;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
+import org.exist.xquery.*;
 import org.exist.xquery.Constants.Comparison;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Expression;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import org.exist.xquery.ErrorCodes;
 
 /**
  *
@@ -217,13 +193,15 @@ public class FunId extends Function {
 
     private void getId(Sequence result, Sequence seq, String id) throws XPathException {
         final Set<DocumentImpl> visitedDocs = new TreeSet<>();
-        for (final SequenceIterator i = seq.iterate(); i.hasNext();) {
+        for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
             final NodeImpl v = (NodeImpl) i.nextItem();
             final DocumentImpl doc = v.getOwnerDocument();
-            if (!visitedDocs.contains(doc)) {
+
+            if (doc != null && !visitedDocs.contains(doc)) {
                 final NodeImpl elem = doc.selectById(id);
-                if (elem != null)
-                    {result.add(elem);}
+                if (elem != null) {
+                    result.add(elem);
+                }
                 visitedDocs.add(doc);
             }
         }
