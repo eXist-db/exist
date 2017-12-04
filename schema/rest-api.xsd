@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:exist="http://exist.sourceforge.net/NS/exist"
+    xmlns:sx="http://exist-db.org/xquery/types/serialized"
+    targetNamespace="http://exist.sourceforge.net/NS/exist"
+    elementFormDefault="qualified">
+
+    <xs:import namespace="http://exist-db.org/xquery/types/serialized" schemaLocation="rest-serialized-sequence.xsd"></xs:import>
+
+    <xs:element name="query">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="text" type="xs:string"/>
+                <xs:element name="variables" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="variable">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="qname">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="localname" type="xs:NCName"/>
+                                                    <xs:element name="namespace" type="xs:anyURI"/>
+                                                    <xs:element name="prefix" type="xs:NCName" minOccurs="0"/>
+                                                    <xs:element ref="sx:sequence"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="properties" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="property" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:attribute name="name" type="xs:string" use="required"/>
+                                    <xs:attribute name="value" type="xs:string" use="required"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="start" type="xs:int"/>
+            <xs:attribute name="max" type="xs:int"/>
+            <xs:attribute name="enclose" type="exist:yesNo"/>
+            <xs:attribute name="wrap" type="exist:yesNo"/>
+            <xs:attribute name="method" type="xs:NCName"/>
+            <xs:attribute name="typed" type="exist:yesNo"/>
+            <xs:attribute name="mime" type="xs:NCName"/>
+            <xs:attribute name="cache" type="exist:yesNo"/>
+            <xs:attribute name="session" type="xs:NCName"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:simpleType name="yesNo">
+        <xs:restriction base="xs:NCName">
+            <xs:enumeration value="yes"/>
+            <xs:enumeration value="no"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:element name="result">
+        <xs:complexType>
+            <xs:choice>
+                <xs:element ref="exist:collection"/>
+                <xs:element name="value" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType mixed="true">
+                        <xs:sequence>
+                            <xs:any processContents="skip"/>
+                        </xs:sequence>
+                        <xs:attribute name="type" type="xs:string" form="qualified"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:choice>
+            <xs:attributeGroup ref="exist:queryAttrs"></xs:attributeGroup>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="collection">
+        <xs:complexType>
+            <xs:sequence>
+                <!-- Child Collection -->
+                <xs:element ref="exist:collection" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attributeGroup ref="exist:collectionAttrs"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:attributeGroup name="collectionAttrs">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="created" type="xs:dateTime" use="required"/>
+        <xs:attribute name="owner" type="xs:string" use="required"/>
+        <xs:attribute name="group" type="xs:string" use="required"/>
+        <xs:attribute name="permissions" type="xs:string" use="required"/>
+    </xs:attributeGroup>
+    
+    <xs:attributeGroup name="queryAttrs">
+        <xs:attribute name="hits" type="xs:int" form="qualified"/>
+        <xs:attribute name="start" type="xs:int" form="qualified"/>
+        <xs:attribute name="count" type="xs:int" form="qualified"/>
+        <xs:attribute name="compilation-time" type="xs:int" form="qualified"/>
+        <xs:attribute name="execution-time" type="xs:int" form="qualified"/>
+    </xs:attributeGroup>
+
+</xs:schema>
