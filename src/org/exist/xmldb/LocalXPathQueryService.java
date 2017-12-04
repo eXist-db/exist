@@ -194,7 +194,11 @@ public class LocalXPathQueryService extends AbstractLocalService implements EXis
             // need to catch all runtime exceptions here to be able to release locked documents
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } finally {
-            context.runCleanupTasks();
+            /*
+             * Run the cleanup tasks, but not the Binary cleanup tasks.
+             * Binary cleanup is done by calling ResourceSet#clear() or CompiledExpression#reset()
+             */
+            context.runCleanupTasks(ct -> !(ct instanceof XQueryContext.BinaryValueCleanupTask));
         }
         LOG.debug("query took " + (System.currentTimeMillis() - start) + " ms.");
         if(result != null) {

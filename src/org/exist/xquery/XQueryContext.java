@@ -86,6 +86,9 @@ import org.w3c.dom.Node;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The current XQuery execution context. Contains the static as well as the dynamic
@@ -3554,7 +3557,7 @@ public class XQueryContext implements BinaryValueManager, Context
      * of any {@link BinaryValue} which have been used during
      * query execution
      */
-    private static class BinaryValueCleanupTask implements CleanupTask {
+    public static class BinaryValueCleanupTask implements CleanupTask {
         @Override
         public void cleanup(final XQueryContext context) {
             if (context.binaryValueInstances != null) {
@@ -3687,5 +3690,20 @@ public class XQueryContext implements BinaryValueManager, Context
         // now it is safe to clear the cleanup tasks list as we know they have run
         // do not move this anywhere else
         cleanupTasks.clear();
+    }
+
+    public void runCleanupTasks(final Predicate<CleanupTask> predicate) {
+        final List<CleanupTask> filteredTasks = cleanupTasks.stream().filter(predicate).collect(Collectors.toList());
+        for (final CleanupTask filteredTask : filteredTasks) {
+            try {
+                filteredTask.cleanup(this);
+            } catch (final Throwable t) {
+                LOG.error("Cleaning up XQueryContext: Ignoring: " + t.getMessage(), t);
+            }
+
+            // now it is safe to remove the cleanup task from the list as we know it has run
+            // do not move this anywhere else
+            cleanupTasks.remove(filteredTask);
+        }
     }
 }
