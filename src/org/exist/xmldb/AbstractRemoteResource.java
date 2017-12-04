@@ -42,6 +42,8 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
+import javax.annotation.Nullable;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public abstract class AbstractRemoteResource extends AbstractRemote
@@ -71,7 +73,8 @@ public abstract class AbstractRemoteResource extends AbstractRemote
         this.mimeType = mimeType;
     }
 
-    protected Properties getProperties() {
+    @Override
+    @Nullable public Properties getProperties() {
         return collection.getProperties();
     }
 
@@ -561,5 +564,10 @@ public abstract class AbstractRemoteResource extends AbstractRemote
         while ((read = is.read(buffer)) > -1) {
             os.write(buffer, 0, read);
         }
+    }
+
+    @Override
+    public void close() throws IOException {
+        freeResources();
     }
 }

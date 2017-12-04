@@ -21,6 +21,7 @@ package org.exist.xmldb;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Properties;
 
 import org.exist.util.EXistInputSource;
 import org.exist.util.MimeType;
@@ -29,6 +30,8 @@ import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
+
+import javax.annotation.Nullable;
 
 /**
  * @author wolf
@@ -108,6 +111,9 @@ public class RemoteBinaryResource
 
     @Override
     public void setDocType(final DocumentType doctype) throws XMLDBException {
+    }
 
+    @Override
+    @Nullable public void setProperties(final Properties properties) {
     }
 }

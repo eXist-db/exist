@@ -34,14 +34,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.BinaryValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -172,7 +165,7 @@ public class LocalResourceSet extends AbstractLocal implements ResourceSet {
 
         final Object r = resources.get((int) pos);
 
-        LocalXMLResource res = null;
+        EXistResource res = null;
         if (r instanceof NodeProxy) {
             final NodeProxy p = (NodeProxy) r;
             // the resource might belong to a different collection
@@ -186,9 +179,19 @@ public class LocalResourceSet extends AbstractLocal implements ResourceSet {
             res = new LocalXMLResource(user, brokerPool, coll, p);
         } else if (r instanceof Node) {
             res = new LocalXMLResource(user, brokerPool, collection, XmldbURI.EMPTY_URI);
-            res.setContentAsDOM((Node) r);
+            ((LocalXMLResource)res).setContentAsDOM((Node) r);
         } else if (r instanceof AtomicValue) {
-            res = new LocalXMLResource(user, brokerPool, collection, XmldbURI.EMPTY_URI);
+            if(r instanceof BinaryValue) {
+                final XmldbURI docId;
+                if(r instanceof Base64BinaryDocument) {
+                    docId = Optional.ofNullable(((Base64BinaryDocument)r).getUrl()).filter(s -> !s.isEmpty()).map(XmldbURI::create).orElse(XmldbURI.EMPTY_URI);
+                } else {
+                    docId = XmldbURI.EMPTY_URI;
+                }
+                res = new LocalBinaryResource(user, brokerPool, collection, docId);
+            } else {
+                res = new LocalXMLResource(user, brokerPool, collection, XmldbURI.EMPTY_URI);
+            }
             res.setContent(r);
         } else if (r instanceof Resource) {
             return (Resource)r;

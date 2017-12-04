@@ -49,6 +49,7 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
+import javax.annotation.Nullable;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -396,11 +397,13 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
         this.lexicalHandler = lexicalHandler;
     }
 
+    @Override
     public void setProperties(final Properties properties) {
         this.outputProperties = properties;
     }
 
-    public Properties getProperties() {
+    @Override
+    @Nullable public Properties getProperties() {
         return outputProperties;
     }
 
