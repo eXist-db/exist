@@ -274,6 +274,18 @@ function nt:qname-lhs-compare() {
 };
 
 declare
+    %test:assertEquals("false")
+function nt:right_empty_sequence-date() {
+    current-date() = ()
+};
+
+declare
+    %test:assertEquals("false")
+function nt:right_empty_sequence-boolean() {
+    false() = ()
+};
+
+declare
     %test:assertError("XPTY0004")
 function nt:int-string-compare() {
     5 eq 'five'
