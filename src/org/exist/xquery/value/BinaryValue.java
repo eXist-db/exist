@@ -213,7 +213,6 @@ public abstract class BinaryValue extends AtomicValue {
     //TODO ideally this should be moved out into serialization where we can stream the output from the buf/channel by calling streamTo()
     @Override
     public String getStringValue() throws XPathException {
-
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         try {

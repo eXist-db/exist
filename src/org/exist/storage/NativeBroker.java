@@ -2062,9 +2062,9 @@ public class NativeBroker extends DBBroker {
             //} catch (ReadOnlyException e) {
             //LOG.warn(DATABASE_IS_READ_ONLY);
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
+            LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
         } catch(final IOException e) {
-            LOG.warn("IOException while writing document data", e);
+            LOG.error("IOException while writing document data: " + doc.getURI(), e);
         } finally {
             lock.release(LockMode.WRITE_LOCK);
         }
