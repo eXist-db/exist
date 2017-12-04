@@ -272,3 +272,27 @@ declare
 function nt:qname-lhs-compare() {
     xs:QName('test') eq 'test'
 };
+
+declare
+    %test:assertError("XPTY0004")
+function nt:int-string-compare() {
+    5 eq 'five'
+};
+
+declare
+    %test:assertError("XPTY0004")
+function nt:string-int-compare() {
+    'five' eq 5
+};
+
+declare
+    %test:assertError("XPTY0004")
+function nt:uri-int-compare() {
+    xs:anyURI('5') eq 5
+};
+
+declare
+    %test:assertError("XPTY0004")
+function nt:int-uri-compare() {
+    5 eq xs:anyURI('5')
+};
