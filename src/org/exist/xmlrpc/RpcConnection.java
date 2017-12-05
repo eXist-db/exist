@@ -1648,6 +1648,9 @@ public class RpcConnection implements RpcAPI {
         });
     }
 
+    /**
+     * @deprecated Use {@link #queryPT(String, XmldbURI, String, Map)} instead.
+     */
     public Map<String, Object> queryP(final String xpath, final String documentPath,
                                       final String s_id, final Map<String, Object> parameters) throws URISyntaxException, EXistException, PermissionDeniedException {
         return queryP(xpath,
@@ -1655,6 +1658,9 @@ public class RpcConnection implements RpcAPI {
                 s_id, parameters);
     }
 
+    /**
+     * @deprecated Use {@link #queryPT(String, XmldbURI, String, Map)} instead.
+     */
     private Map<String, Object> queryP(final String xpath, final XmldbURI docUri,
                                        final String s_id, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
 
@@ -1767,6 +1773,161 @@ public class RpcConnection implements RpcAPI {
     }
 
     @Override
+    public Map<String, Object> queryPT(final byte[] xquery, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
+        return queryPT(new String(xquery, DEFAULT_ENCODING), null, null, parameters);
+    }
+
+    @Override
+    public Map<String, Object> queryPT(final byte[] xquery, @Nullable final String docName, @Nullable final String s_id, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException, URISyntaxException {
+        return queryPT(new String(xquery, DEFAULT_ENCODING), docName == null ? null : XmldbURI.create(docName), s_id, parameters);
+    }
+
+    private Map<String, Object> queryPT(final String xquery, final XmldbURI docUri,
+                                        final String s_id, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
+
+        final Source source = new StringSource(xquery);
+        final Optional<String> sortBy = Optional.ofNullable(parameters.get(RpcAPI.SORT_EXPR)).map(Object::toString);
+
+        return withDb((broker, transaction) -> {
+            final long startTime = System.currentTimeMillis();
+
+            final NodeSet nodes;
+
+            if (docUri != null && s_id != null) {
+                nodes = this.<NodeSet>readDocument(broker, transaction, docUri).apply((document, broker1, transaction1) -> {
+
+                    final Object[] docs = new Object[1];
+                    docs[0] = docUri.toString();
+                    parameters.put(RpcAPI.STATIC_DOCUMENTS, docs);
+
+                    if (s_id.length() > 0) {
+                        final NodeId nodeId = factory.getBrokerPool().getNodeFactory().createFromString(s_id);
+                        final NodeProxy node = new NodeProxy(document, nodeId);
+                        final NodeSet nodeSet = new ExtArrayNodeSet(1);
+                        nodeSet.add(node);
+                        return nodeSet;
+                    } else {
+                        return null;
+                    }
+                });
+            } else {
+                nodes = null;
+            }
+
+            try {
+                final Map<String, Object> rpcResponse = this.<Map<String, Object>>compileQuery(broker, transaction, source, parameters)
+                        .apply(compiledQuery -> queryResultToTypedRpcResponse(startTime, doQuery(broker, compiledQuery, nodes, parameters), sortBy));
+                return rpcResponse;
+            } catch (final XPathException e) {
+                throw new EXistException(e);
+            }
+        });
+    }
+
+    private Map<String, Object> queryResultToTypedRpcResponse(final long startTime, final QueryResult queryResult, final Optional<String> sortBy) throws XPathException {
+        final Map<String, Object> ret = new HashMap<>();
+        if (queryResult == null) {
+            return ret;
+        }
+
+        if (queryResult.hasErrors()) {
+            // return an error description
+            final XPathException e = queryResult.getException();
+            ret.put(RpcAPI.ERROR, e.getMessage());
+            if (e.getLine() != 0) {
+                ret.put(RpcAPI.LINE, e.getLine());
+                ret.put(RpcAPI.COLUMN, e.getColumn());
+            }
+            return ret;
+        }
+
+        Sequence resultSeq = queryResult.result;
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("found " + resultSeq.getItemCount());
+        }
+
+        if (sortBy.isPresent()) {
+            final SortedNodeSet sorted = new SortedNodeSet(factory.getBrokerPool(), user, sortBy.get());
+            sorted.addAll(resultSeq);
+            resultSeq = sorted;
+        }
+
+        final List<Map<String, String>> result = new ArrayList<>();
+        if (resultSeq != null) {
+            final SequenceIterator i = resultSeq.iterate();
+            if (i != null) {
+                while (i.hasNext()) {
+                    final Item next = i.nextItem();
+                    final Map<String, String> entry;
+                    if (Type.subTypeOf(next.getType(), Type.NODE)) {
+                        entry = nodeMap(next);
+                    } else {
+                        entry = atomicMap(next);
+                    }
+
+                    if(entry != null) {
+                        result.add(entry);
+                    }
+                }
+            } else {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("sequence iterator is null. Should not");
+                }
+            }
+        } else {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("result sequence is null. Skipping it...");
+            }
+        }
+
+        queryResult.result = resultSeq;
+        queryResult.queryTime = (System.currentTimeMillis() - startTime);
+        final int id = factory.resultSets.add(queryResult);
+        ret.put("id", id);
+        ret.put("hash", queryResult.hashCode());
+        ret.put("results", result);
+        return ret;
+    }
+
+    private @Nullable Map<String, String> nodeMap(final Item item) {
+        final Map<String, String> result;
+
+        if(item instanceof NodeValue &&
+                ((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
+            final NodeProxy p = (NodeProxy) item;
+
+            result = new HashMap<>();
+            result.put("type", Type.getTypeName(p.getType()));
+            result.put("docUri", p.getOwnerDocument().getURI().toString());
+            result.put("nodeId", p.getNodeId().toString());
+
+        } else if(item instanceof org.exist.dom.memtree.NodeImpl) {
+            final NodeImpl ni = (NodeImpl)item;
+
+            result = new HashMap<>();
+            result.put("type", Type.getTypeName(ni.getType()));
+            result.put("docUri", "temp_xquery/" + item.hashCode());
+            result.put("nodeId", String.valueOf(ni.getNodeNumber()));
+        } else {
+            LOG.error("Omitting from results, unsure how to process: " + item.getClass());
+            result = null;
+        }
+
+        return result;
+    }
+
+    private Map<String, String> atomicMap(final Item item) throws XPathException {
+        final Map<String, String> result = new HashMap<>();
+
+        final int type = item.getType();
+        result.put("type", Type.getTypeName(type));
+        result.put("value", item.getStringValue());
+
+        return result;
+    }
+
+    @Deprecated
+    @Override
     public Map<String, Object> execute(final String pathToQuery, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
         final long startTime = System.currentTimeMillis();
 
@@ -1787,6 +1948,34 @@ public class RpcConnection implements RpcAPI {
             try {
                 final Map<String, Object> rpcResponse = this.<Map<String, Object>>compileQuery(broker, transaction, source, parameters)
                         .apply(compiledQuery -> queryResultToRpcResponse(startTime, doQuery(broker, compiledQuery, null, parameters), sortBy));
+                return rpcResponse;
+            } catch (final XPathException e) {
+                throw new EXistException(e);
+            }
+        });
+    }
+
+    @Override
+    public Map<String, Object> executeT(final String pathToQuery, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
+        final long startTime = System.currentTimeMillis();
+
+        final Optional<String> sortBy = Optional.ofNullable(parameters.get(RpcAPI.SORT_EXPR)).map(Object::toString);
+
+        return this.<Map<String, Object>>readDocument(XmldbURI.createInternal(pathToQuery)).apply((document, broker, transaction) -> {
+            final BinaryDocument xquery = (BinaryDocument) document;
+            if (xquery.getResourceType() != DocumentImpl.BINARY_FILE) {
+                throw new EXistException("Document " + pathToQuery + " is not a binary resource");
+            }
+
+            if (!xquery.getPermissions().validate(user, Permission.READ | Permission.EXECUTE)) {
+                throw new PermissionDeniedException("Insufficient privileges to access resource");
+            }
+
+            final Source source = new DBSource(broker, xquery, true);
+
+            try {
+                final Map<String, Object> rpcResponse = this.<Map<String, Object>>compileQuery(broker, transaction, source, parameters)
+                        .apply(compiledQuery -> queryResultToTypedRpcResponse(startTime, doQuery(broker, compiledQuery, null, parameters), sortBy));
                 return rpcResponse;
             } catch (final XPathException e) {
                 throw new EXistException(e);
@@ -3377,11 +3566,13 @@ public class RpcConnection implements RpcAPI {
     }
 
     @Override
+    @Deprecated
     public Map<String, Object> queryP(final byte[] xpath, final String docName, final String s_id, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException, URISyntaxException {
         return queryP(new String(xpath, DEFAULT_ENCODING), docName, s_id, parameters);
     }
 
     @Override
+    @Deprecated
     public Map<String, Object> queryP(final byte[] xpath, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
         return queryP(new String(xpath, DEFAULT_ENCODING), (XmldbURI) null, null, parameters);
     }

@@ -39,9 +39,18 @@ import javax.annotation.Nullable;
 public class RemoteBinaryResource
         extends AbstractRemoteResource
         implements BinaryResource {
+
+    private String type = null;
+    private byte[] content = null;  // only used for binary results from an XQuery execution, where we have been sent the result
+
     public RemoteBinaryResource(final RemoteCollection parent, final XmldbURI documentName) throws XMLDBException {
         super(parent, documentName, MimeType.BINARY_TYPE.getName());
+    }
 
+    public RemoteBinaryResource(final RemoteCollection parent, final XmldbURI documentName, final String type, final byte[] content) throws XMLDBException {
+        super(parent, documentName, MimeType.BINARY_TYPE.getName());
+        this.type = type;
+        this.content = content;
     }
 
     @Override
@@ -56,25 +65,25 @@ public class RemoteBinaryResource
 
     @Override
     public Object getExtendedContent() throws XMLDBException {
-        return getExtendedContentInternal(null, false, -1, -1);
+        return getExtendedContentInternal(content, false, -1, -1);
     }
 
     @Override
     public long getStreamLength()
             throws XMLDBException {
-        return getStreamLengthInternal(null);
+        return getStreamLengthInternal(content);
     }
 
     @Override
     public InputStream getStreamContent()
             throws XMLDBException {
-        return getStreamContentInternal(null, false, -1, -1);
+        return getStreamContentInternal(content, false, -1, -1);
     }
 
     @Override
-    public void getContentIntoAStream(OutputStream os)
+    public void getContentIntoAStream(final OutputStream os)
             throws XMLDBException {
-        getContentIntoAStreamInternal(os, null, false, -1, -1);
+        getContentIntoAStreamInternal(os, content, false, -1, -1);
     }
 
     protected String getStreamSymbolicPath() {
