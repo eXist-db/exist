@@ -228,7 +228,7 @@ public class RemoteResourceSet implements ResourceSet {
 
     @Override
     public void removeResource(final long pos) throws XMLDBException {
-        resources.get((int) pos); //TODO this is broken!
+        resources.remove(pos);
     }
 
     @Override
