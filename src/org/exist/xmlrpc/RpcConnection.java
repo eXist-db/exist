@@ -88,6 +88,7 @@ import org.exist.xquery.value.*;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.w3c.dom.DocumentType;
+import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -105,6 +106,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.DeflaterOutputStream;
+import javax.annotation.Nullable;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 
@@ -1662,9 +1664,6 @@ public class RpcConnection implements RpcAPI {
         return withDb((broker, transaction) -> {
             final long startTime = System.currentTimeMillis();
 
-            final Map<String, Object> ret = new HashMap<>();
-            final List<Object> result = new ArrayList<>();
-            Sequence resultSeq = null;
             final NodeSet nodes;
 
             if (docUri != null && s_id != null) {
@@ -1689,77 +1688,82 @@ public class RpcConnection implements RpcAPI {
             }
 
             try {
-                final QueryResult queryResult = this.<QueryResult>compileQuery(broker, transaction, source, parameters).apply(compiledQuery -> doQuery(broker, compiledQuery, nodes, parameters));
-                if (queryResult == null) {
-                    return ret;
-                }
-
-                if (queryResult.hasErrors()) {
-                    // return an error description
-                    final XPathException e = queryResult.getException();
-                    ret.put(RpcAPI.ERROR, e.getMessage());
-                    if (e.getLine() != 0) {
-                        ret.put(RpcAPI.LINE, e.getLine());
-                        ret.put(RpcAPI.COLUMN, e.getColumn());
-                    }
-                    return ret;
-                }
-
-                resultSeq = queryResult.result;
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("found " + resultSeq.getItemCount());
-                }
-
-                if (sortBy.isPresent()) {
-                    final SortedNodeSet sorted = new SortedNodeSet(factory.getBrokerPool(), user, sortBy.get());
-                    sorted.addAll(resultSeq);
-                    resultSeq = sorted;
-                }
-                NodeProxy p;
-                List<String> entry;
-                if (resultSeq != null) {
-                    final SequenceIterator i = resultSeq.iterate();
-                    if (i != null) {
-                        Item next;
-                        while (i.hasNext()) {
-                            next = i.nextItem();
-                            if (Type.subTypeOf(next.getType(), Type.NODE)) {
-                                entry = new ArrayList<>();
-                                if (((NodeValue) next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                                    p = (NodeProxy) next;
-                                    entry.add(p.getOwnerDocument().getURI().toString());
-                                    entry.add(p.getNodeId().toString());
-                                } else {
-                                    entry.add("temp_xquery/" + next.hashCode());
-                                    entry.add(String.valueOf(((NodeImpl) next).getNodeNumber()));
-                                }
-                                result.add(entry);
-                            } else {
-                                result.add(next.getStringValue());
-                            }
-                        }
-                    } else {
-                        if(LOG.isDebugEnabled()) {
-                            LOG.debug("sequence iterator is null. Should not");
-                        }
-                    }
-                } else {
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug("result sequence is null. Skipping it...");
-                    }
-                }
-
-                queryResult.result = resultSeq;
-                queryResult.queryTime = (System.currentTimeMillis() - startTime);
-                final int id = factory.resultSets.add(queryResult);
-                ret.put("id", id);
-                ret.put("hash", queryResult.hashCode());
-                ret.put("results", result);
-                return ret;
+                final Map<String, Object> rpcResponse = this.<Map<String, Object>>compileQuery(broker, transaction, source, parameters)
+                        .apply(compiledQuery -> queryResultToRpcResponse(startTime, doQuery(broker, compiledQuery, nodes, parameters), sortBy));
+                return rpcResponse;
             } catch (final XPathException e) {
                 throw new EXistException(e);
             }
         });
+    }
+
+    private Map<String, Object> queryResultToRpcResponse(final long startTime, final QueryResult queryResult, final Optional<String> sortBy) throws XPathException {
+        final Map<String, Object> ret = new HashMap<>();
+        if (queryResult == null) {
+            return ret;
+        }
+
+        if (queryResult.hasErrors()) {
+            // return an error description
+            final XPathException e = queryResult.getException();
+            ret.put(RpcAPI.ERROR, e.getMessage());
+            if (e.getLine() != 0) {
+                ret.put(RpcAPI.LINE, e.getLine());
+                ret.put(RpcAPI.COLUMN, e.getColumn());
+            }
+            return ret;
+        }
+
+        Sequence resultSeq = queryResult.result;
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("found " + resultSeq.getItemCount());
+        }
+
+        if (sortBy.isPresent()) {
+            final SortedNodeSet sorted = new SortedNodeSet(factory.getBrokerPool(), user, sortBy.get());
+            sorted.addAll(resultSeq);
+            resultSeq = sorted;
+        }
+
+        final List<Object> result = new ArrayList<>();
+        if (resultSeq != null) {
+            final SequenceIterator i = resultSeq.iterate();
+            if (i != null) {
+                while (i.hasNext()) {
+                    final Item next = i.nextItem();
+                    if (Type.subTypeOf(next.getType(), Type.NODE)) {
+                        final List<String> entry = new ArrayList<>();
+                        if (((NodeValue) next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                            final NodeProxy p = (NodeProxy) next;
+                            entry.add(p.getOwnerDocument().getURI().toString());
+                            entry.add(p.getNodeId().toString());
+                        } else {
+                            entry.add("temp_xquery/" + next.hashCode());
+                            entry.add(String.valueOf(((NodeImpl) next).getNodeNumber()));
+                        }
+                        result.add(entry);
+                    } else {
+                        result.add(next.getStringValue());
+                    }
+                }
+            } else {
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("sequence iterator is null. Should not");
+                }
+            }
+        } else {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("result sequence is null. Skipping it...");
+            }
+        }
+
+        queryResult.result = resultSeq;
+        queryResult.queryTime = (System.currentTimeMillis() - startTime);
+        final int id = factory.resultSets.add(queryResult);
+        ret.put("id", id);
+        ret.put("hash", queryResult.hashCode());
+        ret.put("results", result);
+        return ret;
     }
 
     @Override
@@ -1778,77 +1782,12 @@ public class RpcConnection implements RpcAPI {
                 throw new PermissionDeniedException("Insufficient privileges to access resource");
             }
 
-            final Map<String, Object> ret = new HashMap<>();
-
             final Source source = new DBSource(broker, xquery, true);
+
             try {
-                final QueryResult queryResult = this.<QueryResult>compileQuery(broker, transaction, source, parameters).apply(compiledQuery -> doQuery(broker, compiledQuery, null, parameters));
-                if (queryResult == null) {
-                    return ret;
-                }
-
-                if (queryResult.hasErrors()) {
-                    // return an error description
-                    final XPathException e = queryResult.getException();
-                    ret.put(RpcAPI.ERROR, e.getMessage());
-                    if (e.getLine() != 0) {
-                        ret.put(RpcAPI.LINE, e.getLine());
-                        ret.put(RpcAPI.COLUMN, e.getColumn());
-                    }
-                    return ret;
-                }
-
-                Sequence resultSeq = queryResult.result;
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("found " + resultSeq.getItemCount());
-                }
-
-                if (sortBy.isPresent()) {
-                    final SortedNodeSet sorted = new SortedNodeSet(factory.getBrokerPool(), user, sortBy.get());
-                    sorted.addAll(resultSeq);
-                    resultSeq = sorted;
-                }
-
-                final List<Object> result = new ArrayList<>();
-                if (resultSeq != null) {
-                    final SequenceIterator i = resultSeq.iterate();
-                    if (i != null) {
-                        Item next;
-                        while (i.hasNext()) {
-                            next = i.nextItem();
-                            if (Type.subTypeOf(next.getType(), Type.NODE)) {
-                                final List<String> entry = new ArrayList<>();
-                                if (((NodeValue) next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                                    final NodeProxy p = (NodeProxy) next;
-                                    entry.add(p.getOwnerDocument().getURI().toString());
-                                    entry.add(p.getNodeId().toString());
-                                } else {
-                                    entry.add("temp_xquery/" + next.hashCode());
-                                    entry.add(String.valueOf(((NodeImpl) next).getNodeNumber()));
-                                }
-                                result.add(entry);
-                            } else {
-                                result.add(next.getStringValue());
-                            }
-                        }
-                    } else {
-                        if(LOG.isDebugEnabled()) {
-                            LOG.debug("sequence iterator is null. Should not be!");
-                        }
-                    }
-                } else {
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug("result sequence is null. Skipping it...");
-                    }
-                }
-
-                queryResult.result = resultSeq;
-                queryResult.queryTime = (System.currentTimeMillis() - startTime);
-                final int id = factory.resultSets.add(queryResult);
-                ret.put("id", id);
-                ret.put("hash", queryResult.hashCode());
-                ret.put("results", result);
-                return ret;
+                final Map<String, Object> rpcResponse = this.<Map<String, Object>>compileQuery(broker, transaction, source, parameters)
+                        .apply(compiledQuery -> queryResultToRpcResponse(startTime, doQuery(broker, compiledQuery, null, parameters), sortBy));
+                return rpcResponse;
             } catch (final XPathException e) {
                 throw new EXistException(e);
             }
