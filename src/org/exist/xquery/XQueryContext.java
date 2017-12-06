@@ -3537,19 +3537,19 @@ public class XQueryContext implements BinaryValueManager, Context
         return isVarDeclared( Debuggee.SESSION );
     }
 
-    private List<BinaryValue> binaryValueInstances;
+    private Deque<BinaryValue> binaryValueInstances;
     
     @Override
     public void registerBinaryValueInstance(final BinaryValue binaryValue) {
         if(binaryValueInstances == null) {
-             binaryValueInstances = new ArrayList<>();
+             binaryValueInstances = new ArrayDeque<>();
         }
 
         if(cleanupTasks.isEmpty() || !cleanupTasks.stream().filter(ct -> ct instanceof BinaryValueCleanupTask).findFirst().isPresent()) {
             cleanupTasks.add(new BinaryValueCleanupTask());
         }
 
-        binaryValueInstances.add(binaryValue);
+        binaryValueInstances.push(binaryValue);
     }
 
     /**
@@ -3561,14 +3561,14 @@ public class XQueryContext implements BinaryValueManager, Context
         @Override
         public void cleanup(final XQueryContext context) {
             if (context.binaryValueInstances != null) {
-                for (final BinaryValue bv : context.binaryValueInstances) {
+                while(!context.binaryValueInstances.isEmpty()) {
                     try {
+                        final BinaryValue bv = context.binaryValueInstances.pop();
                         bv.close();
                     } catch (final IOException ioe) {
                         LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
                     }
                 }
-                context.binaryValueInstances.clear();
             }
         }
     }
@@ -3578,15 +3578,9 @@ public class XQueryContext implements BinaryValueManager, Context
         return (String) getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
     }
 
-    public void destroyBinaryValue(BinaryValue value) {
-        if (binaryValueInstances != null) {
-            for (int i = binaryValueInstances.size() - 1; i > -1; i--) {
-                final BinaryValue bv = binaryValueInstances.get(i);
-                if (bv == value) {
-                    binaryValueInstances.remove(i);
-                    return;
-                }
-            }
+    public void destroyBinaryValue(final BinaryValue value) {
+        if (binaryValueInstances != null && binaryValueInstances.contains(value)) {
+            binaryValueInstances.remove(value);
         }
     }
     

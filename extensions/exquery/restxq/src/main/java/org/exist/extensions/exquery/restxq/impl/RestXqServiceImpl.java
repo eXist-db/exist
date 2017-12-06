@@ -28,8 +28,8 @@ package org.exist.extensions.exquery.restxq.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -85,23 +85,23 @@ class RestXqServiceImpl extends AbstractRestXqService {
         this.brokerPool = brokerPool;
         this.binaryValueManager = new BinaryValueManager() {
 
-            final List<BinaryValue> binaryValues = new ArrayList<>();
+            final Deque<BinaryValue> binaryValues = new ArrayDeque<>();
 
             @Override
             public void registerBinaryValueInstance(final BinaryValue binaryValue) {
-                binaryValues.add(binaryValue);
+                binaryValues.push(binaryValue);
             }
 
             @Override
             public void runCleanupTasks() {
-                for (final BinaryValue binaryValue : binaryValues) {
+                while (!binaryValues.isEmpty()) {
                     try {
+                        final BinaryValue binaryValue = binaryValues.pop();
                         binaryValue.close();
                     } catch (final IOException ioe) {
                         LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
                     }
                 }
-                binaryValues.clear();
             }
 
             @Override
