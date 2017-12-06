@@ -1090,7 +1090,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 }
 
                 default: {
-                    return( lv.compareTo( collator, relation, rv ) );
+                    // If right value is () always return false
+                    return( rv.isEmpty() ? false : lv.compareTo( collator, relation, rv ) );
                 }
             }
         }
