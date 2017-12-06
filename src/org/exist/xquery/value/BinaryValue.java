@@ -34,7 +34,7 @@ import java.io.*;
 /**
  * @author Adam Retter <adam@existsolutions.com>
  */
-public abstract class BinaryValue extends AtomicValue {
+public abstract class BinaryValue extends AtomicValue implements Closeable {
 
     private final static Logger LOG = LogManager.getLogger(BinaryValue.class);
 
@@ -262,6 +262,4 @@ public abstract class BinaryValue extends AtomicValue {
     public abstract InputStream getInputStream();
 
     public abstract boolean isClosed();
-
-    public abstract void close() throws IOException;
 }

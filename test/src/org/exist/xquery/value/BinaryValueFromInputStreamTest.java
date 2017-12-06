@@ -23,18 +23,22 @@ public class BinaryValueFromInputStreamTest {
 
     @Test
     public void getInputStream() throws XPathException, IOException {
+        final byte[] testData = "test data".getBytes();
 
-        BinaryValueManager binaryValueManager = new MockBinaryValueManager();
+        final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
+        try(final InputStream bais = new UnmarkableByteArrayInputStream(testData)) {
 
-        try{
-            final byte[] testData = "test data".getBytes();
+            final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais);
 
-            InputStream bais = new FilterInputStream(new ByteArrayInputStream(testData)) {
-                @Override
-                public boolean markSupported() {
-                    return false;
-                }
-            };
+            try(final InputStream is = binaryValue.getInputStream()) {
+                final byte[] actual = readAll(is);
+                assertArrayEquals(testData, actual);
+            }
+        } finally {
+            binaryValueManager.runCleanupTasks();
+        }
+    }
+
 
             BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais);
 
