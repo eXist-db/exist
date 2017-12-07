@@ -3538,7 +3538,44 @@ public class XQueryContext implements BinaryValueManager, Context
     }
 
     private Deque<BinaryValue> binaryValueInstances;
-    
+
+    public void enterEnclosedExpr() {
+        if(binaryValueInstances != null) {
+            final Iterator<BinaryValue> it = binaryValueInstances.descendingIterator();
+            while (it.hasNext()) {
+                it.next().incrementSharedReferences();
+            }
+        }
+    }
+
+    public void exitEnclosedExpr() {
+        if(binaryValueInstances != null) {
+            final Iterator<BinaryValue> it = binaryValueInstances.iterator();
+            List<BinaryValue> destroyable = null;
+            while (it.hasNext()) {
+                try {
+                    final BinaryValue bv = it.next();
+                    bv.close(); // really just decrements a reference
+                    if(bv.isClosed()) {
+                        if(destroyable == null) {
+                            destroyable = new ArrayList<>();
+                        }
+                        destroyable.add(bv);
+                    }
+                } catch (final IOException e) {
+                    LOG.warn("Unable to close binary reference on exiting enclosed expression: " + e.getMessage(), e);
+                }
+            }
+
+            // eagerly cleanup those BinaryValues that are not used outside the EnclosedExpr (to release memory)
+            if(destroyable != null) {
+                for(final BinaryValue bvd : destroyable) {
+                    binaryValueInstances.remove(bvd);
+                }
+            }
+        }
+    }
+
     @Override
     public void registerBinaryValueInstance(final BinaryValue binaryValue) {
         if(binaryValueInstances == null) {

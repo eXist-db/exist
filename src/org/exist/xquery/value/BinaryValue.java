@@ -262,4 +262,9 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
     public abstract InputStream getInputStream();
 
     public abstract boolean isClosed();
+
+    /**
+     * Increments the number of shared references to this binary value.
+     */
+    public abstract void incrementSharedReferences();
 }

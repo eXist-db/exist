@@ -117,4 +117,9 @@ public class BinaryValueFromFile extends BinaryValue {
         }
         context.destroyBinaryValue(this);
     }
+
+    @Override
+    public void incrementSharedReferences() {
+        throw new UnsupportedOperationException();
+    }
 }
