@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This shell script uses the REST-style HTTP interface to talk
 # to the database. It is based on curl, a standard utility 

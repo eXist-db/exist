@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # $Id$
 
 if [ ! -d "$JAVA_HOME" ]; then
