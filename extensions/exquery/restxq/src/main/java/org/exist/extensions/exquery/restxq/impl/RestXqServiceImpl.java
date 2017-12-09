@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.function.Predicate;
+
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -93,11 +95,13 @@ class RestXqServiceImpl extends AbstractRestXqService {
             }
 
             @Override
-            public void runCleanupTasks() {
+            public void runCleanupTasks(final Predicate<Object> predicate) {
                 while (!binaryValues.isEmpty()) {
                     try {
-                        final BinaryValue binaryValue = binaryValues.pop();
-                        binaryValue.close();
+                        if(predicate.test(binaryValues.peek())) {
+                            final BinaryValue binaryValue = binaryValues.pop();
+                            binaryValue.close();
+                        }
                     } catch (final IOException ioe) {
                         LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
                     }

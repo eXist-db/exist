@@ -5,6 +5,8 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.function.Predicate;
+
 import static org.junit.Assert.fail;
 
 /**
@@ -21,13 +23,15 @@ public class MockBinaryValueManager implements BinaryValueManager {
     }
 
     @Override
-    public void runCleanupTasks() {
+    public void runCleanupTasks(final Predicate<Object> predicate) {
         while(!values.isEmpty()) {
-            final BinaryValue value = values.pop();
-            try {
-                value.close();
-            } catch(final IOException e) {
-                fail(e.getMessage());
+            if(predicate.test(values.peek())) {
+                final BinaryValue value = values.pop();
+                try {
+                    value.close();
+                } catch (final IOException e) {
+                    fail(e.getMessage());
+                }
             }
         }
     }

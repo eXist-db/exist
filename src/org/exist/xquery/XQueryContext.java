@@ -3596,12 +3596,14 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     public static class BinaryValueCleanupTask implements CleanupTask {
         @Override
-        public void cleanup(final XQueryContext context) {
+        public void cleanup(final XQueryContext context, final Predicate<Object> predicate) {
             if (context.binaryValueInstances != null) {
                 while(!context.binaryValueInstances.isEmpty()) {
                     try {
-                        final BinaryValue bv = context.binaryValueInstances.pop();
-                        bv.close();
+                        if(predicate.test(context.binaryValueInstances.peek())) {
+                            final BinaryValue bv = context.binaryValueInstances.pop();
+                            bv.close();
+                        }
                     } catch (final IOException ioe) {
                         LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
                     }
@@ -3706,14 +3708,14 @@ public class XQueryContext implements BinaryValueManager, Context
     }
     
     public interface CleanupTask {
-        void cleanup(final XQueryContext context);
+        void cleanup(final XQueryContext context, final Predicate<Object> predicate);
     }
     
     @Override
-    public void runCleanupTasks() {
+    public void runCleanupTasks(final Predicate<Object> predicate) {
         for(final CleanupTask cleanupTask : cleanupTasks) {
             try {
-                cleanupTask.cleanup(this);
+                cleanupTask.cleanup(this, predicate);
             } catch(final Throwable t) {
                 LOG.error("Cleaning up XQueryContext: Ignoring: " + t.getMessage(), t);
             }
@@ -3721,20 +3723,5 @@ public class XQueryContext implements BinaryValueManager, Context
         // now it is safe to clear the cleanup tasks list as we know they have run
         // do not move this anywhere else
         cleanupTasks.clear();
-    }
-
-    public void runCleanupTasks(final Predicate<CleanupTask> predicate) {
-        final List<CleanupTask> filteredTasks = cleanupTasks.stream().filter(predicate).collect(Collectors.toList());
-        for (final CleanupTask filteredTask : filteredTasks) {
-            try {
-                filteredTask.cleanup(this);
-            } catch (final Throwable t) {
-                LOG.error("Cleaning up XQueryContext: Ignoring: " + t.getMessage(), t);
-            }
-
-            // now it is safe to remove the cleanup task from the list as we know it has run
-            // do not move this anywhere else
-            cleanupTasks.remove(filteredTask);
-        }
     }
 }

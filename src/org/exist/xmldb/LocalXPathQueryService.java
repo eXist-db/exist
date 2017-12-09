@@ -37,7 +37,9 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xmldb.function.LocalXmldbFunction;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Node;
 import org.xmldb.api.base.*;
 import org.xmldb.api.base.Collection;
@@ -179,7 +181,7 @@ public class LocalXPathQueryService extends AbstractLocalService implements EXis
     private ResourceSet execute(final DBBroker broker, final Txn transaction, XmldbURI[] docs, final Sequence contextSet, final CompiledExpression expression, final String sortExpr) throws XMLDBException {
         final long start = System.currentTimeMillis();
         final CompiledXQuery expr = (CompiledXQuery)expression;
-        Sequence result;
+        Sequence result = null;
         final XQueryContext context = expr.getContext();
         try {
             context.setStaticallyKnownDocuments(docs);
@@ -195,10 +197,24 @@ public class LocalXPathQueryService extends AbstractLocalService implements EXis
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } finally {
             /*
-             * Run the cleanup tasks, but not the Binary cleanup tasks.
-             * Binary cleanup is done by calling ResourceSet#clear() or CompiledExpression#reset()
+             * Run the cleanup tasks, but don't close BinaryValues which
+             * are in the result set as the user has not yet accessed them.
+             *
+             * Final cleanup of those BinaryValues is done by the user
+             * calling EXistResource#close(), ResourceSet#clear() or CompiledExpression#reset().
              */
-            context.runCleanupTasks(ct -> !(ct instanceof XQueryContext.BinaryValueCleanupTask));
+            final Sequence resSeq = result;
+            context.runCleanupTasks(o -> {
+                if(resSeq != null && o instanceof BinaryValue) {
+                    for(int i = 0; i < resSeq.getItemCount(); i++) {
+                        if (resSeq.itemAt(i) == o) {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            });
         }
         LOG.debug("query took " + (System.currentTimeMillis() - start) + " ms.");
         if(result != null) {
