@@ -84,6 +84,7 @@ public abstract class AbstractFilterInputStreamCache extends FilterInputStream i
                 }
             }
             this.invalidate(); //empty the cache
+            FilterInputStreamCacheMonitor.getInstance().deregister(this); // deregister with the monitor
         }
     }
 

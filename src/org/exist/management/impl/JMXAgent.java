@@ -109,6 +109,9 @@ public class JMXAgent implements Agent {
 
             addMBean(instance.getId(), "org.exist.management." + instance.getId() + ":type=ProcessReport",
                     new ProcessReport(instance));
+
+            addMBean(instance.getId(), "org.exist.management." + instance.getId() + ":type=BinaryValues",
+                    new BinaryValues());
                         
         } catch (final DatabaseConfigurationException e) {
             LOG.warn("Exception while registering database mbean.", e);

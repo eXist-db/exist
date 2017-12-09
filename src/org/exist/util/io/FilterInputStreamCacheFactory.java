@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.logging.Level;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -41,11 +41,10 @@ import org.apache.logging.log4j.Logger;
  */
 public class FilterInputStreamCacheFactory {
 
-    private final static Logger LOG = LogManager.getLogger(FilterInputStreamCacheFactory.class);
+    private static final Logger LOG = LogManager.getLogger(FilterInputStreamCacheFactory.class);
 
     public interface FilterInputStreamCacheConfiguration {
-
-        public String getCacheClass();
+        String getCacheClass();
     }
 
     private FilterInputStreamCacheFactory() {
@@ -55,16 +54,16 @@ public class FilterInputStreamCacheFactory {
      * Get a suitable Cache instance
      *
      */
-    public static FilterInputStreamCache getCacheInstance(final FilterInputStreamCacheConfiguration cacheConfiguration, InputStream is) throws IOException {
-
+    public static FilterInputStreamCache getCacheInstance(final FilterInputStreamCacheConfiguration cacheConfiguration, final InputStream is) throws IOException {
         final FilterInputStreamCache cache = new FilterInputStreamCacheFactory().instantiate(cacheConfiguration, is);
         if (cache == null) {
             throw new IOException("Could not load cache for class: " + cacheConfiguration.getCacheClass());
         }
+        FilterInputStreamCacheMonitor.getInstance().register(cache);
         return cache;
     }
 
-    private FilterInputStreamCache instantiate(final FilterInputStreamCacheConfiguration cacheConfiguration, InputStream is) {
+    private FilterInputStreamCache instantiate(final FilterInputStreamCacheConfiguration cacheConfiguration, final InputStream is) {
         try {
             final Class clazz = Class.forName(cacheConfiguration.getCacheClass());
             final Constructor ctor = clazz.getDeclaredConstructor(InputStream.class);

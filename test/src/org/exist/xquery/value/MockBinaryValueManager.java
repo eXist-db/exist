@@ -1,10 +1,7 @@
 package org.exist.xquery.value;
 
 import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 
 import static org.junit.Assert.fail;
@@ -24,13 +21,26 @@ public class MockBinaryValueManager implements BinaryValueManager {
 
     @Override
     public void runCleanupTasks(final Predicate<Object> predicate) {
-        while(!values.isEmpty()) {
-            if(predicate.test(values.peek())) {
-                final BinaryValue value = values.pop();
+        if (values != null) {
+            List<BinaryValue> removable = null;
+            for(final Iterator<BinaryValue> iterator = values.iterator(); iterator.hasNext();) {
+                final BinaryValue bv = iterator.next();
                 try {
-                    value.close();
+                    if (predicate.test(bv)) {
+                        bv.close();
+                        if(removable == null) {
+                            removable = new ArrayList<>();
+                        }
+                        removable.add(bv);
+                    }
                 } catch (final IOException e) {
                     fail(e.getMessage());
+                }
+            }
+
+            if(removable != null) {
+                for(final BinaryValue bv : removable) {
+                    values.remove(bv);
                 }
             }
         }

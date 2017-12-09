@@ -3598,14 +3598,25 @@ public class XQueryContext implements BinaryValueManager, Context
         @Override
         public void cleanup(final XQueryContext context, final Predicate<Object> predicate) {
             if (context.binaryValueInstances != null) {
-                while(!context.binaryValueInstances.isEmpty()) {
+                List<BinaryValue> removable = null;
+                for(final Iterator<BinaryValue> iterator = context.binaryValueInstances.iterator(); iterator.hasNext();) {
+                    final BinaryValue bv = iterator.next();
                     try {
-                        if(predicate.test(context.binaryValueInstances.peek())) {
-                            final BinaryValue bv = context.binaryValueInstances.pop();
+                        if (predicate.test(bv)) {
                             bv.close();
+                            if(removable == null) {
+                                removable = new ArrayList<>();
+                            }
+                            removable.add(bv);
                         }
-                    } catch (final IOException ioe) {
-                        LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
+                    } catch (final IOException e) {
+                        LOG.error("Unable to close binary value: " + e.getMessage(), e);
+                    }
+                }
+
+                if(removable != null) {
+                    for(final BinaryValue bv : removable) {
+                        context.binaryValueInstances.remove(bv);
                     }
                 }
             }
