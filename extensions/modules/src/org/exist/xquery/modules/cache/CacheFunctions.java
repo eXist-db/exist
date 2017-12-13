@@ -70,7 +70,7 @@ public class CacheFunctions extends BasicFunction {
             "Explicitly create a cache with a specific configuration",
             returns(Type.BOOLEAN, "true if the cache was created, false if the cache already exists"),
             FS_PARAM_CACHE_NAME,
-            param("config", Type.MAP, "A map with configuration for the cache. At present permission groups may be specified, for operations on the cache. If a permission group is not specified for an operation, then permissions are not checked for that operation. Should have the format: { permissions: { \"put-group\": \"group1\", \"get-group\": \"group2\", \"remove-group\": \"group3\", \"clear-group\": \"group4\"} }")
+            param("config", Type.MAP, "A map with configuration for the cache. At present cache LRU and permission groups may be specified, for operations on the cache. `maximumSize` is optional and specifies the maximum number of entries. `expireAfterAccess` is optional and specified the expiry period for infrequently accessed entries (in milliseconds). If a permission group is not specified for an operation, then permissions are not checked for that operation. Should have the format: { maximumSize: 1000, expireAfterAccess: 120000, permissions: { \"put-group\": \"group1\", \"get-group\": \"group2\", \"remove-group\": \"group3\", \"clear-group\": \"group4\"} }")
     );
 
     private static final String FS_PUT_NAME = "put";
@@ -144,7 +144,7 @@ public class CacheFunctions extends BasicFunction {
                 if(CacheModule.caches.containsKey(cacheName)) {
                     return args[0];
                 }
-                createCache(cacheName, new CacheConfig(Optional.empty()));
+                createCache(cacheName, new CacheConfig());
                 return args[0];
 
 
@@ -157,7 +157,7 @@ public class CacheFunctions extends BasicFunction {
             case FS_PUT_NAME:
                 // lazy create cache if it doesn't exist
                 if(!CacheModule.caches.containsKey(cacheName)) {
-                    createCache(cacheName, new CacheConfig(Optional.empty()));
+                    createCache(cacheName, new CacheConfig());
                 }
                 final String putKey = toMapKey(args[1]);
                 final Sequence value = args[2];
@@ -166,7 +166,7 @@ public class CacheFunctions extends BasicFunction {
             case FS_LIST_NAME:
                 // lazy create cache if it doesn't exist
                 if(!CacheModule.caches.containsKey(cacheName)) {
-                    createCache(cacheName, new CacheConfig(Optional.empty()));
+                    createCache(cacheName, new CacheConfig());
                 }
                 final String[] keys = toMapKeys(args[1]);
                 return list(cacheName, keys);
@@ -174,7 +174,7 @@ public class CacheFunctions extends BasicFunction {
             case FS_GET_NAME:
                 // lazy create cache if it doesn't exist
                 if(!CacheModule.caches.containsKey(cacheName)) {
-                    createCache(cacheName, new CacheConfig(Optional.empty()));
+                    createCache(cacheName, new CacheConfig());
                 }
                 final String getKey = toMapKey(args[1]);
                 return get(cacheName, getKey);
@@ -182,7 +182,7 @@ public class CacheFunctions extends BasicFunction {
             case FS_REMOVE_NAME:
                 // lazy create cache if it doesn't exist
                 if(!CacheModule.caches.containsKey(cacheName)) {
-                    createCache(cacheName, new CacheConfig(Optional.empty()));
+                    createCache(cacheName, new CacheConfig());
                 }
                 final String removeKey = toMapKey(args[1]);
                 return remove(cacheName, removeKey);
@@ -205,7 +205,7 @@ public class CacheFunctions extends BasicFunction {
         }
     }
 
-    private CacheConfig extractCacheConfig(final MapType configMap) {
+    private CacheConfig extractCacheConfig(final MapType configMap) throws XPathException {
         final Sequence permsSeq = configMap.get(new StringValue("permissions"));
 
         final Optional<CacheConfig.Permissions> permissions;
@@ -220,7 +220,25 @@ public class CacheFunctions extends BasicFunction {
             permissions = Optional.empty();
         }
 
-        return new CacheConfig(permissions);
+        final Sequence maximumSizeSeq = configMap.get(new StringValue("maximumSize"));
+        final Optional<Long> maximumSize;
+        if(maximumSizeSeq != null && maximumSizeSeq.getItemCount() == 1) {
+            final long l = maximumSizeSeq.itemAt(0).toJavaObject(Long.class);
+            maximumSize = Optional.of(l);
+        } else {
+            maximumSize = Optional.empty();
+        }
+
+        final Sequence expireAfterAccessSeq = configMap.get(new StringValue("expireAfterAccess"));
+        final Optional<Long> expireAfterAccess;
+        if(expireAfterAccessSeq != null && expireAfterAccessSeq.getItemCount() == 1) {
+            final long l = expireAfterAccessSeq.itemAt(0).toJavaObject(Long.class);
+            expireAfterAccess = Optional.of(l);
+        } else {
+            expireAfterAccess = Optional.empty();
+        }
+
+        return new CacheConfig(permissions, maximumSize, expireAfterAccess);
     }
 
     private Optional<String> getStringValue(final String key, final AbstractMapType map) {

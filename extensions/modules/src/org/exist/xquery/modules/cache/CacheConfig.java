@@ -30,13 +30,34 @@ import java.util.Optional;
 public class CacheConfig {
 
     private final Optional<Permissions> permissions;
+    private final Optional<Long> maximumSize;
+    private final Optional<Long> expireAfterAccess;
 
-    public CacheConfig(final Optional<Permissions> permissions) {
+    public CacheConfig() {
+        this(Optional.empty(), Optional.empty(), Optional.empty());
+    }
+
+    /**
+     * @param permissions Any restrictions on cache operations
+     * @param maximumSize The maximimum number of entries in the cache
+     * @param expireAfterAccess The time in milliseconds after the entry is last accessed, that it should expire
+     */
+    public CacheConfig(final Optional<Permissions> permissions, final Optional<Long> maximumSize, final Optional<Long> expireAfterAccess) {
         this.permissions = permissions;
+        this.maximumSize = maximumSize;
+        this.expireAfterAccess = expireAfterAccess;
     }
 
     public Optional<Permissions> getPermissions() {
         return permissions;
+    }
+
+    public Optional<Long> getMaximumSize() {
+        return maximumSize;
+    }
+
+    public Optional<Long> getExpireAfterAccess() {
+        return expireAfterAccess;
     }
 
     public static class Permissions {
