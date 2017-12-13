@@ -50,12 +50,15 @@ public class CacheModule extends AbstractInternalModule {
             CacheFunctions.class,
             CacheFunctions.FS_CACHE,
             CacheFunctions.FS_CREATE_CACHE,
+            CacheFunctions.FS_NAMES,
             CacheFunctions.FS_PUT,
             CacheFunctions.FS_LIST,
+            CacheFunctions.FS_LIST_KEYS,
             CacheFunctions.FS_GET,
             CacheFunctions.FS_REMOVE,
             CacheFunctions.FS_CLEAR[0],
-            CacheFunctions.FS_CLEAR[1]);
+            CacheFunctions.FS_CLEAR[1],
+            CacheFunctions.FS_DESTROY);
 
 
     static final Map<String, Cache> caches = new ConcurrentHashMap<>();
