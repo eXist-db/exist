@@ -3,6 +3,8 @@ package org.exist.xupdate;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -96,15 +98,9 @@ public class XUpdateTest {
     private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
     private final static String XUPDATE_COLLECTION = "xupdate_tests";
 
-    static Path existDir;
-    static {
-        String existHome = System.getProperty("exist.home");
-        existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-        existDir = existDir.normalize();
-    }
-    private final static Path MODIFICATION_DIR  = existDir.resolve("test/src/org/exist/xupdate/modifications").toAbsolutePath();
-    private final static Path RESULT_DIR = existDir.resolve("test/src/org/exist/xupdate/results").toAbsolutePath();
-    private final static Path SOURCE_DIR = existDir.resolve("test/src/org/exist/xupdate/input").toAbsolutePath();
+    private final static String MODIFICATION_DIR_NAME  = "modifications";
+    private final static String RESULT_DIR_NAME = "results";
+    private final static String SOURCE_DIR_NAME = "input";
     private final static String XUPDATE_FILE = "xu.xml";       // xlm document name in eXist
 
     private Collection col = null;
@@ -118,7 +114,8 @@ public class XUpdateTest {
         addDocument(sourceFile);
 
         //update input xml file
-        Document xupdateResult = updateDocument(MODIFICATION_DIR.resolve(testName + ".xml"));
+        final Path modFile = getRelFile(MODIFICATION_DIR_NAME + "/" + testName + ".xml");
+        Document xupdateResult = updateDocument(modFile);
         removeWhiteSpace(xupdateResult);
 
         //Read reference xml file
@@ -126,7 +123,8 @@ public class XUpdateTest {
                 = DocumentBuilderFactory.newInstance();
         parserFactory.setNamespaceAware(true);
         DocumentBuilder builder = parserFactory.newDocumentBuilder();
-        Document referenceXML = builder.parse(RESULT_DIR.resolve(testName + ".xml").toFile());
+        final Path resultFile = getRelFile(RESULT_DIR_NAME + "/" + testName + ".xml");
+        Document referenceXML = builder.parse(resultFile.toFile());
         removeWhiteSpace(referenceXML);
 
         //compare
@@ -139,14 +137,26 @@ public class XUpdateTest {
      * helperfunctions
      * 
      */
-    public void addDocument(final String sourceFile) throws XMLDBException {
+    public void addDocument(final String sourceFile) throws XMLDBException, IOException, URISyntaxException {
+        final Path f = getRelFile(SOURCE_DIR_NAME + "/" + sourceFile);
+
         final XMLResource document = (XMLResource) col.createResource(XUPDATE_FILE, "XMLResource");
-        final Path f = SOURCE_DIR.resolve(sourceFile);
-        if (!Files.isReadable(f)) {
-            System.err.println("can't read file " + sourceFile);
-        }
         document.setContent(f);
         col.storeResource(document);
+    }
+
+    public Path getRelFile(final String relPath) throws IOException, URISyntaxException {
+        final URL url = getClass().getResource(relPath);
+        if(url == null) {
+            throw new IOException("Can't find file: " + relPath);
+        }
+
+        final Path f = Paths.get(url.toURI());
+        if (!Files.isReadable(f)) {
+            throw new IOException("Can't read file: " + url);
+        }
+
+        return f;
     }
 
     public void removeDocument() throws XMLDBException {
