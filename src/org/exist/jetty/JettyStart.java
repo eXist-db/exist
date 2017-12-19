@@ -369,27 +369,29 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
     private static String getJettyVersion(final String jettyBase) {
         final Path jettyLib = Paths.get(jettyBase, "lib");
-        try(final Stream<Path> children = Files.list(jettyLib)) {
-            final Optional<Path> jettyServerJar = children.filter(child -> {
-                final String fileName = FileUtils.fileName(child);
-                return fileName.startsWith("jetty-server") && fileName.endsWith(".jar");
-            }).findFirst();
+        if(Files.exists(jettyLib)) {
+            try (final Stream<Path> children = Files.list(jettyLib)) {
+                final Optional<Path> jettyServerJar = children.filter(child -> {
+                    final String fileName = FileUtils.fileName(child);
+                    return fileName.startsWith("jetty-server") && fileName.endsWith(".jar");
+                }).findFirst();
 
-            if(jettyServerJar.isPresent()) {
-                final JarFile jarFile = new JarFile(jettyServerJar.get().toFile());
-                final Manifest manifest = jarFile.getManifest();
-                if(manifest != null) {
-                    final Attributes mainAttributes = manifest.getMainAttributes();
-                    if(mainAttributes != null) {
-                        final String jettyVersion = mainAttributes.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
-                        if(jettyVersion != null) {
-                            return jettyVersion;
+                if (jettyServerJar.isPresent()) {
+                    final JarFile jarFile = new JarFile(jettyServerJar.get().toFile());
+                    final Manifest manifest = jarFile.getManifest();
+                    if (manifest != null) {
+                        final Attributes mainAttributes = manifest.getMainAttributes();
+                        if (mainAttributes != null) {
+                            final String jettyVersion = mainAttributes.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+                            if (jettyVersion != null) {
+                                return jettyVersion;
+                            }
                         }
                     }
                 }
+            } catch (final IOException ioe) {
+                logger.error(ioe.getMessage(), ioe);
             }
-        } catch (final IOException ioe) {
-            logger.error(ioe.getMessage(), ioe);
         }
 
         return "<UNKNOWN>";
