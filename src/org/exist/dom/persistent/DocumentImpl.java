@@ -350,7 +350,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      * Returns the update lock associated with this
      * resource.
      */
-    public final synchronized Lock getUpdateLock() {
+    public synchronized Lock getUpdateLock() {
         if(updateLock == null) {
             updateLock = new MultiReadReentrantLock(fileURI);
         }
@@ -572,7 +572,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      * @return an <code>int</code> value
      */
     @Override
-    public final int compareTo(final DocumentImpl other) {
+    public int compareTo(final DocumentImpl other) {
         final long otherId = other.docId;
         if(otherId == docId) {
             return Constants.EQUAL;
