@@ -15,5 +15,6 @@ test:suite((
     inspect:module-functions(xs:anyURI("nill.xql")),
     inspect:module-functions(xs:anyURI("ft-match.xql")),
     inspect:module-functions(xs:anyURI("types.xql")),
-    inspect:module-functions(xs:anyURI("unparsed-text.xql"))
+    inspect:module-functions(xs:anyURI("unparsed-text.xql")),
+    inspect:module-functions(xs:anyURI("xquery-update.xql"))
 ))
