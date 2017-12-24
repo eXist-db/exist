@@ -21,7 +21,6 @@
  */
 package org.exist.xmldb;
 
-import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.After;
 import org.junit.Before;
@@ -33,7 +32,10 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
@@ -49,26 +51,21 @@ public class BinaryResourceUpdateTest  {
 
     private static final int REPEAT = 10;
 
-    private static final Path binFile;
-    private static final Path xmlFile;
-
-    static {
-      binFile = TestUtils.getEXistHome().get().resolve("LICENSE");
-      xmlFile = TestUtils.resolveSample("examples.xml");
-    }
+    private final URL binFile = getClass().getResource("test.bin");
+    private final URL xmlFile = getClass().getResource("/samples/examples.xml");
 
     @Test
-    public void updateBinary() throws XMLDBException {
+    public void updateBinary() throws XMLDBException, URISyntaxException {
         for (int i = 0; i < REPEAT; i++) {
             BinaryResource binaryResource = (BinaryResource)testCollection.createResource("test1.xml", "BinaryResource");
-            binaryResource.setContent(binFile.toFile());
+            binaryResource.setContent(Paths.get(binFile.toURI()));
             testCollection.storeResource(binaryResource);
 
             Resource resource = testCollection.getResource("test1.xml");
             assertNotNull(resource);
 
             XMLResource xmlResource = (XMLResource) testCollection.createResource("test2.xml", "XMLResource");
-            xmlResource.setContent(xmlFile.toFile());
+            xmlResource.setContent(Paths.get(xmlFile.toURI()));
             testCollection.storeResource(xmlResource);
 
             resource = testCollection.getResource("test2.xml");
@@ -79,17 +76,17 @@ public class BinaryResourceUpdateTest  {
 
     // with same docname test fails for windows
     @Test
-    public void updateBinary_windows() throws XMLDBException {
+    public void updateBinary_windows() throws XMLDBException, URISyntaxException {
         for (int i = 0; i < REPEAT; i++) {
             BinaryResource binaryResource = (BinaryResource)testCollection.createResource("test.xml", "BinaryResource");
-            binaryResource.setContent(binFile.toFile());
+            binaryResource.setContent(Paths.get(binFile.toURI()));
             testCollection.storeResource(binaryResource);
 
             Resource resource = testCollection.getResource("test.xml");
             assertNotNull(resource);
 
             XMLResource xmlResource = (XMLResource) testCollection.createResource("test.xml", "XMLResource");
-            xmlResource.setContent(xmlFile.toFile());
+            xmlResource.setContent(Paths.get(xmlFile.toURI()));
             testCollection.storeResource(xmlResource);
 
             resource = testCollection.getResource("test.xml");

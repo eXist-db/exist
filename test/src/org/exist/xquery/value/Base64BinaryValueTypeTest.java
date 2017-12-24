@@ -3,8 +3,10 @@ package org.exist.xquery.value;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.apache.commons.codec.binary.Base64InputStream;
@@ -51,9 +53,9 @@ public class Base64BinaryValueTypeTest {
     }
 
     @Test
-    public void verify_validBase64_passes_large_string() throws XPathException, IOException {
+    public void verify_validBase64_passes_large_string() throws XPathException, IOException, URISyntaxException {
         Optional<Path> home = ConfigurationHelper.getExistHome();
-        Path binaryFile = FileUtils.resolve(home, "webapp").resolve("logo.jpg");
+        Path binaryFile = Paths.get(getClass().getResource("logo.jpg").toURI());
 
         String base64data = null;
         try(final InputStream is = new Base64InputStream(Files.newInputStream(binaryFile), true, -1, null);
