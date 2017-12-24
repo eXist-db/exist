@@ -681,10 +681,12 @@ public class Collations {
     private static Collator getHtmlAsciiCaseInsensitiveCollator() throws Exception {
         Collator collator = htmlAsciiCaseInsensitiveCollator.get();
         if (collator == null) {
-            htmlAsciiCaseInsensitiveCollator.compareAndSet(null,
-                    new RuleBasedCollator("&a=A &b=B &c=C &d=D &e=E &f=F &g=G &h=H "
+            collator = new RuleBasedCollator("&a=A &b=B &c=C &d=D &e=E &f=F &g=G &h=H "
                     + "&i=I &j=J &k=K &l=L &m=M &n=N &o=O &p=P &q=Q &r=R &s=S &t=T "
-                    + "&u=U &v=V &w=W &x=X &y=Y &z=Z").freeze());
+                    + "&u=U &v=V &w=W &x=X &y=Y &z=Z");
+            collator.setStrength(Collator.PRIMARY);
+            htmlAsciiCaseInsensitiveCollator.compareAndSet(null,
+                    collator.freeze());
             collator = htmlAsciiCaseInsensitiveCollator.get();
         }
 
