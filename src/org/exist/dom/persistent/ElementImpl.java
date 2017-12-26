@@ -932,7 +932,7 @@ public class ElementImpl extends NamedNode implements Element {
 
     @Override
     public boolean hasChildNodes() {
-        return children - attributes > 0;
+        return children > 0;
     }
 
     @Override
@@ -1030,6 +1030,10 @@ public class ElementImpl extends NamedNode implements Element {
 
     @Override
     public Node getLastChild() {
+        if(!hasChildNodes()) {
+           return null;
+        }
+        
         Node node = null;
         if(!isDirty) {
             final NodeId child = nodeId.getChild(children);
