@@ -138,6 +138,14 @@ public class CacheFunctions extends BasicFunction {
             )
     );
 
+    private static final String FS_CLEANUP_NAME = "cleanup";
+    static final FunctionSignature FS_CLEANUP = functionSignature(
+            FS_CLEANUP_NAME,
+            "Eviction policy work of the cache is performed asynchronously. Performs any pending maintenance operations needed by the cache, on the current thread. Typically not needed by users, and only used for testing scenarios. Requires 'clear' permissions.",
+            returnsNothing(),
+            FS_PARAM_CACHE_NAME
+    );
+
     private static final String FS_DESTROY_NAME = "destroy";
     static final FunctionSignature FS_DESTROY = functionSignature(
             FS_DESTROY_NAME,
@@ -228,6 +236,13 @@ public class CacheFunctions extends BasicFunction {
                        // only clear the cache if it exists
                        clear(cacheName);
                     }
+                }
+                return Sequence.EMPTY_SEQUENCE;
+
+            case FS_CLEANUP_NAME:
+                if(CacheModule.caches.containsKey(cacheName)) {
+                    // only cleanup the cache if it exists
+                    cleanup(cacheName);
                 }
                 return Sequence.EMPTY_SEQUENCE;
 
@@ -416,6 +431,22 @@ public class CacheFunctions extends BasicFunction {
         }
 
         cache.clear();
+    }
+
+    private void cleanup(final String cacheName) throws XPathException {
+        final Cache cache = CacheModule.caches.get(cacheName);
+
+        // check permissions
+        if(!context.getEffectiveUser().hasDbaRole()) {
+            final Optional<String> clearGroup = cache.getConfig().getPermissions().flatMap(CacheConfig.Permissions::getClearGroup);
+            if (clearGroup.isPresent()) {
+                if (!context.getEffectiveUser().hasGroup(clearGroup.get())) {
+                    throw new XPathException(this, INSUFFICIENT_PERMISSIONS, "User does not have the appropriate permissions to clear data from this cache");
+                }
+            }
+        }
+
+        cache.cleanup();
     }
 
     private String toMapKey(final Sequence key) throws XPathException {

@@ -88,4 +88,8 @@ class Cache {
     public void clear() {
         store.invalidateAll();
     }
+
+    public void cleanup() {
+	    store.cleanUp();
+    }
 }

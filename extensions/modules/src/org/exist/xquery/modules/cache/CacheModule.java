@@ -58,6 +58,7 @@ public class CacheModule extends AbstractInternalModule {
             CacheFunctions.FS_REMOVE,
             CacheFunctions.FS_CLEAR[0],
             CacheFunctions.FS_CLEAR[1],
+            CacheFunctions.FS_CLEANUP,
             CacheFunctions.FS_DESTROY);
 
 
