@@ -88,8 +88,8 @@ public class ElementImpl extends NamedNode implements Element {
     public static final int LENGTH_NS_ID = 2; //sizeof short
     public static final int LENGTH_PREFIX_LENGTH = 2; //sizeof short
 
-    private short attributes = 0;
-    private int children = 0;
+    private short attributes = 0; // number of attributes
+    private int children = 0; // number of elements AND attributes
 
     private int position = 0;
     private Map<String, String> namespaceMappings = null;
@@ -1033,11 +1033,13 @@ public class ElementImpl extends NamedNode implements Element {
         if(!hasChildNodes()) {
             return null;
         }
+
         Node node = null;
         if(!isDirty) {
             final NodeId child = nodeId.getChild(children);
             node = ownerDocument.getNode(new NodeProxy(ownerDocument, child));
         }
+
         if(node == null) {
             final NodeList cl = getChildNodes();
             return cl.item(cl.getLength() - 1);
