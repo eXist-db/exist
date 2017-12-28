@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import com.ibm.icu.text.*;
@@ -65,10 +66,26 @@ public class Collations {
      */
     public final static String UCA_COLLATION_URI = "http://www.w3.org/2013/collation/UCA";
 
+
+    /**
+     * The HTML ASCII Case-Insensitive Collation as defined by the XPath F&O spec.
+     */
+    public final static String HTML_ASCII_CASE_INSENSITIVE_COLLATION_URI = "http://www.w3.org/2005/xpath-functions/collation/html-ascii-case-insensitive";
+
     /**
      * The URI used to select collations in eXist.
      */
     public final static String EXIST_COLLATION_URI = "http://exist-db.org/collation";
+
+    /**
+     * Lazy-initialized singleton Html Ascii Case Insensitive Collator
+     */
+    private final static AtomicReference<Collator> htmlAsciiCaseInsensitiveCollator = new AtomicReference<>();
+
+    /**
+     * Lazy-initialized singleton Samisk Collator
+     */
+    private final static AtomicReference<Collator> samiskCollator = new AtomicReference<>();
 
     /**
      * Get a {@link Comparator}from the specified URI.
@@ -115,10 +132,10 @@ public class Collations {
                     final int eq = param.indexOf('=');
                     if (eq > 0) {
                         final String kw = param.substring(0, eq);
-                        if(kw != null) {
+                        if (kw != null) {
                             final String val = param.substring(eq + 1);
 
-                            switch(kw) {
+                            switch (kw) {
                                 case "fallback":
                                     fallback = "yes".equals(val);
                                     break;
@@ -183,6 +200,12 @@ public class Collations {
                         strength, maxVariable, alternate, backwards,
                         normalization, caseLevel, caseFirst, numeric,
                         reorder, decomposition);
+            }
+        } else if(HTML_ASCII_CASE_INSENSITIVE_COLLATION_URI.equals(uri)) {
+            try {
+                return getHtmlAsciiCaseInsensitiveCollator();
+            } catch (final Exception e) {
+                throw new XPathException("Unable to instantiate HTML ASCII Case Insensitive Collator: "+ e.getMessage(), e);
             }
         } else if (uri.startsWith("java:")) {
             // java class specified: this should be a subclass of
@@ -384,19 +407,8 @@ public class Collations {
 
         final Collator collator;
         if ("sme-SE".equals(lang)) {
-            // Collation rules contained in a String object.
-            // Codes for the representation of names of languages:
-            // http://www.loc.gov/standards/iso639-2/englangn.html
-            // UTF-8 characters from:
-            // http://chouette.info/entities/table-utf8.php
-            final String Samisk = "< a,A< \u00E1,\u00C1< b,B< c,C"
-                    + "< \u010d,\u010c< d,D< \u0111,\u0110< e,E"
-                    + "< f,F< g,G< h,H< i,I< j,J< k,K< l,L< m,M"
-                    + "< n,N< \u014b,\u014a< o,O< p,P< r,R< s,S"
-                    + "< \u0161,\u0160< t,T< \u0167,\u0166< u,U"
-                    + "< v,V< z,Z< \u017e,\u017d";
             try {
-                collator = new RuleBasedCollator(Samisk);
+                collator = getSamiskCollator();
             } catch (final Exception pe) {
                 logger.error(pe.getMessage(), pe);
                 return null;
@@ -643,5 +655,41 @@ public class Collations {
                     throw new XPathException(ErrorCodes.FOCH0002, "Unrecognized lang=" + lang);
             }
         }
+    }
+
+    private static Collator getSamiskCollator() throws Exception {
+        Collator collator = samiskCollator.get();
+        if (collator == null) {
+            // Collation rules contained in a String object.
+            // Codes for the representation of names of languages:
+            // http://www.loc.gov/standards/iso639-2/englangn.html
+            // UTF-8 characters from:
+            // http://chouette.info/entities/table-utf8.php
+            samiskCollator.compareAndSet(null,
+                    new RuleBasedCollator("< a,A< \u00E1,\u00C1< b,B< c,C"
+                            + "< \u010d,\u010c< d,D< \u0111,\u0110< e,E"
+                            + "< f,F< g,G< h,H< i,I< j,J< k,K< l,L< m,M"
+                            + "< n,N< \u014b,\u014a< o,O< p,P< r,R< s,S"
+                            + "< \u0161,\u0160< t,T< \u0167,\u0166< u,U"
+                            + "< v,V< z,Z< \u017e,\u017d").freeze());
+            collator = samiskCollator.get();
+        }
+
+        return collator;
+    }
+
+    private static Collator getHtmlAsciiCaseInsensitiveCollator() throws Exception {
+        Collator collator = htmlAsciiCaseInsensitiveCollator.get();
+        if (collator == null) {
+            collator = new RuleBasedCollator("&a=A &b=B &c=C &d=D &e=E &f=F &g=G &h=H "
+                    + "&i=I &j=J &k=K &l=L &m=M &n=N &o=O &p=P &q=Q &r=R &s=S &t=T "
+                    + "&u=U &v=V &w=W &x=X &y=Y &z=Z");
+            collator.setStrength(Collator.PRIMARY);
+            htmlAsciiCaseInsensitiveCollator.compareAndSet(null,
+                    collator.freeze());
+            collator = htmlAsciiCaseInsensitiveCollator.get();
+        }
+
+        return collator;
     }
 }
