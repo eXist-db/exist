@@ -225,6 +225,7 @@
                                     <xs:attribute name="xquery" type="xs:string" use="optional"/>
                                     <xs:attribute name="cron-trigger" type="xs:string"
                                         use="optional"/>
+                                    <xs:attribute name="unschedule-on-exception" type="yes_no" use="optional" default="yes"/>
                                     <xs:attribute name="period" type="xs:string" use="optional"/>
                                     <xs:attribute name="delay" type="xs:long" use="optional"/>
                                     <xs:attribute name="repeat" type="xs:integer" use="optional"/>
