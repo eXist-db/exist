@@ -383,6 +383,8 @@ public class Deployment {
                         } catch (final IllegalArgumentException e) {
                             throw new PackageException("Bad collection URI for <target> element: " + targetPath.get(), e);
                         }
+                    } else {
+                        LOG.warn("EXPath Package '" + pkgName + "' does not contain a <target> in its repo.xml, no files will be deployed to /apps");
                     }
                 }
 
