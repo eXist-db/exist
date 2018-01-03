@@ -32,6 +32,8 @@ import java.net.URL;
 public class ClassLoaderSource extends URLSource {
 
     public final static String PROTOCOL = "resource:";
+
+    public final String source;
     
     /**
      * @param source The resource name (e.g. url).
@@ -40,6 +42,8 @@ public class ClassLoaderSource extends URLSource {
      * identifies the resource. Preceding "/" and "resource:"" are removed.
      */
     public ClassLoaderSource(String source) throws IOException {
+        this.source = source;
+
         if(source.startsWith(PROTOCOL))
             {source = source.substring(PROTOCOL.length());}
         if(source.startsWith("/"))
