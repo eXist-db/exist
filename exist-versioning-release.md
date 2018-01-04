@@ -178,7 +178,11 @@ Once development on a new stable version is complete, the following steps will p
 
 3. Ask [Evolved Binary](http://www.evolvedbinary.com) to build and upload new Docker Images for the latest release.
 
-4. Edit the links for the downloads on the eXist website, by logging into eXide on http://www.exist-db.org/exist/apps/eXide/ and opening the file `/db/apps/homepage/index.html`, you need to modify the HTML under `<a name="downloads"/>` and then save the page:
+4. Edit the links for the downloads on the eXist website.
+
+    1. `$ git clone https://github.com/exist-db/website.git`
+    
+    2. Edit the file `website/index.html`, you need to modify the HTML under `<a name="downloads"/>` and update the version numbers for the current release:
 
    ```html
    <a name="downloads"/>
@@ -194,6 +198,15 @@ Once development on a new stable version is complete, the following steps will p
                  <span class="exist-version">Version 3.1.0</span>
              </button>
          </a>
+         <a href="https://hub.docker.com/r/evolvedbinary/exist-db/tags/">
+             <button class="btn btn-default download-btn docker-images" type="button">
+                 <span class="status">Docker Images</span>
+                 <span class="icon">
+                     <i class="fa fa-ship"/>
+                 </span>
+                 <span class="exist-version">Version 3.1.0</span>
+             </button>
+         </a>
          <a href="https://github.com/exist-db/mvn-repo">
              <button class="btn btn-default download-btn maven" type="button">
                  <span class="status">Maven Artifacts</span>
@@ -204,8 +217,16 @@ Once development on a new stable version is complete, the following steps will p
              </button>
          </a>
    ```
-
-    As a temporary measure, you also need to make the same modifications to the file in GitHub - https://github.com/eXist-db/website/blob/master/index.html and send a PR for that. 
+   
+    3. Edit the file `expath-pkg.xml` and modify `version="3.1.0"` to reflect the new version.
+    
+    4. Commit your change and push: `$ git commit index.html expath-pkg.xml -m "Update for eXist-3.1.0 website" && git push origin master`
+    
+    5. Tag your release of the Website and push the tag: `$ git tag -s -m "Release tag for eXist 3.1.0 website" eXist-3.1.0 && git push origin eXist-3.1.0`.
+    
+    6. Create a XAR for the website: `$ git checkout eXist-3.1.0 && ant`.
+    
+    7. Visit http://www.exist-db.org/exist/apps/dashboard/index.html, login and upload the new `build/homepage.xar` file via the Package Manager.
 
 5. Login to the blog at http://exist-db.org/exist/apps/wiki/blogs/eXist/ and add a new news item which announces the release and holds the release notes. It should be named like http://exist-db.org/exist/apps/wiki/blogs/eXist/eXistdb310
 
