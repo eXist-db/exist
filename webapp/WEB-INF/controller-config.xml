@@ -24,9 +24,6 @@
   <!-- WebDAV interface -->
   <forward pattern="/webdav/" servlet="milton"/>
   
-  <!-- Atom Publishing Protocol -->
-  <forward pattern="/atom/" servlet="AtomServlet"/>
-  
   <!-- RESTXQ -->
   <forward pattern="/restxq/" servlet="RestXqServlet"/>
   
