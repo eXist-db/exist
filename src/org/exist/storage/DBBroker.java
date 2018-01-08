@@ -668,8 +668,8 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      *     `sourceCollection` and a {@link LockMode#WRITE_LOCK} on the `targetCollection`
 	 *
 	 * @param transaction The transaction, which registers the acquired write locks. The locks should be released on commit/abort.
-	 * @param collection The origin collection
-	 * @param destination The destination parent collection
+	 * @param sourceCollection The origin collection
+	 * @param targetCollection The destination parent collection
 	 * @param newName The new name of the collection
 	 *
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
@@ -680,7 +680,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * @deprecated Use {@link #copyCollection(Txn, Collection, Collection, XmldbURI, PreserveType)}
 	 */
 	@Deprecated
-	public abstract void copyCollection(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) Collection collection,
+	public abstract void copyCollection(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) Collection sourceCollection,
 			@EnsureLocked(mode=LockMode.WRITE_LOCK) Collection destination, XmldbURI newName)
 			throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException;
 
@@ -691,8 +691,8 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      *     `sourceCollection` and a {@link LockMode#WRITE_LOCK} on the `targetCollection`
 	 *
      * @param transaction The transaction, which registers the acquired write locks. The locks should be released on commit/abort.
-     * @param collection The origin collection
-     * @param destination The destination parent collection
+     * @param sourceCollection The origin collection
+     * @param targetCollection The destination parent collection
      * @param newName The new name of the collection
      * @param preserve Cause the copy process to preserve the following attributes of each source in the copy:
      *     modification time, file mode, user ID, and group ID, as allowed by permissions. Access Control Lists (ACLs)
@@ -703,8 +703,8 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * @throws IOException If an error occurs whilst copying the Collection on disk
      * @throws TriggerException If a CollectionTrigger throws an exception
      */
-    public abstract void copyCollection(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) Collection collection,
-            @EnsureLocked(mode=LockMode.WRITE_LOCK) Collection destination, XmldbURI newName, final PreserveType preserve)
+    public abstract void copyCollection(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) Collection sourceCollection,
+            @EnsureLocked(mode=LockMode.WRITE_LOCK) Collection targetCollection, XmldbURI newName, final PreserveType preserve)
             throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException;
 
 
@@ -715,8 +715,8 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      *     `sourceDocument` and its parent Collection,
      *     and a {@link LockMode#WRITE_LOCK} on the `targetCollection`
 	 *
-	 * @param doc the resource to copy
-	 * @param destination the destination collection
+	 * @param sourceDocumet the resource to copy
+	 * @param targetCollection the destination collection
 	 * @param newName the new name the resource should have in the destination collection
      *
 	 * @throws PermissionDeniedException
@@ -726,8 +726,8 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * @deprecated Use {@link #copyResource(Txn, DocumentImpl, Collection, XmldbURI, PreserveType)}
 	 */
 	@Deprecated
-	public abstract void copyResource(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) DocumentImpl doc,
-			@EnsureLocked(mode=LockMode.WRITE_LOCK) Collection destination, XmldbURI newName)
+	public abstract void copyResource(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) DocumentImpl sourceDocument,
+			@EnsureLocked(mode=LockMode.WRITE_LOCK) Collection targetCollection, XmldbURI newName)
             throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException;
 
     /**
@@ -738,8 +738,8 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      *     `sourceDocument` and its parent Collection,
      *     and a {@link LockMode#WRITE_LOCK} on the `targetCollection`
      *
-     * @param doc the resource to copy
-     * @param destination the destination collection
+     * @param sourceDocument the resource to copy
+     * @param targetCollection the destination collection
      * @param newName the new name the resource should have in the destination collection
      * @param preserve Cause the copy process to preserve the following attributes of each source in the copy:
      *     modification time, file mode, user ID, and group ID, as allowed by permissions. Access Control Lists (ACLs)
@@ -749,8 +749,8 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * @throws LockException
      * @throws EXistException
      */
-    public abstract void copyResource(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) DocumentImpl doc,
-            @EnsureLocked(mode=LockMode.WRITE_LOCK) Collection destination, XmldbURI newName, final PreserveType preserve)
+    public abstract void copyResource(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) DocumentImpl sourceDocument,
+            @EnsureLocked(mode=LockMode.WRITE_LOCK) Collection targetCollection, XmldbURI newName, final PreserveType preserve)
             throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException;
 
 	/**
