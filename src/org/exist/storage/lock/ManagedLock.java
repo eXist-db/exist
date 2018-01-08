@@ -182,7 +182,9 @@ public class ManagedLock<T> implements AutoCloseable {
      */
     @Override
     public void close() {
-        closer.run();
+        if(!closed) {
+            closer.run();
+        }
         this.closed = true;
     }
 }
