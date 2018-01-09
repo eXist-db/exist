@@ -792,9 +792,11 @@ public class XQueryURLRewrite extends HttpServlet {
 
         try (final Collection collection = broker.openCollection(resourceUri, LockMode.READ_LOCK)) {
             if (collection != null) {
-                final DocumentImpl doc = collection.getDocumentWithLock(broker, XQUERY_CONTROLLER_URI, LockMode.READ_LOCK);
-                if (doc != null) {
-                    return doc;
+                final LockedDocument lockedDoc = collection.getDocumentWithLock(broker, XQUERY_CONTROLLER_URI, LockMode.READ_LOCK);
+                if (lockedDoc != null) {
+                    // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                    // collection lock will be released by the try-with-resources before the locked document is returned by this function
+                    return lockedDoc;
                 }
             }
         } catch (final PermissionDeniedException e) {

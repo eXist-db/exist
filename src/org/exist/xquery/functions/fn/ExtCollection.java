@@ -37,6 +37,7 @@ import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.UpdateListener;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.util.LockException;
@@ -135,17 +136,19 @@ public class ExtCollection extends Function {
                 MutableDocumentSet ndocs = new DefaultDocumentSet();
                 for (final String next : args) {
                     final XmldbURI uri = new AnyURIValue(next).toXmldbURI();
-                    final Collection coll = context.getBroker().getCollection(uri);
-                    if (coll == null) {
-                        if (context.isRaiseErrorOnFailedRetrieval()) {
-                            throw new XPathException("FODC0002: can not access collection '" + uri + "'");
+                    try(final Collection coll = context.getBroker().openCollection(uri, Lock.LockMode.READ_LOCK)) {
+                        if (coll == null) {
+                            if (context.isRaiseErrorOnFailedRetrieval()) {
+                                throw new XPathException("FODC0002: can not access collection '" + uri + "'");
+                            }
+                        } else {
+                            if (context.inProtectedMode()) {
+                                context.getProtectedDocs().getDocsByCollection(coll, ndocs);
+                            } else {
+                                coll.allDocs(context.getBroker(), ndocs,
+                                        includeSubCollections, context.getProtectedDocs());
+                            }
                         }
-                    } else {
-                        if (context.inProtectedMode())
-                            {context.getProtectedDocs().getDocsByCollection(coll, ndocs);}
-                        else
-                            {coll.allDocs(context.getBroker(), ndocs,
-                                includeSubCollections, context.getProtectedDocs());}
                     }
                 }
                 docs = ndocs;
@@ -160,9 +163,8 @@ public class ExtCollection extends Function {
         // iterate through all docs and create the node set
         final NodeSet result = new NewArrayNodeSet();
         final LockManager lockManager = context.getBroker().getBrokerPool().getLockManager();
-        DocumentImpl doc;
         for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
-            doc = i.next();
+            final DocumentImpl doc = i.next();
 
             ManagedDocumentLock dlock = null;
             try {

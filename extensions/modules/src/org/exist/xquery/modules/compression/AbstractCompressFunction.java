@@ -27,11 +27,9 @@ import org.exist.collections.Collection;
 import org.exist.dom.persistent.*;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedDocumentLock;
-import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Base64Decoder;
 import org.exist.util.FileUtils;
@@ -167,40 +165,43 @@ public abstract class AbstractCompressFunction extends BasicFunction
 
                 } else {
 
-                    // try for a doc
                     final XmldbURI xmldburi = XmldbURI.create(uri);
 
-                    try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(xmldburi, LockMode.READ_LOCK)) {
-                        final DocumentImpl doc = lockedDoc == null ? null : lockedDoc.getDocument();
-                        if(doc == null)
-                        {
-                            // no doc, try for a collection
-                            Collection col = context.getBroker().getCollection(xmldburi);
+                    // try for a collection
+                    try(final Collection collection = context.getBroker().openCollection(xmldburi, LockMode.READ_LOCK)) {
+                        if(collection != null) {
+                            compressCollection(os, collection, useHierarchy, stripOffset);
+                            return;
+                        }
+                    } catch(final PermissionDeniedException | LockException | SAXException | IOException pde) {
+                        throw new XPathException(this, pde.getMessage());
+                    }
 
-                            if(col != null)
-                            {
-                                // got a collection
-                                compressCollection(os, col, useHierarchy, stripOffset);
-                            }
-                            else
-                            {
-                                // no doc or collection
+
+                    // otherwise, try for a doc
+                    try(final Collection collection = context.getBroker().openCollection(xmldburi.removeLastSegment(), LockMode.READ_LOCK)) {
+                        if(collection == null) {
+                            throw new XPathException(this, "Invalid URI: " + uri.toString());
+                        }
+
+                        try(final LockedDocument doc = collection.getDocumentWithLock(context.getBroker(), xmldburi.lastSegment(), LockMode.READ_LOCK)) {
+
+                            // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                            collection.close();
+
+                            if(doc == null) {
                                 throw new XPathException(this, "Invalid URI: " + uri.toString());
                             }
+
+                            compressResource(os, doc.getDocument(), useHierarchy, stripOffset, method, resourceName);
+                            return;
                         }
-                        else
-                        {
-                            // got a doc
-                            compressResource(os, doc, useHierarchy, stripOffset, method, resourceName);
-                        }
-                    }
-                    catch(PermissionDeniedException | LockException | SAXException | IOException pde)
-                    {
+                    } catch(final PermissionDeniedException | LockException | SAXException | IOException pde) {
                         throw new XPathException(this, pde.getMessage());
                     }
                 }
 
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new XPathException(this, e.getMessage());
             }
 

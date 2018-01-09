@@ -59,6 +59,7 @@ import org.exist.storage.*;
 import org.exist.storage.DBBroker.PreserveType;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.LockedDocumentMap;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
@@ -1308,37 +1309,46 @@ public class RpcConnection implements RpcAPI {
                           final int overwrite, final Date created, final Date modified) throws EXistException, PermissionDeniedException {
 
         return this.<Boolean>writeCollection(docUri.removeLastSegment()).apply((collection, broker, transaction) -> {
-            if (overwrite == 0) {
-                final DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
-                if (old != null) {
-                    throw new PermissionDeniedException("Document exists and overwrite is not allowed");
+
+            try(final ManagedDocumentLock lockedDocument = broker.getBrokerPool().getLockManager().acquireDocumentWriteLock(docUri)) {
+                if (overwrite == 0) {
+                    final DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
+                    if (old != null) {
+
+                        // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                        collection.close();
+
+                        throw new PermissionDeniedException("Document exists and overwrite is not allowed");
+                    }
                 }
-            }
 
             try (final InputStream is = new FastByteArrayInputStream(xml)) {
 
-                final InputSource source = new InputSource(is);
+                    final InputSource source = new InputSource(is);
 
-                final long startTime = System.currentTimeMillis();
+                    final long startTime = System.currentTimeMillis();
 
-                final IndexInfo info = collection.validateXMLResource(transaction, broker, docUri.lastSegment(), source);
-                final MimeType mime = MimeTable.getInstance().getContentTypeFor(docUri.lastSegment());
-                if (mime != null && mime.isXMLType()) {
-                    info.getDocument().getMetadata().setMimeType(mime.getName());
-                }
-                if (created != null) {
-                    info.getDocument().getMetadata().setCreated(created.getTime());
-                }
-                if (modified != null) {
-                    info.getDocument().getMetadata().setLastModified(modified.getTime());
-                }
+                    final IndexInfo info = collection.validateXMLResource(transaction, broker, docUri.lastSegment(), source);
+                    final MimeType mime = MimeTable.getInstance().getContentTypeFor(docUri.lastSegment());
+                    if (mime != null && mime.isXMLType()) {
+                        info.getDocument().getMetadata().setMimeType(mime.getName());
+                    }
+                    if (created != null) {
+                        info.getDocument().getMetadata().setCreated(created.getTime());
+                    }
+                    if (modified != null) {
+                        info.getDocument().getMetadata().setLastModified(modified.getTime());
+                    }
 
-                collection.store(transaction, broker, info, source);
+                    collection.store(transaction, broker, info, source);
 
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("parsing " + docUri + " took " + (System.currentTimeMillis() - startTime) + "ms.");
+                    // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                    collection.close();
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("parsing " + docUri + " took " + (System.currentTimeMillis() - startTime) + "ms.");
+                    }
+                    return true;
                 }
-                return true;
             }
         });
     }
@@ -1407,39 +1417,50 @@ public class RpcConnection implements RpcAPI {
             throws EXistException, PermissionDeniedException {
         return this.<Boolean>writeCollection(docUri.removeLastSegment()).apply((collection, broker, transaction) -> {
 
-            if (overwrite == 0) {
-                final DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
-                if (old != null) {
-                    throw new PermissionDeniedException("Old document exists and overwrite is not allowed");
-                }
-            }
+            try(final ManagedDocumentLock lockedDocument = broker.getBrokerPool().getLockManager().acquireDocumentWriteLock(docUri)) {
 
+                if (overwrite == 0) {
+                    final DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
+                    if (old != null) {
+                        // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                        collection.close();
 
-            // get the source for parsing
-            SupplierE<FileInputSource, IOException> sourceSupplier;
-            try {
-                final int handle = Integer.parseInt(localFile);
-                final SerializedResult sr = factory.resultSets.getSerializedResult(handle);
-                if (sr == null) {
-                    throw new EXistException("Invalid handle specified");
+                        throw new PermissionDeniedException("Old document exists and overwrite is not allowed");
+                    }
                 }
 
-                sourceSupplier = () -> {
-                    final FileInputSource source = new FileInputSource(sr.result);
-                    sr.result = null; // de-reference the VirtualTempFile in the SerializeResult
-                    factory.resultSets.remove(handle);
-                    return source;
-                };
-            } catch (final NumberFormatException nfe) {
 
-                // As this file can be a non-temporal one, we should not
-                // blindly erase it!
-                final Path path = Paths.get(localFile);
-                if (!Files.isReadable(path)) {
-                    throw new EXistException("unable to read file " + path.toAbsolutePath().toString());
-                }
+                // get the source for parsing
+                SupplierE<FileInputSource, IOException> sourceSupplier;
+                try {
+                    final int handle = Integer.parseInt(localFile);
+                    final SerializedResult sr = factory.resultSets.getSerializedResult(handle);
+                    if (sr == null) {
+                        // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                        collection.close();
 
-                sourceSupplier = () -> new FileInputSource(path);
+                        throw new EXistException("Invalid handle specified");
+                    }
+
+                    sourceSupplier = () -> {
+                        final FileInputSource source = new FileInputSource(sr.result);
+                        sr.result = null; // de-reference the VirtualTempFile in the SerializeResult
+                        factory.resultSets.remove(handle);
+                        return source;
+                    };
+                } catch (final NumberFormatException nfe) {
+
+                    // As this file can be a non-temporal one, we should not
+                    // blindly erase it!
+                    final Path path = Paths.get(localFile);
+                    if (!Files.isReadable(path)) {
+                        // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                        collection.close();
+
+                        throw new EXistException("unable to read file " + path.toAbsolutePath().toString());
+                    }
+
+                    sourceSupplier = () -> new FileInputSource(path);
             }
 
             // parse the source
@@ -1447,28 +1468,32 @@ public class RpcConnection implements RpcAPI {
                 final MimeType mime = Optional.ofNullable(MimeTable.getInstance().getContentType(mimeType)).orElse(MimeType.BINARY_TYPE);
                 final boolean treatAsXML = (isXML != null && isXML) || (isXML == null && mime.isXMLType());
 
-                if (treatAsXML) {
-                    final IndexInfo info = collection.validateXMLResource(transaction, broker, docUri.lastSegment(), source);
-                    if (created != null) {
-                        info.getDocument().getMetadata().setCreated(created.getTime());
-                    }
-                    if (modified != null) {
-                        info.getDocument().getMetadata().setLastModified(modified.getTime());
-                    }
-                    collection.store(transaction, broker, info, source);
-                } else {
-                    try (final InputStream is = source.getByteStream()) {
-                        final DocumentImpl doc = collection.addBinaryResource(transaction, broker, docUri.lastSegment(), is, mime.getName(), source.getByteStreamLength());
+                    if (treatAsXML) {
+                        final IndexInfo info = collection.validateXMLResource(transaction, broker, docUri.lastSegment(), source);
                         if (created != null) {
-                            doc.getMetadata().setCreated(created.getTime());
+                            info.getDocument().getMetadata().setCreated(created.getTime());
                         }
                         if (modified != null) {
-                            doc.getMetadata().setLastModified(modified.getTime());
+                            info.getDocument().getMetadata().setLastModified(modified.getTime());
+                        }
+                        collection.store(transaction, broker, info, source);
+                    } else {
+                        try (final InputStream is = source.getByteStream()) {
+                            final DocumentImpl doc = collection.addBinaryResource(transaction, broker, docUri.lastSegment(), is, mime.getName(), source.getByteStreamLength());
+                            if (created != null) {
+                                doc.getMetadata().setCreated(created.getTime());
+                            }
+                            if (modified != null) {
+                                doc.getMetadata().setLastModified(modified.getTime());
+                            }
                         }
                     }
-                }
 
-                return true;
+                    // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                    collection.close();
+
+                    return true;
+                }
             }
         });
     }
@@ -1492,27 +1517,45 @@ public class RpcConnection implements RpcAPI {
     private boolean storeBinary(final byte[] data, final XmldbURI docUri, final String mimeType,
                                 final int overwrite, final Date created, final Date modified) throws EXistException, PermissionDeniedException {
         return this.<Boolean>writeCollection(docUri.removeLastSegment()).apply((collection, broker, transaction) -> {
+
             // keep a write lock in the transaction
             transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(collection.getURI(), false));
-            if (overwrite == 0) {
-                final DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
-                if (old != null) {
-                    throw new PermissionDeniedException("Old document exists and overwrite is not allowed");
+            try(final ManagedDocumentLock lockedDocument = broker.getBrokerPool().getLockManager().acquireDocumentWriteLock(docUri)) {
+                if (overwrite == 0) {
+                    final DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
+
+                    if (old != null) {
+                        // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                        collection.close();
+
+                        throw new PermissionDeniedException("Old document exists and overwrite is not allowed");
+                    }
+                }
+
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Storing binary resource to collection " + collection.getURI());
+                }
+
+                final DocumentImpl doc = collection.addBinaryResource(transaction, broker, docUri.lastSegment(), data, mimeType);
+                if(doc != null) {
+                    if (created != null) {
+                        doc.getMetadata().setCreated(created.getTime());
+                    }
+                    if (modified != null) {
+                        doc.getMetadata().setLastModified(modified.getTime());
+                    }
+
+                    // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                    collection.close();
+
+                    return true;
+                } else {
+                    // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                    collection.close();
+
+                    return false;
                 }
             }
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Storing binary resource to collection " + collection.getURI());
-            }
-
-            final DocumentImpl doc = collection.addBinaryResource(transaction, broker, docUri.lastSegment(), data, mimeType);
-            if (created != null) {
-                doc.getMetadata().setCreated(created.getTime());
-            }
-            if (modified != null) {
-                doc.getMetadata().setLastModified(modified.getTime());
-            }
-
-            return doc != null;
         });
     }
 
@@ -2022,17 +2065,26 @@ public class RpcConnection implements RpcAPI {
             // keep a write lock in the transaction
             transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(collection.getURI(), false));
 
-            final DocumentImpl doc = collection.getDocument(broker, docUri.lastSegment());
-            if (doc == null) {
-                throw new EXistException("Document " + docUri + " not found");
-            }
+            try(final LockedDocument lockedDoc = collection.getDocumentWithLock(broker, docUri.lastSegment(), LockMode.WRITE_LOCK)) {
+                if (lockedDoc == null) {
+                    // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                    collection.close();
 
-            if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                collection.removeBinaryResource(transaction, broker, doc);
-            } else {
-                collection.removeXMLResource(transaction, broker, docUri.lastSegment());
+                    throw new EXistException("Document " + docUri + " not found");
+                }
+
+                final DocumentImpl doc = lockedDoc.getDocument();
+                if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                    collection.removeBinaryResource(transaction, broker, doc);
+                } else {
+                    collection.removeXMLResource(transaction, broker, docUri.lastSegment());
+                }
+
+                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                collection.close();
+
+                return true;
             }
-            return true;
         });
     }
 
@@ -3821,6 +3873,10 @@ public class RpcConnection implements RpcAPI {
     private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> withDocument(final LockMode lockMode, final DBBroker broker, final Txn transaction, final Collection collection, final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return readOp -> {
             try(final LockedDocument lockedDocument = collection.getDocumentWithLock(broker, uri.lastSegment(), lockMode)) {
+
+                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                collection.close();
+
                 if (lockedDocument == null) {
                     final String msg = "document " + uri + " not found!";
                     if (LOG.isDebugEnabled()) {

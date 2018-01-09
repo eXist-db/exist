@@ -62,7 +62,6 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;

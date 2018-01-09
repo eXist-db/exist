@@ -100,6 +100,10 @@ public class Scan extends BasicFunction {
                         }
 
                         try(final LockedDocument lockedDoc = collection.getDocumentWithLock(context.getBroker(), resourceURI.lastSegment(), LockMode.READ_LOCK)) {
+
+                            // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                            collection.close();
+
                             final DocumentImpl doc = lockedDoc == null ?  null : lockedDoc.getDocument();
                             if (doc == null) {
                                 return Sequence.EMPTY_SEQUENCE;

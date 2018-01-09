@@ -132,8 +132,11 @@ public class ResourceTest {
             try(final Collection collection = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
                 try (final LockedDocument lockedDoc = broker.getXMLResource(docPath, LockMode.WRITE_LOCK)) {
                     collection.removeBinaryResource(transaction, broker, lockedDoc.getDocument());
+                    broker.saveCollection(transaction, collection);
+
+                    // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                    collection.close();
                 }
-                broker.saveCollection(transaction, collection);
             }
             transact.commit(transaction);
         }

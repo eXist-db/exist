@@ -228,7 +228,7 @@ public class MutableCollection implements Collection {
 
         while(documentIterator.hasNext()) {
             final DocumentImpl document = documentIterator.next();
-            final CollectionEntry entry = new DocumentEntry(document);
+            final DocumentEntry entry = new DocumentEntry(document);
             entry.readMetadata(broker);
             list.add(entry);
         }
@@ -257,10 +257,16 @@ public class MutableCollection implements Collection {
 
         final CollectionEntry entry;
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
-            entry = new DocumentEntry(documents.get(name));
+            final DocumentImpl doc = documents.get(name);
+            try(final ManagedDocumentLock docLock = lockManager.acquireDocumentReadLock(doc.getURI())) {
+                entry = new DocumentEntry(doc);
+                entry.readMetadata(broker);
+
+                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                collectionLock.close();
+            }
         }
 
-        entry.readMetadata(broker);
         return entry;
     }
 
@@ -290,32 +296,49 @@ public class MutableCollection implements Collection {
      */
     private void addDocument(final Txn transaction, final DBBroker broker, final DocumentImpl doc,
             final DocumentImpl oldDoc) throws PermissionDeniedException, LockException {
-        if(oldDoc == null) {
-            
-            /* create */
-            if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.WRITE)) {
-                throw new PermissionDeniedException("Permission to write to Collection denied for " + this.getURI());
-            }
-        } else {
-            
-            /* update-replace */
-            if(!oldDoc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE)) {
-                throw new PermissionDeniedException("Permission to write to overwrite document: " +  oldDoc.getURI());
-            }
-        }
-        
-        if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID) {
-            try {
-                doc.setDocId(broker.getNextResourceId(transaction));
-            } catch(final EXistException e) {
-                LOG.error("Collection error " + e.getMessage(), e);
-                // TODO : re-raise the exception ? -pb
-                return;
-            }
-        }
 
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
-            documents.put(doc.getFileURI().getRawCollectionPath(), doc);
+
+            if (oldDoc == null) {
+
+                /* create */
+                if (!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.WRITE)) {
+                    throw new PermissionDeniedException("Permission to write to Collection denied for " + this.getURI());
+                }
+            } else {
+                /* update-replace */
+                try (final ManagedDocumentLock oldDocLock = lockManager.acquireDocumentReadLock(oldDoc.getURI())) {
+                    if (!oldDoc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE)) {
+
+                        // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                        collectionLock.close();
+
+                        throw new PermissionDeniedException("Permission to write to overwrite document: " + oldDoc.getURI());
+                    }
+                }
+            }
+
+            try (final ManagedDocumentLock docLock = lockManager.acquireDocumentWriteLock(doc.getURI())) {
+
+                if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID) {
+                    try {
+                        doc.setDocId(broker.getNextResourceId(transaction));
+                    } catch (final EXistException e) {
+                        LOG.error("Collection error " + e.getMessage(), e);
+
+                        // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                        collectionLock.close();
+
+                        // TODO : re-raise the exception ? -pb
+                        return;
+                    }
+                }
+
+                documents.put(doc.getFileURI().getRawCollectionPath(), doc);
+
+                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                collectionLock.close();
+            }
         }
     }
 
@@ -557,7 +580,7 @@ public class MutableCollection implements Collection {
     @Override
     public int getMemorySize() {
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
-            return SHALLOW_SIZE + documents.size() * DOCUMENT_SIZE;
+            return SHALLOW_SIZE + (documents.size() * DOCUMENT_SIZE);
         } catch(final LockException e) {
             LOG.error(e);
             return -1;
@@ -566,7 +589,7 @@ public class MutableCollection implements Collection {
 
     @Override
     public int getMemorySizeNoLock() {
-        return SHALLOW_SIZE + documents.size() * DOCUMENT_SIZE;
+        return SHALLOW_SIZE + (documents.size() * DOCUMENT_SIZE);
     }
 
     @Override
@@ -600,16 +623,25 @@ public class MutableCollection implements Collection {
     @Override
     public DocumentImpl getDocument(final DBBroker broker, final XmldbURI name) throws PermissionDeniedException {
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
-            final DocumentImpl doc = documents.get(name.getRawCollectionPath());
-            if (doc != null) {
-                if (!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
-                    throw new PermissionDeniedException("Permission denied to read document: " + name.toString());
-                }
-            } else {
-                LOG.debug("Document " + name + " not found!");
-            }
 
-            return doc;
+            try(final ManagedDocumentLock docLock = lockManager.acquireDocumentReadLock(getURI().append(name))) {
+                final DocumentImpl doc = documents.get(name.getRawCollectionPath());
+
+                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                collectionLock.close();
+
+                if (doc != null) {
+                    if (!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
+                        throw new PermissionDeniedException("Permission denied to read document: " + name.toString());
+                    }
+                } else {
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("Document " + name + " not found!");
+                    }
+                }
+
+                return doc;
+            }
         } catch(final LockException e) {
             LOG.error(e.getMessage(), e);
             return null;
@@ -647,6 +679,10 @@ public class MutableCollection implements Collection {
 
 
             final DocumentImpl doc = documents.get(name.getRawCollectionPath());
+
+            // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+            collectionLock.close();
+
             if(doc == null) {
                 unlockFn.run();
                 return null;
@@ -925,6 +961,9 @@ public class MutableCollection implements Collection {
                 final DocumentImpl doc = documents.get(docUri);
 
                 if (doc == null) {
+                    // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                    collectionLock.close();
+
                     return; //TODO should throw an exception!!! Otherwise we dont know if the document was removed
                 }
 
@@ -950,9 +989,13 @@ public class MutableCollection implements Collection {
                     trigger.afterDeleteDocument(broker, transaction, getURI().append(name));
 
                     broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
+
                 } finally {
                     broker.getBrokerPool().getProcessMonitor().endJob();
                 }
+
+                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                collectionLock.close();
             }
         }
     }
@@ -965,8 +1008,13 @@ public class MutableCollection implements Collection {
         }
 
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
-            final DocumentImpl doc = getDocument(broker, name);
-            removeBinaryResource(transaction, broker, doc);
+            try(final ManagedDocumentLock docLock = lockManager.acquireDocumentWriteLock(path.append(name))) {
+                final DocumentImpl doc = getDocument(broker, name);
+                removeBinaryResource(transaction, broker, doc);
+
+                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                collectionLock.close();
+            }
         }
     }
 
@@ -1014,6 +1062,9 @@ public class MutableCollection implements Collection {
                 } finally {
                     broker.getBrokerPool().getProcessMonitor().endJob();
                 }
+
+                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                collectionLock.close();
             }
         }
     }
@@ -1549,12 +1600,14 @@ public class MutableCollection implements Collection {
         if (db.isReadOnly()) {
             throw new IOException("Database is read-only");
         }
-        final XmldbURI docUri = blob.getFileURI();
-        //TODO : move later, i.e. after the collection lock is acquired ?
-        final DocumentImpl oldDoc = getDocument(broker, docUri);
         final DocumentTriggers trigger = new DocumentTriggers(broker, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
+        final XmldbURI docUri = blob.getFileURI();
 
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
+        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false);
+            final ManagedDocumentLock docLock = lockManager.acquireDocumentWriteLock(blob.getURI())) {
+            //TODO : move later, i.e. after the collection lock is acquired ?
+            final DocumentImpl oldDoc = getDocument(broker, docUri);
+
             db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_BINARY, docUri);
             checkPermissionsForAddDocument(broker, oldDoc);
             checkCollectionConflict(docUri);
@@ -1598,13 +1651,15 @@ public class MutableCollection implements Collection {
                 indexController.endIndexDocument(transaction, listener);
             }
 
-            try(final ManagedDocumentLock blobReadLock = lockManager.acquireDocumentReadLock(blob.getURI())) {
-                if (oldDoc == null) {
-                    trigger.afterCreateDocument(broker, transaction, blob);
-                } else {
-                    trigger.afterUpdateDocument(broker, transaction, blob);
-                }
+
+            if (oldDoc == null) {
+                trigger.afterCreateDocument(broker, transaction, blob);
+            } else {
+                trigger.afterUpdateDocument(broker, transaction, blob);
             }
+
+            // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+            collectionLock.close();
 
             return blob;
         } finally {
@@ -1659,9 +1714,7 @@ public class MutableCollection implements Collection {
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
             this.triggersEnabled = enabled;
         } catch(final LockException e) {
-            LOG.warn(e.getMessage(), e);
-            //Ouch ! -pb
-            this.triggersEnabled = enabled;
+            LOG.error(e.getMessage(), e);
         }
     }
 

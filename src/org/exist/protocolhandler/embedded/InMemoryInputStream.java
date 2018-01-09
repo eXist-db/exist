@@ -56,26 +56,27 @@ public class InMemoryInputStream {
       throw new IOException(e);
     }
 
-    try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+    try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream();
+         final DBBroker broker = db.getBroker()) {
+      final XmldbURI path = XmldbURI.create(xmldbURL.getPath());
 
-      try (DBBroker broker = db.getBroker()) {
-        final XmldbURI path = XmldbURI.create(xmldbURL.getPath());
+      // Test for collection
+      try(final Collection collection = broker.openCollection(path, LockMode.READ_LOCK)) {
+        if(collection != null) {
+          // Collection
+          throw new IOException("Resource " + xmldbURL.getPath() + " is a collection.");
+        }
 
-      Collection collection = null;
-      try (final LockedDocument lockedDocument = broker.getXMLResource(path, LockMode.READ_LOCK)) {
-        if (lockedDocument == null) {
-          // Test for collection
-          collection = broker.openCollection(path, LockMode.READ_LOCK);
-          if (collection == null) {
+        try (final LockedDocument lockedDocument = broker.getXMLResource(path, LockMode.READ_LOCK)) {
+
+//          // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+//          collection.close();
+
+          if(lockedDocument == null) {
             // No collection, no document
             throw new IOException("Resource " + xmldbURL.getPath() + " not found.");
-
-          } else {
-            // Collection
-            throw new IOException("Resource " + xmldbURL.getPath() + " is a collection.");
           }
 
-        } else {
           final DocumentImpl document = lockedDocument.getDocument();
           if (document.getResourceType() == DocumentImpl.XML_FILE) {
             final Serializer serializer = broker.getSerializer();
@@ -90,10 +91,8 @@ public class InMemoryInputStream {
           } else {
             broker.readBinaryResource((BinaryDocument) document, os);
           }
-        }
-      } finally {
-        if (collection != null) {
-          collection.close();
+
+          return os.toFastByteInputStream();
         }
       }
     } catch (final IOException ex) {
@@ -103,8 +102,5 @@ public class InMemoryInputStream {
       LOG.error(ex,ex);
       throw new IOException(ex.getMessage(), ex);
     }
-
-    return os.toFastByteInputStream();
   }
-
 }

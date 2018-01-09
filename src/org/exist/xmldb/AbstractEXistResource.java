@@ -178,6 +178,10 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
         return documentOp ->
                 collection.<R>with(lockMode, broker, transaction).apply((collection, broker1, transaction1) -> {
                     try(final LockedDocument lockedDoc = collection.getDocumentWithLock(broker1, docId, lockMode)) {
+
+                        // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                        collection.close();
+
                         if(lockedDoc == null) {
                             throw new XMLDBException(ErrorCodes.INVALID_RESOURCE);
                         }

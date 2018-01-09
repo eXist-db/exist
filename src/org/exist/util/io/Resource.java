@@ -837,14 +837,14 @@ public class Resource extends File {
 
                 //collections
                 int j = 0;
-                for (final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); j++)
+                for (final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); j++) {
                     children[j] = new Resource(collection.getURI().append(i.next()));
+                }
 
                 //collections
                 final List<XmldbURI> allresources = new ArrayList<>();
-                DocumentImpl doc = null;
                 for (final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
-                    doc = i.next();
+                    final DocumentImpl doc = i.next();
 
                     // Include only when (1) locktoken is present or (2)
                     // locktoken indicates that it is not a null resource

@@ -41,6 +41,7 @@ import org.exist.storage.NodePath;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.XMLString;
 import org.exist.xmldb.XmldbURI;

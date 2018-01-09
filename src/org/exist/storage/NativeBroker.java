@@ -2246,56 +2246,48 @@ public class NativeBroker extends DBBroker {
 
             //get the temp collection
             try(final Txn transaction = transact.beginTransaction();
-                    final Collection existingTemp = openCollection(XmldbURI.TEMP_COLLECTION_URI, LockMode.WRITE_LOCK)) {
+                    final ManagedCollectionLock tempCollectionLock = lockManager.acquireCollectionWriteLock(XmldbURI.TEMP_COLLECTION_URI, false)) {
 
-                final boolean created;
-                final Collection temp;
-                if (existingTemp != null) {
-                    temp = existingTemp;
-                    created = false;
-                } else {
-                    // // if temp collection does not exist, creates temp collection (with write lock in Txn)
-                    final Tuple2<Boolean, Collection> createdOrExistingTemp = getOrCreateTempCollection(transaction);
-                    if (createdOrExistingTemp == null) {
-                        LOG.error("Failed to create temporary collection");
-                        transact.abort(transaction);
-                        return null;
-                    }
-                    temp = createdOrExistingTemp._2;
-                    created = createdOrExistingTemp._1;
+                // if temp collection does not exist, creates temp collection (with write lock in Txn)
+                final Tuple2<Boolean, Collection> createdOrExistingTemp = getOrCreateTempCollection(transaction);
+                if (createdOrExistingTemp == null) {
+                    LOG.error("Failed to create temporary collection");
+                    transact.abort(transaction);
+                    return null;
                 }
+
+                final Collection temp = createdOrExistingTemp._2;
 
                 //create a temporary document
-                final DocumentImpl targetDoc = new DocumentImpl(pool, temp, docName);
-                PermissionFactory.chmod(this, targetDoc, Optional.of(Permission.DEFAULT_TEMPORARY_DOCUMENT_PERM), Optional.empty());
+                try (final ManagedDocumentLock docLock = lockManager.acquireDocumentWriteLock(temp.getURI().append(docName))) {
+                    final DocumentImpl targetDoc = new DocumentImpl(pool, temp, docName);
+                    PermissionFactory.chmod(this, targetDoc, Optional.of(Permission.DEFAULT_TEMPORARY_DOCUMENT_PERM), Optional.empty());
+                    final long now = System.currentTimeMillis();
+                    final DocumentMetadata metadata = new DocumentMetadata();
+                    metadata.setLastModified(now);
+                    metadata.setCreated(now);
+                    targetDoc.setMetadata(metadata);
+                    targetDoc.setDocId(getNextResourceId(transaction));
+                    //index the temporary document
+                    final DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc);
+                    indexer.scan();
+                    indexer.store();
+                    //store the temporary document
+                    temp.addDocument(transaction, this, targetDoc);
 
-                final long now = System.currentTimeMillis();
-                final DocumentMetadata metadata = new DocumentMetadata();
-                metadata.setLastModified(now);
-                metadata.setCreated(now);
-                targetDoc.setMetadata(metadata);
-                targetDoc.setDocId(getNextResourceId(transaction));
-                //index the temporary document
-                final DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc);
-                indexer.scan();
-                indexer.store();
-                //store the temporary document
-                temp.addDocument(transaction, this, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
+                    storeXMLResource(transaction, targetDoc);
 
-                // if we opened the Collection rather than creating it, obtain a lock in the transaction
-                if (!created && transaction != null) {
-                    transaction.acquireCollectionLock(() -> lockManager.acquireCollectionWriteLock(temp.getURI(), false));
+                    saveCollection(transaction, temp);
+
+                    // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                    temp.close();
+
+                    flush();
+                    closeDocument();
+                    //commit the transaction
+                    transact.commit(transaction);
+                    return targetDoc;
                 }
-
-                storeXMLResource(transaction, targetDoc);
-
-                saveCollection(transaction, temp);
-
-                flush();
-                closeDocument();
-                //commit the transaction
-                transact.commit(transaction);
-                return targetDoc;
             } catch (final Exception e) {
                 LOG.error("Failed to store temporary fragment: " + e.getMessage(), e);
             }
@@ -2577,6 +2569,10 @@ public class NativeBroker extends DBBroker {
                 //    throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "' by " + getCurrentSubject().getName());
                 //}
                 final LockedDocument lockedDocument = collection.getDocumentWithLock(this, docUri, lockMode);
+
+                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                collection.close();
+
                 if (lockedDocument == null) {
                     //LOG.debug("document '" + fileName + "' not found!");
                     return null;

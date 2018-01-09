@@ -15,7 +15,6 @@ import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;

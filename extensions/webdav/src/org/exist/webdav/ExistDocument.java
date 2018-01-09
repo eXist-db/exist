@@ -230,8 +230,6 @@ public class ExistDocument extends ExistResource {
             LOG.debug(String.format("Deleting %s", xmldbUri));
         }
 
-        DocumentImpl resource = null;
-
         // Need to split path into collection and document name
         final XmldbURI collName = xmldbUri.removeLastSegment();
         final XmldbURI docName = xmldbUri.lastSegment();
@@ -250,25 +248,29 @@ public class ExistDocument extends ExistResource {
             }
 
             // Open document if possible, else abort
-            resource = collection.getDocument(broker, docName);
-            if (resource == null) {
-                LOG.debug(String.format("No resource found for path: %s", xmldbUri));
-                txnManager.abort(txn);
-                return;
-            }
+            try(final LockedDocument lockedResource = collection.getDocumentWithLock(broker, docName, LockMode.READ_LOCK)) {
+                if (lockedResource == null) {
+                    LOG.debug(String.format("No resource found for path: %s", xmldbUri));
+                    txnManager.abort(txn);
+                    return;
+                }
 
-            if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
-                collection.removeBinaryResource(txn, broker, resource.getFileURI());
+                final DocumentImpl resource = lockedResource.getDocument();
+                if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
+                    collection.removeBinaryResource(txn, broker, resource.getFileURI());
+                } else {
+                    collection.removeXMLResource(txn, broker, resource.getFileURI());
+                }
 
-            } else {
-                collection.removeXMLResource(txn, broker, resource.getFileURI());
-            }
+                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                collection.close();
 
-            // Commit change
-            txnManager.commit(txn);
+                // Commit change
+                txnManager.commit(txn);
 
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Document deleted sucessfully");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Document deleted sucessfully");
+                }
             }
 
         } catch (final LockException e) {

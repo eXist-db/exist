@@ -140,6 +140,8 @@ public class HistoryTriggerTest {
                     // copy doc2 over doc1
                     broker.copyResource(transaction, lockedDoc2.getDocument(), testCollection, testDoc1Name);
 
+                    // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                    testCollection.close();
                 }
             }
 

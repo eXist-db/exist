@@ -27,14 +27,12 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.collections.LockedCollection;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.LockManager;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.MimeTable;
@@ -100,16 +98,19 @@ public class InMemoryOutputStream extends FastByteArrayOutputStream {
           mime = MimeType.BINARY_TYPE;
         }
 
-        if (mime.isXMLType()) {
-          final InputSource inputsource = new InputSource(new FastByteArrayInputStream(data));
-          final IndexInfo info = collection.validateXMLResource(txn, broker, documentUri, inputsource);
-          final DocumentImpl doc = info.getDocument();
-          doc.getMetadata().setMimeType(contentType);
-          collection.store(txn, broker, info, inputsource);
-
-        } else {
-          try (final InputStream is = new FastByteArrayInputStream(data)) {
-            collection.addBinaryResource(txn, broker, documentUri, is, contentType, data.length);
+        try(final ManagedDocumentLock lock = lockManager.acquireDocumentWriteLock(documentUri)) {
+          if (mime.isXMLType()) {
+            try (final InputStream is = new FastByteArrayInputStream(data)) {
+              final InputSource inputsource = new InputSource(is);
+              final IndexInfo info = collection.validateXMLResource(txn, broker, documentUri, inputsource);
+              final DocumentImpl doc = info.getDocument();
+              doc.getMetadata().setMimeType(contentType);
+              collection.store(txn, broker, info, inputsource);
+            }
+          } else {
+            try (final InputStream is = new FastByteArrayInputStream(data)) {
+              collection.addBinaryResource(txn, broker, documentUri, is, contentType, data.length);
+            }
           }
         }
 
