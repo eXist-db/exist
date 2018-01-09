@@ -36,7 +36,7 @@ import java.util.function.Consumer;
 
 /**
  * A Lock Manager for Locks that are used across
- * database instance functions
+ * database instance functions.
  *
  * There is a unique lock for each ID, and calls with the same
  * ID will always return the same lock. Different IDs will always
@@ -45,7 +45,19 @@ import java.util.function.Consumer;
  * The locking protocol for Collection locks is taken from the paper:
  *     Granularity of Locks in a Shared Data Base - Gray, Lorie and Putzolu 1975
  *     {@see https://pdfs.semanticscholar.org/5acd/43c51fa5e677b0c242b065a64f5948af022c.pdf}
- * specifically we have adopted the acquisition algorithm from Section 3.2 of the paper
+ * specifically we have adopted the acquisition algorithm from Section 3.2 of the paper.
+ *
+ * Our adaptions enable us to specify either a multi-writer/multi-reader approach between Collection
+ * sub-trees or a single-writer/multi-reader approach on the entire Collection tree.
+ *
+ * The uptake is that locking a Collection, also implicitly implies locking all descendant
+ * Collections with the same mode. This reduces the amount of locks required for
+ * manipulating Collection sub-trees.
+ *
+ * The locking protocol for Documents is entirely flat, and is unrelated to Collection locking.
+ * Deadlocks can still occur between Collections and Documents in eXist-db (as they could in the past).
+ * If it becomes necessary to eliminate such Collection/Document deadlock scenarios, Document locks
+ * could be acquired using the same protocol as Collection locks (as really they are all just URI paths in a hierarchy)!
  *
  * @author Adam Retter <adam@evolvedbinary.com>
  */
@@ -131,6 +143,13 @@ public class LockManager {
         return collectionLocks.get(collectionPath);
     }
 
+    /**
+     * Acquires a READ_LOCK on a Collection (and implicitly all descendant Collections).
+     *
+     * @param collectionPath The path of the Collection for which a lock is requested.
+     *
+     * @return A READ_LOCK on the Collection.
+     */
     public ManagedCollectionLock acquireCollectionReadLock(final XmldbURI collectionPath) throws LockException {
         final XmldbURI[] segments = collectionPath.getPathSegments();
 
@@ -169,6 +188,14 @@ public class LockManager {
         );
     }
 
+    /**
+     * Locks a lock object.
+     *
+     * @param lock the lock object to lock.
+     * @param lockMode the mode of the {@code lock} to acquire.
+     *
+     * @return true, if we were able to lock with the mode.
+     */
     private boolean lock(final MultiLock lock, final Lock.LockMode lockMode) {
         switch(lockMode) {
             case INTENTION_READ:
@@ -203,6 +230,12 @@ public class LockManager {
         }
     }
 
+    /**
+     * Unlocks a lock object.
+     *
+     * @param lock The lock object to unlock.
+     * @param lockMode The mode of the {@code lock} to release.
+     */
     private void unlock(final MultiLock lock, final Lock.LockMode lockMode) {
         switch(lockMode) {
             case INTENTION_READ:
@@ -226,17 +259,13 @@ public class LockManager {
         }
     }
 
-    //TODO(AR) there are several reasons we might lock a collection for writes
-        // 1) When we also need to modify its parent:
-            // 1.1) to remove a collection (which requires also modifying its parent)
-            // 1.2) to add a new collection (which also requires modifying its parent)
-            // 1.3) to rename a collection (which also requires modifying its parent)
-            //... So we take read locks all the way down, util the parent collection which we write lock, and then we write lock the collection
-
-        // 2) When we just need to modify its properties:
-            // 2.1) to add/remove/rename the child documents of the collection
-            // 2.2) to modify the collections metadata (permissions, timestamps etc)
-            //... So we read lock all the way down until the actual collection which we write lock
+    /**
+     * Acquires a WRITE_LOCK on a Collection (and implicitly all descendant Collections).
+     *
+     * @param collectionPath The path of the Collection for which a lock is requested.
+     *
+     * @return A WRITE_LOCK on the Collection.
+     */
     public ManagedCollectionLock acquireCollectionWriteLock(final XmldbURI collectionPath, final boolean lockParent) throws LockException {
         final XmldbURI[] segments = collectionPath.getPathSegments();
 
@@ -557,14 +586,28 @@ public class LockManager {
         });
     }
 
-    public boolean isBtreeLocked(final String domFileName) {
-        final ReentrantLock lock = getBTreeLock(domFileName);
+    /**
+     * Returns true if the BTree for the file name is locked.
+     *
+     * @param btreeFileName The name of the .dbx file.
+     *
+     * @return true if the Btree is locked.
+     */
+    public boolean isBtreeLocked(final String btreeFileName) {
+        final ReentrantLock lock = getBTreeLock(btreeFileName);
         return lock.isLocked();
     }
 
     /**
+     * Returns true if the BTree for the file name is locked for writes.
+     *
+     * @param btreeFileName The name of the .dbx file.
+     *
+     * @return true if the Btree is locked for writes.
+     *
      * @deprecated Just a place holder until we can make the BTree reader/writer safe
      */
+    @Deprecated
     public boolean isBtreeLockedForWrite(final String btreeFileName) {
         return isBtreeLocked(btreeFileName);
     }
