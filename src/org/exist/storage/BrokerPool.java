@@ -1042,6 +1042,11 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         return globalXUpdateLock;
     }
 
+    long config_ts = 0;
+    public void configurationChanged() {
+        config_ts = System.currentTimeMillis();
+    }
+
     /**
      * Creates an inactive broker for the database instance.
      *
@@ -1187,6 +1192,12 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                     }
             }
             broker = inactiveBrokers.pop();
+
+            if (broker.config_ts != config_ts) {
+                broker.config_ts = config_ts;
+                broker.initIndexModules();
+            }
+
             //activate the broker
             activeBrokers.put(Thread.currentThread(), broker);
 

@@ -116,6 +116,8 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     protected IndexController indexController;
 
+    long config_ts = 0;
+
     public DBBroker(final BrokerPool pool, final Configuration config) {
         this.config = config;
         final Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);

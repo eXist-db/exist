@@ -132,6 +132,9 @@ public class IndexManager implements BrokerPoolService {
         if (LOG.isInfoEnabled()) {
             LOG.info("Registered index " + index.getClass() + " as " + index.getIndexId());
         }
+
+        pool.configurationChanged();
+
         return index;
     }
 
@@ -140,6 +143,8 @@ public class IndexManager implements BrokerPoolService {
         if (LOG.isInfoEnabled()) {
             LOG.info("Unregistered index " + index.getClass() + " as " + index.getIndexId());
         }
+
+        pool.configurationChanged();
     }
 
     /**
