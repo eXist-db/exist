@@ -1553,12 +1553,13 @@ public class MutableCollection implements Collection {
      * @param document The current/new document
      */
     private void manageDocumentInformation(final DocumentImpl oldDoc, final DocumentImpl document) {
-        DocumentMetadata metadata = new DocumentMetadata();
+        final DocumentMetadata metadata;
         if (oldDoc != null) {
             metadata = oldDoc.getMetadata();
             metadata.setCreated(oldDoc.getMetadata().getCreated());
             document.setPermissions(oldDoc.getPermissions());
         } else {
+            metadata = new DocumentMetadata();
             metadata.setCreated(System.currentTimeMillis());
         }
         document.setMetadata(metadata);
