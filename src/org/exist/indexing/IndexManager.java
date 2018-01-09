@@ -57,6 +57,8 @@ public class IndexManager implements BrokerPoolService {
     private Configuration.IndexModuleConfig modConfigs[];
     private Path dataDir;
 
+    private long configurationTimestamp = System.currentTimeMillis();
+
     /**
      * @param pool   the BrokerPool representing the current database instance
      */
@@ -64,11 +66,27 @@ public class IndexManager implements BrokerPoolService {
         this.pool = pool;
     }
 
+    private void configurationChanged() {
+        this.configurationTimestamp = System.currentTimeMillis();
+    }
+
+    /**
+     * Get the timestamp of when the index manager's configuration was last
+     * updated.
+     *
+     * @return the timestamp of when the index managers configuration was
+     *      last updated.
+     */
+    public long getConfigurationTimestamp() {
+        return configurationTimestamp;
+    }
+
     @Override
     public void configure(final Configuration configuration) throws BrokerPoolServiceException {
         this.modConfigs = (Configuration.IndexModuleConfig[])
                 configuration.getProperty(PROPERTY_INDEXER_MODULES);
         this.dataDir = (Path) configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+        configurationChanged();
     }
 
     /**
@@ -100,6 +118,8 @@ public class IndexManager implements BrokerPoolService {
             }
         } catch(final DatabaseConfigurationException e) {
             throw new BrokerPoolServiceException(e);
+        } finally {
+            configurationChanged();
         }
     }
 
@@ -132,6 +152,9 @@ public class IndexManager implements BrokerPoolService {
         if (LOG.isInfoEnabled()) {
             LOG.info("Registered index " + index.getClass() + " as " + index.getIndexId());
         }
+
+        configurationChanged();
+
         return index;
     }
 
@@ -140,6 +163,8 @@ public class IndexManager implements BrokerPoolService {
         if (LOG.isInfoEnabled()) {
             LOG.info("Unregistered index " + index.getClass() + " as " + index.getIndexId());
         }
+
+        configurationChanged();
     }
 
     /**
