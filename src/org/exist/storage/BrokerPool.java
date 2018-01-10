@@ -52,7 +52,6 @@ import org.exist.scheduler.impl.SystemTaskJobImpl;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.SecurityManagerImpl;
-import org.exist.storage.btree.DBException;
 import org.exist.storage.journal.JournalManager;
 import org.exist.storage.lock.DeadlockDetection;
 import org.exist.storage.lock.FileLockService;
@@ -1187,6 +1186,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                     }
             }
             broker = inactiveBrokers.pop();
+            broker.initIndexModules();
+
             //activate the broker
             activeBrokers.put(Thread.currentThread(), broker);
 
