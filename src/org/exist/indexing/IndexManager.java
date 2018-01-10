@@ -57,11 +57,22 @@ public class IndexManager implements BrokerPoolService {
     private Configuration.IndexModuleConfig modConfigs[];
     private Path dataDir;
 
+    long config_timestamp = 0;
+
     /**
      * @param pool   the BrokerPool representing the current database instance
      */
     public IndexManager(final BrokerPool pool) {
         this.pool = pool;
+        configurationChanged();
+    }
+
+    private void configurationChanged() {
+        config_timestamp = System.currentTimeMillis();
+    }
+
+    public long getConfigurationTimestamp() {
+        return config_timestamp;
     }
 
     @Override
@@ -69,6 +80,7 @@ public class IndexManager implements BrokerPoolService {
         this.modConfigs = (Configuration.IndexModuleConfig[])
                 configuration.getProperty(PROPERTY_INDEXER_MODULES);
         this.dataDir = (Path) configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+        configurationChanged();
     }
 
     /**
@@ -100,6 +112,8 @@ public class IndexManager implements BrokerPoolService {
             }
         } catch(final DatabaseConfigurationException e) {
             throw new BrokerPoolServiceException(e);
+        } finally {
+            configurationChanged();
         }
     }
 
@@ -133,7 +147,7 @@ public class IndexManager implements BrokerPoolService {
             LOG.info("Registered index " + index.getClass() + " as " + index.getIndexId());
         }
 
-        pool.configurationChanged();
+        configurationChanged();
 
         return index;
     }
@@ -144,7 +158,7 @@ public class IndexManager implements BrokerPoolService {
             LOG.info("Unregistered index " + index.getClass() + " as " + index.getIndexId());
         }
 
-        pool.configurationChanged();
+        configurationChanged();
     }
 
     /**
