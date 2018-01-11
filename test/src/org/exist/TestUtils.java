@@ -4,6 +4,7 @@ import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
@@ -59,28 +60,58 @@ public class TestUtils {
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
                 // Remove all collections below the /db root, except /db/system
-                Collection root = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI);
-                assertNotNull(root);
-                for (Iterator<DocumentImpl> i = root.iterator(broker); i.hasNext(); ) {
-                    DocumentImpl doc = i.next();
-                    root.removeXMLResource(transaction, broker, doc.getURI().lastSegment());
-                }
-                broker.saveCollection(transaction, root);
-                for (Iterator<XmldbURI> i = root.collectionIterator(broker); i.hasNext(); ) {
-                    XmldbURI childName = i.next();
-                    if (childName.equals("system"))
-                        continue;
-                    Collection childColl = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append(childName));
-                    assertNotNull(childColl);
-                    broker.removeCollection(transaction, childColl);
+                Collection root = null;
+                try {
+                    root = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI, Lock.LockMode.WRITE_LOCK);
+                    if(root == null) {
+                        transaction.commit();
+                        return;
+                    }
+
+                    for (final Iterator<DocumentImpl> i = root.iterator(broker); i.hasNext(); ) {
+                        final DocumentImpl doc = i.next();
+                        root.removeXMLResource(transaction, broker, doc.getURI().lastSegment());
+                    }
+                    broker.saveCollection(transaction, root);
+
+                    for (final Iterator<XmldbURI> i = root.collectionIterator(broker); i.hasNext(); ) {
+                        final XmldbURI childName = i.next();
+                        if (childName.equals("system")) {
+                            continue;
+                        }
+
+                        Collection childColl = null;
+                        try {
+                            childColl = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI.append(childName), Lock.LockMode.WRITE_LOCK);
+                            assertNotNull(childColl);
+                            broker.removeCollection(transaction, childColl);
+                        } finally {
+                            childColl.getLock().release(Lock.LockMode.WRITE_LOCK);
+                        }
+                    }
+                    broker.saveCollection(transaction, root);
+                } finally {
+                    if(root != null) {
+                        root.getLock().release(Lock.LockMode.WRITE_LOCK);
+                    }
                 }
 
                 // Remove /db/system/config/db and all collection configurations with it
-                Collection config = broker.getOrCreateCollection(transaction,
-                        XmldbURI.create(XmldbURI.CONFIG_COLLECTION + "/db"));
-                assertNotNull(config);
-                broker.removeCollection(transaction, config);
-                
+                Collection dbConfig = null;
+                try {
+                    dbConfig = broker.openCollection(XmldbURI.CONFIG_COLLECTION_URI.append("/db"), Lock.LockMode.WRITE_LOCK);
+                    if(dbConfig == null) {
+                        transaction.commit();
+                        return;
+                    }
+                    broker.removeCollection(transaction, dbConfig);
+
+                } finally {
+                    if(dbConfig != null) {
+                        dbConfig.getLock().release(Lock.LockMode.WRITE_LOCK);
+                    }
+                }
+
                 pool.getTransactionManager().commit(transaction);
             }
         } catch (Exception e) {
