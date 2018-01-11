@@ -20,6 +20,7 @@
 package org.exist.indexing.lucene.analyzers;
 
 import org.apache.lucene.analysis.*;
+import org.apache.lucene.analysis.icu.*;
 import org.apache.lucene.analysis.core.LowerCaseFilter;
 import org.apache.lucene.analysis.core.StopAnalyzer;
 import org.apache.lucene.analysis.core.StopFilter;
@@ -129,7 +130,7 @@ public class NoDiacriticsStandardAnalyzer extends StopwordAnalyzerBase {
         src.setMaxTokenLength(maxTokenLength);
 //        src.setReplaceInvalidAcronym(replaceInvalidAcronym);
         TokenStream tok = new StandardFilter(getVersion(), src);
-        tok = new ASCIIFoldingFilter(tok);
+        tok = new ICUFoldingFilter(tok);
         tok = new LowerCaseFilter(getVersion(), tok);
         tok = new StopFilter(getVersion(), tok, stopwords);
         return new TokenStreamComponents(src, tok);
