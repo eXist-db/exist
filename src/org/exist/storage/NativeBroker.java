@@ -2306,16 +2306,17 @@ public class NativeBroker extends DBBroker {
      */
     @Override
     public void cleanUpTempResources(final boolean forceRemoval) throws PermissionDeniedException {
-        final Collection temp = getCollection(XmldbURI.TEMP_COLLECTION_URI);
-        if(temp == null) {
-            return;
-        }
-        final TransactionManager transact = pool.getTransactionManager();
-        try(final Txn transaction = transact.beginTransaction()) {
-            removeCollection(transaction, temp);
-            transact.commit(transaction);
-        } catch(final Exception e) {
-            LOG.error("Failed to remove temp collection: " + e.getMessage(), e);
+        try (final Collection temp = openCollection(XmldbURI.TEMP_COLLECTION_URI, LockMode.WRITE_LOCK)) {
+            if (temp == null) {
+                return;
+            }
+            final TransactionManager transact = pool.getTransactionManager();
+            try (final Txn transaction = transact.beginTransaction()) {
+                removeCollection(transaction, temp);
+                transact.commit(transaction);
+            } catch (final Exception e) {
+                LOG.error("Failed to remove temp collection: " + e.getMessage(), e);
+            }
         }
     }
 
@@ -2519,35 +2520,44 @@ public class NativeBroker extends DBBroker {
         //TODO : resolve URIs !!!
         final XmldbURI collUri = fileName.removeLastSegment();
         final XmldbURI docUri = fileName.lastSegment();
-        final Collection collection = getCollection(collUri);
-        if(collection == null) {
-            LOG.debug("collection '" + collUri + "' not found!");
-            return null;
-        }
+        try(final Collection collection = openCollection(collUri, LockMode.READ_LOCK)) {
+            if (collection == null) {
+                LOG.debug("collection '" + collUri + "' not found!");
+                return null;
+            }
 
-        //if(!collection.getPermissions().validate(getCurrentSubject(), Permission.READ)) {
-        //throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "' by " + getCurrentSubject().getName());
-        //}
+            //if(!collection.getPermissions().validate(getCurrentSubject(), Permission.READ)) {
+            //throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "' by " + getCurrentSubject().getName());
+            //}
 
-        final DocumentImpl doc = collection.getDocument(this, docUri);
-        if(doc == null) {
-            LOG.debug("document '" + fileName + "' not found!");
-            return null;
-        }
+            try(final LockedDocument lockedDocument = collection.getDocumentWithLock(this, docUri, LockMode.READ_LOCK)) {
 
-        if(!doc.getPermissions().validate(getCurrentSubject(), accessType)) {
-            throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' not allowed requested access to document '" + fileName + "'");
-        }
+                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                collection.close();
 
-        if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-            final BinaryDocument bin = (BinaryDocument) doc;
-            try {
-                bin.setContentLength(getBinaryResourceSize(bin));
-            } catch(final IOException ex) {
-                LOG.fatal("Cannot get content size for " + bin.getURI(), ex);
+                if (lockedDocument == null) {
+                    LOG.debug("document '" + fileName + "' not found!");
+                    return null;
+                }
+
+                final DocumentImpl doc = lockedDocument.getDocument();
+                if (!doc.getPermissions().validate(getCurrentSubject(), accessType)) {
+                    throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' not allowed requested access to document '" + fileName + "'");
+                }
+
+                if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                    final BinaryDocument bin = (BinaryDocument) doc;
+                    try {
+                        bin.setContentLength(getBinaryResourceSize(bin));
+                    } catch (final IOException ex) {
+                        LOG.fatal("Cannot get content size for " + bin.getURI(), ex);
+                    }
+                }
+                return doc;
+            } catch(final LockException e) {
+                throw new PermissionDeniedException(e);
             }
         }
-        return doc;
     }
 
     @Override
