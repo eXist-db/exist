@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.storage.lock.ManagedLock;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -35,7 +36,7 @@ import java.util.List;
  * Locks will be released in the reverse order to which they
  * are provided
  */
-public class ManagedLocks<T extends ManagedLock> implements AutoCloseable {
+public class ManagedLocks<T extends ManagedLock> implements Iterable<T>, AutoCloseable {
 
     private final static Logger LOG = LogManager.getLogger(ManagedLocks.class);
 
@@ -58,7 +59,43 @@ public class ManagedLocks<T extends ManagedLock> implements AutoCloseable {
     }
 
     @Override
+    public Iterator<T> iterator() {
+        return new ManagedLockIterator();
+    }
+
+    private class ManagedLockIterator implements Iterator<T> {
+        private final Iterator<T> iterator = managedLocks.iterator();
+
+        @Override
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
+
+        @Override
+        public T next() {
+            return iterator.next();
+        }
+    }
+
+    @Override
     public void close() {
+        closeAll(managedLocks);
+    }
+
+    /**
+     * Closes all the locks in the provided list.
+     *
+     * Locks will be closed in reverse (acquisition) order.
+     *
+     * If a {@link RuntimeException} occurs when closing
+     * any lock. The first exception will be recorded and
+     * lock closing will continue. After all locks are closed
+     * the first encountered exception is rethrown.
+     *
+     * @param <T> The type of the ManagedLocks
+     * @param managedLocks A list of locks, the list should be ordered in lock acquisition order.
+     */
+    public static <T extends ManagedLock> void closeAll(final List<T> managedLocks) {
         RuntimeException firstException = null;
 
         for(int i = managedLocks.size() - 1; i >= 0; i--) {

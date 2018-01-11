@@ -168,7 +168,7 @@ public class TransformTest {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = pool.getTransactionManager().beginTransaction();
-            final ManagedCollectionLock collectionLock = pool.getLockManager().acquireCollectionWriteLock(TEST_COLLECTION, false)) {
+            final ManagedCollectionLock collectionLock = pool.getLockManager().acquireCollectionWriteLock(TEST_COLLECTION)) {
                 final Collection testCollection = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
 
             storeXml(broker, transaction, testCollection, LIST_OPS_XSLT_NAME, LIST_OPS_XSLT);

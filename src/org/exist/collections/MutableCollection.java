@@ -185,7 +185,7 @@ public class MutableCollection implements Collection {
         
         final XmldbURI childName = child.getURI().lastSegment();
 
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
+        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path)) {
             if (!subCollections.contains(childName)) {
                 subCollections.add(childName);
             }
@@ -278,7 +278,7 @@ public class MutableCollection implements Collection {
     @Override
     public void update(final DBBroker broker, final Collection child) throws PermissionDeniedException, LockException {
         final XmldbURI childName = child.getURI().lastSegment();
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
+        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path)) {
             subCollections.remove(childName);
             subCollections.add(childName);
         }
@@ -297,7 +297,7 @@ public class MutableCollection implements Collection {
     private void addDocument(final Txn transaction, final DBBroker broker, final DocumentImpl doc,
             final DocumentImpl oldDoc) throws PermissionDeniedException, LockException {
 
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
+        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path)) {
 
             if (oldDoc == null) {
 
@@ -349,7 +349,7 @@ public class MutableCollection implements Collection {
             throw new PermissionDeniedException("Permission denied to remove document from collection: " + path);
         }
 
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
+        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path)) {
             documents.remove(doc.getFileURI().getRawCollectionPath());
         }
     }
@@ -737,7 +737,7 @@ public class MutableCollection implements Collection {
 
     @Override
     public XmldbURI getURI() {
-        return path;
+        return path;    //TODO(AR) we should have a READ_LOCK on here! but we can't as we need the URI to get the READ_LOCK... urgh!
     }
 
     /**
@@ -924,7 +924,7 @@ public class MutableCollection implements Collection {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
 
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
+        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path)) {
             subCollections.remove(name);
         }
     }
@@ -953,7 +953,7 @@ public class MutableCollection implements Collection {
         final BrokerPool db = broker.getBrokerPool();
 
         db.getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_XML, name);
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
+        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path)) {
 
             final XmldbURI docUri = XmldbURI.create(name.getRawCollectionPath());
             try(final ManagedDocumentLock docUpdateLock = lockManager.acquireDocumentWriteLock(docUri)) {
@@ -1007,7 +1007,7 @@ public class MutableCollection implements Collection {
             throw new PermissionDeniedException("Permission denied to write collection: " + path);
         }
 
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
+        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path)) {
             try(final ManagedDocumentLock docLock = lockManager.acquireDocumentWriteLock(path.append(name))) {
                 final DocumentImpl doc = getDocument(broker, name);
                 removeBinaryResource(transaction, broker, doc);
@@ -1030,7 +1030,7 @@ public class MutableCollection implements Collection {
         }
 
         broker.getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_BINARY, doc.getFileURI());
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
+        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path)) {
 
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE) {
                 throw new PermissionDeniedException("document " + doc.getFileURI() + " is not a binary object");
@@ -1352,7 +1352,7 @@ public class MutableCollection implements Collection {
 
         db.getProcessMonitor().startJob(ProcessMonitor.ACTION_VALIDATE_DOC, name);
         try {
-            try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
+            try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path)) {
 
                 // acquire the WRITE_LOCK on the Document, this lock is released in storeXMLInternal via IndexInfo
                 documentWriteLock = lockManager.acquireDocumentWriteLock(getURI().append(name));
@@ -1603,8 +1603,8 @@ public class MutableCollection implements Collection {
         final DocumentTriggers trigger = new DocumentTriggers(broker, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
         final XmldbURI docUri = blob.getFileURI();
 
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false);
-            final ManagedDocumentLock docLock = lockManager.acquireDocumentWriteLock(blob.getURI())) {
+        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path);
+                final ManagedDocumentLock docLock = lockManager.acquireDocumentWriteLock(blob.getURI())) {
             //TODO : move later, i.e. after the collection lock is acquired ?
             final DocumentImpl oldDoc = getDocument(broker, docUri);
 
@@ -1674,7 +1674,7 @@ public class MutableCollection implements Collection {
 
     @Override
     public void setPermissions(final DBBroker broker, final int mode) throws LockException, PermissionDeniedException {
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
+        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path)) {
             PermissionFactory.chmod(broker, this, Optional.of(mode), Optional.empty());
         }
     }
@@ -1711,7 +1711,7 @@ public class MutableCollection implements Collection {
 
     @Override
     public void setTriggersEnabled(final boolean enabled) {
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
+        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path)) {
             this.triggersEnabled = enabled;
         } catch(final LockException e) {
             LOG.error(e.getMessage(), e);

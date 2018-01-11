@@ -461,12 +461,24 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     /**
      * Remove a XML document from the database.
      *
+     * NOTE Should never be called directly,
+     * only for use from {@link Collection#removeXMLResource(Txn, DBBroker, XmldbURI)}
+     * or {@link DBBroker}.
+     *
      */
     public void removeXMLResource(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl document)
             throws PermissionDeniedException, IOException {
         removeXMLResource(transaction, document, true);
     }
 
+    /**
+     * Remove a XML document from the database.
+     *
+     * NOTE Should never be called directly,
+     * only for use from {@link Collection#removeXMLResource(Txn, DBBroker, XmldbURI)}
+     * or {@link DBBroker}.
+     *
+     */
     public abstract void removeXMLResource(Txn transaction,
         @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl document, boolean freeDocId) throws PermissionDeniedException, IOException;
 

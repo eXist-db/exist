@@ -140,7 +140,7 @@ public class MoveResourceRecoveryTest {
             try(final Txn transaction = transact.beginTransaction();
                     final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
                 assertNotNull(root);
-                transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(root.getURI(), false));
+                transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(root.getURI()));
                 broker.removeCollection(transaction, root);
 
                 transact.commit(transaction);
@@ -201,7 +201,7 @@ public class MoveResourceRecoveryTest {
             try(final Txn transaction = transact.beginTransaction();
                     final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
                 assertNotNull(root);
-                transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(root.getURI(), false));
+                transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(root.getURI()));
                 broker.removeCollection(transaction, root);
 
                 transact.commit(transaction);

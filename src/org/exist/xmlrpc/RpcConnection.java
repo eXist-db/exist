@@ -1519,7 +1519,8 @@ public class RpcConnection implements RpcAPI {
         return this.<Boolean>writeCollection(docUri.removeLastSegment()).apply((collection, broker, transaction) -> {
 
             // keep a write lock in the transaction
-            transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(collection.getURI(), false));
+            transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(collection.getURI()));
+
             try(final ManagedDocumentLock lockedDocument = broker.getBrokerPool().getLockManager().acquireDocumentWriteLock(docUri)) {
                 if (overwrite == 0) {
                     final DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
@@ -2063,7 +2064,7 @@ public class RpcConnection implements RpcAPI {
     private boolean remove(final XmldbURI docUri) throws EXistException, PermissionDeniedException {
         return this.<Boolean>writeCollection(docUri.removeLastSegment()).apply((collection, broker, transaction) -> {
             // keep a write lock in the transaction
-            transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(collection.getURI(), false));
+            transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(collection.getURI()));
 
             try(final LockedDocument lockedDoc = collection.getDocumentWithLock(broker, docUri.lastSegment(), LockMode.WRITE_LOCK)) {
                 if (lockedDoc == null) {
@@ -2097,7 +2098,7 @@ public class RpcConnection implements RpcAPI {
         try {
             return this.<Boolean>writeCollection(collURI).apply((collection, broker, transaction) -> {
                 // keep a write lock in the transaction
-                transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(collection.getURI(), false));
+                transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(collection.getURI()));
                 if(LOG.isDebugEnabled()) {
                     LOG.debug("removing collection " + collURI);
                 }

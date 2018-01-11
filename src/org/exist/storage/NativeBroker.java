@@ -20,6 +20,7 @@
 package org.exist.storage;
 
 import com.evolvedbinary.j8fu.function.BiFunctionE;
+import com.evolvedbinary.j8fu.function.FunctionE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.*;
@@ -75,6 +76,7 @@ import org.w3c.dom.NodeList;
 import javax.annotation.Nullable;
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -707,7 +709,7 @@ public class NativeBroker extends DBBroker {
         try {
 
             // 1) optimize for the existence of the Collection in the cache
-            try (final ManagedCollectionLock collectionLock = readLockCollection(null, collectionUri)) {
+            try (final ManagedCollectionLock collectionLock = readLockCollection(collectionUri)) {
                 final Collection collection = collectionsCache.getIfPresent(collectionUri);
                 if (collection != null) {
                     return new Tuple2<>(false, collection);
@@ -715,7 +717,7 @@ public class NativeBroker extends DBBroker {
             }
 
             // 2) try and read the Collection from disk, if not on disk then create it
-            try (final ManagedCollectionLock collectionLock = writeLockCollection(null, collectionUri, true)) {
+            try (final ManagedCollectionLock parentCollectionLock = writeLockCollection(parentCollectionUri.numSegments() == 0 ? XmldbURI.ROOT_COLLECTION_URI : parentCollectionUri)) {       // we write lock the parent (as we may need to add a new Collection to it)
 
                 // check for preemption between READ -> WRITE lock, is the Collection now in the cache?
                 final Collection collection = collectionsCache.getIfPresent(collectionUri);
@@ -930,12 +932,12 @@ public class NativeBroker extends DBBroker {
         try {
             switch (lockMode) {
                 case WRITE_LOCK:
-                    collectionLock = writeLockCollection(null, collectionUri, false);
+                    collectionLock = writeLockCollection(collectionUri);
                     unlockFn = collectionLock::close;
                     break;
 
                 case READ_LOCK:
-                    collectionLock = readLockCollection(null, collectionUri);
+                    collectionLock = readLockCollection(collectionUri);
                     unlockFn = collectionLock::close;
                     break;
 
@@ -1103,72 +1105,46 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " has insufficient privileges on target collection " + targetCollectionUri + " to copy collection " + sourceCollectionUri);
         }
 
-        // READ_LOCK the sourceCollection
-        try (final ManagedCollectionLock sourceCollectionLock = readLockCollection(null, sourceCollectionUri)) {
+        /*
+         * At this point this thread should hold:
+         *   READ_LOCK on:
+         *     1) sourceCollection
+         *
+         *   WRITE_LOCK on:
+         *     1) targetCollection
+         *
+         *  Remember a lock on a node in the Collection tree,
+         *  implies locking the entire sub-tree, therefore
+         *  we don't need to explicitly lock sub-collections (just documents).
+         */
 
-            // WRITE LOCK the destinationCollection and its parent (targetCollection)
-            try (final ManagedCollectionLock destinationCollectionLock = writeLockCollection(null, destinationCollectionUri, true)) {
-                /*
-                 * At this point this thread should hold:
-                 *   READ_LOCKS on:
-                 *     1) sourceCollection
-                 *
-                 *   WRITE_LOCKs on:
-                 *     2) targetCollection
-                 *     3) destinationCollection
-                 */
+        pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_COPY_COLLECTION, sourceCollection.getURI());
+        try {
 
-                // we now pessimistically READ_LOCK the sourceCollection descendants
-                final List<ManagedCollectionLock> sourceCollectionDescendantLocks = readLockDescendants(sourceCollection, sourceCollectionLock);
-                try {
+            final XmldbURI sourceCollectionParentUri = sourceCollection.getParentURI();
+            // READ_LOCK the parent of the source Collection for the triggers
+            try(final Collection sourceCollectionParent = sourceCollectionParentUri == null ? sourceCollection : openCollection(sourceCollectionParentUri, LockMode.READ_LOCK)) {
+                // fire before copy collection triggers
+                final CollectionTrigger trigger = new CollectionTriggers(this, sourceCollectionParent);
+                trigger.beforeCopyCollection(this, transaction, sourceCollection, destinationCollectionUri);
 
-                    // we now pessimistically WRITE_LOCK the destinationCollection descendants that we are about to create
-                    final List<XmldbURI> destinationCollectionDescendentUris = sourceCollectionDescendantLocks.stream()
-                            .map(ManagedCollectionLock::getPath)
-                            .map(uri -> sourceCollectionUri.relativizeCollectionPath(uri.getURI()))
-                            .map(destinationCollectionUri::resolveCollectionPath)
-                            .map(XmldbURI::create)
-                            .collect(Collectors.toList());
-                    final List<ManagedCollectionLock> destinationCollectionDescendantLocks = writeLockCollections(destinationCollectionDescendentUris, destinationCollectionLock);
-                    try {
-                        pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_COPY_COLLECTION, sourceCollection.getURI());
-                        try {
+                final DocumentTrigger docTrigger = new DocumentTriggers(this);
 
-                            final XmldbURI sourceCollectionParentUri = sourceCollection.getParentURI();
-                            // READ_LOCK the parent of the source Collection for the triggers
-                            try(final Collection sourceCollectionParent = sourceCollectionParentUri == null ? sourceCollection : openCollection(sourceCollectionParentUri, LockMode.READ_LOCK)) {
-                                // fire before copy collection triggers
-                                final CollectionTrigger trigger = new CollectionTriggers(this, sourceCollectionParent);
-                                trigger.beforeCopyCollection(this, transaction, sourceCollection, destinationCollectionUri);
+                // pessimistically obtain READ_LOCKs on all descendant documents of sourceCollection, and WRITE_LOCKs on all target documents
+                final Collection newCollection;
+                try(final ManagedLocks<ManagedDocumentLock> sourceDocLocks = new ManagedLocks(lockDescendantDocuments(sourceCollection, lockManager::acquireDocumentReadLock));
+                        final ManagedLocks<ManagedDocumentLock> targetDocLocks = new ManagedLocks(lockTargetDocuments(sourceCollectionUri, sourceDocLocks, destinationCollectionUri, lockManager::acquireDocumentWriteLock))) {
 
-                                // check all permissions in the tree to ensure a copy operation will succeed before starting copying
-                                checkPermissionsForCopy(sourceCollection, targetCollection, newName);
-
-                                final DocumentTrigger docTrigger = new DocumentTriggers(this);
-
-                                final Collection newCollection = doCopyCollection(transaction, docTrigger, sourceCollection, targetCollection, destinationCollectionUri, true, preserve);
-
-                                // fire after copy collection triggers
-                                trigger.afterCopyCollection(this, transaction, newCollection, sourceCollectionUri);
-                            }
-
-                        } finally {
-                            pool.getProcessMonitor().endJob();
-                        }
-                    } finally {
-                        // iterate over the list in reverse order (to ensure correct order of release)
-                        for(int i = destinationCollectionDescendantLocks.size() - 1; i >= 0; i--) {
-                            destinationCollectionDescendantLocks.get(i).close();  // release the lock
-                        }
-                    }
-
-                } finally {
-                    // iterate over the list in reverse order (to ensure correct order of release)
-                    for(int i = sourceCollectionDescendantLocks.size() - 1; i >= 0; i--) {
-                        sourceCollectionDescendantLocks.get(i).close();  // release the lock
-                    }
+                    // check all permissions in the tree to ensure a copy operation will succeed before starting copying
+                    checkPermissionsForCopy(sourceCollection, targetCollection, newName);
+                    newCollection = doCopyCollection(transaction, docTrigger, sourceCollection, targetCollection, destinationCollectionUri, true, preserve);
                 }
+                // fire after copy collection triggers
+                trigger.afterCopyCollection(this, transaction, newCollection, sourceCollectionUri);
             }
+
+        } finally {
+            pool.getProcessMonitor().endJob();
         }
     }
 
@@ -1184,7 +1160,7 @@ public class NativeBroker extends DBBroker {
      * @throws LockException If an exception occurs whilst acquiring locks
      */
     protected void checkPermissionsForCopy(@EnsureLocked(mode=LockMode.READ_LOCK) final Collection sourceCollection,
-            @EnsureLocked(mode=LockMode.READ_LOCK) final Collection targetCollection, final XmldbURI newName)
+            @EnsureLocked(mode=LockMode.READ_LOCK) @Nullable final Collection targetCollection, final XmldbURI newName)
             throws PermissionDeniedException, LockException {
 
         if(!sourceCollection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.READ)) {
@@ -1207,7 +1183,7 @@ public class NativeBroker extends DBBroker {
         }
 
         // check document permissions
-        for(final Iterator<DocumentImpl> itSrcSubDoc = sourceCollection.iterator(this); itSrcSubDoc.hasNext(); ) {
+        for(final Iterator<DocumentImpl> itSrcSubDoc = sourceCollection.iteratorNoLock(this); itSrcSubDoc.hasNext(); ) {        // NOTE: we already have a READ lock on sourceCollection implicitly
             final DocumentImpl srcSubDoc = itSrcSubDoc.next();
             if(!srcSubDoc.getPermissions().validate(getCurrentSubject(), Permission.READ)) {
                 throw new PermissionDeniedException("Permission denied to copy collection " + sourceCollection.getURI() + " for resource " + srcSubDoc.getURI() + " by " + getCurrentSubject().getName());
@@ -1225,7 +1201,7 @@ public class NativeBroker extends DBBroker {
         }
 
         // descend into sub-collections
-        for(final Iterator<XmldbURI> itSrcSubColUri = sourceCollection.collectionIterator(this); itSrcSubColUri.hasNext(); ) {
+        for(final Iterator<XmldbURI> itSrcSubColUri = sourceCollection.collectionIteratorNoLock(this); itSrcSubColUri.hasNext(); ) {        // NOTE: we already have a READ lock on sourceCollection implicitly
             final XmldbURI srcSubColUri = itSrcSubColUri.next();
             final Collection srcSubCol = getCollection(sourceCollection.getURI().append(srcSubColUri));  // NOTE: we already have a READ_LOCK on destinationCollectionUri
 
@@ -1235,7 +1211,7 @@ public class NativeBroker extends DBBroker {
 
 
     /**
-     * Copy a collection and all its sub-Collections
+     * Copy a collection and all its sub-Collections.
      *
      * @param transaction The current transaction
      * @param documentTrigger The trigger to use for document events
@@ -1295,7 +1271,7 @@ public class NativeBroker extends DBBroker {
         for(final Iterator<XmldbURI> i = sourceCollection.collectionIterator(this); i.hasNext(); ) {
             final XmldbURI childName = i.next();
             final XmldbURI childUri = sourceCollectionUri.append(childName);
-            try (final Collection child = getCollection(childUri)) {        // NOTE: we already have a READ lock on child
+            try (final Collection child = getCollection(childUri)) {        // NOTE: we already have a READ lock on child implicitly
                 if (child == null) {
                     throw new IOException("Child collection " + childUri + " not found");
                 } else {
@@ -1462,166 +1438,65 @@ public class NativeBroker extends DBBroker {
 
 
 
-        // WRITE LOCK the sourceCollection and its parent
-        try (final ManagedCollectionLock sourceCollectionLock = writeLockCollection(null, sourceCollectionUri, true)) {
+        // WRITE LOCK the parent of the sourceCollection (as we will want to remove the sourceCollection from it eventually)
+        final XmldbURI sourceCollectionParentUri = sourceCollectionUri.removeLastSegment();
+        try (final Collection sourceCollectionParent = openCollection(sourceCollectionParentUri, LockMode.WRITE_LOCK)) {
 
-            final XmldbURI sourceCollectionParentUri = sourceCollectionUri.removeLastSegment();
-            final Collection sourceCollectionParent =  getCollection(sourceCollectionParentUri); // NOTE: we already have a WRITE lock on sourceCollectionParent (in sourceCollectionLock)
             if(!sourceCollectionParent.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE | Permission.EXECUTE)) {
                 throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on collection " + sourceCollectionParentUri + " to move collection " + sourceCollectionUri);
             }
 
-            // WRITE LOCK the destinationCollection
-            try(final ManagedCollectionLock destinationCollectionLock = writeLockCollection(null, destinationCollectionUri, false)) {
-
-                /*
-                 * If replacing another collection in the move
-                 * i.e. sourceCollection=/db/col1/A, targetCollection=/db/col2, newName=A
-                 * where /db/col2/A already exists we have to make sure the permissions to
-                 * remove /db/col2/A are okay!
-                 *
-                 * So we must call removeCollection on /db/col2/A
-                 * Which will ensure that collection can be removed and then remove it.
-                 */
-                try(final Collection existingDestinationCollection = getCollection(destinationCollectionUri)) { // NOTE: we already have a WRITE lock on destinationCollection (in destinationCollectionLock)
-                    if(existingDestinationCollection != null) {
-                        if (!removeCollection(transaction, existingDestinationCollection)) {
-                            throw new IOException("Destination collection '" + destinationCollectionUri + "' already exists and cannot be removed");
-                        }
-                    }
-                }
-
-                /*
-                 * At this point this thread should hold WRITE_LOCKs on:
-                 *   1) parent of sourceCollection
-                 *   2) sourceCollection
-                 *   3) targetCollection
-                 *   4) destinationCollection
-                 */
-
-                // we now pessimistically WRITE_LOCK the sourceCollection descendants
-                final List<ManagedCollectionLock> sourceCollectionDescendantLocks = writeLockDescendants(sourceCollection, sourceCollectionLock);
-                try {
-
-                    // we now pessimistically WRITE_LOCK the destinationCollection descendants that we are about to create
-                    final List<XmldbURI> destinationCollectionDescendentUris = sourceCollectionDescendantLocks.stream()
-                            .map(ManagedCollectionLock::getPath)
-                            .map(uri -> sourceCollectionUri.relativizeCollectionPath(uri.getURI()))
-                            .map(destinationCollectionUri::resolveCollectionPath)
-                            .map(XmldbURI::create)
-                            .collect(Collectors.toList());
-                    final List<ManagedCollectionLock> destinationCollectionDescendantLocks = writeLockCollections(destinationCollectionDescendentUris, destinationCollectionLock);
-                    try {
-
-                        pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_MOVE_COLLECTION, sourceCollection.getURI());
-                        try {
-                            final CollectionTrigger trigger = new CollectionTriggers(this, sourceCollectionParent);
-                            trigger.beforeMoveCollection(this, transaction, sourceCollection, destinationCollectionUri);
-
-                            // Need to move each collection in the source tree individually, so recurse.
-                            moveCollectionRecursive(transaction, trigger, sourceCollectionParent, sourceCollection, targetCollection, newName, false);
-
-                            // For binary resources, though, just move the top level directory and all descendants come with it.
-                            final Path fsSourceDir = getCollectionFile(getFsDir(), sourceCollectionUri, false);
-                            moveBinaryFork(transaction, fsSourceDir, targetCollection, newName);
-
-                            trigger.afterMoveCollection(this, transaction, sourceCollection, sourceCollectionUri);
-                        } finally {
-                            pool.getProcessMonitor().endJob();
-                        }
-
-                    } finally {
-                        // iterate over the list in reverse order (to ensure correct order of release)
-                        for(int i = destinationCollectionDescendantLocks.size() - 1; i >= 0; i--) {
-                            destinationCollectionDescendantLocks.get(i).close();  // release the lock
-                        }
-                    }
-
-                } finally {
-                    // iterate over the list in reverse order (to ensure correct order of release)
-                    for(int i = sourceCollectionDescendantLocks.size() - 1; i >= 0; i--) {
-                        sourceCollectionDescendantLocks.get(i).close();  // release the lock
+            /*
+             * If replacing another collection in the move
+             * i.e. sourceCollection=/db/col1/A, targetCollection=/db/col2, newName=A
+             * where /db/col2/A already exists we have to make sure the permissions to
+             * remove /db/col2/A are okay!
+             *
+             * So we must call removeCollection on /db/col2/A
+             * Which will ensure that collection can be removed and then remove it.
+             */
+            try(final Collection existingDestinationCollection = getCollection(destinationCollectionUri)) { // NOTE: we already have a WRITE lock on destinationCollection (implicitly as targetCollection is locked)
+                if(existingDestinationCollection != null) {
+                    if (!removeCollection(transaction, existingDestinationCollection)) {
+                        throw new IOException("Destination collection '" + destinationCollectionUri + "' already exists and cannot be removed");
                     }
                 }
             }
-        }
-    }
 
-    /**
-     * Acquires WRITE_LOCKs on multiple Collections
-     *
-     * Attempts to optimize the acquisition of locks by calling
-     * {@link LockManager#acquireCollectionWriteLock(ManagedCollectionLock, XmldbURI)} instead of
-     * {@link LockManager#acquireCollectionWriteLock(XmldbURI, boolean)}
-     *
-     * @param collectionUris A list of Collection URIs expected to be sorting top-down left-to-right
-     * @param parentCollectionLock An optional parentCollectionLock for the first collectionUri
-     *
-     * @return A list of WRITE_LOCKs in the same order as collectionUris
-     */
-    private List<ManagedCollectionLock> writeLockCollections(final List<XmldbURI> collectionUris, @Nullable ManagedCollectionLock parentCollectionLock) throws LockException {
-        final List<ManagedCollectionLock> locks = new ArrayList<>();
+            /*
+             * At this point this thread should hold WRITE_LOCKs on:
+             *   1) parent of sourceCollection
+             *   2) sourceCollection
+             *   3) targetCollection
+             *
+             *  Remember a lock on a node in the Collection tree,
+             *  implies locking the entire sub-tree, therefore
+             *  we don't need to explicitly lock sub-collections (just documents).
+             */
 
-        try {
-            for (final XmldbURI collectionUri : collectionUris) {
-                final XmldbURI parentCollectionUri = collectionUri.removeLastSegment();
-                parentCollectionLock = parentCollectionLock.getPath().equals(parentCollectionUri) ? parentCollectionLock : null;
+            pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_MOVE_COLLECTION, sourceCollection.getURI());
+            try {
+                final CollectionTrigger trigger = new CollectionTriggers(this, sourceCollectionParent);
+                trigger.beforeMoveCollection(this, transaction, sourceCollection, destinationCollectionUri);
 
-                final ManagedCollectionLock collectionLock = writeLockCollection(parentCollectionLock, collectionUri, false);
-                locks.add(collectionLock);
+                // pessimistically obtain WRITE_LOCKs on all descendant documents of sourceCollection, and WRITE_LOCKs on all target documents
+                // we do this as whilst the document objects won't change, their method getURI() will return a different URI after the move
+                try(final ManagedLocks<ManagedDocumentLock> sourceDocLocks = new ManagedLocks(lockDescendantDocuments(sourceCollection, lockManager::acquireDocumentWriteLock));
+                        final ManagedLocks<ManagedDocumentLock> targetDocLocks = new ManagedLocks(lockTargetDocuments(sourceCollectionUri, sourceDocLocks, destinationCollectionUri, lockManager::acquireDocumentWriteLock))) {
 
-                parentCollectionLock = collectionLock;
+                    // Need to move each collection in the source tree individually, so recurse.
+                    moveCollectionRecursive(transaction, trigger, sourceCollectionParent, sourceCollection, targetCollection, newName, false);
+
+                    // For binary resources, though, just move the top level directory and all descendants come with it.
+                    final Path fsSourceDir = getCollectionFile(getFsDir(), sourceCollectionUri, false);
+                    moveBinaryFork(transaction, fsSourceDir, targetCollection, newName);
+                }
+
+                trigger.afterMoveCollection(this, transaction, sourceCollection, sourceCollectionUri);
+            } finally {
+                pool.getProcessMonitor().endJob();
             }
-        } catch(final LockException e) {
-            locks.forEach(ManagedCollectionLock::close);
-            throw e;
         }
-
-        return locks;
-    }
-
-    /**
-     * Acquires WRITE_LOCKs on all descendant Collections of a specific Collection
-     *
-     * Locks are acquired in a top-down, left-to-right order
-     *
-     * Attempts to optimize the acquisition of locks by calling
-     * {@link LockManager#acquireCollectionWriteLock(ManagedCollectionLock, XmldbURI)} instead of
-     * {@link LockManager#acquireCollectionWriteLock(XmldbURI, boolean)}
-     *
-     * NOTE: It is assumed that the caller holds a {@link LockMode#WRITE_LOCK} on the
-     *     `collection`
-     *
-     * @param collection The Collection whose descendant WRITE_LOCKs should be acquired
-     * @param collectionLock An existing WRITE_LOCK acquired on `collection`
-     *
-     * @return A list of WRITE_LOCKs in the same order as collectionUris. Note that these should be released in reverse
-     *     order
-     */
-    private List<ManagedCollectionLock> writeLockDescendants(final Collection collection, final ManagedCollectionLock collectionLock) throws LockException, PermissionDeniedException {
-        return lockDescendants(collection, collectionLock, (parentCollectionLock, collectionUri) -> writeLockCollection(parentCollectionLock, collectionUri, false));
-    }
-
-    /**
-     * Acquires READ_LOCKs on all descendant Collections of a specific Collection
-     *
-     * Locks are acquired in a top-down, left-to-right order
-     *
-     * Attempts to optimize the acquisition of locks by calling
-     * {@link LockManager#acquireCollectionReadLock(ManagedCollectionLock, XmldbURI)} instead of
-     * {@link LockManager#acquireCollectionReadLock(XmldbURI)}
-     *
-     * NOTE: It is assumed that the caller holds a {@link LockMode#READ_LOCK} on the
-     *     `collection`
-     *
-     * @param collection The Collection whose descendant READ_LOCKs should be acquired
-     * @param collectionLock An existing READ_LOCK acquired on `collection`
-     *
-     * @return A list of READ_LOCKs in the same order as collectionUris. Note that these should be released in reverse
-     *     order
-     */
-    private List<ManagedCollectionLock> readLockDescendants(final Collection collection, final ManagedCollectionLock collectionLock) throws LockException, PermissionDeniedException {
-        return lockDescendants(collection, collectionLock, (parentCollectionLock, collectionUri) -> readLockCollection(parentCollectionLock, collectionUri));
     }
 
     /**
@@ -1633,29 +1508,75 @@ public class NativeBroker extends DBBroker {
      *     `collection` of the same mode as those that we should acquire on the descendants
      *
      * @param collection The Collection whose descendant locks should be acquired
-     * @param collectionLock An existing lock acquired on `collection`
      * @param lockFn A function for acquiring a lock
      *
      * @return A list of locks in the same order as collectionUris. Note that these should be released in reverse order
      */
-    private List<ManagedCollectionLock> lockDescendants(final Collection collection, final ManagedCollectionLock collectionLock, final BiFunctionE<ManagedCollectionLock, XmldbURI, ManagedCollectionLock, LockException> lockFn) throws LockException, PermissionDeniedException {
-        final List<ManagedCollectionLock> locks = new ArrayList<>();
+    private List<ManagedDocumentLock> lockDescendantDocuments(final Collection collection, final FunctionE<XmldbURI, ManagedDocumentLock, LockException> lockFn) throws LockException, PermissionDeniedException {
+        final List<ManagedDocumentLock> locks = new ArrayList<>();
 
         try {
+            final Iterator<DocumentImpl> itDoc = collection.iteratorNoLock(this);
+            while(itDoc.hasNext()) {
+                final DocumentImpl doc = itDoc.next();
+                final ManagedDocumentLock docLock = lockFn.apply(doc.getURI());
+                locks.add(docLock);
+            }
+
             final XmldbURI collectionUri = collection.getURI();
-            final Iterator<XmldbURI> it = collection.collectionIteratorNoLock(this);    // NOTE: we already have a lock on collection
+            final Iterator<XmldbURI> it = collection.collectionIteratorNoLock(this);    // NOTE: we should already have a lock on collection
             while (it.hasNext()) {
                 final XmldbURI childCollectionName = it.next();
                 final XmldbURI childCollectionUri = collectionUri.append(childCollectionName);
-                final ManagedCollectionLock childCollectionLock = lockFn.apply(collectionLock, childCollectionUri);
-                locks.add(childCollectionLock);
-
-                final Collection childCollection = getCollection(childCollectionUri);  // NOTE: we already have a lock on childCollection
-                final List<ManagedCollectionLock> descendantLocks = lockDescendants(childCollection, childCollectionLock, lockFn);
+                final Collection childCollection = getCollection(childCollectionUri);  // NOTE: we don't need to lock the collection as we should already implicitly have a lock on the collection sub-tree
+                final List<ManagedDocumentLock> descendantLocks = lockDescendantDocuments(childCollection, lockFn);
                 locks.addAll(descendantLocks);
             }
         } catch (final PermissionDeniedException | LockException e) {
-            locks.forEach(ManagedCollectionLock::close);
+            // unlock in reverse order
+            try {
+                ManagedLocks.closeAll(locks);
+            } catch (final RuntimeException re) {
+                LOG.error(re);
+            }
+
+            throw e;
+        }
+
+        return locks;
+    }
+
+    /**
+     * Locks target documents (useful for copy/move operations).
+     *
+     * @param sourceCollectionUri The source collection URI root of the copy/move operation
+     * @param sourceDocumentLocks Locks on the source documents, for which target document locks should be acquired
+     * @param targetCollectionUri The target collection URI root of the copy/move operation
+     * @param lockFn The function for locking the target document.
+     *
+     * @return A list of locks on the target documents.
+     */
+    private List<ManagedDocumentLock> lockTargetDocuments(final XmldbURI sourceCollectionUri, final ManagedLocks<ManagedDocumentLock> sourceDocumentLocks, final XmldbURI targetCollectionUri, final FunctionE<XmldbURI, ManagedDocumentLock, LockException> lockFn) throws LockException {
+        final List<ManagedDocumentLock> locks = new ArrayList<>();
+        try {
+            for (final ManagedDocumentLock sourceDocumentLock : sourceDocumentLocks) {
+                final XmldbURI sourceDocumentUri = sourceDocumentLock.getPath();
+                final URI relativeDocumentUri = sourceCollectionUri.relativizeCollectionPath(sourceDocumentUri.getURI());
+                final XmldbURI targetDocumentUri = XmldbURI.create(targetCollectionUri.resolveCollectionPath(relativeDocumentUri));
+
+
+                final ManagedDocumentLock documentLock = lockFn.apply(targetDocumentUri);
+                locks.add(documentLock);
+
+            }
+        } catch(final LockException e) {
+            // unlock in reverse order
+            try {
+                ManagedLocks.closeAll(locks);
+            } catch (final RuntimeException re) {
+                LOG.error(re);
+            }
+
             throw e;
         }
 
@@ -1787,19 +1708,25 @@ public class NativeBroker extends DBBroker {
         if(isReadOnly()) {
             throw new IOException(DATABASE_IS_READ_ONLY);
         }
-        return _removeCollection(transaction, collection, null);
+
+        // WRITE LOCK the collection's parent (as we will remove this collection from it)
+        final XmldbURI parentCollectionUri = collection.getParentURI() == null ? XmldbURI.ROOT_COLLECTION_URI : collection.getParentURI();
+        try(final ManagedCollectionLock parentCollectionLock = writeLockCollection(parentCollectionUri)) {
+            return _removeCollection(transaction, collection);
+        } catch(final LockException e) {
+            LOG.error("Unable to lock Collection: {}", collection.getURI(), e);
+            return false;
+        }
     }
 
-    private boolean _removeCollection(final Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) final Collection collection, @Nullable final ManagedCollectionLock parentCollectionLock) throws PermissionDeniedException, TriggerException, IOException {
+    private boolean _removeCollection(final Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) final Collection collection) throws PermissionDeniedException, TriggerException, IOException {
         final XmldbURI collectionUri = collection.getURI();
 
         getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_COLLECTION, collectionUri);
 
-        // WRITE LOCK the collection and its parent
-        try(final ManagedCollectionLock collectionLock = writeLockCollection(parentCollectionLock, collectionUri, true)) {
+        try {
 
-            @Nullable final XmldbURI parentCollectionUri = collection.getParentURI();
-            @Nullable final Collection parentCollection = parentCollectionUri == null ? null : getCollection(parentCollectionUri);  // NOTE: we already have a WRITE lock on the parent as part of collectionLock
+            @Nullable final Collection parentCollection = collection.getParentURI() == null ? null : getCollection(collection.getParentURI());  // NOTE: we already have a WRITE lock on the parent of the Collection we set out to remove
 
             // 1) check the current user has permission to delete the Collection
             //TODO(AR) the below permissions check could be optimised when descending the tree so we don't check the same collection(s) twice in some cases
@@ -1811,9 +1738,9 @@ public class NativeBroker extends DBBroker {
             colTrigger.beforeDeleteCollection(this, transaction, collection);
 
             // 2) remove descendant collections
-            for (final Iterator<XmldbURI> subCollectionName = collection.collectionIterator(this); subCollectionName.hasNext(); ) {
+            for (final Iterator<XmldbURI> subCollectionName = collection.collectionIteratorNoLock(this); subCollectionName.hasNext(); ) {   // NOTE: we already have a WRITE lock on the parent of the Collection we set out to remove
                 final XmldbURI subCollectionUri = collectionUri.append(subCollectionName.next());
-                final boolean removedSubCollection = _removeCollection(transaction, getCollection(subCollectionUri), collectionLock);
+                final boolean removedSubCollection = _removeCollection(transaction, getCollection(subCollectionUri));   // NOTE: we already have a WRITE lock on the parent of the Collection we set out to remove
                 if(!removedSubCollection) {
                     LOG.error("Unable to remove Collection: {}", subCollectionUri);
                     return false;
@@ -1922,7 +1849,7 @@ public class NativeBroker extends DBBroker {
             throws TriggerException, PermissionDeniedException, LockException {
         final DocumentTrigger docTrigger = new DocumentTriggers(this, collection);
 
-        for (final Iterator<DocumentImpl> itDocument = collection.iterator(this); itDocument.hasNext(); ) {
+        for (final Iterator<DocumentImpl> itDocument = collection.iteratorNoLock(this); itDocument.hasNext(); ) {       // NOTE: we already have a WRITE_LOCK on the collection
             final DocumentImpl doc = itDocument.next();
 
             docTrigger.beforeDeleteDocument(this, transaction, doc);
@@ -2015,35 +1942,23 @@ public class NativeBroker extends DBBroker {
     /**
      * Acquires a write lock on a Collection
      *
-     * @param parentCollectionLock lock that is already held on the parent Collection or null
      * @param collectionUri The uri of the collection to lock
-     * @param lockParent true if we should also write lock the parent Collection, only
-     *     relevant when {@code parentCollectionLock == null}
      *
      * @return A managed lock for the Collection
      */
-    private ManagedCollectionLock writeLockCollection(@Nullable final ManagedCollectionLock parentCollectionLock, final XmldbURI collectionUri, final boolean lockParent) throws LockException {
-        if(parentCollectionLock != null) {
-            return lockManager.acquireCollectionWriteLock(parentCollectionLock, collectionUri);
-        } else {
-            return lockManager.acquireCollectionWriteLock(collectionUri, lockParent);
-        }
+    private ManagedCollectionLock writeLockCollection(final XmldbURI collectionUri) throws LockException {
+        return lockManager.acquireCollectionWriteLock(collectionUri);
     }
 
     /**
      * Acquires a READ lock on a Collection
      *
-     * @param parentCollectionLock lock that is already held on the parent Collection or null
      * @param collectionUri The uri of the collection to lock
      *
      * @return A managed lock for the Collection
      */
-    private ManagedCollectionLock readLockCollection(@Nullable final ManagedCollectionLock parentCollectionLock, final XmldbURI collectionUri) throws LockException {
-        if(parentCollectionLock != null) {
-            return lockManager.acquireCollectionReadLock(parentCollectionLock, collectionUri);
-        } else {
-            return lockManager.acquireCollectionReadLock(collectionUri);
-        }
+    private ManagedCollectionLock readLockCollection(final XmldbURI collectionUri) throws LockException {
+        return lockManager.acquireCollectionReadLock(collectionUri);
     }
 
     @Override
@@ -2246,7 +2161,7 @@ public class NativeBroker extends DBBroker {
 
             //get the temp collection
             try(final Txn transaction = transact.beginTransaction();
-                    final ManagedCollectionLock tempCollectionLock = lockManager.acquireCollectionWriteLock(XmldbURI.TEMP_COLLECTION_URI, false)) {
+                    final ManagedCollectionLock tempCollectionLock = lockManager.acquireCollectionWriteLock(XmldbURI.TEMP_COLLECTION_URI)) {
 
                 // if temp collection does not exist, creates temp collection (with write lock in Txn)
                 final Tuple2<Boolean, Collection> createdOrExistingTemp = getOrCreateTempCollection(transaction);

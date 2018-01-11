@@ -857,7 +857,7 @@ public class Folder extends NamedResource implements Cloneable {
 						broker.getBrokerPool().getLockManager().acquireCollectionReadLock(handle.getURI());
 						break;
 					case WRITE_LOCK:
-						broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(handle.getURI(), false);
+						broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(handle.getURI());
 						break;
 					case NO_LOCK:
 						break;

@@ -266,7 +266,19 @@ public class LockManager {
      *
      * @return A WRITE_LOCK on the Collection.
      */
-    public ManagedCollectionLock acquireCollectionWriteLock(final XmldbURI collectionPath, final boolean lockParent) throws LockException {
+    public ManagedCollectionLock acquireCollectionWriteLock(final XmldbURI collectionPath) throws LockException {
+        return acquireCollectionWriteLock(collectionPath, false);
+    }
+
+    /**
+     * Acquires a WRITE_LOCK on a Collection (and implicitly all descendant Collections).
+     *
+     * @param collectionPath The path of the Collection for which a lock is requested.
+     * @param lockParent true if we should also explicitly write lock the parent Collection.
+     *
+     * @return A WRITE_LOCK on the Collection.
+     */
+    ManagedCollectionLock acquireCollectionWriteLock(final XmldbURI collectionPath, final boolean lockParent) throws LockException {
         final XmldbURI[] segments = collectionPath.getPathSegments();
 
         final long groupId = System.nanoTime();
@@ -323,64 +335,6 @@ public class LockManager {
                 collectionPath,
                 Arrays.stream(locked).map(Tuple3::get_1).toArray(MultiLock[]::new),
                 () -> unlockAll(locked, l -> lockTable.released(groupId, l._3, LockType.COLLECTION, l._2))
-        );
-    }
-
-    /**
-     * Optimized locking method for acquiring a WRITE_LOCK lock on a Collection, when we already hold a WRITE_LOCK lock on the
-     * parent collection. In that instance we can avoid descending the locking tree again
-     */
-    public ManagedCollectionLock acquireCollectionWriteLock(final ManagedCollectionLock parentLock, final XmldbURI collectionPath) throws LockException {
-        return acquireCollectionLock(parentLock, collectionPath, Lock.LockMode.WRITE_LOCK);
-    }
-
-    /**
-     * Optimized locking method for acquiring a READ_LOCK lock on a Collection, when we already hold a READ_LOCK lock on the
-     * parent collection. In that instance we can avoid descending the locking tree again
-     */
-    public ManagedCollectionLock acquireCollectionReadLock(final ManagedCollectionLock parentLock, final XmldbURI collectionPath) throws LockException {
-        return acquireCollectionLock(parentLock, collectionPath, Lock.LockMode.READ_LOCK);
-    }
-
-    /**
-     * Optimized locking method for acquiring a lock on a Collection, when we already hold a lock on the
-     * parent collection. In that instance we can avoid descending the locking tree again
-     */
-    private ManagedCollectionLock acquireCollectionLock(final ManagedCollectionLock parentLock, final XmldbURI collectionPath, final Lock.LockMode lockMode) throws LockException {
-        if(Objects.isNull(parentLock)) {
-            throw new LockException("Cannot acquire a sub-Collection lock without a lock for the parent");
-        }
-        if(parentLock.isReleased()) {
-            throw new LockException("Cannot acquire a sub-Collection lock without a lock on the parent");
-        }
-
-        final XmldbURI parentCollectionUri = collectionPath.removeLastSegment();
-        if(!parentLock.getPath().equals(parentCollectionUri)) {
-            throw new LockException("Cannot acquire a lock on sub-Collection '" + collectionPath + "' as provided parent lock '" + parentCollectionUri + "' is not the parent");
-        }
-
-        final long groupId = System.nanoTime();
-        final String collectionPathStr = collectionPath.toString();
-
-        //TODO(AR) is this correct do we need to unlock the parentLock's parent, and what about on LockException? -- need tests
-        final MultiLock subCollectionLock = getCollectionLock(collectionPath.getCollectionPath());
-
-        lockTable.attempt(groupId, collectionPathStr, LockType.COLLECTION, lockMode);
-
-        if(lock(subCollectionLock, lockMode)) {
-            lockTable.acquired(groupId, collectionPathStr, LockType.COLLECTION, lockMode);
-        } else {
-            lockTable.attemptFailed(groupId, collectionPathStr, LockType.COLLECTION, lockMode);
-            throw new LockException("Unable to acquire " + lockMode + " for: " + collectionPath);
-        }
-
-        return new ManagedCollectionLock(
-                collectionPath,
-                new MultiLock[] { subCollectionLock },
-                () -> {
-                    unlock(subCollectionLock, lockMode);
-                    lockTable.released(groupId, collectionPathStr, LockType.COLLECTION, lockMode);
-                }
         );
     }
 

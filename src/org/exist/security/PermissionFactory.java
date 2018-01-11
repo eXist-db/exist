@@ -149,7 +149,7 @@ public class PermissionFactory {
                     }
                 } else {
                     // keep a write lock in the transaction
-                    transaction.acquireCollectionLock(() -> brokerPool.getLockManager().acquireCollectionWriteLock(collection.getURI(), false));
+                    transaction.acquireCollectionLock(() -> brokerPool.getLockManager().acquireCollectionWriteLock(collection.getURI()));
 
                     final Permission permissions = collection.getPermissionsNoLock();
                     permissionModifier.accept(permissions);
