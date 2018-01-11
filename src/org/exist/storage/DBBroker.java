@@ -772,7 +772,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 	 * @param doc
 	 *            to defrag
 	 */
-	public abstract void defragXMLResource(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) DocumentImpl doc);
+	public abstract void defragXMLResource(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl doc);
 
 	/**
 	 * Perform a consistency check on the specified document.
