@@ -192,7 +192,7 @@ public class LocalCollectionManagementService extends AbstractLocalService imple
         }
 
         withDb((broker, transaction) ->
-                modify(broker, transaction, srcPath).apply((source, b1, t1) ->
+                read(broker, transaction, srcPath).apply((source, b1, t1) ->
                         modify(b1, t1, destPath).apply((destination, b2, t2) -> {
                             try {
                                 b2.copyCollection(t2, source, destination, newName);
