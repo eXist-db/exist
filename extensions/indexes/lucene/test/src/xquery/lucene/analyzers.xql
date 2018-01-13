@@ -28,7 +28,7 @@ declare variable $analyze:XCONF2 :=
             <trigger class="org.exist.extensions.exquery.restxq.impl.RestXqTrigger"/>
         </triggers>
     </collection>;
-    
+
 declare
     %test:setUp
 function analyze:setup() {
@@ -46,6 +46,23 @@ function analyze:setup() {
                 <p>Russelsheim</p>
                 <p>Māori</p>
                 <p>Maori</p>
+                <!--Syriac, eastern, western and no vowels. -->
+                <p>ܦܘܼܪܫܵܢܵܐ</p>
+                <p>ܦܘܽܪܫܳܢܳܐ</p>
+                <p>ܦܘܪܫܢܐ</p>
+                <!-- Hebrew with and without vowels -->
+                <p>פָּעַל</p>
+                <p>פעל</p>
+                <!-- Arabic with and without vowels -->
+                <p>بَردَيصان</p>
+                <p>برديصان</p>
+                <!-- Pinyin tone marks (complex) -->
+                <p>nǚ</p>
+                <p>nü</p>
+                <p>nu</p>
+                <!-- Pinyin tone marks (simple) -->
+                <p>zìyóu</p>
+                <p>ziyou</p>
             </test>
         ),
         xmldb:store($confCol2, "collection.xconf", $analyze:XCONF2),
@@ -55,19 +72,29 @@ function analyze:setup() {
                 <p>Russelsheim</p>
                 <p>Māori</p>
                 <p>Maori</p>
+                <!--Syriac, eastern, western and no vowels. -->
+                <p>ܦܘܼܪܫܵܢܵܐ</p>
+                <p>ܦܘܽܪܫܳܢܳܐ</p>
+                <p>ܦܘܪܫܢܐ</p>
+                <!-- Hebrew with and without vowels-->
+                <p>פָּעַל</p>
+                <p>פעל</p>
+                <!-- Arabic with and without vowels -->
+                <p>بَردَيصان</p>
+                <p>برديصان</p>
+                <!-- Pinyin tone marks (complex) -->
+                <p>nǚ</p>
+                <p>nü</p>
+                <p>nu</p>
+                <!-- Pinyin tone marks (simple) -->
+                <p>zìyóu</p>
+                <p>ziyou</p>
             </test>
         )
     )
 };
 
-(:declare :)
-(:    %test:tearDown:)
-(:function analyze:tearDown() {:)
-(:    xmldb:remove("/db/lucenetest"),:)
-(:    xmldb:remove("/db/system/config/db/lucenetest"):)
-(:};:)
-
-declare 
+declare
     %test:args("russelsheim")
     %test:assertEquals(2)
     %test:args("rüsselsheim")
@@ -75,12 +102,36 @@ declare
     %test:args("maori")
     %test:assertEquals(2)
     %test:args("Māori")
+    %test:assertEquals(2)
+    %test:args("ܦܘܼܪܫܵܢܵܐ")
+    %test:assertEquals(3)
+    %test:args("ܦܘܽܪܫܳܢܳܐ")
+    %test:assertEquals(3)
+    %test:args("ܦܘܪܫܢܐ")
+    %test:assertEquals(3)
+    %test:args("פָּעַל")
+    %test:assertEquals(2)
+    %test:args("פעל")
+    %test:assertEquals(2)
+    %test:args("بَردَيصان")
+    %test:assertEquals(2)
+    %test:args("برديصان")
+    %test:assertEquals(2)
+    %test:args("nǚ")
+    %test:assertEquals(3)
+    %test:args("nü")
+    %test:assertEquals(3)
+    %test:args("nu")
+    %test:assertEquals(3)
+    %test:args("zìyóu")
+    %test:assertEquals(2)
+    %test:args("ziyou")
     %test:assertEquals(2)
 function analyze:no-diacrictics($term as xs:string) {
     count(collection("/db/lucenetest/test1")//p[ft:query(., $term)])
 };
 
-declare 
+declare
     %test:args("russelsheim")
     %test:assertEquals(1)
     %test:args("rüsselsheim")
@@ -89,11 +140,35 @@ declare
     %test:assertEquals(1)
     %test:args("Māori")
     %test:assertEquals(1)
+    %test:args("ܦܘܼܪܫܵܢܵܐ")
+    %test:assertEquals(1)
+    %test:args("ܦܘܽܪܫܳܢܳܐ")
+    %test:assertEquals(1)
+    %test:args("ܦܘܪܫܢܐ")
+    %test:assertEquals(1)
+    %test:args("פָּעַל")
+    %test:assertEquals(1)
+    %test:args("פעל")
+    %test:assertEquals(1)
+    %test:args("بَردَيصان")
+    %test:assertEquals(1)
+    %test:args("برديصان")
+    %test:assertEquals(1)
+    %test:args("nu")
+    %test:assertEquals(1)
+    %test:args("nü")
+    %test:assertEquals(1)
+    %test:args("nǚ")
+    %test:assertEquals(1)
+    %test:args("ziyou")
+    %test:assertEquals(1)
+    %test:args("zìyóu")
+    %test:assertEquals(1)
 function analyze:diacrictics($term as xs:string) {
     count(collection("/db/lucenetest/test2")//p[ft:query(., $term)])
 };
 
-declare 
+declare
     %test:args("rüssels*")
     %test:assertEquals(2)
     %test:args("russels*")
@@ -102,6 +177,23 @@ declare
     %test:assertEquals(2)
     %test:args("Māor*")
     %test:assertEquals(2)
+    %test:args("ܦܘܪ*")
+    %test:assertEquals(3)
+    %test:args("פע*")
+    %test:assertEquals(2)
+    %test:args("بردي*")
+    %test:assertEquals(2)
+    %test:args("ziy*")
+    %test:assertEquals(2)
+    %test:args("n*")
+    %test:assertEquals(3)
 function analyze:query-parser($term as xs:string) {
     count(collection("/db/lucenetest/test1")//p[ft:query(., $term)])
+};
+
+declare
+    %test:tearDown
+function analyze:tearDown() {
+    xmldb:remove("/db/lucenetest"),
+    xmldb:remove("/db/system/config/db/lucenetest")
 };
