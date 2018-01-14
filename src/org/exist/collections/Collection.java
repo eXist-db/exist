@@ -10,11 +10,8 @@ import org.exist.security.SecurityManager;
 import org.exist.storage.*;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
-import org.exist.storage.lock.EnsureLocked;
-import org.exist.storage.lock.EnsureUnlocked;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.*;
 import org.exist.storage.lock.Lock.LockMode;
-import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.SyntaxException;
@@ -32,6 +29,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import static org.exist.storage.lock.Lock.LockMode.READ_LOCK;
+import static org.exist.storage.lock.Lock.LockMode.WRITE_LOCK;
 
 /**
  * Represents a Collection in the database. A collection maintains a list of
@@ -65,14 +65,14 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param id The id of the Collection
      */
-    void setId(int id);
+    @EnsureContainerLocked(mode=WRITE_LOCK) void setId(int id);
 
     /**
      * Set the internal storage address of the Collection data
      *
      * @param address The internal storage address
      */
-    void setAddress(long address);
+    @EnsureContainerLocked(mode=WRITE_LOCK) void setAddress(long address);
 
     /**
      * Gets the internal storage address of the Collection data
@@ -139,7 +139,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param timestamp the creation timestamp in milliseconds
      */
-    void setCreationTime(long timestamp);
+    @EnsureContainerLocked(mode=WRITE_LOCK) void setCreationTime(long timestamp);
 
     /**
      * Get the Collection Configuration of this Collection
@@ -301,7 +301,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker The database broker
      * @param child  The child Collection to add to this Collection
      */
-    void addCollection(DBBroker broker, Collection child)
+    void addCollection(DBBroker broker, @EnsureLocked(mode=WRITE_LOCK) Collection child)
             throws PermissionDeniedException, LockException;
 
     /**
@@ -340,7 +340,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker The database broker
      * @param child  The child Collection to update
      */
-    void update(DBBroker broker, Collection child) throws PermissionDeniedException, LockException;
+    void update(DBBroker broker, @EnsureLocked(mode=WRITE_LOCK) Collection child) throws PermissionDeniedException, LockException;
 
     /**
      * Add a document to the collection
@@ -359,7 +359,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker The database broker
      * @param doc    The document to unlink from the Collection
      */
-    void unlinkDocument(DBBroker broker, DocumentImpl doc) throws PermissionDeniedException, LockException;
+    void unlinkDocument(DBBroker broker, @EnsureLocked(mode=WRITE_LOCK) DocumentImpl doc) throws PermissionDeniedException, LockException;
 
     /**
      * Return an iterator over all child Collections
@@ -839,7 +839,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param outputStream The output stream to write the collection contents to
      */
-    void serialize(final VariableByteOutputStream outputStream) throws IOException, LockException;
+    @EnsureContainerLocked(mode=READ_LOCK) void serialize(final VariableByteOutputStream outputStream) throws IOException, LockException;
 
     @Override void close();
 
