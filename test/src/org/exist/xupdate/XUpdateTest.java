@@ -66,7 +66,6 @@ public class XUpdateTest {
             {"update", "address.xml"},
             {"append_attribute", "address.xml"},
             {"append_child", "address.xml"},
-            {"append_child", "address.xml"},
             {"insertafter_big", "address_big.xml"},
             {"conditional", "address.xml"},
             {"variables", "address.xml"},
