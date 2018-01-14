@@ -166,7 +166,9 @@ public class RpcConnection implements RpcAPI {
             if (created != null) {
                 current.setCreationTime(created.getTime());
             }
-            LOG.debug("creating collection " + collUri);
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("creating collection " + collUri);
+            }
 
             broker.saveCollection(transaction, current);
 
@@ -271,8 +273,10 @@ public class RpcConnection implements RpcAPI {
                 coll.allDocs(broker, docs, true, lockedDocuments, LockMode.WRITE_LOCK);
                 return lockedDocuments;
             } catch (final LockException e) {
-                LOG.debug("Deadlock detected. Starting over again. Docs: " + docs.getDocumentCount() + "; locked: "
-                        + lockedDocuments.size());
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Deadlock detected. Starting over again. Docs: " + docs.getDocumentCount() + "; locked: "
+                            + lockedDocuments.size());
+                }
                 lockedDocuments.unlock();
             }
         } while (true);
@@ -376,7 +380,9 @@ public class RpcConnection implements RpcAPI {
                 throw new XPathException("Unknown parameter found in " + pragma.getQName().getStringValue()
                         + ": '" + content + "'");
             }
-            LOG.debug("Setting serialization property from pragma: " + pair[0] + " = " + pair[1]);
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Setting serialization property from pragma: " + pair[0] + " = " + pair[1]);
+            }
             parameters.put(pair[0], pair[1]);
         }
     }
@@ -385,7 +391,9 @@ public class RpcConnection implements RpcAPI {
     public int executeQuery(final byte[] xpath, final String encoding, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
         final Charset charset = Optional.ofNullable(encoding).map(Charset::forName).orElse(DEFAULT_ENCODING);
         final String xpathString = new String(xpath, charset);
-        LOG.debug("query: " + xpathString);
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("query: " + xpathString);
+        }
         return executeQuery(xpathString, parameters);
     }
 
@@ -521,7 +529,9 @@ public class RpcConnection implements RpcAPI {
                 return hash;
             });
         } catch (final EXistException e) {
-            LOG.debug(e);
+            if(LOG.isDebugEnabled()) {
+                LOG.debug(e);
+            }
             return new HashMap<>();
         }
     }
@@ -581,7 +591,9 @@ public class RpcConnection implements RpcAPI {
         final String xml = getDocumentAsString(name, parameters);
 
         if (compression) {
-            LOG.debug("getDocument with compression");
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("getDocument with compression");
+            }
             try {
                 return Compressor.compress(xml.getBytes(encoding));
             } catch (final IOException ioe) {
@@ -899,7 +911,9 @@ public class RpcConnection implements RpcAPI {
                 return list;
             });
         } catch (final EXistException e) {
-            LOG.debug(e);
+            if(LOG.isDebugEnabled()) {
+                LOG.debug(e);
+            }
             return Collections.EMPTY_LIST;
         }
     }
@@ -1315,7 +1329,9 @@ public class RpcConnection implements RpcAPI {
 
                 collection.store(transaction, broker, info, source);
 
-                LOG.debug("parsing " + docUri + " took " + (System.currentTimeMillis() - startTime) + "ms.");
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("parsing " + docUri + " took " + (System.currentTimeMillis() - startTime) + "ms.");
+                }
                 return true;
             }
         });
@@ -1478,7 +1494,9 @@ public class RpcConnection implements RpcAPI {
                     throw new PermissionDeniedException("Old document exists and overwrite is not allowed");
                 }
             }
-            LOG.debug("Storing binary resource to collection " + collection.getURI());
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Storing binary resource to collection " + collection.getURI());
+            }
 
             final DocumentImpl doc = collection.addBinaryResource(transaction, broker, docUri.lastSegment(), data, mimeType);
             if (created != null) {
@@ -1503,7 +1521,9 @@ public class RpcConnection implements RpcAPI {
             final int handle = factory.resultSets.add(new SerializedResult(vtempFile));
             fileName = Integer.toString(handle);
         } else {
-//            LOG.debug("appending to file " + fileName);
+//            if(LOG.isDebugEnabled()) {
+//                LOG.debug("appending to file " + fileName);
+//            }
             try {
                 final int handle = Integer.parseInt(fileName);
                 final SerializedResult sr = factory.resultSets.getSerializedResult(handle);
@@ -1719,10 +1739,14 @@ public class RpcConnection implements RpcAPI {
                             }
                         }
                     } else {
-                        LOG.debug("sequence iterator is null. Should not");
+                        if(LOG.isDebugEnabled()) {
+                            LOG.debug("sequence iterator is null. Should not");
+                        }
                     }
                 } else {
-                    LOG.debug("result sequence is null. Skipping it...");
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("result sequence is null. Skipping it...");
+                    }
                 }
 
                 queryResult.result = resultSeq;
@@ -1808,10 +1832,14 @@ public class RpcConnection implements RpcAPI {
                             }
                         }
                     } else {
-                        LOG.debug("sequence iterator is null. Should not be!");
+                        if(LOG.isDebugEnabled()) {
+                            LOG.debug("sequence iterator is null. Should not be!");
+                        }
                     }
                 } else {
-                    LOG.debug("result sequence is null. Skipping it...");
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("result sequence is null. Skipping it...");
+                    }
                 }
 
                 queryResult.result = resultSeq;
@@ -1830,14 +1858,18 @@ public class RpcConnection implements RpcAPI {
     @Override
     public boolean releaseQueryResult(final int handle) {
         factory.resultSets.remove(handle);
-        LOG.debug("removed query result with handle " + handle);
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("removed query result with handle " + handle);
+        }
         return true;
     }
 
     @Override
     public boolean releaseQueryResult(final int handle, final int hash) {
         factory.resultSets.remove(handle, hash);
-        LOG.debug("removed query result with handle " + handle);
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("removed query result with handle " + handle);
+        }
         return true;
     }
 
@@ -1875,11 +1907,15 @@ public class RpcConnection implements RpcAPI {
             return this.<Boolean>writeCollection(collURI).apply((collection, broker, transaction) -> {
                 // keep the write lock in the transaction
                 transaction.registerLock(collection.getLock(), LockMode.WRITE_LOCK);
-                LOG.debug("removing collection " + collURI);
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("removing collection " + collURI);
+                }
                 return broker.removeCollection(transaction, collection);
             });
         } catch (final EXistException e) {
-            LOG.debug(e);
+            if(LOG.isDebugEnabled()) {
+                LOG.debug(e);
+            }
             return false;
         }
     }
@@ -1953,7 +1989,9 @@ public class RpcConnection implements RpcAPI {
 
             OutputStream os = null;
             if (compression) {
-                LOG.debug("retrieveFirstChunk with compression");
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("retrieveFirstChunk with compression");
+                }
                 os = new DeflaterOutputStream(vtempFile);
             } else {
                 os = vtempFile;
@@ -2004,7 +2042,9 @@ public class RpcConnection implements RpcAPI {
 
 
         if (compression) {
-            LOG.debug("retrieve with compression");
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("retrieve with compression");
+            }
             try {
                 return Compressor.compress(xml.getBytes(encoding));
             } catch (final IOException ioe) {
@@ -2071,7 +2111,9 @@ public class RpcConnection implements RpcAPI {
 
             OutputStream os;
             if (compression) {
-                LOG.debug("retrieveFirstChunk with compression");
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("retrieveFirstChunk with compression");
+                }
                 os = new DeflaterOutputStream(vtempFile);
             } else {
                 os = vtempFile;
@@ -2212,7 +2254,9 @@ public class RpcConnection implements RpcAPI {
 
             OutputStream os;
             if (compression) {
-                LOG.debug("retrieveAllFirstChunk compression");
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("retrieveAllFirstChunk compression");
+                }
                 os = new DeflaterOutputStream(vtempFile);
             } else {
                 os = vtempFile;
@@ -2658,7 +2702,9 @@ public class RpcConnection implements RpcAPI {
 
             });
         } catch (final EXistException | PermissionDeniedException e) {
-            LOG.debug("addUserGroup encountered error", e);
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("addUserGroup encountered error", e);
+            }
             return false;
         }
     }
@@ -2698,7 +2744,9 @@ public class RpcConnection implements RpcAPI {
             });
 
         } catch (final EXistException | PermissionDeniedException ex) {
-            LOG.debug("removeGroup encountered error", ex);
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("removeGroup encountered error", ex);
+            }
             return false;
         }
     }
@@ -3005,7 +3053,9 @@ public class RpcConnection implements RpcAPI {
         }
         final byte buffer[] = new byte[len];
         try (final RandomAccessFile os = new RandomAccessFile(file.toFile(), "r")) {
-            LOG.debug("Read from: " + start + " to: " + (start + len));
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Read from: " + start + " to: " + (start + len));
+            }
             os.seek(start);
             os.read(buffer);
         }
@@ -3082,7 +3132,9 @@ public class RpcConnection implements RpcAPI {
     private void reindexCollection(final XmldbURI collUri) throws EXistException, PermissionDeniedException {
         withDb((broker, transaction) -> {
             broker.reindexCollection(collUri);
-            LOG.debug("collection " + collUri + " and sub-collections reindexed");
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("collection " + collUri + " and sub-collections reindexed");
+            }
             return null;
         });
     }
@@ -3094,7 +3146,9 @@ public class RpcConnection implements RpcAPI {
             try {
                 doc = broker.getXMLResource(XmldbURI.create(docUri), LockMode.READ_LOCK);
                 broker.reindexXMLResource(transaction, doc, DBBroker.IndexMode.STORE);
-                LOG.debug("document " + docUri + " reindexed");
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("document " + docUri + " reindexed");
+                }
                 return null;
             } finally {
                 if (doc != null) {
