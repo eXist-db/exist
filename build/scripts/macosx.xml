@@ -17,7 +17,7 @@
     <property name="app.resources" value="${app.dir}/Contents/Resources"/>
     <property name="app.exist" value="${app.resources}/eXist-db"/>
     <property name="app.icon" value="installer/scripts/icon.icns"/>
-    <property name="appbundler.jar" value="${tools.appbundler}/lib/appbundler-20170504.jar"/>
+    <property name="appbundler.jar" value="${tools.appbundler}/lib/appbundler-20180114.jar"/>
 
     <condition property="isMacOS">
         <and>
