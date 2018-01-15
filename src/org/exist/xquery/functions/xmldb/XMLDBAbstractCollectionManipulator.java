@@ -7,16 +7,16 @@
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
+ *
  *  $Id$
  */
 package org.exist.xquery.functions.xmldb;
@@ -42,166 +42,135 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
 /**
- *
- *  @author Luigi P. Bai, finder@users.sf.net, 2004
- *  @author gev
- *  @author delirium
- *
- *
+ * @author Luigi P. Bai, finder@users.sf.net, 2004
+ * @author gev
+ * @author delirium
  */
 public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
-	
-	protected static final Logger logger = LogManager.getLogger(XMLDBAbstractCollectionManipulator.class);
-	
-	private final boolean errorIfAbsent;
-	
-	private int paramNumber = 0;  //collecton will be passed as parameter number 0 by default  
-	
-	protected void setCollectionParameterNumber(int paramNumber){
-		this.paramNumber = paramNumber;
-	}
-	
-	protected int getCollectionParameterNumber() {
-		return paramNumber;
-	}
 
-	public XMLDBAbstractCollectionManipulator(XQueryContext context, FunctionSignature signature) {
-		this(context, signature, true);
-	}
-	public XMLDBAbstractCollectionManipulator(XQueryContext context, FunctionSignature signature, boolean errorIfAbsent) {
-		super(context, signature);
-		this.errorIfAbsent = errorIfAbsent;
-	}
-	
-	protected LocalCollection createLocalCollection(String name) throws XMLDBException {
-		try {
-			return new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), new AnyURIValue(name).toXmldbURI());
-		} catch(final XPathException e) {
-			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
-		}
-	}
-	
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-		throws XPathException {
-		
-        if (0 == args.length)
-            {throw new XPathException(this, "Expected a collection as the argument " + (paramNumber + 1) + ".");}
-        
+    protected static final Logger logger = LogManager.getLogger(XMLDBAbstractCollectionManipulator.class);
+
+    private final boolean errorIfAbsent;
+
+    private final int paramNumber = 0;  //collecton will be passed as parameter number 0 by default
+
+    public XMLDBAbstractCollectionManipulator(final XQueryContext context, final FunctionSignature signature) {
+        this(context, signature, true);
+    }
+
+    public XMLDBAbstractCollectionManipulator(final XQueryContext context, final FunctionSignature signature, final boolean errorIfAbsent) {
+        super(context, signature);
+        this.errorIfAbsent = errorIfAbsent;
+    }
+
+    protected LocalCollection createLocalCollection(String name) throws XMLDBException {
+        try {
+            return new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), new AnyURIValue(name).toXmldbURI());
+        } catch (final XPathException e) {
+            throw new XMLDBException(ErrorCodes.INVALID_URI, e);
+        }
+    }
+
+    @Override
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence)
+            throws XPathException {
+
+        if (0 == args.length) {
+            throw new XPathException(this, "Expected a collection as the argument " + (paramNumber + 1) + ".");
+        }
+
         final boolean collectionNeedsClose = false;
-        
+
         Collection collection = null;
         final Item item = args[paramNumber].itemAt(0);
-        if(Type.subTypeOf(item.getType(), Type.NODE))
-        {
-        	final NodeValue node = (NodeValue)item;
-        	logger.debug("Found node");
-        	if(node.getImplementationType() == NodeValue.PERSISTENT_NODE)
-        	{
-        		final org.exist.collections.Collection internalCol = ((NodeProxy)node).getOwnerDocument().getCollection();
-        		logger.debug("Found node");
-        		try
-        		{
-        			//TODO: use xmldbURI
-					collection = createLocalCollection(internalCol.getURI().toString());
-					logger.debug("Loaded collection " + collection.getName());
-				}
-        		catch(final XMLDBException e)
-        		{
-					throw new XPathException(this, "Failed to access collection: " + internalCol.getURI(), e);
-				}
-        	}
-        	else {
-        		return Sequence.EMPTY_SEQUENCE;
-        	}
+        if (Type.subTypeOf(item.getType(), Type.NODE)) {
+            final NodeValue node = (NodeValue) item;
+            if(logger.isDebugEnabled()) {
+                logger.debug("Found node");
+            }
+            if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                final org.exist.collections.Collection internalCol = ((NodeProxy) node).getOwnerDocument().getCollection();
+                if(logger.isDebugEnabled()) {
+                    logger.debug("Found node");
+                }
+                try {
+                    //TODO: use xmldbURI
+                    collection = createLocalCollection(internalCol.getURI().toString());
+                    if(logger.isDebugEnabled()) {
+                        logger.debug("Loaded collection " + collection.getName());
+                    }
+                } catch (final XMLDBException e) {
+                    throw new XPathException(this, "Failed to access collection: " + internalCol.getURI(), e);
+                }
+            } else {
+                return Sequence.EMPTY_SEQUENCE;
+            }
         }
-        
-        if(collection == null)
-        {
-        	//Otherwise, just extract the name as a string:
+
+        if (collection == null) {
+            //Otherwise, just extract the name as a string:
             final String collectionURI = args[paramNumber].getStringValue();
-            if(collectionURI != null)
-            {
-                try
-                {
-                	if (!collectionURI.startsWith("xmldb:"))
-                    {
+            if (collectionURI != null) {
+                try {
+                    if (!collectionURI.startsWith("xmldb:")) {
                         // Must be a LOCAL collection
                         collection = createLocalCollection(collectionURI);
-                    }
-                    else if(collectionURI.startsWith("xmldb:exist:///"))
-                    {
-                    	// Must be a LOCAL collection
+                    } else if (collectionURI.startsWith("xmldb:exist:///")) {
+                        // Must be a LOCAL collection
                         collection = createLocalCollection(collectionURI.replaceFirst("xmldb:exist://", ""));
-                    }
-                    else if(collectionURI.startsWith("xmldb:exist://embedded-eXist-server"))
-                    {
-                    	// Must be a LOCAL collection
-                    	collection = createLocalCollection(collectionURI.replaceFirst("xmldb:exist://embedded-eXist-server", ""));
-                    }
-                    else if(collectionURI.startsWith("xmldb:exist://localhost"))
-                    {
-                    	// Must be a LOCAL collection
+                    } else if (collectionURI.startsWith("xmldb:exist://embedded-eXist-server")) {
+                        // Must be a LOCAL collection
+                        collection = createLocalCollection(collectionURI.replaceFirst("xmldb:exist://embedded-eXist-server", ""));
+                    } else if (collectionURI.startsWith("xmldb:exist://localhost")) {
+                        // Must be a LOCAL collection
                         collection = createLocalCollection(collectionURI.replaceFirst("xmldb:exist://localhost", ""));
-                    }
-                    else if(collectionURI.startsWith("xmldb:exist://127.0.0.1"))
-                    {
-                    	// Must be a LOCAL collection
+                    } else if (collectionURI.startsWith("xmldb:exist://127.0.0.1")) {
+                        // Must be a LOCAL collection
                         collection = createLocalCollection(collectionURI.replaceFirst("xmldb:exist://127.0.0.1", ""));
-                    }
-                    else
-                    {
+                    } else {
                         // Right now, the collection is retrieved as GUEST. Need to figure out how to
                         // get user information into the URL?
                         collection = org.xmldb.api.DatabaseManager.getCollection(collectionURI);
                     }
-                }
-                catch(final XMLDBException xe)
-                {
-                    if(errorIfAbsent)
-                        {throw new XPathException(this, "Could not locate collection: "+collectionURI, xe);}
+                } catch (final XMLDBException xe) {
+                    if (errorIfAbsent) {
+                        throw new XPathException(this, "Could not locate collection: " + collectionURI, xe);
+                    }
                     collection = null;
                 }
             }
-            if(collection == null && errorIfAbsent)
-            {
+            if (collection == null && errorIfAbsent) {
                 throw new XPathException(this, "Unable to find collection: " + collectionURI);
             }
         }
-        
+
         Sequence s = Sequence.EMPTY_SEQUENCE;
-        try
-        {
+        try {
             s = evalWithCollection(collection, args, contextSequence);
-        }
-        finally
-        {
-            if(collectionNeedsClose && collection != null)
-            {
-                try
-            	{
-                	collection.close();
-            	}
-            	catch(final Exception e)
-            	{
-            		throw new XPathException(this, "Unable to close collection", e);
-        		}
+        } finally {
+            if (collectionNeedsClose && collection != null) {
+                try {
+                    collection.close();
+                } catch (final Exception e) {
+                    throw new XPathException(this, "Unable to close collection", e);
+                }
             }
         }
         return s;
-	}
+    }
 
-    abstract protected Sequence evalWithCollection(Collection c, Sequence[] args, Sequence contextSequence) throws XPathException;
-    
-    static public final Collection createCollection(Collection parentColl, String name) throws XMLDBException, XPathException {
+    abstract protected Sequence evalWithCollection(final Collection c, final Sequence[] args, final Sequence contextSequence) throws XPathException;
+
+    static public final Collection createCollection(final Collection parentColl, final String name) throws XMLDBException {
         final Collection child = parentColl.getChildCollection(name);
         if (child == null) {
-        	final CollectionManagementService mgtService = (CollectionManagementService) parentColl.getService("CollectionManagementService", "1.0");
+            final CollectionManagementService mgtService = (CollectionManagementService) parentColl.getService("CollectionManagementService", "1.0");
             return mgtService.createCollection(name);
         }
         return child;
     }
-    
-    static public final Collection createCollectionPath(Collection parentColl, String relPath) throws XMLDBException, XPathException {
+
+    static public final Collection createCollectionPath(final Collection parentColl, final String relPath) throws XMLDBException, XPathException {
         Collection current = parentColl;
         final StringTokenizer tok = new StringTokenizer(new AnyURIValue(relPath).toXmldbURI().toString(), "/");
         while (tok.hasMoreTokens()) {
@@ -210,5 +179,5 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         }
         return current;
     }
-	
+
 }
