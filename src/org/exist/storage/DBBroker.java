@@ -253,11 +253,11 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     /**
      * Adds all the documents in the database to the specified DocumentSet.
-     * 
-     * @param docs
-     *            a (possibly empty) document set to which the found documents
-     *            are added.
-     * 
+     *
+     * WARNING: This is an incredibly expensive operation as it requires recursing through the Collection hierarchy and
+     * accessing every document.
+     *
+     * @param docs a (possibly empty) document set to which the found documents are added.
      */
     public abstract MutableDocumentSet getAllXMLResources(MutableDocumentSet docs) throws PermissionDeniedException, LockException;
 
@@ -865,9 +865,18 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 	 */
 	public abstract void checkAvailableMemory();
 
-	/**
-	 * 
-	 */
+    /**
+     * Get all the documents in this database matching the given
+     * document-type's name.
+     *
+     * WARNING: This is an incredibly expensive operation as it requires recursing through the Collection hierarchy and
+     * accessing every document.
+     *
+     * @param doctype The doctype to match documents against
+     * @param result a (possibly empty) document set to which the found documents are added.
+     *
+     * @return The result
+     */
 	public abstract MutableDocumentSet getXMLResourcesByDoctype(String doctype, MutableDocumentSet result) throws PermissionDeniedException, LockException;
 
 	public int getReferenceCount() {

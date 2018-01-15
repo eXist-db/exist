@@ -2593,36 +2593,26 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    /**
-     * Get all the documents in this database matching the given
-     * document-type's name.
-     *
-     * @return The documentsByDoctype value
-     */
     @Override
     public MutableDocumentSet getXMLResourcesByDoctype(final String doctypeName, final MutableDocumentSet result) throws PermissionDeniedException, LockException {
         final MutableDocumentSet docs = getAllXMLResources(new DefaultDocumentSet());
         for(final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
             final DocumentImpl doc = i.next();
-            final DocumentType doctype = doc.getDoctype();
-            if(doctype == null) {
-                continue;
-            }
-            if(doctypeName.equals(doctype.getName())
-                && doc.getCollection().getPermissionsNoLock().validate(getCurrentSubject(), Permission.READ)
-                && doc.getPermissions().validate(getCurrentSubject(), Permission.READ)) {
-                result.add(doc);
+            try(final ManagedDocumentLock documentLock = lockManager.acquireDocumentReadLock(doc.getURI())) {
+                final DocumentType doctype = doc.getDoctype();
+                if (doctype == null) {
+                    continue;
+                }
+                if (doctypeName.equals(doctype.getName())
+                        && doc.getCollection().getPermissionsNoLock().validate(getCurrentSubject(), Permission.READ)
+                        && doc.getPermissions().validate(getCurrentSubject(), Permission.READ)) {
+                    result.add(doc);
+                }
             }
         }
         return result;
     }
 
-    /**
-     * Adds all the documents in the database to the specified DocumentSet.
-     *
-     * @param docs a (possibly empty) document set to which the found
-     *             documents are added.
-     */
     @Override
     public MutableDocumentSet getAllXMLResources(final MutableDocumentSet docs) throws PermissionDeniedException, LockException {
         final long start = System.currentTimeMillis();
