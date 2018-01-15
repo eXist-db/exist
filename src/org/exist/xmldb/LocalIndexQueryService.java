@@ -68,7 +68,7 @@ public class LocalIndexQueryService extends AbstractLocalService implements Inde
     @Override
     public void reindexCollection(final XmldbURI col) throws XMLDBException {
         final XmldbURI collectionPath = resolve(col);
-        withDb((broker, transaction) -> {
+        read(collectionPath).apply((collection, broker, transaction) -> {
             try {
                 broker.reindexCollection(collectionPath);
                 broker.sync(Sync.MAJOR);
