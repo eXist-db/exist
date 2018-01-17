@@ -51,3 +51,9 @@ function tps:xqname() {
     data(inspect:inspect-function(fn:function-name#1)//returns/@type)
 };
 
+declare
+    %test:assertEquals("array(*)")
+function tps:array() {
+    data(inspect:inspect-function(array:append#2)//returns/@type)
+};
+
