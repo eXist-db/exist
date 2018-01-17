@@ -191,7 +191,7 @@ public class Type {
         defineBuiltInType(ITEM, "item()");
         defineBuiltInType(EMPTY, "empty-sequence()","empty()"); // keep empty() for backward compatibility
 
-        defineBuiltInType(ELEMENT, "element()");
+        defineBuiltInType(ELEMENT, "element(*)","element()");
         defineBuiltInType(DOCUMENT, "document-node()");
         defineBuiltInType(ATTRIBUTE, "attribute()");
         defineBuiltInType(TEXT, "text()");
@@ -201,9 +201,9 @@ public class Type {
         defineBuiltInType(CDATA_SECTION, "cdata-section()");
 
         defineBuiltInType(JAVA_OBJECT, "object");
-        defineBuiltInType(FUNCTION_REFERENCE, "function");
+        defineBuiltInType(FUNCTION_REFERENCE, "function(*)", "function");
         defineBuiltInType(MAP, "map(*)", "map"); // keep map for backward compatibility
-        defineBuiltInType(ARRAY, "array");
+        defineBuiltInType(ARRAY, "array(*)","array");
         defineBuiltInType(NUMBER, "numeric");
 
         defineBuiltInType(ANY_TYPE, "xs:anyType");
