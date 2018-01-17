@@ -191,7 +191,7 @@ public class Type {
         defineBuiltInType(ITEM, "item()");
         defineBuiltInType(EMPTY, "empty-sequence()","empty()"); // keep empty() for backward compatibility
 
-        defineBuiltInType(ELEMENT, "element(*)","element()");
+        defineBuiltInType(ELEMENT, "element()");
         defineBuiltInType(DOCUMENT, "document-node()");
         defineBuiltInType(ATTRIBUTE, "attribute()");
         defineBuiltInType(TEXT, "text()");
