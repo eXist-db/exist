@@ -1,57 +1,33 @@
 package org.exist.security;
 
-import java.util.Arrays;
+import java.io.IOException;
 
-import org.exist.test.ExistWebServer;
+import org.exist.EXistException;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.UserManagementService;
-import org.junit.Rule;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.junit.runners.Parameterized;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 import org.xmldb.api.base.XMLDBException;
 
 /**
  * Ensures that security manager data, accounts, groups (and associations)
  * are correctly persisted across database restarts
  *
- * @author Adam Retter <adam@existsolutions.com.com>
+ * @author Adam Retter <adam@existsolutions.com>
  */
-@RunWith (Parameterized.class)
-public class SecurityManagerRoundtripTest {
+public abstract class AbstractSecurityManagerRoundtripTest {
 
-    @Rule
-    public final ExistWebServer existWebServer = new ExistWebServer(true, true, true);
+    protected abstract String getBaseUri();
 
-    private static final String PORT_PLACEHOLDER = "${PORT}";
-
-    @Parameters(name = "{0}")
-    public static java.util.Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-            { "local", "xmldb:exist://" },
-            { "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" }
-        });
-    }
-    
-    @Parameter
-    public String apiName;
-    
-    @Parameter(value = 1)
-    public String baseUri;
-
-    private final String getBaseUri() {
-        return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
-    }
+    protected abstract void restartServer() throws XMLDBException;
 
     @Test
-    public void checkGroupMembership() throws XMLDBException, PermissionDeniedException {
+    public void checkGroupMembership() throws XMLDBException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
 
         Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
         UserManagementService ums = (UserManagementService)root.getService("UserManagementService", "1.0");
@@ -74,7 +50,7 @@ public class SecurityManagerRoundtripTest {
             ums.updateAccount(user);
 
             /*** RESTART THE SERVER ***/
-            existWebServer.restart();
+            restartServer();
             /**************************/
 
             root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
@@ -102,7 +78,7 @@ public class SecurityManagerRoundtripTest {
     }
 
     @Test
-    public void checkPrimaryGroupRemainsDBA() throws XMLDBException, PermissionDeniedException {
+    public void checkPrimaryGroupRemainsDBA() throws XMLDBException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
 
         Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
         UserManagementService ums = (UserManagementService)root.getService("UserManagementService", "1.0");
@@ -126,7 +102,7 @@ public class SecurityManagerRoundtripTest {
             ums.updateAccount(user);
 
             /*** RESTART THE SERVER ***/
-            existWebServer.restart();
+            restartServer();
             /**************************/
 
             root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
@@ -155,7 +131,7 @@ public class SecurityManagerRoundtripTest {
     }
 
     @Test
-    public void checkPrimaryGroupStability() throws XMLDBException, PermissionDeniedException {
+    public void checkPrimaryGroupStability() throws XMLDBException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
 
         Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
         UserManagementService ums = (UserManagementService)root.getService("UserManagementService", "1.0");
@@ -178,7 +154,7 @@ public class SecurityManagerRoundtripTest {
             ums.updateAccount(user);
 
             /*** RESTART THE SERVER ***/
-            existWebServer.restart();
+            restartServer();
             /**************************/
 
             root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
