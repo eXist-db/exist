@@ -22,7 +22,7 @@
 	<classpathentry kind="src" path="extensions/debuggee/test"/>
 	<classpathentry kind="src" path="extensions/webdav/src"/>
 	<classpathentry kind="src" path="extensions/commands/src"/>
-	<classpathentry kind="lib" path="lib/core/j8fu-1.11.jar"/>
+	<classpathentry kind="lib" path="lib/core/j8fu-1.12.jar"/>
 	<classpathentry kind="lib" path="lib/core/icu4j-60_2.jar"/>
 	<classpathentry kind="lib" path="lib/core/icu4j-localespi-60_2.jar"/>
 	<classpathentry kind="lib" path="lib/core/pkg-java-fork.jar"/>
