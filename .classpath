@@ -72,7 +72,7 @@
 	<classpathentry kind="lib" path="lib/optional/jing-20151127.jar"/>
 	<classpathentry kind="lib" path="extensions/xqdoc/lib/xqdoc_conv.jar"/>
 	<classpathentry kind="lib" path="lib/user/activation-1.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/test/easymock-3.4.jar"/>
+	<classpathentry kind="lib" path="lib/test/easymock-3.5.1.jar"/>
 	<classpathentry kind="lib" path="extensions/webdav/lib/jdom-1.1.jar"/>
 	<classpathentry kind="lib" path="extensions/webdav/lib/mime-util-2.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/optional/isorelax-20041111.jar"/>
