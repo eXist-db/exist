@@ -136,9 +136,9 @@
 	<classpathentry kind="lib" path="lib/user/exificient-0.9.3.jar"/>
 	<classpathentry kind="lib" path="lib/user/mail-1.4.7.jar"/>
 	<classpathentry kind="lib" path="lib/user/nekohtml-1.9.22.jar"/>
-	<classpathentry kind="lib" path="lib/test/xmlunit-core-2.4.0.jar"/>
-	<classpathentry kind="lib" path="lib/test/xmlunit-legacy-2.4.0.jar"/>
-	<classpathentry kind="lib" path="lib/test/xmlunit-matchers-2.4.0.jar"/>
+	<classpathentry kind="lib" path="lib/test/xmlunit-core-2.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/test/xmlunit-legacy-2.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/test/xmlunit-matchers-2.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/jcip-annotations-1.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="test/classes"/>
