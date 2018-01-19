@@ -24,7 +24,6 @@ check_exist_home() {
 	echo "Unable to find start.jar. Please set EXIST_HOME to point to your installation directory." > /dev/stderr;
 	exit 1;
     fi
-    JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
 }
 
 set_locale_lang() {
@@ -78,9 +77,9 @@ set_client_java_options() {
     OS=`uname`
     if [ "${OS}" == "Darwin" ]; then
 	CLIENT_NAME="Client"
-        JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -Djava.endorsed.dirs=${JAVA_ENDORSED_DIRS} -Xdock:icon=${EXIST_HOME}/icon.png -Xdock:name=${CLIENT_NAME}";
+        JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -Xdock:icon=${EXIST_HOME}/icon.png -Xdock:name=${CLIENT_NAME}";
     else
-        JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -Djava.endorsed.dirs=${JAVA_ENDORSED_DIRS}";
+        JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS}";
     fi    
 }
 
@@ -88,7 +87,7 @@ set_java_options() {
     if [ -z "${JAVA_OPTIONS}" ]; then
 	JAVA_OPTIONS="-Xms128m -Xmx%{MAX_MEMORY}m -Dfile.encoding=UTF-8";
     fi
-    JAVA_OPTIONS="${JAVA_OPTIONS} -Djava.endorsed.dirs=${JAVA_ENDORSED_DIRS}";
+    JAVA_OPTIONS="${JAVA_OPTIONS}";
 }
 
 check_java_home() {
