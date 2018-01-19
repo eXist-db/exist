@@ -6,7 +6,10 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
+
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.junit.*;
+import org.junit.runner.RunWith;
 
 /**
  * Test case for mime-type mapping.
@@ -15,6 +18,7 @@ import org.junit.*;
  * 
  * @author Peter Ciuffetti
  */
+@RunWith(ParallelRunner.class)
 public class MimeTableTest  {
 
 	@After

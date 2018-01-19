@@ -1,7 +1,9 @@
 package org.exist.dom.memtree;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.*;
+import org.junit.runner.RunWith;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
@@ -10,6 +12,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Adam Retter <adam.retter@googlemail.com>
  */
+@RunWith(ParallelRunner.class)
 public class MemtreeInXQuery {
 
     @ClassRule

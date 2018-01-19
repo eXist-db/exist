@@ -1,8 +1,10 @@
 package org.exist.source;
 
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.security.PermissionDeniedException;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -12,6 +14,7 @@ import java.nio.file.Paths;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+@RunWith(ParallelRunner.class)
 public class SourceFactoryTest {
 
     @Test

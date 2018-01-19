@@ -3,19 +3,21 @@ package org.exist.xquery.value;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 
 import static org.junit.Assert.fail;
 
 public abstract class AbstractTimeRelatedTestCase {
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeClass
+	public static void setUp() throws Exception {
 		TimeUtils.getInstance().overrideLocalTimezoneOffset(-5 * 60 * 60 * 1000);
 	}
 
-	@After
-	public void tearDown() throws Exception {
+	@AfterClass
+	public static void tearDown() throws Exception {
 		TimeUtils.getInstance().resetLocalTimezoneOffset();
 	}
 

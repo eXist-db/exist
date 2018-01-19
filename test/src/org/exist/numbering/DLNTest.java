@@ -21,13 +21,16 @@
  */
 package org.exist.numbering;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 import java.util.Random;
 
 import static org.junit.Assert.*;
 
+@RunWith(ParallelRunner.class)
 public class DLNTest {
 
     private class TestItem implements Comparable<TestItem> {

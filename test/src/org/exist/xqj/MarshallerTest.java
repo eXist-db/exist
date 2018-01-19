@@ -21,6 +21,7 @@
  */
 package org.exist.xqj;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
@@ -48,6 +49,8 @@ import org.junit.Test;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import org.junit.runner.RunWith;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -69,6 +72,7 @@ import java.util.Properties;
  * @author Cherif YAYA
  *
  */
+@RunWith(ParallelRunner.class)
 public class MarshallerTest {
 
     private static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("xqjmarhallertest");

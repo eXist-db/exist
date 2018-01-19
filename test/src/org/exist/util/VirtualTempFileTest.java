@@ -20,11 +20,13 @@
 
 package org.exist.util;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import org.junit.Test;
 import org.junit.Assert;
+import org.junit.runner.RunWith;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -34,6 +36,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * 
  * @author jmfernandez
  */
+@RunWith(ParallelRunner.class)
 public class VirtualTempFileTest {
 	@Test
 	public void testWriteSwitch()

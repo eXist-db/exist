@@ -20,11 +20,13 @@
 
 package org.exist.dom.memtree;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import net.sf.saxon.dom.AttrOverNodeInfo;
 import net.sf.saxon.dom.DocumentBuilderImpl;
 import org.apache.xerces.dom.AttrNSImpl;
 import org.exist.Namespaces;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.w3c.dom.*;
 import org.xml.sax.*;
 
@@ -38,6 +40,7 @@ import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+@RunWith(ParallelRunner.class)
 public class DocumentImplTest {
 
     private static final String DOC =

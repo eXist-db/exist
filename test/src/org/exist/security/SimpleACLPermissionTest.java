@@ -1,5 +1,6 @@
 package org.exist.security;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteInputStream;
 import java.io.ByteArrayInputStream;
@@ -13,6 +14,7 @@ import java.util.Random;
 import org.easymock.EasyMock;
 import org.exist.util.ByteArray;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertTrue;
@@ -23,6 +25,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Adam Retter <adam@exist-db.org>
  */
+@RunWith(ParallelRunner.class)
 public class SimpleACLPermissionTest {
 
     private final static int ALL = Permission.READ | Permission.WRITE | Permission.EXECUTE;

@@ -1,5 +1,6 @@
 package org.exist.storage.txn;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMockSupport;
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
@@ -7,6 +8,7 @@ import org.exist.storage.NativeBroker;
 import org.exist.storage.SystemTaskManager;
 import org.exist.storage.journal.JournalManager;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Optional;
 
@@ -16,6 +18,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Adam Retter <adam.retter@googlemail.com>
  */
+@RunWith(ParallelRunner.class)
 public class TxnTest extends EasyMockSupport {
 
     private BrokerPool mockBrokerPool;

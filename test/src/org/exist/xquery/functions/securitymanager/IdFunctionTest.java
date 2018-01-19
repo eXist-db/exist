@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.securitymanager;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
@@ -41,6 +42,7 @@ import org.exist.xquery.value.Sequence;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +50,7 @@ import java.util.Map;
 /**
  * @author Adam Retter <adam@exist-db.org>
  */
+@RunWith(ParallelRunner.class)
 public class IdFunctionTest {
 
     /**

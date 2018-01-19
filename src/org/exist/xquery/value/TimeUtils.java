@@ -1,5 +1,7 @@
 package org.exist.xquery.value;
 
+import net.jcip.annotations.NotThreadSafe;
+
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
@@ -48,6 +50,9 @@ public class TimeUtils {
      * Set the offset of the local timezone, ignoring the default provided by the OS.
      * Mainly useful for testing.
      *
+     * NOTE calling this method is not thread-safe and has a global impact
+     * it should only be used for test cases.
+     *
      * @param millis the timezone offset in milliseconds, positive or negative
      */
     public void overrideLocalTimezoneOffset(int millis) {
@@ -57,6 +62,9 @@ public class TimeUtils {
 
     /**
      * Cancel any timezone override that may be in effect, reverting back to the OS value.
+     *
+     * NOTE calling this method is not thread-safe and has a global impact
+     * it should only be used for test cases.
      */
     public void resetLocalTimezoneOffset() {
         timezoneOverriden = false;

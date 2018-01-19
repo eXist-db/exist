@@ -23,6 +23,7 @@
 
 package org.exist.validation;
 
+import com.googlecode.junittoolbox.ParallelSuite;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -31,7 +32,7 @@ import org.junit.runners.Suite;
  * @author Adam Retter <adam@exist-db.org>
  */
 
-@RunWith(Suite.class)
+@RunWith(ParallelSuite.class)
 @Suite.SuiteClasses({
     DatabaseInsertResources_NoValidation_Test.class,
     DatabaseInsertResources_WithValidation_Test.class

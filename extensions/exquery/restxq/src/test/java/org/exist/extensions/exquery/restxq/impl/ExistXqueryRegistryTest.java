@@ -26,15 +26,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.exist.extensions.exquery.restxq.impl;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.xmldb.XmldbURI;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for ResourceFunctionFactory
  * 
  * @author Adam Retter <adam.retter@googlemail.com>
  */
+@RunWith(ParallelRunner.class)
 public class ExistXqueryRegistryTest {
     
     @Test

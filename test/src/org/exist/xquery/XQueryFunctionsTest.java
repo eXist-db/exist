@@ -27,11 +27,13 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Optional;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
+import org.junit.runner.RunWith;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -57,6 +59,7 @@ import static org.junit.Assert.assertTrue;
  * @author gvalentino
  * @author jmvanel
  */
+@RunWith(ParallelRunner.class)
 public class XQueryFunctionsTest {
 
     @ClassRule
@@ -692,7 +695,6 @@ public class XQueryFunctionsTest {
         assertEquals("21", r);
     }
 
-    @Ignore
     @Test
     public void resolveQName() throws XMLDBException {
         String query = "declare namespace a=\"aes\"; " +

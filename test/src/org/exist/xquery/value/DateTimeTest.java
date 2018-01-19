@@ -1,10 +1,12 @@
 package org.exist.xquery.value;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -15,6 +17,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
+@RunWith(ParallelRunner.class)
 public class DateTimeTest extends AbstractTimeRelatedTestCase {
 
 	@Test(expected = XPathException.class)

@@ -1,5 +1,6 @@
 package org.exist.xquery.functions.util;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.ClassRule;
@@ -9,6 +10,8 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.junit.Assert.*;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+
+import org.junit.runner.RunWith;
 import org.xml.sax.SAXException;
 import java.io.IOException;
 
@@ -22,6 +25,7 @@ import org.xmldb.api.base.XMLDBException;
  *
  * @author jim.fuller@webcomposite.com
  */
+@RunWith(ParallelRunner.class)
 public class SerializeTest {
 
     @ClassRule

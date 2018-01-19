@@ -1,5 +1,6 @@
 package org.exist.dom.persistent;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.Database;
 import org.exist.security.Group;
 import org.exist.security.internal.RealmImpl;
@@ -17,11 +18,13 @@ import static org.easymock.EasyMock.expect;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  *
  * @author aretter
  */
+@RunWith(ParallelRunner.class)
 public class DocumentImplTest {
 
     @Test

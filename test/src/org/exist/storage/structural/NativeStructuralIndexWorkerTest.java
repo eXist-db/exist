@@ -1,9 +1,11 @@
 package org.exist.storage.structural;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMock;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 import java.util.List;
@@ -15,6 +17,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Adam Retter <adam.retter@googlemail.com>
  */
+@RunWith(ParallelRunner.class)
 public class NativeStructuralIndexWorkerTest {
 
     @Test

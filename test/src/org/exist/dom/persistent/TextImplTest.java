@@ -19,9 +19,11 @@
  */
 package org.exist.dom.persistent;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMock;
 import org.exist.numbering.DLN;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.w3c.dom.DOMException;
 
 import static org.easymock.EasyMock.expect;
@@ -34,6 +36,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
+@RunWith(ParallelRunner.class)
 public class TextImplTest {
 
     @Test

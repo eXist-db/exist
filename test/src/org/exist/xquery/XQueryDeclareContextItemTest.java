@@ -20,6 +20,7 @@
 
 package org.exist.xquery;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -43,6 +44,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
@@ -58,6 +60,7 @@ import static org.junit.Assert.assertNotNull;
  *
  * @author aretter
  */
+@RunWith(ParallelRunner.class)
 public class XQueryDeclareContextItemTest {
 
     private static final String SYSEVENT_XML = "<log xmlns=\"http://syslog\">some-event</log>";

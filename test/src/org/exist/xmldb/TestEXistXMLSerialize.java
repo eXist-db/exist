@@ -21,7 +21,6 @@
  */
 package org.exist.xmldb;
 
-import org.exist.TestUtils;
 import org.exist.security.Account;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.ClassRule;
@@ -30,7 +29,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 import javax.xml.parsers.ParserConfigurationException;
