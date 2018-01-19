@@ -122,11 +122,11 @@
 	<classpathentry kind="lib" path="lib/optional/commons-compress-1.15.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-fileupload-1.3.3.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-net-3.6.jar"/>
-	<classpathentry kind="lib" path="lib/optional/fluent-hc-4.5.3.jar"/>
-	<classpathentry kind="lib" path="lib/optional/httpclient-4.5.3.jar"/>
-	<classpathentry kind="lib" path="lib/optional/httpclient-cache-4.5.3.jar"/>
-	<classpathentry kind="lib" path="lib/optional/httpcore-4.4.6.jar"/>
-	<classpathentry kind="lib" path="lib/optional/httpmime-4.5.3.jar"/>
+	<classpathentry kind="lib" path="lib/optional/fluent-hc-4.5.4.jar"/>
+	<classpathentry kind="lib" path="lib/optional/httpclient-4.5.4.jar"/>
+	<classpathentry kind="lib" path="lib/optional/httpclient-cache-4.5.4.jar"/>
+	<classpathentry kind="lib" path="lib/optional/httpcore-4.4.9.jar"/>
+	<classpathentry kind="lib" path="lib/optional/httpmime-4.5.4.jar"/>
 	<classpathentry kind="lib" path="lib/core/jackson-core-2.9.1.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/Saxon-HE-9.6.0-7.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/serializer-2.7.2.jar"/>
