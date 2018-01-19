@@ -23,6 +23,8 @@ package org.expath.exist;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -40,7 +42,6 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.expath.httpclient.HttpClientException;
 import org.expath.httpclient.HttpConnection;
-import org.expath.httpclient.HttpCredentials;
 import org.expath.httpclient.HttpRequest;
 import org.expath.httpclient.HttpResponse;
 import org.expath.httpclient.impl.ApacheHttpConnection;
@@ -164,26 +165,18 @@ public class SendRequestFunction extends BasicFunction {
      * Authentication may require to reply to an authentication challenge,
      * by sending again the request, with credentials.
      */
-    private EXistResult sendOnce(final URI uri, final HttpRequest request, final RequestParser parser) throws HttpClientException
-    {
-        final EXistResult result;
-        
-        if(parser.getSendAuth()) {
-            result = sendOnceWithAuth(uri, request, parser.getCredentials());        
-        } else {
+    private EXistResult sendOnce(final URI uri, final HttpRequest request, final RequestParser parser) throws HttpClientException {
+            EXistResult result = new EXistResult(getContext());
             HttpConnection conn = null;
             try {
                 conn = new ApacheHttpConnection(uri);
-                final EXistResult firstResult = new EXistResult(context);
-                final HttpResponse response = request.send(firstResult, conn, null);
-                if(response.getStatus() == 401) {
-                    conn.disconnect();
-                    result = sendOnceWithAuth(uri, request, parser.getCredentials());
-                } else {
-                    result = firstResult;
-                    registerConnectionWithContext(conn);
+                final HttpResponse response = request.send(result, conn, parser.getSendAuth() ? parser.getCredentials() : null);
+                if(response.getStatus() == HttpStatus.SC_UNAUTHORIZED && parser.getCredentials() != null) {
+                    // requires authorization, try again with auth
+                    result = new EXistResult(getContext());
+                    request.send(result, conn, parser.getCredentials());
                 }
-            } catch(final HttpClientException hce) {
+            } finally {
                 if(conn != null) {
                     try {
                         conn.disconnect();
@@ -191,44 +184,8 @@ public class SendRequestFunction extends BasicFunction {
                         logger.warn(hcee.getMessage(), hcee);
                     }
                 }
-                throw hce;
             }
-        }
         
         return result;
-    }
-    
-    private EXistResult sendOnceWithAuth(final URI uri, final HttpRequest request, final HttpCredentials httpCredentials) throws HttpClientException {
-        final EXistResult result = new EXistResult(getContext());
-        HttpConnection conn = null;
-        try {
-            conn = new ApacheHttpConnection(uri);
-            request.send(result, conn, httpCredentials);
-            registerConnectionWithContext(conn);
-        } catch(final HttpClientException hce) {
-            if(conn != null) {
-                try {
-                    conn.disconnect();
-                } catch(final HttpClientException hcee) {
-                    logger.warn(hcee.getMessage(), hcee);
-                }
-            }
-            throw hce;
-        }
-        
-        return result;
-    }
-    
-    private void registerConnectionWithContext(final HttpConnection conn) {
-        context.registerCleanupTask(new XQueryContext.CleanupTask() {
-            @Override
-            public void cleanup(final XQueryContext context) {
-                try {
-                    conn.disconnect();
-                } catch(final HttpClientException hce) {
-                    logger.warn(hce.getMessage(), hce);
-                }
-            }
-        });
     }
 }
