@@ -26,7 +26,7 @@
 	<classpathentry kind="lib" path="lib/core/icu4j-59_1.jar"/>
 	<classpathentry kind="lib" path="lib/core/icu4j-localespi-59_1.jar"/>
 	<classpathentry kind="lib" path="lib/core/pkg-java-fork.jar"/>
-	<classpathentry kind="lib" path="lib/core/caffeine-2.6.0.jar"/>
+	<classpathentry kind="lib" path="lib/core/caffeine-2.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/jctools-core-2.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/jsr305-3.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/rsyntaxtextarea-2.6.1.jar"/>
