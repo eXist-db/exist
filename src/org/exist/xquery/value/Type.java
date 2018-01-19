@@ -189,7 +189,7 @@ public class Type {
         //TODO use parentheses after the nodes name  ?
         defineBuiltInType(NODE, "node()");
         defineBuiltInType(ITEM, "item()");
-        defineBuiltInType(EMPTY, "empty()");
+        defineBuiltInType(EMPTY, "empty-sequence()","empty()"); // keep empty() for backward compatibility
 
         defineBuiltInType(ELEMENT, "element()");
         defineBuiltInType(DOCUMENT, "document-node()");
@@ -201,9 +201,9 @@ public class Type {
         defineBuiltInType(CDATA_SECTION, "cdata-section()");
 
         defineBuiltInType(JAVA_OBJECT, "object");
-        defineBuiltInType(FUNCTION_REFERENCE, "function");
-        defineBuiltInType(MAP, "map");
-        defineBuiltInType(ARRAY, "array");
+        defineBuiltInType(FUNCTION_REFERENCE, "function(*)", "function");
+        defineBuiltInType(MAP, "map(*)", "map"); // keep map for backward compatibility
+        defineBuiltInType(ARRAY, "array(*)","array");
         defineBuiltInType(NUMBER, "numeric");
 
         defineBuiltInType(ANY_TYPE, "xs:anyType");
