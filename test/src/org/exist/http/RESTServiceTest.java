@@ -33,6 +33,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.eclipse.jetty.http.HttpStatus;
 import org.exist.Namespaces;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.test.ExistWebServer;
@@ -52,8 +53,10 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
-/** A test case for accessing a remote server via REST-Style Web API.
+/**
+ * A test case for accessing a remote server via REST-Style Web API.
  * @author wolf
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
@@ -227,45 +230,53 @@ public class RESTServiceTest {
     @Test
     public void getFailNoSuchDocument() throws IOException {
         String uri = getCollectionUri() + "/nosuchdocument.xml";
-        HttpURLConnection connect = getConnection(uri);
-        connect.setRequestMethod("GET");
-        connect.connect();
+        final HttpURLConnection connect = getConnection(uri);
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
 
-        int r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 404, r);
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.NOT_FOUND_404, r);
+        } finally {
+            connect.disconnect();
+        }
     }
 
     @Test
     public void xqueryGetWithEmptyPath() throws IOException {
         /* store the documents that we need for this test */
-        doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", 201);
+        doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", HttpStatus.CREATED_201);
 
         String path = getCollectionUri() + "/requestwithpath.xq";
-        HttpURLConnection connect = getConnection(path);
-        connect.setRequestProperty("Authorization", "Basic " + credentials);
-        connect.setRequestMethod("GET");
-        connect.connect();
-        int r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 200, r);
-        String response = readResponse(connect.getInputStream());
-        String pathInfo = response.substring("pathInfo=".length(), response.indexOf("servletPath=")-2);
-        String servletPath = response.substring(response.indexOf("servletPath=") + "servletPath=".length(), response.lastIndexOf("\r\n"));
+        final HttpURLConnection connect = getConnection(path);
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("GET");
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+            String response = readResponse(connect.getInputStream());
+            String pathInfo = response.substring("pathInfo=".length(), response.indexOf("servletPath=") - 2);
+            String servletPath = response.substring(response.indexOf("servletPath=") + "servletPath=".length(), response.lastIndexOf("\r\n"));
 
-        //check the responses    
-        assertEquals("XQuery servletPath is: \"" + servletPath + "\" expected: \"/db/test/requestwithpath.xq\"", "/db/test/requestwithpath.xq", servletPath);
-        assertEquals("XQuery pathInfo is: \"" + pathInfo + "\" expected: \"\"", "", pathInfo);
+            //check the responses
+            assertEquals("XQuery servletPath is: \"" + servletPath + "\" expected: \"/db/test/requestwithpath.xq\"", "/db/test/requestwithpath.xq", servletPath);
+            assertEquals("XQuery pathInfo is: \"" + pathInfo + "\" expected: \"\"", "", pathInfo);
+        } finally {
+            connect.disconnect();
+        }
     }
 
     @Test
     public void xqueryPOSTWithEmptyPath() throws IOException {
         /* store the documents that we need for this test */
-        doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", 201);
+        doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", HttpStatus.CREATED_201);
 
         String path = getCollectionUri() + "/requestwithpath.xq";
-        HttpURLConnection connect = preparePost("boo", path);
+        final HttpURLConnection connect = preparePost("boo", path);
         connect.connect();
         int r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 200, r);
+        assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
         String response = readResponse(connect.getInputStream());
         String pathInfo = response.substring("pathInfo=".length(), response.indexOf("servletPath=")-2);
         String servletPath = response.substring(response.indexOf("servletPath=") + "servletPath=".length(), response.lastIndexOf("\r\n"));
@@ -278,41 +289,49 @@ public class RESTServiceTest {
     @Test
     public void xqueryGetWithNonEmptyPath() throws IOException {
         /* store the documents that we need for this test */
-        doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", 201);
+        doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", HttpStatus.CREATED_201);
 
         String path = getCollectionUri() + "/requestwithpath.xq/some/path";
-        HttpURLConnection connect = getConnection(path);
-        connect.setRequestProperty("Authorization", "Basic " + credentials);
-        connect.setRequestMethod("GET");
-        connect.connect();
-        int r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 200, r);
-        String response = readResponse(connect.getInputStream());
-        String pathInfo = response.substring("pathInfo=".length(), response.indexOf("servletPath=")-2);
-        String servletPath = response.substring(response.indexOf("servletPath=") + "servletPath=".length(), response.lastIndexOf("\r\n"));
-	            
-        //check the responses        
-        assertEquals("XQuery servletPath is: \"" + servletPath + "\" expected: \"/db/test/requestwithpath.xq\"", "/db/test/requestwithpath.xq", servletPath);
-        assertEquals("XQuery pathInfo is: \"" + pathInfo + "\" expected: \"/some/path\"", "/some/path", pathInfo);
+        final HttpURLConnection connect = getConnection(path);
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("GET");
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+            String response = readResponse(connect.getInputStream());
+            String pathInfo = response.substring("pathInfo=".length(), response.indexOf("servletPath=") - 2);
+            String servletPath = response.substring(response.indexOf("servletPath=") + "servletPath=".length(), response.lastIndexOf("\r\n"));
+
+            //check the responses
+            assertEquals("XQuery servletPath is: \"" + servletPath + "\" expected: \"/db/test/requestwithpath.xq\"", "/db/test/requestwithpath.xq", servletPath);
+            assertEquals("XQuery pathInfo is: \"" + pathInfo + "\" expected: \"/some/path\"", "/some/path", pathInfo);
+        } finally {
+            connect.disconnect();
+        }
     }
 
     @Test
     public void xqueryPOSTWithNonEmptyPath() throws IOException {
         /* store the documents that we need for this test */
-        doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", 201);
+        doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", HttpStatus.CREATED_201);
     		
         String path = getCollectionUri() + "/requestwithpath.xq/some/path";
-        HttpURLConnection connect = preparePost("boo", path);
-        connect.connect();
-        int r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 200, r);
-        String response = readResponse(connect.getInputStream());
-        String pathInfo = response.substring("pathInfo=".length(), response.indexOf("servletPath=")-2);
-        String servletPath = response.substring(response.indexOf("servletPath=") + "servletPath=".length(), response.lastIndexOf("\r\n"));
-	            
-        //check the responses        
-        assertEquals("XQuery servletPath is: \"" + servletPath + "\" expected: \"/db/test/requestwithpath.xq\"", "/db/test/requestwithpath.xq", servletPath);
-        assertEquals("XQuery pathInfo is: \"" + pathInfo + "\" expected: \"/some/path\"", "/some/path", pathInfo);
+        final HttpURLConnection connect = preparePost("boo", path);
+        try {
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+            String response = readResponse(connect.getInputStream());
+            String pathInfo = response.substring("pathInfo=".length(), response.indexOf("servletPath=") - 2);
+            String servletPath = response.substring(response.indexOf("servletPath=") + "servletPath=".length(), response.lastIndexOf("\r\n"));
+
+            //check the responses
+            assertEquals("XQuery servletPath is: \"" + servletPath + "\" expected: \"/db/test/requestwithpath.xq\"", "/db/test/requestwithpath.xq", servletPath);
+            assertEquals("XQuery pathInfo is: \"" + pathInfo + "\" expected: \"/some/path\"", "/some/path", pathInfo);
+        } finally {
+            connect.disconnect();
+        }
     }
 
 
@@ -320,26 +339,34 @@ public class RESTServiceTest {
     public void xqueryGetFailWithNonEmptyPath() throws IOException {
         /* store the documents that we need for this test */
         HttpURLConnection sconnect = getConnection(getResourceUri());
-        sconnect.setRequestProperty("Authorization", "Basic " + credentials);
-        sconnect.setRequestMethod("PUT");
-        sconnect.setDoOutput(true);
-        sconnect.setRequestProperty("ContentType", "application/xml");
-        Writer writer = new OutputStreamWriter(sconnect.getOutputStream(), "UTF-8");
-        writer.write(XML_DATA);
-        writer.close();
+        try {
+            sconnect.setRequestProperty("Authorization", "Basic " + credentials);
+            sconnect.setRequestMethod("PUT");
+            sconnect.setDoOutput(true);
+            sconnect.setRequestProperty("ContentType", "application/xml");
+            try (final Writer writer = new OutputStreamWriter(sconnect.getOutputStream(), UTF_8)) {
+                writer.write(XML_DATA);
+            }
 
-        String path = getResourceUri() + "/some/path";	// should not be able to get this path
-        HttpURLConnection connect = getConnection(path);
-        connect.setRequestMethod("GET");
-        connect.connect();
-        int r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 404, r);
+            String path = getResourceUri() + "/some/path";    // should not be able to get this path
+            final HttpURLConnection connect = getConnection(path);
+            try {
+                connect.setRequestMethod("GET");
+                connect.connect();
+                int r = connect.getResponseCode();
+                assertEquals("Server returned response code " + r, HttpStatus.NOT_FOUND_404, r);
+            } finally {
+                connect.disconnect();
+            }
+        } finally {
+            sconnect.disconnect();
+        }
     }
 
     @Test
     public void testPut() throws IOException {
         int r = uploadData();
-        assertEquals("Server returned response code " + r, 201, r);
+        assertEquals("Server returned response code " + r, HttpStatus.CREATED_201, r);
 
         doGet();
     }
@@ -347,147 +374,183 @@ public class RESTServiceTest {
     @Test
     public void testPutPlus() throws IOException {
         int r = uploadDataPlus();
-        assertEquals("Server returned response code " + r, 201, r);
+        assertEquals("Server returned response code " + r, HttpStatus.CREATED_201, r);
 
         doGetPlus();
     }
 
     @Test
     public void putFailAgainstCollection() throws IOException {
-        HttpURLConnection connect = getConnection(getCollectionUri());
-        connect.setRequestProperty("Authorization", "Basic " + credentials);
-        connect.setRequestMethod("PUT");
-        connect.setDoOutput(true);
-        connect.setRequestProperty("ContentType", "application/xml");
-        Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
-        writer.write(XML_DATA);
-        writer.close();
+        final HttpURLConnection connect = getConnection(getCollectionUri());
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("PUT");
+            connect.setDoOutput(true);
+            connect.setRequestProperty("ContentType", "application/xml");
+            try (final Writer writer = new OutputStreamWriter(connect.getOutputStream(), UTF_8)) {
+                writer.write(XML_DATA);
+            }
 
-        connect.connect();
-        int r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 400, r);
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.BAD_REQUEST_400, r);
+        } finally {
+            connect.disconnect();
+        }
     }
     
     @Test
     public void putWithCharset() throws IOException {
-        HttpURLConnection connect = getConnection(getResourceUri());
-        connect.setRequestProperty("Authorization", "Basic " + credentials);
-        connect.setRequestMethod("PUT");
-        connect.setDoOutput(true);
-        connect.setRequestProperty("ContentType", "application/xml; charset=UTF-8");
+        final HttpURLConnection connect = getConnection(getResourceUri());
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("PUT");
+            connect.setDoOutput(true);
+            connect.setRequestProperty("ContentType", "application/xml; charset=UTF-8");
 
-        Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
-        writer.write(XML_DATA);
-        writer.close();
+            try (final Writer writer = new OutputStreamWriter(connect.getOutputStream(), UTF_8)) {
+                writer.write(XML_DATA);
+            }
 
-        connect.connect();
-        int r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 201, r);
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.CREATED_201, r);
 
-        doGet();
+            doGet();
+        } finally {
+            connect.disconnect();
+        }
     }
 
     @Test
     public void putFailAndRechallengeAuthorization() throws IOException {
-        HttpURLConnection connect = getConnection(getResourceUri());
-        connect.setRequestProperty("Authorization", "Basic " + badCredentials);
-        connect.setDoOutput(true);
-        connect.setRequestMethod("PUT");
-        connect.setAllowUserInteraction(false);
-        connect.connect();
-        int r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 401, r);
-        String auth = connect.getHeaderField("WWW-Authenticate");         
-        assertEquals("WWW-Authenticate = " + auth, "Basic realm=\"exist\"", auth);
+        final HttpURLConnection connect = getConnection(getResourceUri());
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + badCredentials);
+            connect.setDoOutput(true);
+            connect.setRequestMethod("PUT");
+            connect.setAllowUserInteraction(false);
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.UNAUTHORIZED_401, r);
+            String auth = connect.getHeaderField("WWW-Authenticate");
+            assertEquals("WWW-Authenticate = " + auth, "Basic realm=\"exist\"", auth);
+        } finally {
+            connect.disconnect();
+        }
     }
 
     @Test
     public void putAgainstXQuery() throws IOException {
-        doPut(TEST_XQUERY_WITH_PATH_AND_CONTENT, "requestwithcontent.xq", 201);
+        doPut(TEST_XQUERY_WITH_PATH_AND_CONTENT, "requestwithcontent.xq", HttpStatus.CREATED_201);
 
         String path = getCollectionUriRedirected() + "/requestwithcontent.xq/a/b/c";
-        HttpURLConnection connect = getConnection(path);
-        connect.setRequestProperty("Authorization", "Basic " + credentials);
-        connect.setRequestMethod("PUT");
-        connect.setDoOutput(true);
-        connect.setRequestProperty("ContentType", "application/xml");
-        Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
-        writer.write("<data>test data</data>");
-        writer.close();
+        final HttpURLConnection connect = getConnection(path);
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("PUT");
+            connect.setDoOutput(true);
+            connect.setRequestProperty("ContentType", "application/xml");
+            try (final Writer writer = new OutputStreamWriter(connect.getOutputStream(), UTF_8)) {
+                writer.write("<data>test data</data>");
+            }
 
-        connect.connect();
-        int r = connect.getResponseCode();
-        assertEquals("doPut: Server returned response code " + r, 200, r);
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("doPut: Server returned response code " + r, HttpStatus.OK_200, r);
 
-        //get the response of the query
-        String response = readResponse(connect.getInputStream());
-        assertEquals(response.trim(), "test data /a/b/c");
+            //get the response of the query
+            String response = readResponse(connect.getInputStream());
+            assertEquals(response.trim(), "test data /a/b/c");
+        } finally {
+            connect.disconnect();
+        }
     }
 
     @Test
     public void deleteAgainstXQuery() throws IOException {
-        doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithcontent.xq", 201);
+        doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithcontent.xq", HttpStatus.CREATED_201);
 
         String path = getCollectionUriRedirected() + "/requestwithcontent.xq/a/b/c";
-        HttpURLConnection connect = getConnection(path);
-        connect.setRequestProperty("Authorization", "Basic " + credentials);
-        connect.setRequestMethod("DELETE");
+        final HttpURLConnection connect = getConnection(path);
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("DELETE");
 
-        connect.connect();
-        int r = connect.getResponseCode();
-        assertEquals("doDelete: Server returned response code " + r, 200, r);
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("doDelete: Server returned response code " + r, HttpStatus.OK_200, r);
 
-        //get the response of the query
-        String response = readResponse(connect.getInputStream());
-        String pathInfo = response.substring("pathInfo=".length(), response.indexOf("servletPath=")-2);
-        assertEquals(pathInfo, "/a/b/c");
+            //get the response of the query
+            String response = readResponse(connect.getInputStream());
+            String pathInfo = response.substring("pathInfo=".length(), response.indexOf("servletPath=")-2);
+            assertEquals(pathInfo, "/a/b/c");
+        } finally {
+            connect.disconnect();
+        }
     }
 
     @Test
     public void headAgainstXQuery() throws IOException {
-        doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithcontent.xq", 201);
+        doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithcontent.xq", HttpStatus.CREATED_201);
 
         String path = getCollectionUriRedirected() + "/requestwithcontent.xq/a/b/c";
-        HttpURLConnection connect = getConnection(path);
-        connect.setRequestProperty("Authorization", "Basic " + credentials);
-        connect.setRequestMethod("HEAD");
+        final HttpURLConnection connect = getConnection(path);
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("HEAD");
 
-        connect.connect();
-        int r = connect.getResponseCode();
-        assertEquals("doHead: Server returned response code " + r, 200, r);
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("doHead: Server returned response code " + r, HttpStatus.OK_200, r);
+        } finally {
+            connect.disconnect();
+        }
     }
 
     @Test
     public void xUpdate() throws IOException {
-        HttpURLConnection connect = preparePost(XUPDATE, getResourceUri());
-        connect.connect();
-        int r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 200, r);
+        final HttpURLConnection connect = preparePost(XUPDATE, getResourceUri());
+        try {
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
 
-        doGet();
+            doGet();
+        } finally {
+            connect.disconnect();
+        }
     }
 
     @Test
     public void queryPost() throws IOException, SAXException, ParserConfigurationException {
         uploadData();
         
-        HttpURLConnection connect = preparePost(QUERY_REQUEST, getResourceUri());
-        connect.connect();
-        int r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 200, r);
+        final HttpURLConnection connect = preparePost(QUERY_REQUEST, getResourceUri());
+        try {
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
 
-        String data = readResponse(connect.getInputStream());
-        int hits = parseResponse(data);
-        assertEquals(1, hits);
+            String data = readResponse(connect.getInputStream());
+            int hits = parseResponse(data);
+            assertEquals(1, hits);
+        } finally {
+            connect.disconnect();
+        }
     }
 
     @Test
     public void queryPostXQueryError() throws IOException {
-        HttpURLConnection connect = preparePost(QUERY_REQUEST_ERROR, getResourceUri());
-        connect.connect();
-        int r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 202, r);
-        readResponse(connect.getInputStream());
+        final HttpURLConnection connect = preparePost(QUERY_REQUEST_ERROR, getResourceUri());
+        try {
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.ACCEPTED_202, r);
+            readResponse(connect.getInputStream());
+        } finally {
+            connect.disconnect();
+        }
     }
 
     @Test
@@ -499,83 +562,97 @@ public class RESTServiceTest {
                                 "doc('"
                                         + XmldbURI.ROOT_COLLECTION
                                         + "/test/test.xml')//para[. = '\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC']/text()",
-                                "UTF-8");
-        HttpURLConnection connect = getConnection(uri);
-        connect.setRequestMethod("GET");
-        connect.connect();
+                                UTF_8.displayName());
+        final HttpURLConnection connect = getConnection(uri);
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
 
-        int r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 200, r);
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
 
-        readResponse(connect.getInputStream());
+            readResponse(connect.getInputStream());
+        } finally {
+            connect.disconnect();
+        }
     }
 
     @Test
     public void requestModule() throws IOException {
         String uri = getCollectionUri() + "?_query=request:get-uri()&_wrap=no";
         HttpURLConnection connect = getConnection(uri);
-        connect.setRequestMethod("GET");
-        connect.connect();
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
 
-        int r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 200, r);
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
 
-        String response = readResponse(connect.getInputStream()).trim();
-        assertTrue(response.endsWith(XmldbURI.ROOT_COLLECTION + "/test"));
+            String response = readResponse(connect.getInputStream()).trim();
+            assertTrue(response.endsWith(XmldbURI.ROOT_COLLECTION + "/test"));
+        } finally {
+            connect.disconnect();
+        }
 
         uri = getCollectionUri() + "?_query=request:get-url()&_wrap=no";
-        connect = getConnection(uri);
-        connect.setRequestMethod("GET");
-        connect.connect();
+        try {
+            connect = getConnection(uri);
+            connect.setRequestMethod("GET");
+            connect.connect();
 
-        r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 200, r);
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
 
-        response = readResponse(connect.getInputStream()).trim();
-        //TODO : the server name may have been renamed by the Web server
-        assertTrue(response.endsWith(XmldbURI.ROOT_COLLECTION + "/test"));
+            String response = readResponse(connect.getInputStream()).trim();
+            //TODO : the server name may have been renamed by the Web server
+            assertTrue(response.endsWith(XmldbURI.ROOT_COLLECTION + "/test"));
+        } finally {
+            connect.disconnect();
+        }
     }
     
     @Test
     public void requestGetParameterFromModule() throws IOException {
         /* store the documents that we need for this test */
-        doPut(TEST_XQUERY_PARAMETER, "requestparameter.xql", 201);
-        doPut(TEST_XQUERY_PARAMETER_MODULE, "requestparametermod.xqm", 201);
+        doPut(TEST_XQUERY_PARAMETER, "requestparameter.xql", HttpStatus.CREATED_201);
+        doPut(TEST_XQUERY_PARAMETER_MODULE, "requestparametermod.xqm", HttpStatus.CREATED_201);
 
         /* execute the stored xquery a few times */
-        HttpURLConnection connect;
-        int iHttpResult;
         for(int i=0; i < 5; i++) {
-            connect = getConnection(getCollectionUri() + "/requestparameter.xql?doc=somedoc" + i);
-            connect.setRequestProperty("Authorization", "Basic " + credentials);
-            connect.setRequestMethod("GET");
-            connect.connect();
+            final HttpURLConnection connect = getConnection(getCollectionUri() + "/requestparameter.xql?doc=somedoc" + i);
+            try {
+                connect.setRequestProperty("Authorization", "Basic " + credentials);
+                connect.setRequestMethod("GET");
+                connect.connect();
 
-            iHttpResult = connect.getResponseCode();
-            assertEquals("Server returned response code " + iHttpResult, 200, iHttpResult);
-            String contentType = connect.getContentType();
-            int semicolon = contentType.indexOf(';');
-            if (semicolon > 0) {
-                contentType = contentType.substring(0, semicolon).trim();
+                int iHttpResult = connect.getResponseCode();
+                assertEquals("Server returned response code " + iHttpResult, HttpStatus.OK_200, iHttpResult);
+                String contentType = connect.getContentType();
+                int semicolon = contentType.indexOf(';');
+                if (semicolon > 0) {
+                    contentType = contentType.substring(0, semicolon).trim();
+                }
+                assertEquals("Server returned content type " + contentType, "application/xml", contentType);
+
+                //get the response of the query
+                String response = readResponse(connect.getInputStream());
+
+                String strXQLRequestParameter = response.substring("xql=".length(), response.indexOf("xqm="));
+                String strXQMRequestParameter = response.substring(response.indexOf("xqm=") + "xqm=".length(), response.lastIndexOf("\r\n"));
+
+                //check the responses
+                assertEquals("XQuery Request Parameter is: \"" + strXQLRequestParameter + "\" expected: \"somedoc" + i + "\"", "somedoc" + i, strXQLRequestParameter);
+                assertEquals("XQuery Module Request Parameter is: \"" + strXQMRequestParameter + "\" expected: \"somedoc" + i + "\"", "somedoc" + i, strXQMRequestParameter);
+            } finally {
+                connect.disconnect();
             }
-            assertEquals("Server returned content type " + contentType, "application/xml", contentType);
-
-            //get the response of the query
-            String response = readResponse(connect.getInputStream());
-
-            String strXQLRequestParameter = response.substring("xql=".length(), response.indexOf("xqm="));
-            String strXQMRequestParameter = response.substring(response.indexOf("xqm=") + "xqm=".length(), response.lastIndexOf("\r\n"));
-
-            //check the responses
-            assertEquals("XQuery Request Parameter is: \"" + strXQLRequestParameter + "\" expected: \"somedoc"+i + "\"", "somedoc"+i, strXQLRequestParameter);
-            assertEquals("XQuery Module Request Parameter is: \"" + strXQMRequestParameter + "\" expected: \"somedoc"+i + "\"", "somedoc"+i, strXQMRequestParameter);
         }
     }
 
     @Test
     public void storedQuery() throws IOException {
-        doPut(TEST_MODULE, "module.xq", 201);
-        doPut(TEST_XQUERY, "test.xq", 201);
+        doPut(TEST_MODULE, "module.xq", HttpStatus.CREATED_201);
+        doPut(TEST_XQUERY, "test.xq", HttpStatus.CREATED_201);
 
         doStoredQuery(false, false);
 
@@ -587,18 +664,22 @@ public class RESTServiceTest {
     }
     
     private void doPut(String data, String path, int responseCode) throws IOException {
-        HttpURLConnection connect = getConnection(getCollectionUri() + '/' + path);
-        connect.setRequestProperty("Authorization", "Basic " + credentials);
-        connect.setRequestMethod("PUT");
-        connect.setDoOutput(true);
-        connect.setRequestProperty("ContentType", "application/xquery");
-        Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
-        writer.write(data);
-        writer.close();
+        final HttpURLConnection connect = getConnection(getCollectionUri() + '/' + path);
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("PUT");
+            connect.setDoOutput(true);
+            connect.setRequestProperty("ContentType", "application/xquery");
+            try (final Writer writer = new OutputStreamWriter(connect.getOutputStream(), UTF_8)) {
+                writer.write(data);
+            }
 
-        connect.connect();
-        int r = connect.getResponseCode();
-        assertEquals("doPut: Server returned response code " + r, responseCode, r);
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("doPut: Server returned response code " + r, responseCode, r);
+        } finally {
+            connect.disconnect();
+        }
     }
 
     private void doStoredQuery(boolean cacheHeader, boolean wrap) throws IOException {
@@ -608,124 +689,149 @@ public class RESTServiceTest {
             uri += "&_wrap=yes";
         }
 
-        HttpURLConnection connect = getConnection(uri);
-        connect.setRequestProperty("Authorization", "Basic " + credentials);
-        connect.setRequestMethod("GET");
-        connect.connect();
+        final HttpURLConnection connect = getConnection(uri);
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("GET");
+            connect.connect();
 
-        int r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 200, r);
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
 
-        String cached = connect.getHeaderField("X-XQuery-Cached");
-        assertNotNull(cached);
-        assertEquals(cacheHeader, Boolean.valueOf(cached).booleanValue());
+            String cached = connect.getHeaderField("X-XQuery-Cached");
+            assertNotNull(cached);
+            assertEquals(cacheHeader, Boolean.valueOf(cached).booleanValue());
 
-        String contentType = connect.getContentType();
-        int semicolon = contentType.indexOf(';');
-        if (semicolon > 0) {
-            contentType = contentType.substring(0, semicolon).trim();
-        }
-        if (wrap) {
-            assertEquals("Server returned content type " + contentType, "application/xml", contentType);
-        } else {
-            assertEquals("Server returned content type " + contentType, "text/text", contentType);
-        }
+            String contentType = connect.getContentType();
+            int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+            if (wrap) {
+                assertEquals("Server returned content type " + contentType, "application/xml", contentType);
+            } else {
+                assertEquals("Server returned content type " + contentType, "text/text", contentType);
+            }
 
-        String response = readResponse(connect.getInputStream());
-        if (wrap) {
-            assertTrue ("Server returned response: " + response, 
-                        response.startsWith ("<exist:result "));
-        } else {
-            assertTrue ("Server returned response: " + response, 
-                        response.startsWith ("Hello World!"));
+            String response = readResponse(connect.getInputStream());
+            if (wrap) {
+                assertTrue("Server returned response: " + response,
+                        response.startsWith("<exist:result "));
+            } else {
+                assertTrue("Server returned response: " + response,
+                        response.startsWith("Hello World!"));
+            }
+        } finally {
+            connect.disconnect();
         }
     }
     
     private int uploadData() throws IOException {
-        HttpURLConnection connect = getConnection(getResourceUri());
-        connect.setRequestProperty("Authorization", "Basic " + credentials);
-        connect.setRequestMethod("PUT");
-        connect.setDoOutput(true);
-        connect.setRequestProperty("ContentType", "application/xml");
-        Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
-        writer.write(XML_DATA);
-        writer.close();
+        final HttpURLConnection connect = getConnection(getResourceUri());
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("PUT");
+            connect.setDoOutput(true);
+            connect.setRequestProperty("ContentType", "application/xml");
+            try (final Writer writer = new OutputStreamWriter(connect.getOutputStream(), UTF_8)) {
+                writer.write(XML_DATA);
+            }
 
-        connect.connect();
-        return connect.getResponseCode();
+            connect.connect();
+            return connect.getResponseCode();
+        } finally {
+            connect.disconnect();
+        }
     }
     
     private void doGet() throws IOException {
-        HttpURLConnection connect = getConnection(getResourceUri());
-        connect.setRequestMethod("GET");
-        connect.connect();
+        final HttpURLConnection connect = getConnection(getResourceUri());
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
 
-        int r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 200, r);
-        String contentType = connect.getContentType();
-        int semicolon = contentType.indexOf(';');
-        if (semicolon > 0) {
-            contentType = contentType.substring(0, semicolon).trim();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+            String contentType = connect.getContentType();
+            int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+            assertEquals("Server returned content type " + contentType, "application/xml", contentType);
+
+            readResponse(connect.getInputStream());
+        } finally {
+            connect.disconnect();
         }
-        assertEquals("Server returned content type " + contentType, "application/xml", contentType);
-
-        readResponse(connect.getInputStream());
     }
 
     private int uploadDataPlus() throws IOException {
-        HttpURLConnection connect = getConnection(getResourceUriPlus());
-        connect.setRequestProperty("Authorization", "Basic " + credentials);
-        connect.setRequestMethod("PUT");
-        connect.setDoOutput(true);
-        connect.setRequestProperty("ContentType", "application/xml");
-        Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
-        writer.write(XML_DATA);
-        writer.close();
+        final HttpURLConnection connect = getConnection(getResourceUriPlus());
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("PUT");
+            connect.setDoOutput(true);
+            connect.setRequestProperty("ContentType", "application/xml");
+            try (final Writer writer = new OutputStreamWriter(connect.getOutputStream(), UTF_8)) {
+                writer.write(XML_DATA);
+            }
 
-        connect.connect();
-        return connect.getResponseCode();
+            connect.connect();
+            return connect.getResponseCode();
+        } finally {
+            connect.disconnect();
+        }
     }
 
     private void doGetPlus() throws IOException {
-        HttpURLConnection connect = getConnection(getResourceUriPlus());
-        connect.setRequestMethod("GET");
-        connect.connect();
+        final HttpURLConnection connect = getConnection(getResourceUriPlus());
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
 
-        int r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 200, r);
-        String contentType = connect.getContentType();
-        int semicolon = contentType.indexOf(';');
-        if (semicolon > 0) {
-            contentType = contentType.substring(0, semicolon).trim();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+            String contentType = connect.getContentType();
+            int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+            assertEquals("Server returned content type " + contentType, "application/xml", contentType);
+
+            readResponse(connect.getInputStream());
+        } finally {
+            connect.disconnect();
         }
-        assertEquals("Server returned content type " + contentType, "application/xml", contentType);
-
-        readResponse(connect.getInputStream());
     }
 
     private HttpURLConnection preparePost(String content, String path) throws IOException {
-        HttpURLConnection connect = getConnection(path);
-        connect.setRequestProperty("Authorization", "Basic " + credentials);
-        connect.setRequestMethod("POST");
-        connect.setDoOutput(true);
-        connect.setRequestProperty("Content-Type", "application/xml");
+        final HttpURLConnection connect = getConnection(path);
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("POST");
+            connect.setDoOutput(true);
+            connect.setRequestProperty("Content-Type", "application/xml");
 
-        Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
-        writer.write(content);
-        writer.close();
+            try (final Writer writer = new OutputStreamWriter(connect.getOutputStream(), UTF_8)) {
+                writer.write(content);
+            }
 
-        return connect;
+            return connect;
+        } finally {
+            connect.disconnect();
+        }
     }
 
-    private String readResponse(InputStream is) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-        String line;
-        StringBuilder out = new StringBuilder();
-        while ((line = reader.readLine()) != null) {
-            out.append(line);
-            out.append("\r\n");
+    private String readResponse(final InputStream is) throws IOException {
+        try(final BufferedReader reader = new BufferedReader(new InputStreamReader(is, UTF_8))) {
+            String line;
+            StringBuilder out = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                out.append(line);
+                out.append("\r\n");
+            }
+            return out.toString();
         }
-        return out.toString();
     }
 
     private int parseResponse(String data) throws IOException, SAXException, ParserConfigurationException {
