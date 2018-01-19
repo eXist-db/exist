@@ -546,8 +546,7 @@ public class RESTServiceTest {
         try {
             connect.connect();
             int r = connect.getResponseCode();
-            assertEquals("Server returned response code " + r, HttpStatus.ACCEPTED_202, r);
-            readResponse(connect.getInputStream());
+            assertEquals("Server returned response code " + r, HttpStatus.BAD_REQUEST_400, r);
         } finally {
             connect.disconnect();
         }
@@ -572,6 +571,26 @@ public class RESTServiceTest {
             assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
 
             readResponse(connect.getInputStream());
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
+    public void queryGetXQueryError() throws IOException {
+        String uri = getCollectionUri()
+                + "?_query="
+                + URLEncoder
+                .encode(
+                        "not-$a:-function()",
+                        UTF_8.displayName());
+        final HttpURLConnection connect = getConnection(uri);
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.BAD_REQUEST_400, r);
         } finally {
             connect.disconnect();
         }
