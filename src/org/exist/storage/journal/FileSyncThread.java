@@ -53,7 +53,7 @@ public class FileSyncThread extends Thread {
      * @param latch The object to synchronize on
      */
     public FileSyncThread(final Object latch) {
-        super();
+        super("exist-fileSyncThread");
         this.latch = latch;
     }
 

@@ -32,7 +32,6 @@ import java.util.SimpleTimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 import javax.xml.datatype.Duration;
 import javax.xml.parsers.ParserConfigurationException;
@@ -60,6 +59,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.util.NamedThreadFactory;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -135,20 +135,7 @@ public class Eval extends BasicFunction {
     protected static final FunctionReturnSequenceType RETURN_THREADID_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The ID of the asynchronously executing thread.");
     protected static final FunctionReturnSequenceType RETURN_ITEM_TYPE = new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the evaluated XPath/XQuery expression");
 
-    private final static ExecutorService asyncExecutorService = Executors.newCachedThreadPool(new AsyncQueryThreadFactory());
-    private static class AsyncQueryThreadFactory implements ThreadFactory {
-        private int id = 0;
-
-        @Override
-        public Thread newThread(Runnable r) {
-            return new Thread(r, "AsynchronousEval-" + getId());
-        }
-
-        private synchronized int getId() {
-            return id++;
-        }
-    }
-
+    private final static ExecutorService asyncExecutorService = Executors.newCachedThreadPool(new NamedThreadFactory("asyncEval"));
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(

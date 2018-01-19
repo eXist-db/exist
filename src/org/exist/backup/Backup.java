@@ -59,6 +59,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.*;
 
@@ -496,8 +497,10 @@ public class Backup
         private final BackupDialog dialog;
         private final Backup backup;
 
+        private static final AtomicInteger backupThreadId = new AtomicInteger();
+
         public BackupThread(final Collection collection, final BackupDialog dialog, final Backup backup) {
-            super();
+            super("exist-backupThread-" + backupThreadId.getAndIncrement());
             this.collection = collection;
             this.dialog = dialog;
             this.backup = backup;

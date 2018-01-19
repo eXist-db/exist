@@ -52,6 +52,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.management.impl.SanityReport;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.util.NamedThreadFactory;
 import org.exist.util.serializer.DOMSerializer;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -133,6 +134,7 @@ public class JMXtoXML {
     private final MBeanServerConnection platformConnection = ManagementFactory.getPlatformMBeanServer();
     private MBeanServerConnection connection;
     private JMXServiceURL url;
+    private final ThreadFactory jmxPingFactory = new NamedThreadFactory("jmx-ping");
 
 
     /**
@@ -190,7 +192,7 @@ public class JMXtoXML {
      */
     public long ping(final String instance, final long timeout) {
         final long start = System.currentTimeMillis();
-        final ExecutorService executorService = Executors.newSingleThreadExecutor();
+        final ExecutorService executorService = Executors.newSingleThreadExecutor(jmxPingFactory);
         final Future<Long> futurePing = executorService.submit(new Ping(instance, connection));
 
         while(true) {
