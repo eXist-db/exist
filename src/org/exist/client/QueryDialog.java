@@ -510,13 +510,12 @@ public class QueryDialog extends JFrame {
     }
 
 
-    class QueryThread extends Thread {
+    private class QueryThread extends Thread {
 
-        private String xpath;
-
+        private final String xpath;
         private XQueryContext context;
 
-        public QueryThread(String query) {
+        public QueryThread(final String query) {
             super();
             this.xpath = query;
             this.context = null;
@@ -537,9 +536,7 @@ public class QueryDialog extends JFrame {
             return false;
         }
 
-        /**
-         * @see java.lang.Thread#run()
-         */
+        @Override
         public void run() {
             statusMessage.setText(Messages.getString("QueryDialog.processingquerymessage"));
             progress.setVisible(true);
