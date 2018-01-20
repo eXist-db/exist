@@ -91,7 +91,7 @@ declare function testmodule:test() {
     <test output="text">
         <task>util:collation</task>
         <code>util:collations()</code>
-        <expected>af am ar as az be bg bn bo bs bs ca chr cs cy da de de-AT dsb dz ee el en en-US en-US eo es et fa fa-AF fi fil fo fr fr-CA ga gl gu ha haw iw hi hr hsb hu hy in ig is it ja ka kk kl km kn ko kok ky lb lkt ln lo lt lv mk ml mn mr ms mt my nb ne nl nn om or pa pl ps pt ro ru se si sk sl smn sq sr sr sv sw ta te th to tr ug uk ur uz vi wae ji yo zh zh zu</expected>
+        <expected>af am ar as az be bg bn bo bs bs ca chr cs cy da de de-AT dsb dz ee el en en-US en-US eo es et fa fa-AF fi fil fo fr fr-CA ga gl gu ha haw iw hi hr hsb hu hy in ig is it ja ka kk kl km kn ko kok ky lb lkt ln lo lt lv mk ml mn mr ms mt my nb ne nl nn om or pa pl ps pt ro ru se si sk sl smn sq sr sr sv sw ta te th to tr ug uk ur uz vi wae wo ji yo zh zh zu</expected>
     </test>
 
     <test output="text">
