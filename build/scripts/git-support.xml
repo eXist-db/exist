@@ -3,7 +3,20 @@
         
         <available file="${basedir}/.git" type="dir" property="git.present"/>
 
-        <target name="git.details" description="Setup ${git.branch}, ${git.revision} and ${git.description} properties" if="git.present">
+        <target name="git.details" description="Setup ${git.branch}, ${git.revision} and ${git.description} properties" depends="git.details.from-git-repo,git.details.no-repo">
+                <!-- meta target which depends on two mutually exclusive targets -->
+        </target>
+
+        <target name="git.details.no-repo" description="Sets basic git details from static properties when git isn't present" unless="git.present">
+                <tstamp>
+                        <format property="TSTAMP" pattern="HHmmss" timezone="UTC"/>
+                </tstamp>
+
+                <!-- The BUILD label from our Semantic Versioning scheme -->
+                <property name="build.label" value="-SNAPSHOT+${DSTAMP}${TSTAMP}"/>
+        </target>
+
+        <target name="git.details.from-git-repo" description="Gets git details from the local repo" if="git.present">
                 <exec executable="git" outputproperty="git.branch.full" errorproperty="git.branch.full.error" failifexecutionfails="false">
                         <arg value="symbolic-ref"/>
                         <arg value="-q"/>
@@ -51,7 +64,7 @@
                 <condition property="git.commit" value="${git.commit}" else="${git.branch}-${git.revision}">
                         <isset property="git.commit" />      
                 </condition>
-                
+
                 <tstamp>
                         <format property="TSTAMP" pattern="HHmmss" timezone="UTC"/>
                 </tstamp>
