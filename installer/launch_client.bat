@@ -16,8 +16,7 @@ set JAVA_HOME=$JAVA_HOME
 set JAVA_CMD="%JAVA_HOME%\bin\java"
 
 if not "%JAVA_OPTS%" == "" goto gotJavaOpts
-set JAVA_ENDORSED_DIRS="%EXIST_HOME%"\lib\endorsed
-set JAVA_OPTS="-Xms32000k -Xmx256000k -Dfile.encoding=UTF-8 -Djava.endorsed.dirs=%JAVA_ENDORSED_DIRS%"
+set JAVA_OPTS="-Xms32000k -Xmx256000k -Dfile.encoding=UTF-8"
 
 :gotJavaOpts
 cd "%EXIST_HOME%"

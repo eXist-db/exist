@@ -15,8 +15,7 @@ set JAVA_HOME=$JAVA_HOME
 :gotJavaHome
 set JAVA_CMD="%JAVA_HOME%\bin\java"
 
-set JAVA_ENDORSED_DIRS="%EXIST_HOME%"\lib\endorsed
-set JAVA_OPTS="-Xms64m -Xmx768m -Djava.endorsed.dirs=%JAVA_ENDORSED_DIRS%"
+set JAVA_OPTS="-Xms64m -Xmx768m"
 
 rem make sure there's the jetty tmp directory
 mkdir "%EXIST_HOME%\tools\jetty\tmp"
