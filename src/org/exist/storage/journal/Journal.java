@@ -550,7 +550,7 @@ public class Journal {
         final Path path;
 
         RemoveThread(final FileChannel channel, final Path path) {
-            super("RemoveJournalThread");
+            super("exist-removeJournalThread");
             this.channel = channel;
             this.path = path;
         }

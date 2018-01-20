@@ -24,6 +24,7 @@ package org.exist.protocolhandler.embedded;
 
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,8 +45,12 @@ public class EmbeddedUploadThread extends Thread {
     private BlockingInputStream bis;
     
     private Subject subject = null;
+
+    private static final AtomicInteger threadInitNumber = new AtomicInteger();
     
     public EmbeddedUploadThread(XmldbURL url, BlockingInputStream bis) {
+        super("exist-embeddedDownloadThread-" + threadInitNumber.getAndIncrement());
+
         xmldbURL=url;
         this.bis=bis;
         

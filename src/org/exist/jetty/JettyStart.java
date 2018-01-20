@@ -610,7 +610,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         private final Server server;
 
         BrokerPoolAndJettyShutdownHook(final Server server) {
-            super("JettyStart-ShutdownHook");
+            super("exist-jettyStart-shutdownHook");
             this.server = server;
         }
 

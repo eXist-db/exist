@@ -59,6 +59,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.*;
 
@@ -198,7 +199,7 @@ public class Backup
             final BackupDialog dialog = new BackupDialog( parent, false );
             dialog.setSize( new Dimension( 350, 150 ) );
             dialog.setVisible( true );
-            final BackupThread thread = new BackupThread( current, dialog );
+            final BackupThread thread = new BackupThread( current, dialog, this );
             thread.start();
 
             if( parent == null ) {
@@ -222,7 +223,7 @@ public class Backup
     }
 
 
-    private void backup( Collection current, BackupDialog dialog ) throws XMLDBException, IOException, SAXException
+    private void backup(Collection current, BackupDialog dialog) throws XMLDBException, IOException, SAXException
     {
         String cname = current.getName();
 
@@ -491,25 +492,26 @@ public class Backup
         serializer.endElement(Namespaces.EXIST_NS, "acl", "acl");
     }
 
-    class BackupThread extends Thread
-    {
-        Collection   collection_;
-        BackupDialog dialog_;
+    private static class BackupThread extends Thread {
+        private final Collection collection;
+        private final BackupDialog dialog;
+        private final Backup backup;
 
-        public BackupThread( Collection collection, BackupDialog dialog )
-        {
-            super();
-            collection_ = collection;
-            dialog_     = dialog;
+        private static final AtomicInteger backupThreadId = new AtomicInteger();
+
+        public BackupThread(final Collection collection, final BackupDialog dialog, final Backup backup) {
+            super("exist-backupThread-" + backupThreadId.getAndIncrement());
+            this.collection = collection;
+            this.dialog = dialog;
+            this.backup = backup;
         }
 
-        public void run()
-        {
+        @Override
+        public void run() {
             try {
-                backup( collection_, dialog_ );
-                dialog_.setVisible( false );
-            }
-            catch( final Exception e ) {
+                backup.backup(collection, dialog);
+                dialog.setVisible( false );
+            } catch (final Exception e) {
                 e.printStackTrace();
             }
         }
