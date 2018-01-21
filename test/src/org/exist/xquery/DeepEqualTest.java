@@ -1,6 +1,7 @@
 package org.exist.xquery;
 
-import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.TestUtils;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
 import org.xmldb.api.DatabaseManager;
@@ -13,11 +14,8 @@ import static org.junit.Assert.assertNotNull;
 
 public class DeepEqualTest {
 
-    private final static String URI = XmldbURI.LOCAL_DB;
-    private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
-
-    private static XPathQueryService query;
     private static Collection c;
+    private static XPathQueryService query;
 
     @Test
     public void atomic1() throws XMLDBException {
@@ -461,9 +459,6 @@ public class DeepEqualTest {
 
     }
 
-    ;
-
-
     @Test
     public void nsElements1() throws XMLDBException {
         createDocument("test", "<test xmlns:p='urn:foo' xmlns:q='urn:foo'><p:a/><q:a/></test>");
@@ -504,37 +499,31 @@ public class DeepEqualTest {
         return res;
     }
 
-    private static Collection setupTestCollection() throws XMLDBException {
-        Collection root = DatabaseManager.getCollection(URI, "admin", "");
-        CollectionManagementService rootcms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-        Collection cc = root.getChildCollection("test");
-        if (cc != null) rootcms.removeCollection("test");
-        rootcms.createCollection("test");
-        cc = DatabaseManager.getCollection(URI + "/test", "admin", "");
-        assertNotNull(cc);
-        return cc;
-    }
+    @ClassRule
+    public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     @BeforeClass
-    public static void setUp() throws ClassNotFoundException, XMLDBException, IllegalAccessException, InstantiationException {
-        // initialize driver
-        Database database = (Database) Class.forName(DRIVER).newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-        c = setupTestCollection();
+    public static void setupTestCollection() throws XMLDBException {
+        final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+        final CollectionManagementService rootcms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        c = root.getChildCollection("test");
+        if (c != null) {
+            rootcms.removeCollection("test");
+        }
+        c = rootcms.createCollection("test");
+        assertNotNull(c);
         query = (XPathQueryService) c.getService("XPathQueryService", "1.0");
     }
 
     @AfterClass
     public static void tearDown() throws XMLDBException {
         if (c != null) {
-            DatabaseInstanceManager dim = (DatabaseInstanceManager) c.getService("DatabaseInstanceManager", "1.0");
-            c.close();
-            dim.shutdown();
+            final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+            final CollectionManagementService rootcms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+            rootcms.removeCollection("test");
+            query = null;
+            c = null;
         }
-
-        c = null;
-        query = null;
     }
 
 }
