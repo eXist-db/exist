@@ -3,8 +3,11 @@ package org.exist.dom.persistent;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -62,15 +65,15 @@ public class DocTypeTest {
 	private static Collection root = null;
 
     @Test
-	public void docType_usingInputSource() throws Exception{
+	public void docType_usingInputSource() throws EXistException, URISyntaxException, LockException, SAXException, PermissionDeniedException, IOException {
 		DocumentImpl doc = null;
 		final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 		final TransactionManager transact = pool.getTransactionManager();
 
 		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-			final Optional<Path> existHome = pool.getConfiguration().getExistHome();
-			final Path testFile = FileUtils.resolve(existHome, "test/src/org/exist/dom/persistent/test_content.xml");
-			assertTrue(Files.isReadable(testFile));
+            final URL testFileUrl = getClass().getResource("test_content.xml");
+			final Path testFile = Paths.get(testFileUrl.toURI());
+            assertTrue(Files.isReadable(testFile));
 			
 			final InputSource is = new FileInputSource(testFile);
 
@@ -106,7 +109,7 @@ public class DocTypeTest {
 	}
 
     @Test
-	public void docType_usingString() throws Exception{
+	public void docType_usingString() throws EXistException, PermissionDeniedException, SAXException {
 		DocumentImpl doc = null;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {

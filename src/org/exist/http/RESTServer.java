@@ -851,10 +851,10 @@ public class RESTServer {
 
                         } catch (final XPathException e) {
                             if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-                                writeXPathException(response, HttpServletResponse.SC_ACCEPTED,
+                                writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST,
                                         encoding, null, path, e);
                             } else {
-                                writeXPathExceptionHtml(response, HttpServletResponse.SC_ACCEPTED,
+                                writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST,
                                         encoding, null, path, e);
                             }
                         }
@@ -1854,26 +1854,24 @@ public class RESTServer {
 
         response.setContentType(MimeType.XML_TYPE.getName() + "; charset=" + encoding);
 
-        final OutputStreamWriter writer =
-                new OutputStreamWriter(response.getOutputStream(), encoding);
+        try(final OutputStreamWriter writer =
+                new OutputStreamWriter(response.getOutputStream(), encoding)) {
 
-        writer.write("<?xml version=\"1.0\" ?>");
-        writer.write("<exception><path>");
-        writer.write(path);
-        writer.write("</path>");
-        writer.write("<message>");
-        final String message = e.getMessage() == null ? e.toString() : e.getMessage();
-        writer.write(XMLUtil.encodeAttrMarkup(message));
-        writer.write("</message>");
-        if (query != null) {
-            writer.write("<query>");
-            writer.write(XMLUtil.encodeAttrMarkup(query));
-            writer.write("</query>");
+            writer.write("<?xml version=\"1.0\" ?>");
+            writer.write("<exception><path>");
+            writer.write(path);
+            writer.write("</path>");
+            writer.write("<message>");
+            final String message = e.getMessage() == null ? e.toString() : e.getMessage();
+            writer.write(XMLUtil.encodeAttrMarkup(message));
+            writer.write("</message>");
+            if (query != null) {
+                writer.write("<query>");
+                writer.write(XMLUtil.encodeAttrMarkup(query));
+                writer.write("</query>");
+            }
+            writer.write("</exception>");
         }
-        writer.write("</exception>");
-
-        writer.flush();
-        writer.close();
     }
 
     /**

@@ -179,157 +179,157 @@ public class GetThumbnailsFunction extends BasicFunction {
 			return result;
 		}
 
-        try(final DBBroker dbbroker = context.getBroker()) {
+        final DBBroker dbbroker = context.getBroker();
 
-            // Start transaction
-            final TransactionManager transact = pool.getTransactionManager();
-            try (final Txn transaction = transact.beginTransaction()) {
+        // Start transaction
+        final TransactionManager transact = pool.getTransactionManager();
+        try (final Txn transaction = transact.beginTransaction()) {
 
-                Collection thumbCollection = null;
-                Path thumbDir = null;
-                if (isSaveToDataBase) {
-                    try {
-                        thumbCollection = dbbroker.getOrCreateCollection(transaction,
-                                thumbPath.toXmldbURI());
-                        dbbroker.saveCollection(transaction, thumbCollection);
-                    } catch (Exception e) {
-                        throw new XPathException(this, e.getMessage());
-                    }
-                } else {
-                    thumbDir = Paths.get(thumbPath.toString());
-                    if (!Files.isDirectory(thumbDir))
-                        try {
-                            Files.createDirectories(thumbDir);
-                        } catch (IOException e) {
-                            throw new XPathException(this, e.getMessage());
-                        }
-
-                }
-
-                Collection allPictures = null;
-                Collection existingThumbsCol = null;
-                List<Path> existingThumbsArray = null;
+            Collection thumbCollection = null;
+            Path thumbDir = null;
+            if (isSaveToDataBase) {
                 try {
-                    allPictures = dbbroker.getCollection(picturePath.toXmldbURI());
-
-                    if (allPictures == null) {
-                        return Sequence.EMPTY_SEQUENCE;
-                    }
-
-                    if (isSaveToDataBase) {
-                        existingThumbsCol = dbbroker.getCollection(thumbPath.toXmldbURI());
-                    } else {
-                        existingThumbsArray = FileUtils.list(thumbDir, path -> {
-                            final String fileName = FileUtils.fileName(path);
-                            return fileName.endsWith(".jpeg") || fileName.endsWith(".jpg");
-                        });
-                    }
-                } catch (PermissionDeniedException | IOException e) {
-                    throw new XPathException(this, e.getMessage(), e);
-                }
-
-                DocumentImpl docImage = null;
-                BinaryDocument binImage = null;
-                @SuppressWarnings("unused")
-                BinaryDocument doc = null;
-                BufferedImage bImage = null;
-                @SuppressWarnings("unused")
-                byte[] imgData = null;
-                Image image = null;
-                ByteArrayOutputStream os = null;
-
-                try {
-                    Iterator<DocumentImpl> i = allPictures.iterator(dbbroker);
-
-                    while (i.hasNext()) {
-                        docImage = i.next();
-                        // is not already existing??
-                        if (!((fileExist(context.getBroker(), existingThumbsCol, docImage, prefix)) || (fileExist(
-                                existingThumbsArray, docImage, prefix)))) {
-                            if (docImage.getResourceType() == DocumentImpl.BINARY_FILE)
-                                // TODO maybe extends for gifs too.
-                                if (docImage.getMetadata().getMimeType().startsWith(
-                                        "image/jpeg")) {
-
-                                    binImage = (BinaryDocument) docImage;
-
-                                    // get a byte array representing the image
-
-                                    try {
-                                        InputStream is = dbbroker.getBinaryResource(binImage);
-                                        image = ImageIO.read(is);
-                                    } catch (IOException ioe) {
-                                        throw new XPathException(this, ioe.getMessage());
-                                    }
-
-                                    try {
-                                        bImage = ImageModule.createThumb(image, maxThumbHeight,
-                                                maxThumbWidth);
-                                    } catch (Exception e) {
-                                        throw new XPathException(this, e.getMessage());
-                                    }
-
-                                    if (isSaveToDataBase) {
-                                        os = new ByteArrayOutputStream();
-                                        try {
-                                            ImageIO.write(bImage, "jpg", os);
-                                        } catch (Exception e) {
-                                            throw new XPathException(this, e.getMessage());
-                                        }
-                                        try {
-                                            doc = thumbCollection.addBinaryResource(
-                                                    transaction, dbbroker,
-                                                    XmldbURI.create(prefix
-                                                            + docImage.getFileURI()), os
-                                                            .toByteArray(), "image/jpeg");
-                                        } catch (Exception e) {
-                                            throw new XPathException(this, e.getMessage());
-                                        }
-                                        // result.add(new
-                                        // StringValue(""+docImage.getFileURI()+"|"+thumbCollection.getURI()+THUMBPREFIX
-                                        // + docImage.getFileURI()));
-                                    } else {
-                                        try {
-                                            ImageIO
-                                                    .write(
-                                                            bImage,
-                                                            "jpg",
-                                                            Paths.get(thumbPath.toString()
-                                                                    + "/" + prefix
-                                                                    + docImage.getFileURI()).toFile());
-                                        } catch (Exception e) {
-                                            throw new XPathException(this, e.getMessage());
-                                        }
-                                        // result.add(new StringValue(
-                                        // thumbPath.toString() + "/"
-                                        // + THUMBPREFIX
-                                        // + docImage.getFileURI()));
-                                    }
-                                }
-                        } else {
-
-                            // result.add(new StringValue(""+docImage.getURI()+"|"
-                            // + ((existingThumbsCol != null) ? ""
-                            // + existingThumbsCol.getURI() : thumbDir
-                            // .toString()) + "/" + prefix
-                            // + docImage.getFileURI()));
-
-                            result.add(new StringValue(docImage.getFileURI().toString()));
-                        }
-                    }
-                } catch (final PermissionDeniedException | LockException e) {
-                    throw new XPathException(this, e.getMessage(), e);
-                }
-                try {
-                    transact.commit(transaction);
+                    thumbCollection = dbbroker.getOrCreateCollection(transaction,
+                            thumbPath.toXmldbURI());
+                    dbbroker.saveCollection(transaction, thumbCollection);
                 } catch (Exception e) {
                     throw new XPathException(this, e.getMessage());
                 }
+            } else {
+                thumbDir = Paths.get(thumbPath.toString());
+                if (!Files.isDirectory(thumbDir))
+                    try {
+                        Files.createDirectories(thumbDir);
+                    } catch (IOException e) {
+                        throw new XPathException(this, e.getMessage());
+                    }
+
             }
-            final Optional<JournalManager> journalManager = pool.getJournalManager();
-            journalManager.ifPresent(j -> j.flush(true, false));
-            dbbroker.closeDocument();
+
+            Collection allPictures = null;
+            Collection existingThumbsCol = null;
+            List<Path> existingThumbsArray = null;
+            try {
+                allPictures = dbbroker.getCollection(picturePath.toXmldbURI());
+
+                if (allPictures == null) {
+                    return Sequence.EMPTY_SEQUENCE;
+                }
+
+                if (isSaveToDataBase) {
+                    existingThumbsCol = dbbroker.getCollection(thumbPath.toXmldbURI());
+                } else {
+                    existingThumbsArray = FileUtils.list(thumbDir, path -> {
+                        final String fileName = FileUtils.fileName(path);
+                        return fileName.endsWith(".jpeg") || fileName.endsWith(".jpg");
+                    });
+                }
+            } catch (PermissionDeniedException | IOException e) {
+                throw new XPathException(this, e.getMessage(), e);
+            }
+
+            DocumentImpl docImage = null;
+            BinaryDocument binImage = null;
+            @SuppressWarnings("unused")
+            BinaryDocument doc = null;
+            BufferedImage bImage = null;
+            @SuppressWarnings("unused")
+            byte[] imgData = null;
+            Image image = null;
+            ByteArrayOutputStream os = null;
+
+            try {
+                Iterator<DocumentImpl> i = allPictures.iterator(dbbroker);
+
+                while (i.hasNext()) {
+                    docImage = i.next();
+                    // is not already existing??
+                    if (!((fileExist(context.getBroker(), existingThumbsCol, docImage, prefix)) || (fileExist(
+                            existingThumbsArray, docImage, prefix)))) {
+                        if (docImage.getResourceType() == DocumentImpl.BINARY_FILE)
+                            // TODO maybe extends for gifs too.
+                            if (docImage.getMetadata().getMimeType().startsWith(
+                                    "image/jpeg")) {
+
+                                binImage = (BinaryDocument) docImage;
+
+                                // get a byte array representing the image
+
+                                try {
+                                    InputStream is = dbbroker.getBinaryResource(binImage);
+                                    image = ImageIO.read(is);
+                                } catch (IOException ioe) {
+                                    throw new XPathException(this, ioe.getMessage());
+                                }
+
+                                try {
+                                    bImage = ImageModule.createThumb(image, maxThumbHeight,
+                                            maxThumbWidth);
+                                } catch (Exception e) {
+                                    throw new XPathException(this, e.getMessage());
+                                }
+
+                                if (isSaveToDataBase) {
+                                    os = new ByteArrayOutputStream();
+                                    try {
+                                        ImageIO.write(bImage, "jpg", os);
+                                    } catch (Exception e) {
+                                        throw new XPathException(this, e.getMessage());
+                                    }
+                                    try {
+                                        doc = thumbCollection.addBinaryResource(
+                                                transaction, dbbroker,
+                                                XmldbURI.create(prefix
+                                                        + docImage.getFileURI()), os
+                                                        .toByteArray(), "image/jpeg");
+                                    } catch (Exception e) {
+                                        throw new XPathException(this, e.getMessage());
+                                    }
+                                    // result.add(new
+                                    // StringValue(""+docImage.getFileURI()+"|"+thumbCollection.getURI()+THUMBPREFIX
+                                    // + docImage.getFileURI()));
+                                } else {
+                                    try {
+                                        ImageIO
+                                                .write(
+                                                        bImage,
+                                                        "jpg",
+                                                        Paths.get(thumbPath.toString()
+                                                                + "/" + prefix
+                                                                + docImage.getFileURI()).toFile());
+                                    } catch (Exception e) {
+                                        throw new XPathException(this, e.getMessage());
+                                    }
+                                    // result.add(new StringValue(
+                                    // thumbPath.toString() + "/"
+                                    // + THUMBPREFIX
+                                    // + docImage.getFileURI()));
+                                }
+                            }
+                    } else {
+
+                        // result.add(new StringValue(""+docImage.getURI()+"|"
+                        // + ((existingThumbsCol != null) ? ""
+                        // + existingThumbsCol.getURI() : thumbDir
+                        // .toString()) + "/" + prefix
+                        // + docImage.getFileURI()));
+
+                        result.add(new StringValue(docImage.getFileURI().toString()));
+                    }
+                }
+            } catch (final PermissionDeniedException | LockException e) {
+                throw new XPathException(this, e.getMessage(), e);
+            }
+            try {
+                transact.commit(transaction);
+            } catch (Exception e) {
+                throw new XPathException(this, e.getMessage());
+            }
         }
+        final Optional<JournalManager> journalManager = pool.getJournalManager();
+        journalManager.ifPresent(j -> j.flush(true, false));
+        dbbroker.closeDocument();
+
 		return result;
 
 	}

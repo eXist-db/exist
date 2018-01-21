@@ -119,14 +119,34 @@
         <echo message="--------------------------------------------"/>
         <echo message="eXist ${project.version}${build.label} build"/>
         <echo message="--------------------------------------------"/>
-        <echo message="Git commit: ${git.revision}"/>
+
+        <if>
+            <and>
+                <isset property="git.revision"/>
+                <not><equals arg1="${git.revision}" arg2=""/></not>
+            </and>
+            <then>
+                <echo message="Git commit: ${git.revision}"/>
+            </then>
+        </if>
         <if>
             <or>
                 <not><isset property="git.branch.full"/></not>
                 <equals arg1="${git.branch.full}" arg2=""/>
             </or>
             <then>
-                <echo message="Git tag: ${git.tag.full}"/>
+                <if>
+                    <or>
+                        <not><isset property="git.tag.full"/></not>
+                        <equals arg1="${git.tag.full}" arg2=""/>
+                    </or>
+                    <then>
+                        <echo message="Built from Installed build: ${project.version}"/>
+                    </then>
+                    <else>
+                        <echo message="Git tag: '${git.tag.full}'"/>
+                    </else>
+                </if>
             </then>
             <else>
                 <echo message="Git branch: ${git.branch.full}"/>

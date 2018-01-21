@@ -33,6 +33,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
@@ -509,15 +510,14 @@ public class QueryDialog extends JFrame {
         }
     }
 
+    private static AtomicInteger queryThreadId = new AtomicInteger();
 
-    class QueryThread extends Thread {
-
-        private String xpath;
-
+    private class QueryThread extends Thread {
+        private final String xpath;
         private XQueryContext context;
 
-        public QueryThread(String query) {
-            super();
+        public QueryThread(final String query) {
+            super("exist-queryThread-" + queryThreadId.getAndIncrement());
             this.xpath = query;
             this.context = null;
         }
@@ -537,9 +537,7 @@ public class QueryDialog extends JFrame {
             return false;
         }
 
-        /**
-         * @see java.lang.Thread#run()
-         */
+        @Override
         public void run() {
             statusMessage.setText(Messages.getString("QueryDialog.processingquerymessage"));
             progress.setVisible(true);

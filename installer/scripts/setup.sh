@@ -29,8 +29,5 @@ if [ -z "$JAVA_OPTIONS" ]; then
 	JAVA_OPTIONS="-Xms64m -Xmx768m"
 fi
 
-JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
-
 "$JAVA_CMD" $JAVA_OPTIONS $OPTIONS \
-    -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS \
     -jar "$EXIST_HOME/start.jar" org.exist.installer.Setup $*

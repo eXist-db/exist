@@ -192,7 +192,7 @@ public class LocalCollectionManagementService extends AbstractLocalService imple
         }
 
         withDb((broker, transaction) ->
-                modify(broker, transaction, srcPath).apply((source, b1, t1) ->
+                read(broker, transaction, srcPath).apply((source, b1, t1) ->
                         modify(b1, t1, destPath).apply((destination, b2, t2) -> {
                             try {
                                 b2.copyCollection(t2, source, destination, newName);
@@ -226,21 +226,21 @@ public class LocalCollectionManagementService extends AbstractLocalService imple
         }
 
         withDb((broker, transaction) ->
-                        modify(broker, transaction, srcPath.removeLastSegment()).apply((sourceCol, b1, t1) -> {
-                            final DocumentImpl source = sourceCol.getDocument(b1, srcPath.lastSegment());
-                            if(source == null) {
-                                throw new XMLDBException(ErrorCodes.NO_SUCH_RESOURCE, "Resource " + srcPath + " not found");
-                            }
+            read(broker, transaction, srcPath.removeLastSegment()).apply((sourceCol, b1, t1) -> {
+                final DocumentImpl source = sourceCol.getDocument(b1, srcPath.lastSegment());
+                if(source == null) {
+                    throw new XMLDBException(ErrorCodes.NO_SUCH_RESOURCE, "Resource " + srcPath + " not found");
+                }
 
-                            return modify(b1, t1, destPath).apply((destinationCol, b2, t2) -> {
-                                try {
-                                    b2.copyResource(t2, source, destinationCol, newName);
-                                    return null;
-                                } catch (final EXistException e) {
-                                    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "failed to copy resource " + srcPath, e);
-                                }
-                            });
-                        })
+                return modify(b1, t1, destPath).apply((destinationCol, b2, t2) -> {
+                    try {
+                        b2.copyResource(t2, source, destinationCol, newName);
+                        return null;
+                    } catch (final EXistException e) {
+                        throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "failed to copy resource " + srcPath, e);
+                    }
+                });
+            })
         );
     }
 

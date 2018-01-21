@@ -39,7 +39,6 @@ EXIST_USER=exist
 TMP_DIR=/var/tmp
 PID_FILE=$EXIST_HOME/jsvc.pid
 
-JAVA_ENDORSED_DIR=$EXIST_HOME/lib/endorsed
 #LDAP_OPTIONS="-Dsecurity.ldap.connection.url=ldap://your-server.com:389 -Dsecurity.ldap.dn.user=ou=Users,dc=yourdomain,dc=org,dc=authority -Dsecurity.ldap.dn.group=ou=Groups,dc=yourdomain,dc=org,dc=authority"
 JAVA_OPTIONS="-Dexist.home=$EXIST_HOME -Djava.library.path=$EXIST_HOME/jni/native/.libs -Xmx512m -Dfile.encoding=UTF-8 $LDAP_OPTIONS"
 
@@ -61,7 +60,6 @@ case "$1" in
     $DAEMON_HOME/jsvc \
     -user $EXIST_USER \
     -home $JAVA_HOME \
-    -Djava.endorsed.dir=$JAVA_ENDORSED_DIR \
     -Djava.io.tmpdir=$TMP_DIR \
     -wait 10 \
     -pidfile $PID_FILE \
@@ -86,7 +84,6 @@ case "$1" in
     # Stop eXist
     #
     $DAEMON_HOME/jsvc \
-    -Djava.endorsed.dir=$JAVA_ENDORSED_DIR \
     -cp $CLASSPATH \
     -stop \
     -pidfile $PID_FILE \

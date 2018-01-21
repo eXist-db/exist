@@ -21,12 +21,10 @@
  */
 package org.exist.management.client;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import static java.lang.management.ManagementFactory.CLASS_LOADING_MXBEAN_NAME;
-import static java.lang.management.ManagementFactory.GARBAGE_COLLECTOR_MXBEAN_DOMAIN_TYPE;
 import static java.lang.management.ManagementFactory.MEMORY_MXBEAN_NAME;
 import static java.lang.management.ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME;
 import static java.lang.management.ManagementFactory.RUNTIME_MXBEAN_NAME;
@@ -38,6 +36,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.*;
 import javax.management.*;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeType;
@@ -53,7 +52,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.management.impl.SanityReport;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.util.ConfigurationHelper;
+import org.exist.util.NamedThreadFactory;
 import org.exist.util.serializer.DOMSerializer;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -135,8 +134,7 @@ public class JMXtoXML {
     private final MBeanServerConnection platformConnection = ManagementFactory.getPlatformMBeanServer();
     private MBeanServerConnection connection;
     private JMXServiceURL url;
-
-    private long ping = -1;
+    private final ThreadFactory jmxPingFactory = new NamedThreadFactory("jmx-ping");
 
 
     /**
@@ -192,45 +190,45 @@ public class JMXtoXML {
      * @return Response time in msec, less than 0 in case of an error on server or PING_TIMEOUT when server does not
      * respond in time
      */
-    public long ping(String instance, long timeout) {
-        ping = SanityReport.PING_WAITING;
+    public long ping(final String instance, final long timeout) {
         final long start = System.currentTimeMillis();
-        final Ping thread = new Ping(instance);
-        thread.start();
-        synchronized (this) {
-            while (ping == SanityReport.PING_WAITING) {
-                try {
-                    wait(100);
-                } catch (final InterruptedException e) {
-                }
+        final ExecutorService executorService = Executors.newSingleThreadExecutor(jmxPingFactory);
+        final Future<Long> futurePing = executorService.submit(new Ping(instance, connection));
+
+        while(true) {
+            try {
+                return futurePing.get(timeout, TimeUnit.MILLISECONDS);
+            } catch (final ExecutionException e) {
+                LOG.error(e);
+                return PING_TIMEOUT;
+            } catch (final TimeoutException e) {
+                return PING_TIMEOUT;
+            } catch (final InterruptedException e) {
                 if ((System.currentTimeMillis() - start) >= timeout) {
                     return PING_TIMEOUT;
                 }
+                // else will retry in loop
             }
-            return ping;
         }
     }
 
-    private class Ping extends Thread {
+    private static class Ping implements Callable<Long> {
+        private final String instance;
+        private final MBeanServerConnection connection;
 
-        private String instance;
-
-        public Ping(String instance) {
+        public Ping(final String instance, final MBeanServerConnection connection) {
             this.instance = instance;
+            this.connection = connection;
         }
 
         @Override
-        public void run() {
+        public Long call() {
             try {
                 final ObjectName name = new ObjectName("org.exist.management." + instance + ".tasks:type=SanityReport");
-                ping = (Long) connection.invoke(name, "ping", new Object[]{Boolean.TRUE}, new String[]{boolean.class.getName()});
+                return (Long) connection.invoke(name, "ping", new Object[]{Boolean.TRUE}, new String[]{boolean.class.getName()});
             } catch (final Exception e) {
                 LOG.warn(e.getMessage(), e);
-                ping = SanityReport.PING_ERROR;
-            }
-
-            synchronized (this) {
-                notifyAll();
+                return (long)SanityReport.PING_ERROR;
             }
         }
     }

@@ -23,6 +23,7 @@
 package org.exist.protocolhandler.xmlrpc;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,6 +41,8 @@ public class XmlrpcDownloadThread extends Thread {
     private XmldbURL     xmldbURL;
     private BlockingOutputStream bos;
 
+    private static final AtomicInteger threadInitNumber = new AtomicInteger();
+
     /**
      *  Constructor of XmlrpcDownloadThread.
      * 
@@ -47,6 +50,7 @@ public class XmlrpcDownloadThread extends Thread {
      * @param bos Stream to which the document is written.
      */
     public XmlrpcDownloadThread(XmldbURL url, BlockingOutputStream bos) {
+        super("exist-xmlrpcDownloadThread-" + threadInitNumber.getAndIncrement());
         xmldbURL=url;
         this.bos=bos;
     }

@@ -6,6 +6,8 @@ import org.junit.Test;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XPathQueryService;
 
+import java.net.URISyntaxException;
+
 /**
  * @author Jean-Marc Vanel http://jmvanel.free.fr/
  */
@@ -30,9 +32,9 @@ public class ValueIndexByQNameTest extends ValueIndexTest {
 
 	@Test
 	@Override
-	public void strings() throws XMLDBException {
+	public void strings() throws XMLDBException, URISyntaxException {
         configureCollection(config);
-        XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "test/src/org/exist/xquery/items.xml");
+        XPathQueryService service = storeXMLFileAndGetQueryService(ITEMS_FILENAME, ITEMS_FILE);
 
         // queryResource(service, "items.xml", "//item[name > 'Racing Bicycle']", 4 );
 

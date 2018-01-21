@@ -24,6 +24,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.SystemTask;
 import org.exist.util.Configuration;
+import org.exist.util.NamedThreadFactory;
 
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -56,7 +57,7 @@ public class ShutdownTask implements SystemTask {
 
         //NOTE - shutdown must be executed asynchronously from the scheduler, to avoid a deadlock with shutting down the scheduler
         final Callable shutdownCallable = new AsyncShutdown(broker.getBrokerPool());
-        Executors.newSingleThreadExecutor(r -> new Thread(threadGroup, r, "Async Scheduled eXist Shutdown")).submit(shutdownCallable);
+        Executors.newSingleThreadExecutor(new NamedThreadFactory("shutdownTask-asyncShutdown")).submit(shutdownCallable);
     }
 
     @Override

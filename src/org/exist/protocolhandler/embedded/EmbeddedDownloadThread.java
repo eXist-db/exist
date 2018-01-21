@@ -56,7 +56,7 @@ public class EmbeddedDownloadThread extends Thread {
      * @param bos Stream to which the document is written.
      */
     public EmbeddedDownloadThread(final XmldbURL url, final OutputStream bos) {
-        super("EmbeddedDownloadThread-" + threadInitNumber.getAndIncrement());
+        super("exist-embeddedDownloadThread-" + threadInitNumber.getAndIncrement());
         this.xmldbURL = url;
         this.bos = bos;
         

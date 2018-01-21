@@ -67,16 +67,28 @@
                 <path refid="classpath.test-libs"/>
             </classpath>
         </javac>
-        <copy todir="${junit.reports}/classes/org/exist/performance/ant"
-              file="${junit.reports}/src/org/exist/performance/ant/antlib.xml"/>
-        <copy todir="${junit.reports}/classes/org/exist/performance"
-            file="${junit.reports}/src/org/exist/performance/log2html.xql"/>
-        <copy todir="${junit.reports}/classes/org/exist/config/mapping"
-            file="${junit.reports}/src/org/exist/config/mapping/Mapping.xml"/>
-        <copy todir="${junit.reports}/classes/org/exist/source"
-              file="${junit.reports}/src/org/exist/source/main.xq"/>
-        <copy todir="${junit.reports}/classes/org/exist/source"
-              file="${junit.reports}/src/org/exist/source/library.xqm"/>
+
+        <!-- copy all test resources to compiled tests output dir -->
+        <copy todir="${junit.reports}/classes" includeEmptyDirs="false">
+            <fileset dir="${junit.reports}/src">
+                <exclude name="**/*.java"/>
+            </fileset>
+            <file name="LICENSE"/>
+        </copy>
+        <copy todir="${junit.reports}/classes/samples" includeemptydirs="false">
+            <fileset dir="samples" >
+                <exclude name="ant/**"/>
+                <exclude name="http/**"/>
+                <exclude name="soap/**"/>
+                <exclude name="src/**"/>
+                <exclude name="xmlrpc/**"/>
+                <exclude name="build.xml"/>
+            </fileset>
+        </copy>
+        <copy todir="${junit.reports}/classes/org/exist/xquery/value" includeemptydirs="false">
+            <file name="webapp/logo.jpg"/>
+        </copy>
+
        <!-- <ant antfile="build.xml" dir="extensions/indexes" target="compile-tests"/>
         <ant antfile="build.xml" dir="extensions/xqdoc" target="compile-tests"/> -->
     </target>

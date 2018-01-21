@@ -1431,7 +1431,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         private boolean status = false;
 
         public ProcessThread() {
-            super();
+            super("exist-client-processThread");
         }
 
         synchronized public void setAction(final String action) {
