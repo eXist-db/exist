@@ -179,7 +179,7 @@ public class OptimizerTest {
         execute("/root//b/parent::c[b = 'two']", true, MSG_OPT_ERROR, r);
     }
 
-    @Test @Ignore
+    @Test
     public void reversePathsWithWildcard() throws XMLDBException {
         //parent with wildcard
         long r = execute("/root//b/parent::*[b = 'two']", false);

@@ -319,7 +319,6 @@ public class XQueryTest {
     /**
      * @author Gev
      */
-    @Ignore
     @Test
     public void inMemoryNodeSequences() throws XMLDBException {
         ResourceSet result;
@@ -329,36 +328,46 @@ public class XQueryTest {
                 (XPathQueryService) getTestCollection().getService(
                 "XPathQueryService",
                 "1.0");
+
         query = "let $c := (<a/>,<b/>) return <t>text{$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
+        assertEquals("XQuery: " + query, "<t>text<a/>\n</t>", result.getResource(0).getContent());
+
         query = "let $c := (<a/>,<b/>) return <t><text/>{$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t><text/><a/></t>", result.getResource(0).getContent());
+        assertEquals("XQuery: " + query, "<t>\n    <text/>\n    <a/>\n</t>", result.getResource(0).getContent());
+
         query = "let $c := (<a/>,<b/>) return <t>{\"text\"}{$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
+        assertEquals("XQuery: " + query, "<t>text<a/>\n</t>", result.getResource(0).getContent());
+
         query = "let $c := (<a/>,\"b\") return <t>text{$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
+        assertEquals("XQuery: " + query, "<t>text<a/>\n</t>", result.getResource(0).getContent());
+
         query = "let $c := (<a/>,\"b\") return <t><text/>{$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t><text/><a/></t>", result.getResource(0).getContent());
+        assertEquals("XQuery: " + query, "<t>\n    <text/>\n    <a/>\n</t>", result.getResource(0).getContent());
+
         query = "let $c := (<a/>,\"b\") return <t>{\"text\"}{$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
+        assertEquals("XQuery: " + query, "<t>text<a/>\n</t>", result.getResource(0).getContent());
+
         query = "let $c := (<a/>,<b/>) return <t>{<text/>,$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
+        assertEquals("XQuery: " + query, "<t>\n    <text/>\n    <a/>\n</t>", result.getResource(0).getContent());
+
         query = "let $c := (<a/>,<b/>) return <t>{\"text\",$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
+        assertEquals("XQuery: " + query, "<t>text<a/>\n</t>", result.getResource(0).getContent());
+
         query = "let $c := (<a/>,\"b\") return <t>{<text/>,$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
+        assertEquals("XQuery: " + query, "<t>\n    <text/>\n    <a/>\n</t>", result.getResource(0).getContent());
+
         query = "let $c := (<a/>,\"b\") return <t>{\"text\",$c[1]}</t>";
         result = service.query(query);
-        assertEquals("XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
+        assertEquals("XQuery: " + query, "<t>text<a/>\n</t>", result.getResource(0).getContent());
     }
 
     @Test
@@ -2113,7 +2122,6 @@ public class XQueryTest {
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1846228
      */
-    @Ignore
     @Test
     public void namespaceHandlingSameModule_1846228() throws XMLDBException {
         String query = "declare option exist:serialize 'indent=no';" +
