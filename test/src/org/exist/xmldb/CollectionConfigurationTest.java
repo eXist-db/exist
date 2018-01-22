@@ -350,7 +350,7 @@ public class CollectionConfigurationTest {
        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
 
        //Configure collection *manually*
-       XmldbURI configurationFileName = XmldbURI.create("foo" + CollectionConfiguration.COLLECTION_CONFIG_SUFFIX);
+       XmldbURI configurationFileName = XmldbURI.create(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE);
        storeConfiguration(CONF_COLL_URI, configurationFileName, CONFIG1);
 
        // ... then configure collection automatically
@@ -399,7 +399,7 @@ public class CollectionConfigurationTest {
        testCollection.storeResource(doc);
 
        //... then configure collection *manually*
-       XmldbURI configurationFileName = XmldbURI.create("foo" + CollectionConfiguration.COLLECTION_CONFIG_SUFFIX);
+       XmldbURI configurationFileName = XmldbURI.create(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE);
        storeConfiguration(CONF_COLL_URI, configurationFileName, CONFIG1);
 
        //... then configure collection automatically

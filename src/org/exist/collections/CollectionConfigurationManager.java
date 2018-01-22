@@ -106,7 +106,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
      *            the xconf document as a String.
      * @throws CollectionConfigurationException
      */
-    public void addConfiguration(Txn txn, final DBBroker broker, Collection collection, String config) throws CollectionConfigurationException {
+    public void addConfiguration(final Txn txn, final DBBroker broker, final Collection collection, final String config) throws CollectionConfigurationException {
         try {
             final XmldbURI path = CONFIG_COLLECTION_URI.append(collection.getURI());
 
