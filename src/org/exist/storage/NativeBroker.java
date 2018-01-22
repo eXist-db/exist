@@ -2021,6 +2021,9 @@ public class NativeBroker extends DBBroker {
             //get the resource uri
             final Value key = new CollectionStore.DocumentKey(collectionId, resourceType, documentId);
             final VariableByteInput vbi = collectionsDb.getAsStream(key);
+            if (vbi == null) {
+                return null;
+            }
             vbi.readInt(); //skip doc id
             final String resourceUri = vbi.readUTF();
 
