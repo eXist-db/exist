@@ -29,8 +29,22 @@
         <mkdir dir="webapp/WEB-INF/logs"/>
 
         <!-- create war specific configuration files -->
-        <xslt in="conf.xml"  out="webapp/WEB-INF/conf.xml"  style="${build.scripts}/dist-war-conf.xsl"/>
-        <xslt in="log4j2.xml" out="webapp/WEB-INF/log4j2.xml" style="${build.scripts}/dist-war-log4j.xsl"/>
+        <xslt in="conf.xml"  out="webapp/WEB-INF/conf.xml"  style="${build.scripts}/dist-war-conf.xsl" classpathref="classpath.core">
+            <factory name="net.sf.saxon.TransformerFactoryImpl"/>
+            <classpath>
+                <fileset dir="lib/endorsed">
+                    <include name="Saxon*.jar"/>
+                </fileset>
+            </classpath>
+        </xslt>
+        <xslt in="log4j2.xml" out="webapp/WEB-INF/log4j2.xml" style="${build.scripts}/dist-war-log4j.xsl" classpathref="classpath.core">
+        <factory name="net.sf.saxon.TransformerFactoryImpl"/>
+            <classpath>
+                <fileset dir="lib/endorsed">
+                    <include name="Saxon*.jar"/>
+                </fileset>
+            </classpath>
+        </xslt>
         
         <!-- fetch war specific libs -->
         <path id="log4j2.core.path">

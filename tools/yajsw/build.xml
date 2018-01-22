@@ -30,6 +30,12 @@
     	<pathelement path="${server.dir}/exist.jar"/>
     </path>
 
+    <path id="classpath.saxon">
+        <fileset dir="${env.EXIST_HOME}/lib/endorsed">
+            <include name="Saxon*.jar"/>
+        </fileset>
+    </path>
+
     <available file="${conf}/wrapper.conf" property="conf.available"/>
 
     <!-- =================================================================== -->
@@ -62,7 +68,9 @@
     <!-- Prepare the build                                                   -->
     <!-- =================================================================== -->
     <target name="prepare" depends="create-conf">
-    	<echo message="--------------------------------------------------"/>
+        <fail unless="env.EXIST_HOME" message="EXIST_HOME environment variable not set. Please set it and start the build again. If run from commandline just prepend it."/>
+
+        <echo message="--------------------------------------------------"/>
         <echo message="Setting up Java Service Wrapper"/>
         <echo message="--------------------------------------------------"/>
        
@@ -74,7 +82,14 @@
         <tstamp/>
 
         <!-- Create log4j config based on general config file -->
-        <xslt in="${server.dir}/log4j2.xml" out="${conf}/log4j2.xml" style="${wrapper.dir}/wrapper-log4j.xsl"/>
+        <xslt in="${server.dir}/log4j2.xml" out="${conf}/log4j2.xml" style="${wrapper.dir}/wrapper-log4j.xsl" classpathref="classpath.saxon">
+            <factory name="net.sf.saxon.TransformerFactoryImpl"/>
+            <classpath>
+                <fileset dir="${env.EXIST_HOME}/lib/endorsed">
+                    <include name="Saxon*.jar"/>
+                </fileset>
+            </classpath>
+        </xslt>
     </target>
 
     <!-- =================================================================== -->
