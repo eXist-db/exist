@@ -271,13 +271,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @Override
     public DocumentMetadata getMetadata() {
-        if(metadata == null) {
-            try(final DBBroker broker = pool.getBroker()) {
-                broker.getResourceMetadata(this);
-            } catch(final EXistException e) {
-                LOG.warn("Error while loading document metadata: " + e.getMessage(), e);
-            }
-        }
         return metadata;
     }
 
@@ -510,57 +503,10 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             for(int i = 0; i < children; i++) {
                 childAddress[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
             }
-        } catch(final IOException e) {
-            LOG.error("IO error while reading document data for document " + fileURI, e);
-            //TODO : raise exception ?
-        }
-    }
-
-    public void readWithMetadata(final VariableByteInput istream) throws IOException, EOFException {
-        try {
-            docId = istream.readInt();
-            fileURI = XmldbURI.createInternal(istream.readUTF());
-            getPermissions().read(istream);
-            //Should be > 0 ;-)
-            children = istream.readInt();
-            childAddress = new long[children];
-            for(int i = 0; i < children; i++) {
-                childAddress[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
-            }
             metadata = new DocumentMetadata();
             metadata.read(pool.getSymbols(), istream);
         } catch(final IOException e) {
             LOG.error("IO error while reading document data for document " + fileURI, e);
-            //TODO : raise exception ?
-        }
-    }
-
-    /**
-     * The method <code>readDocumentMeta</code>
-     *
-     * @param istream a <code>VariableByteInput</code> value
-     */
-    public void readDocumentMeta(final VariableByteInput istream) {
-        // skip over already known document data
-        try {
-            istream.skip(1); //docId
-            istream.readUTF(); //fileURI.toString()
-
-            //istream.skip(2 + 2); //uid, gid, mode, children count
-            istream.skip(1); //unix style permission uses a single long
-            if(permissions instanceof ACLPermission) {
-                final int aceCount = istream.read();
-                istream.skip(aceCount);
-            }
-
-            istream.skip(1); //children size
-            istream.skip(children * 2); //actual children
-
-            metadata = new DocumentMetadata();
-            metadata.read(pool.getSymbols(), istream);
-
-        } catch(final IOException e) {
-            LOG.error("IO error while reading document metadata for " + fileURI, e);
             //TODO : raise exception ?
         }
     }

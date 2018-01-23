@@ -606,8 +606,6 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     public abstract long getBinaryResourceSize(final BinaryDocument blob)
            throws IOException;
-
-    public abstract void getResourceMetadata(DocumentImpl doc);
     
     /**
      * Completely delete this binary document (descriptor and binary data).

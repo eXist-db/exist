@@ -840,7 +840,7 @@ public class SystemExport {
                     } else {
                         doc = new DocumentImpl(broker.getBrokerPool());
                     }
-                    doc.readWithMetadata(istream);
+                    doc.read(istream);
                     reportError("Found an orphaned document: " + doc.getFileURI().toString(), null);
 
                     if (writtenDocs != null) {
