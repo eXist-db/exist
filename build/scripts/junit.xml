@@ -109,7 +109,14 @@
         <mkdir dir="${junit.reports.html}"/>
 
         <!-- create a log4j config for running the tests -->
-        <xslt in="${basedir}/log4j2.xml" out="${basedir}/test/classes/log4j2-test.xml" style="${build.scripts}/log4j2-test.xsl"/>
+        <xslt in="${basedir}/log4j2.xml" out="${basedir}/test/classes/log4j2-test.xml" style="${build.scripts}/log4j2-test.xsl" classpathref="classpath.core">
+            <factory name="net.sf.saxon.TransformerFactoryImpl"/>
+            <classpath>
+                <fileset dir="lib/endorsed">
+                    <include name="Saxon*.jar"/>
+                </fileset>
+            </classpath>
+        </xslt>
 
     </target>
 
@@ -122,7 +129,17 @@
             <fileset dir="${junit.reports.dat}">
                 <include name="TEST-*.xml"/>
             </fileset>
-            <report format="frames" todir="${junit.reports.html}"/>
+            <report format="frames" todir="${junit.reports.html}">
+                <classpath>
+                    <fileset dir="lib/endorsed">
+                        <include name="xalan*.jar"/>
+                        <include name="xml-apis*.jar"/>
+                        <include name="xercesImpl*.jar"/>
+                        <include name="serializer*.jar"/>
+                    </fileset>
+                </classpath>
+                <factory name="org.apache.xalan.processor.TransformerFactoryImpl"/>
+            </report>
         </junitreport>
     </target>
 

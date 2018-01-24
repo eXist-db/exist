@@ -123,12 +123,11 @@
         <delete file="installer/install.xml" failonerror="false"/>
         <xslt basedir="installer" in="installer/install.xml.tmpl"
             out="installer/install.xml"
-            style="installer/install.xsl" classpathref="classpath.core"
-            processor="trax">
+            style="installer/install.xsl" classpathref="classpath.core">
             <factory name="net.sf.saxon.TransformerFactoryImpl"/>
             <classpath>
                 <fileset dir="lib/endorsed">
-                    <include name="saxon*.jar"/>
+                    <include name="Saxon*.jar"/>
                 </fileset>
             </classpath>
             <param name="apps" expression="${apps.list}"/>

@@ -50,12 +50,26 @@ expand-xincludes=yes
 highlight-matches=none
 
 </echo>
-  <xslt in="${src.dir}/conf.xml" out="${dist.minimal}/conf.xml" style="${build.scripts}/minimal-fix-conf.xsl"/>
+  <xslt in="${src.dir}/conf.xml" out="${dist.minimal}/conf.xml" style="${build.scripts}/minimal-fix-conf.xsl" classpathref="classpath.core">
+    <factory name="net.sf.saxon.TransformerFactoryImpl"/>
+    <classpath>
+      <fileset dir="lib/endorsed">
+        <include name="Saxon*.jar"/>
+      </fileset>
+    </classpath>
+  </xslt>
   <copy file="${src.dir}/descriptor.xml" todir="${dist.minimal}"/>
   <copy file="${src.dir}/exist.jar" todir="${dist.minimal}"/>
   <copy file="${src.dir}/exist-optional.jar" todir="${dist.minimal}"/>
   <copy file="${src.dir}/LICENSE" todir="${dist.minimal}"/>
-  <xslt in="${src.dir}/log4j2.xml" out="${dist.minimal}/log4j2.xml" style="${build.scripts}/minimal-fix-log4j.xsl"/>
+  <xslt in="${src.dir}/log4j2.xml" out="${dist.minimal}/log4j2.xml" style="${build.scripts}/minimal-fix-log4j.xsl" classpathref="classpath.core">
+    <factory name="net.sf.saxon.TransformerFactoryImpl"/>
+    <classpath>
+      <fileset dir="lib/endorsed">
+        <include name="Saxon*.jar"/>
+      </fileset>
+    </classpath>
+  </xslt>
   <copy file="${src.dir}/mime-types.xml" todir="${dist.minimal}"/>
   <copy file="${src.dir}/server.xml" todir="${dist.minimal}"/>
   <!-- copy file="${src.dir}/atom-services.xml" todir="${dist.minimal}"/ -->
