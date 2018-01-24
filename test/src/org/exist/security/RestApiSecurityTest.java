@@ -25,14 +25,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
-import org.exist.jetty.JettyStart;
-import org.junit.BeforeClass;
+import org.exist.test.ExistWebServer;
+import org.junit.ClassRule;
 
 /**
  *
@@ -40,13 +41,15 @@ import org.junit.BeforeClass;
  */
 public class RestApiSecurityTest extends AbstractApiSecurityTest {
 
-    private static JettyStart server = null;
-    
-    private final static String HOST = "localhost";
-    private final static int PORT = 8088;
-    private final static String REST_URI = "http://" + HOST + ":" + PORT + "/rest";
+    @ClassRule
+    public static ExistWebServer existWebServer = new ExistWebServer(true, false, true);
+
     private final static String baseUri = "/db";
-    
+
+    private static String getServerUri() {
+        return "http://localhost:" + existWebServer.getPort() + "/rest";
+    }
+
     @Override
     protected void createCol(final String collectionName, final String uid, final String pwd) throws ApiException {
         executeQuery("xmldb:create-collection('/db', '" + collectionName + "')", uid, pwd);
@@ -54,7 +57,7 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
 
     @Override
     protected void removeCol(final String collectionName, final String uid, final String pwd) throws ApiException {
-        final String collectionUri = REST_URI + baseUri + "/" + collectionName;
+        final String collectionUri = getServerUri() + baseUri + "/" + collectionName;
         
         final Executor exec = getExecutor(uid, pwd);
         try {
@@ -94,7 +97,7 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
     protected String getXmlResourceContent(final String resourceUri, final String uid, final String pwd) throws ApiException {
         final Executor exec = getExecutor(uid, pwd);
         try {
-            final HttpResponse resp = exec.execute(Request.Get(REST_URI + resourceUri)).returnResponse();
+            final HttpResponse resp = exec.execute(Request.Get(getServerUri() + resourceUri)).returnResponse();
             
             if(resp.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 throw new ApiException("Could not get XML resource from uri: " + resourceUri + ". " + getResponseBody(resp.getEntity()));
@@ -113,7 +116,7 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
 
     @Override
     protected void removeGroup(final String group_uid, final String uid, final String pwd) throws ApiException {
-        executeQuery("sm:delete-group('" + group_uid + "')", uid, pwd);
+        executeQuery("if(sm:group-exists('" + group_uid + "'))then sm:delete-group('" + group_uid + "') else()", uid, pwd);
     }
 
     @Override
@@ -131,7 +134,7 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
         final Executor exec = getExecutor(uid, pwd);
         try {
             final HttpResponse resp = exec.execute(
-                    Request.Put(REST_URI + resourceUri)
+                    Request.Put(getServerUri() + resourceUri)
                     .addHeader("Content-Type", "application/xml")
                     .bodyByteArray(content.getBytes())
             ).returnResponse();
@@ -149,7 +152,7 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
          final Executor exec = getExecutor(uid, pwd);
         try {
             final HttpResponse resp = exec.execute(
-                    Request.Put(REST_URI + resourceUri)
+                    Request.Put(getServerUri() + resourceUri)
                     .addHeader("Content-Type", "application/octet-stream")
                     .bodyByteArray(content)
             ).returnResponse();
@@ -159,15 +162,6 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
             }
         } catch(final IOException ioe) {
             throw new ApiException(ioe);
-        }
-    }
-    
-    @BeforeClass
-    public static void startServer() throws InterruptedException {
-        //Don't worry about closing the server : the shutdownDB hook will do the job
-        if (server == null) {
-            server = new JettyStart();
-            server.run();
         }
     }
 
@@ -187,11 +181,11 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
     }
     
     private Executor getExecutor(final String uid, String pwd) {
-        return Executor.newInstance().authPreemptive(new HttpHost(HOST, PORT)).auth(uid, pwd);
+        return Executor.newInstance().authPreemptive(new HttpHost("localhost", existWebServer.getPort())).auth(uid, pwd);
     }
     
     private String createQueryUri(final String xquery) throws UnsupportedEncodingException {
-        return REST_URI + baseUri + "/?_query=" + URLEncoder.encode(xquery, "UTF-8");
+        return getServerUri() + baseUri + "/?_query=" + URLEncoder.encode(xquery, "UTF-8");
     }
     
     private String getResponseBody(final HttpEntity entity) throws IOException {

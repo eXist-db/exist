@@ -2,6 +2,7 @@ package org.exist.xquery.value;
 
 import java.util.Arrays;
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import org.exist.xquery.XPathException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +16,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
-@RunWith(Parameterized.class)
+@RunWith(ParallelParameterized.class)
 public class NumericOpPromotionTest {
 
     @Parameters(name = "{0}")

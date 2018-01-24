@@ -19,6 +19,7 @@
  */
 package org.exist.util;
 
+import com.googlecode.junittoolbox.ParallelSuite;
 import org.exist.util.sorters.SortComparatorTest;
 import org.exist.util.sorters.SortTest;
 import org.junit.runner.RunWith;
@@ -38,7 +39,7 @@ import org.junit.runners.Suite;
  * 
  */
 
-@RunWith(Suite.class)
+@RunWith(ParallelSuite.class)
 @Suite.SuiteClasses({
 		SortTest.class,
 		SortComparatorTest.class,

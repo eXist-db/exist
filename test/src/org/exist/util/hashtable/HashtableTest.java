@@ -21,7 +21,9 @@
  */
 package org.exist.util.hashtable;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Iterator;
 import java.util.Random;
@@ -31,6 +33,7 @@ import static org.junit.Assert.*;
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
+@RunWith(ParallelRunner.class)
 public class HashtableTest {
 
     private int tabSize = 100000;

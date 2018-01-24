@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.TestUtils;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.FileUtils;
@@ -28,6 +29,7 @@ import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
+import org.junit.runner.RunWith;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -47,6 +49,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * 
  */
+@RunWith(ParallelRunner.class)
 public class OptimizerTest {
 
     private final static String OPTIMIZE = "declare option exist:optimize 'enable=yes';";
@@ -176,7 +179,7 @@ public class OptimizerTest {
         execute("/root//b/parent::c[b = 'two']", true, MSG_OPT_ERROR, r);
     }
 
-    @Test @Ignore
+    @Test
     public void reversePathsWithWildcard() throws XMLDBException {
         //parent with wildcard
         long r = execute("/root//b/parent::*[b = 'two']", false);

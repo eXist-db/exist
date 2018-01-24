@@ -1,10 +1,11 @@
 package org.exist.xquery.value;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -15,6 +16,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
+@RunWith(ParallelRunner.class)
 public class DateTimeTest extends AbstractTimeRelatedTestCase {
 
 	@Test(expected = XPathException.class)
@@ -40,11 +42,6 @@ public class DateTimeTest extends AbstractTimeRelatedTestCase {
 		assertEquals("2005-10-11T10:00:00-01:00", v.getTrimmedCalendar().toXMLFormat());
 	}
 
-	// TODO: reinstate when Java's parsing is fixed to handle 24:00:00
-	/**
-     * @see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6238849
-     */
-    @Ignore
     @Test
 	public void stringFormat3() throws XPathException {
 		AbstractDateTimeValue v = new DateTimeValue("2005-10-11T24:00:00");

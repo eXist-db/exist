@@ -2,10 +2,14 @@ package org.exist.http.urlrewrite;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMock;
 import javax.servlet.http.HttpServletRequest;
 import org.exist.http.urlrewrite.XQueryURLRewrite.RequestWrapper;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
 import static org.easymock.EasyMock.expect;
@@ -16,6 +20,7 @@ import static org.easymock.EasyMock.verify;
  *
  * @author aretter
  */
+@RunWith(ParallelRunner.class)
 public class XQueryURLRewriteTest
 {
     @Test

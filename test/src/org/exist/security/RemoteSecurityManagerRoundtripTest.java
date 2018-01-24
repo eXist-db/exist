@@ -1,7 +1,6 @@
 /*
- *
  * eXist Open Source Native XML Database
- * Copyright (C) 2009 The eXist team
+ * Copyright (C) 2001-2018 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -17,26 +16,30 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * $Id$
  */
 
-package org.exist.validation;
+package org.exist.security;
 
-import com.googlecode.junittoolbox.ParallelSuite;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.exist.test.ExistWebServer;
+import org.junit.ClassRule;
 
 /**
+ * Security Manager round trip tests against the XML:DB Remote API
  *
  * @author Adam Retter <adam@exist-db.org>
  */
+public class RemoteSecurityManagerRoundtripTest extends AbstractSecurityManagerRoundtripTest {
 
-@RunWith(ParallelSuite.class)
-@Suite.SuiteClasses({
-    DatabaseInsertResources_NoValidation_Test.class,
-    DatabaseInsertResources_WithValidation_Test.class
-})
-public class AllValidationTests
-{
+    @ClassRule
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
+
+    @Override
+    protected String getBaseUri() {
+        return "xmldb:exist://localhost:" + Integer.toString(existWebServer.getPort()) + "/xmlrpc";
+    }
+
+    @Override
+    protected void restartServer() {
+        existWebServer.restart();
+    }
 }

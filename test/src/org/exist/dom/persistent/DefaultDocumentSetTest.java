@@ -20,8 +20,10 @@
 
 package org.exist.dom.persistent;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.collections.Collection;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Iterator;
 
@@ -35,6 +37,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Adam Retter <adam@evolvedbinary.com>
  */
+@RunWith(ParallelRunner.class)
 public class DefaultDocumentSetTest {
 
     @Test

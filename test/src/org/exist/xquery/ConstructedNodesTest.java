@@ -23,10 +23,12 @@ package org.exist.xquery;
 
 import javax.xml.transform.OutputKeys;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XQueryService;
@@ -38,6 +40,7 @@ import static org.junit.Assert.assertEquals;
  * @author Adam Retter <adam.retter@devon.gov.uk>
  * @author ljo
  */
+@RunWith(ParallelRunner.class)
 public class ConstructedNodesTest {
 
 	@ClassRule
@@ -120,7 +123,6 @@ public class ConstructedNodesTest {
 	/**
 	 * Test retrieving sorted nodes by position
 	 */
-    @Ignore
     @Test
 	public void constructedNodesPosition() throws XMLDBException {
 		String xquery =
@@ -137,9 +139,9 @@ public class ConstructedNodesTest {
 			"$categories/category[position() eq 1]";
 		
 		String expectedResults [] = { 
-				"<option value=\"1\">Fruit</option>",
-				"<option value=\"1\">Fruit</option>"
-				};
+				"<category uid=\"1\">Fruit</category>",
+				"<category uid=\"1\">Fruit</category>"
+		};
 		
 		ResourceSet result = existEmbeddedServer.executeQuery(xquery);
 			

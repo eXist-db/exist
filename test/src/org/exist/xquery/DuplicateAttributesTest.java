@@ -21,8 +21,10 @@
  */
 package org.exist.xquery;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.ClassRule;
+import org.junit.runner.RunWith;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.base.Resource;
@@ -36,6 +38,7 @@ import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
 
+@RunWith(ParallelRunner.class)
 public class DuplicateAttributesTest {
 
     @ClassRule

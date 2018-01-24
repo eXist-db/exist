@@ -20,8 +20,10 @@
 
 package org.exist.dom.memtree;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.dom.QName;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Text;
@@ -31,6 +33,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
+@RunWith(ParallelRunner.class)
 public class TextImplTest {
 
     @Test

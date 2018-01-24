@@ -19,10 +19,12 @@
  */
 package org.exist.xquery.functions.xquery3;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.ClassRule;
+import org.junit.runner.RunWith;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.ResourceSet;
 
@@ -38,6 +40,7 @@ import static org.junit.Assert.*;
 /**
  * @author wessels
  */
+@RunWith(ParallelRunner.class)
 public class TryCatchTest {
 
     @ClassRule

@@ -194,9 +194,15 @@
             <test fork="yes" name="org.exist.xquery.OptimizerTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.collections.triggers.AllTriggerTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.collections.AllCollectionTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.security.XMLDBSecurityTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.security.AccountTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.security.LocalSecurityManagerRoundtripTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.security.RemoteSecurityManagerRoundtripTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.security.RestApiSecurityTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.security.SimpleACLPermissionTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.security.UnixStylePermissionTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.security.XmldbApiSecurityTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.security.SecurityManagerRoundtripTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.security.XMLDBSecurityTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.security.internal.aider.UnixStylePermissionAiderTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.storage.NativeBrokerTest" todir="${junit.reports.dat}"/>
 	    <test fork="yes" name="org.exist.AllIndexerTests" todir="${junit.reports.dat}"/>
 

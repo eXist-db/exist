@@ -1,5 +1,6 @@
 package org.exist.dom.persistent;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import java.io.IOException;
@@ -27,6 +28,7 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
+import org.junit.runner.RunWith;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -41,6 +43,7 @@ import static org.junit.Assert.assertTrue;
  * @author wolf
  *
  */
+@RunWith(ParallelRunner.class)
 public class DocTypeTest {
 
 	public final static Properties OUTPUT_PROPERTIES = new Properties();

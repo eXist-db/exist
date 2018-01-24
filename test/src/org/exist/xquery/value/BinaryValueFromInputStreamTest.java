@@ -6,9 +6,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.util.io.CachingFilterInputStream;
 import org.exist.xquery.XPathException;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.junit.Assert.*;
 
@@ -16,6 +18,7 @@ import static org.junit.Assert.*;
  *
  * @author Adam Retter <adam@existsolutions.com>
  */
+@RunWith(ParallelRunner.class)
 public class BinaryValueFromInputStreamTest {
 
     @Test

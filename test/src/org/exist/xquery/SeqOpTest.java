@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.TestUtils;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -20,12 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-
 public class SeqOpTest {
-
-	private final static String URI = XmldbURI.LOCAL_DB;
-	private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
-
 	private static XPathQueryService query;
 	private static Collection c;
 
@@ -246,39 +241,31 @@ public class SeqOpTest {
 		return res;
 	}
 
-	private static Collection setupTestCollection() throws XMLDBException {
-		Collection root = DatabaseManager.getCollection(URI, "admin", "");
-		CollectionManagementService rootcms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-		Collection c = root.getChildCollection("test");
-		if(c != null) rootcms.removeCollection("test");
-		rootcms.createCollection("test");
-		c = DatabaseManager.getCollection(URI+"/test", "admin", "");
+	@ClassRule
+	public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+
+	@BeforeClass
+	public static void setupTestCollection() throws XMLDBException {
+		final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+		final CollectionManagementService rootcms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+		c = root.getChildCollection("test");
+		if (c != null) {
+			rootcms.removeCollection("test");
+		}
+		c = rootcms.createCollection("test");
 		assertNotNull(c);
-		return c;
+		query = (XPathQueryService) c.getService("XPathQueryService", "1.0");
 	}
 
-    @BeforeClass
-	public static void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-        // initialize driver
-        Database database = (Database) Class.forName(DRIVER).newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-
-        c = setupTestCollection();
-        query = (XPathQueryService) c.getService("XPathQueryService", "1.0");
-	}
-
-    @AfterClass
+	@AfterClass
 	public static void tearDown() throws XMLDBException {
-        if (c != null) {
-            DatabaseInstanceManager manager =
-                    (DatabaseInstanceManager) c.getService("DatabaseInstanceManager", "1.0");
-            c.close();
-            manager.shutdown();
-
-        }
-        c = null;
-        query = null;
+		if (c != null) {
+			final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+			final CollectionManagementService rootcms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+			rootcms.removeCollection("test");
+			query = null;
+			c = null;
+		}
 	}
 	
 }

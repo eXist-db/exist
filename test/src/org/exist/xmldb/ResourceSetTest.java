@@ -61,12 +61,11 @@ public class ResourceSetTest {
         assertEquals("size of intersection of " + query1 + " and " + query2 + " yields ", expected, ResourceSetHelper.intersection(result1, result2).getSize());
 	}
 
-	@Ignore
 	@Test
 	public void intersection2() throws XMLDBException {
 	   	final String xpathPrefix = "doc('/db/" + TEST_COLLECTION + "/hamlet.xml')//LINE";
-		final String query1 = xpathPrefix + "[. = 'funeral' ]";		// count=4
-		final String query2 = xpathPrefix + "[. = 'dirge']";		// count=1, intersection=1
+		final String query1 = xpathPrefix + "[fn:contains(. , 'funeral')]";		// count=4
+		final String query2 = xpathPrefix + "[fn:contains(. , 'dirge')]";		// count=1, intersection=1
 		final int expected = 1;
 
 		final XPathQueryService service = (XPathQueryService)

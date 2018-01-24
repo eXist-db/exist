@@ -1,8 +1,10 @@
 package org.exist.util.hashtable;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Iterator;
 import java.util.Random;
@@ -11,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+@RunWith(ParallelRunner.class)
 public abstract class AbstractHashSetTest<T, K> {
 
 	protected T map;

@@ -1,15 +1,15 @@
 package org.exist.xquery.functions.util;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.*;
 import org.exist.xquery.ErrorCodes;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
+
 import static org.junit.Assert.*;
 
 import org.exist.xquery.XPathException;
+import org.junit.runner.RunWith;
 import org.w3c.dom.Node;
 
 import org.xmldb.api.base.Collection;
@@ -24,12 +24,13 @@ import org.xmldb.api.modules.CollectionManagementService;
  *
  * @author jim.fuller@webcomposite.com
  */
+@RunWith(ParallelRunner.class)
 public class EvalTest {
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
-    private Resource invokableQuery;
+    private static Resource invokableQuery;
 
     private final static String INVOKABLE_QUERY_FILENAME = "invokable.xql";
     private final static String INVOKABLE_QUERY_EXTERNAL_VAR_NAME = "some-value";
@@ -37,8 +38,8 @@ public class EvalTest {
     public EvalTest() {
     }
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeClass
+    public static void setUp() throws Exception {
         invokableQuery = existEmbeddedServer.getRoot().createResource(INVOKABLE_QUERY_FILENAME, "BinaryResource");
         invokableQuery.setContent(
             "declare variable $" + INVOKABLE_QUERY_EXTERNAL_VAR_NAME + " external;\n" + "<hello>{$" + INVOKABLE_QUERY_EXTERNAL_VAR_NAME + "}</hello>"
@@ -47,8 +48,8 @@ public class EvalTest {
         existEmbeddedServer.getRoot().storeResource(invokableQuery);
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterClass
+    public static void tearDown() throws Exception {
         existEmbeddedServer.getRoot().removeResource(invokableQuery);
     }
 

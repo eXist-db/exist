@@ -2,8 +2,11 @@ package org.exist.collections;
 
 import static org.junit.Assert.*;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+@RunWith(ParallelRunner.class)
 public class CollectionURITest {
 
 	@Test

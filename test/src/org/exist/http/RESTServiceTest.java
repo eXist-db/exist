@@ -33,12 +33,14 @@ import java.net.URL;
 import java.net.URLEncoder;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.eclipse.jetty.http.HttpStatus;
 import org.exist.Namespaces;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.test.ExistWebServer;
 import org.exist.util.Base64Encoder;
 import org.exist.xmldb.XmldbURI;
+import org.junit.runner.RunWith;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -60,6 +62,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author wolf
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
+@RunWith(ParallelRunner.class)
 public class RESTServiceTest {
 
     @ClassRule

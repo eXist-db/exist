@@ -20,6 +20,7 @@
 
 package org.exist.http;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -35,6 +36,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
@@ -45,6 +47,7 @@ import java.util.Optional;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertFalse;
 
+@RunWith(ParallelRunner.class)
 public class AuditTrailSessionListenerTest {
 
     @ClassRule

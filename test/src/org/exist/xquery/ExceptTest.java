@@ -1,5 +1,6 @@
 package org.exist.xquery;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.DocumentImpl;
@@ -8,6 +9,7 @@ import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.value.*;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.w3c.dom.Document;
 
 import javax.xml.XMLConstants;
@@ -19,6 +21,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
+@RunWith(ParallelRunner.class)
 public class ExceptTest {
 
     /**

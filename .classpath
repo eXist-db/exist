@@ -132,6 +132,7 @@
 	<classpathentry kind="lib" path="lib/endorsed/serializer-2.7.2.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xalan-2.7.2.jar"/>
 	<classpathentry kind="lib" path="lib/test/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="lib/test/junit-toolbox-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/test/objenesis-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/user/exificient-0.9.3.jar"/>
 	<classpathentry kind="lib" path="lib/user/mail-1.4.7.jar"/>

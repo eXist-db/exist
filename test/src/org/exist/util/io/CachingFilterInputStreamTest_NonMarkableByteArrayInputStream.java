@@ -24,11 +24,11 @@
  */
 package org.exist.util.io;
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import org.junit.runners.Parameterized.Parameters;
 import java.util.Collection;
 import java.util.Arrays;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -48,7 +48,7 @@ import static org.junit.Assert.assertArrayEquals;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-@RunWith(value = Parameterized.class)
+@RunWith(value = ParallelParameterized.class)
 public class CachingFilterInputStreamTest_NonMarkableByteArrayInputStream {
 
     @Parameters

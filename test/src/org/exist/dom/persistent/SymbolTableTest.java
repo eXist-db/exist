@@ -1,5 +1,6 @@
 package org.exist.dom.persistent;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.io.VariableByteInput;
@@ -14,6 +15,7 @@ import java.nio.file.Paths;
 import org.exist.EXistException;
 import org.exist.util.Configuration;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertEquals;
@@ -21,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Adam Retter <adam@exist-db.org>
  */
+@RunWith(ParallelRunner.class)
 public class SymbolTableTest {
 
     private final Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));

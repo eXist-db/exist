@@ -24,9 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -44,7 +44,7 @@ import org.junit.runners.Parameterized.Parameters;
  * @author http://www.users.bigpond.com/pmurray
  * 
  */
-@RunWith(Parameterized.class)
+@RunWith(ParallelParameterized.class)
 public class SortTest {
 
     @Parameters(name = "{0}")

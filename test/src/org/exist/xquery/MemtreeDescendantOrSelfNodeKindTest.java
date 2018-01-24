@@ -1,11 +1,14 @@
 package org.exist.xquery;
 
+import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.runner.RunWith;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author Adam Retter <adam.retter@googlemail.com>
  */
+@RunWith(ParallelRunner.class)
 public class MemtreeDescendantOrSelfNodeKindTest extends AbstractDescendantOrSelfNodeKindTest {
 
     private String getInMemoryQuery(final String queryPostfix) {

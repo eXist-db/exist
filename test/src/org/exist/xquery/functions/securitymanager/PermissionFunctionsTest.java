@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.securitymanager;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMock;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -28,11 +29,13 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import static org.junit.Assert.*;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
+@RunWith(ParallelRunner.class)
 public class PermissionFunctionsTest {
 
     /**

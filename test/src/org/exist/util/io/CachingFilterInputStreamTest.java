@@ -1,11 +1,10 @@
 package org.exist.util.io;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Arrays;
+
+import com.googlecode.junittoolbox.ParallelParameterized;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import java.io.ByteArrayInputStream;
@@ -27,7 +26,7 @@ import static org.junit.Assert.fail;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-@RunWith(value = Parameterized.class)
+@RunWith(value = ParallelParameterized.class)
 public class CachingFilterInputStreamTest {
 
     @Parameters(name = "{0}")

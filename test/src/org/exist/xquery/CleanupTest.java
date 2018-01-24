@@ -20,6 +20,7 @@
 
 package org.exist.xquery;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
@@ -35,6 +36,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 

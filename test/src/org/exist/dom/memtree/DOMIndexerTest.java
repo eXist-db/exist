@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.EXistException;
 
 import org.exist.collections.Collection;
@@ -49,6 +50,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.xml.sax.SAXException;
 
 /**
@@ -56,6 +58,7 @@ import org.xml.sax.SAXException;
  * 
  * @author wolf
  */
+@RunWith(ParallelRunner.class)
 public class DOMIndexerTest {
 
     @ClassRule

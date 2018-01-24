@@ -3,6 +3,8 @@ package org.exist.security;
 import java.io.IOException;
 import java.util.Random;
 import static org.easymock.EasyMock.expect;
+
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMock;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
@@ -15,11 +17,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  *
  * @author Adam Retter <adam@exist-db.org>
  */
+@RunWith(ParallelRunner.class)
 public class UnixStylePermissionTest {
 
     @Test
