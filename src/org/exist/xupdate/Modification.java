@@ -220,7 +220,7 @@ public abstract class Modification {
 		    // acquire a lock on all documents
 	        // we have to avoid that node positions change
 	        // during the modification
-	        lockedDocuments.lock(broker, true, false);
+	        lockedDocuments.lock(broker, true);
 	        
 		    final StoredNode ql[] = new StoredNode[nl.getLength()];		    
 			for (int i = 0; i < ql.length; i++) {
@@ -246,22 +246,26 @@ public abstract class Modification {
 	 * database modification to call the eventual triggers
 	 * @throws TriggerException 
 	 */
-	protected final void unlockDocuments(Txn transaction) throws TriggerException
+	protected final void unlockDocuments(final Txn transaction) throws TriggerException
 	{
-		if(lockedDocuments == null)
-			{return;}
-		
-		//finish Trigger
-		final Iterator<DocumentImpl> iterator = modifiedDocuments.getDocumentIterator();
-		while (iterator.hasNext()) {
-			finishTrigger(transaction, iterator.next());
+		if(lockedDocuments == null) {
+			return;
 		}
-        triggers.clear();
-        modifiedDocuments.clear();
-		
-		//unlock documents
-	    lockedDocuments.unlock(true);
-	    lockedDocuments = null;
+
+		try {
+			//finish Trigger
+			final Iterator<DocumentImpl> iterator = modifiedDocuments.getDocumentIterator();
+			while (iterator.hasNext()) {
+				finishTrigger(transaction, iterator.next());
+			}
+		} finally {
+			triggers.clear();
+			modifiedDocuments.clear();
+
+			//unlock documents
+			lockedDocuments.unlock();
+			lockedDocuments = null;
+		}
 	}
 	
 	/**

@@ -322,11 +322,11 @@ public class QueryService implements Cloneable {
 					compiledQuery = xquery.compile(broker, context, source);
 					t3 = System.currentTimeMillis();
 				}
-				docsToLock.lock(broker, false, false);
+				docsToLock.lock(broker, false);
 				try {
 					return new ItemList(xquery.execute(broker, wrap(compiledQuery, wrapperFactory, context), base), namespaceBindings.extend(), db);
 				} finally {
-					docsToLock.unlock(false);
+					docsToLock.unlock();
 					t4 = System.currentTimeMillis();
 				}
 			} finally {

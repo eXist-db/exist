@@ -144,7 +144,7 @@ public abstract class Modification extends AbstractExpression
             // acquire a lock on all documents
             // we have to avoid that node positions change
             // during the modification
-            lockedDocuments.lock(context.getBroker(), true, false);
+            lockedDocuments.lock(context.getBroker(), true);
 
             final StoredNode ql[] = new StoredNode[nodes.getItemCount()];
             for (int i = 0; i < ql.length; i++) {
@@ -238,7 +238,7 @@ public abstract class Modification extends AbstractExpression
         modifiedDocuments.clear();
 
         //unlock documents
-        lockedDocuments.unlock(true);
+        lockedDocuments.unlock();
         lockedDocuments = null;
     }
 

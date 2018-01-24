@@ -51,9 +51,17 @@ public interface DocumentSet {
 
     NodeSet docsToNodeSet();
 
-    void lock(DBBroker broker, boolean exclusive, boolean checkExisting) throws LockException;
+    /**
+     * Locks all of the documents currently in the document set.
+     *
+     * @param exclusive true if a WRITE_LOCK is required, false if a READ_LOCK is required
+     */
+    void lock(final DBBroker broker, final boolean exclusive) throws LockException;
 
-    void unlock(boolean exclusive);
+    /**
+     * Unlocks all of the documents which were locked by the previous call(s) to {@link #lock(DBBroker, boolean)}.
+     */
+    void unlock();
 
     boolean equalDocs(DocumentSet other);
 }

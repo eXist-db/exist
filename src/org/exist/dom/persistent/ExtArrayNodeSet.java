@@ -39,9 +39,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * A fast node set implementation, based on arrays to store nodes and documents.
@@ -70,6 +68,7 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
     private static final int DEFAULT_INITIAL_SIZE = 128;
 
     private final int initialSize;
+    private final Deque<Runnable> lockReleasers = new ArrayDeque<>();
 
     private int documentIds[];
     protected int lastDoc = -1;
@@ -457,25 +456,20 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
     }
 
     @Override
-    public void lock(final DBBroker broker, final boolean exclusive, final boolean checkExisting) throws LockException {
+    public void lock(final DBBroker broker, final boolean exclusive) throws LockException {
         for (int i = 0; i < partCount; i++) {
             final DocumentImpl doc = parts[i].getOwnerDocument();
             final Lock docLock = doc.getUpdateLock();
             docLock.acquire(exclusive ? LockMode.WRITE_LOCK : LockMode.READ_LOCK);
+            lockReleasers.push(() -> docLock.release(exclusive ? LockMode.WRITE_LOCK : LockMode.READ_LOCK));
         }
     }
 
     @Override
-    public void unlock(final boolean exclusive) {
-        final Thread thread = Thread.currentThread();
-        for (int i = 0; i < partCount; i++) {
-            final DocumentImpl doc = parts[i].getOwnerDocument();
-            final Lock docLock = doc.getUpdateLock();
-            if(exclusive) {
-                docLock.release(LockMode.WRITE_LOCK);
-            } else if(docLock.isLockedForRead(thread)) {
-                docLock.release(LockMode.READ_LOCK);
-            }
+    public void unlock() {
+        // NOTE: locks are released in the reverse order that they were acquired
+        while(!lockReleasers.isEmpty()) {
+            lockReleasers.pop().run();
         }
     }
 

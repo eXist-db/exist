@@ -37,11 +37,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * A fast node set implementation, based on arrays to store nodes and documents.
@@ -67,6 +63,7 @@ import java.util.NoSuchElementException;
  */
 public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet, DocumentSet {
 
+    private final Deque<Runnable> lockReleasers = new ArrayDeque<>();
     private Set<Collection> cachedCollections = null;
 
     private int documentIds[] = new int[16];
@@ -1049,27 +1046,21 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     }
 
     @Override
-    public void lock(final DBBroker broker, final boolean exclusive, final boolean checkExisting) throws LockException {
+    public void lock(final DBBroker broker, final boolean exclusive) throws LockException {
         sort();
         for(int idx = 0; idx < documentCount; idx++) {
             final DocumentImpl doc = nodes[documentOffsets[idx]].getOwnerDocument();
             final Lock docLock = doc.getUpdateLock();
             docLock.acquire(exclusive ? LockMode.WRITE_LOCK : LockMode.READ_LOCK);
+            lockReleasers.push(() -> docLock.release(exclusive ? LockMode.WRITE_LOCK : LockMode.READ_LOCK));
         }
     }
 
     @Override
-    public void unlock(final boolean exclusive) {
-        sort();
-        final Thread thread = Thread.currentThread();
-        for(int idx = 0; idx < documentCount; idx++) {
-            final DocumentImpl doc = nodes[documentOffsets[idx]].getOwnerDocument();
-            final Lock docLock = doc.getUpdateLock();
-            if(exclusive) {
-                docLock.release(LockMode.WRITE_LOCK);
-            } else if(docLock.isLockedForRead(thread)) {
-                docLock.release(LockMode.READ_LOCK);
-            }
+    public void unlock() {
+        // NOTE: locks are released in the reverse order that they were acquired
+        while(!lockReleasers.isEmpty()) {
+            lockReleasers.pop().run();
         }
     }
 
