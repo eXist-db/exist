@@ -43,6 +43,21 @@
     <target name="jnlp-sign-exist" 
             description="Sign all EXIST jar files, e.g. exist.jar, exist-XX.jar and start.jar"
             depends="jnlp-prepare,jnlp-keygen">
+
+
+        <jar update="true" file="exist.jar">
+            <manifest>
+                <!-- allow the application to run anywhere
+                     https://docs.oracle.com/javase/tutorial/deployment/deploymentInDepth/deployingWithoutCodebase.html -->
+                <attribute name="Codebase" value="*"/>
+
+                <!-- the appliction needs to be able to access localfiles, so 'sandbox' is not sufficient -->
+                <attribute name="Permissions" value="all-permissions"/>
+
+                <!-- this name is visible in the security window -->
+                <attribute name="Application-Name" value="eXist Native XML Database Client"/>
+            </manifest>
+        </jar>
         
         <signjar alias="${keystore.alias}" storepass="${keystore.password}"
                  keystore="${keystore.file}">
