@@ -24,13 +24,12 @@ package org.exist.xmldb.concurrent.action;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import org.exist.TestUtils;
 import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
-import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.concurrent.DBUtils;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -50,7 +49,7 @@ public class CreateCollectionAction extends Action {
         addFiles(target);
         String resources[] = target.listResources();
         
-        CollectionManagementServiceImpl mgt = (CollectionManagementServiceImpl)
+        EXistCollectionManagementService mgt = (EXistCollectionManagementService)
             col.getService("CollectionManagementService", "1.0");
         Collection copy = DBUtils.addCollection(col, "CC" + collectionCnt);
         for (int i = 0; i < resources.length; i++) {

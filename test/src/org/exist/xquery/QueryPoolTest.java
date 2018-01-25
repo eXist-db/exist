@@ -24,7 +24,7 @@ package org.exist.xquery;
 
 import org.exist.source.StringSource;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.EXistXQueryService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -45,7 +45,7 @@ public class QueryPoolTest {
 
     @Test
     public void differentQueries() throws XMLDBException {
-        XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+        EXistXQueryService service = (EXistXQueryService) testCollection.getService("XQueryService", "1.0");
         for (int i = 0; i < 1000; i++) {
             String query = "update insert <node id='id" + Integer.toHexString(i) + "'>" +
                     "<p>Some longer text <b>content</b> in this node. Some longer text <b>content</b> in this node. " +

@@ -10,7 +10,7 @@ import javax.xml.transform.OutputKeys;
 
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
-import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -65,8 +65,8 @@ public class XQueryExample {
             Collection col =
                 DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION);
             // get query-service
-            XQueryService service =
-                (XQueryService) col.getService( "XQueryService", "1.0" );
+            EXistXQueryService service =
+                (EXistXQueryService) col.getService( "XQueryService", "1.0" );
             
             // set pretty-printing on
             service.setProperty( OutputKeys.INDENT, "yes" );

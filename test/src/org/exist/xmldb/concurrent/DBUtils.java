@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.EXistXQueryService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -158,7 +158,7 @@ public class DBUtils {
 	public static ResourceSet xquery(Collection collection, String xquery)
 	throws XMLDBException
 	{
-		XQueryService service = getXQueryService(collection);
+		EXistXQueryService service = getXQueryService(collection);
 		Source source = new StringSource(xquery);
 		return service.execute(source);
 	}
@@ -170,10 +170,10 @@ public class DBUtils {
 				"XPathQueryService", "1.0");
 	}
 
-	public static XQueryService getXQueryService(Collection collection)
+	public static EXistXQueryService getXQueryService(Collection collection)
 	throws XMLDBException
 	{
-		return (XQueryService) collection.getService(
+		return (EXistXQueryService) collection.getService(
 				"XQueryService", "1.0");
 	}
 	
@@ -184,7 +184,7 @@ public class DBUtils {
         final String query = "util:index-keys(//*, \"\", function($key, $options) {\n" +
                 "    $key\n" +
                 "}, 100, \"lucene-index\")";
-        XQueryService service = getXQueryService(root);
+        EXistXQueryService service = getXQueryService(root);
         ResourceSet result = service.query(query);
 
         ArrayList<String> list = new ArrayList<String>();

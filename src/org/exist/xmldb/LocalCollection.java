@@ -64,7 +64,7 @@ import org.xmldb.api.modules.XMLResource;
  *
  * @author     wolf
  */
-public class LocalCollection extends AbstractLocal implements CollectionImpl {
+public class LocalCollection extends AbstractLocal implements EXistCollection {
 
     private static Logger LOG = LogManager.getLogger(LocalCollection.class);
 

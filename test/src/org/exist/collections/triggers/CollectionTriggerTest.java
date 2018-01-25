@@ -5,7 +5,7 @@ import org.exist.TestUtils;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.xmldb.api.base.Collection;
-import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
@@ -21,14 +21,14 @@ public class CollectionTriggerTest {
 
     private final static String TEST_COLLECTION = "testCollectionTrigger";
     private static Collection testCollection;
-    private static CollectionManagementServiceImpl rootSrv;
+    private static EXistCollectionManagementService rootSrv;
 
 
     @Test
     public void move() throws XMLDBException, EXistException, PermissionDeniedException {
 
         //create /db/testCollectionTrigger/srcCollection
-        final CollectionManagementServiceImpl colMgmtSrv = (CollectionManagementServiceImpl)testCollection.getService("CollectionManagementService", "1.0");
+        final EXistCollectionManagementService colMgmtSrv = (EXistCollectionManagementService)testCollection.getService("CollectionManagementService", "1.0");
         final Collection srcCollection = colMgmtSrv.createCollection("col1");
 
         final XmldbURI baseUri = XmldbURI.create(testCollection.getName());
@@ -66,7 +66,7 @@ public class CollectionTriggerTest {
     /** just start the DB and create the test collection */
     @BeforeClass
     public static void startDB() throws XMLDBException {
-        rootSrv = (CollectionManagementServiceImpl)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        rootSrv = (EXistCollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
     }
 
     @AfterClass

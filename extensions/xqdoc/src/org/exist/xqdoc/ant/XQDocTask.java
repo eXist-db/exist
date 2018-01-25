@@ -14,7 +14,7 @@ import org.exist.ant.AbstractXMLDBTask;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.util.FileUtils;
-import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.xmldb.api.DatabaseManager;
@@ -67,7 +67,7 @@ public class XQDocTask extends AbstractXMLDBTask {
             } else
                 root = DatabaseManager.getCollection(uri, user, password);
 
-            XQueryService service = (XQueryService) root.getService("XQueryService", "1.0");
+            EXistXQueryService service = (EXistXQueryService) root.getService("XQueryService", "1.0");
             Source source = new StringSource(XQUERY);
             service.declareVariable("collection", root.getName());
             service.declareVariable("uri", "");

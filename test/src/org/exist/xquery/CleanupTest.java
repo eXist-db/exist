@@ -29,7 +29,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.EXistResource;
-import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.EXistXQueryService;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Sequence;
 import org.junit.After;
@@ -106,7 +106,7 @@ public class CleanupTest {
 
     @Test
     public void resetStateOfModuleVars() throws XMLDBException, XPathException {
-        final XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
+        final EXistXQueryService service = (EXistXQueryService)collection.getService("XQueryService", "1.0");
         final CompiledExpression compiled = service.compile(TEST_QUERY);
 
         final Module module = ((PathExpr) compiled).getContext().getModule(MODULE_NS);
@@ -155,7 +155,7 @@ public class CleanupTest {
     @Test
     public void preserveExternalVariable() throws XMLDBException, XPathException {
         // see https://github.com/eXist-db/exist/pull/1512 and use of util:eval
-        final XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
+        final EXistXQueryService service = (EXistXQueryService)collection.getService("XQueryService", "1.0");
 
         final CompiledExpression compiled = service.compile(INTERNAL_MODULE_EVAL_TEST);
         final Module module = ((PathExpr) compiled).getContext().getModule(MODULE_NS);
@@ -171,7 +171,7 @@ public class CleanupTest {
 
     @Test
     public void resetStateofInternalModule() throws XMLDBException, XPathException {
-        final XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
+        final EXistXQueryService service = (EXistXQueryService)collection.getService("XQueryService", "1.0");
 
         final CompiledExpression compiled = service.compile(INTERNAL_MODULE_TEST);
         final Module module = ((PathExpr) compiled).getContext().getModule(MODULE_NS);

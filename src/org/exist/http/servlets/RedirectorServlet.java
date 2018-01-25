@@ -26,8 +26,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.source.FileSource;
-import org.exist.xmldb.CollectionImpl;
-import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.EXistCollection;
+import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.response.ResponseModule;
@@ -176,8 +176,8 @@ public class RedirectorServlet extends HttpServlet {
         try {
             // Prepare and execute the XQuery
             final Collection collection = DatabaseManager.getCollection(collectionURI.toString(), user, password);
-            final XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
-            if(!((CollectionImpl)collection).isRemoteCollection()) {
+            final EXistXQueryService service = (EXistXQueryService) collection.getService("XQueryService", "1.0");
+            if(!((EXistCollection)collection).isRemoteCollection()) {
                 service.declareVariable(RequestModule.PREFIX + ":request", new HttpRequestWrapper(request, "UTF-8", "UTF-8"));
                 service.declareVariable(ResponseModule.PREFIX + ":response", new HttpResponseWrapper(response));
                 service.declareVariable(SessionModule.PREFIX + ":session", new HttpSessionWrapper(request.getSession( false )));

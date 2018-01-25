@@ -29,7 +29,7 @@ public class CopyMoveTest {
         XMLResource original = (XMLResource) testCollection.createResource("original", XMLResource.RESOURCE_TYPE);
         original.setContent("<sample/>");
         testCollection.storeResource(original);
-        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) testCollection.getService("CollectionManagementService", "1.0");
+        EXistCollectionManagementService cms = (EXistCollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
         cms.copyResource("original", "", "duplicate");
         assertEquals(2, testCollection.getResourceCount());
         XMLResource duplicate = (XMLResource) testCollection.getResource("duplicate");
@@ -42,7 +42,7 @@ public class CopyMoveTest {
         XMLResource original = (XMLResource) testCollection.createResource("original", XMLResource.RESOURCE_TYPE);
         original.setContent("<sample/>");
         testCollection.storeResource(original);
-        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) testCollection.getService("CollectionManagementService", "1.0");
+        EXistCollectionManagementService cms = (EXistCollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
         cms.copyResource("original", "", "duplicate");
         XMLResource duplicate = (XMLResource) testCollection.getResource("duplicate");
         assertNotNull(duplicate);
@@ -60,8 +60,8 @@ public class CopyMoveTest {
         final String resourceURL = collectionURL + "/" + originalResource;
         
         //get collection & services
-        CollectionImpl col = (CollectionImpl)DatabaseManager.getCollection(collectionURL);
-        CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) col.getService("CollectionManagementService", "1.0");
+        EXistCollection col = (EXistCollection)DatabaseManager.getCollection(collectionURL);
+        EXistCollectionManagementService service = (EXistCollectionManagementService) col.getService("CollectionManagementService", "1.0");
         UserManagementService ums = (UserManagementService)DatabaseManager.getCollection(collectionURL, ADMIN_UID, ADMIN_PWD).getService("UserManagementService", "1.0");
         
         //store xml document

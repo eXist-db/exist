@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.net.URISyntaxException;
 import org.exist.dom.QName;
-import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -85,7 +85,7 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
 		    logger.error("Resource " + doc + " not found");
                     throw new XPathException(this, "Resource " + doc + " not found");
                 }
-                final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) collection.getService("CollectionManagementService", "1.0");
+                final EXistCollectionManagementService service = (EXistCollectionManagementService) collection.getService("CollectionManagementService", "1.0");
                 service.copyResource(doc, destination, null);
             } catch (final XMLDBException e) {
 		logger.error("XMLDB exception caught: ", e);
@@ -94,7 +94,7 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
             
         } else {
             try {
-                final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) collection.getService("CollectionManagementService", "1.0");
+                final EXistCollectionManagementService service = (EXistCollectionManagementService) collection.getService("CollectionManagementService", "1.0");
                 // DWES to check not sure about XmldbURI.xmldbUriFor() here.
                 service.copy(XmldbURI.xmldbUriFor(collection.getName()), destination, null);
 

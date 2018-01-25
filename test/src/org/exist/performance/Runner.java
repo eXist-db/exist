@@ -24,7 +24,7 @@ package org.exist.performance;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.performance.actions.Action;
-import org.exist.xmldb.CollectionImpl;
+import org.exist.xmldb.EXistCollection;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -151,7 +151,7 @@ public class Runner {
 
     private void shutdownDb() throws XMLDBException {
         for (Connection connection : connections.values()) {
-            CollectionImpl collection = (CollectionImpl) connection.getCollection("/db");
+            EXistCollection collection = (EXistCollection) connection.getCollection("/db");
             if (!collection.isRemoteCollection()) {
                 DatabaseInstanceManager mgr = (DatabaseInstanceManager)
                         collection.getService("DatabaseInstanceManager", "1.0");

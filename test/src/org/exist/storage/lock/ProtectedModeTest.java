@@ -24,7 +24,7 @@ package org.exist.storage.lock;
 import org.exist.TestDataGenerator;
 import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.xmldb.XPathQueryServiceImpl;
+import org.exist.xmldb.EXistXPathQueryService;
 import org.exist.xmldb.IndexQueryService;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -77,7 +77,7 @@ public class ProtectedModeTest {
     public void queryCollection() {
         try {
             Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", "");
-            XPathQueryServiceImpl service = (XPathQueryServiceImpl) root.getService("XQueryService", "1.0");
+            EXistXPathQueryService service = (EXistXPathQueryService) root.getService("XQueryService", "1.0");
             try {
                 service.beginProtected();
                 ResourceSet result = service.query("collection('/db/protected/test5')//book");
@@ -95,7 +95,7 @@ public class ProtectedModeTest {
     public void queryRoot() {
         try {
             Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", "");
-            XPathQueryServiceImpl service = (XPathQueryServiceImpl) root.getService("XQueryService", "1.0");
+            EXistXPathQueryService service = (EXistXPathQueryService) root.getService("XQueryService", "1.0");
             try {
                 service.beginProtected();
                 ResourceSet result = service.query("//book");
@@ -113,7 +113,7 @@ public class ProtectedModeTest {
     public void queryDocs() {
         try {
             Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", "");
-            XPathQueryServiceImpl service = (XPathQueryServiceImpl) root.getService("XQueryService", "1.0");
+            EXistXPathQueryService service = (EXistXPathQueryService) root.getService("XQueryService", "1.0");
             Random random = new Random();
             for (int i = 0; i < COLLECTION_COUNT; i++) {
                 String docURI = "doc('/db/protected/test" + i + "/xdb" + random.nextInt(DOCUMENT_COUNT) + ".xml')";

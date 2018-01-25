@@ -54,7 +54,7 @@ import org.xmldb.api.modules.XMLResource;
  * @author wolf Updated Andy Foster - Updated code to allow child collection
  * cache to resync with the remote collection.
  */
-public class RemoteCollection extends AbstractRemote implements CollectionImpl {
+public class RemoteCollection extends AbstractRemote implements EXistCollection {
 
     protected final static Logger LOG = LogManager.getLogger(RemoteCollection.class);
 

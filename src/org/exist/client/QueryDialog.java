@@ -57,9 +57,9 @@ import javax.swing.border.BevelBorder;
 import javax.xml.transform.OutputKeys;
 
 import org.exist.security.PermissionDeniedException;
+import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.UserManagementService;
-import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQueryContext;
@@ -481,7 +481,7 @@ public class QueryDialog extends JFrame {
             long tCompiled = 0;
 
             try {
-                final XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
+                final EXistXQueryService service = (EXistXQueryService) collection.getService("XQueryService", "1.0");
                 service.setProperty(OutputKeys.INDENT, properties.getProperty(OutputKeys.INDENT, "yes"));
                 final long t0 = System.currentTimeMillis();
                 final CompiledExpression compiled = service.compile(xpath);
@@ -547,7 +547,7 @@ public class QueryDialog extends JFrame {
             long tCompiled = 0;
             ResourceSet result = null;
             try {
-                final XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
+                final EXistXQueryService service = (EXistXQueryService) collection.getService("XQueryService", "1.0");
                 service.setProperty(OutputKeys.INDENT, properties.getProperty(OutputKeys.INDENT, "yes"));
                 final long t0 = System.currentTimeMillis();
 

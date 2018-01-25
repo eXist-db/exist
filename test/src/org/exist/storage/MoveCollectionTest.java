@@ -41,7 +41,7 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
-import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
@@ -215,7 +215,7 @@ public class MoveCollectionTest {
         assertNotNull(pool);
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         assertNotNull(root);
-        final CollectionManagementServiceImpl rootMgr = (CollectionManagementServiceImpl) root.getService("CollectionManagementService", "1.0");
+        final EXistCollectionManagementService rootMgr = (EXistCollectionManagementService) root.getService("CollectionManagementService", "1.0");
         assertNotNull(rootMgr);
 
         org.xmldb.api.base.Collection test = root.getChildCollection("test");
@@ -226,7 +226,7 @@ public class MoveCollectionTest {
 
         org.xmldb.api.base.Collection test2 = test.getChildCollection("test2");
         if (test2 == null) {
-            CollectionManagementServiceImpl testMgr = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+            EXistCollectionManagementService testMgr = (EXistCollectionManagementService) test.getService("CollectionManagementService", "1.0");
             test2 = testMgr.createCollection("test2");
         }
         assertNotNull(test2);

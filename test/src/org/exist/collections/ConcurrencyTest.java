@@ -1,7 +1,7 @@
 package org.exist.collections;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.xmldb.XPathQueryServiceImpl;
+import org.exist.xmldb.EXistXPathQueryService;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -80,7 +80,7 @@ public class ConcurrencyTest {
         public void run() {
             try {
                 Collection collection = DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", "");
-                XPathQueryServiceImpl service = (XPathQueryServiceImpl) collection.getService("XQueryService", "1.0");
+                EXistXPathQueryService service = (EXistXPathQueryService) collection.getService("XQueryService", "1.0");
                 service.beginProtected();
                 try {
                     if (start > 0)

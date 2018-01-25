@@ -39,7 +39,7 @@ import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
-import org.exist.xmldb.CollectionImpl;
+import org.exist.xmldb.EXistCollection;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.ExtendedResource;
 import org.exist.xmldb.UserManagementService;
@@ -286,7 +286,7 @@ public class Backup
         serializer.startPrefixMapping( "", Namespaces.EXIST_NS );
 
         // write <collection> element
-        final CollectionImpl cur  = (CollectionImpl)current;
+        final EXistCollection cur  = (EXistCollection)current;
         final AttributesImpl attr = new AttributesImpl();
 
         //The name should have come from an XmldbURI.toString() call

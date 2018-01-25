@@ -47,7 +47,7 @@ import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XPathQueryServiceImpl;
+import org.exist.xmldb.EXistXPathQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -335,7 +335,7 @@ public class DeadlockTest {
 						.getCollection("xmldb:exist://" + collection, "admin", null);
                 if (testCollection == null)
                     return;
-                XPathQueryServiceImpl service = (XPathQueryServiceImpl) testCollection
+                EXistXPathQueryService service = (EXistXPathQueryService) testCollection
 						.getService("XQueryService", "1.0");
 				service.beginProtected();
 				try {

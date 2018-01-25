@@ -27,7 +27,7 @@ import org.exist.performance.Connection;
 import org.exist.EXistException;
 import org.exist.util.FileUtils;
 import org.exist.xquery.value.IntegerValue;
-import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.EXistXQueryService;
 import org.exist.util.serializer.DOMSerializer;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -113,7 +113,7 @@ public class DataGenerator extends AbstractAction {
     @Override
     public void execute(Connection connection) throws XMLDBException, EXistException {
         Collection collection = connection.getCollection("/db");
-        XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
+        EXistXQueryService service = (EXistXQueryService) collection.getService("XQueryService", "1.0");
         service.declareVariable("filename", "");
         service.declareVariable("count", "0");
         String query = IMPORT + xqueryContent;

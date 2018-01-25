@@ -36,10 +36,9 @@ import java.util.stream.Collectors;
 
 import org.exist.source.FileSource;
 import org.exist.source.Source;
-import org.exist.util.FileUtils;
 import org.exist.util.SystemExitCodes;
 import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.Sequence;
 import org.w3c.dom.Document;
@@ -105,7 +104,7 @@ public class TestRunnerMain {
 	private static void runTests(final List<Path> files, final String id) {
 		try {
 			StringBuilder results = new StringBuilder();
-			XQueryService xqs = (XQueryService) rootCollection.getService("XQueryService", "1.0");
+			EXistXQueryService xqs = (EXistXQueryService) rootCollection.getService("XQueryService", "1.0");
 			Source query = new FileSource(Paths.get("test/src/xquery/runTests.xql"), false);
 			for (final Path file : files) {
 				if (!Files.isReadable(file)) {

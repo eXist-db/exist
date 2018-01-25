@@ -60,7 +60,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 
-public class LocalXPathQueryService extends AbstractLocalService implements XPathQueryServiceImpl, XQueryService {
+public class LocalXPathQueryService extends AbstractLocalService implements EXistXPathQueryService, EXistXQueryService {
 
 	private final static Logger LOG = LogManager.getLogger(LocalXPathQueryService.class);
 

@@ -273,8 +273,8 @@ public class EvalTest {
     }
 
     private ResourceSet executeModule(final Collection collection, final String moduleName) throws XMLDBException {
-        final XPathQueryServiceImpl service = (XPathQueryServiceImpl) collection.getService("XQueryService", "1.0");
-        final XmldbURI moduleUri = ((CollectionImpl)collection).getPathURI().append(moduleName);
+        final EXistXPathQueryService service = (EXistXPathQueryService) collection.getService("XQueryService", "1.0");
+        final XmldbURI moduleUri = ((EXistCollection)collection).getPathURI().append(moduleName);
         return service.executeStoredQuery(moduleUri.toString());
     }
 }

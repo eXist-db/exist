@@ -104,7 +104,7 @@ public class TreeLevelOrderTest {
     @Test
     public final void treeLevelOrder() throws XMLDBException, IllegalAccessException, InstantiationException, ClassNotFoundException {
         String document = "survey.xml";
-        XQueryService service = null;
+        EXistXQueryService service = null;
 
         // Obtain XQuery service
         service = getXQueryService();
@@ -151,7 +151,7 @@ public class TreeLevelOrderTest {
      * @param service  the xquery service
      * @param document the document name
      */
-    private final void store(String xml, XQueryService service, String document) throws XMLDBException {
+    private final void store(String xml, EXistXQueryService service, String document) throws XMLDBException {
         StringBuilder query = new StringBuilder();
         query.append("xquery version \"1.0\";");
         query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
@@ -171,7 +171,7 @@ public class TreeLevelOrderTest {
      * @param service  the xquery service
      * @param document the document to load
      */
-    private final Node load(XQueryService service, String document) throws XMLDBException {
+    private final Node load(EXistXQueryService service, String document) throws XMLDBException {
         StringBuilder query = new StringBuilder();
         query.append("xquery version \"1.0\";");
         query.append("let $survey := xmldb:document(string-join(('" + XmldbURI.ROOT_COLLECTION + "', $document), '/'))");
@@ -192,8 +192,8 @@ public class TreeLevelOrderTest {
      *
      * @return the xquery service
      */
-    private final XQueryService getXQueryService() throws XMLDBException {
-        XQueryService service = (XQueryService) root.getService("XQueryService", "1.0");
+    private final EXistXQueryService getXQueryService() throws XMLDBException {
+        EXistXQueryService service = (EXistXQueryService) root.getService("XQueryService", "1.0");
         return service;
     }
 

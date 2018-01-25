@@ -98,7 +98,7 @@ public class MultiDBTest {
     }
     
     private static void doQuery(Collection collection, String query) throws XMLDBException {
-        XQueryService service = (XQueryService)
+        EXistXQueryService service = (EXistXQueryService)
             collection.getService("XQueryService", "1.0");
         ResourceSet result = service.query(query);
         for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {

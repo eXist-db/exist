@@ -27,7 +27,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.Date;
 
 import org.exist.dom.QName;
-import org.exist.xmldb.CollectionImpl;
+import org.exist.xmldb.EXistCollection;
 import org.exist.xmldb.EXistResource;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -98,7 +98,7 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 	try {
 	    Date date;
 	    if(getSignature().getArgumentCount() == 1) {
-                date = ((CollectionImpl)collection).getCreationTime();
+                date = ((EXistCollection)collection).getCreationTime();
 	    } else {
                 final Resource resource = collection.getResource(args[1].getStringValue());
                 

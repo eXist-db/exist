@@ -27,7 +27,7 @@ import org.exist.performance.AbstractAction;
 import org.exist.performance.Connection;
 import org.exist.performance.Runner;
 import org.exist.EXistException;
-import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.EXistXQueryService;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
@@ -79,7 +79,7 @@ public class XQuery extends AbstractAction {
         Collection collection = connection.getCollection(collectionPath);
         if (collection == null)
             throw new EXistException("collection " + collectionPath + " not found");
-        XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
+        EXistXQueryService service = (EXistXQueryService) collection.getService("XQueryService", "1.0");
         if (getParent().getNamespaces() != null) {
         	for (Map.Entry<String, String> entry : getParent().getNamespaces().entrySet()) {
         		service.setNamespace(entry.getKey(), entry.getValue());

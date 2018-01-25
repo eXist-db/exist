@@ -33,7 +33,7 @@ import org.xmldb.api.modules.CollectionManagementService;
  *
  * @author wolf
  */
-public interface CollectionManagementServiceImpl extends CollectionManagementService {
+public interface EXistCollectionManagementService extends CollectionManagementService {
 
     /**
      * @deprecated Use XmldbURI version instead

@@ -30,7 +30,7 @@ import org.xmldb.api.base.XMLDBException;
 /**
  * This interface extends org.xmldb.api.base.Collection with extensions specific to eXist.
  */
-public interface CollectionImpl extends Collection {
+public interface EXistCollection extends Collection {
 
     boolean isRemoteCollection() throws XMLDBException;
 
