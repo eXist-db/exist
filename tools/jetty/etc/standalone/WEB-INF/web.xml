@@ -141,18 +141,12 @@
             <param-value>WEB-INF/controller-config.xml</param-value>
         </init-param>
     </servlet>
-    
+
     <servlet>
         <servlet-name>XSLTServlet</servlet-name>
         <servlet-class>org.exist.http.servlets.XSLTServlet</servlet-class>
     </servlet>
 
-    <!-- Atom Atom Publishing Protocol -->
-    <servlet>
-        <servlet-name>AtomServlet</servlet-name>
-        <servlet-class>org.exist.atom.http.AtomServlet</servlet-class>
-    </servlet>
-    
     <!--
         EXQuery - RESTXQ
     -->

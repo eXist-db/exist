@@ -359,11 +359,6 @@
                 <include name="**/*.xq*"/>
             </fileset>
         </copy>
-        <copy todir="${build.classes}/org/exist/atom/modules">
-            <fileset dir="${src}/org/exist/atom/modules">
-                <include name="**.xq"/>
-            </fileset>
-        </copy>
         <copy todir="${build.classes}/org/exist/http">
             <fileset dir="${src}/org/exist/http">
                 <include name="**.xq"/>
@@ -430,7 +425,6 @@
             </manifest>
             <exclude name="org/exist/*.xsl"/>
             <exclude name="org/exist/ant/**"/>
-            <exclude name="org/exist/atom/**"/>
             <exclude name="org/exist/http/**"/>
             <exclude name="org/exist/jetty/**"/>
             <exclude name="org/exist/jsp/**"/>
@@ -496,7 +490,6 @@
             </manifest>
             <include name="org/exist/*.xsl"/>
             <include name="org/exist/ant/**"/>
-            <include name="org/exist/atom/**"/>
             <include name="org/exist/http/**"/>
             <include name="org/exist/jetty/**"/>
             <include name="org/exist/jsp/**"/>
