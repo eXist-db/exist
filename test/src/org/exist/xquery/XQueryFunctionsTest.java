@@ -925,7 +925,7 @@ public class XQueryFunctionsTest {
     @Test
     public void collectionAvailable1() throws XMLDBException {
         //remove the test collection if it already exists
-        String collectionName = "testCollectionAvailable";
+        String collectionName = "testCollectionAvailable1";
         String collectionPath = XmldbURI.ROOT_COLLECTION + "/" + collectionName;
         String collectionURI = ROOT_COLLECTION_URI + "/" + collectionName;
 
@@ -946,7 +946,7 @@ public class XQueryFunctionsTest {
     @Test
     public void collectionAvailable2() throws XMLDBException {
         //add the test collection
-        String collectionName = "testCollectionAvailable";
+        String collectionName = "testCollectionAvailable2";
         String collectionPath = XmldbURI.ROOT_COLLECTION + "/" + collectionName;
         String collectionURI = ROOT_COLLECTION_URI + "/" + collectionName;
 
