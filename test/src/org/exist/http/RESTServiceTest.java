@@ -62,7 +62,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author wolf
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
-@RunWith(ParallelRunner.class)
+//@RunWith(ParallelRunner.class)    // TODO(AR) when running in parallel a deadlock is encountered in eXist-db... this needs to be resolved!
 public class RESTServiceTest {
 
     @ClassRule
