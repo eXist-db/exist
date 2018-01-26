@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>xquery3 typeswitch</testName>
+    <description>
+        <p>Test xquery3 typeswitch functionality</p>
+        <author>Joe Wicentowski</author>
+        <author>Dmitriy Shabanov</author>
+    </description>
+    <setup>
+    </setup>
+    <tearDown>
+    </tearDown>
+
+    <test output="text">
+        <task>deprecated empty()
+        </task>
+        <code><![CDATA[
+xquery version "3.1";
+
+let $value := <node/>
+return
+    typeswitch ($value)
+        case empty() return "empty?!"
+        default return "default"
+]]>
+        </code>
+        <error>XPST0003</error>
+    </test>
+</TestSet>

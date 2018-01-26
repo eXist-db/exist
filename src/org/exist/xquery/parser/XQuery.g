@@ -543,12 +543,9 @@ typeDeclaration throws XPathException:
 
 sequenceType throws XPathException
 :
-	( "empty" LPAREN ) => "empty"^ LPAREN! RPAREN! // deprecated
-	|
 	( "empty-sequence" LPAREN ) => "empty-sequence"^ LPAREN! RPAREN!
 	|
 	itemType ( occurrenceIndicator )?
-	// conformant: ( "empty-sequence" LPAREN ) => "empty-sequence"^ LPAREN! RPAREN! | itemType ( occurrenceIndicator )?
 	;
 
 occurrenceIndicator

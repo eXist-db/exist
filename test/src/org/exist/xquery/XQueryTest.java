@@ -520,7 +520,7 @@ public class XQueryTest {
         query = "let $v as item()* := ()\n" + "return $v";
         result = service.query(query);
         assertEquals("XQuery: " + query, 0, result.getSize());
-        query = "let $v as empty() := ()\n" + "return $v";
+        query = "let $v as empty-sequence() := ()\n" + "return $v";
         result = service.query(query);
         assertEquals("XQuery: " + query, 0, result.getSize());
         query = "let $v as item() := ()\n" + "return $v";
@@ -568,7 +568,7 @@ public class XQueryTest {
         query = "declare variable $v as item()* { () };\n" + "$v";
         result = service.query(query);
         assertEquals("XQuery: " + query, 0, result.getSize());
-        query = "declare variable $v as empty() { () };\n" + "$v";
+        query = "declare variable $v as empty-sequence() { () };\n" + "$v";
         result = service.query(query);
         assertEquals("XQuery: " + query, 0, result.getSize());
         query = "declare variable $v as item() { () };\n" + "$v";
