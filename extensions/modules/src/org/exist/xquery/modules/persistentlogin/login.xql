@@ -42,7 +42,7 @@ import module namespace plogin="http://exist-db.org/xquery/persistentlogin"
     by request parameter "duration".
     @param $asDba  if true, require the user to be a member of the dba administrators group
 :)
-declare function login:set-user($domain as xs:string, $path as xs:string?, $maxAge as xs:dayTimeDuration?, $asDba as xs:boolean) as empty() {
+declare function login:set-user($domain as xs:string, $path as xs:string?, $maxAge as xs:dayTimeDuration?, $asDba as xs:boolean) as empty-sequence() {
     let $user := request:get-parameter("user", ())
     let $password := request:get-parameter("password", ())
     let $logout := request:get-parameter("logout", ())
@@ -69,7 +69,7 @@ declare function login:set-user($domain as xs:string, $path as xs:string?, $maxA
 (:~
     Same as login:set-user#4 but $path set to the default (use context path).
 :)
-declare function login:set-user($domain as xs:string, $maxAge as xs:dayTimeDuration?, $asDba as xs:boolean) as empty() {
+declare function login:set-user($domain as xs:string, $maxAge as xs:dayTimeDuration?, $asDba as xs:boolean) as empty-sequence() {
     login:set-user($domain, (), $maxAge, $asDba)
 };
 
@@ -88,12 +88,12 @@ declare %private function login:callback($newToken as xs:string?, $user as xs:st
         ()
 };
 
-declare %private function login:get-credentials($domain as xs:string, $path as xs:string?, $token as xs:string, $asDba as xs:boolean) as empty() {
+declare %private function login:get-credentials($domain as xs:string, $path as xs:string?, $token as xs:string, $asDba as xs:boolean) as empty-sequence() {
     plogin:login($token, login:callback(?, ?, ?, ?, $domain, $path, $asDba))
 };
 
 declare %private function login:create-login-session($domain as xs:string, $path as xs:string?, $user as xs:string, $password as xs:string,
-    $maxAge as xs:dayTimeDuration?, $asDba as xs:boolean) as empty() {
+    $maxAge as xs:dayTimeDuration?, $asDba as xs:boolean) as empty-sequence() {
     if (exists($maxAge)) then (
         plogin:register($user, $password, $maxAge, login:callback(?, ?, ?, ?, $domain, $path, $asDba)),
         session:invalidate()
@@ -101,7 +101,7 @@ declare %private function login:create-login-session($domain as xs:string, $path
         login:fallback-to-session($domain, $user, $password, $asDba)
 };
 
-declare %private function login:clear-credentials($token as xs:string?, $domain as xs:string, $path as xs:string?) as empty() {
+declare %private function login:clear-credentials($token as xs:string?, $domain as xs:string, $path as xs:string?) as empty-sequence() {
     response:set-cookie($domain, "deleted", xs:dayTimeDuration("-P1D"), false(), (), 
         if (exists($path)) then $path else request:get-context-path()),
     if ($token and $token != "deleted") then

@@ -81,7 +81,7 @@ declare function xqts:initialize() as element() {
         $config
 };
 
-declare function xqts:create-progress-file($testCount as xs:int) as empty() {
+declare function xqts:create-progress-file($testCount as xs:int) as empty-sequence() {
     let $results := xdb:store("/db/XQTS", "progress.xml", 
         <progress total="{$testCount}" done="0" failed="0" passed="0" error="0"/>)
     return ()
@@ -467,7 +467,7 @@ declare function xqts:run-single-test-case($case as element(catalog:test-case),
         $result
 };
 
-declare function xqts:run-test-group($group as element(catalog:test-group), $inMemory as xs:boolean) as empty() {
+declare function xqts:run-test-group($group as element(catalog:test-group), $inMemory as xs:boolean) as empty-sequence() {
     (: Create the collection hierarchy for this group and get the results.xml doc to append to. :)
     let $resultsDoc := xqts:create-collections($group)
     let $tests := $group/catalog:test-case
@@ -515,7 +515,7 @@ declare function xqts:test-single($name as xs:string, $inMemory as xs:boolean) a
             <error>Test case not found: {$name}.</error>
 };
 
-declare function xqts:test-group($groupName as xs:string, $inMemory as xs:boolean) as empty() {
+declare function xqts:test-group($groupName as xs:string, $inMemory as xs:boolean) as empty-sequence() {
     let $group := //catalog:test-group[@name = $groupName]
     return (
         xqts:create-progress-file(count($group//catalog:test-case)),
@@ -523,13 +523,13 @@ declare function xqts:test-group($groupName as xs:string, $inMemory as xs:boolea
     )
 };
 
-declare function xqts:test-all($inMemory as xs:boolean) as empty() {
+declare function xqts:test-all($inMemory as xs:boolean) as empty-sequence() {
     for $test in /catalog:test-suite/catalog:test-group
     return
         xqts:test-group($test/@name, $inMemory)
 };
 
-declare function xqts:report-progress($testResults as element()*) as empty() {
+declare function xqts:report-progress($testResults as element()*) as empty-sequence() {
     let $fails := count($testResults[@result = 'fail'])
     let $errors := count($testResults[@result = 'error'])
     let $passed := count($testResults[@result = 'pass'])
@@ -543,7 +543,7 @@ declare function xqts:report-progress($testResults as element()*) as empty() {
     )
 };
 
-declare function xqts:finish($result as element()) as empty() {
+declare function xqts:finish($result as element()) as empty-sequence() {
     let $passed := count($result//test-case[@result = 'pass'])
     let $failed := count($result//test-case[@result = 'fail'])
     let $error := count($result//test-case[@result = 'error'])
