@@ -25,6 +25,7 @@ package org.exist.source;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
@@ -96,7 +97,15 @@ public interface Source {
     InputStream getInputStream() throws IOException;
 
     String getContent() throws IOException;
-    
+
+    /**
+     * Returns the character encoding of the underlying source or null if unknown.
+     *
+     * @return the character encoding
+     * @throws IOException
+     */
+    Charset getEncoding() throws IOException;
+
     /**
      * Set a timestamp for this source. This is used
      * by {@link org.exist.storage.XQueryPool} to

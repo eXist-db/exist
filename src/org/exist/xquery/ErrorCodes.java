@@ -214,6 +214,8 @@ public class ErrorCodes {
     public static final ErrorCode FOJS0003 = new W3CErrorCode("FOJS0003", "JSON duplicate keys.");
 
     public static final ErrorCode FOUT1170 = new W3CErrorCode("FOUT1170", "Invalid $href argument to fn:unparsed-text() (etc.)");
+    public static final ErrorCode FOUT1190 = new W3CErrorCode("FOUT1190", "Cannot decode resource retrieved by fn:unparsed-text() (etc.)");
+    public static final ErrorCode FOUT1200 = new W3CErrorCode("FOUT1200", "Cannot infer encoding of resource retrieved by fn:unparsed-text() (etc.)");
     public static final ErrorCode FOQM0001 = new W3CErrorCode("FOQM0001", "Module URI is a zero-length string");
     public static final ErrorCode FOQM0002 = new W3CErrorCode("FOQM0002", "Module URI not found.");
     public static final ErrorCode FOQM0003 = new W3CErrorCode("FOQM0003", "Static error in dynamically-loaded XQuery module.");

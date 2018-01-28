@@ -120,7 +120,13 @@ public class FileSource extends AbstractSource {
         checkEncoding();
         return new String(Files.readAllBytes(path), encoding);
     }
-    
+
+    @Override
+    public Charset getEncoding() throws IOException {
+        checkEncoding();
+        return encoding;
+    }
+
     private void checkEncoding() throws IOException {
         if (checkEncoding) {
             try(final InputStream is = Files.newInputStream(path)) {

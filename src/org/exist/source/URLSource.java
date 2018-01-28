@@ -27,6 +27,11 @@ import java.net.ConnectException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.HttpURLConnection;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,6 +39,7 @@ import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
+import org.exist.util.PatternFactory;
 
 /**
  * A source implementation reading from an URL.
@@ -118,6 +124,26 @@ public class URLSource extends AbstractSource {
 	@Override
 	public Validity isValid(final Source other) {
 		return Validity.INVALID;
+	}
+
+	public Charset getEncoding() throws IOException {
+		if (connection == null) {
+			connection = url.openConnection();
+		}
+		final String contentType = connection.getContentType();
+		if (contentType != null) {
+			final Pattern pattern = PatternFactory.getInstance().getPattern("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
+			final Matcher matcher = pattern.matcher(contentType);
+			if (matcher.find()) {
+				try {
+					return Charset.forName(matcher.group(1).trim().toUpperCase());
+				} catch (IllegalArgumentException e) {
+					// unknown or illegal charset
+					return null;
+				}
+			}
+		}
+		return null;
 	}
 
 	/* (non-Javadoc)
