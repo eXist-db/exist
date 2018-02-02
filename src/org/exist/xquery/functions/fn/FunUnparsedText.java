@@ -66,6 +66,15 @@ public class FunUnparsedText extends BasicFunction {
                 arity(PARAM_HREF, PARAM_ENCODING)
         ));
 
+    static final FunctionSignature [] FS_UNPARSED_TEXT_AVAILABLE = functionSignatures(
+        new QName("unparsed-text-available", Function.BUILTIN_FUNCTION_NS),
+        "determines whether a call on the fn:unparsed-text function with identical arguments would return a string",
+        returnsOpt(Type.STRING),
+        arities(
+                arity(PARAM_HREF),
+                arity(PARAM_HREF, PARAM_ENCODING)
+        ));
+
     public FunUnparsedText(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
@@ -74,7 +83,18 @@ public class FunUnparsedText extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         final String encoding = args.length == 2 ? args[1].getStringValue() : null;
         if (!args[0].isEmpty()) {
-            final String content = readContent(args[0].getStringValue(), encoding);
+            final String content;
+            try {
+                content = readContent(args[0].getStringValue(), encoding);
+            } catch (XPathException e) {
+                if (isCalledAs("unparsed-text-available")) {
+                    return BooleanValue.FALSE;
+                }
+                throw e;
+            }
+            if (isCalledAs("unparsed-text-available")) {
+                return BooleanValue.TRUE;
+            }
             if (isCalledAs("unparsed-text-lines")) {
                 final Pattern pattern = PatternFactory.getInstance().getPattern(LINE_REGEX);
                 final String[] lines = pattern.split(content);

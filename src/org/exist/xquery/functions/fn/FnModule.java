@@ -246,7 +246,9 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT[0], FunUnparsedText.class),
         new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT[1], FunUnparsedText.class),
         new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT_LINES[0], FunUnparsedText.class),
-        new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT_LINES[1], FunUnparsedText.class)
+        new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT_LINES[1], FunUnparsedText.class),
+        new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT_AVAILABLE[0], FunUnparsedText.class),
+        new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT_AVAILABLE[1], FunUnparsedText.class)
     };
 
     static {

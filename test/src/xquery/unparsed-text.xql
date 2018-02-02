@@ -11,8 +11,10 @@ declare
     %test:setUp
 function upt:store() {
     let $col := xmldb:create-collection("/db", "test-unparsed-text")
-    return
-        xmldb:store($col, "test.txt", "Hello&#10;world!", "application/octet-stream")
+    return (
+        xmldb:store($col, "test.txt", "Hello&#10;world!&#xD;Hello&#xD;&#xA;world!", "application/octet-stream"),
+        xmldb:store($col, "test.xml", "<p>Hello world!</p>", "application/xml")
+    )
 };
 
 declare
@@ -46,21 +48,27 @@ function upt:unparsed-text-from-url-encoding() {
 };
 
 declare 
-    %test:assertEquals("Hello&#10;world!")
+    %test:assertEquals("Hello&#10;world!&#xD;Hello&#xD;&#xA;world!")
 function upt:unparsed-text-from-db() {
     unparsed-text("/db/test-unparsed-text/test.txt")
 };
 
 declare 
-    %test:assertEquals("Hello&#10;world!")
+    %test:assertEquals("Hello&#10;world!&#xD;Hello&#xD;&#xA;world!")
 function upt:unparsed-text-from-db-full() {
     unparsed-text("xmldb:exist:///db/test-unparsed-text/test.txt")
 };
 
 declare 
-    %test:assertEquals("Hello", "world!")
+    %test:assertEquals("Hello", "world!", "Hello", "world!")
 function upt:unparsed-text-lines-from-db() {
     unparsed-text-lines("/db/test-unparsed-text/test.txt")
+};
+
+declare 
+    %test:assertEquals("<p>Hello world!</p>")
+function upt:unparsed-text-from-db-xml() {
+    unparsed-text("/db/test-unparsed-text/test.xml")
 };
 
 declare 
@@ -103,4 +111,70 @@ declare
     %test:assertError("FOUT1170")
 function upt:windows-path() {
     unparsed-text-lines("C:\file-might-exist.txt", "utf-8")
+};
+
+declare 
+    %test:assertTrue
+function upt:unparsed-text-available-from-url() {
+    unparsed-text-available("https://raw.githubusercontent.com/eXist-db/exist/develop/test/src/xquery/README")
+};
+
+declare 
+    %test:assertTrue
+function upt:unparsed-text-available-from-url-encoding() {
+    unparsed-text-available("https://raw.githubusercontent.com/eXist-db/exist/develop/test/src/xquery/README", "UTF-8")
+};
+
+declare 
+    %test:assertTrue
+function upt:unparsed-text-available-from-db() {
+    unparsed-text-available("/db/test-unparsed-text/test.txt")
+};
+
+declare 
+    %test:assertTrue
+function upt:unparsed-text-available-from-db-full() {
+    unparsed-text-available("xmldb:exist:///db/test-unparsed-text/test.txt")
+};
+
+declare 
+    %test:assertTrue
+function upt:unparsed-text-available-from-db-xml() {
+    unparsed-text-available("/db/test-unparsed-text/test.xml")
+};
+
+declare 
+    %test:assertFalse
+function upt:unparsed-text-available-fragment-identifier() {
+    unparsed-text-available("http://www.example.org/#fragment")
+};
+
+declare 
+    %test:assertFalse
+function upt:fragment-identifier-encoding() {
+    unparsed-text-available("http://www.example.org/#fragment", "UTF-8")
+};
+
+declare 
+    %test:assertFalse
+function upt:unparsed-text-available-invalid-uri() {
+    unparsed-text-available("http://www.example.org/%gg")
+};
+
+declare 
+    %test:assertFalse
+function upt:unparsed-text-available-invalid-uri2() {
+    unparsed-text-available(":/")
+};
+
+declare 
+    %test:assertFalse
+function upt:unparsed-text-available-non-existant() {
+    unparsed-text-available("http://www.w3.org/fots/unparsed-text/does-not-exist.txt")
+};
+
+declare 
+    %test:assertFalse
+function upt:unparsed-text-available-unsupported-scheme() {
+    fn:unparsed-text-available("surely-nobody-supports-this:/path.txt")
 };
