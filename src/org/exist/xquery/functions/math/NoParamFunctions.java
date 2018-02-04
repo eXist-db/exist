@@ -46,7 +46,7 @@ public class NoParamFunctions extends BasicFunction {
     public static final String PI = "pi";
 
     public final static FunctionSignature FNS_PI = new FunctionSignature(
-        new QName(PI, MathModule.NAMESPACE_URI),
+        new QName(PI, MathModule.NAMESPACE_URI, MathModule.PREFIX),
         "Returns the value of pi.",
         null,
         new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the value of pi")

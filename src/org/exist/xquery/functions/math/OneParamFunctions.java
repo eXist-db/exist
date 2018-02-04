@@ -59,77 +59,77 @@ public class OneParamFunctions extends BasicFunction {
     public static final String TAN = "tan";
     
     public final static FunctionSignature FNS_ACOS = new FunctionSignature(
-        new QName(ACOS, MathModule.NAMESPACE_URI),
+        new QName(ACOS, MathModule.NAMESPACE_URI, MathModule.PREFIX),
         "Returns the arc cosine of the argument, the result being in the range zero to +π radians.",
         new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
         new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the result")
     );
                         
     public final static FunctionSignature FNS_ASIN = new FunctionSignature(
-        new QName(ASIN, MathModule.NAMESPACE_URI),
+        new QName(ASIN, MathModule.NAMESPACE_URI, MathModule.PREFIX),
         "Returns the arc sine of the argument, the result being in the range -π/2 to +π/2 radians.",
         new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
         new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
     );
     
     public final static FunctionSignature FNS_ATAN = new FunctionSignature(
-        new QName(ATAN, MathModule.NAMESPACE_URI),
+        new QName(ATAN, MathModule.NAMESPACE_URI, MathModule.PREFIX),
         "Returns the arc tangent of the argument, the result being in the range -π/2 to +π/2 radians.",
         new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
         new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the result")
     );
     
     public final static FunctionSignature FNS_COS = new FunctionSignature(
-        new QName(COS, MathModule.NAMESPACE_URI),
+        new QName(COS, MathModule.NAMESPACE_URI, MathModule.PREFIX),
         "Returns the cosine of the argument, expressed in radians.",
         new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
         new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the cosine")
     );
     
     public final static FunctionSignature FNS_EXP = new FunctionSignature(
-        new QName(EXP, MathModule.NAMESPACE_URI),
+        new QName(EXP, MathModule.NAMESPACE_URI, MathModule.PREFIX),
         "Calculates e (the Euler Constant) raised to the power of $arg",
         new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
         new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "e (the Euler Constant) raised to the power of a value or expression")
     );
                 
     public final static FunctionSignature FNS_EXP10 = new FunctionSignature( // NEW
-        new QName(EXP10, MathModule.NAMESPACE_URI),
+        new QName(EXP10, MathModule.NAMESPACE_URI, MathModule.PREFIX),
         "Calculates 10 raised to the power of $arg",
         new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
         new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "e (the Euler Constant) raised to the power of a value or expression")
     );
         
     public final static FunctionSignature FNS_LOG = new FunctionSignature(
-        new QName(LOG, MathModule.NAMESPACE_URI),
+        new QName(LOG, MathModule.NAMESPACE_URI, MathModule.PREFIX),
         "Returns the natural logarithm of the argument.",
         new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
         new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the log")
     );
         
     public final static FunctionSignature FNS_LOG10 = new FunctionSignature( // NEW
-        new QName(LOG10, MathModule.NAMESPACE_URI),
+        new QName(LOG10, MathModule.NAMESPACE_URI, MathModule.PREFIX),
         "Returns the base-ten logarithm of the argument.",
         new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
         new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the log")
     );
         
     public final static FunctionSignature FNS_SIN = new FunctionSignature(
-        new QName(SIN, MathModule.NAMESPACE_URI),
+        new QName(SIN, MathModule.NAMESPACE_URI, MathModule.PREFIX),
         "Returns the sine of the argument, expressed in radians.",
         new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
         new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the sine")
     );
         
     public final static FunctionSignature FNS_SQRT = new FunctionSignature(
-        new QName(SQRT, MathModule.NAMESPACE_URI),
+        new QName(SQRT, MathModule.NAMESPACE_URI, MathModule.PREFIX),
         "Returns the non-negative square root of the argument.",
         new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
         new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the square root of $x")
     );
     
     public final static FunctionSignature FNS_TAN = new FunctionSignature(
-        new QName(TAN, MathModule.NAMESPACE_URI),
+        new QName(TAN, MathModule.NAMESPACE_URI, MathModule.PREFIX),
         "Returns the tangent of the argument, expressed in radians.",
         new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The radians") },
         new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the tangent")
