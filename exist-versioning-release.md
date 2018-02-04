@@ -4,25 +4,25 @@
 
 ## Overview
 
-This document describes a new Versioning Scheme and Release Process for eXist. These two topics are tightly connected, so both are covered in this document. 
+This document describes the Versioning Scheme and Release Process for eXist. These two topics are tightly connected, so both are covered in this document. 
 
-* The Versioning Scheme describes how eXist's source code and releases are to be named. The goal is that every new version number unambiguously inform users and developers about its significance and order relative to past and future versions.
+* The Versioning Scheme describes how eXist's source code and releases are named. Version numbers unambiguously inform users and developers about the significance of the release and order relative to past and future versions.
 
-* The Release Process describes how the release manager should take a snapshot of eXist source code, apply the Versioning Scheme, assemble it, and publish the resulting products. The goal is to have a clear procedure for altering the version number to mark transitions in phases of development leading up to each release, and to ensure that releases are consistently sourced from a specific point in the project repository's history.
+* The Release Process describes how the Release Manager (the person who orchestrates a release) should take a snapshot of eXist source code, apply the Versioning Scheme, assemble it, and publish the resulting products. The goal is to have a clear procedure for altering the version number to mark transitions in phases of development leading up to each release, and to ensure that releases are consistently sourced from a specific point in the project repository's history.
 
-The final section of the document explains the motivation for the recommendation here, for those who would like additional context. Assuming the proposal is adopted, this section could be removed from the final version of this document. 
+The final section of the document describes the old versioning practice, compared to the new one. 
 
-### TL;DR - The Motivation in Brief
+### Motivation
 
-This proposal is part of a larger effort to facilitate more rapid releases, with the goal of getting new features and bug fixes out to the community without sacrificing quality or stability. Critical to the success of this effort is achieving a common understanding about version numbers and managing version changes during releases. 
+This proposal is intended to facilitate more rapid releases, with the goal of getting new features and bug fixes out to the community without sacrificing quality or stability. Critical to the success of this effort is achieving a common understanding about version numbers and managing version changes during releases. 
 
-The immediate problems with versioning crept in during the long development phase of eXist 3.0, when eXist's version-related properties (as recorded in the `$EXIST_HOME/build.properties` file) diverged, and as a result, the community struggled with having two ways of talking about eXist's version, e.g., the public label, `3.0.RC2`, and the numeric version, `3.0.3`. 
+Problems with versioning crept in during the long development phase of eXist 3.0, when eXist's version-related properties (as recorded in the `$EXIST_HOME/build.properties` file) diverged, and as a result, the community struggled with having two ways of talking about eXist's version, e.g., the public label, `3.0.RC2`, and the numeric version, `3.0.3`. 
 
-If this proposal is adopted, the next version of eXist, version 3.1.0, will inaugurate the use of a single version number for all versions of eXist. 
+This proposal was first implemented with eXist 3.1.0, which inaugurated the use of a single version number for all versions of eXist. The document has been refined and expanded since then.
 
 The new versioning scheme uses the popular Semantic Versioning scheme, in which each number here reflects major, minor, and patch versions. This single version-related property will bring clarity and semantic precision to eXist's releases. The Semantic Versioning scheme allows the eXist team to label development versions as snapshots or release candidates, and to release these and nightly builds with clear version numbers. 
 
-Paired with a revised set of release procedures, the new versioning scheme will ensure the names of new versions of eXist delivered to the community will be precise and reliable. Removing versioning ambiguities and clarifying release practices will be a key step in moving eXist to a more rapid cycle of development and release.
+Paired with a revised set of release procedures, the new versioning scheme ensures the names of new versions of eXist delivered to the community are precise and reliable. Removing versioning ambiguities and clarifying release practices facilitates a rapid cycle of development and release.
 
 ## Versioning Scheme
 
@@ -313,9 +313,7 @@ Assuming that work on eXist 3.2.0 is complete and the changes from the previous 
     $ ./build.sh installer installer-exe app dist-war
     ```
 
-## Motivation
-
-The goal of this proposal is to ensure the theory and practice for each new version of eXist is solid is well understood by core developers and the eXist community. Versioning practices adopted during the development of eXist 3.0 and some well-intentioned mistakes in its public release led the authors to propose a new scheme which could avoid these problems and establish a firmer foundation in versioning and release practices.
+## Comparison to the Old Versioning and Release Procedures
 
 ### The Old Way
 
@@ -339,7 +337,7 @@ Our goal is to prevent such a divergence in versioning from creeping back into e
 
 ### The New Way
 
-Once this proposal is adopted, eXist will have a single version number, forumlated according to the precise principles of Semantic Versioning, captured in a single property:
+eXist now has a single version number, forumlated according to the precise principles of Semantic Versioning, captured in a single property:
 
 ```
 project.version = 3.0.0
