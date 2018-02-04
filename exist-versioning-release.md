@@ -313,6 +313,33 @@ Assuming that work on eXist 3.2.0 is complete and the changes from the previous 
     $ ./build.sh installer installer-exe app dist-war
     ```
 
+### Releasing to Homebrew
+
+[Homebrew](http://brew.sh) is a popular command-line package manager for macOS. Once Homebrew is installed, applications like eXist can be installed via a simple command. eXist's presence on Homebrew is found in the Caskroom project, as a "cask", at [https://github.com/caskroom/homebrew-cask/blob/master/Casks/exist-db.rb](https://github.com/caskroom/homebrew-cask/blob/master/Casks/exist-db.rb).
+
+> **Terminology:** "Caskroom" is the Homebrew extension project where pre-built binaries and GUI applications go, whereas the original "Homebrew" project is reserved for command-line utilities that can be built from source. Because the macOS version of eXist is released as an app bundle with GUI components, it is distributed via Caskroom.
+
+When there is a new release of eXist, a member of the community can submit a pull request with the necessary changes to the eXist cask. [Follow the directions on the Homebrew-cask Github](https://github.com/caskroom/homebrew-cask/blob/master/CONTRIBUTING.md#updating-a-cask) - summarized here adapted to OpenRefine:
+
+```
+# install and setup script - only needed once
+brew install vitorgalvao/tiny-scripts/cask-repair
+cask-repair --help
+
+# use to update eXist
+cask-repair exist-db
+```
+
+The cask-repair tool will prompt you to enter the new version number. It will then use this version number to construct a download URL using the formula (where `{version}` represents the version number):
+
+```
+https://bintray.com/artifact/download/existdb/releases/eXist-db-#{version}.dmg
+```
+
+**Note:** It is important that both version number components (the tag and version number) match, so that the formula can find the installer's URL.
+
+Once cask-repair has successfully downloaded the new installer, it will calculate the new SHA-256 fingerprint value and construct a pull request, like this one: [https://github.com/caskroom/homebrew-cask/pull/42509](https://github.com/caskroom/homebrew-cask/pull/42509). Once the pull request is submitted, continuous integration tests will run, and a member of the caskroom community will review the PR. At times there is a backlog on the CI servers, but once tests pass, the community review is typically completed in a matter of hours.
+
 ## Comparison to the Old Versioning and Release Procedures
 
 ### The Old Way
