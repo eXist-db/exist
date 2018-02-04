@@ -204,7 +204,7 @@ public class Type {
         defineBuiltInType(FUNCTION_REFERENCE, "function(*)", "function");
         defineBuiltInType(MAP, "map(*)", "map"); // keep map for backward compatibility
         defineBuiltInType(ARRAY, "array(*)","array");
-        defineBuiltInType(NUMBER, "numeric");
+        defineBuiltInType(NUMBER, "xs:numeric", "numeric"); // keep numeric for backward compatibility
 
         defineBuiltInType(ANY_TYPE, "xs:anyType");
         defineBuiltInType(ANY_SIMPLE_TYPE, "xs:anySimpleType");
