@@ -34,6 +34,7 @@ import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import com.evolvedbinary.j8fu.function.ConsumerE;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 
@@ -110,40 +111,52 @@ public class PermissionFactory {
     }
 
     public static void updatePermissions(final DBBroker broker, final XmldbURI pathUri, final ConsumerE<Permission, PermissionDeniedException> permissionModifier) throws PermissionDeniedException {
-        DocumentImpl doc = null;
         final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
         try(final Txn transaction = transact.beginTransaction()) {
-            final Collection collection = broker.openCollection(pathUri, LockMode.WRITE_LOCK);
-            if (collection == null) {
-                doc = broker.getXMLResource(pathUri, LockMode.WRITE_LOCK);
-                if(doc == null) {
-                    transact.abort(transaction);
-                    throw new XPathException("Resource or collection '" + pathUri.toString() + "' does not exist.");
+            Collection collection = null;
+            try {
+                collection = broker.openCollection(pathUri, LockMode.WRITE_LOCK);
+                if (collection == null) {
+                    DocumentImpl doc = null;
+                    try {
+                        doc = broker.getXMLResource(pathUri, LockMode.WRITE_LOCK);
+                        if (doc == null) {
+                            transact.abort(transaction);
+                            throw new XPathException("Resource or collection '" + pathUri.toString() + "' does not exist.");
+                        }
+
+                        // keep a write lock in the transaction
+                        transaction.acquireLock(doc.getUpdateLock(), LockMode.WRITE_LOCK);
+
+                        final Permission permissions = doc.getPermissions();
+                        permissionModifier.accept(permissions);
+
+                        broker.storeXMLResource(transaction, doc);
+                    } finally {
+                        if(doc != null) {
+                            doc.getUpdateLock().release(LockMode.WRITE_LOCK);
+                        }
+                    }
+                    transact.commit(transaction);
+                    broker.flush();
+                } else {
+                    // keep a write lock in the transaction
+                    transaction.acquireLock(collection.getLock(), LockMode.WRITE_LOCK);
+
+                    final Permission permissions = collection.getPermissionsNoLock();
+                    permissionModifier.accept(permissions);
+
+                    broker.saveCollection(transaction, collection);
+                    transact.commit(transaction);
+                    broker.flush();
                 }
-
-                final Permission permissions = doc.getPermissions();
-                permissionModifier.accept(permissions);
-
-                broker.storeXMLResource(transaction, doc);
-                transact.commit(transaction);
-                broker.flush();
-            } else {
-                // keep the write lock in the transaction
-                transaction.registerLock(collection.getLock(), LockMode.WRITE_LOCK);
-
-                final Permission permissions = collection.getPermissionsNoLock();
-                permissionModifier.accept(permissions);
-
-                broker.saveCollection(transaction, collection);
-                transact.commit(transaction);
-                broker.flush();
+            } finally {
+                if(collection != null) {
+                    collection.release(LockMode.WRITE_LOCK);
+                }
             }
-        } catch(final XPathException | PermissionDeniedException | IOException | TriggerException | TransactionException e) {
+        } catch(final XPathException | PermissionDeniedException | IOException | TriggerException | TransactionException | LockException e) {
             throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getCurrentSubject().getName() + "' on '" + pathUri.toString() + "': " + e.getMessage(), e);
-        } finally {
-            if(doc != null) {
-                doc.getUpdateLock().release(LockMode.WRITE_LOCK);
-            }
         }
     }
 }
