@@ -30,16 +30,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.commons.io.input.CloseShieldInputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.extensions.exquery.xdm.type.impl.BinaryTypedValue;
-import org.exist.extensions.exquery.xdm.type.impl.DocumentTypedValue;
-import org.exist.extensions.exquery.xdm.type.impl.StringTypedValue;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.extensions.exquery.xdm.type.impl.BinaryTypedValue;
+import org.exist.extensions.exquery.xdm.type.impl.DocumentTypedValue;
+import org.exist.extensions.exquery.xdm.type.impl.Multipart;
+import org.exist.extensions.exquery.xdm.type.impl.StringTypedValue;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
@@ -164,9 +166,22 @@ class RestXqServiceImpl extends AbstractRestXqService {
                     if (contentType.contains(";")) {
                         contentType = contentType.substring(0, contentType.indexOf(";"));
                     }
-
                     MimeType mimeType = MimeTable.getInstance().getContentType(contentType);
-                    if (mimeType != null && !mimeType.isXMLType()) {
+
+                    if(contentType.equalsIgnoreCase("multipart/related")){
+                    	// multipart/related request
+                    	String encoding = request.getCharacterEncoding();
+                    	if (encoding == null) {
+                            encoding = "UTF-8";
+                        }
+
+                    	final Multipart multipart = new Multipart(request.getContentType(), is, encoding);
+                    	final DocumentImpl doc = multipart.getDocument();
+                    	if(doc != null){
+                			result = new SequenceImpl<>(new DocumentTypedValue(doc));
+                		}
+                    	
+                    } else if (mimeType != null && !mimeType.isXMLType()) {
 
                         //binary data
                         try {
