@@ -19,12 +19,15 @@
  */
 package org.exist.xmldb;
 
+import org.apache.commons.io.output.CountingOutputStream;
+import org.apache.commons.io.output.NullOutputStream;
 import org.exist.dom.persistent.BinaryDocument;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
+import org.exist.xquery.value.BinaryValue;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.InputSource;
 import org.xml.sax.ext.LexicalHandler;
@@ -32,6 +35,7 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 
+import javax.annotation.Nullable;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -40,12 +44,14 @@ import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Properties;
 
 public class LocalBinaryResource extends AbstractEXistResource implements ExtendedResource, BinaryResource, EXistResource {
 
     protected InputSource inputSource = null;
     protected Path file = null;
     protected byte[] rawData = null;
+    private BinaryValue binaryValue = null;
     private boolean isExternal = false;
 
     public LocalBinaryResource(final Subject user, final BrokerPool brokerPool, final LocalCollection collection, final XmldbURI docId) {
@@ -65,6 +71,12 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
         if (inputSource != null) {
             return inputSource;
         }
+        if (rawData != null) {
+            return rawData;
+        }
+        if(binaryValue != null) {
+            return binaryValue;
+        }
 
         return read((document, broker, transaction) -> broker.getBinaryResource(((BinaryDocument) document)));
     }
@@ -78,7 +90,16 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
             } else if(res instanceof java.io.File) {
                 return readFile(((java.io.File)res).toPath());
             } else if(res instanceof InputSource) {
-                return readFile((InputSource)res);
+                return readFile((InputSource) res);
+            } else if(res instanceof byte[]) {
+                return res;
+            } else if(res instanceof BinaryValue) {
+                try(final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                    ((BinaryValue) res).streamBinaryTo(baos);
+                    return baos.toByteArray();
+                } catch (final IOException e) {
+                    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+                }
             } else if(res instanceof InputStream) {
                 try(final InputStream is = (InputStream)res) {
                     return readFile(is);
@@ -102,32 +123,37 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
         } else if(value instanceof byte[]) {
             rawData = (byte[])value;
         } else if(value instanceof String) {
-            rawData = ((String)value).getBytes();
+            rawData = ((String) value).getBytes();
+        } else if(value instanceof BinaryValue) {
+            binaryValue = (BinaryValue)value;
         } else {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "don't know how to handle value of type " + value.getClass().getName());
         }
+
         isExternal = true;
     }
 
     @Override
     public InputStream getStreamContent() throws XMLDBException {
-        final InputStream retval;
+        final InputStream is;
         if(file != null) {
             try {
-                retval = Files.newInputStream(file);
-            } catch(final IOException fnfe) {
+                is = Files.newInputStream(file);
+            } catch(final IOException e) {
                 // Cannot fire it :-(
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, fnfe.getMessage(), fnfe);
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
             }
         } else if(inputSource != null) {
-            retval = inputSource.getByteStream();
+            is = inputSource.getByteStream();
         } else if(rawData != null) {
-            retval = new ByteArrayInputStream(rawData);
+            is = new ByteArrayInputStream(rawData);
+        } else if(binaryValue != null) {
+            is = binaryValue.getInputStream();
         } else {
-            retval = read((document, broker, transaction) -> broker.getBinaryResource(((BinaryDocument) document)));
+            is = read((document, broker, transaction) -> broker.getBinaryResource(((BinaryDocument) document)));
         }
 
-        return retval;
+        return is;
     }
 
     @Override
@@ -154,9 +180,17 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
     }
 	
     @Override
-    public void freeResources() {
+    public void freeResources() throws XMLDBException {
         if(!isExternal && file != null) {
             file = null;
+        }
+
+        if(binaryValue != null) {
+            try {
+                binaryValue.close();
+            } catch(final IOException e) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "error while closing binary resource " + getId(), e);
+            }
         }
     }
 
@@ -170,6 +204,13 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
             retval = ((EXistInputSource)inputSource).getByteStreamLength();
         } else if(rawData != null) {
             retval = rawData.length;
+        } else if(binaryValue != null) {
+            try(final CountingOutputStream os = new CountingOutputStream(new NullOutputStream())) {
+                binaryValue.streamBinaryTo(os);
+                retval = os.getByteCount();
+            } catch(final IOException e) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "error while obtaining length of binary value " + getId(), e);
+            }
         } else {
             retval = getContentLength();
         }
@@ -219,5 +260,14 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
     @Override
     public void setLexicalHandler(final LexicalHandler handler) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setProperties(final Properties properties) {
+    }
+
+    @Override
+    @Nullable public Properties getProperties() {
+        return null;
     }
 }

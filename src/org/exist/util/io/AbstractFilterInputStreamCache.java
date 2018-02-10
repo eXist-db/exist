@@ -73,16 +73,18 @@ public abstract class AbstractFilterInputStreamCache extends FilterInputStream i
         if(sharedReferenceCount <= 0) {
             if (!srcClosed) {
                 try {
-                    if(src instanceof CachingFilterInputStream) {
-                        ((CachingFilterInputStream) src).decrementSharedReferences();
-                    } else {
-                        src.close();
-                    }
+//                    if(src instanceof CachingFilterInputStream) {
+//                        ((CachingFilterInputStream) src).decrementSharedReferences();
+//                    } else {
+//                        src.close();
+//                    }
+                    src.close();
                 } finally {
                     srcClosed = true;
                 }
             }
             this.invalidate(); //empty the cache
+            FilterInputStreamCacheMonitor.getInstance().deregister(this); // deregister with the monitor
         }
     }
 

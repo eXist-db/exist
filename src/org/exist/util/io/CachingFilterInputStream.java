@@ -65,7 +65,7 @@ public class CachingFilterInputStream extends FilterInputStream {
         super(null);
 
         if (inputStream instanceof CachingFilterInputStream) {
-            this.cache = ((CachingFilterInputStream) inputStream).getCache();
+            this.cache = ((CachingFilterInputStream) inputStream).shareCache();     // must be #shareCache not #getCache() to increment references
         } else {
             throw new InstantiationException("Only CachingFilterInputStream are supported as InputStream");
         }
@@ -77,9 +77,19 @@ public class CachingFilterInputStream extends FilterInputStream {
     }
 
     /**
-     * Gets the cache implementation
+     * Gets the cache implementation directly.
      */
     FilterInputStreamCache getCache() {
+        return cache;
+    }
+
+    /**
+     * Gets the cache implementation for
+     * sharing with another source. This is done
+     * by incrementing its shared reference count.
+     */
+    FilterInputStreamCache shareCache() {
+        cache.incrementSharedReferences();
         return cache;
     }
 

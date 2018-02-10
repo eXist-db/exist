@@ -34,11 +34,11 @@ public class Base64BinaryDocument extends BinaryValueFromInputStream {
 
     private String url = null;
 
-    private Base64BinaryDocument(BinaryValueManager manager, InputStream is) throws XPathException {
+    private Base64BinaryDocument(final BinaryValueManager manager, final InputStream is) throws XPathException {
         super(manager, new Base64BinaryValueType(), is);
     }
 
-    public static Base64BinaryDocument getInstance(BinaryValueManager manager, InputStream is) throws XPathException {
+    public static Base64BinaryDocument getInstance(final BinaryValueManager manager, final InputStream is) throws XPathException {
         final Base64BinaryDocument b64BinaryDocument = new Base64BinaryDocument(manager, is);
         manager.registerBinaryValueInstance(b64BinaryDocument);
         return b64BinaryDocument;
@@ -48,7 +48,7 @@ public class Base64BinaryDocument extends BinaryValueFromInputStream {
         return url;
     }
 
-    public void setUrl(String url) {
+    public void setUrl(final String url) {
         this.url = url;
     }
 }

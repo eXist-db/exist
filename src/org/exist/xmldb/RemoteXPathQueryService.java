@@ -97,7 +97,7 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
             final List<Object> params = new ArrayList<>();
             params.add(query.getBytes(UTF_8));
             params.add(optParams);
-            final Map result = (Map) collection.getClient().execute("queryP", params);
+            final Map result = (Map) collection.getClient().execute("queryPT", params);
 
             if (result.get(RpcAPI.ERROR) != null) {
                 throwException(result);
@@ -191,7 +191,7 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
         params.add(new HashMap<String, Object>());
 
         try {
-            final Map result = (Map) collection.getClient().execute("execute", params);
+            final Map result = (Map) collection.getClient().execute("executeT", params);
 
             if (result.get(RpcAPI.ERROR) != null) {
                 throwException(result);
@@ -244,7 +244,7 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
             params.add(resource.path.toString());
             params.add(resource.idIsPresent() ? resource.getNodeId() : "");
             params.add(optParams);
-            final Map result = (Map) collection.getClient().execute("queryP", params);
+            final Map result = (Map) collection.getClient().execute("queryPT", params);
 
             if (result.get(RpcAPI.ERROR) != null) {
                 throwException(result);

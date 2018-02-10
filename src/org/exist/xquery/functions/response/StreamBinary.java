@@ -42,7 +42,7 @@ public class StreamBinary extends BasicFunction {
     protected static final Logger logger = LogManager.getLogger(StreamBinary.class);
     protected static final FunctionParameterSequenceType BINARY_DATA_PARAM = new FunctionParameterSequenceType("binary-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The binary data to stream");
     protected static final FunctionParameterSequenceType CONTENT_TYPE_PARAM = new FunctionParameterSequenceType("content-type", Type.STRING, Cardinality.EXACTLY_ONE, "The ContentType HTTP header value");
-    protected static final FunctionParameterSequenceType FILENAME_PARAM = new FunctionParameterSequenceType("filename", Type.STRING, Cardinality.ZERO_OR_ONE, "The filename.  If no filename is given, then the current request name is used");
+    protected static final FunctionParameterSequenceType FILENAME_PARAM = new FunctionParameterSequenceType("filename", Type.STRING, Cardinality.ZERO_OR_ONE, "The filename.  If provided, a Content-Disposition header is set for the filename in the HTTP Response");
     public final static FunctionSignature signature =
             new FunctionSignature(
             new QName("stream-binary", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),

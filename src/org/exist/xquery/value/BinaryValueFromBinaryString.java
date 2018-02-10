@@ -117,4 +117,9 @@ public class BinaryValueFromBinaryString extends BinaryValue {
     public void close() throws IOException {
         closed = true;
     }
+
+    @Override
+    public void incrementSharedReferences() {
+        throw new UnsupportedOperationException();
+    }
 }

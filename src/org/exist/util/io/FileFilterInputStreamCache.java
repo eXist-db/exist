@@ -129,4 +129,13 @@ public class FileFilterInputStreamCache extends AbstractFilterInputStreamCache {
             TemporaryFileManager.getInstance().returnTemporaryFile(tempFile);
         }
     }
+
+    /**
+     * Get the path of the file backing the cache.
+     *
+     * @return the path of the file backing the cache.
+     */
+    public Path getFilePath() {
+        return tempFile;
+    }
 }

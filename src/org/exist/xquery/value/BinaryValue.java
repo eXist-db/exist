@@ -34,7 +34,7 @@ import java.io.*;
 /**
  * @author Adam Retter <adam@existsolutions.com>
  */
-public abstract class BinaryValue extends AtomicValue {
+public abstract class BinaryValue extends AtomicValue implements Closeable {
 
     private final static Logger LOG = LogManager.getLogger(BinaryValue.class);
 
@@ -213,7 +213,6 @@ public abstract class BinaryValue extends AtomicValue {
     //TODO ideally this should be moved out into serialization where we can stream the output from the buf/channel by calling streamTo()
     @Override
     public String getStringValue() throws XPathException {
-
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         try {
@@ -264,5 +263,8 @@ public abstract class BinaryValue extends AtomicValue {
 
     public abstract boolean isClosed();
 
-    public abstract void close() throws IOException;
+    /**
+     * Increments the number of shared references to this binary value.
+     */
+    public abstract void incrementSharedReferences();
 }

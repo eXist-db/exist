@@ -33,6 +33,8 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
+
 /**
  * Defines the methods callable through the XMLRPC interface.
  *
@@ -361,11 +363,40 @@ public interface RpcAPI {
 
     Map<String, Object> compile(byte[] xquery, Map<String, Object> parameters)  throws EXistException, PermissionDeniedException;
 
+    /**
+     * @deprecated Use {@link #queryPT(byte[], Map)} instead.
+     */
+    @Deprecated
     Map<String, Object> queryP(byte[] xpath, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException;
 
+    /**
+     * @deprecated Use {@link #queryPT(byte[], String, String, Map)} instead.
+     */
+    @Deprecated
     Map<String, Object> queryP(byte[] xpath, String docName, String s_id, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException, URISyntaxException;
+
+    /**
+     * XQuery with typed response.
+     *
+     * @param xquery The XQuery (or XPath) to execute
+     * @param parameters Any parameters for controlling the query execution.
+     */
+    Map<String, Object> queryPT(byte[] xquery, Map<String, Object> parameters)
+            throws EXistException, PermissionDeniedException;
+
+    /**
+     * XQuery with typed response.
+     *
+     * @param xquery The XQuery (or XPath) to execute
+     * @param docName The name of the document to set as the static context.
+     * @param s_id The node if to set as the static context.
+     * @param parameters Any parameters for controlling the query execution.
+     */
+    Map<String, Object> queryPT(byte[] xquery, @Nullable String docName, @Nullable String s_id, Map<String, Object> parameters)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
+
 
     /**
      * execute XPath query and return howmany nodes from the result set,
@@ -376,11 +407,15 @@ public interface RpcAPI {
      * @param howmany maximum number of results to return.
      * @param start item in the result set to start with.
      * @param parameters
+     *
      * @return Description of the Return Value
+     *
      * @exception EXistException Description of the Exception
      * @exception PermissionDeniedException Description of the Exception
-     * @deprecated use List query() or int executeQuery() instead
+     *
+     * @deprecated use {@link #queryPT(byte[], Map)} or int {@link #executeQuery(byte[], Map)} instead.
      */
+    @Deprecated
     byte[] query(
             byte[] xquery,
             int howmany,
@@ -635,13 +670,37 @@ public interface RpcAPI {
      * Execute XPath/XQuery from path file (stored inside eXist) returned
      * reference may be used later to get a summary of results or retrieve the
      * actual hits.
-     * @param path
-     * @param parameters
-     * @return 
+     * @param path Path of the stored query in the database
+     * @param parameters Parameters to the execution.
+     *
+     * @return Either a reference to a node or the value if a non-node
+     *
      * @throws org.exist.EXistException
      * @throws org.exist.security.PermissionDeniedException
+     *
+     * @deprecated Use {@link #executeT(String, Map)} instead.
      */
+    @Deprecated
     Map<String, Object> execute(String path, Map<String, Object> parameters)
+            throws EXistException, PermissionDeniedException;
+
+
+    /**
+     * Execute XPath/XQuery from path file (stored inside eXist) returned
+     * reference may be used later to get a summary of results or retrieve the
+     * actual hits.
+     *
+     * @param path Path of the stored query in the database
+     * @param parameters Parameters to the execution.
+     *
+     * @return Details of items from the result, including type information.
+     *
+     * @throws org.exist.EXistException
+     * @throws org.exist.security.PermissionDeniedException
+     *
+     * @deprecated Use {@link #executeT(String, Map)} instead.
+     */
+    Map<String, Object> executeT(String path, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException;
 
     /**

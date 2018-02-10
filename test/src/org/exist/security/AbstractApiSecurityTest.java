@@ -22,6 +22,9 @@
 package org.exist.security;
 
 import org.junit.After;
+
+import static org.exist.TestUtils.ADMIN_DB_PWD;
+import static org.exist.TestUtils.ADMIN_DB_USER;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,9 +46,6 @@ public abstract class AbstractApiSecurityTest {
     protected final static String TEST_BIN_DOC1_NAME = "test.bin";
     protected final static String TEST_BIN_DOC1 = TEST_COLLECTION1 + "/" + TEST_BIN_DOC1_NAME;
     protected final static byte[] TEST_BIN_DOC1_CONTENT = "binary-test".getBytes();
-    
-    protected final static String ADMIN_UID = "admin";
-    protected final static String ADMIN_PWD = "";
     
     protected final static String TEST_USER1_UID = "test1";
     protected final static String TEST_USER1_PWD = TEST_USER1_UID;
@@ -99,38 +99,38 @@ public abstract class AbstractApiSecurityTest {
     @Before
     public void setup() throws ApiException {
         
-        chmodCol("/db", "rwxr-xr-x", ADMIN_UID, ADMIN_PWD); //ensure /db is always 755
+        chmodCol("/db", "rwxr-xr-x", ADMIN_DB_USER, ADMIN_DB_PWD); //ensure /db is always 755
         
-        removeAccount(TEST_USER1_UID, ADMIN_UID, ADMIN_PWD);
-        removeAccount(TEST_USER2_UID, ADMIN_UID, ADMIN_PWD);
-        removeGroup(TEST_GROUP_GID, ADMIN_UID, ADMIN_PWD);
+        removeAccount(TEST_USER1_UID, ADMIN_DB_USER, ADMIN_DB_PWD);
+        removeAccount(TEST_USER2_UID, ADMIN_DB_USER, ADMIN_DB_PWD);
+        removeGroup(TEST_GROUP_GID, ADMIN_DB_USER, ADMIN_DB_PWD);
         
-        createGroup(TEST_GROUP_GID, ADMIN_UID, ADMIN_PWD);
-        createAccount(TEST_USER1_UID, TEST_USER1_PWD, TEST_GROUP_GID, ADMIN_UID, ADMIN_PWD);
-        createAccount(TEST_USER2_UID, TEST_USER2_PWD, TEST_GROUP_GID, ADMIN_UID, ADMIN_PWD);
+        createGroup(TEST_GROUP_GID, ADMIN_DB_USER, ADMIN_DB_PWD);
+        createAccount(TEST_USER1_UID, TEST_USER1_PWD, TEST_GROUP_GID, ADMIN_DB_USER, ADMIN_DB_PWD);
+        createAccount(TEST_USER2_UID, TEST_USER2_PWD, TEST_GROUP_GID, ADMIN_DB_USER, ADMIN_DB_PWD);
 
         // create a collection /db/securityTest as user "test1"
-        createCol(TEST_COLLECTION1_NAME, ADMIN_UID, ADMIN_PWD);
+        createCol(TEST_COLLECTION1_NAME, ADMIN_DB_USER, ADMIN_DB_PWD);
         // pass ownership to test1
-        chownCol(TEST_COLLECTION1, TEST_USER1_UID, TEST_GROUP_GID, ADMIN_UID, ADMIN_PWD);
-        chmodCol(TEST_COLLECTION1, "rwxrwx---", ADMIN_UID, ADMIN_PWD);
+        chownCol(TEST_COLLECTION1, TEST_USER1_UID, TEST_GROUP_GID, ADMIN_DB_USER, ADMIN_DB_PWD);
+        chmodCol(TEST_COLLECTION1, "rwxrwx---", ADMIN_DB_USER, ADMIN_DB_PWD);
         
-        createXmlResource(TEST_XML_DOC1, TEST_XML_DOC1_CONTENT, ADMIN_UID, ADMIN_PWD);
-        chmodRes(TEST_XML_DOC1, "rwxrwx---", ADMIN_UID, ADMIN_PWD);
-        chownRes(TEST_XML_DOC1, TEST_USER1_UID, TEST_GROUP_GID, ADMIN_UID, ADMIN_PWD);
+        createXmlResource(TEST_XML_DOC1, TEST_XML_DOC1_CONTENT, ADMIN_DB_USER, ADMIN_DB_PWD);
+        chmodRes(TEST_XML_DOC1, "rwxrwx---", ADMIN_DB_USER, ADMIN_DB_PWD);
+        chownRes(TEST_XML_DOC1, TEST_USER1_UID, TEST_GROUP_GID, ADMIN_DB_USER, ADMIN_DB_PWD);
         
-        createBinResource(TEST_BIN_DOC1, TEST_BIN_DOC1_CONTENT, ADMIN_UID, ADMIN_PWD);
-        chmodRes(TEST_BIN_DOC1, "rwxrwx---", ADMIN_UID, ADMIN_PWD);
-        chownRes(TEST_BIN_DOC1, TEST_USER1_UID, TEST_GROUP_GID, ADMIN_UID, ADMIN_PWD);
+        createBinResource(TEST_BIN_DOC1, TEST_BIN_DOC1_CONTENT, ADMIN_DB_USER, ADMIN_DB_PWD);
+        chmodRes(TEST_BIN_DOC1, "rwxrwx---", ADMIN_DB_USER, ADMIN_DB_PWD);
+        chownRes(TEST_BIN_DOC1, TEST_USER1_UID, TEST_GROUP_GID, ADMIN_DB_USER, ADMIN_DB_PWD);
     }
 
     @After
     public void cleanup() throws ApiException {
-        removeCol(TEST_COLLECTION1_NAME, ADMIN_UID, ADMIN_PWD);
+        removeCol(TEST_COLLECTION1_NAME, ADMIN_DB_USER, ADMIN_DB_PWD);
 
-        removeAccount(TEST_USER1_UID, ADMIN_UID, ADMIN_PWD);
-        removeAccount(TEST_USER2_UID, ADMIN_UID, ADMIN_PWD);
-        removeGroup(TEST_GROUP_GID, ADMIN_UID, ADMIN_PWD);
+        removeAccount(TEST_USER1_UID, ADMIN_DB_USER, ADMIN_DB_PWD);
+        removeAccount(TEST_USER2_UID, ADMIN_DB_USER, ADMIN_DB_PWD);
+        removeGroup(TEST_GROUP_GID, ADMIN_DB_USER, ADMIN_DB_PWD);
     }
     
     protected String getCollectionUri(String resourceUri) {

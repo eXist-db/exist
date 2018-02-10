@@ -26,12 +26,11 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.TextImpl;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.w3c.dom.DOMException;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
 
 /**
  * Represents an enclosed expression <code>{expr}</code> inside element
@@ -75,82 +74,94 @@ public class EnclosedExpr extends PathExpr {
         if (contextItem != null) {
             contextSequence = contextItem.toSequence();
         }
-        // evaluate the expression
-        context.pushDocumentContext();
-        Sequence result;
-        try {
-            result = super.eval(contextSequence, null);
-        } finally {
-            context.popDocumentContext();
-        }
-        // create the output
-        final MemTreeBuilder builder = context.getDocumentBuilder();
-        final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
-        receiver.setCheckNS(true);
-        try {
-            // flatten all arrays in the input sequence
-            result = ArrayType.flatten(result);
-            final SequenceIterator i = result.iterate();
-            Item next = i.nextItem();
-            StringBuilder buf = null;
-            boolean allowAttribs = true;
-            while (next != null) {
-                context.proceed(this, builder);
-                if (Type.subTypeOf(next.getType(), Type.FUNCTION_REFERENCE)) {
-                    throw new XPathException(ErrorCodes.XQTY0105, "Enclosed expression contains function item");
 
-                // if item is an atomic value, collect the string values of all
-                // following atomic values and separate them by a space.
-                } else if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {
-                    if (buf == null)
-                        {buf = new StringBuilder();}
-                    else if (buf.length() > 0)
-                        {buf.append(' ');}
-                    buf.append(next.getStringValue());
-                    allowAttribs = false;
-                    next = i.nextItem();
-                //If the item is a node, flush any collected character data and
-                //copy the node to the target doc. 
-                } else if (Type.subTypeOf(next.getType(), Type.NODE)) {
-                	
-                    //It is possible for a text node constructor to construct a text node containing a zero-length string.
-                    //However, if used in the content of a constructed element or document node,
-                    //such a text node will be deleted or merged with another text node.
-                	if (next instanceof TextImpl && ((TextImpl)next).getStringValue().isEmpty()) {
-                        next = i.nextItem();
-						continue;
-					}
-                    if (buf != null && buf.length() > 0) {
-                        receiver.characters(buf);
-                        buf.setLength(0);
-                    }
-                    if (next.getType() == Type.ATTRIBUTE && !allowAttribs) {
-                        throw new XPathException(this, ErrorCodes.XQTY0024,
-                            "An attribute may not appear after another child node.");
-                    }
-                    try {
-                        next.copyTo(context.getBroker(), receiver);
-                    } catch (DOMException e) {
-                      if (e.code == DOMException.NAMESPACE_ERR) {
-                          throw new XPathException(this, ErrorCodes.XQDY0102, e.getMessage());
-                      } else {
-                          throw new XPathException(this, e.getMessage(), e);
-                      }
-                    }
-                    allowAttribs = next.getType() == Type.ATTRIBUTE || next.getType() == Type.NAMESPACE;
-                    next = i.nextItem();
-                }
+        // evaluate the expression
+        Sequence result;
+        context.enterEnclosedExpr();
+        try {
+            context.pushDocumentContext();
+
+            try {
+                result = super.eval(contextSequence, null);
+            } finally {
+                context.popDocumentContext();
             }
-            // flush remaining character data
-            if (buf != null && buf.length() > 0)
-                {receiver.characters(buf);}
-        } catch (final SAXException e) {
-            LOG.warn("SAXException during serialization: " + e.getMessage(), e);
-            throw new XPathException(this, e);
+
+            // create the output
+            final MemTreeBuilder builder = context.getDocumentBuilder();
+            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+            receiver.setCheckNS(true);
+            try {
+                // flatten all arrays in the input sequence
+                result = ArrayType.flatten(result);
+                final SequenceIterator i = result.iterate();
+                Item next = i.nextItem();
+                StringBuilder buf = null;
+                boolean allowAttribs = true;
+                while (next != null) {
+                    context.proceed(this, builder);
+                    if (Type.subTypeOf(next.getType(), Type.FUNCTION_REFERENCE)) {
+                        throw new XPathException(ErrorCodes.XQTY0105, "Enclosed expression contains function item");
+
+                        // if item is an atomic value, collect the string values of all
+                        // following atomic values and separate them by a space.
+                    } else if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {
+                        if (buf == null) {
+                            buf = new StringBuilder();
+                        } else if (buf.length() > 0) {
+                            buf.append(' ');
+                        }
+                        buf.append(next.getStringValue());
+                        allowAttribs = false;
+                        next = i.nextItem();
+                        //If the item is a node, flush any collected character data and
+                        //copy the node to the target doc.
+                    } else if (Type.subTypeOf(next.getType(), Type.NODE)) {
+
+                        //It is possible for a text node constructor to construct a text node containing a zero-length string.
+                        //However, if used in the content of a constructed element or document node,
+                        //such a text node will be deleted or merged with another text node.
+                        if (next instanceof TextImpl && ((TextImpl) next).getStringValue().isEmpty()) {
+                            next = i.nextItem();
+                            continue;
+                        }
+                        if (buf != null && buf.length() > 0) {
+                            receiver.characters(buf);
+                            buf.setLength(0);
+                        }
+                        if (next.getType() == Type.ATTRIBUTE && !allowAttribs) {
+                            throw new XPathException(this, ErrorCodes.XQTY0024,
+                                    "An attribute may not appear after another child node.");
+                        }
+                        try {
+                            next.copyTo(context.getBroker(), receiver);
+                        } catch (DOMException e) {
+                            if (e.code == DOMException.NAMESPACE_ERR) {
+                                throw new XPathException(this, ErrorCodes.XQDY0102, e.getMessage());
+                            } else {
+                                throw new XPathException(this, e.getMessage(), e);
+                            }
+                        }
+                        allowAttribs = next.getType() == Type.ATTRIBUTE || next.getType() == Type.NAMESPACE;
+                        next = i.nextItem();
+                    }
+                }
+                // flush remaining character data
+                if (buf != null && buf.length() > 0) {
+                    receiver.characters(buf);
+                }
+            } catch (final SAXException e) {
+                LOG.warn("SAXException during serialization: " + e.getMessage(), e);
+                throw new XPathException(this, e);
+            }
+        } finally {
+            context.exitEnclosedExpr();
         }
-       if (context.getProfiler().isEnabled())
-            {context.getProfiler().end(this, "", result);}
-       return result;
+
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", result);
+        }
+        return result;
     }
 
     /* (non-Javadoc)

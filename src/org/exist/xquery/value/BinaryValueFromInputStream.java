@@ -112,4 +112,9 @@ public class BinaryValueFromInputStream extends BinaryValue {
         }
         context.destroyBinaryValue(this);
     }
+
+    @Override
+    public void incrementSharedReferences() {
+        cache.incrementSharedReferences();
+    }
 }

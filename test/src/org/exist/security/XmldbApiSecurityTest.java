@@ -59,7 +59,7 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
             { "local", "xmldb:exist://" },
             { "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" }
         });
-    };
+    }
     
     @Parameter
     public String apiName;

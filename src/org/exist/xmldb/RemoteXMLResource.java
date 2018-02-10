@@ -46,6 +46,7 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
+import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -113,11 +114,12 @@ public class RemoteXMLResource
     }
 
     @Override
-    protected Properties getProperties() {
+    @Nullable public Properties getProperties() {
         return outputProperties == null ? super.getProperties() : outputProperties;
     }
 
-    protected void setProperties(final Properties properties) {
+    @Override
+    public void setProperties(final Properties properties) {
         this.outputProperties = properties;
     }
 

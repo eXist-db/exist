@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
+import java.util.function.Predicate;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.stream.XMLStreamException;
@@ -807,6 +808,6 @@ public interface Context {
 
 	public void registerBinaryValueInstance(BinaryValue binaryValue);
 
-	public void runCleanupTasks();
+	public void runCleanupTasks(final Predicate<Object> predicate);
 
 }

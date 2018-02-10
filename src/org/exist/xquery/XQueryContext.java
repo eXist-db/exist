@@ -86,6 +86,9 @@ import org.w3c.dom.Node;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The current XQuery execution context. Contains the static as well as the dynamic
@@ -3534,19 +3537,56 @@ public class XQueryContext implements BinaryValueManager, Context
         return isVarDeclared( Debuggee.SESSION );
     }
 
-    private List<BinaryValue> binaryValueInstances;
-    
+    private Deque<BinaryValue> binaryValueInstances;
+
+    public void enterEnclosedExpr() {
+        if(binaryValueInstances != null) {
+            final Iterator<BinaryValue> it = binaryValueInstances.descendingIterator();
+            while (it.hasNext()) {
+                it.next().incrementSharedReferences();
+            }
+        }
+    }
+
+    public void exitEnclosedExpr() {
+        if(binaryValueInstances != null) {
+            final Iterator<BinaryValue> it = binaryValueInstances.iterator();
+            List<BinaryValue> destroyable = null;
+            while (it.hasNext()) {
+                try {
+                    final BinaryValue bv = it.next();
+                    bv.close(); // really just decrements a reference
+                    if(bv.isClosed()) {
+                        if(destroyable == null) {
+                            destroyable = new ArrayList<>();
+                        }
+                        destroyable.add(bv);
+                    }
+                } catch (final IOException e) {
+                    LOG.warn("Unable to close binary reference on exiting enclosed expression: " + e.getMessage(), e);
+                }
+            }
+
+            // eagerly cleanup those BinaryValues that are not used outside the EnclosedExpr (to release memory)
+            if(destroyable != null) {
+                for(final BinaryValue bvd : destroyable) {
+                    binaryValueInstances.remove(bvd);
+                }
+            }
+        }
+    }
+
     @Override
     public void registerBinaryValueInstance(final BinaryValue binaryValue) {
         if(binaryValueInstances == null) {
-             binaryValueInstances = new ArrayList<>();
+             binaryValueInstances = new ArrayDeque<>();
         }
 
         if(cleanupTasks.isEmpty() || !cleanupTasks.stream().filter(ct -> ct instanceof BinaryValueCleanupTask).findFirst().isPresent()) {
             cleanupTasks.add(new BinaryValueCleanupTask());
         }
 
-        binaryValueInstances.add(binaryValue);
+        binaryValueInstances.push(binaryValue);
     }
 
     /**
@@ -3554,18 +3594,31 @@ public class XQueryContext implements BinaryValueManager, Context
      * of any {@link BinaryValue} which have been used during
      * query execution
      */
-    private static class BinaryValueCleanupTask implements CleanupTask {
+    public static class BinaryValueCleanupTask implements CleanupTask {
         @Override
-        public void cleanup(final XQueryContext context) {
+        public void cleanup(final XQueryContext context, final Predicate<Object> predicate) {
             if (context.binaryValueInstances != null) {
-                for (final BinaryValue bv : context.binaryValueInstances) {
+                List<BinaryValue> removable = null;
+                for(final Iterator<BinaryValue> iterator = context.binaryValueInstances.iterator(); iterator.hasNext();) {
+                    final BinaryValue bv = iterator.next();
                     try {
-                        bv.close();
-                    } catch (final IOException ioe) {
-                        LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
+                        if (predicate.test(bv)) {
+                            bv.close();
+                            if(removable == null) {
+                                removable = new ArrayList<>();
+                            }
+                            removable.add(bv);
+                        }
+                    } catch (final IOException e) {
+                        LOG.error("Unable to close binary value: " + e.getMessage(), e);
                     }
                 }
-                context.binaryValueInstances.clear();
+
+                if(removable != null) {
+                    for(final BinaryValue bv : removable) {
+                        context.binaryValueInstances.remove(bv);
+                    }
+                }
             }
         }
     }
@@ -3575,15 +3628,9 @@ public class XQueryContext implements BinaryValueManager, Context
         return (String) getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
     }
 
-    public void destroyBinaryValue(BinaryValue value) {
-        if (binaryValueInstances != null) {
-            for (int i = binaryValueInstances.size() - 1; i > -1; i--) {
-                final BinaryValue bv = binaryValueInstances.get(i);
-                if (bv == value) {
-                    binaryValueInstances.remove(i);
-                    return;
-                }
-            }
+    public void destroyBinaryValue(final BinaryValue value) {
+        if (binaryValueInstances != null && binaryValueInstances.contains(value)) {
+            binaryValueInstances.remove(value);
         }
     }
     
@@ -3672,14 +3719,14 @@ public class XQueryContext implements BinaryValueManager, Context
     }
     
     public interface CleanupTask {
-        void cleanup(final XQueryContext context);
+        void cleanup(final XQueryContext context, final Predicate<Object> predicate);
     }
     
     @Override
-    public void runCleanupTasks() {
+    public void runCleanupTasks(final Predicate<Object> predicate) {
         for(final CleanupTask cleanupTask : cleanupTasks) {
             try {
-                cleanupTask.cleanup(this);
+                cleanupTask.cleanup(this, predicate);
             } catch(final Throwable t) {
                 LOG.error("Cleaning up XQueryContext: Ignoring: " + t.getMessage(), t);
             }

@@ -32,6 +32,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
+import java.io.IOException;
 import java.util.Date;
 
 /**
@@ -188,5 +189,14 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
                         }
                     }
                 });
+    }
+
+    @Override
+    public void close() throws IOException {
+        try {
+            freeResources();
+        } catch (final XMLDBException e) {
+            throw new IOException(e);
+        }
     }
 }
