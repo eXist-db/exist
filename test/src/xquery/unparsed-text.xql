@@ -71,6 +71,30 @@ function upt:unparsed-text-from-db-xml() {
     unparsed-text("/db/test-unparsed-text/test.xml")
 };
 
+declare
+    %test:assertEquals(26436)
+function upt:unparsed-text-from-file-dba() {
+    let $home := system:get-exist-home()
+    let $url := "file:" || $home || "/LICENSE"
+    return
+        string-length(unparsed-text($url))
+};
+
+declare
+    %test:assertEquals(504)
+function upt:unparsed-text-lines-from-file-dba() {
+    let $home := system:get-exist-home()
+    let $url := "file:" || $home || "/LICENSE"
+    return
+        count(unparsed-text-lines($url))
+};
+
+declare
+    %test:assertError("FOUT1170")
+function upt:unparsed-text-from-file-not-allowed() {
+    system:as-user("guest", "guest", unparsed-text("file:///etc/passwd"))
+};
+
 declare 
     %test:assertError("FOUT1170")
 function upt:fragment-identifier() {

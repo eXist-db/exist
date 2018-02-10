@@ -22,24 +22,25 @@
  */
 package org.exist.source;
 
-import java.io.*;
-import java.net.ConnectException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.HttpURLConnection;
-import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
-import java.nio.charset.UnsupportedCharsetException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
-import org.exist.util.PatternFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.ConnectException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A source implementation reading from an URL.
@@ -47,6 +48,8 @@ import org.exist.util.PatternFactory;
  * @author wolf
  */
 public class URLSource extends AbstractSource {
+
+	private final static Pattern URL_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
 
 	private final static Logger LOG = LogManager.getLogger(URLSource.class);
 	
@@ -132,8 +135,7 @@ public class URLSource extends AbstractSource {
 		}
 		final String contentType = connection.getContentType();
 		if (contentType != null) {
-			final Pattern pattern = PatternFactory.getInstance().getPattern("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
-			final Matcher matcher = pattern.matcher(contentType);
+			final Matcher matcher = URL_PATTERN.matcher(contentType);
 			if (matcher.find()) {
 				try {
 					return Charset.forName(matcher.group(1).trim().toUpperCase());
@@ -141,6 +143,8 @@ public class URLSource extends AbstractSource {
 					// unknown or illegal charset
 					return null;
 				}
+			} else if (contentType.startsWith("text/")) {
+				return StandardCharsets.ISO_8859_1;
 			}
 		}
 		return null;

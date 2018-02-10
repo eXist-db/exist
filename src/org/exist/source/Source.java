@@ -32,6 +32,8 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 
+import javax.annotation.Nullable;
+
 
 /**
  * A general interface for access to external or internal sources.
@@ -104,7 +106,7 @@ public interface Source {
      * @return the character encoding
      * @throws IOException
      */
-    Charset getEncoding() throws IOException;
+    @Nullable Charset getEncoding() throws IOException;
 
     /**
      * Set a timestamp for this source. This is used
