@@ -43,6 +43,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
+import org.xml.sax.SAXException;
 
 /**
  * Factory to create a {@link org.exist.source.Source} object for a given
@@ -204,7 +205,17 @@ public class SourceFactory {
                 final XmldbURI pathUri = XmldbURI.create(location);
                 resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
                 if (resource != null) {
-                    source = new DBSource(broker, (BinaryDocument) resource, true);
+                    if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
+                        source = new DBSource(broker, (BinaryDocument) resource, true);
+                    } else {
+                        try {
+                            // XML document: serialize to string source so it can be read as a stream
+                            // by fn:unparsed-text and friends
+                            source = new StringSource(broker.getSerializer().serialize(resource));
+                        } catch (SAXException e) {
+                            throw new IOException(e.getMessage());
+                        }
+                    }
                 }
             } finally {
                 //TODO: this is nasty!!! as we are unlocking the resource whilst there

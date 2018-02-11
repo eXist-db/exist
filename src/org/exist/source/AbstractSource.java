@@ -25,6 +25,7 @@ package org.exist.source;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 
 import org.exist.dom.QName;
 import org.exist.xquery.XPathException;
@@ -42,10 +43,14 @@ public abstract class AbstractSource implements Source {
 
     private long cacheTime = 0;
 
-    
+    @Override
+    public Charset getEncoding() throws IOException {
+        return null;
+    }
+
     /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
     @Override
     public boolean equals(Object obj) {
     	if (obj != null && obj instanceof Source) {

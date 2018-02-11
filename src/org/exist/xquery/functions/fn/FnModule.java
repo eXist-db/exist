@@ -242,7 +242,13 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(LoadXQueryModule.LOAD_XQUERY_MODULE_2, LoadXQueryModule.class),
         new FunctionDef(FunSort.signatures[0], FunSort.class),
         new FunctionDef(FunSort.signatures[1], FunSort.class),
-        new FunctionDef(FunSort.signatures[2], FunSort.class)
+        new FunctionDef(FunSort.signatures[2], FunSort.class),
+        new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT[0], FunUnparsedText.class),
+        new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT[1], FunUnparsedText.class),
+        new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT_LINES[0], FunUnparsedText.class),
+        new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT_LINES[1], FunUnparsedText.class),
+        new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT_AVAILABLE[0], FunUnparsedText.class),
+        new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT_AVAILABLE[1], FunUnparsedText.class)
     };
 
     static {
