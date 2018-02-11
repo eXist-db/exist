@@ -74,8 +74,8 @@ function upt:unparsed-text-from-db-xml() {
 declare
     %test:assertEquals(26436)
 function upt:unparsed-text-from-file-dba() {
-    let $home := system:get-exist-home()
-    let $url := "file:" || $home || "/LICENSE"
+    let $home := translate(system:get-exist-home(), "\", "/")
+    let $url := ``[file://`{$home}`/LICENSE]``
     return
         string-length(unparsed-text($url))
 };
@@ -83,8 +83,8 @@ function upt:unparsed-text-from-file-dba() {
 declare
     %test:assertEquals(504)
 function upt:unparsed-text-lines-from-file-dba() {
-    let $home := system:get-exist-home()
-    let $url := "file:" || $home || "/LICENSE"
+    let $home := translate(system:get-exist-home(), "\", "/")
+    let $url := ``[file://`{$home}`/LICENSE]``
     return
         count(unparsed-text-lines($url))
 };
