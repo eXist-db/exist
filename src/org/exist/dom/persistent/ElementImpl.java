@@ -88,8 +88,8 @@ public class ElementImpl extends NamedNode implements Element {
     public static final int LENGTH_NS_ID = 2; //sizeof short
     public static final int LENGTH_PREFIX_LENGTH = 2; //sizeof short
 
-    private short attributes = 0;
-    private int children = 0;
+    private short attributes = 0; // number of attributes
+    private int children = 0; // number of elements AND attributes
 
     private int position = 0;
     private Map<String, String> namespaceMappings = null;
@@ -583,7 +583,7 @@ public class ElementImpl extends NamedNode implements Element {
                         final IStoredNode<?> last = (IStoredNode<?>) cl.item(child - 2);
                         insertAfter(transaction, nodes, last);
                     } else {
-                        final IStoredNode<?> last = (IStoredNode<?>) getLastChild();
+                        final IStoredNode<?> last = (IStoredNode<?>) getLastChild(true);
                         appendChildren(transaction, last.getNodeId().nextSibling(), null,
                             new NodeImplRef(getLastNode(last)), path, nodes, listener);
                     }
@@ -1030,16 +1030,41 @@ public class ElementImpl extends NamedNode implements Element {
 
     @Override
     public Node getLastChild() {
-        if(!hasChildNodes()) {
+        return getLastChild(false);
+    }
+
+    /**
+     * Get the last child.
+     *
+     * @param attributesAreChildren In the DLN model attributes have child node ids,
+     *     however in the DOM model attributes are not child nodes. Set true for DLN
+     *     or false for DOM.
+     *
+     * @return the last child.
+     */
+    private Node getLastChild(final boolean attributesAreChildren) {
+        if ((!attributesAreChildren) && (!hasChildNodes())) {
+            // DOM model
+            return null;
+        } else if (!(hasChildNodes() || hasAttributes())) {
+            // DLN model
             return null;
         }
+
         Node node = null;
-        if(!isDirty) {
+        if (!isDirty) {
             final NodeId child = nodeId.getChild(children);
             node = ownerDocument.getNode(new NodeProxy(ownerDocument, child));
         }
-        if(node == null) {
-            final NodeList cl = getChildNodes();
+        if (node == null) {
+            final NodeList cl;
+            if (!attributesAreChildren) {
+                // DOM model
+                cl = getChildNodes();
+            } else {
+                // DLN model
+                cl = getAttrsAndChildNodes();
+            }
             return cl.item(cl.getLength() - 1);
         }
         return node;
