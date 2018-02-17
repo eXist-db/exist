@@ -87,14 +87,6 @@
             <PatternLayout pattern="${exist.file.pattern}"/>
         </RollingRandomAccessFile>
         
-        <RollingRandomAccessFile name="exist.betterform" filePattern="${logs}/betterform.${rollover.file.pattern}.log.gz" fileName="${logs}/betterform.log">
-            <Policies>
-                <SizeBasedTriggeringPolicy size="${rollover.max.size}"/>
-            </Policies>
-            <DefaultRolloverStrategy max="${rollover.max}"/>
-            <PatternLayout pattern="${exist.file.pattern}"/>
-        </RollingRandomAccessFile>
-        
         <RollingRandomAccessFile name="exist.restxq" filePattern="${logs}/restxq.${rollover.file.pattern}.log.gz" fileName="${logs}/restxq.log">
             <Policies>
                 <SizeBasedTriggeringPolicy size="${rollover.max.size}"/>

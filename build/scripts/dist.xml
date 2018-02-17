@@ -113,10 +113,6 @@
             <lib dir="extensions/webdav/lib">
                 <include name="*.jar"/>
             </lib>
-            <!-- Include betterform jars  -->
-            <lib dir="extensions/betterform/main/lib">
-                <include name="*.jar"/>
-            </lib>
             <!-- Include the AspectJ runtime jar -->
             <lib dir="${tools.aspectj}/lib">
                 <include name="aspectjrt-*.jar"/>
