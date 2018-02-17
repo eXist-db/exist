@@ -208,7 +208,7 @@ public class AnalyzerConfig {
                 }
 
                 // A lucene Version object has been provided, so it shall be used
-                newAnalyzer = createInstance(clazz, cParamClasses, cParamValues);
+                newAnalyzer = createInstance(clazz, cParamClasses, cParamValues, false);
 
             } else {
                 // Either no parameters have been provided or more than one parameter
@@ -218,13 +218,13 @@ public class AnalyzerConfig {
                 Object[] vcParamValues = addVersionValueToValues(cParamValues);
 
                 // Finally create Analyzer
-                newAnalyzer = createInstance(clazz, vcParamClasses, vcParamValues);
+                newAnalyzer = createInstance(clazz, vcParamClasses, vcParamValues, true);
 
                 // Fallback scenario: a special (not standard type of) Analyzer has been specified without 
                 // a 'Version' argument on purpose. For this (try) to create the Analyzer with 
                 // the original parameters.
                 if (newAnalyzer == null) {
-                    newAnalyzer = createInstance(clazz, cParamClasses, cParamValues);
+                    newAnalyzer = createInstance(clazz, cParamClasses, cParamValues, false);
                 }
 
             }
@@ -244,9 +244,11 @@ public class AnalyzerConfig {
      * @param clazz The analyzer class
      * @param vcParamClasses The parameter classes
      * @param vcParamValues The parameter values
+     * @param warnOnError true if an error should be treated as a warning
      * @return The lucene analyzer
      */
-    private static Analyzer createInstance(Class<?> clazz, Class<?>[] vcParamClasses, Object[] vcParamValues) {
+    private static Analyzer createInstance(final Class<?> clazz, final Class<?>[] vcParamClasses,
+        final Object[] vcParamValues, final boolean warnOnError) {
 
         String className = clazz.getName();
 
@@ -260,10 +262,20 @@ public class AnalyzerConfig {
 
             return (Analyzer) cstr.newInstance(vcParamValues);
 
-        } catch (IllegalArgumentException | IllegalAccessException | InstantiationException | InvocationTargetException | SecurityException e) {
-            LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage()), e);
-        } catch (NoSuchMethodException ex) {
-            LOG.error(String.format("Could not find matching analyzer class constructor%s: %s", className, ex.getMessage()), ex);
+        } catch (final IllegalArgumentException | IllegalAccessException | InstantiationException | InvocationTargetException | SecurityException e) {
+            final String message = String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage());
+            if (warnOnError) {
+                LOG.warn(message + ". Will retry...");
+            } else {
+                LOG.error(message, e);
+            }
+        } catch (final NoSuchMethodException e) {
+            final String message = String.format("Could not find matching analyzer class constructor%s: %s", className, e.getMessage());
+            if (warnOnError) {
+                LOG.warn(message + ". Will retry...");
+            } else {
+                LOG.error(message, e);
+            }
         }
 
         return null;
