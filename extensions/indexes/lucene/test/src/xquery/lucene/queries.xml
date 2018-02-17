@@ -257,7 +257,7 @@
 		<task>XML query test 15: near with regex</task>
 		<code><![CDATA[
 			let $qu := <query><near slop="5"><regex>[ei][ei]ns</regex><regex>s.ch.</regex></near></query>
-			for $hit in doc("/db/test/test1.xml")//p[ft:query(., $qu)]
+			for $hit in doc("/db/lucene/text1.xml")//p[ft:query(., $qu)]
 			return
 			$hit
 		]]></code>
