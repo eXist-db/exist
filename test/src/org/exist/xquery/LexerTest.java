@@ -33,6 +33,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
+import static org.junit.Assert.fail;
+
 public class LexerTest {
 
 	private static final String xml =
@@ -79,7 +81,7 @@ public class LexerTest {
             XQueryTreeParser treeParser = new XQueryTreeParser(context);
             xparser.xpath();
             if (xparser.foundErrors()) {
-                System.err.println(xparser.getErrorMessage());
+                fail(xparser.getErrorMessage());
                 return;
             }
 
@@ -89,7 +91,7 @@ public class LexerTest {
             PathExpr expr = new PathExpr(context);
             treeParser.xpath(ast, expr);
             if (treeParser.foundErrors()) {
-                System.err.println(treeParser.getErrorMessage());
+               fail(treeParser.getErrorMessage());
                 return;
             }
             expr.analyze(new AnalyzeContextInfo());
