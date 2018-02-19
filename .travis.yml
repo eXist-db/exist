@@ -1,4 +1,5 @@
 language: java
+install: "curl -sL https://raw.githubusercontent.com/travis-ci/artifacts/master/install | bash"
 matrix:
   include:
   - os: linux
