@@ -18,7 +18,14 @@ xquery version "3.0";
  :)
 module namespace test="http://exist-db.org/xquery/xqsuite";
 
-declare namespace stats="http://exist-db.org/xquery/profiling";
+import module namespace map = "http://www.w3.org/2005/xpath-functions/map";
+import module namespace util = "http://exist-db.org/xquery/util";
+import module namespace system = "http://exist-db.org/xquery/system";
+import module namespace xmldb = "http://exist-db.org/xquery/xmldb";
+
+declare namespace err = "http://www.w3.org/2005/xqt-errors";
+declare namespace exerr = "http://www.exist-db.org/xqt-errors/";
+declare namespace stats = "http://exist-db.org/xquery/profiling";
 
 declare variable $test:TEST_NAMESPACE := "http://exist-db.org/xquery/xqsuite";
 
@@ -35,6 +42,31 @@ declare variable $test:TYPE_ERROR := QName($test:TEST_NAMESPACE, "type-error");
  : @return an XML report (in xUnit format)
  :)
 declare function test:suite($functions as function(*)+) {
+    test:suite($functions, (), (), (), (), (), ())
+};
+
+(:~
+ : Main entry point into the module. Takes a sequence of function items.
+ : Functions with known test annotations will be evaluated and their results
+ : checked against the annotations.
+ :
+ : @param $functions a sequence of function items
+ : @param $test-ignored-function a function callback for reporting ignored tests
+ : @param $test-started-function a function callback for reporting the start of a test
+ : @param $test-failure-function a function callback for reporting the failure of a test
+ : @param $test-assumption-failed-function a function callback for reporting the failure of a assumption within a test
+ : @param $test-error-function a function callback for reporting an error when running a test
+ : @param $test-finished-function a function callback for reporting the end of a test
+ :
+ : @return an XML report (in xUnit format)
+ :)
+declare function test:suite($functions as function(*)+,
+        $test-ignored-function as (function(xs:string) as empty-sequence())?,
+        $test-started-function as (function(xs:string) as empty-sequence())?,
+        $test-failure-function as (function(xs:string, map(xs:string, item()?), map(xs:string, item()?)) as empty-sequence())?,
+        $test-assumption-failed-function as (function(xs:string, map(xs:string, item()?)?) as empty-sequence())?,
+        $test-error-function as (function(xs:string, map(xs:string, item()?)?) as empty-sequence())?,
+        $test-finished-function as (function(xs:string) as empty-sequence())?) {
     let $modules := test:distinct-modules($functions)
     return
         <testsuites>
@@ -49,7 +81,7 @@ declare function test:suite($functions as function(*)+) {
                 if (empty($setup) or $setup/self::ok) then
                     let $startTime := util:system-time()
                     let $results :=
-                        test:function-by-annotation($modFunctions, "assert", test:run-tests#2)
+                        test:function-by-annotation($modFunctions, "assert", test:run-tests(?, ?, $test-ignored-function, $test-started-function, $test-failure-function, $test-assumption-failed-function, $test-error-function, $test-finished-function))
                     let $elapsed :=
                         util:system-time() - $startTime
                     return
@@ -112,32 +144,48 @@ declare %private function test:call-func-with-annotation($functions as function(
  : %args() annotations found. Each %arg annotation triggers one test run
  : using the supplied parameters.
  :)
-declare %private function test:run-tests($func as function(*), $meta as element(function)) {
+declare %private function test:run-tests($func as function(*), $meta as element(function),
+        $test-ignored-function as (function(xs:string) as empty-sequence())?,
+        $test-started-function as (function(xs:string) as empty-sequence())?,
+        $test-failure-function as (function(xs:string, map(xs:string, item()?), map(xs:string, item()?)) as empty-sequence())?,
+        $test-assumption-failed-function as (function(xs:string, map(xs:string, item()?)?) as empty-sequence())?,
+        $test-error-function as (function(xs:string, map(xs:string, item()?)?) as empty-sequence())?,
+        $test-finished-function as (function(xs:string) as empty-sequence())?) {
     if($meta/annotation[ends-with(@name,  ":pending")])then
-      test:print-result($meta, (), <report>{
-        element pending {
-          $meta/annotation[ends-with(@name,  ":pending")]/value ! text()
-        }
-      }</report>)
+      (
+          if(not(empty($test-ignored-function))) then $test-ignored-function(test:get-test-name($meta)) else (),
+          test:print-result($meta, (), <report>{
+            element pending {
+              $meta/annotation[ends-with(@name,  ":pending")]/value ! text()
+            }
+          }</report>)
+      )
     else
       let $argsAnnot := $meta/annotation[matches(@name, ":args?")][not(preceding-sibling::annotation[1][matches(@name, ":args?")])]
       return
           if ($argsAnnot) then
-              $argsAnnot ! test:test($func, $meta, .)
+              $argsAnnot ! test:test($func, $meta, ., $test-started-function, $test-failure-function, $test-assumption-failed-function, $test-error-function, $test-finished-function)
           else
-              test:test($func, $meta, ())
+              test:test($func, $meta, (), $test-started-function, $test-failure-function, $test-assumption-failed-function, $test-error-function, $test-finished-function)
 };
 
 (:~
  : The main function for running a single test. Executes the test function
  : and compares the result against each assertXXX annotation.
  :)
-declare %private function test:test($func as function(*), $meta as element(function), $firstArg as element(annotation)?) {
+declare %private function test:test($func as function(*), $meta as element(function), $firstArg as element(annotation)?,
+        $test-started-function as (function(xs:string) as empty-sequence())?,
+        $test-failure-function as (function(xs:string, map(xs:string, item()?), map(xs:string, item()?)) as empty-sequence())?,
+        $test-assumption-failed-function as (function(xs:string, map(xs:string, item()?)?) as empty-sequence())?,
+        $test-error-function as (function(xs:string, map(xs:string, item()?)?) as empty-sequence())?,
+        $test-finished-function as (function(xs:string) as empty-sequence())?) {
     let $args := test:get-run-args($firstArg)
     let $assertions := test:get-assertions($meta, $firstArg)
     let $assertError := $assertions[contains(@name, ":assertError")]
     return
         if (exists($assertions)) then
+        (
+            if(not(empty($test-started-function))) then $test-started-function(test:get-test-name($meta)) else (),
             try {
                 let $result := test:call-test($func, $meta, $args)
                 let $assertResult := test:check-assertions($assertions, $result)
@@ -154,22 +202,64 @@ declare %private function test:test($func as function(*), $meta as element(funct
             } catch * {
                 if ($assertError) then
                     if ($assertError/value and not(contains($err:code, $assertError/value/string())
-                        or matches($err:description, $assertError/value/string())))then
+                            or matches($err:description, $assertError/value/string())))then
+                    (
+                        if(not(empty($test-failure-function))) then
+                            $test-failure-function(test:get-test-name($meta), map { "error": $assertError/value/string() },
+                                    map {
+                                        "error": map {
+                                            "code": $err:code,
+                                            "description": $err:description,
+                                            "value": $err:value,
+                                            "module": $err:module,
+                                            "line-number": $err:line-number,
+                                            "column-number": $err:column-number,
+                                            "additional": $err:additional,
+                                            "xquery-stack-trace": $exerr:xquery-stack-trace,
+                                            "java-stack-trace": $exerr:java-stack-trace
+                                        }
+                                    }
+                            )
+                        else ()
+                        ,
                         test:print-result($meta, (),
                             <report>
                                 <failure message="Expected error {$assertError/value/string()}, got: {$err:code} {$err:description}"
                                     type="failure-error-code-1"/>
                             </report>
                         )
+                    )
                     else
                         test:print-result($meta, (), ())
                 else
+                (
+                    if(not(empty($test-error-function))) then
+                        $test-error-function(test:get-test-name($meta),
+                                map {
+                                    "error": map {
+                                        "code": $err:code,
+                                        "description": $err:description,
+                                        "value": $err:value,
+                                        "module": $err:module,
+                                        "line-number": $err:line-number,
+                                        "column-number": $err:column-number,
+                                        "additional": $err:additional,
+                                        "xquery-stack-trace": $exerr:xquery-stack-trace,
+                                        "java-stack-trace": $exerr:java-stack-trace
+                                    }
+                                }
+                        )
+                    else ()
+                    ,
                     test:print-result($meta, (),
                         <report>
                             <error type="{$err:code}" message="{$err:description}"/>
                         </report>
                     )
-            }
+                )
+            },
+            if(not(empty($test-finished-function))) then $test-finished-function(test:get-test-name($meta)) else ()
+        )
         else
             ()
 };
@@ -371,22 +461,28 @@ declare %private function test:apply($func as function(*), $args as item()*) {
             error($test:WRONG_ARG_COUNT, "Function takes too many arguments")
 };
 
+declare %private function test:get-test-name($meta as element(function)) as xs:string {
+    let $nameAnnot := $meta/annotation[matches(@name, ":name")]
+    return
+        if ($nameAnnot) then
+            $nameAnnot/value
+        else
+            replace($meta/@name, "^\w+:([^:]+)$", "$1")
+};
+
 (:~
  : Print out evaluation results for a given test.
  :)
 declare %private function test:print-result($meta as element(function), $result as item()*, 
-    $assertResult as element(report)*) {
-    let $nameAnnot := $meta/annotation[matches(@name, ":name")]
-    let $name := if ($nameAnnot) then $nameAnnot/value else replace($meta/@name, "^\w+:([^:]+)$", "$1")
-    return
-        <testcase name="{$name}" class="{$meta/@name}">
-        {
-            if (exists($assertResult)) then
-                ($assertResult[failure] | $assertResult)[1]/*
-            else
-                ()
-        }
-        </testcase>
+        $assertResult as element(report)*) {
+    <testcase name="{test:get-test-name($meta)}" class="{$meta/@name}">
+    {
+        if (exists($assertResult)) then
+            ($assertResult[failure] | $assertResult)[1]/*
+        else
+            ()
+    }
+    </testcase>
 };
 
 (:~

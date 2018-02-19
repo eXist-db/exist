@@ -50,7 +50,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
     
     private boolean hasBeenReset = false;
 
-    private boolean visited = false;
+    protected boolean visited = false;
 
     private List<ClosureVariable> closureVariables = null;
     
@@ -112,7 +112,9 @@ public class UserDefinedFunction extends Function implements Cloneable {
 				final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
 				newContextInfo.setParent(this);
 				if (!bodyAnalyzed) {
-					body.analyze(newContextInfo);
+					if(body != null) {
+						body.analyze(newContextInfo);
+					}
 					bodyAnalyzed = true;
 				}
 			} finally {
@@ -223,7 +225,9 @@ public class UserDefinedFunction extends Function implements Cloneable {
         // Question: understand this test. Why not reset even is not in recursion ?
 		// Answer: would lead to an infinite loop if the function is recursive.
         bodyAnalyzed = false;
-        body.resetState(postOptimization);
+        if(body != null) {
+			body.resetState(postOptimization);
+		}
 
         if (!postOptimization) {
             currentArguments = null;
