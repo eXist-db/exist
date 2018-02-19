@@ -11,5 +11,6 @@ script: "./build.sh -Dexist.autodeploy=off -Dtest.haltonerror=true -Dtest.halton
   travis"
 notifications:
   hipchat: ec8fcfa661addc56a361a8ef536320@integrations
-after_failure: artifacts upload --key AKIAIZDFTNH5RI6OYVMA --secret J1phdN/ssH+CEL0GU9Zh5atmO3dyUHWDsTYJcANnyJ7U2ZXc+IX8thKEXmyEOQ0oxhJyGGg46wE7JrbFieGPaNaZr0gtGns9A6OkIojXqs09dzc7U1BaykToKg2TNzuI40v2Jh670pUqT7wMfhFbSMSuXJ0Pw92Uv8OI4NWgFXg= --bucket exist-travis-ci --s us-east-1 test/junit/data
+after_failure: "artifacts upload --key AKIAIZDFTNH5RI6OYVMA --secret J1phdN/ssH+CEL0GU9Zh5atmO3dyUHWDsTYJcANnyJ7U2ZXc+IX8thKEXmyEOQ0oxhJyGGg46wE7JrbFieGPaNaZr0gtGns9A6OkIojXqs09dzc7U1BaykToKg2TNzuI40v2Jh670pUqT7wMfhFbSMSuXJ0Pw92Uv8OI4NWgFXg= --bucket exist-travis-ci --s us-east-1 test/junit/data"
+after_success: "artifacts upload --key AKIAIZDFTNH5RI6OYVMA --secret J1phdN/ssH+CEL0GU9Zh5atmO3dyUHWDsTYJcANnyJ7U2ZXc+IX8thKEXmyEOQ0oxhJyGGg46wE7JrbFieGPaNaZr0gtGns9A6OkIojXqs09dzc7U1BaykToKg2TNzuI40v2Jh670pUqT7wMfhFbSMSuXJ0Pw92Uv8OI4NWgFXg= --bucket exist-travis-ci --s us-east-1 test/junit/data"
 
