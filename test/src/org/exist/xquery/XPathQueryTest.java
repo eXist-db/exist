@@ -1621,7 +1621,6 @@ public class XPathQueryTest {
         assertEquals(2, result.getSize());
 
         String item = result.getResource(0).getContent().toString();
-        System.out.println(item);
         assertXMLEqual("<text> </text>", item);
         item = result.getResource(1).getContent().toString();
         assertXMLEqual("<text xml:space=\"default\"> </text>", item);
