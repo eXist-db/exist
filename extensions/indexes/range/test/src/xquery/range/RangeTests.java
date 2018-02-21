@@ -1,11 +1,11 @@
-package xquery.xinclude;
+package xquery.range;
 
 import org.exist.test.runner.XSuite;
 import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-    "test/src/xquery/xinclude"
+    "extensions/indexes/range/test/src/xquery"
 })
-public class XIncludeTests {
+public class RangeTests {
 }

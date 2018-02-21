@@ -1,11 +1,11 @@
 package xquery.indexing;
 
-import xquery.TestRunner;
+import org.exist.test.runner.XSuite;
+import org.junit.runner.RunWith;
 
-public class IndexingTests extends TestRunner {
-
-    @Override
-    protected String getDirectory() {
-        return "test/src/xquery/indexing";
-    }
+@RunWith(XSuite.class)
+@XSuite.XSuiteFiles({
+        "test/src/xquery/indexing"
+})
+public class IndexingTests {
 }

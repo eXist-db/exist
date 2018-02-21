@@ -20,13 +20,13 @@
 
 package xquery.modules.file;
 
-import xquery.TestRunner;
+import org.exist.test.runner.XSuite;
+import org.junit.runner.RunWith;
 
-public class FileTests extends TestRunner {
-
-    @Override
-    protected String getDirectory() {
-        return "test/src/xquery/modules/file";
-    }
+@RunWith(XSuite.class)
+@XSuite.XSuiteFiles({
+    "test/src/xquery/modules/file"
+})
+public class FileTests {
 }
 

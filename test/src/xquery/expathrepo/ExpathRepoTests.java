@@ -1,12 +1,11 @@
 package xquery.expathrepo;
 
-import xquery.TestRunner;
+import org.exist.test.runner.XSuite;
+import org.junit.runner.RunWith;
 
-public class ExpathRepoTests extends TestRunner {
-
-    @Override
-    protected String getDirectory() {
-        return "test/src/xquery/expathrepo";
-    }
+@RunWith(XSuite.class)
+@XSuite.XSuiteFiles({
+        "test/src/xquery/expathrepo"
+})
+public class ExpathRepoTests {
 }
-

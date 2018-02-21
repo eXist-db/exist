@@ -1,11 +1,11 @@
 package xquery.util;
 
-import xquery.TestRunner;
+import org.exist.test.runner.XSuite;
+import org.junit.runner.RunWith;
 
-public class UtilTests extends TestRunner {
-
-    @Override
-    protected String getDirectory() {
-        return "test/src/xquery/util";
-    }
+@RunWith(XSuite.class)
+@XSuite.XSuiteFiles({
+        "test/src/xquery/util"
+})
+public class UtilTests {
 }

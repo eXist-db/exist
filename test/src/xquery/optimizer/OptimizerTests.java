@@ -1,14 +1,14 @@
 package xquery.optimizer;
 
-import xquery.TestRunner;
+import org.exist.test.runner.XSuite;
+import org.junit.runner.RunWith;
 
 /**
  * XQuery optimizer tests
  */
-public class OptimizerTests extends TestRunner {
-
-    @Override
-    protected String getDirectory() {
-        return "test/src/xquery/optimizer";
-    }
+@RunWith(XSuite.class)
+@XSuite.XSuiteFiles({
+    "test/src/xquery/optimizer"
+})
+public class OptimizerTests {
 }

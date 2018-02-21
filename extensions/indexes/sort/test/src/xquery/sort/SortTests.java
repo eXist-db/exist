@@ -1,11 +1,11 @@
 package xquery.sort;
 
-import xquery.TestRunner;
+import org.exist.test.runner.XSuite;
+import org.junit.runner.RunWith;
 
-public class SortTests extends TestRunner {
-
-    @Override
-    protected String getDirectory() {
-        return "extensions/indexes/sort/test/src/xquery/sort";
-    }
+@RunWith(XSuite.class)
+@XSuite.XSuiteFiles({
+    "extensions/indexes/sort/test/src/xquery/sort"
+})
+public class SortTests {
 }

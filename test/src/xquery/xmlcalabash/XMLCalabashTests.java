@@ -1,11 +1,11 @@
 package xquery.xmlcalabash;
 
-import xquery.TestRunner;
+import org.exist.test.runner.XSuite;
+import org.junit.runner.RunWith;
 
-public class XMLCalabashTests extends TestRunner {
-
-    @Override
-    protected String getDirectory() {
-        return "test/src/xquery/xmlcalabash";
-    }
+@RunWith(XSuite.class)
+@XSuite.XSuiteFiles({
+    "test/src/xquery/xmlcalabash"
+})
+public class XMLCalabashTests {
 }

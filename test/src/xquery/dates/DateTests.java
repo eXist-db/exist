@@ -22,12 +22,12 @@
 
 package xquery.dates;
 
-import xquery.TestRunner;
+import org.exist.test.runner.XSuite;
+import org.junit.runner.RunWith;
 
-public class DateTests extends TestRunner {
-
-    @Override
-    protected String getDirectory() {
-        return "test/src/xquery/dates";
-    }
+@RunWith(XSuite.class)
+@XSuite.XSuiteFiles({
+    "test/src/xquery/dates"
+})
+public class DateTests {
 }
