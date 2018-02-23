@@ -35,7 +35,7 @@
             $node/name/text()
 		};
 
-		declare function local:create-index($options as element()?) as empty() {
+		declare function local:create-index($options as element()?) as empty-sequence() {
 			let $fn := util:function(xs:QName("local:cb"), 1)
             return
                 sort:create-index-callback("names", doc("/db/test/sort1.xml")//item, $fn, 
