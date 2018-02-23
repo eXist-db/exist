@@ -49,6 +49,7 @@ import java.net.URLConnection;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.custommonkey.xmlunit.XMLUnit.compareXML;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * I propose that we put here in XQueryTest the tests involving all the
@@ -1220,8 +1221,6 @@ public class XQueryTest {
     @Test
     public void functionDocExternal() throws XMLDBException {
         boolean hasInternetAccess = false;
-        ResourceSet result;
-        String query;
 
         //Checking that we have an Internet Access
         try {
@@ -1236,16 +1235,12 @@ public class XQueryTest {
         } catch (IOException e) {
             //Ignore
         }
-
-        if (!hasInternetAccess) {
-            System.out.println("No Internet access: skipping 'testFunctionDocExternal' tests");
-            return;
-        }
+        assumeTrue("No Internet access: skipping 'functionDocExternal' tests", hasInternetAccess);
 
         XPathQueryService service =
                 storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
-        query = "if (doc-available(\"http://www.w3.org/XML/Core/\")) then doc(\"http://www.w3.org/XML/Core/\") else ()";
-        result = service.query(query);
+        String query = "if (doc-available(\"http://www.w3.org/XML/Core/\")) then doc(\"http://www.w3.org/XML/Core/\") else ()";
+        ResourceSet result = service.query(query);
         assertEquals("XQuery: " + query, 1, result.getSize());
         query = "if (doc-available(\"http://www.w3.org/XML/dummy\")) then doc(\"http://www.w3.org/XML/dummy\") else ()";
         result = service.query(query);
