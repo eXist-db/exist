@@ -56,11 +56,13 @@ public class FnHasChildren extends Function {
         if(getArgumentCount() == 0) {
             // default to the context item
 
-            if(contextItem == null) {
-                throw new XPathException(this, ErrorCodes.XPDY0002, "Context item is absent");
-            }
+            if(contextSequence == null) {
 
-            contextSequence = contextItem.toSequence();
+                if (contextItem == null) {
+                    throw new XPathException(this, ErrorCodes.XPDY0002, "Context item is absent");
+                }
+                contextSequence = contextItem.toSequence();
+            }
 
             if(contextSequence.isEmpty()) {
                 return BooleanValue.FALSE;

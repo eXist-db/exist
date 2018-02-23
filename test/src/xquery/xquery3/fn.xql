@@ -47,7 +47,7 @@ function fnt:has-children-contextItem-absent() {
 };
 
 declare
-    %test:assertError("XPTY0004")
+    %test:assertError("XPTY0019")
 function fnt:has-children-contextItem-notNode() {
     "str1"/has-children()
 };
@@ -89,7 +89,7 @@ function fnt:innermost() {
         </a>
     } return
         string-join(
-            for $inner in fn:innermost($doc/a/b, $doc/a/c, $doc/a/c/e, $doc/a/f, $doc/a/f/g/h, $doc/a/b)
+            for $inner in fn:innermost(($doc/a/b, $doc/a/c, $doc/a/c/e, $doc/a/f, $doc/a/f/g/h, $doc/a/b))
             return
                 local-name($inner)
             ,
@@ -115,9 +115,9 @@ function fnt:outermost() {
         </a>
     } return
         string-join(
-            for $inner in fn:outermost($doc/a/b, $doc/a/c, $doc/a/c/e, $doc/a/f, $doc/a/f/g/h, $doc/a/b)
+            for $outer in fn:outermost(($doc/a/b, $doc/a/c, $doc/a/c/e, $doc/a/f, $doc/a/f/g/h, $doc/a/b))
             return
-                local-name($inner)
+                local-name($outer)
             ,
             ","
         )

@@ -111,7 +111,7 @@ public class ExistEmbeddedServer extends ExternalResource {
             if(useTemporaryStorage) {
                 this.temporaryStorage = Optional.of(Files.createTempDirectory("org.exist.test.ExistEmbeddedServer"));
                 config.setProperty(BrokerPool.PROPERTY_DATA_DIR, temporaryStorage.get());
-                config.setProperty(Journal.RECOVERY_JOURNAL_DIR_ATTRIBUTE, temporaryStorage.get());
+                config.setProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR, temporaryStorage.get());
                 System.out.println("Using temporary storage location: " + temporaryStorage.get().toAbsolutePath().toString());
             }
 
