@@ -159,7 +159,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
     public void run(final RunNotifier notifier) {
         try {
             final Source query = new FileSource(Paths.get("test/src/org/exist/test/runner/xquery-test-runner.xq"), false);
-            final URI testModuleUri = new URI(path.toAbsolutePath().toString());
+            final URI testModuleUri = path.toAbsolutePath().toUri();
 
             final List<java.util.function.Function<XQueryContext, Tuple2<String, Object>>> externalVariableDeclarations = Arrays.asList(
                     context -> new Tuple2<String, Object>("test-module-uri", new AnyURIValue(testModuleUri)),
@@ -175,7 +175,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
 
             executeQuery(query, externalVariableDeclarations);
 
-        } catch(final URISyntaxException | DatabaseConfigurationException | IOException | EXistException | PermissionDeniedException | XPathException e) {
+        } catch(final DatabaseConfigurationException | IOException | EXistException | PermissionDeniedException | XPathException e) {
             //TODO(AR) what to do here?
             throw new RuntimeException(e);
         }

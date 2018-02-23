@@ -230,7 +230,7 @@ public class Transform extends BasicFunction {
                     serializer.setReceiver(receiver, true);
                     if (expandXIncludes) {
                         String xiPath = serializationProps.getProperty(EXistOutputKeys.XINCLUDE_PATH);
-                        if (xiPath != null) {
+                        if(xiPath != null && !xiPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
                             final Path f = Paths.get(xiPath).normalize();
                             if (!f.isAbsolute()) {
                                 xiPath = Paths.get(context.getModuleLoadPath(), xiPath).normalize().toAbsolutePath().toString();

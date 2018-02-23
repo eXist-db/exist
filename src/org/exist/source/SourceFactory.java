@@ -150,7 +150,7 @@ public class SourceFactory {
 
             if (source == null) {
                 /*
-                 * Try to load from the folder of the contextPath URL
+                 * Try to load from the parent folder of the contextPath URL
                  */
                 try {
                     Path p6 = null;
@@ -177,14 +177,41 @@ public class SourceFactory {
 
             if (source == null) {
                 /*
-                 * Lastly we try to load it using EXIST_HOME as the reference point
+                 * Try to load from the contextPath URL folder
                  */
-                Path p7 = null;
                 try {
-                    p7 = FileUtils.resolve(BrokerPool.getInstance().getConfiguration().getExistHome(), location);
+                    Path p7 = null;
+                    if(contextPath.startsWith("file:/")) {
+                        try {
+                            p7 = Paths.get(new URI(contextPath)).resolve(location);
+                        } catch (final URISyntaxException e) {
+                            // continue trying
+                        }
+                    }
+
+                    if(p7 == null) {
+                        p7 = Paths.get(contextPath.replaceFirst("^file:/*(/.*)$", "$1")).resolve(location);
+                    }
+
                     if (Files.isReadable(p7)) {
                         location = p7.toUri().toASCIIString();
                         source = new FileSource(p7, checkXQEncoding);
+                    }
+                } catch (InvalidPathException e) {
+                    // continue trying
+                }
+            }
+
+            if (source == null) {
+                /*
+                 * Lastly we try to load it using EXIST_HOME as the reference point
+                 */
+                Path p8 = null;
+                try {
+                    p8 = FileUtils.resolve(BrokerPool.getInstance().getConfiguration().getExistHome(), location);
+                    if (Files.isReadable(p8)) {
+                        location = p8.toUri().toASCIIString();
+                        source = new FileSource(p8, checkXQEncoding);
                     }
                 } catch (final EXistException e) {
                     LOG.warn(e);
