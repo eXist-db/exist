@@ -47,7 +47,7 @@ function fnt:has-children-contextItem-absent() {
 };
 
 declare
-    %test:assertError("XPTY0004")
+    %test:assertError("XPTY0019")
 function fnt:has-children-contextItem-notNode() {
     "str1"/has-children()
 };
