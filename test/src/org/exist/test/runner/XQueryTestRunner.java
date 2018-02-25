@@ -41,7 +41,6 @@ import org.w3c.dom.NodeList;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -148,9 +147,9 @@ public class XQueryTestRunner extends AbstractTestRunner {
 
     @Override
     public Description getDescription() {
-        final Description description = Description.createSuiteDescription(getSuiteName(), null);
+        final Description description = Description.createSuiteDescription(getSuiteName(), (java.lang.annotation.Annotation[]) null);
         for (final XQueryTestInfo.TestFunctionDef testFunctionDef : info.getTestFunctions()) {
-            description.addChild(Description.createTestDescription(getSuiteName(), testFunctionDef.getLocalName(), null));
+            description.addChild(Description.createTestDescription(getSuiteName(), testFunctionDef.getLocalName(), (java.lang.annotation.Annotation) null));
         }
         return description;
     }

@@ -484,31 +484,23 @@ public interface TransactionTestDSL {
 
             // submit t1
             final ExecutorService t1ExecutorService = Executors.newSingleThreadExecutor(r -> new Thread(transactionsThreadGroup, r, "Transaction-1 Schedule"));
-            final Future<U1> t1Result = t1ExecutorService.submit(new Callable<U1>() {
-
-                @Override
-                public U1 call() throws EXistException, XPathException, PermissionDeniedException, LockException, TriggerException, IOException, InterruptedException {
-                    try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
-                         final Txn txn = brokerPool.getTransactionManager().beginTransaction()) {
-                        final U1 result = lastOperation.t1_state.apply(broker, txn, executionListener, null);
-                        txn.commit();
-                        return result;
-                    }
+            final Future<U1> t1Result = t1ExecutorService.submit(() -> {
+                try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
+                     final Txn txn = brokerPool.getTransactionManager().beginTransaction()) {
+                    final U1 result = lastOperation.t1_state.apply(broker, txn, executionListener, null);
+                    txn.commit();
+                    return result;
                 }
             });
 
             // submit t2
             final ExecutorService t2ExecutorService = Executors.newSingleThreadExecutor(r -> new Thread(transactionsThreadGroup, r, "Transaction-2 Schedule"));
-            final Future<U2> t2Result = t2ExecutorService.submit(new Callable<U2>() {
-
-                @Override
-                public U2 call() throws EXistException, XPathException, PermissionDeniedException, LockException, TriggerException, IOException, InterruptedException {
-                    try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
-                         final Txn txn = brokerPool.getTransactionManager().beginTransaction()) {
-                        final U2 result = lastOperation.t2_state.apply(broker, txn, executionListener, null);
-                        txn.commit();
-                        return result;
-                    }
+            final Future<U2> t2Result = t2ExecutorService.submit(() -> {
+                try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
+                     final Txn txn = brokerPool.getTransactionManager().beginTransaction()) {
+                    final U2 result = lastOperation.t2_state.apply(broker, txn, executionListener, null);
+                    txn.commit();
+                    return result;
                 }
             });
 

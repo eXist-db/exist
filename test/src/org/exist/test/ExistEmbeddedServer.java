@@ -102,11 +102,11 @@ public class ExistEmbeddedServer extends ExternalResource {
             }
 
             // override any specified config properties
-            if(configProperties.isPresent()) {
-                for(final Map.Entry<Object, Object> configProperty : configProperties.get().entrySet()) {
+            configProperties.ifPresent(properties -> {
+                for (final Map.Entry<Object, Object> configProperty : properties.entrySet()) {
                     config.setProperty(configProperty.getKey().toString(), configProperty.getValue());
                 }
-            }
+            });
 
             if(useTemporaryStorage) {
                 this.temporaryStorage = Optional.of(Files.createTempDirectory("org.exist.test.ExistEmbeddedServer"));

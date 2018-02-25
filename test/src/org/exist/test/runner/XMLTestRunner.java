@@ -90,20 +90,24 @@ public class XMLTestRunner extends AbstractTestRunner {
         for(int i = 0; i < children.getLength(); i++) {
             final Node child = children.item(i);
             if(child.getNodeType() == Node.ELEMENT_NODE && child.getNamespaceURI() == null) {
-                if (child.getLocalName().equals("testName")) {
-                    testName = child.getTextContent().trim();
-                } else if (child.getLocalName().equals("description")) {
-                    description = child.getTextContent().trim();
-                } else if (child.getLocalName().equals("test")) {
-                    final NodeList testChildren = child.getChildNodes();
-                    for (int j = 0; j < testChildren.getLength(); j++) {
-                        final Node testChild = testChildren.item(j);
-                        if (testChild.getNodeType() == Node.ELEMENT_NODE && testChild.getNamespaceURI() == null) {
-                            if (testChild.getLocalName().equals("task")) {
-                                childNames.add(testChild.getTextContent().trim());
+                switch (child.getLocalName()) {
+                    case "testName":
+                        testName = child.getTextContent().trim();
+                        break;
+                    case "description":
+                        description = child.getTextContent().trim();
+                        break;
+                    case "test":
+                        final NodeList testChildren = child.getChildNodes();
+                        for (int j = 0; j < testChildren.getLength(); j++) {
+                            final Node testChild = testChildren.item(j);
+                            if (testChild.getNodeType() == Node.ELEMENT_NODE && testChild.getNamespaceURI() == null) {
+                                if (testChild.getLocalName().equals("task")) {
+                                    childNames.add(testChild.getTextContent().trim());
+                                }
                             }
                         }
-                    }
+                        break;
                 }
             }
         }
@@ -121,9 +125,9 @@ public class XMLTestRunner extends AbstractTestRunner {
 
     @Override
     public Description getDescription() {
-        final Description description = Description.createSuiteDescription(getSuiteName(), null);
+        final Description description = Description.createSuiteDescription(getSuiteName(), (java.lang.annotation.Annotation[]) null);
         for (final String childName : info.getChildNames()) {
-            description.addChild(Description.createTestDescription(getSuiteName(), childName, null));
+            description.addChild(Description.createTestDescription(getSuiteName(), childName, (java.lang.annotation.Annotation[]) null));
         }
         return description;
     }

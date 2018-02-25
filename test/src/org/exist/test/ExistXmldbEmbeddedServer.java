@@ -87,8 +87,7 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
 
     public ResourceSet executeQuery(final String query) throws XMLDBException {
         final CompiledExpression compiledQuery = xpathQueryService.compile(query);
-        final ResourceSet result = xpathQueryService.execute(compiledQuery);
-        return result;
+        return xpathQueryService.execute(compiledQuery);
     }
 
     public ResourceSet executeQuery(final String query, final Map<String, Object> externalVariables)
