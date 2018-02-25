@@ -1,5 +1,5 @@
 <TestSet xmlns:exist="http://exist.sourceforge.net/NS/exist">
-    <testName>tests for behaviour of eXist w.r.t. variable references in location step</testName>
+    <testName>Variable references in location step</testName>
     <description>
         <p>These tests check eXist's behaviour when variable references are used in a location step, both on persistend nodes and in-memory nodes. Two test contexts are repeated:
             <ul>

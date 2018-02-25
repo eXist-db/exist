@@ -19,12 +19,12 @@
  */
 package xquery.lucene;
 
-import xquery.TestRunner;
+import org.exist.test.runner.XSuite;
+import org.junit.runner.RunWith;
 
-public class RunTests extends TestRunner {
-
-    @Override
-    protected String getDirectory() {
-        return "extensions/indexes/lucene/test/src/xquery/lucene";
-    }
+@RunWith(XSuite.class)
+@XSuite.XSuiteFiles({
+    "extensions/indexes/lucene/test/src/xquery/lucene"
+})
+public class LuceneTests {
 }

@@ -42,6 +42,7 @@ import org.exist.xmldb.LocalXMLResource;
 import org.exist.xmldb.RemoteXMLResource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.*;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -116,7 +117,11 @@ public class XPathUtil {
                 final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
                 streamer.setContentHandler(receiver);
                 streamer.serialize((Node) obj, false);
-                return builder.getDocument().getNode(1);
+                if(obj instanceof Document) {
+                    return builder.getDocument();
+                } else {
+                    return builder.getDocument().getNode(1);
+                }
             } catch (final SAXException e) {
                 throw new XPathException(
                         "Failed to transform node into internal model: "

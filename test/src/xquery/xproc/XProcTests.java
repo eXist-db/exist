@@ -1,11 +1,11 @@
 package xquery.xproc;
 
-import xquery.TestRunner;
+import org.exist.test.runner.XSuite;
+import org.junit.runner.RunWith;
 
-public class XProcTests extends TestRunner {
-
-    @Override
-    protected String getDirectory() {
-        return "test/src/xquery/xproc";
-    }
+@RunWith(XSuite.class)
+@XSuite.XSuiteFiles({
+    "test/src/xquery/xproc"
+})
+public class XProcTests {
 }

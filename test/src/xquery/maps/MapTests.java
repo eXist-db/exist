@@ -1,11 +1,11 @@
 package xquery.maps;
 
-import xquery.TestRunner;
+import org.exist.test.runner.XSuite;
+import org.junit.runner.RunWith;
 
-public class MapTests extends TestRunner {
-
-    @Override
-    protected String getDirectory() {
-        return "test/src/xquery/maps";
-    }
+@RunWith(XSuite.class)
+@XSuite.XSuiteFiles({
+    "test/src/xquery/maps"
+})
+public class MapTests {
 }

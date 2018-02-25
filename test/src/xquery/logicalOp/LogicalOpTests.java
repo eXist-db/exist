@@ -1,11 +1,11 @@
 package xquery.logicalOp;
 
-import xquery.TestRunner;
+import org.exist.test.runner.XSuite;
+import org.junit.runner.RunWith;
 
-public class LogicalOpTests extends TestRunner {
-
-    @Override
-    protected String getDirectory() {
-        return "test/src/xquery/logicalOp";
-    }
+@RunWith(XSuite.class)
+@XSuite.XSuiteFiles({
+    "test/src/xquery/logicalOp"
+})
+public class LogicalOpTests {
 }

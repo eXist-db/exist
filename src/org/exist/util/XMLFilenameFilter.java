@@ -9,10 +9,8 @@ import java.util.function.Predicate;
 
 public class XMLFilenameFilter implements FilenameFilter {
 
-    public XMLFilenameFilter() {
-    }
-
-    public boolean accept(File dir, String name) {
+    @Override
+    public boolean accept(File dir, final String name) {
         final MimeTable mimetab = MimeTable.getInstance();
         final MimeType mime = mimetab.getContentTypeFor(name);
         return mime != null && mime.isXMLType();

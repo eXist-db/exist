@@ -9,6 +9,7 @@ import org.exist.xquery.functions.fn.LoadXQueryModule;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.*;
 
+import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -66,7 +67,8 @@ public class ModuleFunctions extends BasicFunction {
                 if (isCalledAs("module-functions-by-uri")) {
                     module = tempContext.importModule(args[0].getStringValue(), null, null);
                 } else {
-                    tempContext.setSource(new FileSource(Paths.get(args[0].getStringValue()), false));
+                    final URI locationUri = ((AnyURIValue)args[0]).toURI();
+                    tempContext.setSource(new FileSource(Paths.get(locationUri), false));
                     module = tempContext.importModule(null, null, args[0].getStringValue());
                 }
                 

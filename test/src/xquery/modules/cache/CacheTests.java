@@ -20,13 +20,12 @@
 
 package xquery.modules.cache;
 
-import xquery.TestRunner;
+import org.exist.test.runner.XSuite;
+import org.junit.runner.RunWith;
 
-public class CacheTests extends TestRunner {
-
-    @Override
-    protected String getDirectory() {
-        return "test/src/xquery/modules/cache";
-    }
+@RunWith(XSuite.class)
+@XSuite.XSuiteFiles({
+    "test/src/xquery/modules/cache"
+})
+public class CacheTests {
 }
-

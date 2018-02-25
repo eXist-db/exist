@@ -1,11 +1,11 @@
 package xquery.xquery3;
 
-import xquery.TestRunner;
+import org.exist.test.runner.XSuite;
+import org.junit.runner.RunWith;
 
-public class XQuery3Tests extends TestRunner {
-
-    @Override
-    protected String getDirectory() {
-        return "test/src/xquery/xquery3";
-    }
+@RunWith(XSuite.class)
+@XSuite.XSuiteFiles({
+        "test/src/xquery/xquery3"
+})
+public class XQuery3Tests {
 }

@@ -21,10 +21,12 @@
  */
 package xquery;
 
-public class CoreTests extends TestRunner {
+import org.exist.test.runner.XSuite;
+import org.junit.runner.RunWith;
 
-    @Override
-    protected String getDirectory() {
-        return "test/src/xquery";
-    }
+@RunWith(XSuite.class)
+@XSuite.XSuiteFiles({
+    "test/src/xquery"
+})
+public class CoreTests {
 }

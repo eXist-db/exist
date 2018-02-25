@@ -21,13 +21,13 @@ package xquery.modules.compression;
  *
  *  $Id$
  */
-import xquery.TestRunner;
+import org.exist.test.runner.XSuite;
+import org.junit.runner.RunWith;
 
-public class CompressionTests extends TestRunner {
-
-    @Override
-    protected String getDirectory() {
-        return "test/src/xquery/modules/compression";
-    }
+@RunWith(XSuite.class)
+@XSuite.XSuiteFiles({
+    "test/src/xquery/modules/compression"
+})
+public class CompressionTests  {
 }
 
