@@ -108,6 +108,9 @@ public class XMLTestRunner extends AbstractTestRunner {
                             }
                         }
                         break;
+                    default:
+                        // ignored
+                        break;
                 }
             }
         }
