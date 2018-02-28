@@ -61,23 +61,25 @@ public class SystemTaskManager implements BrokerPoolService {
         }
 
         synchronized (waitingSystemTasks) {
-            try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-                while (!waitingSystemTasks.isEmpty()) {
-                    final SystemTask task = waitingSystemTasks.pop();
+            if(!waitingSystemTasks.isEmpty()) {
+                try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+                    while (!waitingSystemTasks.isEmpty()) {
+                        final SystemTask task = waitingSystemTasks.pop();
 
-                    if(pool.isShuttingDown()) {
-                        LOG.info("Skipping SystemTask: '" + task.getName() + "' as database is shutting down...");
-                    } else if(pool.isShutDown()) {
-                        LOG.warn("Unable to execute SystemTask: '" + task.getName() + "' as database is shut down!");
-                    } else {
-                        if (task.afterCheckpoint()) {
-                            pool.sync(broker, Sync.MAJOR);
+                        if (pool.isShuttingDown()) {
+                            LOG.info("Skipping SystemTask: '" + task.getName() + "' as database is shutting down...");
+                        } else if (pool.isShutDown()) {
+                            LOG.warn("Unable to execute SystemTask: '" + task.getName() + "' as database is shut down!");
+                        } else {
+                            if (task.afterCheckpoint()) {
+                                pool.sync(broker, Sync.MAJOR);
+                            }
+                            runSystemTask(task, broker);
                         }
-                        runSystemTask(task, broker);
                     }
+                } catch (final Exception e) {
+                    LOG.error("System maintenance task reported error: " + e.getMessage(), e);
                 }
-            } catch (final Exception e) {
-                LOG.error("System maintenance task reported error: " + e.getMessage(), e);
             }
         }
     }
