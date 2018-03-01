@@ -468,3 +468,12 @@ function mt:single-entry-map() {
     return
         map:for-each($map, function($k, $v) { $k })
 };
+
+declare 
+    %test:assertEquals(5)
+function mt:qname() {
+    let $a := 1
+    let $m := map {  $a: fn:string-length("hello") }
+    return
+            $m?1
+};
