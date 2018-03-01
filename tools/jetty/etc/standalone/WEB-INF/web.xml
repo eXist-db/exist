@@ -116,19 +116,6 @@
             </init-param>
         -->
     </servlet>
-    
-    <!-- 
-        Old webDAV access to eXist 
-    -->
-    <!--servlet>
-        <servlet-name>WebDAVServlet</servlet-name>
-        <servlet-class>org.exist.http.servlets.WebDAVServlet</servlet-class>
-
-        <init-param>
-            <param-name>authentication</param-name>
-            <param-value>basic</param-value>
-        </init-param>
-    </servlet-->
 	
     <servlet>
         <servlet-name>XQueryURLRewrite</servlet-name>
