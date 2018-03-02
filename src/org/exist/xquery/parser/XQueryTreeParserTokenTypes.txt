@@ -1,6 +1,6 @@
 // $ANTLR 2.7.7 (2006-11-01): XQueryTree.g -> XQueryTreeParserTokenTypes.txt$
 XQueryTreeParser    // output token vocab name
-QNAME=4
+QNAME("qname")=4
 EQNAME=5
 PREDICATE=6
 FLWOR=7
@@ -65,7 +65,7 @@ SEQUENCE=65
 LITERAL_xpointer="xpointer"=66
 LPAREN("opening parenthesis '('")=67
 RPAREN("closing parenthesis ')'")=68
-NCNAME("name")=69
+NCNAME("ncname")=69
 LITERAL_xquery="xquery"=70
 LITERAL_version="version"=71
 SEMICOLON("semicolon ';'")=72
@@ -239,15 +239,15 @@ XML_CDATA_END("end of CDATA section")=239
 LETTER=240
 DIGITS=241
 HEX_DIGITS=242
-NMSTART=243
-NMCHAR=244
-WS=245
-XQDOC_COMMENT("XQuery XQDoc comment")=246
-EXPR_COMMENT("XQuery comment")=247
-PREDEFINED_ENTITY_REF=248
-CHAR_REF=249
-S=250
-NEXT_TOKEN=251
+WS=243
+XQDOC_COMMENT("XQuery XQDoc comment")=244
+EXPR_COMMENT("XQuery comment")=245
+PREDEFINED_ENTITY_REF=246
+CHAR_REF=247
+S=248
+NEXT_TOKEN=249
+NAME_START_CHAR=250
+NAME_CHAR=251
 CHAR=252
 BASECHAR=253
 IDEOGRAPHIC=254
