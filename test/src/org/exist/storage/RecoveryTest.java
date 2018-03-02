@@ -44,10 +44,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.FileUtils;
-import org.exist.util.LockException;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -59,6 +56,8 @@ import org.junit.After;
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -113,7 +112,7 @@ public class RecoveryTest {
                 broker.saveCollection(transaction, test2);
 
 
-                files = FileUtils.list(dir);
+                files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
                 assertNotNull(files);
 
                 doc = test2.addBinaryResource(transaction, broker, TestConstants.TEST_BINARY_URI, "Some text data".getBytes(), null);
@@ -126,20 +125,18 @@ public class RecoveryTest {
                         assertNotNull(info);
                         test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
                     } catch (SAXException e) {
-//                	    TODO : why pass invalid couments ?
-                        System.err.println("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
+                        fail("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
                     }
                 }
 
                 // replace some documents
-            for(final Path f : files) {
+                for(final Path f : files) {
                     try {
                         final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
                         assertNotNull(info);
                         test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
                     } catch (SAXException e) {
-//                	    TODO : why pass invalid documents ?
-                        System.err.println("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
+                        fail("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
                     }
                 }
 

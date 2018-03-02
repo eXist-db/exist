@@ -67,17 +67,14 @@ public class ReindexTest {
                 assertNotNull(root);
                 broker.saveCollection(transaction, root);
 
-                final List<Path> files = FileUtils.list(dir);
+                final List<Path> files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
                 for (final Path f : files) {
-                    final MimeType mime = MimeTable.getInstance().getContentTypeFor(FileUtils.fileName(f));
-                    if (mime == null || mime.isXMLType()) {
-                        try {
-                            final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
-                            assertNotNull(info);
-                            root.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
-                        } catch (SAXException e) {
-                            System.err.println("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
-                        }
+                    try {
+                        final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
+                        assertNotNull(info);
+                        root.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+                    } catch (SAXException e) {
+                        fail("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
                     }
                 }
                 transact.commit(transaction);

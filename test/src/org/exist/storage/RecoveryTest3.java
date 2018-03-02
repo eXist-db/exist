@@ -40,6 +40,7 @@ import org.exist.test.TestConstants;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
+import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Test;
@@ -47,6 +48,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * Add a larger number of documents into a collection,
@@ -87,7 +89,7 @@ public class RecoveryTest3 {
             assertNotNull(test2);
             broker.saveCollection(transaction, test2);
 
-            final List<Path> files = FileUtils.list(dir);
+            final List<Path> files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
             assertNotNull(files);
 
             // store some documents.
@@ -98,8 +100,7 @@ public class RecoveryTest3 {
                     assertNotNull(info);
                     test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
                 } catch (final SAXException e) {
-                    //TODO : why store invalid documents ?
-                    System.err.println("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
+                    fail("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
                 }
             }
 
@@ -142,7 +143,7 @@ public class RecoveryTest3 {
                 assertNotNull(test2);
                 broker.saveCollection(transaction, test2);
 
-                final List<Path> files = FileUtils.list(dir);
+                final List<Path> files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
 
                 // store some documents.
                 for (int i = 0; i < files.size() && i < RESOURCE_COUNT; i++) {
@@ -152,7 +153,7 @@ public class RecoveryTest3 {
                         assertNotNull(info);
                         test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
                     } catch (SAXException e) {
-                        System.err.println("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
+                        fail("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
                     }
                 }
 

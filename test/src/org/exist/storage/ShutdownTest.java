@@ -25,6 +25,8 @@ import org.exist.xquery.value.Sequence;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -73,7 +75,7 @@ public class ShutdownTest {
                         assertNotNull(info);
                         test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
                     } catch (SAXException e) {
-                        System.err.println("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
+                        fail("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
                     }
                 }
 
