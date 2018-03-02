@@ -1,6 +1,8 @@
 package org.exist.xquery.functions.map;
 
 import com.ibm.icu.text.Collator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.fn.FunDistinctValues;
@@ -20,6 +22,8 @@ import java.util.Map;
 public abstract class AbstractMapType extends FunctionReference
         implements Map.Entry<AtomicValue, Sequence>, Iterable<Map.Entry<AtomicValue, Sequence>>,
         Lookup.LookupSupport {
+
+    private final static Logger LOG = LogManager.getLogger(AbstractMapType.class);
 
     private static final Comparator<AtomicValue> DEFAULT_COMPARATOR = new FunDistinctValues.ValueComparator(null);
 
@@ -98,6 +102,56 @@ public abstract class AbstractMapType extends FunctionReference
             return new FunDistinctValues.ValueComparator(collator);
         }
         return DEFAULT_COMPARATOR;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder buf = new StringBuilder("map {");
+
+        boolean first = true;
+        final Sequence keys = keys();
+        if(keys != null && !keys.isEmpty()) {
+            try {
+                final SequenceIterator iterator = keys.iterate();
+                while (iterator.hasNext()) {
+                    final Item key = iterator.nextItem();
+
+                    if (!first) {
+                        buf.append(", ");
+                    }
+
+                    if(key instanceof StringValue) {
+                        buf.append('\"');
+                    }
+
+                    buf.append(key);
+
+                    if(key instanceof StringValue) {
+                        buf.append('\"');
+                    }
+
+                    buf.append(": ");
+                    final Sequence value = get((AtomicValue) key);
+
+                    if(value != null && value.hasOne() && value instanceof StringValue) {
+                        buf.append('\"');
+                    }
+
+                    buf.append(value);
+                    if(value != null && value.hasOne() && value instanceof StringValue) {
+                        buf.append('\"');
+                    }
+
+                    first = false;
+                }
+            } catch (final XPathException e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+
+        buf.append('}');
+
+        return buf.toString();
     }
 
     /**
