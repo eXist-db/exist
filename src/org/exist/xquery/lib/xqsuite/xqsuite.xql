@@ -236,17 +236,15 @@ declare %private function test:test($func as function(*), $meta as element(funct
                     if(not(empty($test-error-function))) then
                         $test-error-function(test:get-test-name($meta),
                                 map {
-                                    "error": map {
-                                        "code": $err:code,
-                                        "description": $err:description,
-                                        "value": $err:value,
-                                        "module": $err:module,
-                                        "line-number": $err:line-number,
-                                        "column-number": $err:column-number,
-                                        "additional": $err:additional,
-                                        "xquery-stack-trace": $exerr:xquery-stack-trace,
-                                        "java-stack-trace": $exerr:java-stack-trace
-                                    }
+                                    "code": $err:code,
+                                    "description": $err:description,
+                                    "value": $err:value,
+                                    "module": $err:module,
+                                    "line-number": $err:line-number,
+                                    "column-number": $err:column-number,
+                                    "additional": $err:additional,
+                                    "xquery-stack-trace": $exerr:xquery-stack-trace,
+                                    "java-stack-trace": $exerr:java-stack-trace
                                 }
                         )
                     else ()
