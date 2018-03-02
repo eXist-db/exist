@@ -76,7 +76,7 @@ declare function test:suite($functions as function(*)+,
             let $modFunctions := filter($functions, function($func) {
                     namespace-uri-from-QName(function-name($func)) = $module
                 })
-            let $setup := test:call-func-with-annotation($modFunctions, "setUp")
+            let $setup := test:call-func-with-annotation($modFunctions, "setUp", $test-error-function)
             let $result :=
                 if (empty($setup) or $setup/self::ok) then
                     let $startTime := util:system-time()
@@ -96,7 +96,7 @@ declare function test:suite($functions as function(*)+,
                         {$setup/string()}
                     </testsuite>
             return
-                ($result, test:call-func-with-annotation($modFunctions, "tearDown"))[1]
+                ($result, test:call-func-with-annotation($modFunctions, "tearDown", $test-error-function))[1]
         }
         </testsuites>
 };
@@ -129,11 +129,28 @@ declare %private function test:distinct-modules($functions as function(*)+) as x
  : return <ok/> upon success, an error description otherwise.
  : Used for setUp and tearDown.
  :)
-declare %private function test:call-func-with-annotation($functions as function(*)+, $annot as xs:string) as element()? {
+declare %private function test:call-func-with-annotation($functions as function(*)+, $annot as xs:string,
+        $test-error-function as (function(xs:string, map(xs:string, item()?)?) as empty-sequence())?) as element()? {
     test:function-by-annotation($functions, $annot, function($func, $meta) {
         try {
             (<ok/>, $func())[1]
         } catch * {
+            if(not(empty($test-error-function))) then
+                $test-error-function($annot,
+                        map {
+                            "code": $err:code,
+                            "description": $err:description,
+                            "value": $err:value,
+                            "module": $err:module,
+                            "line-number": $err:line-number,
+                            "column-number": $err:column-number,
+                            "additional": $err:additional,
+                            "xquery-stack-trace": $exerr:xquery-stack-trace,
+                            "java-stack-trace": $exerr:java-stack-trace
+                        }
+                )
+            else ()
+            ,
             <system-err>{$err:description}</system-err>
         }
     })
