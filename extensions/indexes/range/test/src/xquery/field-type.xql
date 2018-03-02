@@ -52,8 +52,7 @@ declare
 function rt:cleanup() {
     xmldb:remove($rt:INDEXED_COLLECTION_NAME),
     xmldb:remove("/db/system/config/db/" || $rt:INDEXED_COLLECTION_NAME),
-    xmldb:remove($rt:NON_INDEXED_COLLECTION_NAME),
-    xmldb:remove("/db/system/config/db/" || $rt:NON_INDEXED_COLLECTION_NAME)
+    xmldb:remove($rt:NON_INDEXED_COLLECTION_NAME)
 };
 
 declare function rt:get-note($div as element(div)) as element(note)  {

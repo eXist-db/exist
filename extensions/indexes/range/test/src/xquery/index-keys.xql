@@ -67,7 +67,7 @@ declare
 %test:tearDown
 function rtik:cleanup() {
     xmldb:remove($rtik:COLLECTION),
-    xmldb:remove("/db/system/config/db/" || $rtik:COLLECTION_NAME)()
+    xmldb:remove("/db/system/config/db/" || $rtik:COLLECTION_NAME)
 };
 
 
