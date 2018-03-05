@@ -530,14 +530,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 final short nodeType = qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node
                         .ELEMENT_NODE;
 
-                if (contextSet != null && contextSet.hasOne() && contextSet.getItemType() != Type.DOCUMENT) {
-                    NodesFilter filter = new NodesFilter(contextSet);
-                    filter.init(searcher.getIndexReader());
-                    FilteredQuery filtered = new FilteredQuery(query, filter, FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
-                    resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, nodeType, filtered, null));
-                } else {
-                    resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, nodeType, query, null));
-                }
+                resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, nodeType, query, null));
             }
             return resultSet;
         });
@@ -568,15 +561,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             if (clauses.length == 1) {
                 qu = clauses[0].getQuery();
             }
-            NodeSet resultSet = new NewArrayNodeSet();
-            if (contextSet != null && contextSet.hasOne() && contextSet.getItemType() != Type.DOCUMENT) {
-                NodesFilter filter = new NodesFilter(contextSet);
-                filter.init(searcher.getIndexReader());
-                FilteredQuery filtered = new FilteredQuery(qu, filter, FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
-                resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, Node.ELEMENT_NODE, filtered, null));
-            } else {
-                resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, Node.ELEMENT_NODE, qu, null));
-            }
+            final NodeSet resultSet = new NewArrayNodeSet();
+            resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, Node.ELEMENT_NODE, qu, null));
             return resultSet;
         });
     }
