@@ -102,6 +102,7 @@ wrapper.java.additional.4=-Dlog4j.configurationFile=file:tools/yajsw/conf/log4j2
 
 # force headless mode
 wrapper.java.additional.5=-Djava.awt.headless=true
+wrapper.java.additional.6=-Djava.io.tmpdir=@server.dir@/tools/yajsw/tmp
 
 # Application parameters.  Add parameters as needed starting from 1
 wrapper.app.parameter.1=jetty
