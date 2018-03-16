@@ -519,7 +519,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             statusReporter = new StatusReporter(SIGNAL_STARTUP);
             statusObservers.forEach(statusReporter::addObserver);
 
-            final Thread statusThread = new Thread(statusReporter);
+            final Thread statusThread = new Thread(statusReporter, "exist-broker-" + getId() + "-initialize-statusReporter");
             statusThread.start();
 
             // statusReporter may have to be terminated or the thread can/will hang.
@@ -1534,7 +1534,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 statusObservers.forEach(statusReporter::addObserver);
 
                 synchronized (this) {
-                    final Thread statusThread = new Thread(statusReporter);
+                    final Thread statusThread = new Thread(statusReporter,  "exist-broker-" + getId() + "-shutdown-statusReporter");
                     statusThread.start();
 
                     // release transaction log to allow remaining brokers to complete
