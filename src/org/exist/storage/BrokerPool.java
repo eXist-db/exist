@@ -22,6 +22,7 @@ package org.exist.storage;
 import com.evolvedbinary.j8fu.fsm.AtomicFSM;
 import com.evolvedbinary.j8fu.fsm.FSM;
 import net.jcip.annotations.GuardedBy;
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
@@ -1774,6 +1775,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         }
     }
 
+    @ThreadSafe
     private static class StatusReporter extends Observable implements Runnable {
         private String status;
         private volatile boolean terminate = false;
@@ -1788,9 +1790,11 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             this.notifyObservers(status);
         }
 
-        public synchronized void terminate() {
+        public void terminate() {
             this.terminate = true;
-            this.notifyAll();
+            synchronized(this) {
+                this.notifyAll();
+            }
         }
 
         @Override
@@ -1802,9 +1806,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                     } catch(final InterruptedException e) {
                         // nothing to do
                     }
+                    this.setChanged();
+                    this.notifyObservers(status);
                 }
-                this.setChanged();
-                this.notifyObservers(status);
             }
         }
     }
