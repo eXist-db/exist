@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.util;
 
+import java.util.Locale;
+
 /**
  * Swedish language formatting of numbers and dates.
  *
@@ -28,25 +30,8 @@ package org.exist.xquery.util;
  */
 public class NumberFormatter_sv extends NumberFormatter {
 
-    public final static String[] MONTHS = { "januari", "februari", "mars", "april", "maj", "juni", "juli",
-            "augusti", "september", "oktober", "november", "december" };
-    
-    public final static String[] DAYS = { "söndag", "måndag", "tisdag", "onsdag", "torsdag",
-            "fredag", "lördag" };
-
-    @Override
-    public String getMonth(int month) {
-        return MONTHS[month - 1];
-    }
-
-    @Override
-    public String getDay(int day) {
-        return DAYS[day - 1];
-    }
-
-    @Override
-    public String getAmPm(int hour) {
-        return "";
+    public NumberFormatter_sv(Locale locale) {
+        super(locale);
     }
 
     @Override

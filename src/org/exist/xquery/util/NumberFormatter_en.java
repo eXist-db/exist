@@ -1,5 +1,7 @@
 package org.exist.xquery.util;
 
+import java.util.Locale;
+
 /**
  * English formatter for numbers and dates.
  *
@@ -7,27 +9,8 @@ package org.exist.xquery.util;
  */
 public class NumberFormatter_en extends NumberFormatter {
 
-    private static final String[] DAYS = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
-
-    private static final String[] MONTHS = { "January", "February", "March", "April", "May", "June", "July", "August",
-        "September", "October", "November", "December" };
-
-    @Override
-    public String getMonth(int month) {
-        return MONTHS[month - 1];
-    }
-
-    @Override
-    public String getDay(int day) {
-        return DAYS[day - 1];
-    }
-
-    @Override
-    public String getAmPm(int hour) {
-        if (hour > 12)
-            {return "pm";}
-        else
-            {return "am";}
+    public NumberFormatter_en(Locale locale) {
+        super(locale);
     }
 
     public String getOrdinalSuffix(long number) {

@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.util;
 
+import java.util.Locale;
+
 /**
  * Dutch language formatting of numbers and dates.
  *
@@ -28,25 +30,8 @@ package org.exist.xquery.util;
  */
 public class NumberFormatter_nl extends NumberFormatter {
 
-    public final static String[] MONTHS = { "Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli",
-            "Augustus", "September", "Oktober", "November", "December" };
-    
-    public final static String[] DAYS = { "Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag",
-            "Vrijdag", "Zaterdag" };
-
-    @Override
-    public String getMonth(int month) {
-        return MONTHS[month - 1];
-    }
-
-    @Override
-    public String getDay(int day) {
-        return DAYS[day - 1];
-    }
-
-    @Override
-    public String getAmPm(int hour) {
-        return "";
+    public NumberFormatter_nl(Locale locale) {
+        super(locale);
     }
 
     @Override
