@@ -1530,12 +1530,10 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 // they will have a lock on the transactionManager
                 lock.lock();
 
-                synchronized (this) {
-                    // these may be used and set by other threads for the same or some other purpose
-                    // (unlikely). Take no chances.
-                    statusReporter = new StatusReporter(SIGNAL_SHUTDOWN);
-                    statusObservers.forEach(statusReporter::addObserver);
+                statusReporter = new StatusReporter(SIGNAL_SHUTDOWN);
+                statusObservers.forEach(statusReporter::addObserver);
 
+                synchronized (this) {
                     final Thread statusThread = new Thread(statusReporter);
                     statusThread.start();
 
@@ -1645,9 +1643,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                     if (shutdownListener != null) {
                         shutdownListener.shutdown(instanceName, instancesCount());
                     }
-
-                    statusReporter.terminate();
-                    statusReporter = null;
                 }
             } finally {
                 // clear instance variables, just to be sure they will be garbage collected
@@ -1666,6 +1661,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 securityManager = null;
                 notificationService = null;
                 statusObservers.clear();
+
+                statusReporter.terminate();
+                statusReporter = null;
             }
         } finally {
             status.process(Event.FINISHED_SHUTDOWN);
