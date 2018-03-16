@@ -44,7 +44,6 @@ import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.*;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Document;
@@ -62,21 +61,16 @@ import org.xml.sax.helpers.AttributesImpl;
 @ConfigurationClass("plugin-manager")
 public class PluginsManagerImpl implements Configurable, BrokerPoolService, PluginsManager, LifeCycle {
 
-    private final static Logger LOG = LogManager.getLogger(PluginsManagerImpl.class);
+    private static final Logger LOG = LogManager.getLogger(PluginsManagerImpl.class);
 
-    public final static XmldbURI COLLETION_URI = XmldbURI.SYSTEM.append("plugins");
-    public final static XmldbURI CONFIG_FILE_URI = XmldbURI.create("config.xml");
+    private static final XmldbURI COLLETION_URI = XmldbURI.SYSTEM.append("plugins");
+    private static final XmldbURI CONFIG_FILE_URI = XmldbURI.create("config.xml");
 
     @ConfigurationFieldAsAttribute("version")
     private String version = "1.0";
 
     @ConfigurationFieldAsElement("plugin")
-    private List<String> runPlugins = new ArrayList<String>();
-
-//	@ConfigurationFieldAsElement("search-path")
-//	private Map<String, File> placesToSearch = new LinkedHashMap<String, File>();
-
-//	private Map<String, PluginInfo> foundClasses = new LinkedHashMap<String, PluginInfo>();
+    private List<String> runPlugins = new ArrayList<>();
 
     private Map<String, Plug> jacks = new HashMap<>();
 
@@ -159,14 +153,12 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
 //		}
 
         for (final Plug jack : jacks.values()) {
-            if (jack instanceof LifeCycle) {
-                ((LifeCycle) jack).start(broker);
-            }
+            jack.start(broker);
         }
     }
 
     @Override
-    public void sync(DBBroker broker) {
+    public void sync(final DBBroker broker) {
         for (final Plug plugin : jacks.values()) {
             try {
                 plugin.sync(broker);
@@ -197,7 +189,8 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
 	}
 
 	@SuppressWarnings("unchecked")
-	public void addPlugin(String className) {
+    @Override
+	public void addPlugin(final String className) {
 		//check if already run
 		if (jacks.containsKey(className))
 			{return;}
@@ -220,10 +213,10 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
     /*
      * Generate list of service implementations
      */
-    private <S> Iterable<Class<? extends S>> listServices(Class<S> ifc) throws Exception {
+    private <S> Iterable<Class<? extends S>> listServices(final Class<S> ifc) throws Exception {
         final ClassLoader ldr = Thread.currentThread().getContextClassLoader();
         final Enumeration<URL> e = ldr.getResources("META-INF/services/" + ifc.getName());
-        final Set<Class<? extends S>> services = new HashSet<Class<? extends S>>();
+        final Set<Class<? extends S>> services = new HashSet<>();
         while (e.hasMoreElements()) {
             final URL url = e.nextElement();
             try (final InputStream is = url.openStream();
@@ -259,19 +252,19 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
     }
 
     @Override
-    public BackupHandler getBackupHandler(Logger logger) {
+    public BackupHandler getBackupHandler(final Logger logger) {
         return new BH(logger);
     }
 
     class BH implements BackupHandler {
         Logger LOG;
 
-        public BH(Logger logger) {
+        BH(final Logger logger) {
             LOG = logger;
         }
 
         @Override
-        public void backup(Collection colection, AttributesImpl attrs) {
+        public void backup(final Collection colection, final AttributesImpl attrs) {
             for (final Plug plugin : jacks.values()) {
                 if (plugin instanceof BackupHandler) {
                     try {
@@ -284,7 +277,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         }
 
         @Override
-        public void backup(Collection colection, SAXSerializer serializer) throws SAXException {
+        public void backup(final Collection colection, final SAXSerializer serializer) {
             for (final Plug plugin : jacks.values()) {
                 if (plugin instanceof BackupHandler) {
                     try {
@@ -297,7 +290,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         }
 
         @Override
-        public void backup(Document document, AttributesImpl attrs) {
+        public void backup(final Document document, final AttributesImpl attrs) {
             for (final Plug plugin : jacks.values()) {
                 if (plugin instanceof BackupHandler) {
                     try {
@@ -310,7 +303,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         }
 
         @Override
-        public void backup(Document document, SAXSerializer serializer) throws SAXException {
+        public void backup(final Document document, final SAXSerializer serializer) {
             for (final Plug plugin : jacks.values()) {
                 if (plugin instanceof BackupHandler) {
                     try {
@@ -333,7 +326,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
     class RH implements RestoreHandler {
 
         @Override
-        public void setDocumentLocator(Locator locator) {
+        public void setDocumentLocator(final Locator locator) {
             for (final Plug plugin : jacks.values()) {
                 if (plugin instanceof RestoreHandler) {
                     ((RestoreHandler) plugin).setDocumentLocator(locator);
@@ -360,7 +353,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         }
 
         @Override
-        public void startPrefixMapping(String prefix, String uri) throws SAXException {
+        public void startPrefixMapping(final String prefix, final String uri) throws SAXException {
             for (final Plug plugin : jacks.values()) {
                 if (plugin instanceof RestoreHandler) {
                     ((RestoreHandler) plugin).startPrefixMapping(prefix, uri);
@@ -369,7 +362,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         }
 
         @Override
-        public void endPrefixMapping(String prefix) throws SAXException {
+        public void endPrefixMapping(final String prefix) throws SAXException {
             for (final Plug plugin : jacks.values()) {
                 if (plugin instanceof RestoreHandler) {
                     ((RestoreHandler) plugin).endPrefixMapping(prefix);
@@ -378,7 +371,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         }
 
         @Override
-        public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+        public void startElement(final String uri, final String localName, final String qName, final Attributes atts) throws SAXException {
             for (final Plug plugin : jacks.values()) {
                 if (plugin instanceof RestoreHandler) {
                     ((RestoreHandler) plugin).startElement(uri, localName, qName, atts);
@@ -387,7 +380,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         }
 
         @Override
-        public void endElement(String uri, String localName, String qName) throws SAXException {
+        public void endElement(final String uri, final String localName, final String qName) throws SAXException {
             for (final Plug plugin : jacks.values()) {
                 if (plugin instanceof RestoreHandler) {
                     ((RestoreHandler) plugin).endElement(uri, localName, qName);
@@ -396,7 +389,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         }
 
         @Override
-        public void characters(char[] ch, int start, int length) throws SAXException {
+        public void characters(final char[] ch, final int start, final int length) throws SAXException {
             for (final Plug plugin : jacks.values()) {
                 if (plugin instanceof RestoreHandler) {
                     ((RestoreHandler) plugin).characters(ch, start, length);
@@ -405,7 +398,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         }
 
         @Override
-        public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+        public void ignorableWhitespace(final char[] ch, final int start, final int length) throws SAXException {
             for (final Plug plugin : jacks.values()) {
                 if (plugin instanceof RestoreHandler) {
                     ((RestoreHandler) plugin).ignorableWhitespace(ch, start, length);
@@ -414,7 +407,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         }
 
         @Override
-        public void processingInstruction(String target, String data) throws SAXException {
+        public void processingInstruction(final String target, final String data) throws SAXException {
             for (final Plug plugin : jacks.values()) {
                 if (plugin instanceof RestoreHandler) {
                     ((RestoreHandler) plugin).processingInstruction(target, data);
@@ -423,7 +416,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         }
 
         @Override
-        public void skippedEntity(String name) throws SAXException {
+        public void skippedEntity(final String name) throws SAXException {
             for (final Plug plugin : jacks.values()) {
                 if (plugin instanceof RestoreHandler) {
                     ((RestoreHandler) plugin).skippedEntity(name);
@@ -432,7 +425,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         }
 
         @Override
-        public void startCollectionRestore(Collection colection, Attributes atts) {
+        public void startCollectionRestore(final Collection colection, final Attributes atts) {
             for (final Plug plugin : jacks.values()) {
                 if (plugin instanceof RestoreHandler) {
                     ((RestoreHandler) plugin).startCollectionRestore(colection, atts);
@@ -441,7 +434,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         }
 
         @Override
-        public void endCollectionRestore(Collection colection) {
+        public void endCollectionRestore(final Collection colection) {
             for (final Plug plugin : jacks.values()) {
                 if (plugin instanceof RestoreHandler) {
                     ((RestoreHandler) plugin).endCollectionRestore(colection);
@@ -450,7 +443,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         }
 
         @Override
-        public void startDocumentRestore(Document document, Attributes atts) {
+        public void startDocumentRestore(final Document document, final Attributes atts) {
             for (final Plug plugin : jacks.values()) {
                 if (plugin instanceof RestoreHandler) {
                     ((RestoreHandler) plugin).startDocumentRestore(document, atts);
@@ -459,7 +452,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         }
 
         @Override
-        public void endDocumentRestore(Document document) {
+        public void endDocumentRestore(final Document document) {
             for (final Plug plugin : jacks.values()) {
                 if (plugin instanceof RestoreHandler) {
                     ((RestoreHandler) plugin).endDocumentRestore(document);

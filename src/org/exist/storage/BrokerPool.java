@@ -1551,12 +1551,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
                     //Notify all running XQueries that we are shutting down
                     processMonitor.killAll(500);
-                    //TODO : close other objects using varying methods ? set them to null ?
-                    //cacheManager.something();
-                    //xQueryPool.something();
-                    //collectionConfigurationManager.something();
-                    //collectionCache.something();
-                    //xmlReaderPool.close();
 
                     if (isRecoveryEnabled()) {
                         journalManager.ifPresent(jm -> jm.flush(true, true));
@@ -1583,24 +1577,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                         }
                     }
                     LOG.debug("Calling shutdown ...");
-
-//                    if (pluginManager != null) {
-//                        try {
-//                            pluginManager.stop((DBBroker) null);
-//                        } catch (final EXistException e) {
-//                            LOG.warn("Error during plugin manager shutdown: " + e.getMessage(), e);
-//                        }
-//                    }
-//
-//                    // stop all services
-//                    servicesManager.shutdown(this);
-//
-//                    // closing down external indexes
-//                    try {
-//                        indexManager.shutdown();
-//                    } catch (final DBException e) {
-//                        LOG.warn("Error during index shutdown: " + e.getMessage(), e);
-//                    }
 
                     //TODO : replace the following code by get()/release() statements ?
                     // WM: deadlock risk if not all brokers returned properly.
@@ -1799,7 +1775,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     }
 
     private static class StatusReporter extends Observable implements Runnable {
-
         private String status;
         private volatile boolean terminate = false;
 
@@ -1818,6 +1793,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             this.notifyAll();
         }
 
+        @Override
         public void run() {
             while(!terminate) {
                 synchronized(this) {
