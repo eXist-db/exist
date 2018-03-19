@@ -86,10 +86,12 @@ public class PutExample {
             connect.setRequestMethod("GET");
             connect.connect();
             System.out.println("Result:");
-            BufferedReader bis = new BufferedReader(new InputStreamReader(connect.getInputStream()));
-            String line;
-            while ((line = bis.readLine()) != null) {
-                System.out.println(line);
+
+            try (BufferedReader bis = new BufferedReader(new InputStreamReader(connect.getInputStream())) ) {
+                String line;
+                while ((line = bis.readLine()) != null) {
+                    System.out.println(line);
+                }
             }
         } catch (Exception e) {
             System.err.println("An exception occurred: " + e.getMessage());

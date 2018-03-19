@@ -329,9 +329,9 @@ public abstract class Source {
 				connection.setAllowUserInteraction(false);
 				connection.connect();
 				if (connection.getContentLength() == -1) {
-					try {
+					try (InputStream inputStream = connection.getInputStream() ){
 						byte[] bytes = null;
-						bytes = readInputStream(connection.getInputStream(), bytes);
+						bytes = readInputStream(inputStream, bytes);
 						length = bytes.length;
 						return new ByteArrayInputStream(bytes);
 					} finally {

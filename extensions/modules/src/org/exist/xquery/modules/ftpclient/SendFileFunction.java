@@ -1,6 +1,8 @@
 package org.exist.xquery.modules.ftpclient;
 
 import java.io.IOException;
+import java.io.InputStream;
+
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.logging.log4j.LogManager;
@@ -73,14 +75,14 @@ public class SendFileFunction extends BasicFunction {
     private Sequence sendBinaryFile(FTPClient ftp, String remoteDirectory, String fileName, BinaryValue data) {
         
         boolean result = false;
-        try {
+        try (InputStream inputStream = data.getInputStream()) {
             ftp.changeWorkingDirectory(remoteDirectory);
             ftp.setFileType(FTP.BINARY_FILE_TYPE);
             
             //BinaryValueFromInputStream bvis = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), data.getInputStream());
             //OutputStream out = ftp.storeFileStream(fileName);
-            
-            result = ftp.storeFile(fileName, data.getInputStream());
+
+            result = ftp.storeFile(fileName, inputStream);
 
         } catch(IOException ioe) {
             log.error(ioe.getMessage(), ioe);

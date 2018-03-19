@@ -74,10 +74,11 @@ public class PostExample {
 		os.write(request.getBytes(UTF_8));
 		connect.connect();
 
-        BufferedReader is = new BufferedReader(new InputStreamReader(connect.getInputStream()));
-        String line;
-        while((line = is.readLine()) != null)
-            System.out.println(line);
+        try (BufferedReader is = new BufferedReader(new InputStreamReader(connect.getInputStream()))) {
+			String line;
+			while ((line = is.readLine()) != null)
+				System.out.println(line);
+		}
     }
 	
 	public static void main(String[] args) {

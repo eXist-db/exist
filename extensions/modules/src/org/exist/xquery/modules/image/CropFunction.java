@@ -132,11 +132,10 @@ public class CropFunction extends BasicFunction {
         String formatName = mimeType.substring(mimeType.indexOf("/")+1);
 
         //TODO currently ONLY tested for JPEG!!!
-        Image image = null;
         BufferedImage bImage = null;
         try {
             //get the image data
-            image = ImageIO.read(((BinaryValue)args[0].itemAt(0)).getInputStream());
+            Image image = ImageIO.read(((BinaryValue)args[0].itemAt(0)).getInputStream());
             //			image = ImageModule.getImage((Base64BinaryValueType)args[0].itemAt(0));
             //      			image = ImageIO.read(new ByteArrayInputStream(getImageData((Base64BinaryValueType)args[0].itemAt(0))));
             if(image == null) {
@@ -149,6 +148,7 @@ public class CropFunction extends BasicFunction {
             if(cropImage instanceof BufferedImage) {
                 // just in case cropImage is allready an BufferedImage
                 bImage = (BufferedImage)cropImage;
+
             } else {
                 bImage = new BufferedImage(cropImage.getHeight(null),
                 cropImage.getWidth(null),BufferedImage.TYPE_INT_RGB);

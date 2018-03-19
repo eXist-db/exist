@@ -22,6 +22,8 @@
 package org.exist.contentextraction;
 
 import java.io.IOException;
+import java.io.InputStream;
+
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
@@ -52,8 +54,8 @@ public class ContentExtraction {
         
         Metadata metadata = new Metadata();
 
-        try {
-            parser.parse(binaryValue.getInputStream(), contentHandler, metadata, parseContext);
+        try (InputStream is = binaryValue.getInputStream()) {
+            parser.parse(is, contentHandler, metadata, parseContext);
             
         } catch (TikaException e) {
             throw new ContentExtractionException("Problem with content extraction library: " + e.getMessage(), e);
@@ -69,9 +71,8 @@ public class ContentExtraction {
     public void extractMetadata(BinaryValue binaryValue, ContentHandler contentHandler) throws IOException, SAXException, ContentExtractionException {
         Metadata metadata = new Metadata();
 
-        try {
-            parser.parse(binaryValue.getInputStream(), 
-                    new AbortAfterMetadataContentHandler(contentHandler), metadata, parseContext);
+        try (InputStream is = binaryValue.getInputStream()) {
+            parser.parse(is, new AbortAfterMetadataContentHandler(contentHandler), metadata, parseContext);
             
         } catch (TikaException e) {
             throw new ContentExtractionException("Problem with content extraction library: " + e.getMessage(), e);

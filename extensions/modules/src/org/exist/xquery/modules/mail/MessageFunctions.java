@@ -314,10 +314,13 @@ public class MessageFunctions extends BasicFunction {
                Additionally, the namespace binding is dropped - so this throws an error when the content is parsed.
              */
 
-            DocumentImpl html = ModuleUtils.htmlToXHtml(context, new StreamSource(part.getInputStream()), null, null);
-            ElementImpl rootElem = (ElementImpl)html.getDocumentElement();
-            html.copyTo(rootElem,receiver);
-            builder.endElement();
+            try (InputStream inputStream = part.getInputStream()) {
+                DocumentImpl html = ModuleUtils.htmlToXHtml(context, new StreamSource(inputStream), null, null);
+                ElementImpl rootElem = (ElementImpl) html.getDocumentElement();
+                html.copyTo(rootElem,receiver);
+                builder.endElement();
+            }
+
 
         } else if (disposition.equalsIgnoreCase(Part.ATTACHMENT)) {
             builder.startElement(new QName("attachment", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
