@@ -144,10 +144,11 @@ public class JSON extends BasicFunction {
             if (source == null) {
                 throw new XPathException(this, ErrorCodes.FOUT1170, "failed to load json doc from URI " + url);
             }
-            final InputStream is = source.getInputStream();
-            final JsonParser parser = factory.createParser(is);
-            final Item result = readValue(context, parser, handleDuplicates);
-            return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
+            try (final InputStream is = source.getInputStream()) {
+                final JsonParser parser = factory.createParser(is);
+                final Item result = readValue(context, parser, handleDuplicates);
+                return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
+            }
         } catch (IOException | PermissionDeniedException e) {
             throw new XPathException(this, ErrorCodes.FOUT1170, e.getMessage());
         }
