@@ -1,7 +1,6 @@
 package org.exist.xquery.functions.fn;
 
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import org.exist.dom.QName;
@@ -119,8 +118,7 @@ public class JSON extends BasicFunction {
         if (json.isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        try {
-            final JsonParser parser = factory.createParser(json.itemAt(0).getStringValue());
+        try (final JsonParser parser = factory.createParser(json.itemAt(0).getStringValue())) {
             final Item result = readValue(context, parser, handleDuplicates);
             return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
         } catch (IOException e) {
@@ -144,10 +142,12 @@ public class JSON extends BasicFunction {
             if (source == null) {
                 throw new XPathException(this, ErrorCodes.FOUT1170, "failed to load json doc from URI " + url);
             }
-            final InputStream is = source.getInputStream();
-            final JsonParser parser = factory.createParser(is);
-            final Item result = readValue(context, parser, handleDuplicates);
-            return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
+            try (final InputStream is = source.getInputStream();
+                 final JsonParser parser = factory.createParser(is)) {
+
+                final Item result = readValue(context, parser, handleDuplicates);
+                return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
+            }
         } catch (IOException | PermissionDeniedException e) {
             throw new XPathException(this, ErrorCodes.FOUT1170, e.getMessage());
         }
