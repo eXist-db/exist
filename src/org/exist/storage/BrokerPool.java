@@ -22,6 +22,7 @@ package org.exist.storage;
 import com.evolvedbinary.j8fu.fsm.AtomicFSM;
 import com.evolvedbinary.j8fu.fsm.FSM;
 import net.jcip.annotations.GuardedBy;
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
@@ -518,7 +519,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             statusReporter = new StatusReporter(SIGNAL_STARTUP);
             statusObservers.forEach(statusReporter::addObserver);
 
-            final Thread statusThread = new Thread(statusReporter);
+            final Thread statusThread = new Thread(statusReporter, "exist-broker-" + getId() + "-initialize-statusReporter");
             statusThread.start();
 
             // statusReporter may have to be terminated or the thread can/will hang.
@@ -1529,13 +1530,11 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 // they will have a lock on the transactionManager
                 lock.lock();
 
-                synchronized (this) {
-                    // these may be used and set by other threads for the same or some other purpose
-                    // (unlikely). Take no chances.
-                    statusReporter = new StatusReporter(SIGNAL_SHUTDOWN);
-                    statusObservers.forEach(statusReporter::addObserver);
+                statusReporter = new StatusReporter(SIGNAL_SHUTDOWN);
+                statusObservers.forEach(statusReporter::addObserver);
 
-                    final Thread statusThread = new Thread(statusReporter);
+                synchronized (this) {
+                    final Thread statusThread = new Thread(statusReporter,  "exist-broker-" + getId() + "-shutdown-statusReporter");
                     statusThread.start();
 
                     // release transaction log to allow remaining brokers to complete
@@ -1551,12 +1550,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
                     //Notify all running XQueries that we are shutting down
                     processMonitor.killAll(500);
-                    //TODO : close other objects using varying methods ? set them to null ?
-                    //cacheManager.something();
-                    //xQueryPool.something();
-                    //collectionConfigurationManager.something();
-                    //collectionCache.something();
-                    //xmlReaderPool.close();
 
                     if (isRecoveryEnabled()) {
                         journalManager.ifPresent(jm -> jm.flush(true, true));
@@ -1583,24 +1576,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                         }
                     }
                     LOG.debug("Calling shutdown ...");
-
-//                    if (pluginManager != null) {
-//                        try {
-//                            pluginManager.stop((DBBroker) null);
-//                        } catch (final EXistException e) {
-//                            LOG.warn("Error during plugin manager shutdown: " + e.getMessage(), e);
-//                        }
-//                    }
-//
-//                    // stop all services
-//                    servicesManager.shutdown(this);
-//
-//                    // closing down external indexes
-//                    try {
-//                        indexManager.shutdown();
-//                    } catch (final DBException e) {
-//                        LOG.warn("Error during index shutdown: " + e.getMessage(), e);
-//                    }
 
                     //TODO : replace the following code by get()/release() statements ?
                     // WM: deadlock risk if not all brokers returned properly.
@@ -1668,9 +1643,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                     if (shutdownListener != null) {
                         shutdownListener.shutdown(instanceName, instancesCount());
                     }
-
-                    statusReporter.terminate();
-                    statusReporter = null;
                 }
             } finally {
                 // clear instance variables, just to be sure they will be garbage collected
@@ -1689,6 +1661,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 securityManager = null;
                 notificationService = null;
                 statusObservers.clear();
+
+                statusReporter.terminate();
+                statusReporter = null;
             }
         } finally {
             status.process(Event.FINISHED_SHUTDOWN);
@@ -1798,8 +1773,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         }
     }
 
+    @ThreadSafe
     private static class StatusReporter extends Observable implements Runnable {
-
         private String status;
         private volatile boolean terminate = false;
 
@@ -1813,11 +1788,14 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             this.notifyObservers(status);
         }
 
-        public synchronized void terminate() {
+        public void terminate() {
             this.terminate = true;
-            this.notifyAll();
+            synchronized(this) {
+                this.notifyAll();
+            }
         }
 
+        @Override
         public void run() {
             while(!terminate) {
                 synchronized(this) {
@@ -1826,9 +1804,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                     } catch(final InterruptedException e) {
                         // nothing to do
                     }
+                    this.setChanged();
+                    this.notifyObservers(status);
                 }
-                this.setChanged();
-                this.notifyObservers(status);
             }
         }
     }
