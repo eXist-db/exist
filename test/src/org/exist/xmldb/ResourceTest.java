@@ -254,7 +254,6 @@ public class ResourceTest {
 
         for (ResourceIterator iterator = rs.getIterator(); iterator.hasMoreResources();) {
             Resource r = iterator.nextResource();
-            System.err.println("Resource id=" + r.getId() + " xml=" + r.getContent());
             testCollection.removeResource(r);
             resource = null;
         }
