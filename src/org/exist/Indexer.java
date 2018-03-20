@@ -398,7 +398,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     @Override
     public void endElement(final String namespace, final String name, final String qname) {
         final ElementImpl last = stack.peek();
-        if (last.getNodeName().equals(qname)) {
             processText(last, ProcessTextParent.ELEMENT_END);
             stack.pop();
             XMLString elemContent = null;
@@ -424,7 +423,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
             currentPath.removeLastComponent();
             setPrevious(last);
             level--;
-        }
     }
 
     /**

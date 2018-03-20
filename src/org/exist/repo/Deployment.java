@@ -786,22 +786,26 @@ public class Deployment {
 
                 try(final Txn transaction = mgr.beginTransaction()) {
                     if (mime.isXMLType()) {
+                        final InputSource is = new FileInputSource(file);
+                        IndexInfo info = null;
                         try {
-                            final InputSource is = new InputSource(file.toUri().toASCIIString());
-                            final IndexInfo info = targetCollection.validateXMLResource(transaction, broker, name, is);
+                            info = targetCollection.validateXMLResource(transaction, broker, name, is);
+                        } catch (EXistException | PermissionDeniedException | LockException | SAXException | IOException e) {
+                            //check for .html ending
+                            if(mime.getName().equals(MimeType.HTML_TYPE.getName())){
+                                //store it as binary resource
+                                storeBinary(targetCollection, file, mime, name, requestedPerms, transaction);
+                            } else {
+                                // could neither store as xml nor binary: give up and report failure in outer catch
+                                throw new EXistException(FileUtils.fileName(file) + " cannot be stored");
+                            }
+                        }
+                        if (info != null) {
                             info.getDocument().getMetadata().setMimeType(mime.getName());
                             final Permission permission = info.getDocument().getPermissions();
                             setPermissions(requestedPerms, false, mime, permission);
 
                             targetCollection.store(transaction, broker, info, is);
-                        } catch (Exception e) {
-                            //check for .html ending
-                            if(mime.getName().equals(MimeType.HTML_TYPE.getName())){
-                                //store it
-                                storeBinary(targetCollection, file, mime, name, requestedPerms, transaction);
-                            } else {
-                                errors.add(FileUtils.fileName(file) + ": " + e.getMessage());
-                            }
                         }
                     } else {
                         final long size = Files.size(file);
@@ -816,7 +820,7 @@ public class Deployment {
                         }
                     }
                     mgr.commit(transaction);
-                } catch (final EXistException | PermissionDeniedException | LockException | TriggerException | IOException e) {
+                } catch (final SAXException | EXistException | PermissionDeniedException | LockException | IOException e) {
                     LOG.error(e.getMessage(), e);
                     errors.add(FileUtils.fileName(file) + ": " + e.getMessage());
                 }
