@@ -545,10 +545,10 @@ function fd:language-ru($date as xs:dateTime) {
 };
 
 declare
-%test:args("2012-06-27T10:21:55.082+02:00")
-%test:assertEquals("jeudi, 27. juin 2012")
-%test:args("1970-10-07T10:21:55.082+02:00")
-%test:assertEquals("jeudi, 7. octobre 1970")
-function fd:language-fr($date as xs:dateTime) {
+%test:args("2012-06-01")
+%test:assertEquals("jeudi, 1er juin 2012")
+%test:args("1970-10-07")
+%test:assertEquals("jeudi, 7 octobre 1970")
+function fd:language-fr($date as xs:date) {
     format-date($date, "[FNn], [D1o] [MNn] [Y]", "fr", (), ())
 };
