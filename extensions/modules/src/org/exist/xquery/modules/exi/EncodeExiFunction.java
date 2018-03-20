@@ -87,7 +87,7 @@ public class EncodeExiFunction extends BasicFunction {
         }
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			EXISerializer exiSerializer = null;
+			EXISerializer exiSerializer;
 			if(args.length > 1) {
 				if(!args[1].isEmpty()) {
 					Item xsdItem = args[1].itemAt(0);

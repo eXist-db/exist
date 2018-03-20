@@ -20,21 +20,22 @@ public class EXIUtils {
 	private static final Logger LOG = LogManager.getLogger(EXIUtils.class);
 	
 	protected static InputStream getInputStream(Item item, XQueryContext context) throws XPathException, MalformedURLException, IOException {
-        if (item.getType() == Type.ANY_URI) {
-            LOG.debug("Streaming xs:anyURI");
+        switch (item.getType()) {
+            case Type.ANY_URI:
+                LOG.debug("Streaming xs:anyURI");
 
-            // anyURI provided
-            String url = item.getStringValue();
+                // anyURI provided
+                String url = item.getStringValue();
 
-            // Fix URL
-            if (url.startsWith("/")) {
-                url = "xmldb:exist://" + url;
-            }
+                // Fix URL
+                if (url.startsWith("/")) {
+                    url = "xmldb:exist://" + url;
+                }
 
-            return new URL(url).openStream();   
-        }
-        else if (item.getType() == Type.ELEMENT || item.getType() == Type.DOCUMENT) {
-            LOG.debug("Streaming element or document node");
+                return new URL(url).openStream();
+            case Type.ELEMENT:
+            case Type.DOCUMENT:
+                LOG.debug("Streaming element or document node");
 
             /*
             if (item instanceof NodeProxy) {
@@ -45,15 +46,14 @@ public class EXIUtils {
             }
             */
 
-            // Node provided
-            Serializer serializer = context.getBroker().newSerializer();
+                // Node provided
+                Serializer serializer = context.getBroker().newSerializer();
 
-            NodeValue node = (NodeValue) item;
-            return new NodeInputStream(serializer, node);
-        }
-        else {
-            LOG.error("Wrong item type " + Type.getTypeName(item.getType()));
-            throw new XPathException("wrong item type " + Type.getTypeName(item.getType()));
+                NodeValue node = (NodeValue) item;
+                return new NodeInputStream(serializer, node);
+            default:
+                LOG.error("Wrong item type " + Type.getTypeName(item.getType()));
+                throw new XPathException("wrong item type " + Type.getTypeName(item.getType()));
         }
     }
 
