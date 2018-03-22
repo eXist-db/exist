@@ -2,6 +2,13 @@ package org.exist.xquery.util;
 
 import org.exist.xquery.XPathException;
 
+import java.lang.reflect.Constructor;
+import java.text.DateFormatSymbols;
+import java.time.DayOfWeek;
+import java.time.Month;
+import java.time.format.TextStyle;
+import java.util.Locale;
+
 /**
  * Formatter for numbers and dates. Concrete implementations are language-dependant.
  *
@@ -34,14 +41,28 @@ public abstract class NumberFormatter {
         return -1;
     }
 
-    public NumberFormatter() {
+    private final Locale locale;
+
+    public NumberFormatter(final Locale locale) {
+        this.locale = locale;
     }
 
-    public abstract String getMonth(int month);
+    public String getMonth(int month) {
+        return Month.of(month).getDisplayName(TextStyle.FULL, locale);
+    }
 
-    public abstract String getDay(int day);
+    public String getDay(int day) {
+        return DayOfWeek.of(day).getDisplayName(TextStyle.FULL, locale);
+    }
 
-    public abstract String getAmPm(int hour);
+    public String getAmPm(int hour) {
+        final DateFormatSymbols symbols = DateFormatSymbols.getInstance(locale);
+        final String[] amPm = symbols.getAmPmStrings();
+        if (hour > 12) {
+            return amPm[1];
+        }
+        return amPm[0];
+    }
 
     public abstract String getOrdinalSuffix(long number);
 
@@ -120,15 +141,15 @@ public abstract class NumberFormatter {
         return count;
     }
 
-    public static final NumberFormatter DEFAULT_FORMATTER = new NumberFormatter_en();
-
     public static NumberFormatter getInstance(String language) {
         final String className = NumberFormatter.class.getName() + "_" + language;
+        final Locale locale = new Locale(language);
         try {
             final Class langClass = Class.forName(className);
-            return (NumberFormatter) langClass.newInstance();
+            final Constructor constructor = langClass.getConstructor(Locale.class);
+            return (NumberFormatter) constructor.newInstance(locale);
         } catch (final Exception e) {
-            return DEFAULT_FORMATTER;
+            return new NumberFormatter_en(locale);
         }
     }
 }

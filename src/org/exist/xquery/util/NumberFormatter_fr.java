@@ -7,14 +7,17 @@ import java.util.Locale;
  *
  * @author Wolfgang
  */
-public class NumberFormatter_de extends NumberFormatter {
+public class NumberFormatter_fr extends NumberFormatter {
 
-    public NumberFormatter_de(Locale locale) {
+    public NumberFormatter_fr(Locale locale) {
         super(locale);
     }
 
     @Override
     public String getOrdinalSuffix(long number) {
-        return ".";
+        if (number == 1) {
+            return "er";
+        }
+        return "";
     }
 }

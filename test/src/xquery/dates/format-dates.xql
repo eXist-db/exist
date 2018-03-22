@@ -543,3 +543,12 @@ declare
 function fd:language-ru($date as xs:dateTime) {
     format-date($date, "[FNn], [D1o] [MNn] [Y]", "ru", (), ())
 };
+
+declare
+%test:args("2012-06-01")
+%test:assertEquals("jeudi, 1er juin 2012")
+%test:args("1970-10-07")
+%test:assertEquals("jeudi, 7 octobre 1970")
+function fd:language-fr($date as xs:date) {
+    format-date($date, "[FNn], [D1o] [MNn] [Y]", "fr", (), ())
+};
