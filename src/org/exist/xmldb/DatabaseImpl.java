@@ -32,6 +32,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.util.SSLHelper;
 
+import org.exist.xmlrpc.ExistRpcTypeFactory;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ErrorCodes;
@@ -312,6 +313,7 @@ public class DatabaseImpl implements Database {
 
         final XmlRpcClient client = Optional.ofNullable(rpcClients.get(key)).orElseGet(() -> {
             final XmlRpcClient newClient = new XmlRpcClient();
+            newClient.setTypeFactory(new ExistRpcTypeFactory(newClient));
             rpcClients.put(key, newClient);
             return newClient;
         });
