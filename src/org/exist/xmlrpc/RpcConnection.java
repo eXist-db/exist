@@ -2685,6 +2685,7 @@ public class RpcConnection implements RpcAPI {
         return false;
     }
 
+    @Override
     public boolean setUserPrimaryGroup(final String username, final String groupName) throws EXistException, PermissionDeniedException {
         final SecurityManager manager = factory.getBrokerPool().getSecurityManager();
 
@@ -2781,6 +2782,7 @@ public class RpcConnection implements RpcAPI {
         });
     }
 
+    @Override
     public void removeGroupMember(final String group, final String member) throws EXistException, PermissionDeniedException {
         withDb((broker, transaction) -> {
             final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
@@ -2806,8 +2808,8 @@ public class RpcConnection implements RpcAPI {
      * @return
      * @throws org.exist.security.PermissionDeniedException
      */
+    @Override
     public boolean updateAccount(final String name, final List<String> groups) throws EXistException, PermissionDeniedException {
-
         try {
             return withDb((broker, transaction) -> {
                 final SecurityManager manager = broker.getBrokerPool().getSecurityManager();
@@ -3654,13 +3656,15 @@ public class RpcConnection implements RpcAPI {
         return factory.getBrokerPool().getScheduler().createPeriodicJob(0, shutdownJob, delay, new Properties(), 0);
     }
 
-    public boolean enterServiceMode() throws PermissionDeniedException, EXistException {
+    @Override
+    public boolean enterServiceMode() throws PermissionDeniedException {
         final BrokerPool brokerPool = factory.getBrokerPool();
         brokerPool.enterServiceMode(user);
         return true;
     }
 
-    public void exitServiceMode() throws PermissionDeniedException, EXistException {
+    @Override
+    public void exitServiceMode() throws PermissionDeniedException {
         final BrokerPool brokerPool = factory.getBrokerPool();
         brokerPool.exitServiceMode(user);
     }
