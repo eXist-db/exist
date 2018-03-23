@@ -62,7 +62,7 @@ import org.xml.sax.SAXException;
 public class XmlRpcTest {
 
     @ClassRule
-    public final static ExistWebServer existWebServer = new ExistWebServer(true, false, true);
+    public final static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     private final static XmldbURI TARGET_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xmlrpc");
 
