@@ -1,9 +1,9 @@
 package org.exist.xquery.value;
 
 import org.apache.commons.codec.binary.Hex;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.xquery.XPathException;
 import java.io.IOException;
 import org.junit.Test;

@@ -25,12 +25,12 @@
 package org.exist.util.io;
 
 import com.googlecode.junittoolbox.ParallelParameterized;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.junit.runners.Parameterized.Parameters;
 import java.util.Collection;
 import java.util.Arrays;
 import org.junit.runner.RunWith;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;

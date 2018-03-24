@@ -20,6 +20,7 @@
 
 package org.exist.xquery;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.collections.Collection;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
@@ -34,7 +35,6 @@ import org.exist.xquery.value.*;
 import org.junit.ClassRule;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;

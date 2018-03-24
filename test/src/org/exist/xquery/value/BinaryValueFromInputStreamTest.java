@@ -2,11 +2,11 @@ package org.exist.xquery.value;
 
 import java.io.FilterInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import com.googlecode.junittoolbox.ParallelRunner;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.util.io.CachingFilterInputStream;
 import org.exist.xquery.XPathException;
 import org.junit.Test;

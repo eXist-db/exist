@@ -2,10 +2,12 @@ package org.exist.fluent;
 
 import static org.junit.Assert.*;
 
-import java.io.*;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.hamcrest.Matchers;
 import org.junit.Test;
+
+import java.io.IOException;
 
 public class XMLDocumentTest extends DatabaseTestCase {
 	@Test public void query1() {
