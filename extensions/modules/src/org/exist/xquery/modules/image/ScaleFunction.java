@@ -143,7 +143,7 @@ public class ScaleFunction extends BasicFunction
 			ImageIO.write(bImage, formatName, os);
 			
 			//return the new scaled image data
-			return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(os.toByteArray()));
+			return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), os.toInputStream());
 		}
 		catch(Exception e)
 		{
