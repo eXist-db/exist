@@ -272,9 +272,7 @@
             <arg value="count=${dmg.size}"/>
         </exec>
 
-        <exec executable="/sbin/mkfs" os="Linux" failonerror="true">
-            <arg value="-t"/>
-            <arg value="hfsplus"/>
+	<exec executable="/sbin/mkfs.hfsplus" os="Linux" failonerror="true">
             <arg value="-v"/>
             <arg value="${app.name}"/>
             <arg value="${dist}/${app.name}-tmp.dmg"/>
