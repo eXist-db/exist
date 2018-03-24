@@ -346,15 +346,20 @@ public class SendEmailFunction extends BasicFunction
 
         List<Boolean> sendMailResults = new ArrayList<>();
 
+
+
         try (//Create a Socket and connect to the SMTP Server
              Socket smtpSock = new Socket(SMTPServer, TCP_PROTOCOL_SMTP);
 
              //Create a Buffered Reader for the Socket
-             BufferedReader smtpIn = new BufferedReader(new InputStreamReader(smtpSock.getInputStream()));
+             InputStream smtpSockInputStream = smtpSock.getInputStream();
+             InputStreamReader inputStreamReader = new InputStreamReader(smtpSockInputStream);
+             BufferedReader smtpIn = new BufferedReader(inputStreamReader);
 
              //Create an Output Writer for the Socket
-             PrintWriter smtpOut = new PrintWriter(new OutputStreamWriter(smtpSock.getOutputStream(), charset));) {
-
+             OutputStream smtpSockOutputStream = smtpSock.getOutputStream();
+             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(smtpSockOutputStream, charset);
+             PrintWriter smtpOut = new PrintWriter(outputStreamWriter)) {
 
             //First line sent to us from the SMTP server should be "220 blah blah", 220 indicates okay
             smtpResult = smtpIn.readLine();
@@ -377,6 +382,7 @@ public class SendEmailFunction extends BasicFunction
                 LOG.error(errMsg);
                 throw new SMTPException(errMsg);
             }
+
             if(!smtpResult.substring(0, 3).equals("250"))
             {
                 String errMsg = "Error - SMTP HELO Failed: '" + smtpResult + "'";
@@ -391,9 +397,8 @@ public class SendEmailFunction extends BasicFunction
 
                 sendMailResults.add(mailResult);
             }
-        }
-        catch(IOException ioe)
-        {
+
+        } catch(IOException ioe) {
             LOG.error(ioe.getMessage(), ioe);
             throw new SMTPException(ioe);
         }

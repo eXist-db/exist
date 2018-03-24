@@ -33,6 +33,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.CropImageFilter;
 import java.awt.image.FilteredImageSource;
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import javax.imageio.ImageIO;
 
 import org.exist.dom.QName;
@@ -133,11 +134,13 @@ public class CropFunction extends BasicFunction {
 
         //TODO currently ONLY tested for JPEG!!!
         BufferedImage bImage = null;
-        try {
+        try (InputStream inputStream = ((BinaryValue) args[0].itemAt(0)).getInputStream();) {
             //get the image data
-            Image image = ImageIO.read(((BinaryValue)args[0].itemAt(0)).getInputStream());
+            Image image = ImageIO.read(inputStream);
+
             //			image = ImageModule.getImage((Base64BinaryValueType)args[0].itemAt(0));
             //      			image = ImageIO.read(new ByteArrayInputStream(getImageData((Base64BinaryValueType)args[0].itemAt(0))));
+
             if(image == null) {
                 logger.error("Unable to read image data!");
                 return Sequence.EMPTY_SEQUENCE;
@@ -161,7 +164,7 @@ public class CropFunction extends BasicFunction {
             ImageIO.write(bImage, formatName, os);
 
             //return the new croped image data
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(os.toByteArray()));
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), os.toInputStream());
 
         } catch(Exception e) {
             throw new XPathException(this, e.getMessage());
