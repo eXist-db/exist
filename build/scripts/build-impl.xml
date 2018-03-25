@@ -100,7 +100,7 @@
         </fileset>
     </path>
 
-    <taskdef classpath="${tools.aspectj}/lib/aspectjtools-1.9.0.RC2.jar" resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties"/>
+    <taskdef classpath="${tools.aspectj}/lib/aspectjtools-1.9.0.RC4.jar" resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties"/>
     <path id="classpath.aspectj">
         <fileset dir="${tools.aspectj}/lib">
             <include name="*.jar"/>
