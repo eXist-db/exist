@@ -25,7 +25,7 @@ set EXIST_HOME=%CD%
 
 :gotExistHome
 set ANT_HOME=%EXIST_HOME%\tools\ant
-set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher-1.10.1.jar
+set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher-1.10.2.jar
 
 rem You must set
 rem -Djavax.xml.transform.TransformerFactory=org.apache.xalan.processor.TransformerFactoryImpl
