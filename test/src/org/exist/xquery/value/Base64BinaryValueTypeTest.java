@@ -1,6 +1,5 @@
 package org.exist.xquery.value;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -10,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.FileUtils;
 import org.exist.xquery.XPathException;

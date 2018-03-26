@@ -85,7 +85,7 @@ public class GZipFunction extends BasicFunction
             gzos.flush();
             gzos.finish();
             
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream());
         } catch(IOException ioe) {
             throw new XPathException(this, ioe.getMessage(), ioe);
         }

@@ -100,16 +100,21 @@ public class DecodeExiFunction extends BasicFunction {
 			if(args.length > 1) {
 				if(!args[1].isEmpty()) {
 					Item xsdItem = args[1].itemAt(0);
-					InputStream xsdInputStream = EXIUtils.getInputStream(xsdItem, context);
-					GrammarFactory grammarFactory = GrammarFactory.newInstance();
-					Grammars grammar = grammarFactory.createGrammars(xsdInputStream);
-					exiFactory.setGrammars(grammar);
+					try (InputStream xsdInputStream = EXIUtils.getInputStream(xsdItem, context)) {
+						GrammarFactory grammarFactory = GrammarFactory.newInstance();
+						Grammars grammar = grammarFactory.createGrammars(xsdInputStream);
+						exiFactory.setGrammars(grammar);
+					}
+
 				}
 			}
 			SAXDecoder decoder = new SAXDecoder(exiFactory);
 			SAXAdapter adapter = new AppendingSAXAdapter(builder);
             decoder.setContentHandler(adapter);
-            decoder.parse(new InputSource(exiBinary.getInputStream()));
+
+			try (InputStream inputStream = exiBinary.getInputStream()) {
+				decoder.parse(new InputSource(inputStream));
+			}
 
 			return (NodeValue)builder.getDocument().getDocumentElement();
 		}

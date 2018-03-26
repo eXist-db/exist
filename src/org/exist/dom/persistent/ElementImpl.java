@@ -20,6 +20,7 @@
  */
 package org.exist.dom.persistent;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.dom.NamedNodeMapImpl;
@@ -57,7 +58,6 @@ import org.w3c.dom.Text;
 import org.w3c.dom.TypeInfo;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStream;
@@ -225,7 +225,7 @@ public class ElementImpl extends NamedNode implements Element {
             // serialize namespace prefixes declared in this element
             if(declaresNamespacePrefixes()) {
                 try(final ByteArrayOutputStream bout = new ByteArrayOutputStream();
-                        final DataOutputStream out = new DataOutputStream(bout)) {
+                    final DataOutputStream out = new DataOutputStream(bout)) {
                     out.writeShort(namespaceMappings.size());
                     for (final Map.Entry<String, String> namespaceMapping : namespaceMappings.entrySet()) {
                         //TODO(AR) could store the prefix from the symbol table

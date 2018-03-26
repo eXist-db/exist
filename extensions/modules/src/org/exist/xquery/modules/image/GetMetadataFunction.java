@@ -23,6 +23,7 @@
 package org.exist.xquery.modules.image;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 
 import javax.imageio.ImageIO;
@@ -119,9 +120,9 @@ public class GetMetadataFunction extends BasicFunction
                 //get the format of metadata to return
                 boolean nativeFormat = args[1].effectiveBooleanValue();
 
-                try {
-                    //get an input stream
-                    ImageInputStream iis = ImageIO.createImageInputStream(imageData.getInputStream());
+                try (InputStream inputStream = imageData.getInputStream();) {
+
+                    ImageInputStream iis = ImageIO.createImageInputStream(inputStream);
                     return parseWithImageIO(iis, nativeFormat);
                 } catch(IOException ioe) {
                     throw (new XPathException(this, ioe.getMessage(), ioe));

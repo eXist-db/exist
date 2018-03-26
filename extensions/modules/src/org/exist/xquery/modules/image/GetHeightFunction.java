@@ -23,6 +23,7 @@ package org.exist.xquery.modules.image;
 
 import java.awt.Image;
 import java.io.IOException;
+import java.io.InputStream;
 import javax.imageio.ImageIO;
 
 import org.apache.logging.log4j.LogManager;
@@ -91,9 +92,10 @@ public class GetHeightFunction extends BasicFunction {
 
         //get the image
         Image image = null;
-        try {
-            BinaryValue imageData = (BinaryValue) args[0].itemAt(0);
-            image = ImageIO.read(imageData.getInputStream());
+        BinaryValue imageData = (BinaryValue) args[0].itemAt(0);
+        try (InputStream inputStream = imageData.getInputStream()) {
+            image = ImageIO.read(inputStream);
+
         } catch (IOException ioe) {
             logger.error("Unable to read image data!", ioe);
             return Sequence.EMPTY_SEQUENCE;

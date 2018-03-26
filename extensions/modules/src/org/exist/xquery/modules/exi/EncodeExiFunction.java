@@ -87,12 +87,13 @@ public class EncodeExiFunction extends BasicFunction {
         }
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			EXISerializer exiSerializer = null;
+			EXISerializer exiSerializer;
 			if(args.length > 1) {
 				if(!args[1].isEmpty()) {
 					Item xsdItem = args[1].itemAt(0);
-					InputStream xsdInputStream = EXIUtils.getInputStream(xsdItem, context);
-					exiSerializer = new EXISerializer(baos, xsdInputStream);
+					try (InputStream xsdInputStream = EXIUtils.getInputStream(xsdItem, context)) {
+						exiSerializer = new EXISerializer(baos, xsdInputStream);
+					}
 				}
 				else {
 					exiSerializer = new EXISerializer(baos);
@@ -101,6 +102,7 @@ public class EncodeExiFunction extends BasicFunction {
 			else {
 				exiSerializer = new EXISerializer(baos);
 			}
+
 			Item inputNode = args[0].itemAt(0);
 			exiSerializer.startDocument();
 	        inputNode.toSAX(context.getBroker(), exiSerializer, new Properties());

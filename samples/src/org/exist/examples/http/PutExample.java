@@ -68,15 +68,17 @@ public class PutExample {
             connect.setDoOutput(true);
             connect.setRequestProperty("ContentType", "application/xml");
 
-            OutputStream os = connect.getOutputStream();
-            InputStream is = new FileInputStream(file);
-            byte[] buf = new byte[1024];
-            int c;
-            while ((c = is.read(buf)) > -1) {
-                os.write(buf, 0, c);
+            try (OutputStream os = connect.getOutputStream();
+                 InputStream is = new FileInputStream(file) ) {
+
+                byte[] buf = new byte[1024];
+                int c;
+                while ((c = is.read(buf)) > -1) {
+                    os.write(buf, 0, c);
+                }
+                os.flush();
             }
-            os.flush();
-            os.close();
+
             System.out.println("Statuscode "+connect.getResponseCode() 
                     +" ("+ connect.getResponseMessage() +")");
 
@@ -86,10 +88,15 @@ public class PutExample {
             connect.setRequestMethod("GET");
             connect.connect();
             System.out.println("Result:");
-            BufferedReader bis = new BufferedReader(new InputStreamReader(connect.getInputStream()));
-            String line;
-            while ((line = bis.readLine()) != null) {
-                System.out.println(line);
+
+            try (InputStream connectInputStream = connect.getInputStream();
+                 InputStreamReader inputStreamReader = new InputStreamReader(connectInputStream);
+                 BufferedReader bis = new BufferedReader(inputStreamReader) ) {
+
+                String line;
+                while ((line = bis.readLine()) != null) {
+                    System.out.println(line);
+                }
             }
         } catch (Exception e) {
             System.err.println("An exception occurred: " + e.getMessage());

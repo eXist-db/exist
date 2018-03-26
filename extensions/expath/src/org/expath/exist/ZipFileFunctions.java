@@ -157,7 +157,8 @@ public class ZipFileFunctions extends BasicFunction {
             zos.close();
             zis.close();
 
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream());
+
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
             throw new XPathException("IO Exception in zip:update");

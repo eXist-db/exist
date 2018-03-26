@@ -171,7 +171,9 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
 
         if (ze != null) {
             properties = new Properties();
-            properties.load(archive.getInputStream(ze));
+            try (InputStream is = archive.getInputStream(ze)) {
+                properties.load(is);
+            }
         }
         return properties;
     }

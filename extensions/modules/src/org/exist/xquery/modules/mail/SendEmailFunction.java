@@ -22,19 +22,6 @@
 
 package org.exist.xquery.modules.mail;
 
-import java.io.*;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.util.*;
-import javax.activation.DataHandler;
-import javax.mail.*;
-import javax.mail.internet.*;
-import javax.mail.util.ByteArrayDataSource;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,6 +33,20 @@ import org.exist.xquery.functions.system.GetVersion;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import javax.activation.DataHandler;
+import javax.mail.*;
+import javax.mail.internet.*;
+import javax.mail.util.ByteArrayDataSource;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.*;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.*;
 
 //send-email specific imports
 
@@ -343,22 +344,22 @@ public class SendEmailFunction extends BasicFunction
         final int TCP_PROTOCOL_SMTP = 25;   //SMTP Protocol
         String smtpResult = "";             //Holds the server Result code when an SMTP Command is executed
 
-        Socket smtpSock = null;
-        BufferedReader smtpIn = null;
-        PrintWriter smtpOut = null;
-
         List<Boolean> sendMailResults = new ArrayList<>();
 
-        try
-        {
-            //Create a Socket and connect to the SMTP Server
-            smtpSock = new Socket(SMTPServer, TCP_PROTOCOL_SMTP);
 
-            //Create a Buffered Reader for the Socket
-            smtpIn = new BufferedReader(new InputStreamReader(smtpSock.getInputStream()));
 
-            //Create an Output Writer for the Socket
-            smtpOut = new PrintWriter(new OutputStreamWriter(smtpSock.getOutputStream(),charset));
+        try (//Create a Socket and connect to the SMTP Server
+             Socket smtpSock = new Socket(SMTPServer, TCP_PROTOCOL_SMTP);
+
+             //Create a Buffered Reader for the Socket
+             InputStream smtpSockInputStream = smtpSock.getInputStream();
+             InputStreamReader inputStreamReader = new InputStreamReader(smtpSockInputStream);
+             BufferedReader smtpIn = new BufferedReader(inputStreamReader);
+
+             //Create an Output Writer for the Socket
+             OutputStream smtpSockOutputStream = smtpSock.getOutputStream();
+             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(smtpSockOutputStream, charset);
+             PrintWriter smtpOut = new PrintWriter(outputStreamWriter)) {
 
             //First line sent to us from the SMTP server should be "220 blah blah", 220 indicates okay
             smtpResult = smtpIn.readLine();
@@ -381,6 +382,7 @@ public class SendEmailFunction extends BasicFunction
                 LOG.error(errMsg);
                 throw new SMTPException(errMsg);
             }
+
             if(!smtpResult.substring(0, 3).equals("250"))
             {
                 String errMsg = "Error - SMTP HELO Failed: '" + smtpResult + "'";
@@ -395,27 +397,10 @@ public class SendEmailFunction extends BasicFunction
 
                 sendMailResults.add(mailResult);
             }
-        }
-        catch(IOException ioe)
-        {
+
+        } catch(IOException ioe) {
             LOG.error(ioe.getMessage(), ioe);
             throw new SMTPException(ioe);
-        }
-        finally
-        {
-            try {
-                if(smtpOut != null)
-                    smtpOut.close();
-
-                if(smtpIn != null)
-                    smtpIn.close();
-
-                if(smtpSock != null)
-                    smtpSock.close();
-                
-            } catch (IOException ioe) {
-                LOG.warn(ioe.getMessage(), ioe);
-            }
         }
 
         //Message(s) Sent Succesfully

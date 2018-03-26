@@ -105,7 +105,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
             LOG.error("Unable to get read only buffer: {}", ioe.getMessage(), ioe);
         }
 
-        return new ByteArrayInputStream(baos.toByteArray());
+        return baos.toInputStream();
     }
 
     @Override

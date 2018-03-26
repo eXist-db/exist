@@ -21,7 +21,7 @@
  */
 package org.exist.xmldb;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.TestUtils;
 import org.exist.dom.persistent.XMLUtil;
 import org.exist.security.Account;
