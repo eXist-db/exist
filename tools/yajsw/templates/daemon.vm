@@ -15,6 +15,9 @@ $H END INIT INFO
 # config: $w_conf_file
 # pidfile: $w_wrapper_pid_file
 # apppidfile: $w_app_pid_file
+#if (!$w_start_priority.equals("") && !$w_start_priority.equals(""))
+# chkconfig: - $w_start_priority $w_stop priority
+#end
 #-----------------------------------------------------------------------------
 # YAJSW sh script template.  Suitable for starting and stopping
 #  wrapped daemon on POSIX platforms.

@@ -3,6 +3,9 @@
 # stop YAJSW daemon script
 #
 # -----------------------------------------------------------------------------
+
+set -e
+
 # resolve links - $0 may be a softlink
 PRG="$0"
 

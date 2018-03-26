@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # -----------------------------------------------------------------------------
-# remove YAJSW daemon script
+# generate a YAJSW configuration file
+# arguments: pid : process ID of the process which should be wrapped
 #
 # -----------------------------------------------------------------------------
 
@@ -24,7 +25,6 @@ EXECUTABLE=wrapper.sh
 
 # set java and conf file
 source "$PRGDIR"/setenv.sh
-export PRGDIR
 
 # Check that target executable exists
 if [ ! -x "$PRGDIR"/"$EXECUTABLE" ]; then
@@ -33,5 +33,5 @@ if [ ! -x "$PRGDIR"/"$EXECUTABLE" ]; then
   exit 1
 fi
 
-exec "$PRGDIR"/"$EXECUTABLE" -r "$conf_file"
- 
+exec "$PRGDIR"/"$EXECUTABLE" -g $1 -d "$conf_default_file" "$conf_file"
+

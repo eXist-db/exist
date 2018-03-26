@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # -----------------------------------------------------------------------------
-# remove YAJSW daemon script
+# run test.HelloWorld
 #
 # -----------------------------------------------------------------------------
 
@@ -20,18 +20,9 @@ while [ -h "$PRG" ] ; do
 done
  
 PRGDIR=`dirname "$PRG"`
-EXECUTABLE=wrapper.sh
 
 # set java and conf file
 source "$PRGDIR"/setenv.sh
-export PRGDIR
 
-# Check that target executable exists
-if [ ! -x "$PRGDIR"/"$EXECUTABLE" ]; then
-  echo "Cannot find $PRGDIR/$EXECUTABLE"
-  echo "This file is needed to run this program"
-  exit 1
-fi
+"$java_exe" -cp "$wrapper_jar":"$wrapper_app_jar" test.HelloWorld 
 
-exec "$PRGDIR"/"$EXECUTABLE" -r "$conf_file"
- 
