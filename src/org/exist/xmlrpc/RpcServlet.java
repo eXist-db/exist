@@ -28,6 +28,7 @@ import org.apache.xmlrpc.server.AbstractReflectiveHandlerMapping;
 import org.apache.xmlrpc.server.RequestProcessorFactoryFactory;
 import org.apache.xmlrpc.server.XmlRpcHandlerMapping;
 import org.apache.xmlrpc.webserver.XmlRpcServlet;
+import org.apache.xmlrpc.webserver.XmlRpcServletServer;
 import org.exist.EXistException;
 import org.exist.http.Descriptor;
 import org.exist.http.servlets.HttpServletRequestWrapper;
@@ -42,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
 import static com.evolvedbinary.j8fu.Either.*;
@@ -94,6 +94,13 @@ public class RpcServlet extends XmlRpcServlet {
             }
             throw new ServletException(exceptionMessage, e);
         }
+    }
+
+    @Override
+    protected XmlRpcServletServer newXmlRpcServer(final ServletConfig pConfig) throws XmlRpcException {
+        final XmlRpcServletServer server = super.newXmlRpcServer(pConfig);
+        server.setTypeFactory(new ExistRpcTypeFactory(server));
+        return server;
     }
 
     @Override
