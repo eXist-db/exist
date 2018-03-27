@@ -210,10 +210,10 @@ public class RestoreHandler extends DefaultHandler {
             return deferredPermission;
             
         } catch(final Exception e) {
-            final String msg = "An unrecoverable error occurred while restoring\ncollection '" + name + "'. " + "Aborting restore!";
+            final String msg = "An unrecoverable error occurred while restoring\ncollection '" + name + "': "  + e.getMessage() + ". Aborting restore!";
             LOG.error(msg, e);
             listener.warn(msg);
-            throw new SAXException(e.getMessage(), e);
+            throw new SAXException(msg, e);
         }
     }
 
