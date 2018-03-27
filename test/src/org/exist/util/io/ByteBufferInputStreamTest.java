@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Random;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -197,20 +196,18 @@ public class ByteBufferInputStreamTest {
         random.nextBytes(testData);
 
         final ByteBuffer buf = ByteBuffer.wrap(testData);
-        InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
+        try(final InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf))) {
+            final FastByteArrayOutputStream baos = new FastByteArrayOutputStream(testData.length);
+            byte readBuf[] = new byte[56];
+            int read = -1;
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte readBuf[] = new byte[56];
-        int read = -1;
+            while ((read = is.read(readBuf)) > -1) {
+                assertLessThanOrEqual(readBuf.length, read);
+                baos.write(readBuf, 0, read);
+            }
 
-        while((read = is.read(readBuf)) > -1) {
-
-            assertLessThanOrEqual(readBuf.length, read);
-
-            baos.write(readBuf, 0, read);
+            assertArrayEquals(testData, baos.toByteArray());
         }
-
-        assertArrayEquals(testData, baos.toByteArray());
     }
 
     @Test
@@ -224,17 +221,18 @@ public class ByteBufferInputStreamTest {
         final ByteBuffer buf = ByteBuffer.wrap(testData);
         InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte readBuf[] = new byte[56];
-        int read = -1;
+        try (FastByteArrayOutputStream baos = new FastByteArrayOutputStream(testData.length)) {
+            byte readBuf[] = new byte[56];
+            int read = -1;
 
-        while((read = is.read(readBuf, 0, readBuf.length)) > -1) {
+            while ((read = is.read(readBuf, 0, readBuf.length)) > -1) {
 
-            assertLessThanOrEqual(readBuf.length, read);
+                assertLessThanOrEqual(readBuf.length, read);
 
-            baos.write(readBuf, 0, read);
+                baos.write(readBuf, 0, read);
+            }
+            assertArrayEquals(testData, baos.toByteArray());
         }
-        assertArrayEquals(testData, baos.toByteArray());
     }
 
     @Test

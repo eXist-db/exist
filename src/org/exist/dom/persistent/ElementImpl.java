@@ -20,7 +20,6 @@
  */
 package org.exist.dom.persistent;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.dom.NamedNodeMapImpl;
@@ -41,6 +40,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.pool.NodePool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
@@ -224,7 +224,7 @@ public class ElementImpl extends NamedNode implements Element {
             final byte[] prefixData;
             // serialize namespace prefixes declared in this element
             if(declaresNamespacePrefixes()) {
-                try(final ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                try(final FastByteArrayOutputStream bout = new FastByteArrayOutputStream(64);
                     final DataOutputStream out = new DataOutputStream(bout)) {
                     out.writeShort(namespaceMappings.size());
                     for (final Map.Entry<String, String> namespaceMapping : namespaceMappings.entrySet()) {

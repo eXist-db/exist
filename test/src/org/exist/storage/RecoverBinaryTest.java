@@ -28,7 +28,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -78,12 +77,11 @@ public class RecoverBinaryTest {
 	            final String existHome = System.getProperty("exist.home");
                 Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
                 existDir = existDir.normalize();
-        	    try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-                    Files.copy(existDir.resolve("LICENSE"), os);
-                	BinaryDocument doc =
-                    	root.addBinaryResource(transaction, broker, TestConstants.TEST_BINARY_URI, os.toByteArray(), "text/text");
-	                assertNotNull(doc);
-    	        }
+
+                final byte[] bin = Files.readAllBytes(existDir.resolve("LICENSE"));
+                BinaryDocument doc =
+                    root.addBinaryResource(transaction, broker, TestConstants.TEST_BINARY_URI, bin, "text/text");
+                assertNotNull(doc);
 
 				transact.commit(transaction);
 			}

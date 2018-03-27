@@ -50,11 +50,10 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
-
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -1971,7 +1970,7 @@ public class BFile extends BTree {
             byte[] temp;
             int len;
 
-            try(final ByteArrayOutputStream os = new ByteArrayOutputStream(page.getPageHeader().getDataLength())) {
+            try(final FastByteArrayOutputStream os = new FastByteArrayOutputStream(page.getPageHeader().getDataLength())) {
                 do {
                     temp = page.getData();
                     next = page.getPageHeader().getNextInChain();

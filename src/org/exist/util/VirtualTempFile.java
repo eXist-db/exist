@@ -33,8 +33,8 @@ import java.io.RandomAccessFile;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.util.io.FastByteArrayOutputStream;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * 
@@ -59,7 +59,7 @@ public class VirtualTempFile
 	
 	protected File tempFile;
 	protected boolean deleteTempFile;
-	protected ByteArrayOutputStream baBuffer;
+	protected FastByteArrayOutputStream baBuffer;
 	protected FileOutputStream strBuffer;
 	protected OutputStream os;
 	
@@ -91,7 +91,7 @@ public class VirtualTempFile
 		
 		vLength = -1L;
 		
-		baBuffer = new ByteArrayOutputStream(maxMemorySize);
+		baBuffer = new FastByteArrayOutputStream(maxMemorySize);
 		strBuffer = null;
 		
 		tempFile = null;

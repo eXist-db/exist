@@ -21,7 +21,7 @@
  */
 package org.exist.util;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.exist.util.io.FastByteArrayOutputStream;
 
 /**
  * Base 64 text to byte decoder. To produce the binary  array from
@@ -33,7 +33,7 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
  */
 
 public final class Base64Decoder {
-    private ByteArrayOutputStream out = new ByteArrayOutputStream();
+    private FastByteArrayOutputStream out = new FastByteArrayOutputStream();
 
     private byte token[] = new byte[4];      // input buffer
 

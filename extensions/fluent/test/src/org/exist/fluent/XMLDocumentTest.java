@@ -3,7 +3,7 @@ package org.exist.fluent;
 import static org.junit.Assert.*;
 
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
@@ -118,10 +118,11 @@ public class XMLDocumentTest extends DatabaseTestCase {
 	
 	@Test public void writeToOutputStream() throws IOException {
 		XMLDocument doc = db.createFolder("/top").documents().load(Name.create(db,"foo"), Source.xml("<root/>"));
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		doc.write(out);
-		out.close();
-		assertEquals("<root/>", out.toString());
+		try (final FastByteArrayOutputStream out = new FastByteArrayOutputStream()) {
+			doc.write(out);
+			out.close();
+			assertEquals("<root/>", out.toString());
+		}
 	}
 
 }

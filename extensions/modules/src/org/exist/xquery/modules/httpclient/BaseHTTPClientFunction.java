@@ -26,7 +26,6 @@ import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.methods.OptionsMethod;
 import org.apache.commons.httpclient.util.EncodingUtil;
 import org.apache.commons.io.input.CloseShieldInputStream;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -37,6 +36,7 @@ import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.io.CachingFilterInputStream;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.xquery.*;
@@ -374,14 +374,10 @@ public abstract class BaseHTTPClientFunction extends BasicFunction {
                         builder.addAttribute(new QName("type", null, null), "text");
                         builder.addAttribute(new QName("encoding", null, null), "URLEncoded");
 
-                        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        final byte buf[] = new byte[4096];
-                        int read = -1;
-                        while ((read = cfis.read(buf)) > -1) {
-                            baos.write(buf, 0, read);
+                        try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+                            baos.write(cfis);
+                            builder.characters(URLEncoder.encode(EncodingUtil.getString(baos.toByteArray(), ((HttpMethodBase) method).getResponseCharSet()), "UTF-8"));
                         }
-                        baos.close();
-                        builder.characters(URLEncoder.encode(EncodingUtil.getString(baos.toByteArray(), ((HttpMethodBase) method).getResponseCharSet()), "UTF-8"));
                     } else {
 
                         // Assume it's a binary body and Base64 encode it

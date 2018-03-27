@@ -23,7 +23,6 @@ package org.exist.xquery.modules.image;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -51,6 +50,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -236,7 +236,7 @@ public class GetThumbnailsFunction extends BasicFunction {
             @SuppressWarnings("unused")
             byte[] imgData = null;
             Image image = null;
-            ByteArrayOutputStream os = null;
+            FastByteArrayOutputStream os = null;
 
             try {
                 Iterator<DocumentImpl> i = allPictures.iterator(dbbroker);
@@ -270,7 +270,7 @@ public class GetThumbnailsFunction extends BasicFunction {
                                 }
 
                                 if (isSaveToDataBase) {
-                                    os = new ByteArrayOutputStream();
+                                    os = new FastByteArrayOutputStream();
                                     try {
                                         ImageIO.write(bImage, "jpg", os);
                                     } catch (Exception e) {

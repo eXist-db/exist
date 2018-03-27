@@ -30,8 +30,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.IndentingXMLWriter;
 import org.exist.xquery.FunctionSignature;
@@ -113,33 +113,32 @@ public class PUTFunction extends BaseHTTPClientFunction
         
         if( Type.subTypeOf( payload.getType(), Type.NODE ) ) {
 	        //serialize the node to SAX
-	        ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            OutputStreamWriter osw = new OutputStreamWriter( baos, UTF_8 );
+            try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream();
+                 final OutputStreamWriter osw = new OutputStreamWriter(baos, UTF_8)) {
 
-	        IndentingXMLWriter     xmlWriter = new IndentingXMLWriter( osw );
-	        Properties outputProperties = new Properties();
-	        outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
-	        if (indentLevel != null) {
-	            outputProperties.setProperty(OutputKeys.INDENT, "yes");
-	            outputProperties.setProperty(EXistOutputKeys.INDENT_SPACES, indentLevel);
-	        } else {
-	            outputProperties.setProperty(OutputKeys.INDENT, "no");
-	        }
-	        xmlWriter.setOutputProperties(outputProperties);
-	
-	        SAXSerializer sax       = new SAXSerializer();
-	
-	        sax.setReceiver( xmlWriter );
-	
-	        try {
-	            payload.toSAX( context.getBroker(), sax, new Properties() );
-	            osw.flush();
-	            osw.close();
-	        } catch( Exception e ) {
-	        	throw new XPathException(this, e);
-	        }
-	        entity = new ByteArrayRequestEntity( baos.toByteArray(), "application/xml; charset=utf-8" );
+                IndentingXMLWriter xmlWriter = new IndentingXMLWriter(osw);
+                Properties outputProperties = new Properties();
+                outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+                if (indentLevel != null) {
+                    outputProperties.setProperty(OutputKeys.INDENT, "yes");
+                    outputProperties.setProperty(EXistOutputKeys.INDENT_SPACES, indentLevel);
+                } else {
+                    outputProperties.setProperty(OutputKeys.INDENT, "no");
+                }
+                xmlWriter.setOutputProperties(outputProperties);
+
+                SAXSerializer sax = new SAXSerializer();
+
+                sax.setReceiver(xmlWriter);
+
+                payload.toSAX(context.getBroker(), sax, new Properties());
+                osw.flush();
+
+                entity = new ByteArrayRequestEntity(baos.toByteArray(), "application/xml; charset=utf-8");
+            } catch( Exception e ) {
+                throw new XPathException(this, e);
+            }
 
         } else if( Type.subTypeOf( payload.getType(), Type.BASE64_BINARY ) ) { 
 

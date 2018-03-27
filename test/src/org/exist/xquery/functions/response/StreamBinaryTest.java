@@ -4,16 +4,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.fail;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import org.apache.commons.codec.binary.Base64;
 
-import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.exist.http.RESTTest;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.junit.Test;
 
 /**
@@ -39,20 +38,15 @@ public class StreamBinaryTest extends RESTTest {
 		try {
 			int httpResult = client.executeMethod(get);
 
-			byte buf[] = new byte[1024];
-			int read = -1;
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			InputStream is = get.getResponseBodyAsStream();
-			while ((read = is.read(buf)) > -1) {
-				baos.write(buf, 0, read);
+			try (final InputStream is = get.getResponseBodyAsStream();
+				 	final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+				baos.write(is);
+
+				assertEquals(httpResult, HttpStatus.SC_OK);
+
+				assertArrayEquals(testValue.getBytes(), baos.toByteArray());
 			}
 
-			assertEquals(httpResult, HttpStatus.SC_OK);
-
-			assertArrayEquals(testValue.getBytes(), baos.toByteArray());
-
-		} catch (HttpException he) {
-			fail(he.getMessage());
 		} catch (IOException ioe) {
 			fail(ioe.getMessage());
 		} finally {

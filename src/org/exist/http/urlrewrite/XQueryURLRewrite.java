@@ -40,6 +40,7 @@ import org.exist.source.Source;
 import org.exist.source.DBSource;
 import org.exist.source.SourceFactory;
 import org.exist.source.FileSource;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.response.ResponseModule;
@@ -65,8 +66,6 @@ import org.exist.util.MimeType;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.Descriptor;
-
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.Document;
@@ -1433,7 +1432,7 @@ public class XQueryURLRewrite extends HttpServlet {
 
     private static class CachingServletOutputStream extends ServletOutputStream {
 
-        protected ByteArrayOutputStream ostream = new ByteArrayOutputStream(512);
+        protected FastByteArrayOutputStream ostream = new FastByteArrayOutputStream(512);
 
         protected byte[] getData() {
             return ostream.toByteArray();

@@ -20,7 +20,6 @@
 
 package org.exist.xquery;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.collections.Collection;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
@@ -30,6 +29,7 @@ import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.*;
 import org.junit.ClassRule;
@@ -149,13 +149,13 @@ public class EmbeddedBinariesTest extends AbstractBinariesTest<Sequence, Item, I
     protected byte[] getBytes(final Item item) throws IOException {
         if (item instanceof Base64BinaryDocument) {
             final Base64BinaryDocument doc = (Base64BinaryDocument) item;
-            try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
                 doc.streamBinaryTo(baos);
                 return baos.toByteArray();
             }
         } else {
             final BinaryValueFromFile file = (BinaryValueFromFile) item;
-            try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
                 file.streamBinaryTo(baos);
                 return baos.toByteArray();
             }

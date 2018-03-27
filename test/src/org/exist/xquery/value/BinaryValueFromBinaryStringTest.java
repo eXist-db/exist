@@ -3,7 +3,7 @@ package org.exist.xquery.value;
 import org.apache.commons.codec.binary.Hex;
 import java.io.InputStream;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xquery.XPathException;
 import java.io.IOException;
 import org.junit.Test;
@@ -24,16 +24,12 @@ public class BinaryValueFromBinaryStringTest {
 
         BinaryValue binaryValue = new BinaryValueFromBinaryString(new Base64BinaryValueType(), base64TestData);
 
-        InputStream is = binaryValue.getInputStream();
 
-        int read = -1;
-        byte buf[] = new byte[1024];
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        while((read = is.read(buf)) > -1) {
-            baos.write(buf, 0, read);
+        try (final InputStream is = binaryValue.getInputStream();
+             final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+            baos.write(is);
+            assertArrayEquals(testData.getBytes(), baos.toByteArray());
         }
-
-        assertArrayEquals(testData.getBytes(), baos.toByteArray());
     }
 
     @Test

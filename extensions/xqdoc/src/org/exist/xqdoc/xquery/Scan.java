@@ -1,6 +1,5 @@
 package org.exist.xqdoc.xquery;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.regex.Matcher;
@@ -13,6 +12,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.source.*;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.LockException;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xqdoc.XQDocHelper;
 import org.exist.xquery.*;
@@ -67,9 +67,10 @@ public class Scan extends BasicFunction {
 
     //TODO ideally should be replaced by changing BinarySource to a streaming approach
     private byte[] binaryValueToByteArray(BinaryValue binaryValue) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        binaryValue.streamBinaryTo(baos);
-        return baos.toByteArray();
+        try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+            binaryValue.streamBinaryTo(baos);
+            return baos.toByteArray();
+        }
     }
 
     @Override
