@@ -63,7 +63,7 @@ public class UnZipFunction extends AbstractExtractFunction {
                 new FunctionParameterSequenceType("entry-data", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, 
                 		"A user defined function for storing an extracted resource from the zip file. The function takes 4 parameters e.g. " +
                 		"user:unzip-entry-data($path as xs:string, $data-type as xs:string, $data as item()?, $param as item()*). " +
-                		"Or a user defined function wich returns path for storing an extracted resource from the tar file. The function takes 3 parameters e.g. " +
+                		"Or a user defined function which returns path for storing an extracted resource from the tar file. The function takes 3 parameters e.g. " +
                 		"user:entry-path($path as xs:string, $data-type as xs:string, $param as item()*) as xs:anyURI. " +
                 		"$data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters."),
                 new FunctionParameterSequenceType("entry-data-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with an additional parameters for storing function."),
@@ -87,7 +87,7 @@ public class UnZipFunction extends AbstractExtractFunction {
                 new FunctionParameterSequenceType("entry-data", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, 
                 		"A user defined function for storing an extracted resource from the zip file. The function takes 4 parameters e.g. " +
                 		"user:unzip-entry-data($path as xs:string, $data-type as xs:string, $data as item()?, $param as item()*). " +
-                		"Or a user defined function wich returns path for storing an extracted resource from the tar file. The function takes 3 parameters e.g. " +
+                		"Or a user defined function which returns path for storing an extracted resource from the tar file. The function takes 3 parameters e.g. " +
                 		"user:entry-path($path as xs:string, $data-type as xs:string, $param as item()*) as xs:anyURI. " +
                 		"$data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters."),
                 new FunctionParameterSequenceType("entry-data-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with an additional parameters for storing function."),
