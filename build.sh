@@ -30,7 +30,7 @@ fi
 
 ANT_HOME="$EXIST_HOME/tools/ant"
 
-LOCALCLASSPATH="$ANT_HOME/lib/ant-launcher-1.10.1.jar"
+LOCALCLASSPATH="$ANT_HOME/lib/ant-launcher-1.10.2.jar"
 
 # You must set
 # -Djavax.xml.transform.TransformerFactory=org.apache.xalan.processor.TransformerFactoryImpl
