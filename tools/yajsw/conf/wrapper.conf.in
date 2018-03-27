@@ -38,7 +38,7 @@ wrapper.working.dir=../..
 # per default these are placed in jna.tmpdir.
 # jna.tmpdir is set in setenv batch file to <yajsw>/tmp
 #********************************************************************
-wrapper.tmp.path = @server.dir@/tools/yajsw/tmp
+wrapper.tmp.path = ${jna_tmpdir}
 
 
 #********************************************************************
@@ -141,7 +141,7 @@ wrapper.java.maxmemory=@memory.max@
 wrapper.console.loglevel=INFO
 
 # Log file to use for wrapper output logging.
-wrapper.logfile=@server.dir@/tools/yajsw/logs/wrapper.log
+wrapper.logfile=${wrapper_home}/log/wrapper.log
 
 # Format of output for the log file.  (See docs for formats)
 #wrapper.logfile.format=LPTM
@@ -241,6 +241,13 @@ wrapper.tray.port = 15002
 #********************************************************************
 wrapper.on_exit.0=SHUTDOWN
 wrapper.on_exit.default=RESTART
+
+#********************************************************************
+# Posix Signal Properties
+# Restart on non 9 signal code
+#********************************************************************
+wrapper.on_signal.9=SHUTDOWN
+wrapper.on_signal.default=RESTART
 
 #********************************************************************
 # Trigger actions on console output

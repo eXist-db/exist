@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # -----------------------------------------------------------------------------
-# remove YAJSW daemon script
+# start YAJSW system tray icon process
 #
 # -----------------------------------------------------------------------------
 
@@ -33,5 +33,5 @@ if [ ! -x "$PRGDIR"/"$EXECUTABLE" ]; then
   exit 1
 fi
 
-exec "$PRGDIR"/"$EXECUTABLE" -r "$conf_file"
+exec "$PRGDIR"/"$EXECUTABLE" -y "$conf_file"
  
