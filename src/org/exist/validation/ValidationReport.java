@@ -25,10 +25,13 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.io.output.ByteArrayOutputStream;
+
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Report containing all validation info (errors, warnings).
@@ -215,10 +218,9 @@ public class ValidationReport implements ErrorHandler {
             return null;
         }
 
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final FastByteArrayOutputStream baos = new FastByteArrayOutputStream();
         final PrintStream ps = new PrintStream(baos);
         throwed.printStackTrace(ps);
-
-        return baos.toString();
+        return baos.toString(UTF_8);
     }
 }

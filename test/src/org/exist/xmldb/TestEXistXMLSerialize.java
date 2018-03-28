@@ -23,6 +23,7 @@ package org.exist.xmldb;
 
 import org.exist.security.Account;
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.junit.ClassRule;
 import org.xmldb.api.modules.CollectionManagementService;
 import java.io.IOException;
@@ -41,7 +42,6 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;
@@ -124,11 +124,12 @@ public class TestEXistXMLSerialize {
 
         //Attempting serialization
         DOMSource source = new DOMSource(node);
-        ByteArrayOutputStream out = new ByteArrayOutputStream( );
-        StreamResult result = new StreamResult(out);
+        try (final FastByteArrayOutputStream out = new FastByteArrayOutputStream()) {
+            StreamResult result = new StreamResult(out);
 
-        Transformer xformer = TransformerFactory.newInstance().newTransformer();
-        xformer.transform(source, result);
+            Transformer xformer = TransformerFactory.newInstance().newTransformer();
+            xformer.transform(source, result);
+        }
     }
 
     @Test
@@ -147,15 +148,16 @@ public class TestEXistXMLSerialize {
         format.setLineWidth(0);
         format.setIndent(5);
         format.setPreserveSpace(true);
-        ByteArrayOutputStream out = new ByteArrayOutputStream( );
-        XMLSerializer serializer = new XMLSerializer(out, format);
+        try (final FastByteArrayOutputStream out = new FastByteArrayOutputStream()) {
+            XMLSerializer serializer = new XMLSerializer(out, format);
 
-        if(node instanceof Document){
-            serializer.serialize((Document) node);
-        }else if(node instanceof Element){
-            serializer.serialize((Element) node);
-        }else{
-            fail("Can't serialize node type: "+node);
+            if (node instanceof Document) {
+                serializer.serialize((Document) node);
+            } else if (node instanceof Element) {
+                serializer.serialize((Element) node);
+            } else {
+                fail("Can't serialize node type: " + node);
+            }
         }
     }
 

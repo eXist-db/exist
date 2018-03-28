@@ -19,12 +19,12 @@
  */
 package org.exist.xquery.modules.exi;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
 import org.exist.dom.QName;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.serializer.EXISerializer;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -85,8 +85,7 @@ public class EncodeExiFunction extends BasicFunction {
 		if(args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
-		try {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
 			EXISerializer exiSerializer;
 			if(args.length > 1) {
 				if(!args[1].isEmpty()) {

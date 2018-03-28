@@ -27,7 +27,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -106,9 +105,8 @@ public class FileRead extends BasicFunction {
 			encoding = StandardCharsets.UTF_8;
 		}
 
-		try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-			Files.copy(file, os);
-            return new StringValue(new String(os.toByteArray(), encoding));
+		try {
+            return new StringValue(new String(Files.readAllBytes(file), encoding));
 		} catch(final IOException e ) {
 			throw new XPathException(this, e);	
 		}

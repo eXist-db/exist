@@ -20,9 +20,9 @@
  */
 package org.exist.dom.persistent;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.xquery.Constants;
 import org.w3c.dom.DocumentFragment;
@@ -196,7 +196,7 @@ public final class XMLUtil {
 
                 {
 
-                    final ByteArrayOutputStream out = new ByteArrayOutputStream(150);
+                    final FastByteArrayOutputStream out = new FastByteArrayOutputStream(150);
 
                     out.write('<');
                     out.write(declString, 0, 4);
@@ -248,14 +248,9 @@ public final class XMLUtil {
     @Deprecated
     public static String readFile(final InputSource inSrc) throws IOException {
         // read the file into a string
-        try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+        try(final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
             try(final InputStream is = inSrc.getByteStream()) {
-
-                final byte[] buf = new byte[2048];
-                int read = -1;
-                while ((read = is.read(buf)) != -1) {
-                    os.write(buf, 0, read);
-                }
+                os.write(is);
             }
             return readFile(os.toByteArray(), Charset.forName(inSrc.getEncoding()));
         }

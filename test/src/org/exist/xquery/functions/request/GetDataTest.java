@@ -1,10 +1,9 @@
 package org.exist.xquery.functions.request;
 
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.UserManagementService;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
@@ -120,26 +119,18 @@ public class GetDataTest extends RESTTest {
             int httpResult = client.executeMethod(method);
 
             assertEquals(HttpStatus.SC_OK, httpResult);
-            
-            byte buf[] = new byte[1024];
-            int read = -1;
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            InputStream is = method.getResponseBodyAsStream();
-            while((read = is.read(buf)) > -1) {
-                baos.write(buf, 0, read);
+
+            try (final InputStream is = method.getResponseBodyAsStream();
+                    final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+                baos.write(is);
+
+                byte actualResponse[] = baos.toByteArray();
+                if(stripWhitespaceAndFormatting) {
+                    expectedResponse = new String(expectedResponse).replace("\n", "").replace("\t", "").replace(" ", "").getBytes();
+                    actualResponse = new String(actualResponse).replace("\n", "").replace("\t","").replace(" ", "").getBytes();
+                }
+                assertArrayEquals(expectedResponse, actualResponse);
             }
-            
-            byte actualResponse[] = baos.toByteArray();
-            
-            if(stripWhitespaceAndFormatting) {
-                expectedResponse = new String(expectedResponse).replace("\n", "").replace("\t", "").replace(" ", "").getBytes();
-                actualResponse = new String(actualResponse).replace("\n", "").replace("\t","").replace(" ", "").getBytes();
-            }
-            
-            assertArrayEquals(expectedResponse, actualResponse);
-            
-        } catch(HttpException he) {
-            fail(he.getMessage());
         } catch(IOException ioe) {
             fail(ioe.getMessage());
         } finally {

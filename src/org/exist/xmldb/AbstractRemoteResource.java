@@ -30,12 +30,12 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 import org.apache.xmlrpc.XmlRpcException;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.EXistInputSource;
 import org.exist.util.VirtualTempFile;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.xml.sax.InputSource;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -521,9 +521,8 @@ public abstract class AbstractRemoteResource extends AbstractRemote
 
     protected byte[] readFile(final Path file)
             throws XMLDBException {
-        try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            Files.copy(file, os);
-            return os.toByteArray();
+        try {
+            return Files.readAllBytes(file);
         } catch (final IOException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -550,8 +549,8 @@ public abstract class AbstractRemoteResource extends AbstractRemote
 
     private byte[] readFile(final InputStream is)
             throws XMLDBException {
-        try(final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            copy(is, bos);
+        try(final FastByteArrayOutputStream bos = new FastByteArrayOutputStream()) {
+            bos.write(is);
             return bos.toByteArray();
         } catch (final IOException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);

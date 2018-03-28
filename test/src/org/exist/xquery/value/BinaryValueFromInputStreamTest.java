@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import com.googlecode.junittoolbox.ParallelRunner;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.util.io.CachingFilterInputStream;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xquery.XPathException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -103,7 +103,7 @@ public class BinaryValueFromInputStreamTest {
             assertTrue(binaryValue.isClosed());
 
             // we should not be able to read from the origin binary value!
-            try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
 
                 // this should throw an IOException
                 binaryValue.streamBinaryTo(baos);
@@ -135,7 +135,7 @@ public class BinaryValueFromInputStreamTest {
             assertFalse(binaryValue.isClosed());
 
             // we should still be able to read from the origin binary value!
-            try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
                 binaryValue.streamBinaryTo(baos);
 
                 assertArrayEquals(testData, baos.toByteArray());
@@ -180,7 +180,7 @@ public class BinaryValueFromInputStreamTest {
             assertTrue(binaryValue1.isClosed());
 
             // we should not be able to read from the origin binary value!
-            try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
 
                 // this should throw an IOException
                 binaryValue1.streamBinaryTo(baos);
@@ -219,14 +219,14 @@ public class BinaryValueFromInputStreamTest {
             assertFalse(binaryValue1.isClosed());
 
             // we should still be able to read from the origin binary value2!
-            try (final ByteArrayOutputStream baos2 = new ByteArrayOutputStream()) {
+            try (final FastByteArrayOutputStream baos2 = new FastByteArrayOutputStream()) {
                 binaryValue2.streamBinaryTo(baos2);
 
                 assertArrayEquals(testData2, baos2.toByteArray());
             }
 
             // we should still be able to read from the original binary value1!
-            try (final ByteArrayOutputStream baos1 = new ByteArrayOutputStream()) {
+            try (final FastByteArrayOutputStream baos1 = new FastByteArrayOutputStream()) {
                 binaryValue1.streamBinaryTo(baos1);
 
                 assertArrayEquals(testData1, baos1.toByteArray());
@@ -279,7 +279,7 @@ public class BinaryValueFromInputStreamTest {
             assertTrue(binaryValue.isClosed());
 
             // we should not be able to read from the first filtered binary value!
-            try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
 
                 // this should throw an IOException
                 filteredBinaryValue1.streamBinaryTo(baos);
@@ -317,7 +317,7 @@ public class BinaryValueFromInputStreamTest {
             assertFalse(binaryValue.isClosed());
 
             // we should still be able to read from the filtered binary value!
-            try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
                 filteredBinaryValue1.streamBinaryTo(baos);
 
                 assertArrayEquals(testData, baos.toByteArray());
@@ -330,7 +330,7 @@ public class BinaryValueFromInputStreamTest {
             assertTrue(filteredBinaryValue1.isClosed());
 
             // we should still be able to read from the origin binary value!
-            try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
                 binaryValue.streamBinaryTo(baos);
 
                 assertArrayEquals(testData, baos.toByteArray());
@@ -379,7 +379,7 @@ public class BinaryValueFromInputStreamTest {
 
 
             // we should still be able to read from the filtered binary value2!
-            try (final ByteArrayOutputStream baos2 = new ByteArrayOutputStream()) {
+            try (final FastByteArrayOutputStream baos2 = new FastByteArrayOutputStream()) {
                 filteredBinaryValue2.streamBinaryTo(baos2);
 
                 assertArrayEquals(testData, baos2.toByteArray());
@@ -390,7 +390,7 @@ public class BinaryValueFromInputStreamTest {
             assertTrue(filteredBinaryValue2.isClosed());
 
             // we should still be able to read from the filtered binary value1!
-            try (final ByteArrayOutputStream baos1 = new ByteArrayOutputStream()) {
+            try (final FastByteArrayOutputStream baos1 = new FastByteArrayOutputStream()) {
                 filteredBinaryValue1.streamBinaryTo(baos1);
 
                 assertArrayEquals(testData, baos1.toByteArray());
@@ -400,7 +400,7 @@ public class BinaryValueFromInputStreamTest {
             assertTrue(filteredBinaryValue1.isClosed());
 
             // we should still be able to read from the original binary value!
-            try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
                 binaryValue.streamBinaryTo(baos);
 
                 assertArrayEquals(testData, baos.toByteArray());
@@ -418,13 +418,8 @@ public class BinaryValueFromInputStreamTest {
     }
 
     private static byte[] readAll(final InputStream is) throws IOException {
-        try(final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            int read = -1;
-            final byte buf[] = new byte[1024];
-            while ((read = is.read(buf)) > -1) {
-                baos.write(buf, 0, read);
-            }
-
+        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+            baos.write(is);
             return baos.toByteArray();
         }
     }

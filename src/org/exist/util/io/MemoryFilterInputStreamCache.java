@@ -26,8 +26,6 @@
  */
 package org.exist.util.io;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -42,7 +40,7 @@ import java.io.InputStream;
  */
 public class MemoryFilterInputStreamCache extends AbstractFilterInputStreamCache {
 
-    private ByteArrayOutputStream cache = new ByteArrayOutputStream();
+    private FastByteArrayOutputStream cache = new FastByteArrayOutputStream();
 
     public MemoryFilterInputStreamCache(InputStream src) {
         super(src);

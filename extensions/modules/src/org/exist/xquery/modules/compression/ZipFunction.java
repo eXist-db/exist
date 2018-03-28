@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.modules.compression;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
@@ -30,6 +28,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.exist.dom.QName;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XQueryContext;
@@ -108,7 +107,7 @@ public class ZipFunction extends AbstractCompressFunction {
     }
 
     @Override
-    protected OutputStream stream(final ByteArrayOutputStream baos, final Charset encoding)
+    protected OutputStream stream(final FastByteArrayOutputStream baos, final Charset encoding)
     {
         return new ZipOutputStream(baos, encoding);
     }

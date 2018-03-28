@@ -21,12 +21,12 @@
  */
 package org.exist.debuggee.dbgp.packets;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.IOException;
 
 import org.apache.mina.core.session.IoSession;
 import org.exist.debuggee.dbgp.Errors;
 import org.exist.util.Base64Encoder;
+import org.exist.util.io.FastByteArrayOutputStream;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -77,7 +77,7 @@ public class Eval extends Command {
 			Base64Encoder enc = new Base64Encoder();
 			enc.translate(result.getBytes());
 	
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			FastByteArrayOutputStream baos = new FastByteArrayOutputStream(head.length() + ((result.length() / 100) * 33) + tail.length());
 			try {
 				baos.write(head.getBytes());
 				baos.write(new String(enc.getCharArray()).getBytes());

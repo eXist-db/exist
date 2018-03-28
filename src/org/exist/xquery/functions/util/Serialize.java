@@ -23,7 +23,6 @@ package org.exist.xquery.functions.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -38,6 +37,7 @@ import javax.xml.transform.OutputKeys;
 
 import org.exist.dom.QName;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.BasicFunction;
@@ -147,13 +147,13 @@ public class Serialize extends BasicFunction {
             //parse serialization options from second argument to function
             outputProperties = parseSerializationOptions(args[1]);
 
-            try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
                 //do the serialization
                 serialize(args[0].iterate(), outputProperties, os);
 
 
                 final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, UTF_8.name());
-                return new StringValue(new String(os.toByteArray(), encoding));
+                return new StringValue(os.toString(encoding));
             } catch (final IOException  e) {
                 throw new XPathException(this, "A problem occurred while serializing the node set: " + e.getMessage(), e);
             }

@@ -22,7 +22,6 @@ package org.exist.xquery;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -32,6 +31,7 @@ import org.apache.http.entity.ContentType;
 import org.exist.http.jaxb.Query;
 import org.exist.http.jaxb.Result;
 import org.exist.test.ExistWebServer;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -84,7 +84,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         final HttpResponse response = postXquery(query);
 
         final HttpEntity entity = response.getEntity();
-        try(final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
             entity.writeTo(baos);
 
             assertArrayEquals(BIN1_CONTENT, Base64.decodeBase64(baos.toByteArray()));
@@ -106,7 +106,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         final HttpResponse response = postXquery(query);
 
         final HttpEntity entity = response.getEntity();
-        try(final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
             entity.writeTo(baos);
 
             assertArrayEquals(BIN1_CONTENT, baos.toByteArray());
@@ -131,7 +131,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         final HttpResponse response = postXquery(query);
 
         final HttpEntity entity = response.getEntity();
-        try(final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
             entity.writeTo(baos);
 
             assertArrayEquals(Files.readAllBytes(tmpInFile), Base64.decodeBase64(baos.toByteArray()));
@@ -156,7 +156,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         final HttpResponse response = postXquery(query);
 
         final HttpEntity entity = response.getEntity();
-        try(final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
             entity.writeTo(baos);
 
             assertArrayEquals(Files.readAllBytes(tmpInFile), baos.toByteArray());
@@ -211,7 +211,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         final Marshaller marshaller = jaxbContext.createMarshaller();
 
         final HttpResponse response;
-        try(final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
             marshaller.marshal(query, baos);
             response = executor.execute(Request.Post(getRestUrl() + "/db/")
                     .bodyByteArray(baos.toByteArray(), ContentType.APPLICATION_XML)

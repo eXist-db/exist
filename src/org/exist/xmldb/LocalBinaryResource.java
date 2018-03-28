@@ -22,11 +22,11 @@ package org.exist.xmldb;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.exist.dom.persistent.BinaryDocument;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xquery.value.BinaryValue;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.InputSource;
@@ -94,7 +94,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
             } else if(res instanceof byte[]) {
                 return res;
             } else if(res instanceof BinaryValue) {
-                try(final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
                     ((BinaryValue) res).streamBinaryTo(baos);
                     return baos.toByteArray();
                 } catch (final IOException e) {
@@ -219,9 +219,8 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
     }
 	
     private byte[] readFile(final Path file) throws XMLDBException {
-        try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            Files.copy(file, os);
-            return os.toByteArray();
+        try {
+            return Files.readAllBytes(file);
         } catch (final IOException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "file " + file.toAbsolutePath() + " could not be found", e);
         }
@@ -236,12 +235,8 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
     }
 
     private byte[] readFile(final InputStream is) throws XMLDBException {
-        try(final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            final byte[] buf = new byte[2048];
-            int read = -1;
-            while((read = is.read(buf)) > -1) {
-                bos.write(buf, 0, read);
-            }
+        try(final FastByteArrayOutputStream bos = new FastByteArrayOutputStream()) {
+            bos.write(is);
             return bos.toByteArray();
         } catch (final IOException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "IO exception while reading file " + file.toAbsolutePath(), e);

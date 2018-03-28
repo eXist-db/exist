@@ -25,7 +25,6 @@
 package org.exist.util.io;
 
 import com.googlecode.junittoolbox.ParallelParameterized;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.junit.runners.Parameterized.Parameters;
 import java.util.Collection;
 import java.util.Arrays;
@@ -52,7 +51,7 @@ import static org.junit.Assert.assertArrayEquals;
 public class CachingFilterInputStreamTest_NonMarkableByteArrayInputStream {
 
     @Parameters
-    public static Collection data() throws IOException {
+    public static Collection data() {
         Object[][] data = new Object[][]{
             {MemoryFilterInputStreamCache.class},
             {MemoryMappedFileFilterInputStreamCache.class},
@@ -878,16 +877,9 @@ public class CachingFilterInputStreamTest_NonMarkableByteArrayInputStream {
     }
 
     private byte[] consumeInputStream(final CachingFilterInputStream is) throws IOException {
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            int read = -1;
-            final byte buf[] = new byte[_4KB];
-            while ((read = is.read(buf)) > -1) {
-                baos.write(buf, 0, read);
-            }
+        try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+            baos.write(is);
             return baos.toByteArray();
-        } finally {
-            baos.close();
         }
     }
 

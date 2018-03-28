@@ -38,7 +38,6 @@ import org.apache.logging.log4j.Logger;
 import org.exist.extensions.exquery.xdm.type.impl.BinaryTypedValue;
 import org.exist.extensions.exquery.xdm.type.impl.DocumentTypedValue;
 import org.exist.extensions.exquery.xdm.type.impl.StringTypedValue;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
@@ -47,6 +46,7 @@ import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.io.CachingFilterInputStream;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.xquery.XPathException;
@@ -292,13 +292,11 @@ class RestXqServiceImpl extends AbstractRestXqService {
     }
 
     private static StringValue parseAsString(final InputStream is, final String encoding) throws IOException {
-        final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte[] buf = new byte[4096];
-        int read = -1;
-        while ((read = is.read(buf)) > -1) {
-            bos.write(buf, 0, read);
+        final String s;
+        try (final FastByteArrayOutputStream bos = new FastByteArrayOutputStream(4096)) {
+            bos.write(is);
+            s = new String(bos.toByteArray(), encoding);
         }
-        final String s = new String(bos.toByteArray(), encoding);
         return new StringValue(s);
     }
 }

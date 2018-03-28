@@ -25,13 +25,13 @@ package org.exist.xquery.modules.sql;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -67,6 +67,8 @@ import org.exist.dom.memtree.SAXAdapter;
 import org.exist.xquery.value.DateTimeValue;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 
 /**
@@ -323,40 +325,41 @@ public class ExecuteFunction extends BasicFunction
 
         }
         catch( SQLException sqle ) {
-            LOG.error( "sql:execute() Caught SQLException \"" + sqle.getMessage() + "\" for SQL: \"" + sql + "\"", sqle );
+            LOG.error("sql:execute() Caught SQLException \"" + sqle.getMessage() + "\" for SQL: \"" + sql + "\"", sqle);
 
             //return details about the SQLException
             MemTreeBuilder builder = context.getDocumentBuilder();
 
             builder.startDocument();
-            builder.startElement( new QName( "exception", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );
+            builder.startElement(new QName("exception", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
 
             boolean recoverable = false;
 
-            if( sqle instanceof SQLRecoverableException ) {
+            if (sqle instanceof SQLRecoverableException) {
                 recoverable = true;
             }
-            builder.addAttribute( new QName( "recoverable", null, null ), String.valueOf( recoverable ) );
+            builder.addAttribute(new QName("recoverable", null, null), String.valueOf(recoverable));
 
 
-            builder.startElement( new QName( "state", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );
-            builder.characters( sqle.getSQLState() );
+            builder.startElement(new QName("state", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+            builder.characters(sqle.getSQLState());
             builder.endElement();
 
-            builder.startElement( new QName( "message", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );
-            
+            builder.startElement(new QName("message", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+
             String state = sqle.getMessage();
-            
-            if( state != null ) {
-            	builder.characters( state );
+
+            if (state != null) {
+                builder.characters(state);
             }
-            
+
             builder.endElement();
 
-            builder.startElement( new QName( "stack-trace", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );
-            ByteArrayOutputStream bufStackTrace = new ByteArrayOutputStream();
-            sqle.printStackTrace( new PrintStream( bufStackTrace ) );
-            builder.characters( new String( bufStackTrace.toByteArray() ) );
+            builder.startElement(new QName("stack-trace", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+            final FastByteArrayOutputStream bufStackTrace = new FastByteArrayOutputStream();
+            final PrintStream ps  = new PrintStream(bufStackTrace);
+            sqle.printStackTrace(ps);
+            builder.characters(bufStackTrace.toString(UTF_8));
             builder.endElement();
 
             builder.startElement( new QName( "sql", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );

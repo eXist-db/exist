@@ -41,7 +41,6 @@ import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.StoredNode;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.numbering.DLNBase;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
@@ -71,6 +70,7 @@ import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.hashtable.Object2LongIdentityHashMap;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Node;
@@ -1145,10 +1145,7 @@ public class DOMFile extends BTree implements Lockable {
                                     .getNodeFactory().createFromData(dlnLen, page.data, readOffset);
                                 readOffset += nodeId.size();
                                 buf.append("(").append(nodeId.toString()).append(")");
-                                final ByteArrayOutputStream os = new ByteArrayOutputStream();
-                                os.write(page.data, readOffset, valueLength - (readOffset - pos));
-
-                                String value = new String(os.toByteArray(),UTF_8);
+                                String value = new String(page.data, readOffset, valueLength - (readOffset - pos), UTF_8);
                                 if (value.length() > 15) {
                                     value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
                                 }
@@ -1187,24 +1184,18 @@ public class DOMFile extends BTree implements Lockable {
                                     readOffset += AttrImpl.LENGTH_NS_ID;
                                     final short prefixLen = ByteConversion.byteToShort(page.data, readOffset);
                                     readOffset += AttrImpl.LENGTH_PREFIX_LENGTH + prefixLen;
-                                    final ByteArrayOutputStream os = new ByteArrayOutputStream();
-                                    os.write(page.data, readOffset, valueLength - (readOffset - prefixLen));
-                                    String prefix = new String(os.toByteArray(), UTF_8);
+                                    final String prefix = new String(page.data, readOffset, valueLength - (readOffset - prefixLen), UTF_8);
 
                                     final String NsURI = ((NativeBroker)owner).getBrokerPool()
                                         .getSymbols().getNamespace(NSId);
                                     buf.append(prefix).append("{").append(NsURI).append("}");
                                 }
-                                try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-                                    os.write(page.data, readOffset, valueLength - (readOffset - pos));
-
-                                    String value = new String(os.toByteArray(), UTF_8);
+                                    String value = new String(page.data, readOffset, valueLength - (readOffset - pos), UTF_8);
                                     if (value.length() > 15) {
                                         value = value.substring(0, 8) + "..." + value.substring(value.length() - 8);
                                     }
 
                                     buf.append(":'").append(value).append("'");
-                                }
                             } catch (final Exception e) {
                                 //TODO : more friendly message. Provide the array of bytes ?
                                 buf.append("(unable to read the node ID at : ").append(readOffset);
@@ -1937,7 +1928,7 @@ public class DOMFile extends BTree implements Lockable {
                 //TODO : throw exception ? -pb
             }
             // we collect the string values in binary format and append them to a ByteArrayOutputStream
-            try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            try(final FastByteArrayOutputStream os = new FastByteArrayOutputStream(32)) {
                 // now traverse the tree
                 getNodeValue(broker.getBrokerPool(), (DocumentImpl) node.getOwnerDocument(),
                         os, recordPos, true, addWhitespace);
@@ -1960,7 +1951,7 @@ public class DOMFile extends BTree implements Lockable {
      * and all its descendants.
      */
     private void getNodeValue(final BrokerPool pool, final DocumentImpl doc,
-                              final ByteArrayOutputStream os,
+                              final FastByteArrayOutputStream os,
                               final RecordPos rec, final boolean isTopNode,
                               final boolean addWhitespace) {
         if (!lock.hasLock()) {
@@ -3400,7 +3391,7 @@ public class DOMFile extends BTree implements Lockable {
         }
 
         public byte[] read() {
-            try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            try(final FastByteArrayOutputStream os = new FastByteArrayOutputStream(32)) {
                 streamTo(os);
                 return os.toByteArray();
             } catch(final IOException ioe) {

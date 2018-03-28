@@ -33,12 +33,12 @@ import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import org.exist.dom.QName;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
@@ -56,6 +56,8 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 
 import java.util.Properties;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 
 /**
@@ -130,27 +132,22 @@ public class POSTFunction extends BaseHTTPClientFunction {
             if (Type.subTypeOf(payload.getType(), Type.NODE)) {
 
                 //serialize the node to SAX
-                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                OutputStreamWriter osw = null;
 
-                try {
-                    osw = new OutputStreamWriter(baos, "UTF-8");
-                } catch (final UnsupportedEncodingException e) {
-                    throw new XPathException(this, e.getMessage());
-                }
 
-                final SAXSerializer sax = new SAXSerializer(osw, new Properties());
 
-                try {
+                try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream();
+                        final OutputStreamWriter osw = new OutputStreamWriter(baos, UTF_8)) {
+
+                    final SAXSerializer sax = new SAXSerializer(osw, new Properties());
+
                     payload.toSAX(context.getBroker(), sax, new Properties());
                     osw.flush();
-                    osw.close();
+
+                    final byte[] reqPayload = baos.toByteArray();
+                    entity = new ByteArrayRequestEntity(reqPayload, "application/xml; charset=utf-8");
                 } catch (final Exception e) {
                     throw new XPathException(this, e.getMessage());
                 }
-
-                final byte[] reqPayload = baos.toByteArray();
-                entity = new ByteArrayRequestEntity(reqPayload, "application/xml; charset=utf-8");
             } else {
 
                 try {

@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.TestUtils;
 import org.exist.dom.persistent.XMLUtil;
 import org.exist.security.Account;
@@ -190,13 +189,10 @@ public class CreateCollectionsTest  {
         final Resource res = testCollection.createResource(file.getFileName().toString(), "BinaryResource");
         assertNotNull("store binary Resource From File", res);
         // Get an array of bytes from the file:
-        try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            Files.copy(file, os);
-            final byte[] data = os.toByteArray();
-            res.setContent(data);
-            testCollection.storeResource(res);
-            return data;
-        }
+        final byte[] data = Files.readAllBytes(file);
+        res.setContent(data);
+        testCollection.storeResource(res);
+        return data;
     }
 
     @Test

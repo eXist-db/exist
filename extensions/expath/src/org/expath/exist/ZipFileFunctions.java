@@ -1,6 +1,5 @@
 package org.expath.exist;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
@@ -8,12 +7,12 @@ import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.PermissionDeniedException;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.exist.storage.lock.Lock.LockMode;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -111,14 +110,12 @@ public class ZipFileFunctions extends BasicFunction {
         ZipFileSource zipFileSource =  new ZipFileFromDb(uri);
         ZipInputStream zis = null;
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-        HashMap<String, BinaryValue> binariesTable = new HashMap<String, BinaryValue>(paths.length);
+        Map<String, BinaryValue> binariesTable = new HashMap<>(paths.length);
         for (int i = 0; i < paths.length; i++) {
             binariesTable.put(paths[i], binaries[i]);
         }
 
-        try
+        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream();)
         {
             zis = zipFileSource.getStream();
             ZipOutputStream zos = new ZipOutputStream(baos); // zos is the output - the result

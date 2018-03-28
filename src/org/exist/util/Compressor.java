@@ -27,7 +27,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.exist.util.io.FastByteArrayOutputStream;
 
 public class Compressor {
 
@@ -51,15 +51,15 @@ public class Compressor {
      * @exception IOException if an error occurs
      */
     public static byte[] compress(byte[] whatToCompress, int length) throws IOException {
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final ZipOutputStream gzos = new ZipOutputStream(baos);
-        gzos.setMethod(ZipOutputStream.DEFLATED);
-        gzos.putNextEntry(new ZipEntry(length + ""));
-        gzos.write(whatToCompress, 0, length);
-        gzos.closeEntry();
-        gzos.finish();
-        gzos.close();
-        return baos.toByteArray();
+        try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream(length);
+                final ZipOutputStream gzos = new ZipOutputStream(baos)) {
+            gzos.setMethod(ZipOutputStream.DEFLATED);
+            gzos.putNextEntry(new ZipEntry(length + ""));
+            gzos.write(whatToCompress, 0, length);
+            gzos.closeEntry();
+            gzos.finish();
+            return baos.toByteArray();
+        }
     }
     
     /**
@@ -71,23 +71,24 @@ public class Compressor {
      */
     public static byte[] uncompress(byte[] whatToUncompress)
 	throws IOException {
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        uncompress(whatToUncompress, baos);
-        return baos.toByteArray();
+        try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+            uncompress(whatToUncompress, baos);
+            return baos.toByteArray();
+        }
     }
     
     public static void uncompress(byte[] whatToUncompress, OutputStream os)
     throws IOException {
-        final ByteArrayInputStream bais = new ByteArrayInputStream(whatToUncompress);
-        final ZipInputStream gzis = new ZipInputStream(bais);
-        final ZipEntry zipentry = gzis.getNextEntry();
-        Integer.parseInt(zipentry.getName());
-        final byte[] buf = new byte[512];
-        int bread;
-        while ((bread = gzis.read(buf)) != -1)
-            os.write(buf, 0, bread);
-        gzis.closeEntry();
-        gzis.close();
+        try (final ByteArrayInputStream bais = new ByteArrayInputStream(whatToUncompress);
+             final ZipInputStream gzis = new ZipInputStream(bais)) {
+            final ZipEntry zipentry = gzis.getNextEntry();
+            Integer.parseInt(zipentry.getName());
+            final byte[] buf = new byte[512];
+            int bread;
+            while ((bread = gzis.read(buf)) != -1)
+                os.write(buf, 0, bread);
+            gzis.closeEntry();
+        }
     }
 }
 

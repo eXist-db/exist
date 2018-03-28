@@ -31,12 +31,11 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.SystemProperties;
 import org.exist.util.FileUtils;
+import org.exist.util.io.FastByteArrayOutputStream;
 
 /**
  * Class for writing JNLP file, jar files and image files.
@@ -272,35 +271,24 @@ public class JnlpWriter {
 
         String type = getImageMimeType(filename);
       
-        final InputStream imageInputStream = this.getClass().getResourceAsStream("resources/"+filename); 
-        if (imageInputStream == null) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, String.format("Image file '%s' not found.", filename));
-            return;
-        }
-        
-        // Copy data
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        IOUtils.copy(imageInputStream, baos);
-        IOUtils.closeQuietly(imageInputStream);
-        
-        // Setup HTTP headers
-        response.setContentType(type);
-        response.setContentLength(baos.size());
+        try(final InputStream imageInputStream = this.getClass().getResourceAsStream("resources/"+filename)) {
+            if (imageInputStream == null) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, String.format("Image file '%s' not found.", filename));
+                return;
+            }
 
-        final ServletOutputStream os = response.getOutputStream();
+            // Copy data
+            try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+                baos.write(imageInputStream);
 
-        try {
-            IOUtils.write(baos.toByteArray(), os);
-            os.flush();
-            
-        } catch (final IllegalStateException ex) {
-            LOGGER.debug(ex.getMessage());
-            
-        } catch (final IOException ex) {
-            LOGGER.debug("Ignored IOException for '" + filename + "' " + ex.getMessage());
-            
-        } finally {
-            IOUtils.closeQuietly(os);
+                // Setup HTTP headers
+                response.setContentType(type);
+                response.setContentLength(baos.size());
+
+                try(final ServletOutputStream os = response.getOutputStream()) {
+                    baos.writeTo(os);
+                }
+            }
         }
     }
 

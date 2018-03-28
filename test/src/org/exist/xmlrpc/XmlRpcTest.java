@@ -24,12 +24,12 @@ import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.security.MessageDigester;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.test.ExistWebServer;
 import org.exist.test.TestConstants;
 import org.exist.util.MimeType;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -157,7 +157,7 @@ public class XmlRpcTest {
         params.add(options);
         Map table = (Map) xmlrpc.execute("getDocumentData", params);
 
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+        try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
             int offset = (int) table.get("offset");
             data = (byte[]) table.get("data");
             os.write(data);

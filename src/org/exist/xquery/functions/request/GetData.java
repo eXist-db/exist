@@ -29,7 +29,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
@@ -37,6 +36,7 @@ import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.io.CachingFilterInputStream;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration;
@@ -239,13 +239,9 @@ public class GetData extends BasicFunction {
     }
 
     private Sequence parseAsString(InputStream is, String encoding) throws IOException {
-        final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        final byte[] buf = new byte[4096];
-        int read = -1;
-        while ((read = is.read(buf)) > -1) {
-            bos.write(buf, 0, read);
+        try (final FastByteArrayOutputStream bos = new FastByteArrayOutputStream()) {
+            bos.write(is);
+            return new StringValue(bos.toString(encoding));
         }
-        final String s = new String(bos.toByteArray(), encoding);
-        return new StringValue(s);
     }
 }

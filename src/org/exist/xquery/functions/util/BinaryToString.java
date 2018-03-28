@@ -30,7 +30,7 @@ import java.io.UnsupportedEncodingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -113,17 +113,11 @@ public class BinaryToString extends BasicFunction {
     }
 
     protected StringValue binaryToString(BinaryValue binary, String encoding) throws XPathException {
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        try {
+        try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
             binary.streamBinaryTo(os);
-            return new StringValue(new String(os.toByteArray(), encoding));
+            return new StringValue(os.toString(encoding));
         } catch(final IOException ioe) {
             throw new XPathException(this, ioe);
-        } finally {
-            try {
-                os.close();
-            } catch(final IOException ex) {
-            }
         }
     }
 

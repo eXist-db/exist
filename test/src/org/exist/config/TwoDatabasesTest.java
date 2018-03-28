@@ -21,8 +21,6 @@
  */
 package org.exist.config;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,6 +42,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
 
@@ -185,10 +184,11 @@ public class TwoDatabasesTest {
             binDoc = (BinaryDocument) top.getDocument(broker, XmldbURI.create("xmldb:exist:///bin"));
             top.release(LockMode.READ_LOCK);
             assertTrue(binDoc != null);
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            broker.readBinaryResource(binDoc, os);
-            String comp = os.size() > 0 ? new String(os.toByteArray()) : "";
-            return comp.equals(bin + suffix);
+            try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream((int)binDoc.getContentLength())) {
+                broker.readBinaryResource(binDoc, os);
+                String comp = os.size() > 0 ? new String(os.toByteArray()) : "";
+                return comp.equals(bin + suffix);
+            }
         } finally {
             if (binDoc != null) {
                 binDoc.getUpdateLock().release(LockMode.READ_LOCK);

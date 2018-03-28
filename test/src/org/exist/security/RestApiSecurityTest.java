@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -33,6 +32,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.exist.test.ExistWebServer;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.junit.ClassRule;
 
 /**
@@ -189,8 +189,9 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
     }
     
     private String getResponseBody(final HttpEntity entity) throws IOException {
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        entity.writeTo(baos);
-        return new String(baos.toByteArray());
+        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream(256)) {
+            entity.writeTo(baos);
+            return new String(baos.toByteArray());
+        }
     }
 }

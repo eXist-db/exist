@@ -21,9 +21,10 @@
 package org.exist.util;
 
 import com.googlecode.junittoolbox.ParallelRunner;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.junit.Test;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
@@ -118,23 +119,21 @@ public class VirtualTempFileTest {
 		vtempFile.write(testString,0,testStringLength);
 		vtempFile.close();
 		
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		vtempFile.writeToStream(baos);
-		baos.close();
-		
-		Assert.assertArrayEquals("Written content must match",testString,baos.toByteArray());
+		try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+			vtempFile.writeToStream(baos);
+			Assert.assertArrayEquals("Written content must match",testString,baos.toByteArray());
+		}
 		
 		// Test2, temp file
 		vtempFile = new VirtualTempFile(testStringLength-3,testStringLength-3);
 		
 		vtempFile.write(testString,0,testStringLength);
 		vtempFile.close();
-		
-		baos = new ByteArrayOutputStream();
-		vtempFile.writeToStream(baos);
-		baos.close();
-		
-		Assert.assertArrayEquals("Written content must match",testString,baos.toByteArray());
+
+		try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+			vtempFile.writeToStream(baos);
+			Assert.assertArrayEquals("Written content must match",testString,baos.toByteArray());
+		}
 		
 		// Test3, several writes
 		vtempFile = new VirtualTempFile(testStringLength,testStringLength);
@@ -142,15 +141,13 @@ public class VirtualTempFileTest {
 		vtempFile.write(testString,0,testStringLength);
 		vtempFile.write(testString2,0,testString2.length);
 		vtempFile.close();
-		
-		baos = new ByteArrayOutputStream();
-		vtempFile.writeToStream(baos);
-		baos.close();
-		
-		byte[] joinedTestString = new byte[testStringLength+testString2.length];
-		System.arraycopy(testString,0,joinedTestString,0,testStringLength);
-		System.arraycopy(testString2,0,joinedTestString,testStringLength,testString2.length);
-		
-		Assert.assertArrayEquals("Written content must match",joinedTestString,baos.toByteArray());
+
+		try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+			vtempFile.writeToStream(baos);
+			final byte[] joinedTestString = new byte[testStringLength+testString2.length];
+			System.arraycopy(testString,0,joinedTestString,0,testStringLength);
+			System.arraycopy(testString2,0,joinedTestString,testStringLength,testString2.length);
+			Assert.assertArrayEquals("Written content must match",joinedTestString,baos.toByteArray());
+		}
 	}
 }
