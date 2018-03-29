@@ -1,6 +1,5 @@
 package org.exist.xupdate;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -16,6 +15,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.exist.TestUtils;
 import org.exist.security.Account;
 import org.exist.security.Permission;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.xmldb.DatabaseInstanceManager;
 
 import org.exist.xmldb.UserManagementService;
@@ -181,7 +181,7 @@ public class XUpdateTest {
         // todo: make it nicer
         final DocumentBuilderFactory parserFactory = DocumentBuilderFactory.newInstance();
         parserFactory.setNamespaceAware(true);
-        try(final InputStream is = new ByteArrayInputStream(xmlString.getBytes())) {
+        try(final InputStream is = new FastByteArrayInputStream(xmlString.getBytes())) {
             final InputSource in = new InputSource(is);
             final DocumentBuilder builder = parserFactory.newDocumentBuilder();
             return builder.parse(in);

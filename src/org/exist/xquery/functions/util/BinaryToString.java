@@ -22,14 +22,13 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.io.ByteArrayInputStream;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -123,7 +122,7 @@ public class BinaryToString extends BasicFunction {
 
     protected BinaryValue stringToBinary(String str, String encoding) throws XPathException {
         try {
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(str.getBytes(encoding)));
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new FastByteArrayInputStream(str.getBytes(encoding)));
         } catch(final UnsupportedEncodingException e) {
             throw new XPathException(this, "Unsupported encoding: " + encoding);
         }

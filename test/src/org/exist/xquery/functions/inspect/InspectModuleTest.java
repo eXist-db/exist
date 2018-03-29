@@ -31,6 +31,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -40,7 +41,6 @@ import org.junit.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
@@ -263,7 +263,7 @@ public class InspectModuleTest {
 
             final Collection testCollection = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
 
-            try (final InputStream is = new ByteArrayInputStream(MODULE.getBytes(UTF_8))) {
+            try (final InputStream is = new FastByteArrayInputStream(MODULE.getBytes(UTF_8))) {
                 testCollection.addBinaryResource(transaction, broker, TEST_MODULE, is, "application/xquery", MODULE.getBytes(UTF_8).length);
             }
 

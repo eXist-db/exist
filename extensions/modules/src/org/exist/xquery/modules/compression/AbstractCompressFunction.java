@@ -34,6 +34,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.util.Base64Decoder;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
@@ -140,7 +141,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
                     ((DeflaterOutputStream)os).finish();
                 }
 
-                return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
+                return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new FastByteArrayInputStream(baos.toByteArray()));
             }
 		} catch (final UnsupportedCharsetException | IOException e) {
 			throw new XPathException(this, e.getMessage(), e);

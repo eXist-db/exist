@@ -1,6 +1,5 @@
 package org.exist.xmldb;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -13,6 +12,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.w3c.dom.Document;
@@ -198,7 +198,7 @@ public class DOMTest {
 			String s = (String) resource.getContent();
 			byte[] bytes;
 			bytes = s.getBytes(UTF_8);
-			try(final ByteArrayInputStream bais = new ByteArrayInputStream(bytes)) {
+			try(final FastByteArrayInputStream bais = new FastByteArrayInputStream(bytes)) {
 				DocumentBuilder db =
 						DocumentBuilderFactory.newInstance().newDocumentBuilder();
 				n = db.parse(bais);

@@ -23,7 +23,6 @@
 package org.exist.http.urlrewrite;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -40,6 +39,7 @@ import org.exist.source.Source;
 import org.exist.source.DBSource;
 import org.exist.source.SourceFactory;
 import org.exist.source.FileSource;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.functions.request.RequestModule;
@@ -1466,13 +1466,13 @@ public class XQueryURLRewrite extends HttpServlet {
 
     private static class CachingServletInputStream extends ServletInputStream {
 
-        protected ByteArrayInputStream istream;
+        protected FastByteArrayInputStream istream;
 
         public CachingServletInputStream(byte[] data) {
             if (data == null)
-                {istream = new ByteArrayInputStream(new byte[0]);}
+                {istream = new FastByteArrayInputStream(new byte[0]);}
             else
-                {istream = new ByteArrayInputStream(data);}
+                {istream = new FastByteArrayInputStream(data);}
         }
         
         @Override

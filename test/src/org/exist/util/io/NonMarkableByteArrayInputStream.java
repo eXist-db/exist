@@ -26,7 +26,8 @@
  */
 package org.exist.util.io;
 
-import java.io.ByteArrayInputStream;
+import net.jcip.annotations.NotThreadSafe;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -36,12 +37,13 @@ import java.io.InputStream;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
+@NotThreadSafe
 public class NonMarkableByteArrayInputStream extends InputStream {
 
-    final ByteArrayInputStream is;
+    final FastByteArrayInputStream is;
     
     public NonMarkableByteArrayInputStream(final byte buf[]) {
-        is = new ByteArrayInputStream(buf);
+        is = new FastByteArrayInputStream(buf);
     }
     
     @Override

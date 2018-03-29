@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.functions.validation;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -42,6 +41,7 @@ import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.ValidationReportItem;
 import org.exist.validation.internal.node.NodeInputStream;
@@ -157,7 +157,7 @@ public class Shared {
             final BinaryValue binary = (BinaryValue) item;
             
             final byte[] data = binary.toJavaObject(byte[].class);
-            final InputStream is = new ByteArrayInputStream(data);
+            final InputStream is = new FastByteArrayInputStream(data);
             streamSource.setInputStream(is);
 
             //TODO consider using BinaryValue.getInputStream()

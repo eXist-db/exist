@@ -686,7 +686,7 @@ public class Resource extends File {
 
                 } else {
                     // store as binary resource
-                    try (final InputStream is = new ByteArrayInputStream("".getBytes(UTF_8))) {
+                    try (final InputStream is = new FastByteArrayInputStream(new byte[0])) {
                         final BinaryDocument blob = new BinaryDocument(db, collection, fileName);
                         blob.getPermissions().setMode(DEFAULT_RESOURCE_PERM);
                         collection.addBinaryResource(transaction, broker, blob, is,

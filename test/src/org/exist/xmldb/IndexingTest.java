@@ -1,6 +1,5 @@
 package org.exist.xmldb;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Random;
 
@@ -13,6 +12,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -113,7 +113,7 @@ public class IndexingTest {
         } else {
             String s = (String) resource.getContent();
             byte[] bytes = s.getBytes(UTF_8);
-            ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+            FastByteArrayInputStream bais = new FastByteArrayInputStream(bytes);
             DocumentBuilder db =
                     DocumentBuilderFactory.newInstance().newDocumentBuilder();
             n = db.parse(bais);

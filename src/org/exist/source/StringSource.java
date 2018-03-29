@@ -22,7 +22,6 @@
  */
 package org.exist.source;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -31,6 +30,7 @@ import java.io.StringReader;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
+import org.exist.util.io.FastByteArrayInputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -85,7 +85,7 @@ public class StringSource extends AbstractSource {
     }
 
     public InputStream getInputStream() throws IOException {
-        return new ByteArrayInputStream(data.getBytes(UTF_8));
+        return new FastByteArrayInputStream(data.getBytes(UTF_8));
     }
 
     /* (non-Javadoc)

@@ -22,9 +22,7 @@
  */
 package org.exist.xquery;
 
-import java.io.ByteArrayInputStream;
 import java.net.URISyntaxException;
-import java.util.Iterator;
 import java.util.List;
 
 import org.exist.dom.persistent.AVLTreeNodeSet;
@@ -36,6 +34,7 @@ import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.LocalXMLResource;
@@ -92,7 +91,7 @@ public class XPathUtil {
         } else if (obj instanceof Long) {
             return new IntegerValue(((Long) obj), Type.LONG);
         } else if (obj instanceof byte[]) {
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream((byte[]) obj));
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new FastByteArrayInputStream((byte[]) obj));
 
         } else if (obj instanceof ResourceSet) {
             final Sequence seq = new AVLTreeNodeSet();

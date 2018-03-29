@@ -20,13 +20,13 @@
  */
 package org.exist.util;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 
 public class Compressor {
@@ -79,7 +79,7 @@ public class Compressor {
     
     public static void uncompress(byte[] whatToUncompress, OutputStream os)
     throws IOException {
-        try (final ByteArrayInputStream bais = new ByteArrayInputStream(whatToUncompress);
+        try (final FastByteArrayInputStream bais = new FastByteArrayInputStream(whatToUncompress);
              final ZipInputStream gzis = new ZipInputStream(bais)) {
             final ZipEntry zipentry = gzis.getNextEntry();
             Integer.parseInt(zipentry.getName());

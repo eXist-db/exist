@@ -26,6 +26,7 @@ import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xquery.value.BinaryValue;
 import org.w3c.dom.DocumentType;
@@ -37,7 +38,6 @@ import org.xmldb.api.modules.BinaryResource;
 
 import javax.annotation.Nullable;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -146,7 +146,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
         } else if(inputSource != null) {
             is = inputSource.getByteStream();
         } else if(rawData != null) {
-            is = new ByteArrayInputStream(rawData);
+            is = new FastByteArrayInputStream(rawData);
         } else if(binaryValue != null) {
             is = binaryValue.getInputStream();
         } else {

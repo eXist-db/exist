@@ -31,6 +31,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -102,7 +103,7 @@ public class CollectionXConf
 		try
 		{
 			final DocumentBuilder builder = factory.newDocumentBuilder();
-			docConfig = builder.parse( new java.io.ByteArrayInputStream(resConfig.getContent().toString().getBytes()) );
+			docConfig = builder.parse( new FastByteArrayInputStream(resConfig.getContent().toString().getBytes()) );
 		}
 		catch(final ParserConfigurationException | SAXException | IOException pce)
 		{

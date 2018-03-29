@@ -1,11 +1,21 @@
 package org.exist.fluent;
 
-import java.io.*;
+import java.io.CharArrayReader;
+import java.io.File;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PushbackInputStream;
+import java.io.PushbackReader;
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.*;
 import java.nio.*;
 import java.nio.charset.*;
 import java.util.*;
 
+import org.exist.util.io.FastByteArrayInputStream;
 import org.xml.sax.InputSource;
 
 /**
@@ -72,7 +82,7 @@ public abstract class Source {
 		protected InputStream toInputStream() throws IOException {
 			if (contents == null) createBytes();
 			assert contents != null;
-			return new ByteArrayInputStream(contents, offset, length);
+			return new FastByteArrayInputStream(contents, offset, length);
 		}
 		protected int getLength() {
 			return length;
@@ -148,7 +158,7 @@ public abstract class Source {
 						markedStream = stream;
 					} else {
 						// TODO: if stream size exceeds some threshold, save contents to a temporary file instead
-						markedStream = new ByteArrayInputStream(readInputStream(stream, null));
+						markedStream = new FastByteArrayInputStream(readInputStream(stream, null));
 					}
 					markedStream.mark(Integer.MAX_VALUE);
 				}
@@ -234,7 +244,7 @@ public abstract class Source {
 	public static Source.XML xml(final byte[] bytes) {
 		return new Source.XML() {
 			@Override InputSource createInputSource() throws IOException {
-				return new InputSource(new ByteArrayInputStream(bytes));
+				return new InputSource(new FastByteArrayInputStream(bytes));
 			}
 			@Override public String toString() {
 				return super.toString() + "byte array [" + bytes.length + "]";
@@ -333,7 +343,7 @@ public abstract class Source {
 						byte[] bytes = null;
 						bytes = readInputStream(inputStream, bytes);
 						length = bytes.length;
-						return new ByteArrayInputStream(bytes);
+						return new FastByteArrayInputStream(bytes);
 					} finally {
 						connection.getInputStream().close();
 					}

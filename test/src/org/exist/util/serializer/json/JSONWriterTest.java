@@ -21,6 +21,7 @@
 package org.exist.util.serializer.json;
 
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.serializer.SAXSerializer;
 import org.junit.Test;
 import org.w3c.dom.Document;
@@ -33,7 +34,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -165,7 +165,7 @@ public class JSONWriterTest {
 
     private Document parseXml(final String xmlStr) throws ParserConfigurationException, IOException, SAXException {
         final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        try(final InputStream is = new ByteArrayInputStream(xmlStr.getBytes(UTF_8))) {
+        try(final InputStream is = new FastByteArrayInputStream(xmlStr.getBytes(UTF_8))) {
             return documentBuilder.parse(is);
         }
     }

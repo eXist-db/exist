@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.modules.compression;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -33,6 +32,7 @@ import java.nio.file.Paths;
 import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.LocalCollection;
@@ -191,7 +191,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
                         entryData = baos.toByteArray();
                     }
 
-                    try (final InputStream bis = new ByteArrayInputStream(entryData)) {
+                    try (final InputStream bis = new FastByteArrayInputStream(entryData)) {
                         NodeValue content = ModuleUtils.streamToXML(context, bis);
                         resource = target.createResource(name, "XMLResource");
                         ContentHandler handler = ((XMLResource) resource).setContentAsSAX();
@@ -222,11 +222,11 @@ public abstract class AbstractExtractFunction extends BasicFunction
                 }
 
                 //try and parse as xml, fall back to binary
-                try (final InputStream bis = new ByteArrayInputStream(entryData)) {
+                try (final InputStream bis = new FastByteArrayInputStream(entryData)) {
                     uncompressedData = ModuleUtils.streamToXML(context, bis);
                 } catch (SAXException saxe) {
                     if (entryData.length > 0) {
-                        try (final InputStream bis = new ByteArrayInputStream(entryData)) {
+                        try (final InputStream bis = new FastByteArrayInputStream(entryData)) {
                             uncompressedData = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), bis);
                         }
                     }

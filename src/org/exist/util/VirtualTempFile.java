@@ -20,7 +20,6 @@
 package org.exist.util;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,6 +32,7 @@ import java.io.RandomAccessFile;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 
 
@@ -441,7 +441,7 @@ public class VirtualTempFile
 		if(tempFile!=null) {
 			result = new BufferedInputStream(new FileInputStream(tempFile),655360);
 		} else if(tempBuffer!=null) {
-			result = new ByteArrayInputStream(tempBuffer);
+			result = new FastByteArrayInputStream(tempBuffer);
 		}
 		
 		return result;
