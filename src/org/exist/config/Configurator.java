@@ -19,13 +19,7 @@
  */
 package org.exist.config;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
+import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
@@ -69,6 +63,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.MimeType;
 import com.evolvedbinary.j8fu.function.ConsumerE;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.FullXmldbURI;
 import org.exist.xmldb.XmldbURI;
@@ -1164,20 +1159,19 @@ public class Configurator {
             if (broker.isReadOnly()) {
                 //database in read-only mode & there no configuration file, 
                 //create in memory document & configuration 
-                try {
-                    final StringWriter writer = new StringWriter();
+                try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream();
+                        final Writer writer = new OutputStreamWriter(os)) {
                     final SAXSerializer serializer = new SAXSerializer(writer, null);
                     serializer.startDocument();
                     serialize(instance, serializer);
                     serializer.endDocument();
-                    final String data = writer.toString();
-                    if (data == null || data.length() == 0) {
+                    if (os.size() == 0) {
                         return null;
                     }
-                    return parse(new ByteArrayInputStream(data.getBytes(UTF_8)));
+                    return parse(os.toFastByteInputStream());
                     
-                } catch (final SAXException saxe) {
-                    throw new ConfigurationException(saxe.getMessage(), saxe);
+                } catch (final IOException | SAXException e) {
+                    throw new ConfigurationException(e.getMessage(), e);
                 }
             }
             

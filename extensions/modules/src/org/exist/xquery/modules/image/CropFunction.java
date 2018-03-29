@@ -163,7 +163,7 @@ public class CropFunction extends BasicFunction {
                 ImageIO.write(bImage, formatName, os);
 
                 //return the new croped image data
-                return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), os.toInputStream());
+                return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), os.toFastByteInputStream());
             }
 
         } catch(Exception e) {
