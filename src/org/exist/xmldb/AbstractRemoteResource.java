@@ -19,7 +19,6 @@
  */
 package org.exist.xmldb;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -35,6 +34,7 @@ import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.EXistInputSource;
 import org.exist.util.VirtualTempFile;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.xml.sax.InputSource;
 import org.xmldb.api.base.Collection;
@@ -381,9 +381,9 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     protected static InputStream getAnyStream(final Object obj)
             throws XMLDBException {
         if (obj instanceof String) {
-            return new ByteArrayInputStream(((String) obj).getBytes(UTF_8));
+            return new FastByteArrayInputStream(((String) obj).getBytes(UTF_8));
         } else if (obj instanceof byte[]) {
-            return new ByteArrayInputStream((byte[]) obj);
+            return new FastByteArrayInputStream((byte[]) obj);
         } else {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "don't know how to handle value of type " + obj.getClass().getName());
         }

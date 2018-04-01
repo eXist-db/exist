@@ -3,6 +3,7 @@ package org.exist.source;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
+import org.exist.util.io.FastByteArrayInputStream;
 
 import java.io.*;
 
@@ -47,7 +48,7 @@ public class BinarySource extends AbstractSource {
     }
 
     public InputStream getInputStream() throws IOException {
-        return new ByteArrayInputStream(data);
+        return new FastByteArrayInputStream(data);
     }
 
     public String getContent() throws IOException {

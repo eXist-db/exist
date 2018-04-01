@@ -79,7 +79,7 @@ public class UnGZipFunction extends BasicFunction
         try(final GZIPInputStream gzis = new GZIPInputStream(bin.getInputStream());
                 final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
             baos.write(gzis);
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream());
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toFastByteInputStream());
         } catch(final IOException ioe) {
             throw new XPathException(this, ioe.getMessage(), ioe);
         }

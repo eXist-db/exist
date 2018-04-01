@@ -40,6 +40,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.pool.NodePool;
 import org.exist.xmldb.XmldbURI;
@@ -57,7 +58,6 @@ import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 import org.w3c.dom.TypeInfo;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStream;
@@ -353,7 +353,7 @@ public class ElementImpl extends NamedNode implements Element {
         if(end > pos) {
             final byte[] pfxData = new byte[end - pos];
             System.arraycopy(data, pos, pfxData, 0, end - pos);
-            final InputStream bin = new ByteArrayInputStream(pfxData);
+            final InputStream bin = new FastByteArrayInputStream(pfxData);
             final DataInputStream in = new DataInputStream(bin);
             try {
                 final short prefixCount = in.readShort();
@@ -424,7 +424,7 @@ public class ElementImpl extends NamedNode implements Element {
         if(end > offset) {
             final byte[] pfxData = new byte[end - offset];
             System.arraycopy(data, offset, pfxData, 0, end - offset);
-            final InputStream bin = new ByteArrayInputStream(pfxData);
+            final InputStream bin = new FastByteArrayInputStream(pfxData);
             final DataInputStream in = new DataInputStream(bin);
             try {
                 final short prefixCount = in.readShort();

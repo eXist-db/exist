@@ -1,12 +1,12 @@
 package org.exist.xquery.value;
 
 import java.io.FilterInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.util.io.CachingFilterInputStream;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xquery.XPathException;
 import org.junit.Test;
@@ -86,7 +86,7 @@ public class BinaryValueFromInputStreamTest {
 
         final byte[] testData = "test data".getBytes();
 
-        try (final InputStream bais = new ByteArrayInputStream(testData)) {
+        try (final InputStream bais = new FastByteArrayInputStream(testData)) {
             final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais);
             final InputStream bvis = binaryValue.getInputStream();
 
@@ -120,7 +120,7 @@ public class BinaryValueFromInputStreamTest {
 
         final byte[] testData = "test data".getBytes();
 
-        try (final InputStream bais = new ByteArrayInputStream(testData)) {
+        try (final InputStream bais = new FastByteArrayInputStream(testData)) {
             final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais);
             final InputStream bvis = binaryValue.getInputStream();
 
@@ -158,7 +158,7 @@ public class BinaryValueFromInputStreamTest {
 
         final byte[] testData = "test data".getBytes();
 
-        try (final InputStream bais = new ByteArrayInputStream(testData)) {
+        try (final InputStream bais = new FastByteArrayInputStream(testData)) {
             final BinaryValue binaryValue1 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais);
             final InputStream bvis1 = binaryValue1.getInputStream();
 
@@ -198,8 +198,8 @@ public class BinaryValueFromInputStreamTest {
         final byte[] testData1 = "test data".getBytes();
         final byte[] testData2 = "second test data".getBytes();
 
-        try (final InputStream bais1 = new ByteArrayInputStream(testData1);
-                final InputStream bais2 = new ByteArrayInputStream(testData2)) {
+        try (final InputStream bais1 = new FastByteArrayInputStream(testData1);
+                final InputStream bais2 = new FastByteArrayInputStream(testData2)) {
 
             final BinaryValue binaryValue1 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais1);
             final InputStream bvis1 = binaryValue1.getInputStream();
@@ -253,7 +253,7 @@ public class BinaryValueFromInputStreamTest {
 
         final byte[] testData = "test data".getBytes();
 
-        try (final InputStream bais = new ByteArrayInputStream(testData)) {
+        try (final InputStream bais = new FastByteArrayInputStream(testData)) {
             final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais);
             final InputStream bvis = binaryValue.getInputStream();
 
@@ -296,7 +296,7 @@ public class BinaryValueFromInputStreamTest {
 
         final byte[] testData = "test data".getBytes();
 
-        try (final InputStream bais = new ByteArrayInputStream(testData)) {
+        try (final InputStream bais = new FastByteArrayInputStream(testData)) {
             final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais);
             final InputStream bvis = binaryValue.getInputStream();
 
@@ -352,7 +352,7 @@ public class BinaryValueFromInputStreamTest {
 
         final byte[] testData = "test data".getBytes();
 
-        try (final InputStream bais = new ByteArrayInputStream(testData)) {
+        try (final InputStream bais = new FastByteArrayInputStream(testData)) {
 
             final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais);
 
@@ -424,7 +424,7 @@ public class BinaryValueFromInputStreamTest {
         }
     }
 
-    private static class UnmarkableByteArrayInputStream extends ByteArrayInputStream {
+    private static class UnmarkableByteArrayInputStream extends FastByteArrayInputStream {
         public UnmarkableByteArrayInputStream(final byte[] buf) {
             super(buf);
         }

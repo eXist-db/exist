@@ -24,8 +24,6 @@
  */
 package org.exist.xquery.modules.spatial;
 
-import java.io.ByteArrayInputStream;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.NodeProxy;
@@ -33,6 +31,7 @@ import org.exist.dom.QName;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndex;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndexWorker;
 import org.exist.indexing.spatial.SpatialIndexException;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
@@ -342,7 +341,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                             result = new StringValue(wktWriter.write(geometry));
                         } else if (isCalledAs("getEPSG4326WKB")) {
                             byte data[] = wkbWriter.write(geometry);
-                            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(data));
+                            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new FastByteArrayInputStream(data));
                         } else if (isCalledAs("getEPSG4326MinX")) {
                             result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
                         } else if (isCalledAs("getEPSG4326MaxX")) {

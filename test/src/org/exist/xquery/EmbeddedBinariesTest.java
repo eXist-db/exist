@@ -29,12 +29,12 @@ import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.*;
 import org.junit.ClassRule;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
@@ -55,7 +55,7 @@ public class EmbeddedBinariesTest extends AbstractBinariesTest<Sequence, Item, I
 
             final Collection collection = broker.getOrCreateCollection(transaction, filePath.removeLastSegment());
             collection.getLock().acquire(Lock.LockMode.WRITE_LOCK);
-            try(final InputStream is = new ByteArrayInputStream(content)) {
+            try(final InputStream is = new FastByteArrayInputStream(content)) {
 
                 collection.addBinaryResource(transaction, broker, filePath.lastSegment(), is, "application/octet-stream", content.length);
 

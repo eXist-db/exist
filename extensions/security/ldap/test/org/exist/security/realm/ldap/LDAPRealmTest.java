@@ -23,14 +23,13 @@ package org.exist.security.realm.ldap;
 
 import static org.junit.Assert.*;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Account;
-import org.exist.security.realm.ldap.LDAPRealm;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -57,7 +56,7 @@ public class LDAPRealmTest {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		InputStream is = new ByteArrayInputStream(config.getBytes(UTF_8));
+		InputStream is = new FastByteArrayInputStream(config.getBytes(UTF_8));
 		
 		Configuration config = Configurator.parse(is);
 

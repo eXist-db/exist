@@ -138,7 +138,7 @@ public class MetadataFunctions extends BasicFunction {
                 //make sure process is complete
                 p.waitFor();
 
-                return ModuleUtils.inputSourceToXML(context, new InputSource(baos.toInputStream()));
+                return ModuleUtils.inputSourceToXML(context, new InputSource(baos.toFastByteInputStream()));
             }
         } catch (final IOException ex) {
             throw new XPathException("Could not execute the Exiftool " + ex.getMessage(), ex);
@@ -176,7 +176,7 @@ public class MetadataFunctions extends BasicFunction {
                 //make sure process is complete
                 p.waitFor();
 
-                return ModuleUtils.inputSourceToXML(context, new InputSource(baos.toInputStream()));
+                return ModuleUtils.inputSourceToXML(context, new InputSource(baos.toFastByteInputStream()));
             }
 
         } catch (final IOException ex) {

@@ -108,7 +108,7 @@ public class InMemoryInputStream {
         throw new IOException(ex.getMessage(), ex);
       }
 
-      return os.toInputStream();
+      return os.toFastByteInputStream();
     }
   }
 

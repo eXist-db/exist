@@ -3,7 +3,7 @@ package org.exist.security;
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteInputStream;
-import java.io.ByteArrayInputStream;
+
 import java.io.IOException;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.Database;
@@ -13,6 +13,7 @@ import org.exist.security.internal.SecurityManagerImpl;
 import java.util.Random;
 import org.easymock.EasyMock;
 import org.exist.util.ByteArray;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -690,7 +691,7 @@ public class SimpleACLPermissionTest {
         SimpleACLPermission permission2 = new SimpleACLPermission(mockSecurityManager);
         
         //read the acl in
-        permission2.read(new VariableByteInputStream(new ByteArrayInputStream(data)));
+        permission2.read(new VariableByteInputStream(new FastByteArrayInputStream(data)));
         
         assertEquals(2, permission2.getACECount());
         

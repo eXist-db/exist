@@ -73,6 +73,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.validation.ValidationReport;
@@ -1311,7 +1312,7 @@ public class RpcConnection implements RpcAPI {
                 }
             }
 
-            try (final InputStream is = new ByteArrayInputStream(xml)) {
+            try (final InputStream is = new FastByteArrayInputStream(xml)) {
 
                 final InputSource source = new InputSource(is);
 

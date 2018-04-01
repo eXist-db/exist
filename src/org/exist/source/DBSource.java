@@ -21,12 +21,7 @@
  */
 package org.exist.source;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
@@ -37,6 +32,7 @@ import org.exist.security.Subject;
 import org.exist.security.internal.aider.UnixStylePermissionAider;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -150,31 +146,28 @@ public class DBSource extends AbstractSource {
      */
     @Override
     public String getContent() throws IOException {
-        final InputStream raw = broker.getBinaryResource(doc);
-        final long binaryLength = broker.getBinaryResourceSize(doc);
-	if(binaryLength > (long)Integer.MAX_VALUE) {
-            throw new IOException("Resource too big to be read using this method.");
-	}
-        final byte [] data = new byte[(int)binaryLength];
-        raw.read(data);
-        raw.close();
-        final ByteArrayInputStream is = new ByteArrayInputStream(data);
-        checkEncoding(is);
-        return new String(data, encoding);
-    }
-
-    @Override
-    public QName isModule() throws IOException {
-        final InputStream raw = broker.getBinaryResource(doc);
         final long binaryLength = broker.getBinaryResourceSize(doc);
         if(binaryLength > (long)Integer.MAX_VALUE) {
             throw new IOException("Resource too big to be read using this method.");
         }
-        final byte [] data = new byte[(int)binaryLength];
-        raw.read(data);
-        raw.close();
-        final ByteArrayInputStream is = new ByteArrayInputStream(data);
-        return getModuleDecl(is);
+
+        //final byte [] data = new byte[(int)binaryLength];
+        try(final InputStream raw = broker.getBinaryResource(doc);
+        final FastByteArrayOutputStream buf = new FastByteArrayOutputStream((int)binaryLength)) {
+            buf.write(raw);
+            //raw.close();
+            try (final InputStream is = buf.toFastByteInputStream()) {
+                checkEncoding(is);
+                return buf.toString(encoding);
+            }
+        }
+    }
+
+    @Override
+    public QName isModule() throws IOException {
+        try(final InputStream is = broker.getBinaryResource(doc)) {
+            return getModuleDecl(is);
+        }
     }
 
     private void checkEncoding(final InputStream is) throws IOException {

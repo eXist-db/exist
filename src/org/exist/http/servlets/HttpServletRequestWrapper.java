@@ -24,7 +24,6 @@ package org.exist.http.servlets;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -37,6 +36,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.util.MimeType;
 import org.exist.util.VirtualTempFile;
+import org.exist.util.io.FastByteArrayInputStream;
 
 /** A wrapper for HttpServletRequest
  * - differentiates between POST parameters in the URL or Content Body
@@ -1036,7 +1036,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
             throws IOException
         {
             if (contentBody == null)
-                {istream = new ByteArrayInputStream(new byte[0]);}
+                {istream = new FastByteArrayInputStream(new byte[0]);}
             else
                 {istream = contentBody.getByteStream();}
         }

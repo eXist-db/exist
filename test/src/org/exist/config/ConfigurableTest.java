@@ -23,7 +23,6 @@ package org.exist.config;
 
 import static org.junit.Assert.*;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import javax.xml.parsers.SAXParser;
@@ -31,6 +30,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xml.sax.InputSource;
@@ -78,7 +78,7 @@ public class ConfigurableTest {
 	
 	@Test
 	public void simple() throws Exception {
-		InputStream is = new ByteArrayInputStream(config1.getBytes(UTF_8));
+		InputStream is = new FastByteArrayInputStream(config1.getBytes(UTF_8));
         
         Configuration config = Configurator.parse(is);
         
@@ -102,7 +102,7 @@ public class ConfigurableTest {
 
 	@Test
 	public void subelement() throws Exception {
-		InputStream is = new ByteArrayInputStream(config2.getBytes(UTF_8));
+		InputStream is = new FastByteArrayInputStream(config2.getBytes(UTF_8));
 		
         // initialize xml parser
         // we use eXist's in-memory DOM implementation to work
@@ -127,7 +127,7 @@ public class ConfigurableTest {
 	
 	@Test
 	public void notSimple() throws Exception {
-		InputStream is = new ByteArrayInputStream(config3.getBytes(UTF_8));
+		InputStream is = new FastByteArrayInputStream(config3.getBytes(UTF_8));
         
         Configuration config = Configurator.parse(is);
         

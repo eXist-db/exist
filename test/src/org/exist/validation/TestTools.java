@@ -31,13 +31,13 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.xml.sax.SAXException;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -89,7 +89,7 @@ public class TestTools {
         InputStream is = null;
         OutputStream os = null;
         try {
-            is = new ByteArrayInputStream(data);
+            is = new FastByteArrayInputStream(data);
             os = connection.getOutputStream();
             TestTools.copyStream(is, os);
             os.flush();

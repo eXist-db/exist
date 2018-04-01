@@ -37,6 +37,7 @@ import org.apache.commons.io.input.ClosedInputStream;
  * Commons IO 2.6 {@link org.apache.commons.io.output.ByteArrayOutputStream}
  * which removes the synchronization overhead for non-concurrent
  * access; as such this class is not thread-safe.
+ * It also adds the method {@link FastByteArrayOutputStream#toFastByteInputStream()}.
  *
  * Modified by Adam Retter <adam@exist-db.org>.
  * Original Apache class header continues below:
@@ -353,6 +354,29 @@ public class FastByteArrayOutputStream extends OutputStream {
         for (final byte[] buf : buffers) {
             final int c = Math.min(buf.length, remaining);
             list.add(new ByteArrayInputStream(buf, 0, c));
+            remaining -= c;
+            if (remaining == 0) {
+                break;
+            }
+        }
+        reuseBuffers = false;
+        return new SequenceInputStream(Collections.enumeration(list));
+    }
+
+    /**
+     * Similar to {@link #toInputStream()}
+     * but utilises {@link FastByteArrayInputStream}
+     * as opposed to {@link java.io.ByteArrayInputStream}.
+     */
+    public /*synchronized*/ InputStream toFastByteInputStream() {
+        int remaining = count;
+        if (remaining == 0) {
+            return new ClosedInputStream();
+        }
+        final List<FastByteArrayInputStream> list = new ArrayList<>(buffers.size());
+        for (final byte[] buf : buffers) {
+            final int c = Math.min(buf.length, remaining);
+            list.add(new FastByteArrayInputStream(buf, 0, c));
             remaining -= c;
             if (remaining == 0) {
                 break;

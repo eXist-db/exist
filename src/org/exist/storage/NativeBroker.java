@@ -70,6 +70,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import com.evolvedbinary.j8fu.function.ConsumerE;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.value.Type;
@@ -2127,7 +2128,7 @@ public class NativeBroker extends DBBroker {
     public void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final byte[] data)
             throws IOException {
         storeBinaryResource(transaction, blob, dest -> {
-            try(final InputStream is = new ByteArrayInputStream(data)) {
+            try(final InputStream is = new FastByteArrayInputStream(data)) {
                 Files.copy(is, dest);
             }
         });
