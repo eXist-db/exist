@@ -45,8 +45,10 @@ import org.xml.sax.SAXException;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.StringReader;
 import java.util.*;
+
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.util.AttributeSource.State;
@@ -56,26 +58,21 @@ public class LuceneMatchListener extends AbstractMatchListener {
     private static final Logger LOG = LogManager.getLogger(LuceneMatchListener.class);
 
     private Match match;
-
     private Map<Object, Query> termMap;
-
     private Map<NodeId, Offset> nodesWithMatch;
-
     private final LuceneIndex index;
-
     private LuceneConfig config;
-
     private DBBroker broker;
 
-    public LuceneMatchListener(LuceneIndex index, DBBroker broker, NodeProxy proxy) {
+    public LuceneMatchListener(final LuceneIndex index, final DBBroker broker, final NodeProxy proxy) {
         this.index = index;
         reset(broker, proxy);
     }
 
-    public boolean hasMatches(NodeProxy proxy) {
+    public boolean hasMatches(final NodeProxy proxy) {
         Match nextMatch = proxy.getMatches();
         while (nextMatch != null) {
-            if (nextMatch.getIndexId() == LuceneIndex.ID) {
+            if (nextMatch.getIndexId().equals(LuceneIndex.ID)) {
                 return true;
             }
             nextMatch = nextMatch.getNextMatch();
@@ -83,14 +80,15 @@ public class LuceneMatchListener extends AbstractMatchListener {
         return false;
     }
 
-    protected void reset(DBBroker broker, NodeProxy proxy) {
+    protected void reset(final DBBroker broker, final NodeProxy proxy) {
         this.broker = broker;
         this.match = proxy.getMatches();
         setNextInChain(null);
 
-        IndexSpec indexConf = proxy.getOwnerDocument().getCollection().getIndexConfiguration(broker);
-        if (indexConf != null)
+        final IndexSpec indexConf = proxy.getOwnerDocument().getCollection().getIndexConfiguration(broker);
+        if (indexConf != null) {
             config = (LuceneConfig) indexConf.getCustomIndexSpec(LuceneIndex.ID);
+        }
 
         getTerms();
         nodesWithMatch = new TreeMap<>();
@@ -104,22 +102,23 @@ public class LuceneMatchListener extends AbstractMatchListener {
         Match nextMatch = this.match;
         while (nextMatch != null) {
             if (proxy.getNodeId().isDescendantOf(nextMatch.getNodeId())) {
-                if (ancestors == null)
+                if (ancestors == null) {
                     ancestors = new NewArrayNodeSet();
+                }
                 ancestors.add(new NodeProxy(proxy.getOwnerDocument(), nextMatch.getNodeId()));
             }
             nextMatch = nextMatch.getNextMatch();
         }
 
         if (ancestors != null && !ancestors.isEmpty()) {
-            for (NodeProxy p : ancestors) {
+            for (final NodeProxy p : ancestors) {
                 scanMatches(p);
             }
         }
     }
 
     @Override
-    public void startElement(QName qname, AttrList attribs) throws SAXException {
+    public void startElement(final QName qname, final AttrList attribs) throws SAXException {
         Match nextMatch = match;
         // check if there are any matches in the current element
         // if yes, push a NodeOffset object to the stack to track
@@ -135,49 +134,53 @@ public class LuceneMatchListener extends AbstractMatchListener {
     }
 
     @Override
-    public void characters(CharSequence seq) throws SAXException {
-        NodeId nodeId = getCurrentNode().getNodeId();
+    public void characters(final CharSequence seq) throws SAXException {
+        final NodeId nodeId = getCurrentNode().getNodeId();
         Offset offset = nodesWithMatch.get(nodeId);
-        if (offset == null)
+        if (offset == null) {
             super.characters(seq);
-        else {
-            String s = seq.toString();
+        } else {
+            final String s = seq.toString();
             int pos = 0;
             while (offset != null) {
                 if (offset.startOffset > pos) {
-                    if (offset.startOffset > seq.length())
+                    if (offset.startOffset > seq.length()) {
                         throw new SAXException("start offset out of bounds");
+                    }
                     super.characters(s.substring(pos, offset.startOffset));
                 }
                 int end = offset.endOffset;
-                if (end > s.length())
+                if (end > s.length()) {
                     end = s.length();
+                }
                 super.startElement(MATCH_ELEMENT, null);
                 super.characters(s.substring(offset.startOffset, end));
                 super.endElement(MATCH_ELEMENT);
                 pos = end;
                 offset = offset.next;
             }
-            if (pos < seq.length())
+            if (pos < seq.length()) {
                 super.characters(s.substring(pos));
+            }
         }
     }
 
-    private void scanMatches(NodeProxy p) {
+    private void scanMatches(final NodeProxy p) {
         // Collect the text content of all descendants of p. 
         // Remember the start offsets of the text nodes for later use.
-        NodePath path = getPath(p);
-        LuceneIndexConfig idxConf = config.getConfig(path).next();
-        
-        TextExtractor extractor = new DefaultTextExtractor();
+        final NodePath path = getPath(p);
+        final LuceneIndexConfig idxConf = config.getConfig(path).next();
+
+        final TextExtractor extractor = new DefaultTextExtractor();
         extractor.configure(config, idxConf);
-        OffsetList offsets = new OffsetList();
+
+        final OffsetList offsets = new OffsetList();
         int level = 0;
         int textOffset = 0;
         try {
-            IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(p, false);
+            final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(p, false);
             while (reader.hasNext()) {
-                int ev = reader.next();
+                final int ev = reader.next();
                 switch (ev) {
                     case XMLStreamConstants.END_ELEMENT:
                         if (--level < 0) {
@@ -188,6 +191,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
                             textOffset += extractor.endElement(reader.getQName());
                         }
                         break;
+
                     case XMLStreamConstants.START_ELEMENT:
                         // call extractor.startElement unless this is the root of the current fragment
                         if (level > 0) {
@@ -195,18 +199,19 @@ public class LuceneMatchListener extends AbstractMatchListener {
                         }
                         ++level;
                         break;
+
                     case XMLStreamConstants.CHARACTERS:
-                        NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+                        final NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
                         textOffset += extractor.beforeCharacters();
                         offsets.add(textOffset, nodeId);
                         textOffset += extractor.characters(reader.getXMLText());
                         break;
                 }
             }
-        } catch (IOException | XMLStreamException e) {
+        } catch (final IOException | XMLStreamException e) {
             LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
         }
-        
+
         // Retrieve the Analyzer for the NodeProxy that was used for
         // indexing and querying.
         Analyzer analyzer = idxConf.getAnalyzer();
@@ -215,31 +220,34 @@ public class LuceneMatchListener extends AbstractMatchListener {
             // to tokenize the text and find matching query terms.
             analyzer = index.getDefaultAnalyzer();
         }
-        if (LOG.isDebugEnabled())
+
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Analyzer: " + analyzer + " for path: " + path);
-        String str = extractor.getText().toString();
-        //Token token;
-        try (TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(str))) {
+        }
+
+        final String str = extractor.getText().toString();
+        try (final Reader reader = new StringReader(str);
+                final TokenStream tokenStream = analyzer.tokenStream(null, reader)) {
             tokenStream.reset();
-            MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream);
+            final MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream);
             while (stream.incrementToken()) {
                 String text = stream.getAttribute(CharTermAttribute.class).toString();
-                Query query = termMap.get(text);
+                final Query query = termMap.get(text);
                 if (query != null) {
                     // Phrase queries need to be handled differently to filter
                     // out wrong matches: only the phrase should be marked, not
                     // single words which may also occur elsewhere in the document
                     if (query instanceof PhraseQuery) {
-                        PhraseQuery phraseQuery = (PhraseQuery) query;
-                        Term[] terms = phraseQuery.getTerms();
+                        final PhraseQuery phraseQuery = (PhraseQuery) query;
+                        final Term[] terms = phraseQuery.getTerms();
                         if (text.equals(terms[0].text())) {
                             // Scan the following text and collect tokens to see
                             // if they are part of the phrase.
                             stream.mark();
                             int t = 1;
-                            List<State> stateList = new ArrayList<>(terms.length);
+                            final List<State> stateList = new ArrayList<>(terms.length);
                             stateList.add(stream.captureState());
-                            
+
                             while (stream.incrementToken() && t < terms.length) {
                                 text = stream.getAttribute(CharTermAttribute.class).toString();
                                 if (text.equals(terms[t].text())) {
@@ -254,63 +262,67 @@ public class LuceneMatchListener extends AbstractMatchListener {
                                     break;
                                 }
                             }
-                            
+
                             if (stateList.size() == terms.length) {
                                 // we indeed have a phrase match. record the offsets of its terms.
                                 int lastIdx = -1;
                                 for (int i = 0; i < terms.length; i++) {
                                     stream.restoreState(stateList.get(i));
-                                    
-                                    OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
-                                    int idx = offsets.getIndex(offsetAttr.startOffset());
-                                    
-                                    NodeId nodeId = offsets.ids[idx];
-                                    Offset offset = nodesWithMatch.get(nodeId);
-                                    if (offset != null)
-                                        if (lastIdx == idx)
+
+                                    final OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
+                                    final int idx = offsets.getIndex(offsetAttr.startOffset());
+
+                                    final NodeId nodeId = offsets.ids[idx];
+                                    final Offset offset = nodesWithMatch.get(nodeId);
+                                    if (offset != null) {
+                                        if (lastIdx == idx) {
                                             offset.setEndOffset(offsetAttr.endOffset() - offsets.offsets[idx]);
-                                        else
+                                        } else {
                                             offset.add(offsetAttr.startOffset() - offsets.offsets[idx],
-                                            offsetAttr.endOffset() - offsets.offsets[idx]);
-                                    else
+                                                    offsetAttr.endOffset() - offsets.offsets[idx]);
+                                        }
+                                    } else {
                                         nodesWithMatch.put(nodeId, new Offset(offsetAttr.startOffset() - offsets.offsets[idx],
-                                        offsetAttr.endOffset() - offsets.offsets[idx]));
+                                                offsetAttr.endOffset() - offsets.offsets[idx]));
+                                    }
+
                                     lastIdx = idx;
                                 }
                             }
                         } // End of phrase handling
                     } else {
-                        
-                        OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
-                        int idx = offsets.getIndex(offsetAttr.startOffset());
-                        NodeId nodeId = offsets.ids[idx];
-                        Offset offset = nodesWithMatch.get(nodeId);
-                        if (offset != null)
+
+                        final OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
+                        final int idx = offsets.getIndex(offsetAttr.startOffset());
+                        final NodeId nodeId = offsets.ids[idx];
+                        final Offset offset = nodesWithMatch.get(nodeId);
+                        if (offset != null) {
                             offset.add(offsetAttr.startOffset() - offsets.offsets[idx],
-                            offsetAttr.endOffset() - offsets.offsets[idx]);
-                        else {
+                                    offsetAttr.endOffset() - offsets.offsets[idx]);
+                        } else {
                             nodesWithMatch.put(nodeId, new Offset(offsetAttr.startOffset() - offsets.offsets[idx],
-                                offsetAttr.endOffset() - offsets.offsets[idx]));
+                                    offsetAttr.endOffset() - offsets.offsets[idx]));
                         }
                     }
                 }
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
         }
     }
 
-    private NodePath getPath(NodeProxy proxy) {
-        NodePath path = new NodePath();
-        IStoredNode<?> node = (IStoredNode<?>) proxy.getNode();
+    private NodePath getPath(final NodeProxy proxy) {
+        final NodePath path = new NodePath();
+        final IStoredNode<?> node = (IStoredNode<?>) proxy.getNode();
         walkAncestor(node, path);
         return path;
     }
 
-    private void walkAncestor(IStoredNode node, NodePath path) {
-        if (node == null)
+    private void walkAncestor(final IStoredNode node, final NodePath path) {
+        if (node == null) {
             return;
-        IStoredNode parent = node.getParentStoredNode();
+        }
+        final IStoredNode parent = node.getParentStoredNode();
         walkAncestor(parent, path);
         path.addComponent(node.getQName());
     }
@@ -321,12 +333,12 @@ public class LuceneMatchListener extends AbstractMatchListener {
     private void getTerms() {
         try {
             index.withReader(reader -> {
-                Set<Query> queries = new HashSet<>();
+                final Set<Query> queries = new HashSet<>();
                 termMap = new TreeMap<>();
                 Match nextMatch = this.match;
                 while (nextMatch != null) {
-                    if (nextMatch.getIndexId() == LuceneIndex.ID) {
-                        Query query = ((LuceneIndexWorker.LuceneMatch) nextMatch).getQuery();
+                    if (nextMatch.getIndexId().equals(LuceneIndex.ID)) {
+                        final Query query = ((LuceneIndexWorker.LuceneMatch) nextMatch).getQuery();
                         if (!queries.contains(query)) {
                             queries.add(query);
                             LuceneUtil.extractTerms(query, termMap, reader, false);
@@ -336,7 +348,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
                 }
                 return null;
             });
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.warn("Match listener caught IO exception while reading query tersm: " + e.getMessage(), e);
         }
     }
@@ -348,13 +360,13 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
         int len = 0;
 
-        void add(int offset, NodeId nodeId) {
+        void add(final int offset, final NodeId nodeId) {
             if (len == offsets.length) {
-                int[] tempOffsets = new int[len * 2];
+                final int[] tempOffsets = new int[len * 2];
                 System.arraycopy(offsets, 0, tempOffsets, 0, len);
                 offsets = tempOffsets;
 
-                NodeId[] tempIds = new NodeId[len * 2];
+                final NodeId[] tempIds = new NodeId[len * 2];
                 System.arraycopy(ids, 0, tempIds, 0, len);
                 ids = tempIds;
             }
@@ -362,7 +374,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
             ids[len++] = nodeId;
         }
 
-        int getIndex(int offset) {
+        int getIndex(final int offset) {
             for (int i = 0; i < len; i++) {
                 if (offsets[i] <= offset && (i + 1 == len || offsets[i + 1] > offset)) {
                     return i;
@@ -373,21 +385,21 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
     }
 
-    private class Offset {
+    private static class Offset {
+        private final int startOffset;
+        private int endOffset;
+        private Offset next = null;
 
-        int startOffset;
-        int endOffset;
-        Offset next = null;
-
-        Offset(int startOffset, int endOffset) {
+        Offset(final int startOffset, final int endOffset) {
             this.startOffset = startOffset;
             this.endOffset = endOffset;
         }
 
-        void add(int offset, int endOffset) {
-            if (startOffset == offset)
+        void add(final int offset, final int endOffset) {
+            if (startOffset == offset) {
                 // duplicate match starts at same offset. ignore.
                 return;
+            }
             getLast().next = new Offset(offset, endOffset);
         }
 
@@ -399,7 +411,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
             return next;
         }
 
-        void setEndOffset(int offset) {
+        void setEndOffset(final int offset) {
             getLast().endOffset = offset;
         }
     }

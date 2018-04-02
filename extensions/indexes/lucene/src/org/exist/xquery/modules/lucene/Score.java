@@ -67,7 +67,7 @@ public class Score extends BasicFunction {
         Match match = proxy.getMatches();
         float score = 0.0f;
         while (match != null) {
-            if (match.getIndexId() == LuceneIndex.ID) {
+            if (match.getIndexId().equals(LuceneIndex.ID)) {
                 float currentScore = ((LuceneIndexWorker.LuceneMatch)match).getScore();
                 score += currentScore;
             }
