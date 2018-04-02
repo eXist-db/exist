@@ -22,12 +22,7 @@
  */
 package org.exist.http.urlrewrite;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -99,89 +94,71 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * A servlet to redirect HTTP requests. Similar to the popular UrlRewriteFilter, but
  * based on XQuery.
- *
+ * <p>
  * The request is passed to an XQuery whose return value determines where the request will be
  * redirected to. An empty return value means the request will be passed through the filter
  * untouched. Otherwise, the query should return a single XML element, which will instruct the filter
  * how to further process the request. Details about the format can be found in the main documentation.
- *
+ * <p>
  * The request is forwarded via {@link javax.servlet.RequestDispatcher#forward(javax.servlet.ServletRequest, javax.servlet.ServletResponse)}.
  * Contrary to HTTP forwarding, there is no additional roundtrip to the client. It all happens on
  * the server. The client will not notice the redirect.
- *
- * Please read the <a href="http://exist-db.org/urlrewrite.html">documentation</a> for further information. 
+ * <p>
+ * Please read the <a href="http://exist-db.org/urlrewrite.html">documentation</a> for further information.
  */
 public class XQueryURLRewrite extends HttpServlet {
 
     private static final Logger LOG = LogManager.getLogger(XQueryURLRewrite.class);
+    private static final String DRIVER = "org.exist.xmldb.DatabaseImpl";
+    private static final Pattern NAME_REGEX = Pattern.compile("^.*/([^/]+)$", 0);
 
-    public final static String RQ_ATTR = "org.exist.forward";
-    public final static String RQ_ATTR_REQUEST_URI = "org.exist.forward.request-uri";
-    public final static String RQ_ATTR_SERVLET_PATH = "org.exist.forward.servlet-path";
-    public final static String RQ_ATTR_RESULT = "org.exist.forward.result";
-    public final static String RQ_ATTR_ERROR = "org.exist.forward.error";
-    
-    
-    public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
-
-    private final static Pattern NAME_REGEX = Pattern.compile("^.*/([^/]+)$", 0);
+    public static final String RQ_ATTR = "org.exist.forward";
+    public static final String RQ_ATTR_REQUEST_URI = "org.exist.forward.request-uri";
+    public static final String RQ_ATTR_SERVLET_PATH = "org.exist.forward.servlet-path";
+    public static final String RQ_ATTR_RESULT = "org.exist.forward.result";
+    public static final String RQ_ATTR_ERROR = "org.exist.forward.error";
 
     private ServletConfig config;
-
-    private final Map<String, ModelAndView> urlCache =
-            Collections.synchronizedMap(new TreeMap<String, ModelAndView>());
-
-    protected Subject defaultUser = null;
-    protected BrokerPool pool;
-
+    private final Map<String, ModelAndView> urlCache = Collections.synchronizedMap(new TreeMap<>());
+    private Subject defaultUser = null;
+    private BrokerPool pool;
     // path to the query
     private String query = null;
-    
-    //private boolean checkModified = true;
-
     private boolean compiledCache = true;
-
     private RewriteConfig rewriteConfig;
-
     private Authenticator authenticator;
 
     @Override
-    public void init(ServletConfig filterConfig) throws ServletException {
+    public void init(final ServletConfig filterConfig) {
         // save FilterConfig for later use
         this.config = filterConfig;
 
         query = filterConfig.getInitParameter("xquery");
-        
-//        String opt = filterConfig.getInitParameter("check-modified");
-//        if (opt != null)
-//            checkModified = opt != null && opt.equalsIgnoreCase("true");
-        
+
         final String opt = filterConfig.getInitParameter("compiled-cache");
-        if (opt != null)
-        	{compiledCache = opt != null && opt.equalsIgnoreCase("true");}
-        
+        if (opt != null) {
+            compiledCache = opt.equalsIgnoreCase("true");
+        }
+
     }
 
     @Override
-    protected void service(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException, ServletException {
+    protected void service(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
         if (rewriteConfig == null) {
             configure();
             rewriteConfig = new RewriteConfig(this);
         }
-        
+
         final long start = System.currentTimeMillis();
-        final HttpServletRequest request = servletRequest;
-        final HttpServletResponse response = servletResponse;
 
         if (LOG.isTraceEnabled()) {
             LOG.trace(request.getRequestURI());
         }
+
         final Descriptor descriptor = Descriptor.getDescriptorSingleton();
-        if(descriptor != null && descriptor.requestsFiltered())
-        {
+        if (descriptor != null && descriptor.requestsFiltered()) {
             final String attr = (String) request.getAttribute("XQueryURLRewrite.forwarded");
             if (attr == null) {
-//                request = new HttpServletRequestWrapper(request, /*formEncoding*/ "utf-8" );
                 //logs the request if specified in the descriptor
                 descriptor.doLogRequestInReplayLog(request);
 
@@ -190,7 +167,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 
         Subject user = defaultUser;
-    	
+
         Subject requestUser = HttpAccount.getUserFromServletRequest(request);
         if (requestUser != null) {
             user = requestUser;
@@ -198,7 +175,7 @@ public class XQueryURLRewrite extends HttpServlet {
             // Secondly try basic authentication
             final String auth = request.getHeader("Authorization");
             if (auth != null) {
-                requestUser = authenticator.authenticate(request, response);
+                requestUser = authenticator.authenticate(request, response, true);
                 if (requestUser != null) {
                     user = requestUser;
                 }
@@ -213,16 +190,18 @@ public class XQueryURLRewrite extends HttpServlet {
             final URLRewrite staticRewrite = rewriteConfig.lookup(modifiedRequest);
             if (staticRewrite != null && !staticRewrite.isControllerForward()) {
                 modifiedRequest.setPaths(staticRewrite.resolve(modifiedRequest), staticRewrite.getPrefix());
-                
+
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("Forwarding to target: " + staticRewrite.getTarget());
                 }
+
                 staticRewrite.doRewrite(modifiedRequest, response);
+
             } else {
-                
-            	if (LOG.isTraceEnabled()) {
+                if (LOG.isTraceEnabled()) {
                     LOG.trace("Processing request URI: " + request.getRequestURI());
-            	}
+                }
+
                 if (staticRewrite != null) {
                     // fix the request URI
                     staticRewrite.updateRequest(modifiedRequest);
@@ -230,101 +209,102 @@ public class XQueryURLRewrite extends HttpServlet {
 
                 // check if the request URI is already in the url cache
                 ModelAndView modelView = getFromCache(
-                		request.getHeader("Host") + request.getRequestURI(),
-                		user);
-                
+                        request.getHeader("Host") + request.getRequestURI(),
+                        user);
+
                 if (LOG.isDebugEnabled()) {
-                	LOG.debug(
-            			"Checked cache for URI: " + modifiedRequest.getRequestURI() + 
-            			" original: " + request.getRequestURI()
-        			);
+                    LOG.debug("Checked cache for URI: " + modifiedRequest.getRequestURI() + " original: " + request.getRequestURI());
                 }
+
                 // no: create a new model and view configuration
                 if (modelView == null) {
                     modelView = new ModelAndView();
+
                     // Execute the query
-                    Sequence result = Sequence.EMPTY_SEQUENCE;
-                    try(final DBBroker broker = pool.get(Optional.ofNullable(user))) {
+                    try (final DBBroker broker = pool.get(Optional.ofNullable(user))) {
 
                         modifiedRequest.setAttribute(RQ_ATTR_REQUEST_URI, request.getRequestURI());
-                        
+
                         final Properties outputProperties = new Properties();
-                        
-                		outputProperties.setProperty(OutputKeys.INDENT, "yes");
-                		outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
-                		outputProperties.setProperty(OutputKeys.MEDIA_TYPE, MimeType.XML_TYPE.getName());
-                        
-                        result = runQuery(broker, modifiedRequest, response, modelView, staticRewrite, outputProperties);
+
+                        outputProperties.setProperty(OutputKeys.INDENT, "yes");
+                        outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+                        outputProperties.setProperty(OutputKeys.MEDIA_TYPE, MimeType.XML_TYPE.getName());
+
+                        final Sequence result = runQuery(broker, modifiedRequest, response, modelView, staticRewrite, outputProperties);
 
                         logResult(broker, result);
-                        
+
                         if (response.isCommitted()) {
-                        	return;
+                            return;
                         }
 
-	                    // process the query result
-	                    if (result.getItemCount() == 1) {
-	                        final Item resource = result.itemAt(0);
-	                        if (!Type.subTypeOf(resource.getType(), Type.NODE))
-	                            {throw new ServletException("XQueryURLRewrite: urlrewrite query should return an element!");}
-	                        Node node = ((NodeValue) resource).getNode();
-	                        if (node.getNodeType() == Node.DOCUMENT_NODE)
-	                            {node = ((Document) node).getDocumentElement();}
-	                        if (node.getNodeType() != Node.ELEMENT_NODE) {
-	                            //throw new ServletException("Redirect XQuery should return an XML element!");
-	                        	response(broker, response, outputProperties, result);
-	                        	return;
-	                        }
-	                        Element elem = (Element) node;
-	                        final String ns = elem.getNamespaceURI();
-	                        if (ns == null || !(Namespaces.EXIST_NS.equals(ns))) {
-	                        	response(broker, response, outputProperties, result);
-	                        	return;
-	//                            throw new ServletException("Redirect XQuery should return an element in namespace " + Namespaces.EXIST_NS);
-	                        }
+                        // process the query result
+                        if (result.getItemCount() == 1) {
+                            final Item resource = result.itemAt(0);
+                            if (!Type.subTypeOf(resource.getType(), Type.NODE)) {
+                                throw new ServletException("XQueryURLRewrite: urlrewrite query should return an element!");
+                            }
+                            Node node = ((NodeValue) resource).getNode();
+                            if (node.getNodeType() == Node.DOCUMENT_NODE) {
+                                node = ((Document) node).getDocumentElement();
+                            }
+                            if (node.getNodeType() != Node.ELEMENT_NODE) {
+                                //throw new ServletException("Redirect XQuery should return an XML element!");
+                                response(broker, response, outputProperties, result);
+                                return;
+                            }
+                            Element elem = (Element) node;
+                            final String ns = elem.getNamespaceURI();
+                            if (Namespaces.EXIST_NS.equals(ns)) {
+                                response(broker, response, outputProperties, result);
+                                return;
+                            }
 
-	                        final String nsUri = elem.getNamespaceURI();
-	                        if (nsUri != null && Namespaces.EXIST_NS.equals(nsUri) && "dispatch".equals(elem.getLocalName())) {
-	                            node = elem.getFirstChild();
-	                            while (node != null) {
-	                                final String nodeNs = node.getNamespaceURI();
-	                                if (node.getNodeType() == Node.ELEMENT_NODE && nodeNs != null && Namespaces.EXIST_NS.equals(nodeNs)) {
-	                                    final Element action = (Element) node;
-	                                    if ("view".equals(action.getLocalName())) {
-	                                        parseViews(modifiedRequest, action, modelView);
-	                                    } else if ("error-handler".equals(action.getLocalName())) {
-	                                    	parseErrorHandlers(modifiedRequest, action, modelView);
-	                                    } else if ("cache-control".equals(action.getLocalName())) {
-	                                        final String option = action.getAttribute("cache");
-	                                        modelView.setUseCache("yes".equals(option));
-	                                    } else {
-	                                        final URLRewrite urw = parseAction(modifiedRequest, action);
-	                                        if (urw != null)
-	                                            {modelView.setModel(urw);}
-	                                    }
-	                                }
-	                                node = node.getNextSibling();
-	                            }
-	                            if (modelView.getModel() == null)
-	                                {modelView.setModel(new PassThrough(config, elem, modifiedRequest));}
-	                        } else if (nsUri != null && Namespaces.EXIST_NS.equals(elem.getNamespaceURI()) && "ignore".equals(elem.getLocalName())) {
-	                            modelView.setModel(new PassThrough(config, elem, modifiedRequest));
-	                            final NodeList nl = elem.getElementsByTagNameNS(Namespaces.EXIST_NS, "cache-control");
-	                            if (nl.getLength() > 0) {
-	                                elem = (Element) nl.item(0);
-	                                final String option = elem.getAttribute("cache");
-	                                modelView.setUseCache("yes".equals(option));
-	                            }
-	                        } else {
-	                        	response(broker, response, outputProperties, result);
-	                        	return;
-	                        }
-	                    } else if (result.getItemCount() > 1) {
+                            final String nsUri = elem.getNamespaceURI();
+                            if (Namespaces.EXIST_NS.equals(nsUri) && "dispatch".equals(elem.getLocalName())) {
+                                node = elem.getFirstChild();
+                                while (node != null) {
+                                    final String nodeNs = node.getNamespaceURI();
+                                    if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(nodeNs)) {
+                                        final Element action = (Element) node;
+                                        if ("view".equals(action.getLocalName())) {
+                                            parseViews(modifiedRequest, action, modelView);
+                                        } else if ("error-handler".equals(action.getLocalName())) {
+                                            parseErrorHandlers(modifiedRequest, action, modelView);
+                                        } else if ("cache-control".equals(action.getLocalName())) {
+                                            final String option = action.getAttribute("cache");
+                                            modelView.setUseCache("yes".equals(option));
+                                        } else {
+                                            final URLRewrite urw = parseAction(modifiedRequest, action);
+                                            if (urw != null) {
+                                                modelView.setModel(urw);
+                                            }
+                                        }
+                                    }
+                                    node = node.getNextSibling();
+                                }
+                                if (modelView.getModel() == null) {
+                                    modelView.setModel(new PassThrough(config, elem, modifiedRequest));
+                                }
+                            } else if (nsUri != null && Namespaces.EXIST_NS.equals(elem.getNamespaceURI()) && "ignore".equals(elem.getLocalName())) {
+                                modelView.setModel(new PassThrough(config, elem, modifiedRequest));
+                                final NodeList nl = elem.getElementsByTagNameNS(Namespaces.EXIST_NS, "cache-control");
+                                if (nl.getLength() > 0) {
+                                    elem = (Element) nl.item(0);
+                                    final String option = elem.getAttribute("cache");
+                                    modelView.setUseCache("yes".equals(option));
+                                }
+                            } else {
+                                response(broker, response, outputProperties, result);
+                                return;
+                            }
+                        } else if (result.getItemCount() > 1) {
                             response(broker, response, outputProperties, result);
-                        	return;
-	                    }
-	                    
-	                    if (modelView.useCache()) {
+                            return;
+                        }
+
+                        if (modelView.useCache()) {
                             LOG.debug("Caching request to " + request.getRequestURI());
                             urlCache.put(modifiedRequest.getHeader("Host") + request.getRequestURI(), modelView);
                         }
@@ -338,84 +318,91 @@ public class XQueryURLRewrite extends HttpServlet {
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("URLRewrite took " + (System.currentTimeMillis() - start) + "ms.");
                 }
-            	final HttpServletResponse wrappedResponse = 
-            		new CachingResponseWrapper(response, modelView.hasViews() || modelView.hasErrorHandlers());
-                if (modelView.getModel() == null)
-                    {modelView.setModel(new PassThrough(config, modifiedRequest));}
+                final HttpServletResponse wrappedResponse =
+                        new CachingResponseWrapper(response, modelView.hasViews() || modelView.hasErrorHandlers());
+                if (modelView.getModel() == null) {
+                    modelView.setModel(new PassThrough(config, modifiedRequest));
+                }
 
                 if (staticRewrite != null) {
-                	if (modelView.getModel().doResolve())
-                		{staticRewrite.rewriteRequest(modifiedRequest);}
-                	else
-                		{modelView.getModel().setAbsolutePath(modifiedRequest);}
+                    if (modelView.getModel().doResolve()) {
+                        staticRewrite.rewriteRequest(modifiedRequest);
+                    } else {
+                        modelView.getModel().setAbsolutePath(modifiedRequest);
+                    }
                 }
                 modifiedRequest.allowCaching(!modelView.hasViews());
                 doRewrite(modelView.getModel(), modifiedRequest, wrappedResponse);
 
-                int status = ((CachingResponseWrapper) wrappedResponse).getStatus();
+                final int status = wrappedResponse.getStatus();
                 if (status == HttpServletResponse.SC_NOT_MODIFIED) {
-                	response.flushBuffer();
-                } else if (status < 400) {
-                	if (modelView.hasViews())
-                		{applyViews(modelView, modelView.views, response, modifiedRequest, wrappedResponse);}
-                	else
-                		{((CachingResponseWrapper) wrappedResponse).flush();}
+                    response.flushBuffer();
+                } else if (status < HttpServletResponse.SC_BAD_REQUEST) {
+                    if (modelView.hasViews()) {
+                        applyViews(modelView, modelView.views, response, modifiedRequest, wrappedResponse);
+                    } else {
+                        ((CachingResponseWrapper) wrappedResponse).flush();
+                    }
                 } else {
-                	// HTTP response code indicates an error
-                	if (modelView.hasErrorHandlers()) {
+                    // HTTP response code indicates an error
+                    if (modelView.hasErrorHandlers()) {
                         final byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
-                        if (data != null)
-                            {modifiedRequest.setAttribute(RQ_ATTR_ERROR, new String(data, UTF_8));}
-                		applyViews(modelView, modelView.errorHandlers, response, modifiedRequest, wrappedResponse);
-                	} else {
-                		flushError(response, wrappedResponse);
-                	}
+                        if (data != null) {
+                            modifiedRequest.setAttribute(RQ_ATTR_ERROR, new String(data, UTF_8));
+                        }
+                        applyViews(modelView, modelView.errorHandlers, response, modifiedRequest, wrappedResponse);
+                    } else {
+                        flushError(response, wrappedResponse);
+                    }
                 }
             }
-//            Sequence result;
-//            if ((result = (Sequence) request.getAttribute(RQ_ATTR_RESULT)) != null) {
-//                writeResults(response, broker, result);
-//            }
         } catch (final Throwable e) {
-            LOG.error("Error while processing " + servletRequest.getRequestURI() + ": " + e.getMessage(), e);
-            throw new ServletException("An error occurred while processing request to " + servletRequest.getRequestURI() + ": "
+            LOG.error("Error while processing " + request.getRequestURI() + ": " + e.getMessage(), e);
+            throw new ServletException("An error occurred while processing request to " + request.getRequestURI() + ": "
                     + e.getMessage(), e);
 
         }
     }
-    
-	private void applyViews(ModelAndView modelView, List<URLRewrite> views, HttpServletResponse response, RequestWrapper modifiedRequest,
-			HttpServletResponse currentResponse)
-			throws IOException, ServletException {
-		int status;
+
+    BrokerPool getBrokerPool() {
+        return pool;
+    }
+
+    Subject getDefaultUser() {
+        return defaultUser;
+    }
+
+    private void applyViews(final ModelAndView modelView, final List<URLRewrite> views, final HttpServletResponse response, final RequestWrapper modifiedRequest, final HttpServletResponse currentResponse) throws IOException, ServletException {
+        //int status;
         HttpServletResponse wrappedResponse = currentResponse;
-		for (int i = 0; i < views.size(); i++) {
-			final URLRewrite view = (URLRewrite) views.get(i);
-			
-			// get data returned from last action
-			byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
-			// determine request method to use for calling view
-			String method = view.getMethod();
-			if (method == null) {
-				method = "POST";	// default is POST
-			}
-			
-			final RequestWrapper wrappedReq = new RequestWrapper(modifiedRequest);
-			wrappedReq.allowCaching(false);
-			wrappedReq.setMethod(method);
-			wrappedReq.setBasePath(modifiedRequest.getBasePath());
-			wrappedReq.setCharacterEncoding(wrappedResponse.getCharacterEncoding());
-			wrappedReq.setContentType(wrappedResponse.getContentType());
+        for (int i = 0; i < views.size(); i++) {
+            final URLRewrite view = views.get(i);
 
-			if (data != null)
-				{wrappedReq.setData(data);}
-			
-			wrappedResponse = new CachingResponseWrapper(response, true);
-			doRewrite(view, wrappedReq, wrappedResponse);
+            // get data returned from last action
+            byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
+            // determine request method to use for calling view
+            String method = view.getMethod();
+            if (method == null) {
+                method = "POST";    // default is POST
+            }
 
-			// catch errors in the view
-			status = ((CachingResponseWrapper) wrappedResponse).getStatus();
-            if (status >= 400) {
+            final RequestWrapper wrappedReq = new RequestWrapper(modifiedRequest);
+            wrappedReq.allowCaching(false);
+            wrappedReq.setMethod(method);
+            wrappedReq.setBasePath(modifiedRequest.getBasePath());
+            wrappedReq.setCharacterEncoding(wrappedResponse.getCharacterEncoding());
+            wrappedReq.setContentType(wrappedResponse.getContentType());
+
+            if (data != null) {
+                wrappedReq.setData(data);
+            }
+
+            wrappedResponse = new CachingResponseWrapper(response, true);
+            doRewrite(view, wrappedReq, wrappedResponse);
+
+            // catch errors in the view
+            final int status = wrappedResponse.getStatus();
+            if (status >= HttpServletResponse.SC_BAD_REQUEST) {
                 if (modelView != null && modelView.hasErrorHandlers()) {
                     data = ((CachingResponseWrapper) wrappedResponse).getData();
                     final String msg = data == null ? "" : new String(data, UTF_8);
@@ -425,42 +412,40 @@ public class XQueryURLRewrite extends HttpServlet {
                 } else {
                     flushError(response, wrappedResponse);
                 }
-				break;
-			} else if (i == views.size() - 1)
-                {((CachingResponseWrapper)wrappedResponse).flush();}
-		}
-	}
-
-    private void response(DBBroker broker, HttpServletResponse response, Properties outputProperties, Sequence resultSequence) throws IOException {
-
-    	final String encoding = outputProperties.getProperty(OutputKeys.ENCODING);
-        final ServletOutputStream sout = response.getOutputStream();
-        final PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, encoding));
-		if (!response.containsHeader("Content-Type")){
-			String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
-			if (mimeType != null) {
-				final int semicolon = mimeType.indexOf(';');
-				if (semicolon != Constants.STRING_NOT_FOUND) {
-					mimeType = mimeType.substring(0, semicolon);
-				}
-				response.setContentType(mimeType + "; charset=" + encoding);
-			}
-		}
-        
-//        response.addHeader( "pragma", "no-cache" );
-//        response.addHeader( "Cache-Control", "no-cache" );
-
-    	try {
-            XQuerySerializer serializer = new XQuerySerializer(broker, outputProperties, output);
-        	serializer.serialize(resultSequence);
-    	} catch (final SAXException | XPathException e) {
-    		throw new IOException(e);
-    	}
-    	output.flush();
-    	output.close();
+                break;
+            } else if (i == views.size() - 1) {
+                ((CachingResponseWrapper) wrappedResponse).flush();
+            }
+        }
     }
 
-	private void flushError(HttpServletResponse response, HttpServletResponse wrappedResponse) throws IOException {
+    private void response(final DBBroker broker, final HttpServletResponse response, final Properties outputProperties, final Sequence resultSequence) throws IOException {
+        final String encoding = outputProperties.getProperty(OutputKeys.ENCODING);
+        try (final OutputStream os = response.getOutputStream();
+                final Writer writer = new OutputStreamWriter(os, encoding);
+                final PrintWriter printWriter = new PrintWriter(writer)) {
+            if (!response.containsHeader("Content-Type")) {
+                String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
+                if (mimeType != null) {
+                    final int semicolon = mimeType.indexOf(';');
+                    if (semicolon != Constants.STRING_NOT_FOUND) {
+                        mimeType = mimeType.substring(0, semicolon);
+                    }
+                    response.setContentType(mimeType + "; charset=" + encoding);
+                }
+            }
+
+            try {
+                final XQuerySerializer serializer = new XQuerySerializer(broker, outputProperties, printWriter);
+                serializer.serialize(resultSequence);
+            } catch (final SAXException | XPathException e) {
+                throw new IOException(e);
+            }
+            printWriter.flush();
+        }
+    }
+
+    private void flushError(final HttpServletResponse response, final HttpServletResponse wrappedResponse) throws IOException {
         if (!response.isCommitted()) {
             final byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
             if (data != null) {
@@ -472,73 +457,55 @@ public class XQueryURLRewrite extends HttpServlet {
         }
     }
 
-	private ModelAndView getFromCache(String url, Subject user) throws EXistException, ServletException, PermissionDeniedException {
-		/* Make sure we have a broker *before* we synchronize on urlCache or we may run
-		 * into a deadlock situation (with method checkCache)
-		 */
-		final ModelAndView model = urlCache.get(url);
-		if (model == null)
-			{return null;}
+    private ModelAndView getFromCache(final String url, final Subject user) throws EXistException, PermissionDeniedException {
+        /* Make sure we have a broker *before* we synchronize on urlCache or we may run
+         * into a deadlock situation (with method checkCache)
+         */
+        final ModelAndView model = urlCache.get(url);
+        if (model == null) {
+            return null;
+        }
 
-		try(final DBBroker broker = pool.get(Optional.ofNullable(user))) {
+        try (final DBBroker broker = pool.get(Optional.ofNullable(user))) {
 
-			model.getSourceInfo().source.validate(broker.getCurrentSubject(), Permission.EXECUTE);
-			
-			if (model.getSourceInfo().source.isValid(broker) != Source.Validity.VALID) {
+            model.getSourceInfo().source.validate(broker.getCurrentSubject(), Permission.EXECUTE);
+
+            if (model.getSourceInfo().source.isValid(broker) != Source.Validity.VALID) {
                 urlCache.remove(url);
-				return null;
-			}
-			
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("Using cached entry for " + url);
-			}
-			return model;
-		}
-	}
-	
-//    private void checkCache(Subject user) throws EXistException {
-//        if (checkModified) {
-//            // check if any of the currently used sources has been updated
-//        	DBBroker broker = null;
-//            try {
-//                broker = pool.get(user);
-//
-//                for (Entry<ModelAndView, Source> entry : sources.entrySet() )
-//        			if (entry.getValue().isValid(broker) != Source.VALID)
-//        				urlCache.remove(entry.getKey());
-//
-//            } finally {
-//                pool.release(broker);
-//            }
-//        }
-//    }
+                return null;
+            }
 
-    protected void clearCaches() throws EXistException {
-		urlCache.clear();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Using cached entry for " + url);
+            }
+            return model;
+        }
     }
-    
+
+    void clearCaches() {
+        urlCache.clear();
+    }
+
     /**
      * Process a rewrite action. Method checks if the target path is mapped
      * to another action in controller-config.xml. If yes, replaces the current action
      * with the new action.
      *
-     * @param action
-     * @param request
-     * @param response
-     * @throws IOException
-     * @throws ServletException
+     * @param action the URLRewrite action
+     * @param request the http request
+     * @param response the http response
      */
-    protected void doRewrite(URLRewrite action, RequestWrapper request, HttpServletResponse response) throws IOException, ServletException {
+    private void doRewrite(URLRewrite action, RequestWrapper request, final HttpServletResponse response) throws IOException, ServletException {
         if (action.getTarget() != null && !(action instanceof Redirect)) {
             final String uri = action.resolve(request);
-            URLRewrite staticRewrite = rewriteConfig.lookup(uri, request.getServerName(), true, action);
+            final URLRewrite staticRewrite = rewriteConfig.lookup(uri, request.getServerName(), true, action);
 
             if (staticRewrite != null) {
                 staticRewrite.copyFrom(action);
                 action = staticRewrite;
-                RequestWrapper modifiedRequest = new RequestWrapper(request);
+                final RequestWrapper modifiedRequest = new RequestWrapper(request);
                 modifiedRequest.setPaths(uri, action.getPrefix());
-                
+
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("Forwarding to : " + action.toString() + " url: " + action.getURI());
                 }
@@ -552,83 +519,89 @@ public class XQueryURLRewrite extends HttpServlet {
     protected ServletConfig getConfig() {
         return config;
     }
-    
-    private URLRewrite parseAction(HttpServletRequest request, Element action) throws ServletException {
-        URLRewrite rewrite = null;
+
+    private URLRewrite parseAction(final HttpServletRequest request, final Element action) throws ServletException {
+        final URLRewrite rewrite;
         if ("forward".equals(action.getLocalName())) {
             rewrite = new PathForward(config, action, request.getRequestURI());
         } else if ("redirect".equals(action.getLocalName())) {
             rewrite = new Redirect(action, request.getRequestURI());
-//        } else if ("call".equals(action.getLocalPart())) {
-//            rewrite = new ModuleCall(action, queryContext, request.getRequestURI());
+        } else {
+            rewrite = null;
         }
         return rewrite;
     }
 
-    private void parseViews(HttpServletRequest request, Element view, ModelAndView modelView) throws ServletException {
+    private void parseViews(final HttpServletRequest request, final Element view, final ModelAndView modelView) throws ServletException {
         Node node = view.getFirstChild();
         while (node != null) {
             final String ns = node.getNamespaceURI();
-            if (node.getNodeType() == Node.ELEMENT_NODE && ns != null && Namespaces.EXIST_NS.equals(ns)) {
+            if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(ns)) {
                 final URLRewrite urw = parseAction(request, (Element) node);
-                if (urw != null)
-                    {modelView.addView(urw);}
+                if (urw != null) {
+                    modelView.addView(urw);
+                }
             }
             node = node.getNextSibling();
         }
     }
 
-    private void parseErrorHandlers(HttpServletRequest request, Element view, ModelAndView modelView) throws ServletException {
+    private void parseErrorHandlers(final HttpServletRequest request, final Element view, final ModelAndView modelView) throws ServletException {
         Node node = view.getFirstChild();
         while (node != null) {
             final String ns = node.getNamespaceURI();
-            if (node.getNodeType() == Node.ELEMENT_NODE && ns != null && Namespaces.EXIST_NS.equals(ns)) {
+            if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(ns)) {
                 final URLRewrite urw = parseAction(request, (Element) node);
-                if (urw != null)
-                    {modelView.addErrorHandler(urw);}
+                if (urw != null) {
+                    modelView.addErrorHandler(urw);
+                }
             }
             node = node.getNextSibling();
         }
     }
-    
+
     private void configure() throws ServletException {
-    	if (pool != null)
-    		{return;}
+        if (pool != null) {
+            return;
+        }
         try {
             final Class<?> driver = Class.forName(DRIVER);
             final Database database = (Database) driver.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
-            LOG.debug("Initialized database");
-        } catch(final Exception e) {
-            final String errorMessage="Failed to initialize database driver";
-            LOG.error(errorMessage,e);
-            throw new ServletException(errorMessage+": " + e.getMessage(), e);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Initialized database");
+            }
+        } catch (final Exception e) {
+            final String errorMessage = "Failed to initialize database driver";
+            LOG.error(errorMessage, e);
+            throw new ServletException(errorMessage + ": " + e.getMessage(), e);
         }
 
-		try {
-			pool = BrokerPool.getInstance();
-		} catch (final EXistException e) {
-            throw new ServletException("Could not intialize db: " + e.getMessage(), e);
-		}
-        
-		defaultUser = pool.getSecurityManager().getGuestSubject();
-		
-		final String username = config.getInitParameter("user");
-		if(username != null) {
-			final String password = config.getInitParameter("password");
-			try {
-				Subject user = pool.getSecurityManager().authenticate(username, password);
-	        	if (user != null && user.isAuthenticated())
-	        		{defaultUser = user;}
-			} catch (final AuthenticationException e) {
-				LOG.error("User can not be authenticated ("+username+"), using default user.");
-			}
-		}
+        try {
+            pool = BrokerPool.getInstance();
+        } catch (final EXistException e) {
+            throw new ServletException("Could not initialize db: " + e.getMessage(), e);
+        }
+
+        defaultUser = pool.getSecurityManager().getGuestSubject();
+
+        final String username = config.getInitParameter("user");
+        if (username != null) {
+            final String password = config.getInitParameter("password");
+            try {
+                final Subject user = pool.getSecurityManager().authenticate(username, password);
+                if (user != null && user.isAuthenticated()) {
+                    defaultUser = user;
+                }
+            } catch (final AuthenticationException e) {
+                LOG.error("User can not be authenticated (" + username + "), using default user.");
+            }
+        }
         authenticator = new BasicAuthenticator(pool);
     }
 
-    private void logResult(DBBroker broker, Sequence result) throws IOException, SAXException {
+    private void logResult(final DBBroker broker, final Sequence result) throws SAXException {
         if (LOG.isTraceEnabled() && result.getItemCount() > 0) {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
@@ -644,8 +617,8 @@ public class XQueryURLRewrite extends HttpServlet {
     public void destroy() {
         config = null;
     }
-    
-    private SourceInfo getSourceInfo(DBBroker broker, RequestWrapper request, URLRewrite staticRewrite) throws ServletException {
+
+    private SourceInfo getSourceInfo(final DBBroker broker, final RequestWrapper request, final URLRewrite staticRewrite) throws ServletException {
         final String moduleLoadPath = config.getServletContext().getRealPath("/");
         final String basePath = staticRewrite == null ? "." : staticRewrite.getTarget();
         if (basePath == null) {
@@ -655,82 +628,73 @@ public class XQueryURLRewrite extends HttpServlet {
         }
     }
 
-    private Sequence runQuery(DBBroker broker, RequestWrapper request, HttpServletResponse response,
-							  ModelAndView model,
-                              URLRewrite staticRewrite, Properties outputProperties)
-        throws ServletException, XPathException, PermissionDeniedException {
+    private Sequence runQuery(final DBBroker broker, final RequestWrapper request, final HttpServletResponse response, final ModelAndView model, final URLRewrite staticRewrite, final Properties outputProperties) throws ServletException, XPathException, PermissionDeniedException {
         // Try to find the XQuery
         final SourceInfo sourceInfo = getSourceInfo(broker, request, staticRewrite);
-
         if (sourceInfo == null) {
             return Sequence.EMPTY_SEQUENCE; // no controller found
         }
+
         final String basePath = staticRewrite == null ? "." : staticRewrite.getTarget();
-        
+
         final XQuery xquery = broker.getBrokerPool().getXQueryService();
         final XQueryPool xqyPool = broker.getBrokerPool().getXQueryPool();
-		
+
         CompiledXQuery compiled = null;
         if (compiledCache) {
-			compiled = xqyPool.borrowCompiledXQuery(broker, sourceInfo.source);
+            compiled = xqyPool.borrowCompiledXQuery(broker, sourceInfo.source);
         }
-        XQueryContext queryContext;
+        final XQueryContext queryContext;
         if (compiled == null) {
-			queryContext = new XQueryContext(broker.getBrokerPool());
-		} else {
-			queryContext = compiled.getContext();
-		}
+            queryContext = new XQueryContext(broker.getBrokerPool());
+        } else {
+            queryContext = compiled.getContext();
+        }
         // Find correct module load path
-		queryContext.setModuleLoadPath(sourceInfo.moduleLoadPath);
+        queryContext.setModuleLoadPath(sourceInfo.moduleLoadPath);
         declareVariables(queryContext, sourceInfo, staticRewrite, basePath, request, response);
         if (compiled == null) {
-			try {
-				compiled = xquery.compile(broker, queryContext, sourceInfo.source);
-			} catch (final IOException e) {
-				throw new ServletException("Failed to read query from " + query, e);
-			}
-		}
+            try {
+                compiled = xquery.compile(broker, queryContext, sourceInfo.source);
+            } catch (final IOException e) {
+                throw new ServletException("Failed to read query from " + query, e);
+            }
+        }
         model.setSourceInfo(sourceInfo);
-        
-//		This used by controller.xql only ?
-//		String xdebug = request.getParameter("XDEBUG_SESSION_START");
-//		if (xdebug != null)
-//			compiled.getContext().setDebugMode(true);
-
-//      outputProperties.put("base-uri", collectionURI.toString());
 
         try {
-			return xquery.execute(broker, compiled, null, outputProperties);
-		} finally {
+            return xquery.execute(broker, compiled, null, outputProperties);
+        } finally {
             queryContext.runCleanupTasks();
-			xqyPool.returnCompiledXQuery(sourceInfo.source, compiled);
-		}
+            xqyPool.returnCompiledXQuery(sourceInfo.source, compiled);
+        }
     }
 
-    protected String adjustPathForSourceLookup(String basePath, String path) {
-    	if (LOG.isTraceEnabled()) {
-    		LOG.trace("request path=" + path);
-    	}
-    	if(basePath.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX) && path.startsWith(basePath.replace(XmldbURI.EMBEDDED_SERVER_URI_PREFIX, ""))) {
+    String adjustPathForSourceLookup(final String basePath, String path) {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("request path=" + path);
+        }
+
+        if (basePath.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX) && path.startsWith(basePath.replace(XmldbURI.EMBEDDED_SERVER_URI_PREFIX, ""))) {
             path = path.replace(basePath.replace(XmldbURI.EMBEDDED_SERVER_URI_PREFIX, ""), "");
-        
-    	} else if(path.startsWith("/db/")) {
+
+        } else if (path.startsWith("/db/")) {
             path = path.substring(4);
         }
 
-        if(path.startsWith("/")) {
-             path = path.substring(1);
+        if (path.startsWith("/")) {
+            path = path.substring(1);
         }
 
         if (LOG.isTraceEnabled()) {
-        	LOG.trace("adjusted request path=" + path);
+            LOG.trace("adjusted request path=" + path);
         }
         return path;
     }
 
-    private SourceInfo findSource(HttpServletRequest request, DBBroker broker, String basePath) {
+    private SourceInfo findSource(final HttpServletRequest request, final DBBroker broker, final String basePath) {
         if (LOG.isTraceEnabled()) {
-        	LOG.trace("basePath=" + basePath);
+            LOG.trace("basePath=" + basePath);
         }
 
         final String requestURI = request.getRequestURI();
@@ -739,19 +703,20 @@ public class XQueryURLRewrite extends HttpServlet {
         final String[] components = path.split("/");
 
         if (basePath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
-        	if (LOG.isTraceEnabled()) {
-        		LOG.trace("Looking for controller.xql in the database, starting from: " + basePath);
-        	}
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Looking for controller.xql in the database, starting from: " + basePath);
+            }
             return findSourceFromDb(broker, basePath, path, components);
         } else {
             if (LOG.isTraceEnabled()) {
-            	LOG.trace("Looking for controller.xql in the filesystem, starting from: " + basePath);
+                LOG.trace("Looking for controller.xql in the filesystem, starting from: " + basePath);
             }
             return findSourceFromFs(basePath, components);
         }
     }
 
-    private @Nullable SourceInfo findSourceFromDb(final DBBroker broker, final String basePath, final String path, final String[] components) {
+    private @Nullable
+    SourceInfo findSourceFromDb(final DBBroker broker, final String basePath, final String path, final String[] components) {
         DocumentImpl controllerDoc = null;
         try {
             final XmldbURI locationUri = XmldbURI.xmldbUriFor(basePath);
@@ -774,9 +739,7 @@ public class XQueryURLRewrite extends HttpServlet {
             }
 
             final String controllerPath = controllerDoc.getCollection().getURI().getRawCollectionPath();
-            final SourceInfo sourceInfo = new SourceInfo(new DBSource(broker, (BinaryDocument) controllerDoc, true), "xmldb:exist://" + controllerPath);
-            sourceInfo.controllerPath = controllerPath.substring(locationUri.getCollectionPath().length());
-            return sourceInfo;
+            return new SourceInfo(new DBSource(broker, (BinaryDocument) controllerDoc, true), "xmldb:exist://" + controllerPath, controllerPath.substring(locationUri.getCollectionPath().length()));
 
         } catch (final URISyntaxException e) {
             LOG.warn("Bad URI for base path: " + e.getMessage(), e);
@@ -791,23 +754,23 @@ public class XQueryURLRewrite extends HttpServlet {
     /**
      * Finds a `controller.xql` file within a Collection hierarchy.
      * Most specific collections are considered first.
-     *
+     * <p>
      * For example, given the collectionUri `/db/apps`
      * and the pathPomponents `['myapp', 'data']`, the
      * order or search will be:
-     *
+     * <p>
      * /db/apps/myapp/data/collection.xconf
      * /db/apps/myapp/collection.xconf
      * /db/apps/collection.xconf
      *
-     * @param broker The database broker
-     * @param collectionUri The root collection URI, below which we should not descend
+     * @param broker         The database broker
+     * @param collectionUri  The root collection URI, below which we should not descend
      * @param pathComponents The path within the collectionUri to the most specific Collection
-     *
      * @return The most relevant controller.xql document (with a READ_LOCK), or null if it could not be found.
      */
     //@tailrec
-    private @Nullable DocumentImpl findDbControllerXql(final DBBroker broker, final XmldbURI collectionUri, final String[] pathComponents) {
+    private @Nullable
+    DocumentImpl findDbControllerXql(final DBBroker broker, final XmldbURI collectionUri, final String[] pathComponents) {
         Collection collection = null;
         try {
             collection = broker.openCollection(collectionUri, LockMode.READ_LOCK);
@@ -829,14 +792,14 @@ public class XQueryURLRewrite extends HttpServlet {
             }
             return null;
         } finally {
-            if(collection != null) {
+            if (collection != null) {
                 collection.getLock().release(LockMode.READ_LOCK);
             }
         }
 
         final XmldbURI subCollectionUri = collectionUri.append(pathComponents[0]);
         final String[] subPathComponents = new String[pathComponents.length - 1];
-        if(subPathComponents.length > 0) {
+        if (subPathComponents.length > 0) {
             System.arraycopy(pathComponents, 1, subPathComponents, 0, subPathComponents.length);
         }
         return findDbControllerXql(broker, subCollectionUri, subPathComponents);
@@ -852,9 +815,9 @@ public class XQueryURLRewrite extends HttpServlet {
 
         Path controllerFile = null;
         Path subDir = baseDir;
-        for (int i = 0; i < components.length; i++) {
-            if (components[i].length() > 0) {
-                subDir = subDir.resolve(components[i]);
+        for (final String component : components) {
+            if (!component.isEmpty()) {
+                subDir = subDir.resolve(component);
                 if (Files.isDirectory(subDir)) {
                     final Path cf = subDir.resolve("controller.xql");
                     if (Files.isReadable(cf)) {
@@ -883,15 +846,14 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 
         final String parentPath = controllerFile.getParent().toAbsolutePath().toString();
-        final SourceInfo sourceInfo = new SourceInfo(new FileSource(controllerFile, true), parentPath);
-        sourceInfo.controllerPath = parentPath.substring(baseDir.toAbsolutePath().toString().length());
+        String controllerPath = parentPath.substring(baseDir.toAbsolutePath().toString().length());
         // replace windows path separators
-        sourceInfo.controllerPath = sourceInfo.controllerPath.replace('\\', '/');
-        return sourceInfo;
+        controllerPath = controllerPath.replace('\\', '/');
+        return new SourceInfo(new FileSource(controllerFile, true), parentPath, controllerPath);
     }
-    
-    private SourceInfo getSource(DBBroker broker, String moduleLoadPath) throws ServletException {
-        SourceInfo sourceInfo;
+
+    private SourceInfo getSource(final DBBroker broker, final String moduleLoadPath) throws ServletException {
+        final SourceInfo sourceInfo;
         if (query.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
             // Is the module source stored in the database?
             try {
@@ -899,21 +861,24 @@ public class XQueryURLRewrite extends HttpServlet {
                 DocumentImpl sourceDoc = null;
                 try {
                     sourceDoc = broker.getXMLResource(locationUri.toCollectionPathURI(), LockMode.READ_LOCK);
-                    if (sourceDoc == null)
-                        {throw new ServletException("XQuery resource: " + query + " not found in database");}
+                    if (sourceDoc == null) {
+                        throw new ServletException("XQuery resource: " + query + " not found in database");
+                    }
                     if (sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
-                            !"application/xquery".equals(sourceDoc.getMetadata().getMimeType()))
-                        {throw new ServletException("XQuery resource: " + query + " is not an XQuery or " +
-                                "declares a wrong mime-type");}
+                            !"application/xquery".equals(sourceDoc.getMetadata().getMimeType())) {
+                        throw new ServletException("XQuery resource: " + query + " is not an XQuery or " +
+                                "declares a wrong mime-type");
+                    }
                     sourceInfo = new SourceInfo(new DBSource(broker, (BinaryDocument) sourceDoc, true),
-                        locationUri.toString());
+                            locationUri.toString());
                 } catch (final PermissionDeniedException e) {
                     throw new ServletException("permission denied to read module source from " + query);
                 } finally {
-                    if(sourceDoc != null)
-                        {sourceDoc.getUpdateLock().release(LockMode.READ_LOCK);}
+                    if (sourceDoc != null) {
+                        sourceDoc.getUpdateLock().release(LockMode.READ_LOCK);
+                    }
                 }
-            } catch(final URISyntaxException e) {
+            } catch (final URISyntaxException e) {
                 throw new ServletException(e.getMessage(), e);
             }
         } else {
@@ -928,16 +893,14 @@ public class XQueryURLRewrite extends HttpServlet {
         return sourceInfo;
     }
 
-    private void declareVariables(XQueryContext context, SourceInfo sourceInfo, URLRewrite staticRewrite, String basePath,
-			RequestWrapper request, HttpServletResponse response)
-			throws XPathException {
-		final HttpRequestWrapper reqw = new HttpRequestWrapper(request, "UTF-8", "UTF-8", false);
-		final HttpResponseWrapper respw = new HttpResponseWrapper(response);
-		// context.declareNamespace(RequestModule.PREFIX,
-		// RequestModule.NAMESPACE_URI);
-		context.declareVariable(RequestModule.PREFIX + ":request", reqw);
-		context.declareVariable(ResponseModule.PREFIX + ":response", respw);
-		context.declareVariable(SessionModule.PREFIX + ":session", reqw.getSession( false ));
+    private void declareVariables(final XQueryContext context, final SourceInfo sourceInfo, final URLRewrite staticRewrite, final String basePath, final RequestWrapper request, final HttpServletResponse response) throws XPathException {
+        final HttpRequestWrapper reqw = new HttpRequestWrapper(request, "UTF-8", "UTF-8", false);
+        final HttpResponseWrapper respw = new HttpResponseWrapper(response);
+        // context.declareNamespace(RequestModule.PREFIX,
+        // RequestModule.NAMESPACE_URI);
+        context.declareVariable(RequestModule.PREFIX + ":request", reqw);
+        context.declareVariable(ResponseModule.PREFIX + ":response", respw);
+        context.declareVariable(SessionModule.PREFIX + ":session", reqw.getSession(false));
 
         context.declareVariable("exist:controller", sourceInfo.controllerPath);
         request.setAttribute("$exist:controller", sourceInfo.controllerPath);
@@ -949,13 +912,15 @@ public class XQueryURLRewrite extends HttpServlet {
         context.declareVariable("exist:prefix", prefix == null ? "" : prefix);
         request.setAttribute("$exist:prefix", prefix == null ? "" : prefix);
         String path;
-        if (sourceInfo.controllerPath.length() > 0 && !"/".equals(sourceInfo.controllerPath))
-            {path = request.getInContextPath().substring(sourceInfo.controllerPath.length());}
-        else
-            {path = request.getInContextPath();}
+        if (sourceInfo.controllerPath.length() > 0 && !"/".equals(sourceInfo.controllerPath)) {
+            path = request.getInContextPath().substring(sourceInfo.controllerPath.length());
+        } else {
+            path = request.getInContextPath();
+        }
         final int p = path.lastIndexOf(';');
-        if(p != Constants.STRING_NOT_FOUND)
-            {path = path.substring(0, p);}
+        if (p != Constants.STRING_NOT_FOUND) {
+            path = path.substring(0, p);
+        }
         context.declareVariable("exist:path", path);
         request.setAttribute("$exist:path", path);
 
@@ -970,20 +935,19 @@ public class XQueryURLRewrite extends HttpServlet {
         if (LOG.isDebugEnabled()) {
             LOG.debug("\nexist:path = " + path + "\nexist:resource = " + resource + "\nexist:controller = " + sourceInfo.controllerPath);
         }
-	}
+    }
 
     private static class ModelAndView {
-
-        URLRewrite rewrite = null;
-        List<URLRewrite> views = new LinkedList<URLRewrite>();
-        List<URLRewrite> errorHandlers = null;
-        boolean useCache = false;
-        SourceInfo sourceInfo = null;
+        private URLRewrite rewrite = null;
+        private final List<URLRewrite> views = new LinkedList<>();
+        private List<URLRewrite> errorHandlers = null;
+        private boolean useCache = false;
+        private SourceInfo sourceInfo = null;
 
         private ModelAndView() {
         }
 
-        public void setSourceInfo(SourceInfo sourceInfo) {
+        public void setSourceInfo(final SourceInfo sourceInfo) {
             this.sourceInfo = sourceInfo;
         }
 
@@ -991,7 +955,7 @@ public class XQueryURLRewrite extends HttpServlet {
             return sourceInfo;
         }
 
-        public void setModel(URLRewrite model) {
+        public void setModel(final URLRewrite model) {
             this.rewrite = model;
         }
 
@@ -999,12 +963,13 @@ public class XQueryURLRewrite extends HttpServlet {
             return rewrite;
         }
 
-        public void addErrorHandler(URLRewrite handler) {
-        	if (errorHandlers == null)
-        		{errorHandlers = new LinkedList<URLRewrite>();}
-        	errorHandlers.add(handler);
+        public void addErrorHandler(final URLRewrite handler) {
+            if (errorHandlers == null) {
+                errorHandlers = new LinkedList<>();
+            }
+            errorHandlers.add(handler);
         }
-        
+
         public void addView(URLRewrite view) {
             views.add(view);
         }
@@ -1014,129 +979,127 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 
         public boolean hasErrorHandlers() {
-        	return errorHandlers != null && errorHandlers.size() > 0;
+            return errorHandlers != null && errorHandlers.size() > 0;
         }
-        
+
         public boolean useCache() {
             return useCache;
         }
 
-        public void setUseCache(boolean useCache) {
+        public void setUseCache(final boolean useCache) {
             this.useCache = useCache;
         }
     }
 
     private static class SourceInfo {
+        final Source source;
+        final String moduleLoadPath;
+        final String controllerPath;
 
-        Source source;
-        String controllerPath = "";
-        String moduleLoadPath;
+        private SourceInfo(final Source source, final String moduleLoadPath) {
+            this(source, moduleLoadPath, "");
+        }
 
-        private SourceInfo(Source source, String moduleLoadPath) {
+        private SourceInfo(final Source source, final String moduleLoadPath, final String controllerPath) {
             this.source = source;
             this.moduleLoadPath = moduleLoadPath;
+            this.controllerPath = controllerPath;
         }
     }
 
     public static class RequestWrapper extends javax.servlet.http.HttpServletRequestWrapper {
+        private final Map<String, List<String>> addedParams = new HashMap<>();
 
-        Map<String, List<String>> addedParams = new HashMap<String, List<String>>();
+        private ServletInputStream sis = null;
+        private BufferedReader reader = null;
 
-        Map attributes = new HashMap();
-        
-        ServletInputStream sis = null;
-        BufferedReader reader = null;
+        private String contentType;
+        private int contentLength = 0;
+        private String characterEncoding = null;
+        private String method = null;
+        private String inContextPath = null;
+        private String servletPath;
+        private String basePath = null;
+        private boolean allowCaching = true;
 
-        String contentType = null;
-        int contentLength = 0;
-        String characterEncoding = null;
-        String method = null;
-        String inContextPath = null;
-        String servletPath;
-        String basePath = null;
-        boolean allowCaching = true;
-
-        private void addNameValue(String name, String value, Map<String, List<String>> map) {
+        private void addNameValue(final String name, final String value, final Map<String, List<String>> map) {
             List<String> values = map.get(name);
-            if(values == null) {
-                values = new ArrayList<String>();
+            if (values == null) {
+                values = new ArrayList<>();
             }
             values.add(value);
             map.put(name, values);
         }
 
-        protected RequestWrapper(HttpServletRequest request) {
+        protected RequestWrapper(final HttpServletRequest request) {
             super(request);
 
             // copy parameters
-            for(final Map.Entry<String, String[]> param : (Set<Map.Entry<String, String[]>>)request.getParameterMap().entrySet()) {
-                for(final String paramValue : param.getValue()) {
+            for (final Map.Entry<String, String[]> param : request.getParameterMap().entrySet()) {
+                for (final String paramValue : param.getValue()) {
                     addNameValue(param.getKey(), paramValue, addedParams);
                 }
             }
-            /*for(Enumeration<String> e = request.getParameterNames(); e.hasMoreElements(); ) {
-
-                String key = e.nextElement();
-                String[] value = request.getParameterValues(key);
-                addedParams.put(key, value);
-            }*/
-
             contentType = request.getContentType();
         }
 
-        protected void allowCaching(boolean cache) {
-        	this.allowCaching = cache;
+        protected void allowCaching(final boolean cache) {
+            this.allowCaching = cache;
         }
-        
+
         @Override
         public String getRequestURI() {
             String uri = inContextPath == null ? super.getRequestURI() : getContextPath() + inContextPath;
-            
+
             // Strip jsessionid from uris. New behavior of jetty
             // see jira.codehaus.org/browse/JETTY-1146
             final int pos = uri.indexOf(";jsessionid=");
-            if(pos>0)
-                {uri=uri.substring(0, pos);}
-            
+            if (pos > 0) {
+                uri = uri.substring(0, pos);
+            }
+
             return uri;
         }
 
         public String getInContextPath() {
-            if (inContextPath == null)
-                {return getRequestURI().substring(getContextPath().length());}
+            if (inContextPath == null) {
+                return getRequestURI().substring(getContextPath().length());
+            }
             return inContextPath;
         }
 
-        public void setInContextPath(String path) {
+        public void setInContextPath(final String path) {
             inContextPath = path;
         }
 
         @Override
         public String getMethod() {
-            if (method == null)
-                {return super.getMethod();}
+            if (method == null) {
+                return super.getMethod();
+            }
             return method;
         }
 
-        public void setMethod(String method) {
+        public void setMethod(final String method) {
             this.method = method;
         }
 
         /**
          * Change the requestURI and the servletPath
          *
-         * @param requestURI the URI of the request without the context path
+         * @param requestURI  the URI of the request without the context path
          * @param servletPath the servlet path
          */
-        public void setPaths(String requestURI, String servletPath) {
+        public void setPaths(final String requestURI, final String servletPath) {
             this.inContextPath = requestURI;
-            if (servletPath == null)
-                {this.servletPath = requestURI;}
-            else
-                {this.servletPath = servletPath;}
+            if (servletPath == null) {
+                this.servletPath = requestURI;
+            } else {
+                this.servletPath = servletPath;
+            }
         }
 
-        public void setBasePath(String base) {
+        public void setBasePath(final String base) {
             this.basePath = base;
         }
 
@@ -1150,9 +1113,9 @@ public class XQueryURLRewrite extends HttpServlet {
          *
          * @param base the base path to remove
          */
-        public void removePathPrefix(String base) {
+        public void removePathPrefix(final String base) {
             setPaths(getInContextPath().substring(base.length()),
-                servletPath != null ? servletPath.substring(base.length()) : null);
+                    servletPath != null ? servletPath.substring(base.length()) : null);
         }
 
         @Override
@@ -1164,55 +1127,58 @@ public class XQueryURLRewrite extends HttpServlet {
         public String getPathInfo() {
             final String path = getInContextPath();
             final String sp = getServletPath();
-            if (sp == null)
-                {return null;}
+            if (sp == null) {
+                return null;
+            }
             if (path.length() < sp.length()) {
                 LOG.error("Internal error: servletPath = " + sp + " is longer than path = " + path);
                 return null;
             }
             return path.length() == sp.length() ? null : path.substring(sp.length());
-       }
+        }
 
         @Override
         public String getPathTranslated() {
-			final String pathInfo = getPathInfo();
-			if (pathInfo == null) {
-				super.getPathTranslated();
-			}
-			if( pathInfo == null ) {
-				return( null );
-			}
-			 return super.getSession().getServletContext().getRealPath(pathInfo);
+            final String pathInfo = getPathInfo();
+            if (pathInfo == null) {
+                super.getPathTranslated();
+            }
+            if (pathInfo == null) {
+                return (null);
+            }
+            return super.getSession().getServletContext().getRealPath(pathInfo);
         }
-        
-        protected void setData(byte[] data) {
-            if (data == null)
-                {data = new byte[0];}
+
+        protected void setData(@Nullable byte[] data) {
+            if (data == null) {
+                data = new byte[0];
+            }
             contentLength = data.length;
             sis = new CachingServletInputStream(data);
         }
 
-        public void addParameter(String name, String value) {
+        public void addParameter(final String name, final String value) {
             addNameValue(name, value, addedParams);
         }
 
         @Override
-        public String getParameter(String name) {
+        public String getParameter(final String name) {
             final List<String> paramValues = addedParams.get(name);
-            if (paramValues != null && paramValues.size() > 0)
-                {return paramValues.get(0);}
+            if (paramValues != null && paramValues.size() > 0) {
+                return paramValues.get(0);
+            }
             return null;
         }
 
         @Override
         public Map<String, String[]> getParameterMap() {
-            final Map<String, String[]> parameterMap = new HashMap<String, String[]>();
-            for(final Entry<String, List<String>> param : addedParams.entrySet()) {
+            final Map<String, String[]> parameterMap = new HashMap<>();
+            for (final Entry<String, List<String>> param : addedParams.entrySet()) {
                 final List<String> values = param.getValue();
-                if(values != null) {
+                if (values != null) {
                     parameterMap.put(param.getKey(), values.toArray(new String[values.size()]));
                 } else {
-                    parameterMap.put(param.getKey(), new String[]{});
+                    parameterMap.put(param.getKey(), new String[0]);
                 }
             }
             return parameterMap;
@@ -1224,10 +1190,10 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 
         @Override
-        public String[] getParameterValues(String name) {
+        public String[] getParameterValues(final String name) {
             final List<String> values = addedParams.get(name);
 
-            if(values != null) {
+            if (values != null) {
                 return values.toArray(new String[values.size()]);
             } else {
                 return null;
@@ -1236,120 +1202,111 @@ public class XQueryURLRewrite extends HttpServlet {
 
         @Override
         public ServletInputStream getInputStream() throws IOException {
-            if (sis == null)
-                {return super.getInputStream();}
+            if (sis == null) {
+                return super.getInputStream();
+            }
             return sis;
         }
 
         @Override
         public BufferedReader getReader() throws IOException {
-            if (sis == null)
-                {return super.getReader();}
-            if (reader == null)
-                {reader = new BufferedReader(new InputStreamReader(sis, getCharacterEncoding()));}
+            if (sis == null) {
+                return super.getReader();
+            }
+            if (reader == null) {
+                reader = new BufferedReader(new InputStreamReader(sis, getCharacterEncoding()));
+            }
             return reader;
         }
 
         @Override
         public String getContentType() {
-            if (contentType == null)
-                {return super.getContentType();}
+            if (contentType == null) {
+                return super.getContentType();
+            }
             return contentType;
         }
 
-        protected void setContentType(String contentType) {
+        protected void setContentType(final String contentType) {
             this.contentType = contentType;
         }
 
         @Override
         public int getContentLength() {
-            if (sis == null)
-                {return super.getContentLength();}
+            if (sis == null) {
+                return super.getContentLength();
+            }
             return contentLength;
         }
 
         @Override
-        public void setCharacterEncoding(String encoding) throws UnsupportedEncodingException {
+        public void setCharacterEncoding(final String encoding) {
             this.characterEncoding = encoding;
         }
 
         @Override
         public String getCharacterEncoding() {
-            if (characterEncoding == null)
-                {return super.getCharacterEncoding();}
+            if (characterEncoding == null) {
+                return super.getCharacterEncoding();
+            }
             return characterEncoding;
         }
 
         @Override
-        public String getHeader(String s) {
-            if ("If-Modified-Since".equals(s) && !allowCaching)
-                {return null;}
+        public String getHeader(final String s) {
+            if ("If-Modified-Since".equals(s) && !allowCaching) {
+                return null;
+            }
             return super.getHeader(s);
         }
 
         @Override
-        public long getDateHeader(String s) {
-            if ("If-Modified-Since".equals(s) && !allowCaching)
-                {return -1;}
+        public long getDateHeader(final String s) {
+            if ("If-Modified-Since".equals(s) && !allowCaching) {
+                return -1;
+            }
             return super.getDateHeader(s);
         }
-
-        //        public void setAttribute(String key, Object value) {
-//            attributes.put(key, value);
-//        }
-//
-//        public Object getAttribute(String key) {
-//            Object value = attributes.get(key);
-//            if (value == null)
-//                value = super.getAttribute(key);
-//            return value;
-//        }
-//
-//        public Enumeration getAttributeNames() {
-//            Vector v = new Vector();
-//            for (Enumeration e = super.getAttributeNames(); e.hasMoreElements();) {
-//                v.add(e.nextElement());
-//            }
-//            for (Iterator i = attributes.keySet().iterator(); i.hasNext();) {
-//                v.add(i.next());
-//            }
-//            return v.elements();
-//        }
     }
 
-    private class CachingResponseWrapper extends HttpServletResponseWrapper {
+    private static class CachingResponseWrapper extends HttpServletResponseWrapper {
+        private CachingServletOutputStream sos = null;
+        private PrintWriter writer = null;
+        private int status = HttpServletResponse.SC_OK;
+        private String contentType = null;
+        private final boolean cache;
 
-        protected CachingServletOutputStream sos = null;
-        protected PrintWriter writer = null;
-        protected int status = HttpServletResponse.SC_OK;
-        protected String contentType = null;
-        protected boolean cache;
-
-        public CachingResponseWrapper(HttpServletResponse servletResponse, boolean cache) {
+        public CachingResponseWrapper(final HttpServletResponse servletResponse, final boolean cache) {
             super(servletResponse);
             this.cache = cache;
         }
 
         @Override
         public PrintWriter getWriter() throws IOException {
-            if (!cache)
-                {return super.getWriter();}
-            if (sos != null)
-                {throw new IOException("getWriter cannnot be called after getOutputStream");}
+            if (!cache) {
+                return super.getWriter();
+            }
+            if (sos != null) {
+                throw new IOException("getWriter cannnot be called after getOutputStream");
+            }
             sos = new CachingServletOutputStream();
-            if (writer == null)
-                {writer = new PrintWriter(new OutputStreamWriter(sos, getCharacterEncoding()));}
+            if (writer == null) {
+                writer = new PrintWriter(new OutputStreamWriter(sos, getCharacterEncoding()));
+            }
             return writer;
         }
 
         @Override
         public ServletOutputStream getOutputStream() throws IOException {
-            if (!cache)
-                {return super.getOutputStream();}
-            if (writer != null)
-                {throw new IOException("getOutputStream cannnot be called after getWriter");}
-            if (sos == null)
-                {sos = new CachingServletOutputStream();}
+            if (!cache) {
+                return super.getOutputStream();
+            }
+            if (writer != null) {
+                throw new IOException("getOutputStream cannnot be called after getWriter");
+            }
+            if (sos == null) {
+                sos = new CachingServletOutputStream();
+            }
             return sos;
         }
 
@@ -1358,100 +1315,106 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 
         @Override
-		public void setContentType(String type) {
-        	if (contentType != null)
-        		{return;}
-    		this.contentType = type;
-    		if (!cache)
-        		{super.setContentType(type);}
-		}
-        
-		@Override
-		public String getContentType() {
-			return contentType != null ? contentType : super.getContentType();
-		}
+        public void setContentType(final String type) {
+            if (contentType != null) {
+                return;
+            }
+            this.contentType = type;
+            if (!cache) {
+                super.setContentType(type);
+            }
+        }
 
-		@Override
-		public void setHeader(String name, String value) {
-			if ("Content-Type".equals(name))
-				{setContentType(value);}
-			else
-				{super.setHeader(name, value);}
-		}
-		
-		public int getStatus() {
+        @Override
+        public String getContentType() {
+            return contentType != null ? contentType : super.getContentType();
+        }
+
+        @Override
+        public void setHeader(final String name, final String value) {
+            if ("Content-Type".equals(name)) {
+                setContentType(value);
+            } else {
+                super.setHeader(name, value);
+            }
+        }
+
+        @Override
+        public int getStatus() {
             return status;
         }
-        
+
         @Override
-        public void setStatus(int i) {
+        public void setStatus(final int i) {
             this.status = i;
             super.setStatus(i);
         }
 
         @Override
-        public void setStatus(int i, String msg) {
+        public void setStatus(final int i, final String msg) {
             this.status = i;
             super.setStatus(i, msg);
         }
 
         @Override
-        public void sendError(int i, String msg) throws IOException {
+        public void sendError(final int i, final String msg) throws IOException {
             this.status = i;
             super.sendError(i, msg);
         }
 
         @Override
-        public void sendError(int i) throws IOException {
+        public void sendError(final int i) throws IOException {
             this.status = i;
             super.sendError(i);
         }
 
         @Override
-        public void setContentLength(int i) {
-            if (!cache)
-                {super.setContentLength(i);}
+        public void setContentLength(final int i) {
+            if (!cache) {
+                super.setContentLength(i);
+            }
         }
 
-		@Override
+        @Override
         public void flushBuffer() throws IOException {
-            if (!cache)
-                {super.flushBuffer();} 
+            if (!cache) {
+                super.flushBuffer();
+            }
         }
-        
+
         public void flush() throws IOException {
-        	if (cache) {
-        		if (contentType != null)
-        			{super.setContentType(contentType);}
-        	}
-        	if (sos != null) {
-            	final ServletOutputStream out = super.getOutputStream();
-            	out.write(sos.getData());
-            	out.flush();
+            if (cache) {
+                if (contentType != null) {
+                    super.setContentType(contentType);
+                }
+            }
+            if (sos != null) {
+                final ServletOutputStream out = super.getOutputStream();
+                out.write(sos.getData());
+                out.flush();
             }
         }
     }
 
     private static class CachingServletOutputStream extends ServletOutputStream {
-
-        protected FastByteArrayOutputStream ostream = new FastByteArrayOutputStream(512);
+        private FastByteArrayOutputStream ostream = new FastByteArrayOutputStream(512);
 
         protected byte[] getData() {
             return ostream.toByteArray();
         }
 
         @Override
-        public void write(int b) throws IOException {
+        public void write(final int b) throws IOException {
             ostream.write(b);
         }
 
         @Override
-        public void write(byte b[]) throws IOException {
+        public void write(final byte b[]) throws IOException {
             ostream.write(b);
         }
 
         @Override
-        public void write(byte b[], int off, int len) throws IOException {
+        public void write(final byte b[], final int off, final int len) throws IOException {
             ostream.write(b, off, len);
         }
 
@@ -1467,34 +1430,34 @@ public class XQueryURLRewrite extends HttpServlet {
     }
 
     private static class CachingServletInputStream extends ServletInputStream {
+        private final FastByteArrayInputStream istream;
 
-        protected FastByteArrayInputStream istream;
-
-        public CachingServletInputStream(byte[] data) {
-            if (data == null)
-                {istream = new FastByteArrayInputStream(new byte[0]);}
-            else
-                {istream = new FastByteArrayInputStream(data);}
+        public CachingServletInputStream(final byte[] data) {
+            if (data == null) {
+                istream = new FastByteArrayInputStream(new byte[0]);
+            } else {
+                istream = new FastByteArrayInputStream(data);
+            }
         }
-        
+
         @Override
         public int read() throws IOException {
-           return istream.read();
+            return istream.read();
         }
 
         @Override
-        public int read(byte b[]) throws IOException {
+        public int read(final byte b[]) throws IOException {
             return istream.read(b);
         }
 
         @Override
-        public int read(byte b[], int off, int len) throws IOException {
+        public int read(final byte b[], final int off, final int len) throws IOException {
             return istream.read(b, off, len);
         }
 
         @Override
-        public int available() throws IOException {
-            return istream.available(); 
+        public int available() {
+            return istream.available();
         }
 
         @Override
