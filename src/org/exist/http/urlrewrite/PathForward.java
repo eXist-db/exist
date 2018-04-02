@@ -25,50 +25,51 @@ import org.exist.http.urlrewrite.XQueryURLRewrite.RequestWrapper;
 import org.w3c.dom.Element;
 
 import javax.servlet.RequestDispatcher;
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 public class PathForward extends Forward {
+    private final ServletConfig filterConfig;
+    private String servletName;
 
-    private ServletConfig filterConfig;
-    private String servletName = null;
-
-    public PathForward(ServletConfig filterConfig, Element config, String uri) throws ServletException {
+    public PathForward(final ServletConfig filterConfig, final Element config, final String uri) throws ServletException {
         super(config, uri);
         this.filterConfig = filterConfig;
-        servletName = config.getAttribute("servlet");
         final String url = config.getAttribute("url");
-        if (servletName != null && servletName.length() == 0)
-            {servletName = null;}
+        servletName = config.getAttribute("servlet");
+        if (servletName != null && servletName.isEmpty()) {
+            servletName = null;
+        }
         if (servletName == null) {
-            if (url == null || url.length() == 0)
-                {throw new ServletException("<exist:forward> needs either an attribute 'url' or 'servlet'.");}
+            if (url == null || url.length() == 0) {
+                throw new ServletException("<exist:forward> needs either an attribute 'url' or 'servlet'.");
+            }
             setTarget(URLRewrite.normalizePath(url));
         }
     }
 
-    protected PathForward(PathForward other) {
+    protected PathForward(final PathForward other) {
         super(other);
         this.filterConfig = other.filterConfig;
         this.servletName = other.servletName;
     }
 
     @Override
-	protected void setAbsolutePath(RequestWrapper request) {
-		request.setPaths(target, servletName);
-	}
+    protected void setAbsolutePath(final RequestWrapper request) {
+        request.setPaths(target, servletName);
+    }
 
 
-	@Override
-    protected RequestDispatcher getRequestDispatcher(HttpServletRequest request) {
-        if (servletName != null)
-            {return filterConfig.getServletContext().getNamedDispatcher(servletName);}
-        else if (request != null)
-            {return request.getRequestDispatcher(target);}
-        else
-            {return filterConfig.getServletContext().getRequestDispatcher(target);}
+    @Override
+    protected RequestDispatcher getRequestDispatcher(final HttpServletRequest request) {
+        if (servletName != null) {
+            return filterConfig.getServletContext().getNamedDispatcher(servletName);
+        } else if (request != null) {
+            return request.getRequestDispatcher(target);
+        } else {
+            return filterConfig.getServletContext().getRequestDispatcher(target);
+        }
     }
 
     @Override

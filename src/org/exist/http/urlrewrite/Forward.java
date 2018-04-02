@@ -33,22 +33,23 @@ import org.w3c.dom.Element;
 
 public abstract class Forward extends URLRewrite {
 
-	protected Forward(Element config, String uri) {
+    protected Forward(final Element config, final String uri) {
         super(config, uri);
     }
 
-    protected Forward(URLRewrite other) {
+    protected Forward(final URLRewrite other) {
         super(other);
     }
 
     @Override
     public void doRewrite(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         final RequestDispatcher dispatcher = getRequestDispatcher(request);
-        if (dispatcher == null)
-            {throw new ServletException("Failed to initialize request dispatcher to forward request to " + uri);}
+        if (dispatcher == null) {
+            throw new ServletException("Failed to initialize request dispatcher to forward request to " + uri);
+        }
         setHeaders(new HttpResponseWrapper(response));
         dispatcher.forward(request, response);
     }
 
-    protected abstract RequestDispatcher getRequestDispatcher(HttpServletRequest request);
+    protected abstract RequestDispatcher getRequestDispatcher(final HttpServletRequest request);
 }

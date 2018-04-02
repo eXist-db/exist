@@ -28,31 +28,30 @@ import javax.servlet.http.HttpServletRequest;
 import org.w3c.dom.Element;
 
 public class PassThrough extends Forward {
+    private final ServletConfig servletConfig;
 
-	private ServletConfig servletConfig;
-	
-    public PassThrough(ServletConfig servletConfig, HttpServletRequest request) {
+    public PassThrough(final ServletConfig servletConfig, final HttpServletRequest request) {
         super(null, request.getRequestURI());
         this.servletConfig = servletConfig;
         this.target = request.getRequestURI().substring(request.getContextPath().length());
     }
-    
-    public PassThrough(ServletConfig servletConfig, Element config, HttpServletRequest request) {
+
+    public PassThrough(final ServletConfig servletConfig, final Element config, final HttpServletRequest request) {
         super(config, request.getRequestURI());
         this.servletConfig = servletConfig;
         this.target = request.getRequestURI().substring(request.getContextPath().length());
     }
 
-    public PassThrough(PassThrough other) {
+    public PassThrough(final PassThrough other) {
         super(other);
         this.servletConfig = other.servletConfig;
     }
 
-	@Override
-	protected RequestDispatcher getRequestDispatcher(HttpServletRequest request) {
-		// always forward to the servlet engine's default servlet
+    @Override
+    protected RequestDispatcher getRequestDispatcher(final HttpServletRequest request) {
+        // always forward to the servlet engine's default servlet
         return servletConfig.getServletContext().getNamedDispatcher("default");
-	}
+    }
 
     @Override
     protected URLRewrite copy() {
