@@ -112,6 +112,9 @@ public class XQueryURLRewrite extends HttpServlet {
     private static final String DRIVER = "org.exist.xmldb.DatabaseImpl";
     private static final Pattern NAME_REGEX = Pattern.compile("^.*/([^/]+)$", 0);
 
+    public static final String XQUERY_CONTROLLER_FILENAME = "controller.xql";
+    public static final XmldbURI XQUERY_CONTROLLER_URI = XmldbURI.create(XQUERY_CONTROLLER_FILENAME);
+
     public static final String RQ_ATTR = "org.exist.forward";
     public static final String RQ_ATTR_REQUEST_URI = "org.exist.forward.request-uri";
     public static final String RQ_ATTR_SERVLET_PATH = "org.exist.forward.servlet-path";
@@ -704,12 +707,12 @@ public class XQueryURLRewrite extends HttpServlet {
 
         if (basePath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
             if (LOG.isTraceEnabled()) {
-                LOG.trace("Looking for controller.xql in the database, starting from: " + basePath);
+                LOG.trace("Looking for " + XQUERY_CONTROLLER_FILENAME + " in the database, starting from: " + basePath);
             }
             return findSourceFromDb(broker, basePath, path, components);
         } else {
             if (LOG.isTraceEnabled()) {
-                LOG.trace("Looking for controller.xql in the filesystem, starting from: " + basePath);
+                LOG.trace("Looking for " + XQUERY_CONTROLLER_FILENAME + " in the filesystem, starting from: " + basePath);
             }
             return findSourceFromFs(basePath, components);
         }
@@ -779,7 +782,7 @@ public class XQueryURLRewrite extends HttpServlet {
             }
 
             if (pathComponents.length == 0 || !collection.hasChildCollection(broker, XmldbURI.createInternal(pathComponents[0]))) {
-                return collection.getDocumentWithLock(broker, XmldbURI.create("controller.xql"), LockMode.READ_LOCK);
+                return collection.getDocumentWithLock(broker, XQUERY_CONTROLLER_URI, LockMode.READ_LOCK);
             }
         } catch (final PermissionDeniedException e) {
             if (LOG.isDebugEnabled()) {
@@ -819,7 +822,7 @@ public class XQueryURLRewrite extends HttpServlet {
             if (!component.isEmpty()) {
                 subDir = subDir.resolve(component);
                 if (Files.isDirectory(subDir)) {
-                    final Path cf = subDir.resolve("controller.xql");
+                    final Path cf = subDir.resolve(XQUERY_CONTROLLER_FILENAME);
                     if (Files.isReadable(cf)) {
                         controllerFile = cf;
                     }
@@ -830,7 +833,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 
         if (controllerFile == null) {
-            final Path cf = baseDir.resolve("controller.xql");
+            final Path cf = baseDir.resolve(XQUERY_CONTROLLER_FILENAME);
             if (Files.isReadable(cf)) {
                 controllerFile = cf;
             }
