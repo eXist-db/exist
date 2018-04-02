@@ -39,6 +39,7 @@ import org.exist.source.Source;
 import org.exist.source.DBSource;
 import org.exist.source.SourceFactory;
 import org.exist.source.FileSource;
+import org.exist.util.LockException;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.serializer.XQuerySerializer;
@@ -76,6 +77,7 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.DatabaseManager;
 
+import javax.annotation.Nullable;
 import javax.servlet.*;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
@@ -726,166 +728,166 @@ public class XQueryURLRewrite extends HttpServlet {
         return path;
     }
 
-    private SourceInfo findSource(HttpServletRequest request, DBBroker broker, String basePath) throws ServletException {
-        final String requestURI = request.getRequestURI();
-        String path = requestURI.substring(request.getContextPath().length());
-        
+    private SourceInfo findSource(HttpServletRequest request, DBBroker broker, String basePath) {
         if (LOG.isTraceEnabled()) {
         	LOG.trace("basePath=" + basePath);
         }
-        path = adjustPathForSourceLookup(basePath, path);
 
+        final String requestURI = request.getRequestURI();
+        String path = requestURI.substring(request.getContextPath().length());
+        path = adjustPathForSourceLookup(basePath, path);
         final String[] components = path.split("/");
-        SourceInfo sourceInfo = null;
+
         if (basePath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
         	if (LOG.isTraceEnabled()) {
         		LOG.trace("Looking for controller.xql in the database, starting from: " + basePath);
         	}
-            try {
-                final XmldbURI locationUri = XmldbURI.xmldbUriFor(basePath);
-                final Collection collection = broker.openCollection(locationUri, LockMode.READ_LOCK);
-                if (collection == null) {
-                    LOG.warn("Controller base collection not found: " + basePath);
-                    return null;
-                }
-
-                Collection subColl = collection;
-                DocumentImpl controllerDoc = null;
-                for (int i = 0; i < components.length; i++) {
-                    DocumentImpl doc = null;
-                    try {
-                        if (components[i].length() > 0 && subColl.hasChildCollection(broker, XmldbURI.createInternal(components[i]))) {
-                            final XmldbURI newSubCollURI = subColl.getURI().append(components[i]);
-                            if (LOG.isTraceEnabled()) {
-                            	LOG.trace("Inspecting sub-collection: " + newSubCollURI);
-                            }
-                            subColl = broker.openCollection(newSubCollURI, LockMode.READ_LOCK);
-                            if (subColl != null) {
-                                if (LOG.isTraceEnabled()) {
-                                	LOG.trace("Looking for controller.xql in " + subColl.getURI());
-                                }
-                                final XmldbURI docUri = subColl.getURI().append("controller.xql");
-                                doc = broker.getXMLResource(docUri, LockMode.READ_LOCK);
-                                if (doc != null) {
-                                	if (controllerDoc != null) {
-                                		controllerDoc.getUpdateLock().release(LockMode.READ_LOCK);
-                                	}
-                                    controllerDoc = doc;
-                                }
-                            } else {
-                                break;
-                            }
-                        } else {
-                            break;
-                        }
-                    } catch (final PermissionDeniedException e) {
-                        LOG.debug("Permission denied while scanning for XQueryURLRewrite controllers: " +
-                            e.getMessage(), e);
-                        break;
-                    } catch (final Exception e) {
-                        LOG.debug("Bad collection URI: " + path);
-                        break;
-                    
-                    } finally {
-                        if (doc != null && controllerDoc == null) {
-                            doc.getUpdateLock().release(LockMode.READ_LOCK);
-                        }
-                        
-                        if (subColl != null && subColl != collection) {
-                            subColl.getLock().release(LockMode.READ_LOCK);
-                        }
-                    }
-                }
-                collection.getLock().release(LockMode.READ_LOCK);
-                if (controllerDoc == null) {
-                    try {
-                        final XmldbURI docUri = collection.getURI().append("controller.xql");
-                        controllerDoc = broker.getXMLResource(docUri, LockMode.READ_LOCK);
-                    } catch (final PermissionDeniedException e) {
-                        LOG.debug("Permission denied while scanning for XQueryURLRewrite controllers: " +
-                            e.getMessage(), e);
-                    }
-                }
-                if (controllerDoc == null) {
-                    LOG.warn("XQueryURLRewrite controller could not be found for path: " + path);
-                    return null;
-                }
-
-                if(LOG.isTraceEnabled()) {
-                    LOG.trace("Found controller file: " + controllerDoc.getURI());
-                }
-                try {
-                    if (controllerDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
-                                !"application/xquery".equals(controllerDoc.getMetadata().getMimeType())) {
-                        LOG.warn("XQuery resource: " + query + " is not an XQuery or " +
-                                "declares a wrong mime-type");
-                        return null;
-                    }
-                    final String controllerPath = controllerDoc.getCollection().getURI().getRawCollectionPath();
-                    
-                    sourceInfo = new SourceInfo(new DBSource(broker, (BinaryDocument) controllerDoc, true), "xmldb:exist://" + controllerPath);
-                    sourceInfo.controllerPath = controllerPath.substring(locationUri.getCollectionPath().length());
-
-                    return sourceInfo;
-                } finally {
-                    if (controllerDoc != null) {
-                        controllerDoc.getUpdateLock().release(LockMode.READ_LOCK);
-                    }
-                }
-            } catch (final URISyntaxException e) {
-                LOG.warn("Bad URI for base path: " + e.getMessage(), e);
-                return null;
-            } catch (final PermissionDeniedException e) {
-                LOG.debug("Permission denied while scanning for XQueryURLRewrite controllers: " + e.getMessage(), e);
-              return null;
-            }
+            return findSourceFromDb(broker, basePath, path, components);
         } else {
             if (LOG.isTraceEnabled()) {
             	LOG.trace("Looking for controller.xql in the filesystem, starting from: " + basePath);
             }
-            final String realPath = config.getServletContext().getRealPath(basePath);
-            final Path baseDir = Paths.get(realPath);
-            if (!Files.isDirectory(baseDir)) {
-                LOG.warn("Base path for XQueryURLRewrite does not point to a directory");
+            return findSourceFromFs(basePath, components);
+        }
+    }
+
+    private @Nullable SourceInfo findSourceFromDb(final DBBroker broker, final String basePath, final String path, final String[] components) {
+        DocumentImpl controllerDoc = null;
+        try {
+            final XmldbURI locationUri = XmldbURI.xmldbUriFor(basePath);
+
+            controllerDoc = findDbControllerXql(broker, locationUri, components);
+
+            if (controllerDoc == null) {
+                LOG.warn("XQueryURLRewrite controller could not be found for path: " + path);
                 return null;
             }
 
-            Path controllerFile = null;
-            Path subDir = baseDir;
-            for (int i = 0; i < components.length; i++) {
-                if (components[i].length() > 0) {
-                    subDir = subDir.resolve(components[i]);
-                    if (Files.isDirectory(subDir)) {
-                        Path cf = subDir.resolve("controller.xql");
-                        if (Files.isReadable(cf)) {
-                            controllerFile = cf;
-                        }
-                    } else {
-                        break;
-                    }
-                }
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Found controller file: " + controllerDoc.getURI());
             }
-            if (controllerFile == null) {
-                Path cf = baseDir.resolve("controller.xql");
-                if (Files.isReadable(cf)) {
-                    controllerFile = cf;
-                }
-            }
-            if (controllerFile == null) {
-                LOG.warn("XQueryURLRewrite controller could not be found");
+
+            if (controllerDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
+                    !"application/xquery".equals(controllerDoc.getMetadata().getMimeType())) {
+                LOG.warn("XQuery resource: " + query + " is not an XQuery or declares a wrong mime-type");
                 return null;
             }
-            if (LOG.isTraceEnabled()) {
-                LOG.trace("Found controller file: " + controllerFile.toAbsolutePath());
-            }
-            final String parentPath = controllerFile.getParent().toAbsolutePath().toString();
-            sourceInfo = new SourceInfo(new FileSource(controllerFile, true), parentPath);
-            sourceInfo.controllerPath = parentPath.substring(baseDir.toAbsolutePath().toString().length());
-            // replace windows path separators
-            sourceInfo.controllerPath = sourceInfo.controllerPath.replace('\\', '/');
-            
+
+            final String controllerPath = controllerDoc.getCollection().getURI().getRawCollectionPath();
+            final SourceInfo sourceInfo = new SourceInfo(new DBSource(broker, (BinaryDocument) controllerDoc, true), "xmldb:exist://" + controllerPath);
+            sourceInfo.controllerPath = controllerPath.substring(locationUri.getCollectionPath().length());
             return sourceInfo;
+
+        } catch (final URISyntaxException e) {
+            LOG.warn("Bad URI for base path: " + e.getMessage(), e);
+            return null;
+        } finally {
+            if (controllerDoc != null) {
+                controllerDoc.getUpdateLock().release(LockMode.READ_LOCK);
+            }
         }
+    }
+
+    /**
+     * Finds a `controller.xql` file within a Collection hierarchy.
+     * Most specific collections are considered first.
+     *
+     * For example, given the collectionUri `/db/apps`
+     * and the pathPomponents `['myapp', 'data']`, the
+     * order or search will be:
+     *
+     * /db/apps/myapp/data/collection.xconf
+     * /db/apps/myapp/collection.xconf
+     * /db/apps/collection.xconf
+     *
+     * @param broker The database broker
+     * @param collectionUri The root collection URI, below which we should not descend
+     * @param pathComponents The path within the collectionUri to the most specific Collection
+     *
+     * @return The most relevant controller.xql document (with a READ_LOCK), or null if it could not be found.
+     */
+    //@tailrec
+    private @Nullable DocumentImpl findDbControllerXql(final DBBroker broker, final XmldbURI collectionUri, final String[] pathComponents) {
+        Collection collection = null;
+        try {
+            collection = broker.openCollection(collectionUri, LockMode.READ_LOCK);
+            if (collection == null) {
+                return null;
+            }
+
+            if (pathComponents.length == 0 || !collection.hasChildCollection(broker, XmldbURI.createInternal(pathComponents[0]))) {
+                return collection.getDocumentWithLock(broker, XmldbURI.create("controller.xql"), LockMode.READ_LOCK);
+            }
+        } catch (final PermissionDeniedException e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Permission denied while scanning for XQueryURLRewrite controllers: " + e.getMessage(), e);
+            }
+            return null;
+        } catch (final LockException e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("LockException while scanning for XQueryURLRewrite controllers: " + e.getMessage(), e);
+            }
+            return null;
+        } finally {
+            if(collection != null) {
+                collection.getLock().release(LockMode.READ_LOCK);
+            }
+        }
+
+        final XmldbURI subCollectionUri = collectionUri.append(pathComponents[0]);
+        final String[] subPathComponents = new String[pathComponents.length - 1];
+        if(subPathComponents.length > 0) {
+            System.arraycopy(pathComponents, 1, subPathComponents, 0, subPathComponents.length);
+        }
+        return findDbControllerXql(broker, subCollectionUri, subPathComponents);
+    }
+
+    private SourceInfo findSourceFromFs(final String basePath, final String[] components) {
+        final String realPath = config.getServletContext().getRealPath(basePath);
+        final Path baseDir = Paths.get(realPath);
+        if (!Files.isDirectory(baseDir)) {
+            LOG.warn("Base path for XQueryURLRewrite does not point to a directory");
+            return null;
+        }
+
+        Path controllerFile = null;
+        Path subDir = baseDir;
+        for (int i = 0; i < components.length; i++) {
+            if (components[i].length() > 0) {
+                subDir = subDir.resolve(components[i]);
+                if (Files.isDirectory(subDir)) {
+                    final Path cf = subDir.resolve("controller.xql");
+                    if (Files.isReadable(cf)) {
+                        controllerFile = cf;
+                    }
+                } else {
+                    break;
+                }
+            }
+        }
+
+        if (controllerFile == null) {
+            final Path cf = baseDir.resolve("controller.xql");
+            if (Files.isReadable(cf)) {
+                controllerFile = cf;
+            }
+        }
+
+        if (controllerFile == null) {
+            LOG.warn("XQueryURLRewrite controller could not be found");
+            return null;
+        }
+
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Found controller file: " + controllerFile.toAbsolutePath());
+        }
+
+        final String parentPath = controllerFile.getParent().toAbsolutePath().toString();
+        final SourceInfo sourceInfo = new SourceInfo(new FileSource(controllerFile, true), parentPath);
+        sourceInfo.controllerPath = parentPath.substring(baseDir.toAbsolutePath().toString().length());
+        // replace windows path separators
+        sourceInfo.controllerPath = sourceInfo.controllerPath.replace('\\', '/');
+        return sourceInfo;
     }
     
     private SourceInfo getSource(DBBroker broker, String moduleLoadPath) throws ServletException {
