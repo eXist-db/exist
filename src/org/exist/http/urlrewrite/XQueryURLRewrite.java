@@ -259,7 +259,7 @@ public class XQueryURLRewrite extends HttpServlet {
                             }
                             Element elem = (Element) node;
                             final String ns = elem.getNamespaceURI();
-                            if (Namespaces.EXIST_NS.equals(ns)) {
+                            if (!Namespaces.EXIST_NS.equals(ns)) {
                                 response(broker, response, outputProperties, result);
                                 return;
                             }
