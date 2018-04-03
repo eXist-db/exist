@@ -29,14 +29,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.exist.Namespaces;
 import org.exist.http.servlets.HttpResponseWrapper;
-import org.exist.http.urlrewrite.XQueryURLRewrite;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -46,8 +44,8 @@ import org.w3c.dom.Node;
  */
 public abstract class URLRewrite {
 
-    private final static String UNSET = "";
-    
+    private static final String UNSET = "";
+
     protected String uri;
     protected String target;
     protected String prefix = null;
@@ -56,19 +54,20 @@ public abstract class URLRewrite {
     protected Map<String, List<String>> parameters = null;
     protected Map<String, String> headers = null;
     protected boolean absolute = false;
-    
-    protected URLRewrite(Element config, String uri) {
+
+    protected URLRewrite(final Element config, final String uri) {
         this.uri = uri;
         if (config != null && config.hasAttribute("absolute"))
-        	absolute = "yes".equals(config.getAttribute("absolute"));
-        if (config != null && config.hasAttribute("method"))
-        	{method = config.getAttribute("method").toUpperCase();}
+            absolute = "yes".equals(config.getAttribute("absolute"));
+        if (config != null && config.hasAttribute("method")) {
+            method = config.getAttribute("method").toUpperCase();
+        }
         // Check for add-parameter elements etc.
         if (config != null && config.hasChildNodes()) {
             Node node = config.getFirstChild();
             while (node != null) {
                 final String ns = node.getNamespaceURI();
-                if (node.getNodeType() == Node.ELEMENT_NODE && ns != null && Namespaces.EXIST_NS.equals(ns)) {
+                if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(ns)) {
                     final Element elem = (Element) node;
                     if ("add-parameter".equals(elem.getLocalName())) {
                         addParameter(elem.getAttribute("name"), elem.getAttribute("value"));
@@ -77,7 +76,7 @@ public abstract class URLRewrite {
                     } else if ("clear-attribute".equals(elem.getLocalName())) {
                         unsetAttribute(elem.getAttribute("name"));
                     } else if ("set-header".equals(elem.getLocalName())) {
-                       setHeader(elem.getAttribute("name"), elem.getAttribute("value"));
+                        setHeader(elem.getAttribute("name"), elem.getAttribute("value"));
                     }
                 }
                 node = node.getNextSibling();
@@ -85,48 +84,51 @@ public abstract class URLRewrite {
         }
     }
 
-    protected URLRewrite(URLRewrite other) {
+    protected URLRewrite(final URLRewrite other) {
         this.uri = other.uri;
         this.target = other.target;
         this.prefix = other.prefix;
         this.method = other.method;
     }
 
-    protected void updateRequest(XQueryURLRewrite.RequestWrapper request) {
-        if (prefix != null)
-            {request.removePathPrefix(prefix);}
+    protected void updateRequest(final XQueryURLRewrite.RequestWrapper request) {
+        if (prefix != null) {
+            request.removePathPrefix(prefix);
+        }
     }
 
-    protected void rewriteRequest(XQueryURLRewrite.RequestWrapper request) {
+    protected void rewriteRequest(final XQueryURLRewrite.RequestWrapper request) {
         // do nothing by default
     }
 
-    protected void setAbsolutePath(XQueryURLRewrite.RequestWrapper request) {
-    	request.setPaths(target, null);
+    protected void setAbsolutePath(final XQueryURLRewrite.RequestWrapper request) {
+        request.setPaths(target, null);
     }
 
     protected String getMethod() {
-    	return method;
+        return method;
     }
-    
-    protected boolean doResolve() {
-		return !absolute;
-	}
 
-	/**
+    protected boolean doResolve() {
+        return !absolute;
+    }
+
+    /**
      * Resolve the target of this rewrite rule against the current request context.
      *
      * @return the new target path excluding context path
      */
-    protected String resolve(XQueryURLRewrite.RequestWrapper request) throws ServletException {
+    protected String resolve(final XQueryURLRewrite.RequestWrapper request) throws ServletException {
         final String path = request.getInContextPath();
-        if (target == null)
-            {return path;}
-        String fixedTarget;
+        if (target == null) {
+            return path;
+        }
+        final String fixedTarget;
         if (request.getBasePath() != null && target.startsWith("/")) {
             fixedTarget = request.getBasePath() + target;
-        } else
-            {fixedTarget = target;}
+        } else {
+            fixedTarget = target;
+        }
         try {
             final URI reqURI = new URI(path);
             return reqURI.resolve(fixedTarget).toASCIIString();
@@ -135,61 +137,61 @@ public abstract class URLRewrite {
         }
     }
 
-    protected void copyFrom(URLRewrite other) {
+    protected void copyFrom(final URLRewrite other) {
         if (other.headers != null) {
-            this.headers = new HashMap<String, String>(other.headers);
+            this.headers = new HashMap<>(other.headers);
         }
         if (other.attributes != null) {
-            this.attributes = new HashMap<String, String>(other.attributes);
+            this.attributes = new HashMap<>(other.attributes);
         }
         if (other.parameters != null) {
-            this.parameters = new HashMap<String, List<String>>();
-            for (Map.Entry<String, List<String>> entry: other.parameters.entrySet()) {
-                this.parameters.put(entry.getKey(), new ArrayList<String>(entry.getValue()));
+            this.parameters = new HashMap<>();
+            for (Map.Entry<String, List<String>> entry : other.parameters.entrySet()) {
+                this.parameters.put(entry.getKey(), new ArrayList<>(entry.getValue()));
             }
         }
     }
 
     protected abstract URLRewrite copy();
 
-    private void setHeader(String key, String value) {
-        if(headers == null) {
-            headers = new HashMap<String, String>();
+    private void setHeader(final String key, final String value) {
+        if (headers == null) {
+            headers = new HashMap<>();
         }
         headers.put(key, value);
     }
 
-    private void addNameValue(String name, String value, Map<String, List<String>> map) {
+    private void addNameValue(final String name, final String value, final Map<String, List<String>> map) {
         List<String> values = map.get(name);
-        if(values == null) {
-            values = new ArrayList<String>();
+        if (values == null) {
+            values = new ArrayList<>();
         }
         values.add(value);
         map.put(name, values);
     }
 
-    private void addParameter(String name, String value) {
-        if(parameters == null){
-            parameters = new HashMap<String, List<String>>();
+    private void addParameter(final String name, final String value) {
+        if (parameters == null) {
+            parameters = new HashMap<>();
         }
         addNameValue(name, value, parameters);
     }
 
-    private void setAttribute(String name, String value) {
-        if(attributes == null) {
-            attributes = new HashMap<String, String>();
+    private void setAttribute(final String name, final String value) {
+        if (attributes == null) {
+            attributes = new HashMap<>();
         }
         attributes.put(name, value);
     }
 
-    private void unsetAttribute(String name) {
-        if(attributes == null){
-            attributes = new HashMap<String, String>();
+    private void unsetAttribute(final String name) {
+        if (attributes == null) {
+            attributes = new HashMap<>();
         }
         attributes.put(name, UNSET);
     }
-    
-    public void setTarget(String target) {
+
+    public void setTarget(final String target) {
         this.target = target;
     }
 
@@ -197,7 +199,7 @@ public abstract class URLRewrite {
         return target;
     }
 
-    public void setURI(String uri) {
+    public void setURI(final String uri) {
         this.uri = uri;
     }
 
@@ -206,8 +208,9 @@ public abstract class URLRewrite {
     }
 
     public void setPrefix(String prefix) {
-        if (prefix.endsWith("/"))
-            {prefix = prefix.replaceFirst("/+$", "");}
+        if (prefix.endsWith("/")) {
+            prefix = prefix.replaceFirst("/+$", "");
+        }
         this.prefix = prefix;
     }
 
@@ -215,20 +218,20 @@ public abstract class URLRewrite {
         return prefix;
     }
 
-    public abstract void doRewrite(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
+    public abstract void doRewrite(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException;
 
-    public void prepareRequest(XQueryURLRewrite.RequestWrapper request) {
+    public void prepareRequest(final XQueryURLRewrite.RequestWrapper request) {
         if (parameters != null) {
-            for(final Map.Entry<String, List<String>> param : parameters.entrySet()) {
-                for(final String paramValue : param.getValue()) {
+            for (final Map.Entry<String, List<String>> param : parameters.entrySet()) {
+                for (final String paramValue : param.getValue()) {
                     request.addParameter(param.getKey(), paramValue);
                 }
             }
         }
         if (attributes != null) {
             for (final Map.Entry<String, String> entry : attributes.entrySet()) {
-            	final String value = entry.getValue();
-                if(value.equals(UNSET)) {
+                final String value = entry.getValue();
+                if (value.equals(UNSET)) {
                     request.removeAttribute(entry.getKey());
                 } else {
                     request.setAttribute(entry.getKey(), entry.getValue());
@@ -237,7 +240,7 @@ public abstract class URLRewrite {
         }
     }
 
-    protected void setHeaders(HttpResponseWrapper response) {
+    protected void setHeaders(final HttpResponseWrapper response) {
         if (headers != null) {
             for (final Map.Entry<String, String> entry : headers.entrySet()) {
                 response.setHeader(entry.getKey(), entry.getValue());
@@ -248,16 +251,18 @@ public abstract class URLRewrite {
     public boolean isControllerForward() {
         return false;
     }
-    
-    protected static String normalizePath(String path) {
+
+    protected static String normalizePath(final String path) {
         final StringBuilder sb = new StringBuilder(path.length());
         for (int i = 0; i < path.length(); i++) {
             final char c = path.charAt(i);
             if (c == '/') {
-                if (i == 0 || path.charAt(i - 1) != '/')
-                    {sb.append(c);}
-            } else
-                {sb.append(c);}
+                if (i == 0 || path.charAt(i - 1) != '/') {
+                    sb.append(c);
+                }
+            } else {
+                sb.append(c);
+            }
         }
         return sb.toString();
     }

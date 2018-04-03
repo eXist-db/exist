@@ -26,29 +26,31 @@ import org.w3c.dom.Element;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import java.io.IOException;
 
 public class Redirect extends URLRewrite {
 
-    public Redirect(Element config, String uri) throws ServletException {
+    public Redirect(final Element config, final String uri) throws ServletException {
         super(config, uri);
         final String redirectTo = config.getAttribute("url");
-        if (redirectTo.length() == 0)
-            {throw new ServletException("<exist:redirect> needs an attribute 'url'.");}
-        if (redirectTo.matches("^\\w+://.*"))
-            {setTarget(redirectTo);} // do not touch URIs pointing to other server
-        else
-            {setTarget(URLRewrite.normalizePath(redirectTo));}
+        if (redirectTo.length() == 0) {
+            throw new ServletException("<exist:redirect> needs an attribute 'url'.");
+        }
+        if (redirectTo.matches("^\\w+://.*")) {
+            setTarget(redirectTo);
+        } // do not touch URIs pointing to other server
+        else {
+            setTarget(URLRewrite.normalizePath(redirectTo));
+        }
     }
 
-    public Redirect(Redirect other) {
+    public Redirect(final Redirect other) {
         super(other);
     }
 
     @Override
-    public void doRewrite(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public void doRewrite(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
         setHeaders(new HttpResponseWrapper(response));
         response.sendRedirect(target);
     }

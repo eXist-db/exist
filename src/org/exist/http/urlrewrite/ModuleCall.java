@@ -36,16 +36,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class ModuleCall extends URLRewrite {
+    private static final Logger LOG = LogManager.getLogger(ModuleCall.class);
 
-    private final static Logger LOG = LogManager.getLogger(ModuleCall.class);
-    
-    private FunctionCall call;
+    private final FunctionCall call;
 
-    public ModuleCall(Element config, XQueryContext context, String uri) throws ServletException {
+    public ModuleCall(final Element config, final XQueryContext context, final String uri) throws ServletException {
         super(config, uri);
         String funcName = config.getAttribute("function");
-        if (funcName == null || funcName.length() == 0)
-            {throw new ServletException("<exist:call> requires an attribute 'function'.");}
+        if (funcName == null || funcName.length() == 0) {
+            throw new ServletException("<exist:call> requires an attribute 'function'.");
+        }
         int arity = 0;
         final int p = funcName.indexOf('/');
         if (p > -1) {
@@ -60,39 +60,41 @@ public class ModuleCall extends URLRewrite {
         try {
             final QName fqn = QName.parse(context, funcName);
             final Module module = context.getModule(fqn.getNamespaceURI());
-            UserDefinedFunction func = null;
-            if (module != null)
-                {func = ((ExternalModule)module).getFunction(fqn, arity, context);}
-            else
-                {func = context.resolveFunction(fqn, arity);}
+            final UserDefinedFunction func;
+            if (module != null) {
+                func = ((ExternalModule) module).getFunction(fqn, arity, context);
+            } else {
+                func = context.resolveFunction(fqn, arity);
+            }
             call = new FunctionCall(context, func);
             call.setArguments(new ArrayList<>());
         } catch (final XPathException | QName.IllegalQNameException e) {
-            e.printStackTrace();
+            throw new ServletException(e);
         }
     }
 
-    protected ModuleCall(ModuleCall other) {
+    protected ModuleCall(final ModuleCall other) {
         super(other);
         this.call = other.call;
     }
 
     @Override
-    public void doRewrite(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    public void doRewrite(final HttpServletRequest request, final HttpServletResponse response) throws ServletException {
         try {
-            final Sequence contextSequence;
             final ContextItemDeclaration cid = call.getContext().getContextItemDeclartion();
-            if(cid != null) {
+            final Sequence contextSequence;
+            if (cid != null) {
                 contextSequence = cid.eval(null);
             } else {
                 contextSequence = null;
             }
 
             final Sequence result = call.eval(contextSequence);
-            LOG.debug("Found: " + result.getItemCount());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Found: " + result.getItemCount());
+            }
             request.setAttribute(XQueryURLRewrite.RQ_ATTR_RESULT, result);
-            
+
         } catch (final XPathException e) {
             throw new ServletException("Called function threw exception: " + e.getMessage(), e);
         }

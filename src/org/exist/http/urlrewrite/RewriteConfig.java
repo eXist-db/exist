@@ -43,11 +43,10 @@ import java.util.regex.Pattern;
  * base paths to base controllers or servlets.
  */
 public class RewriteConfig {
+    private static final Logger LOG = LogManager.getLogger(RewriteConfig.class);
 
-    public final static String CONFIG_FILE = "controller-config.xml";
-
-    public final static String MAP_ELEMENT = "map";
-    public final static String PATTERN_ATTRIBUTE = "pattern";
+    public static final String CONFIG_FILE = "controller-config.xml";
+    public static final String PATTERN_ATTRIBUTE = "pattern";
     /**
      * Adding server-name="www.example.com" to a root tag in the controller-config.xml file.<br/>
      * <br/>
@@ -61,55 +60,15 @@ public class RewriteConfig {
      * <br/>
      * If there is no server-name attribute on the root tag, then the server name is ignored while performing the URL rewriting.
      */
-    public final static String SERVER_NAME_ATTRIBUTE = "server-name";
-
-    /**
-     * Maps a regular expression to an URLRewrite instance
-     */
-    private final static class Mapping {
-
-        Pattern pattern;
-        Matcher matcher = null;
-        URLRewrite action;
-
-        private Mapping(String regex, URLRewrite action) throws ServletException {
-            try {
-                final int xmlVersion = 11;
-                final boolean ignoreWhitespace = false;
-                final boolean caseBlind = false;
-
-                regex = JDK15RegexTranslator.translate(regex, xmlVersion, true, ignoreWhitespace, caseBlind);
-
-                this.pattern = Pattern.compile(regex, 0);
-                this.action = action;
-            } catch (final RegexSyntaxException e) {
-                throw new ServletException("Syntax error in regular expression specified for path. " +
-                        e.getMessage(), e);
-            }
-        }
-
-        public String match(String path) {
-            if (matcher == null) {
-                matcher = pattern.matcher(path);
-            } else {
-                matcher.reset(path);
-            }
-            if (matcher.lookingAt()) {
-                return path.substring(matcher.start(), matcher.end());
-            }
-            return null;
-        }
-    }
-
-    private final static Logger LOG = LogManager.getLogger(RewriteConfig.class);
+    public static final String SERVER_NAME_ATTRIBUTE = "server-name";
 
     // the list of established mappings
-    private List<Mapping> mappings = new ArrayList<Mapping>();
+    private final List<Mapping> mappings = new ArrayList<>();
 
     // parent XQueryURLRewrite
-    private XQueryURLRewrite urlRewrite;
+    private final XQueryURLRewrite urlRewrite;
 
-    public RewriteConfig(XQueryURLRewrite urlRewrite) throws ServletException {
+    public RewriteConfig(final XQueryURLRewrite urlRewrite) throws ServletException {
         this.urlRewrite = urlRewrite;
         String controllerConfig = urlRewrite.getConfig().getInitParameter("config");
         if (controllerConfig == null) {
@@ -124,11 +83,9 @@ public class RewriteConfig {
      *
      * @param request use the path from this request
      * @return the URLRewrite instance for the mapping or null if none was found
-     * @throws ServletException
      */
-    public synchronized URLRewrite lookup(HttpServletRequest request) throws ServletException {
+    public synchronized URLRewrite lookup(final HttpServletRequest request) {
         final String path = request.getRequestURI().substring(request.getContextPath().length());
-
         return lookup(path, request.getServerName(), false, null);
     }
 
@@ -139,18 +96,16 @@ public class RewriteConfig {
      * @param staticMapping don't return redirects to other controllers, just static mappings
      *                      to servlets.
      * @return the URLRewrite instance for the mapping or null if none was found
-     * @throws ServletException
      */
-    public synchronized URLRewrite lookup(String path, String serverName, boolean staticMapping, URLRewrite copyFrom) throws ServletException {
+    public synchronized URLRewrite lookup(String path, final String serverName, final boolean staticMapping, final URLRewrite copyFrom) {
         final int p = path.lastIndexOf(';');
         if (p != Constants.STRING_NOT_FOUND) {
             path = path.substring(0, p);
         }
-        for (int i = 0; i < mappings.size(); i++) {
-            final Mapping m = mappings.get(i);
-            final String matchedString = m.match(path);
+        for (final Mapping mapping : mappings) {
+            final String matchedString = mapping.match(path);
             if (matchedString != null) {
-                final URLRewrite action = m.action.copy();
+                final URLRewrite action = mapping.action.copy();
                 if (copyFrom != null) {
                     action.copyFrom(copyFrom);
                 }
@@ -185,12 +140,14 @@ public class RewriteConfig {
         return null;
     }
 
-    private void configure(String controllerConfig) throws ServletException {
-        LOG.debug("Loading XQueryURLRewrite configuration from " + controllerConfig);
+    private void configure(final String controllerConfig) throws ServletException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Loading XQueryURLRewrite configuration from " + controllerConfig);
+        }
+
         if (controllerConfig.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
 
-
-            try (final DBBroker broker = urlRewrite.pool.get(Optional.ofNullable(urlRewrite.defaultUser))) {
+            try (final DBBroker broker = urlRewrite.getBrokerPool().get(Optional.ofNullable(urlRewrite.getDefaultUser()))) {
                 DocumentImpl doc = null;
                 try {
                     doc = broker.getXMLResource(XmldbURI.create(controllerConfig), LockMode.READ_LOCK);
@@ -202,9 +159,7 @@ public class RewriteConfig {
                         doc.getUpdateLock().release(LockMode.READ_LOCK);
                     }
                 }
-            } catch (final EXistException e) {
-                throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
-            } catch (final PermissionDeniedException e) {
+            } catch (final EXistException | PermissionDeniedException e) {
                 throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
             }
         } else {
@@ -215,28 +170,19 @@ public class RewriteConfig {
                     final Document doc = parseConfig(configFile);
                     parse(doc);
                 }
-            } catch (final ParserConfigurationException e) {
-                throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
-            } catch (final SAXException e) {
-                throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
-            } catch (final IOException e) {
+            } catch (final ParserConfigurationException | IOException | SAXException e) {
                 throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
             }
         }
-        try {
-            urlRewrite.clearCaches();
-        } catch (final EXistException e) {
-            throw new ServletException("Failed to update controller.xml: " + e.getMessage(), e);
-        }
+        urlRewrite.clearCaches();
     }
 
-    private void parse(Document doc) throws ServletException {
+    private void parse(final Document doc) throws ServletException {
         final Element root = doc.getDocumentElement();
         Node child = root.getFirstChild();
         while (child != null) {
             final String ns = child.getNamespaceURI();
-            if (child.getNodeType() == Node.ELEMENT_NODE && ns!= null &&
-                    ns.equals(Namespaces.EXIST_NS)) {
+            if (child.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(ns)) {
                 final Element elem = (Element) child;
                 final String pattern = elem.getAttribute(PATTERN_ATTRIBUTE);
                 if (pattern == null) {
@@ -252,24 +198,26 @@ public class RewriteConfig {
         }
     }
 
-    private URLRewrite parseAction(ServletConfig config, String pattern, Element action) throws ServletException {
-        URLRewrite rewrite = null;
+    private URLRewrite parseAction(final ServletConfig config, final String pattern, final Element action) throws ServletException {
+        final URLRewrite rewrite;
         if ("forward".equals(action.getLocalName())) {
             rewrite = new PathForward(config, action, pattern);
         } else if ("redirect".equals(action.getLocalName())) {
             rewrite = new Redirect(action, pattern);
         } else if ("root".equals(action.getLocalName())) {
-            ControllerForward cf = new ControllerForward(action, pattern);
+            final ControllerForward cf = new ControllerForward(action, pattern);
 
-        	/*
-        	 * If there is a server-name attribute on the root tag, then add that
-        	 * as an attribute on the ControllerForward object.
-        	 */
+            /*
+             * If there is a server-name attribute on the root tag, then add that
+             * as an attribute on the ControllerForward object.
+             */
             final String serverName = action.getAttribute(SERVER_NAME_ATTRIBUTE);
             if (serverName != null && serverName.length() > 0) {
                 cf.setServerName(serverName);
             }
             rewrite = cf;
+        } else {
+            rewrite = null;
         }
         return rewrite;
     }
@@ -278,7 +226,7 @@ public class RewriteConfig {
         final SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);
 
-        try(final InputStream is = Files.newInputStream(file)) {
+        try (final InputStream is = Files.newInputStream(file)) {
             final InputSource src = new InputSource(is);
             final SAXParser parser = factory.newSAXParser();
             final XMLReader xr = parser.getXMLReader();
@@ -287,6 +235,40 @@ public class RewriteConfig {
             xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             xr.parse(src);
             return adapter.getDocument();
+        }
+    }
+
+    /**
+     * Maps a regular expression to an URLRewrite instance
+     */
+    private static final class Mapping {
+        private final Pattern pattern;
+        private final URLRewrite action;
+        private Matcher matcher;
+
+        private Mapping(String regex, final URLRewrite action) throws ServletException {
+            try {
+                final int xmlVersion = 11;
+                final boolean ignoreWhitespace = false;
+                final boolean caseBlind = false;
+
+                regex = JDK15RegexTranslator.translate(regex, xmlVersion, true, ignoreWhitespace, caseBlind);
+
+                this.pattern = Pattern.compile(regex, 0);
+                this.action = action;
+                this.matcher = pattern.matcher("");
+            } catch (final RegexSyntaxException e) {
+                throw new ServletException("Syntax error in regular expression specified for path. " +
+                        e.getMessage(), e);
+            }
+        }
+
+        public String match(final String path) {
+            matcher.reset(path);
+            if (matcher.lookingAt()) {
+                return path.substring(matcher.start(), matcher.end());
+            }
+            return null;
         }
     }
 }

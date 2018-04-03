@@ -27,40 +27,36 @@ import org.exist.xmldb.XmldbURI;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import java.io.IOException;
 
 public class ControllerForward extends URLRewrite {
-	
+
     /**
      * Adding server-name="www.example.com" to a root tag in the controller-config.xml file.<br/>
      * <br/>
-     *  i.e.<br/> 
-     *  <br/>
-     *  &lt;root server-name="example1.com" pattern="/*" path="xmldb:exist:///db/org/example1/"/&gt;<br/>
-     *  &lt;root server-name="example2.com" pattern="/*" path="xmldb:exist:///db/org/example2/"/&gt;<br/>
-     *  <br/>
-     *  Will redirect http://example1.com to /db/org/example1/<br/>
-     *  and http://example2.com to /db/org/example2/<br/>
-     *  <br/>
-     *  If there is no server-name attribute on the root tag, then the server name is ignored while performing the URL rewriting.
-     *  
+     * i.e.<br/>
+     * <br/>
+     * &lt;root server-name="example1.com" pattern="/*" path="xmldb:exist:///db/org/example1/"/&gt;<br/>
+     * &lt;root server-name="example2.com" pattern="/*" path="xmldb:exist:///db/org/example2/"/&gt;<br/>
+     * <br/>
+     * Will redirect http://example1.com to /db/org/example1/<br/>
+     * and http://example2.com to /db/org/example2/<br/>
+     * <br/>
+     * If there is no server-name attribute on the root tag, then the server name is ignored while performing the URL rewriting.
      */
-	private String serverName = null;
+    private String serverName = null;
 
-    public ControllerForward(Element config, String uri) {
+    public ControllerForward(final Element config, final String uri) {
         super(config, uri);
         this.target = config.getAttribute("path");
     }
 
-    public ControllerForward(ControllerForward other) {
+    public ControllerForward(final ControllerForward other) {
         super(other);
         this.serverName = other.serverName;
     }
 
     @Override
-    public void doRewrite(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public void doRewrite(final HttpServletRequest request, final HttpServletResponse response) {
     }
 
     @Override
@@ -69,9 +65,9 @@ public class ControllerForward extends URLRewrite {
     }
 
     @Override
-    protected void updateRequest(XQueryURLRewrite.RequestWrapper request) {
+    protected void updateRequest(final XQueryURLRewrite.RequestWrapper request) {
         super.updateRequest(request);
-        if (!(target.length() == 0 || "/".equals(target) ||target.startsWith(XmldbURI.XMLDB_URI_PREFIX))) {
+        if (!(target.isEmpty() || "/".equals(target) || target.startsWith(XmldbURI.XMLDB_URI_PREFIX))) {
             final String oldURI = request.getInContextPath();
             final String uri = target + oldURI;
             request.setInContextPath(uri);
@@ -79,27 +75,28 @@ public class ControllerForward extends URLRewrite {
     }
 
     @Override
-    protected void rewriteRequest(XQueryURLRewrite.RequestWrapper request) {
+    protected void rewriteRequest(final XQueryURLRewrite.RequestWrapper request) {
         if (target != null && target.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
             final XmldbURI dbURI = XmldbURI.create(target);
             this.uri = "/rest";
             String colPath = dbURI.getCollectionPath();
             final String contextPath = request.getInContextPath();
-            if (contextPath.startsWith(colPath))
-                {colPath = "";}
+            if (contextPath.startsWith(colPath)) {
+                colPath = "";
+            }
             request.setPaths("/rest" + colPath + contextPath, "/rest");
             request.setBasePath("/rest" + colPath);
             request.setAttribute(XQueryURLRewrite.RQ_ATTR, "true");
         }
     }
 
-	public void setServerName(String serverName) {
-		this.serverName = serverName;
-	}
+    public void setServerName(final String serverName) {
+        this.serverName = serverName;
+    }
 
-	public String getServerName() {
-		return serverName;
-	}
+    public String getServerName() {
+        return serverName;
+    }
 
     @Override
     protected URLRewrite copy() {
