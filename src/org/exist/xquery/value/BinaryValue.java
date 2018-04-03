@@ -40,7 +40,7 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
 
     private final static Logger LOG = LogManager.getLogger(BinaryValue.class);
 
-    protected final int READ_BUFFER_SIZE = 16 * 1024; //4kb
+    protected final int READ_BUFFER_SIZE = 16 * 1024; //16kb
 
     private final BinaryValueManager binaryValueManager;
     private final BinaryValueType binaryValueType;
