@@ -22,11 +22,11 @@
  */
 package org.exist.http.servlets;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
+import java.nio.file.Path;
 import java.security.Principal;
 
 import java.util.ArrayList;
@@ -415,7 +415,7 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @see javax.servlet.http.HttpServletRequest#getParameter(String)
      */
     @Override
-    public List<File> getFileUploadParam(String name) {
+    public List<Path> getFileUploadParam(String name) {
         if (!isFormDataParsed) {
             return null;
         }
@@ -426,9 +426,9 @@ public class HttpRequestWrapper implements RequestWrapper {
         }
 
         final List<FileItem> items = getFileItem(o);
-        final List<File> files = new ArrayList<File>(items.size());
+        final List<Path> files = new ArrayList<>(items.size());
         for (final FileItem item : items) {
-        	files.add(((DiskFileItem) item).getStoreLocation());
+        	files.add(((DiskFileItem) item).getStoreLocation().toPath());
         }
         return files;
     }

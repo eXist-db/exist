@@ -80,6 +80,6 @@ public class FileReadBinary extends BasicFunction {
 		final String inputPath = args[0].getStringValue();
         final Path file = FileModuleHelper.getFile(inputPath);
 		
-		return BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(),file.toFile());
+		return BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(), file);
 	}
 }
