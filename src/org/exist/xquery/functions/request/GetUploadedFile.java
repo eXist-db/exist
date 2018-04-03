@@ -25,7 +25,7 @@ package org.exist.xquery.functions.request;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.exist.dom.QName;
@@ -92,7 +92,7 @@ public class GetUploadedFile extends BasicFunction {
 
             final RequestWrapper request = (RequestWrapper) value.getObject();
 
-            final List<File> files = request.getFileUploadParam(uploadParamName);
+            final List<Path> files = request.getFileUploadParam(uploadParamName);
             if (files == null) {
                 logger.debug("File param not found: " + uploadParamName);
                 return Sequence.EMPTY_SEQUENCE;
@@ -128,7 +128,7 @@ public class GetUploadedFile extends BasicFunction {
             } */
 
             final ValueSequence result = new ValueSequence();
-            for (final File file : files) {
+            for (final Path file : files) {
             	result.add(BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(), file));
             }
 

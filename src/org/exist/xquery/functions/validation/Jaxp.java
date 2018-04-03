@@ -21,9 +21,9 @@
  */
 package org.exist.xquery.functions.validation;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.file.Path;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -43,11 +43,10 @@ import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.dom.memtree.NodeImpl;
-import org.exist.dom.memtree.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.util.XMLReaderObjectFactory;
+import org.exist.util.io.TemporaryFileManager;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.ValidationContentHandler;
 import org.exist.validation.ValidationReport;
@@ -353,14 +352,14 @@ public class Jaxp extends BasicFunction {
     }
 
     // No-go ...processor is in validating mode
-    private File preparseDTD(StreamSource instance, String systemId)
+    private Path preparseDTD(StreamSource instance, String systemId)
             throws IOException, TransformerConfigurationException, TransformerException {
 
         // prepare output tmp storage
-        final File tmp = File.createTempFile("DTDvalidation", "tmp");
-        tmp.deleteOnExit();
+        final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+        final Path tmp = temporaryFileManager.getTemporaryFile();
 
-        final StreamResult result = new StreamResult(tmp);
+        final StreamResult result = new StreamResult(tmp.toFile());
 
         final TransformerFactory tf = TransformerFactory.newInstance();
 

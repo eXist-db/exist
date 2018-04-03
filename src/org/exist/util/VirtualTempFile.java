@@ -19,21 +19,16 @@
  */
 package org.exist.util;
 
-import java.io.BufferedInputStream;
+import java.io.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
+import org.exist.util.io.TemporaryFileManager;
 
 
 /**
@@ -54,13 +49,11 @@ public class VirtualTempFile
     private final static Logger LOG = LogManager.getLogger(VirtualTempFile.class);
     
     private final static int DEFAULT_MAX_CHUNK_SIZE = 0x40000;
-    private final static String DEFAULT_TEMP_PREFIX = "eXistRPCV";
-    private final static String DEFAULT_TEMP_POSTFIX = ".res";
 	
-	protected File tempFile;
+	protected Path tempFile;
 	protected boolean deleteTempFile;
 	protected FastByteArrayOutputStream baBuffer;
-	protected FileOutputStream strBuffer;
+	protected OutputStream strBuffer;
 	protected OutputStream os;
 	
 	protected byte[] tempBuffer;
@@ -69,9 +62,6 @@ public class VirtualTempFile
 	protected int maxChunkSize;
 	
 	protected long vLength;
-	
-	protected String temp_prefix;
-	protected String temp_postfix;
 	
 	/**
 	 * Constructor for a fresh VirtualTempFile
@@ -100,8 +90,6 @@ public class VirtualTempFile
 		deleteTempFile = true;
 		
 		os = baBuffer;
-		temp_prefix = DEFAULT_TEMP_PREFIX;
-		temp_postfix = DEFAULT_TEMP_POSTFIX;
 	}
 	
 	/**
@@ -126,12 +114,10 @@ public class VirtualTempFile
 		strBuffer = null;
 		os = null;
 		
-		tempFile = theFile;
+		tempFile = theFile.toPath();
 		deleteTempFile = false;
 		vLength = theFile.length();
 		tempBuffer = null;
-		temp_prefix = DEFAULT_TEMP_PREFIX;
-		temp_postfix = DEFAULT_TEMP_POSTFIX;
 	}
 	
 	/**
@@ -156,9 +142,7 @@ public class VirtualTempFile
 		baBuffer = null;
 		strBuffer = null;
 		os = null;
-		
-		temp_prefix = DEFAULT_TEMP_PREFIX;
-		temp_postfix = DEFAULT_TEMP_POSTFIX;
+
 		tempFile = null;
 		deleteTempFile = true;
 		vLength = theBlock.length;
@@ -166,56 +150,19 @@ public class VirtualTempFile
 			tempBuffer = theBlock;
 		} else {
 			try {
-		        tempFile = File.createTempFile(temp_prefix, temp_postfix);
-		        
-		        tempFile.deleteOnExit();
-		        LOG.debug("Writing to temporary file: " + tempFile.getName());
+				final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+		        tempFile = temporaryFileManager.getTemporaryFile();
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("Writing to temporary file: " + FileUtils.fileName(tempFile));
+				}
 
-				try (final OutputStream tmpBuffer = new FileOutputStream(tempFile)) {
+				try (final OutputStream tmpBuffer = Files.newOutputStream(tempFile)) {
 					tmpBuffer.write(theBlock);
 				}
 			} catch(final IOException ioe) {
 				// Do Nothing(R)
 			}
 		}
-	}
-	
-	/**
-	 * The prefix string used when the temp file is going to be created
-	 * @return prefix string
-	 */
-	public String getTempPrefix() {
-		return temp_prefix;
-	}
-	
-	/**
-	 * The postfix string used when the temp file is going to be created
-	 * @return  postfix string
-	 */
-	public String getTempPostfix() {
-		return temp_postfix;
-	}
-	
-	/**
-	 * It sets the used prefix string on temp filename creation
-	 * @param newPrefix
-	 */
-	public void setTempPrefix(String newPrefix) {
-		if(newPrefix==null)
-			{newPrefix=DEFAULT_TEMP_PREFIX;}
-		
-		temp_prefix = newPrefix;
-	}
-	
-	/**
-	 * It sets the used prefix string on temp filename creation
-	 * @param newPostfix
-	 */
-	public void setTempPostfix(String newPostfix) {
-		if(newPostfix==null)
-			{newPostfix=DEFAULT_TEMP_POSTFIX;}
-		
-		temp_postfix = newPostfix;
 	}
 	
 	/**
@@ -233,7 +180,7 @@ public class VirtualTempFile
 		if(strBuffer!=null) {
 			strBuffer.close();
 			strBuffer = null;
-			vLength = tempFile.length();
+			vLength = Files.size(tempFile);
 		}
 		
 		if(os!=null)
@@ -266,16 +213,17 @@ public class VirtualTempFile
 		if(os!=null)  {close();}
 		
 		if(tempFile!=null) {
-	        final RandomAccessFile raf = new RandomAccessFile(tempFile, "r");
-	        raf.seek(offset);
-	        long remaining = raf.length() - offset;
-	        if(remaining > maxChunkSize)
-	            {remaining = maxChunkSize;}
-	        else if(remaining<0)
-	        	{remaining = 0;}
-	        data = new byte[(int)remaining];
-	        raf.readFully(data);
-	        raf.close();
+	        try(final RandomAccessFile raf = new RandomAccessFile(tempFile.toFile(), "r")) {
+				raf.seek(offset);
+				long remaining = raf.length() - offset;
+				if (remaining > maxChunkSize) {
+					remaining = maxChunkSize;
+				} else if (remaining < 0) {
+					remaining = 0;
+				}
+				data = new byte[(int) remaining];
+				raf.readFully(data);
+			}
 		} else if(tempBuffer!=null) {
 			long remaining = tempBuffer.length - offset;
 	        if(remaining > maxChunkSize)
@@ -330,7 +278,7 @@ public class VirtualTempFile
 			}
 			
 			if(deleteTempFile)
-				{tempFile.delete();}
+				{FileUtils.deleteQuietly(tempFile);}
 			tempFile=null;
 		}
 		
@@ -354,12 +302,14 @@ public class VirtualTempFile
 		throws IOException
 	{
 		if(tempFile==null) {
-			tempFile = File.createTempFile(temp_prefix, temp_postfix);
+			final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+			tempFile = temporaryFileManager.getTemporaryFile();
 
-			tempFile.deleteOnExit();
-			LOG.debug("Writing to temporary file: " + tempFile.getName());
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Writing to temporary file: " + FileUtils.fileName(tempFile));
+			}
 
-			strBuffer = new FileOutputStream(tempFile);
+			strBuffer = Files.newOutputStream(tempFile);
 			strBuffer.write(baBuffer.toByteArray());
 			os = strBuffer;
 		}
@@ -439,7 +389,7 @@ public class VirtualTempFile
 		
 		InputStream result = null;
 		if(tempFile!=null) {
-			result = new BufferedInputStream(new FileInputStream(tempFile),655360);
+			result = new BufferedInputStream(Files.newInputStream(tempFile),655360);
 		} else if(tempBuffer!=null) {
 			result = new FastByteArrayInputStream(tempBuffer);
 		}
@@ -477,7 +427,7 @@ public class VirtualTempFile
 		// Second, close
 		if(os!=null)  {close();}
 		
-		final File retFile = tempFile;
+		final File retFile = tempFile.toFile();
 		
 		// From this point the tempFile is not managed any more by this VirtualTempFile
 		tempFile = null;
@@ -492,21 +442,8 @@ public class VirtualTempFile
 	public void writeToStream(OutputStream out)
 		throws IOException
 	{
-		final InputStream result = null;
 		if(tempFile!=null) {
-//			byte[] writeBuffer=new byte[65536];
-			final InputStream input = new BufferedInputStream(new FileInputStream(tempFile));
-            IOUtils.copy(input, out);
-            IOUtils.closeQuietly(input);
-
-//			try {
-//				int readBytes;
-//				while((readBytes = input.read(writeBuffer,0,writeBuffer.length))!=-1) {
-//					out.write(writeBuffer,0,readBytes);
-//				}
-//			} finally {
-//				input.close();
-//			}
+			Files.copy(tempFile, out);
 		} else if(tempBuffer!=null) {
 			out.write(tempBuffer);
 		}

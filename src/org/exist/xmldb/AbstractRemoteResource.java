@@ -285,8 +285,6 @@ public abstract class AbstractRemoteResource extends AbstractRemote
 
         try {
             final VirtualTempFile vtmpfile = new VirtualTempFile();
-            vtmpfile.setTempPrefix("eXistARR");
-            vtmpfile.setTempPostfix("XMLResource".equals(getResourceType()) ? ".xml" : ".bin");
 
             Map table = (Map) collection.getClient().execute(command, params);
 

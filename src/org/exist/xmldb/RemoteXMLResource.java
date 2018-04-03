@@ -242,8 +242,6 @@ public class RemoteXMLResource
     public void setContentAsDOM(final Node root) throws XMLDBException {
         try {
             final VirtualTempFile vtmpfile = new VirtualTempFile();
-            vtmpfile.setTempPrefix("eXistRXR");
-            vtmpfile.setTempPostfix(".xml");
 
             try (final OutputStreamWriter osw = new OutputStreamWriter(vtmpfile, "UTF-8")) {
                 final DOMSerializer xmlout = new DOMSerializer(osw, getProperties());
@@ -303,8 +301,6 @@ public class RemoteXMLResource
         public void startDocument() throws SAXException {
             try {
                 vtmpfile = new VirtualTempFile();
-                vtmpfile.setTempPrefix("eXistRXR");
-                vtmpfile.setTempPostfix(".xml");
 
                 writer = new OutputStreamWriter(vtmpfile, "UTF-8");
                 setOutput(writer, new Properties());

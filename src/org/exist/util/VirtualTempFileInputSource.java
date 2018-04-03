@@ -63,7 +63,7 @@ public class VirtualTempFileInputSource extends EXistInputSource {
 		}
 		
 		if(vtempFile.tempFile != null) {
-			super.setSystemId(vtempFile.tempFile.toURI().toASCIIString());
+			super.setSystemId(vtempFile.tempFile.toUri().toASCIIString());
 		}
 	}
 	
@@ -165,7 +165,7 @@ public class VirtualTempFileInputSource extends EXistInputSource {
 	public String getSymbolicPath() {
 		assertOpen();
 		return file
-				.flatMap(f -> f.fold(l -> Optional.of(l.toAbsolutePath().toString()), r -> Optional.ofNullable(r.tempFile).map(File::getAbsolutePath)))
+				.flatMap(f -> f.fold(l -> Optional.of(l.toAbsolutePath().toString()), r -> Optional.ofNullable(r.tempFile).map(Path::toAbsolutePath).map(Path::toString)))
 				.orElse(null);
 	}
 

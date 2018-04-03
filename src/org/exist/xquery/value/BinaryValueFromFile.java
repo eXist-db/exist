@@ -5,11 +5,15 @@ import org.exist.util.io.ByteBufferInputStream;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
+import java.nio.file.Path;
 
 /**
  * Representation of an XSD binary value e.g. (xs:base64Binary or xs:hexBinary)
@@ -19,51 +23,49 @@ import java.nio.channels.FileChannel.MapMode;
  */
 public class BinaryValueFromFile extends BinaryValue {
 
-    private final File file;
+    private final Path file;
     private final FileChannel channel;
     private final MappedByteBuffer buf;
 
-    protected BinaryValueFromFile(BinaryValueManager manager, BinaryValueType binaryValueType, File file) throws XPathException {
+    protected BinaryValueFromFile(final BinaryValueManager manager, final BinaryValueType binaryValueType, final Path file) throws XPathException {
         super(manager, binaryValueType);
         try {
             this.file = file;
-            this.channel = new RandomAccessFile(file, "r").getChannel();
+            this.channel = new RandomAccessFile(file.toFile(), "r").getChannel();
             this.buf = channel.map(MapMode.READ_ONLY, 0, channel.size());
         } catch (final IOException ioe) {
             throw new XPathException(ioe);
         }
     }
 
-    public static BinaryValueFromFile getInstance(BinaryValueManager manager, BinaryValueType binaryValueType, File file) throws XPathException {
+    public static BinaryValueFromFile getInstance(final BinaryValueManager manager, final BinaryValueType binaryValueType, final Path file) throws XPathException {
         final BinaryValueFromFile binaryFile = new BinaryValueFromFile(manager, binaryValueType, file);
         manager.registerBinaryValueInstance(binaryFile);
         return binaryFile;
     }
 
     @Override
-    public BinaryValue convertTo(BinaryValueType binaryValueType) throws XPathException {
+    public BinaryValue convertTo(final BinaryValueType binaryValueType) throws XPathException {
         final BinaryValueFromFile binaryFile = new BinaryValueFromFile(getManager(), binaryValueType, file);
         getManager().registerBinaryValueInstance(binaryFile);
         return binaryFile;
     }
 
     @Override
-    public void streamBinaryTo(OutputStream os) throws IOException {
+    public void streamBinaryTo(final OutputStream os) throws IOException {
         if (!channel.isOpen()) {
             throw new IOException("Underlying channel has been closed");
         }
 
         try {
-            byte data[] = new byte[READ_BUFFER_SIZE];
+            final byte data[] = new byte[READ_BUFFER_SIZE];
             while (buf.hasRemaining()) {
                 final int remaining = buf.remaining();
-                if (remaining < READ_BUFFER_SIZE) {
-                    data = new byte[remaining];
-                }
+                final int readLen = Math.min(remaining, READ_BUFFER_SIZE);
 
-                buf.get(data);
+                buf.get(data, 0, readLen);
 
-                os.write(data, 0, data.length);
+                os.write(data, 0, readLen);
             }
             os.flush();
         } finally {
@@ -104,7 +106,7 @@ public class BinaryValueFromFile extends BinaryValue {
     }
 
     @Override
-    public void destroy(XQueryContext context, Sequence contextSequence) {
+    public void destroy(final XQueryContext context, final Sequence contextSequence) {
         // do not close if this object is part of the contextSequence
         if (contextSequence == this ||
                 (contextSequence instanceof ValueSequence && ((ValueSequence) contextSequence).containsValue(this))) {

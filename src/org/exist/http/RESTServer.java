@@ -1040,8 +1040,6 @@ public class RESTServer {
                 // to a temporary file first.
 
                 vtempFile = new VirtualTempFile();
-                vtempFile.setTempPrefix("existSRV");
-                vtempFile.setTempPostfix(".tmp");
                 vtempFile.write(is, len);
                 vtempFile.close();
             }

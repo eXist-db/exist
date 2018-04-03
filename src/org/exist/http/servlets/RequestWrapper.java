@@ -22,10 +22,10 @@
  */
 package org.exist.http.servlets;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
 import java.security.Principal;
 import java.util.Enumeration;
 import java.util.List;
@@ -35,93 +35,93 @@ import javax.servlet.http.Cookie;
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public interface RequestWrapper {
+ public interface RequestWrapper {
 
-    public Object getAttribute(String name);
+     Object getAttribute(String name);
 
-    public Enumeration<String> getAttributeNames();
+     Enumeration<String> getAttributeNames();
     
-    public String getCharacterEncoding();
+     String getCharacterEncoding();
 	
-	public long getContentLength();
+	 long getContentLength();
 	
-	public InputStream getInputStream() throws IOException;
+	 InputStream getInputStream() throws IOException;
 	
-	public Cookie[] getCookies();
+	 Cookie[] getCookies();
 	
-	public String getContentType();
+	 String getContentType();
 	
-	public String getContextPath();
+	 String getContextPath();
 	
-	public String getHeader(String arg0);
+	 String getHeader(String arg0);
 	
-	public Enumeration getHeaderNames();
+	 Enumeration getHeaderNames();
 	
-	public Enumeration getHeaders(String arg0);
+	 Enumeration getHeaders(String arg0);
 	
-	public String getMethod();
+	 String getMethod();
 	
-	public String getParameter(String arg0);
+	 String getParameter(String arg0);
 	
-	public Enumeration<String> getParameterNames();
+	 Enumeration<String> getParameterNames();
 	
-	public String[] getParameterValues(String arg0);
+	 String[] getParameterValues(String arg0);
 	
-	public List<File> getFileUploadParam(String parameter);
+	 List<Path> getFileUploadParam(String parameter);
 	
-	public List<String> getUploadedFileName(String parameter);
+	 List<String> getUploadedFileName(String parameter);
 	
-	public String getPathInfo();
+	 String getPathInfo();
 	
-	public String getPathTranslated();
+	 String getPathTranslated();
 	
-	public String getProtocol();
+	 String getProtocol();
 	
-	public String getQueryString();
+	 String getQueryString();
 	
-	public String getRemoteAddr();
+	 String getRemoteAddr();
 	
-	public String getRemoteHost();
+	 String getRemoteHost();
 	
-	public int getRemotePort();
+	 int getRemotePort();
 	
-	public String getRemoteUser();
+	 String getRemoteUser();
 	
-	public String getRequestedSessionId();
+	 String getRequestedSessionId();
 	
-	public String getRequestURI();
+	 String getRequestURI();
 	
-	public StringBuffer getRequestURL();
+	 StringBuffer getRequestURL();
 	
-	public String getScheme();
+	 String getScheme();
 	
-	public String getServerName();
+	 String getServerName();
 	
-	public int getServerPort();
+	 int getServerPort();
 	
-	public String getServletPath();
+	 String getServletPath();
 	
-	public SessionWrapper getSession();
+	 SessionWrapper getSession();
 	
-	public SessionWrapper getSession(boolean arg0);
+	 SessionWrapper getSession(boolean arg0);
 	
-	public Principal getUserPrincipal();
+	 Principal getUserPrincipal();
 	
-	public boolean isRequestedSessionIdFromCookie();
+	 boolean isRequestedSessionIdFromCookie();
 	
-	public boolean isRequestedSessionIdFromURL();
+	 boolean isRequestedSessionIdFromURL();
 	
-	public boolean isRequestedSessionIdValid();
+	 boolean isRequestedSessionIdValid();
 	
-	public boolean isSecure();
+	 boolean isSecure();
 	
-	public boolean isUserInRole(String arg0);
+	 boolean isUserInRole(String arg0);
 	
-	public void removeAttribute(String arg0);
+	 void removeAttribute(String arg0);
 	
-	public void setAttribute(String arg0, Object arg1);
+	 void setAttribute(String arg0, Object arg1);
 	
-	public void setCharacterEncoding(String arg0) throws UnsupportedEncodingException;
+	 void setCharacterEncoding(String arg0) throws UnsupportedEncodingException;
 
-        public boolean isMultipartContent();
+         boolean isMultipartContent();
 }

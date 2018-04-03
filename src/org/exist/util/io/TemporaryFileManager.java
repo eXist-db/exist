@@ -30,8 +30,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Stack;
+import java.util.Deque;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
@@ -46,7 +47,7 @@ import org.exist.util.FileUtils;
  * but finished with temporary files will be re-used where possible if they
  * cannot be deleted.
  *
- * @version 1.0
+ * @version 1.1
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
@@ -55,7 +56,7 @@ public class TemporaryFileManager {
     private final static Log LOG = LogFactory.getLog(TemporaryFileManager.class);
 
     private final static String FOLDER_PREFIX = "_mmtfm_";
-    private final Stack<Path> available = new Stack<>();
+    private final Deque<Path> available = new ConcurrentLinkedDeque<>();
     private final Path tmpFolder;
 
     private final static TemporaryFileManager instance = new TemporaryFileManager();
@@ -82,14 +83,7 @@ public class TemporaryFileManager {
     }
 
     public final Path getTemporaryFile() throws IOException {
-
-        Path tempFile = null;
-
-        synchronized(available) {
-            if(!available.empty()) {
-                tempFile = available.pop();
-            }
-        }
+        Path tempFile = available.poll();
 
         if(tempFile == null) {
             tempFile = Files.createTempFile(tmpFolder, "mmtf_" + System.currentTimeMillis(), ".tmp");
@@ -106,7 +100,6 @@ public class TemporaryFileManager {
         //Check if tempFile is still present ..
         if (Files.exists(tempFile)) {
 
-
             boolean deleted = false;
             try {
                 deleted = Files.deleteIfExists(tempFile);
@@ -114,25 +107,24 @@ public class TemporaryFileManager {
                 LOG.error("Unable to delete temporary file: " + tempFile.toAbsolutePath().toString(), e);
             }
             if(deleted) {
-                LOG.debug("Deleted temporary file: " + tempFile.toAbsolutePath().toString());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Deleted temporary file: " + tempFile.toAbsolutePath().toString());
+                }
             } else {
-                LOG.debug("Could not delete temporary file: " + tempFile.toAbsolutePath().toString() + ". Returning to stack for re-use.");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Could not delete temporary file: " + tempFile.toAbsolutePath().toString() + ". Returning to stack for re-use.");
+                }
 
-                //if we couldnt delete it, add it to the stack of available files
+                //if we couldn't delete it, add it to the deque of available files
                 //for reuse in the future.
                 //Typically there are problems deleting these files on Windows
                 //platforms which is why this facility was added
-                synchronized(available) {
-                    //Check if tempFile is not allready present in stack ...
-                    if (available.contains(tempFile)) {
-                        LOG.debug("Temporary file: " + tempFile.toAbsolutePath().toString() + " already in stack. Skipping.");
-                    } else {
-                        available.push(tempFile);
-                    }
-                }
+                available.push(tempFile);
             }
         } else {
-            LOG.debug("Trying to delete non existing file: " + tempFile.toAbsolutePath().toString());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Trying to delete non existing file: " + tempFile.toAbsolutePath().toString());
+            }
         }
     }
 

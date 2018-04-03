@@ -22,13 +22,14 @@
  */
 package org.exist.xquery.functions.request;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
+import org.exist.util.FileUtils;
 import org.exist.xquery.*;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -62,9 +63,7 @@ public class GetUploadedFileSize extends BasicFunction {
 		super(context, signature);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
+	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		
@@ -84,13 +83,13 @@ public class GetUploadedFileSize extends BasicFunction {
 		final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper) {
 			final RequestWrapper request = (RequestWrapper)value.getObject();
-			final List<File> files = request.getFileUploadParam(uploadParamName);
+			final List<Path> files = request.getFileUploadParam(uploadParamName);
 			if(files == null) {
 				return Sequence.EMPTY_SEQUENCE;
 			}
 			final ValueSequence result = new ValueSequence();
-			for (final File file : files) {
-				result.add(new DoubleValue(file.length()));
+			for (final Path file : files) {
+				result.add(new DoubleValue(FileUtils.sizeQuietly(file)));
 			}
 			return result;
 		} else

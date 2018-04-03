@@ -104,17 +104,6 @@ public class Resource extends File {
         return new Resource(dir, prefix + Long.toString(n) + suffix);
     }
 
-    public static File createTempFile(String prefix, String suffix, File directory) throws IOException {
-        if (prefix.length() < 3) {
-            throw new IllegalArgumentException("Prefix string too short");
-        }
-        if (suffix == null) {
-            suffix = ".tmp";
-        }
-
-        return generateFile(prefix, suffix, directory);
-    }
-
     protected XmldbURI uri;
 
     protected boolean initialized = false;
@@ -417,8 +406,8 @@ public class Resource extends File {
             serializer.setUser(broker.getCurrentSubject());
             serializer.setProperties(XML_OUTPUT_PROPERTIES);
 
-            file = Files.createTempFile("eXist-resource-", ".xml");
-            file.toFile().deleteOnExit();
+            final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+            file = temporaryFileManager.getTemporaryFile();
 
             try (final Writer w = Files.newBufferedWriter(file, UTF_8)) {
                 serializer.serialize(doc, w);
@@ -528,38 +517,30 @@ public class Resource extends File {
                 serializer.setUser(broker.getCurrentSubject());
                 serializer.setProperties(XML_OUTPUT_PROPERTIES);
 
-                File tempFile = null;
-                FileInputStream is = null;
+                final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+                Path tempFile = null;
                 try {
-                    tempFile = File.createTempFile("eXist-resource-", ".xml");
-                    tempFile.deleteOnExit();
+                    tempFile = temporaryFileManager.getTemporaryFile();
 
-                    final Writer w = new OutputStreamWriter(new FileOutputStream(tempFile), "UTF-8");
-
-                    serializer.serialize(doc, w);
-                    w.flush();
-                    w.close();
-
-                    is = new FileInputStream(tempFile);
-
-                    final DocumentMetadata meta = doc.getMetadata();
-
-                    final Date created = new Date(meta.getCreated());
-                    final Date lastModified = new Date(meta.getLastModified());
-
-                    BinaryDocument binary = destination.validateBinaryResource(txn, broker, newName);
-
-                    binary = destination.addBinaryResource(txn, broker, binary, is, mimeType.getName(), -1, created, lastModified);
-
-                    source.removeXMLResource(txn, broker, doc.getFileURI());
-
-                } finally {
-                    if (is != null) {
-                        is.close();
+                    try(final Writer w = Files.newBufferedWriter(tempFile, UTF_8)) {
+                        serializer.serialize(doc, w);
                     }
 
+                    try (final InputStream is = Files.newInputStream(tempFile)) {
+                        final DocumentMetadata meta = doc.getMetadata();
+
+                        final Date created = new Date(meta.getCreated());
+                        final Date lastModified = new Date(meta.getLastModified());
+
+                        BinaryDocument binary = destination.validateBinaryResource(txn, broker, newName);
+
+                        binary = destination.addBinaryResource(txn, broker, binary, is, mimeType.getName(), -1, created, lastModified);
+
+                        source.removeXMLResource(txn, broker, doc.getFileURI());
+                    }
+                } finally {
                     if (tempFile != null) {
-                        tempFile.delete();
+                        temporaryFileManager.returnTemporaryFile(tempFile);
                     }
                 }
             }

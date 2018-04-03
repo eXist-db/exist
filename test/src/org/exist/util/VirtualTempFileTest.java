@@ -21,8 +21,8 @@
 package org.exist.util;
 
 import com.googlecode.junittoolbox.ParallelRunner;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.junit.Test;
@@ -52,7 +52,7 @@ public class VirtualTempFileTest {
 		vtempFile.write(testString,0,testStringLength);
 		vtempFile.close();
 		
-		Assert.assertFalse(vtempFile.getContent() instanceof File);
+		Assert.assertFalse(vtempFile.getContent() instanceof Path);
 		
 		// Test2, temp file
 		vtempFile = new VirtualTempFile(testStringLength-3,testStringLength-3);
@@ -60,7 +60,7 @@ public class VirtualTempFileTest {
 		vtempFile.write(testString,0,testStringLength);
 		vtempFile.close();
 		
-		Assert.assertTrue(vtempFile.getContent() instanceof File);
+		Assert.assertTrue(vtempFile.getContent() instanceof Path);
 		
 		// Test3, no temp file just at the limit
 		vtempFile = new VirtualTempFile(testStringLength,testStringLength);
@@ -68,7 +68,7 @@ public class VirtualTempFileTest {
 		vtempFile.write(testString,0,testStringLength);
 		vtempFile.close();
 		
-		Assert.assertFalse(vtempFile.getContent() instanceof File);
+		Assert.assertFalse(vtempFile.getContent() instanceof Path);
 	}
 	
 	@Test
