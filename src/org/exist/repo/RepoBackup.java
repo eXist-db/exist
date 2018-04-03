@@ -6,6 +6,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.FileUtils;
+import org.exist.util.io.TemporaryFileManager;
 import org.exist.xmldb.XmldbURI;
 
 import java.io.File;
@@ -25,7 +26,8 @@ public class RepoBackup {
     public final static String REPO_ARCHIVE = "expathrepo.zip";
 
     public static Path backup(final DBBroker broker) throws IOException {
-        final Path tempFile = Files.createTempFile("expathrepo", "zip");
+        final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+        final Path tempFile = temporaryFileManager.getTemporaryFile();
         try(final ZipOutputStream os = new ZipOutputStream(Files.newOutputStream(tempFile))) {
             final Path directory = ExistRepository.getRepositoryDir(broker.getConfiguration());
             zipDir(directory.toAbsolutePath(), os, "");

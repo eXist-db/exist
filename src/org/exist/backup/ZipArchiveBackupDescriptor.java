@@ -25,6 +25,7 @@ import org.exist.repo.RepoBackup;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
 import org.exist.util.ZipEntryInputSource;
+import org.exist.util.io.TemporaryFileManager;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -185,7 +186,8 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
         if (ze == null) {
             return null;
         }
-        final Path temp = Files.createTempFile("expathrepo", "zip");
+        final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+        final Path temp = temporaryFileManager.getTemporaryFile();
         try (final InputStream is = archive.getInputStream(ze)) {
             Files.copy(is, temp, StandardCopyOption.REPLACE_EXISTING);
         }

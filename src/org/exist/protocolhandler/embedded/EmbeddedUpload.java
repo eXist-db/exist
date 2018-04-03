@@ -42,6 +42,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
+import org.exist.util.io.TemporaryFileManager;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
 
@@ -75,9 +76,10 @@ public class EmbeddedUpload {
      * @throws IOException
      */
     public void stream(XmldbURL xmldbURL, InputStream is, Subject user) throws IOException {
-        Path tmp =null;
-        try{
-            tmp = Files.createTempFile("EMBEDDED", "tmp");
+        Path tmp = null;
+        final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+        try {
+            tmp = temporaryFileManager.getTemporaryFile();
             Files.copy(is, tmp, StandardCopyOption.REPLACE_EXISTING);
 
             // Let database read file
@@ -89,8 +91,8 @@ public class EmbeddedUpload {
             throw ex;
             
         } finally {
-            if(tmp!=null){
-                Files.delete(tmp);
+            if(tmp != null) {
+                temporaryFileManager.returnTemporaryFile(tmp);
             }
         }
     }

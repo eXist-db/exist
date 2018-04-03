@@ -659,8 +659,6 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 			if(lenstr!=null)
 				{clen = Long.parseLong(lenstr);}
 			contentBody = new VirtualTempFile();
-			contentBody.setTempPrefix("existWRP");
-			contentBody.setTempPostfix(".tmp");
 			contentBody.write(is,clen);
 			contentBody.close();
 		}

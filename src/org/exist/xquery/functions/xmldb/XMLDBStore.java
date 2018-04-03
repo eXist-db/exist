@@ -40,6 +40,7 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
+import org.exist.util.io.TemporaryFileManager;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.EXistResource;
 import org.exist.xquery.Cardinality;
@@ -284,15 +285,16 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
             resource = loadFromFile(collection, file, docName, binary, mimeType);
 
         } else {
+            final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
             Path temp = null;
             try {
-                temp = Files.createTempFile("existDBS", ".xml");
+                temp = temporaryFileManager.getTemporaryFile();
                 try(final InputStream is = uri.toURL().openStream()) {
                     Files.copy(is, temp);
                     resource = loadFromFile(collection, temp, docName, binary, mimeType);
                 } finally {
                     if(temp != null) {
-                        FileUtils.deleteQuietly(temp);
+                        temporaryFileManager.returnTemporaryFile(temp);
                     }
                 }
             } catch (final MalformedURLException e) {

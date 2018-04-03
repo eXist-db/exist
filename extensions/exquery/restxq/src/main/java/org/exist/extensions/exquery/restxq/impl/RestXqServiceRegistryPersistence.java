@@ -45,6 +45,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
+import org.exist.util.io.TemporaryFileManager;
 import org.exist.xquery.CompiledXQuery;
 import org.exquery.ExQueryException;
 import org.exquery.restxq.RestXqService;
@@ -212,7 +213,8 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
 
             final Path registryFile;
             if(temp) {
-                registryFile = Files.createTempFile(dataDir, REGISTRY_FILENAME, ".tmp");
+                final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+                registryFile = temporaryFileManager.getTemporaryFile();
             } else {
                 registryFile = dataDir.resolve(REGISTRY_FILENAME);
             }

@@ -39,6 +39,7 @@ import org.exist.repo.PackageLoader;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.util.io.TemporaryFileManager;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -281,7 +282,8 @@ public class Deploy extends BasicFunction {
             connection.connect();
 
             try(final InputStream is = connection.getInputStream()) {
-                final Path outFile = Files.createTempFile("deploy", "xar");
+                final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+                final Path outFile = temporaryFileManager.getTemporaryFile();
                 Files.copy(is, outFile, StandardCopyOption.REPLACE_EXISTING);
                 return outFile;
             } catch (IOException e) {

@@ -74,6 +74,7 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.io.FastByteArrayInputStream;
+import org.exist.util.io.TemporaryFileManager;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.validation.ValidationReport;
@@ -89,7 +90,6 @@ import org.exist.xquery.value.*;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.w3c.dom.DocumentType;
-import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -642,11 +642,9 @@ public class RpcConnection implements RpcAPI {
             VirtualTempFile vtempFile = null;
             try {
                 vtempFile = new VirtualTempFile(MAX_DOWNLOAD_CHUNK_SIZE, MAX_DOWNLOAD_CHUNK_SIZE);
-                vtempFile.setTempPrefix("eXistRPCC");
 
                 // binary check TODO dwes
                 if (document.getResourceType() == DocumentImpl.XML_FILE) {
-                    vtempFile.setTempPostfix(".xml");
                     final Serializer serializer = broker.getSerializer();
                     serializer.setProperties(toProperties(parameters));
 
@@ -654,7 +652,6 @@ public class RpcConnection implements RpcAPI {
                         serializer.serialize(document, writer);
                     }
                 } else {
-                    vtempFile.setTempPostfix(".bin");
                     broker.readBinaryResource((BinaryDocument) document, vtempFile);
                 }
             } finally {
@@ -1519,8 +1516,6 @@ public class RpcConnection implements RpcAPI {
         if (fileName == null || fileName.length() == 0) {
             // create temporary file
             vtempFile = new VirtualTempFile(MAX_DOWNLOAD_CHUNK_SIZE, MAX_DOWNLOAD_CHUNK_SIZE);
-            vtempFile.setTempPrefix("rpc");
-            vtempFile.setTempPostfix(".xml");
             final int handle = factory.resultSets.add(new SerializedResult(vtempFile));
             fileName = Integer.toString(handle);
         } else {
@@ -2113,8 +2108,6 @@ public class RpcConnection implements RpcAPI {
 
             final Map<String, Object> result = new HashMap<>();
             VirtualTempFile vtempFile = new VirtualTempFile(MAX_DOWNLOAD_CHUNK_SIZE, MAX_DOWNLOAD_CHUNK_SIZE);
-            vtempFile.setTempPrefix("eXistRPCC");
-            vtempFile.setTempPostfix(".xml");
 
             OutputStream os = null;
             if (compression) {
@@ -2235,8 +2228,6 @@ public class RpcConnection implements RpcAPI {
 
             final Map<String, Object> result = new HashMap<>();
             VirtualTempFile vtempFile = new VirtualTempFile(MAX_DOWNLOAD_CHUNK_SIZE, MAX_DOWNLOAD_CHUNK_SIZE);
-            vtempFile.setTempPrefix("eXistRPCC");
-            vtempFile.setTempPostfix(".xml");
 
             OutputStream os;
             if (compression) {
@@ -2378,8 +2369,6 @@ public class RpcConnection implements RpcAPI {
 
             final Map<String, Object> result = new HashMap<>();
             VirtualTempFile vtempFile = new VirtualTempFile(MAX_DOWNLOAD_CHUNK_SIZE, MAX_DOWNLOAD_CHUNK_SIZE);
-            vtempFile.setTempPrefix("eXistRPCC");
-            vtempFile.setTempPostfix(".xml");
 
             OutputStream os;
             if (compression) {
@@ -3425,13 +3414,13 @@ public class RpcConnection implements RpcAPI {
     @Override
     public List<String> getDocumentChunk(final String name, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException, IOException {
         final List<String> result = new ArrayList<>(2);
-        final File file = File.createTempFile("rpc", ".xml");
-        file.deleteOnExit();
-        try (final FileOutputStream os = new FileOutputStream(file.getAbsolutePath(), true)) {
+        final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+        final Path file = temporaryFileManager.getTemporaryFile();
+        try (final OutputStream os = Files.newOutputStream(file)) {
             os.write(getDocument(name, parameters));
         }
-        result.add(file.getName());
-        result.add(Long.toString(file.length()));
+        result.add(FileUtils.fileName(file));
+        result.add(Long.toString(Files.size(file)));
         return result;
     }
 

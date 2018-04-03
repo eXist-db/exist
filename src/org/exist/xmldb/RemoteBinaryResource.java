@@ -93,6 +93,8 @@ public class RemoteBinaryResource
             final Object content = vfile.getContent();
             if (content instanceof java.io.File) {
                 retval = ((java.io.File) content).getAbsolutePath();
+            } else if (content instanceof java.nio.file.Path) {
+                    retval = ((java.nio.file.Path) content).toAbsolutePath().toString();
             }
         } else if (inputSource != null && inputSource instanceof EXistInputSource) {
             retval = ((EXistInputSource) inputSource).getSymbolicPath();
