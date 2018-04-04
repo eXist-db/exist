@@ -32,6 +32,7 @@ import org.exist.http.RESTServer;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
+import org.exist.util.Configuration;
 import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.XmldbURI;
 
@@ -44,7 +45,7 @@ import java.io.IOException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Implements the REST-style interface if eXist is running within a Servlet
@@ -404,78 +405,83 @@ public class EXistServlet extends AbstractExistHttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
         HttpServletRequest request = null;
-
-        // For POST request, If we are logging the requests we must wrap
-        // HttpServletRequest in HttpServletRequestWrapper
-        // otherwise we cannot access the POST parameters from the content body
-        // of the request!!! - deliriumsky
-        final Descriptor descriptor = Descriptor.getDescriptorSingleton();
-        if (descriptor != null) {
-            if (descriptor.allowRequestLogging()) {
-                request = new HttpServletRequestWrapper(req, getFormEncoding());
+        try {
+            // For POST request, If we are logging the requests we must wrap
+            // HttpServletRequest in HttpServletRequestWrapper
+            // otherwise we cannot access the POST parameters from the content body
+            // of the request!!! - deliriumsky
+            final Descriptor descriptor = Descriptor.getDescriptorSingleton();
+            if (descriptor != null) {
+                if (descriptor.allowRequestLogging()) {
+                    request = new HttpServletRequestWrapper(() -> (String) getPool().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY), req, getFormEncoding());
+                } else {
+                    request = req;
+                }
             } else {
                 request = req;
             }
-        } else {
-            request = req;
-        }
 
-        // first, adjust the path
-        String path = request.getPathInfo();
-        if (path == null) {
-            path = "";
-        } else {
-            path = adjustPath(request);
-        }
-
-        // second, perform descriptor actions
-        if (descriptor != null && !descriptor.requestsFiltered()) {
-            // logs the request if specified in the descriptor
-            descriptor.doLogRequestInReplayLog(request);
-
-            // map's the path if a mapping is specified in the descriptor
-            path = descriptor.mapPath(path);
-        }
-
-        // third, authenticate the user
-        final Subject user = authenticate(request, response);
-        if (user == null) {
-            // You now get a challenge if there is no user
-            // response.sendError(HttpServletResponse.SC_FORBIDDEN,
-            // "Permission denied: unknown user " + "or password");
-            return;
-        }
-
-        // fourth, process the request
-        try(final DBBroker broker = getPool().get(Optional.of(user))) {
-            srvREST.doPost(broker, request, response, path);
-        } catch (final PermissionDeniedException e) {
-            // If the current user is the Default User and they do not have permission
-            // then send a challenge request to prompt the client for a username/password.
-            // Else return a FORBIDDEN Error
-            if (user != null && user.equals(getDefaultUser())) {
-                getAuthenticator().sendChallenge(request, response);
+            // first, adjust the path
+            String path = request.getPathInfo();
+            if (path == null) {
+                path = "";
             } else {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+                path = adjustPath(request);
             }
-        } catch (final EXistException e) {
-            if (response.isCommitted()) {
-                throw new ServletException(e.getMessage(), e);
+
+            // second, perform descriptor actions
+            if (descriptor != null && !descriptor.requestsFiltered()) {
+                // logs the request if specified in the descriptor
+                descriptor.doLogRequestInReplayLog(request);
+
+                // map's the path if a mapping is specified in the descriptor
+                path = descriptor.mapPath(path);
             }
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-        } catch (final BadRequestException e) {
-            if (response.isCommitted()) {
-                throw new ServletException(e.getMessage(), e);
+
+            // third, authenticate the user
+            final Subject user = authenticate(request, response);
+            if (user == null) {
+                // You now get a challenge if there is no user
+                // response.sendError(HttpServletResponse.SC_FORBIDDEN,
+                // "Permission denied: unknown user " + "or password");
+                return;
             }
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-        } catch (final NotFoundException e) {
-            if (response.isCommitted()) {
-                throw new ServletException(e.getMessage(), e);
+
+            // fourth, process the request
+            try (final DBBroker broker = getPool().get(Optional.of(user))) {
+                srvREST.doPost(broker, request, response, path);
+            } catch (final PermissionDeniedException e) {
+                // If the current user is the Default User and they do not have permission
+                // then send a challenge request to prompt the client for a username/password.
+                // Else return a FORBIDDEN Error
+                if (user != null && user.equals(getDefaultUser())) {
+                    getAuthenticator().sendChallenge(request, response);
+                } else {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+                }
+            } catch (final EXistException e) {
+                if (response.isCommitted()) {
+                    throw new ServletException(e.getMessage(), e);
+                }
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            } catch (final BadRequestException e) {
+                if (response.isCommitted()) {
+                    throw new ServletException(e.getMessage(), e);
+                }
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            } catch (final NotFoundException e) {
+                if (response.isCommitted()) {
+                    throw new ServletException(e.getMessage(), e);
+                }
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+            } catch (final Throwable e) {
+                getLog().error(e);
+                throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
             }
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-        } catch (final Throwable e) {
-            getLog().error(e);
-            throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
+        } finally {
+            if (request != null && request instanceof HttpServletRequestWrapper) {
+                ((HttpServletRequestWrapper)request).close();
+            }
         }
     }
 }

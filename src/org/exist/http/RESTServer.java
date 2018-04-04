@@ -93,8 +93,9 @@ import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
-import org.exist.util.VirtualTempFile;
-import org.exist.util.VirtualTempFileInputSource;
+import org.exist.util.io.CachingFilterInputStream;
+import org.exist.util.io.FilterInputStreamCache;
+import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
@@ -1027,22 +1028,8 @@ public class RESTServer {
         }
 
         final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
-        VirtualTempFile vtempFile = null;
         try(final Txn transaction = transact.beginTransaction()) {
             // fourth, process the request
-            try(final InputStream is = request.getInputStream()) {
-                long len = request.getContentLength();
-                final String lenstr = request.getHeader("Content-Length");
-                if (lenstr != null) {
-                    len = Long.parseLong(lenstr);
-                }
-                // put may send a lot of data, so save it
-                // to a temporary file first.
-
-                vtempFile = new VirtualTempFile();
-                vtempFile.write(is, len);
-                vtempFile.close();
-            }
 
             final XmldbURI docUri = path.lastSegment();
             final XmldbURI collUri = path.removeLastSegment();
@@ -1086,20 +1073,20 @@ public class RESTServer {
                 contentType = mime.getName();
             }
 
-            if (mime.isXMLType()) {
-                try(final VirtualTempFileInputSource vtfis = new VirtualTempFileInputSource(vtempFile, charset)) {
-                    final IndexInfo info = collection.validateXMLResource(transaction, broker, docUri, vtfis);
+            try(final FilterInputStreamCache cache = FilterInputStreamCacheFactory.getCacheInstance(() -> (String) broker.getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY), request.getInputStream());
+                final InputStream cfis = new CachingFilterInputStream(cache)) {
+
+                if (mime.isXMLType()) {
+                    cfis.mark(Integer.MAX_VALUE);
+                    final IndexInfo info = collection.validateXMLResource(transaction, broker, docUri, new InputSource(cfis));
                     info.getDocument().getMetadata().setMimeType(contentType);
-                    collection.store(transaction, broker, info, vtfis);
+                    cfis.reset();
+                    collection.store(transaction, broker, info, new InputSource(cfis));
+                    response.setStatus(HttpServletResponse.SC_CREATED);
+                } else {
+                    collection.addBinaryResource(transaction, broker, docUri, cfis, contentType, request.getContentLength());
                     response.setStatus(HttpServletResponse.SC_CREATED);
                 }
-            } else {
-
-                try(final InputStream is = vtempFile.getByteStream()) {
-                    collection.addBinaryResource(transaction, broker, docUri, is,
-                            contentType, vtempFile.length());
-                }
-                response.setStatus(HttpServletResponse.SC_CREATED);
             }
 
             transact.commit(transaction);
@@ -1119,10 +1106,6 @@ public class RESTServer {
             throw new BadRequestException("Internal error: " + e.getMessage());
         } catch (final LockException e) {
             throw new PermissionDeniedException(e.getMessage());
-        } finally {
-            if (vtempFile != null) {
-                vtempFile.delete();
-            }
         }
     }
 

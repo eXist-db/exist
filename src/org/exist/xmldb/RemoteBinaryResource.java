@@ -89,13 +89,8 @@ public class RemoteBinaryResource
     protected String getStreamSymbolicPath() {
         String retval = "<streamunknown>";
 
-        if (vfile != null) {
-            final Object content = vfile.getContent();
-            if (content instanceof java.io.File) {
-                retval = ((java.io.File) content).getAbsolutePath();
-            } else if (content instanceof java.nio.file.Path) {
-                    retval = ((java.nio.file.Path) content).toAbsolutePath().toString();
-            }
+        if (file != null) {
+            retval = file.toAbsolutePath().toString();
         } else if (inputSource != null && inputSource instanceof EXistInputSource) {
             retval = ((EXistInputSource) inputSource).getSymbolicPath();
         }

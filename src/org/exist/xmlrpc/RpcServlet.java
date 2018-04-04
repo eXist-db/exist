@@ -32,6 +32,8 @@ import org.apache.xmlrpc.webserver.XmlRpcServletServer;
 import org.exist.EXistException;
 import org.exist.http.Descriptor;
 import org.exist.http.servlets.HttpServletRequestWrapper;
+import org.exist.storage.BrokerPool;
+import org.exist.util.Configuration;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -69,30 +71,39 @@ public class RpcServlet extends XmlRpcServlet {
 
     @Override
     public void doPost(HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
-        // Request logger
-
-        final Descriptor descriptor = Descriptor.getDescriptorSingleton();
-        if (descriptor.allowRequestLogging() && !descriptor.requestsFiltered()) {
-            // Wrap HttpServletRequest, because both request Logger and xmlrpc
-            // need the request InputStream, which is consumed when read.
-            request =
-                    new HttpServletRequestWrapper(request, /*formEncoding*/ "utf-8");
-            descriptor.doLogRequestInReplayLog(request);
-        }
-
         try {
-            super.doPost(request, response);
-        } catch (final Throwable e){
-            LOG.error("Problem during XmlRpc execution", e);
-            final String exceptionMessage;
-            if (e instanceof XmlRpcException) {
-                final Throwable linkedException = ((XmlRpcException)e).linkedException;
-                LOG.error(linkedException.getMessage(), linkedException);
-                exceptionMessage = "An error occurred: " + e.getMessage() + ": " + linkedException.getMessage();
-            } else {
-                exceptionMessage = "An unknown error occurred: " + e.getMessage();
+            // Request logger
+
+            final Descriptor descriptor = Descriptor.getDescriptorSingleton();
+            if (descriptor.allowRequestLogging() && !descriptor.requestsFiltered()) {
+                // Wrap HttpServletRequest, because both request Logger and xmlrpc
+                // need the request InputStream, which is consumed when read.
+                final String cacheClass = (String) BrokerPool.getInstance().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
+                request =
+                        new HttpServletRequestWrapper(() -> cacheClass, request, /*formEncoding*/ "utf-8");
+                descriptor.doLogRequestInReplayLog(request);
             }
-            throw new ServletException(exceptionMessage, e);
+
+            try {
+                super.doPost(request, response);
+            } catch (final Throwable e) {
+                LOG.error("Problem during XmlRpc execution", e);
+                final String exceptionMessage;
+                if (e instanceof XmlRpcException) {
+                    final Throwable linkedException = ((XmlRpcException) e).linkedException;
+                    LOG.error(linkedException.getMessage(), linkedException);
+                    exceptionMessage = "An error occurred: " + e.getMessage() + ": " + linkedException.getMessage();
+                } else {
+                    exceptionMessage = "An unknown error occurred: " + e.getMessage();
+                }
+                throw new ServletException(exceptionMessage, e);
+            }
+        } catch (final EXistException e) {
+            throw new ServletException(e);
+        } finally {
+            if (request != null && request instanceof HttpServletRequestWrapper) {
+                ((HttpServletRequestWrapper)request).close();
+            }
         }
     }
 

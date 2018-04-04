@@ -21,7 +21,6 @@
  */
 package org.exist.webdav;
 
-import org.apache.commons.io.IOUtils;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -35,13 +34,13 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
+import org.exist.util.io.*;
 import org.exist.webdav.exceptions.CollectionDoesNotExistException;
 import org.exist.webdav.exceptions.CollectionExistsException;
 import org.exist.xmldb.XmldbURI;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -49,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Class for accessing the Collection class of the exist-db native API.
@@ -314,26 +315,15 @@ public class ExistCollection extends ExistResource {
         // References to the database
         Collection collection = null;
 
-        // create temp file and store. Existdb needs to read twice from a stream.
-        VirtualTempFile vtf = new VirtualTempFile();
-        try (final BufferedInputStream bis = new BufferedInputStream(is);
-             final BufferedOutputStream bos = new BufferedOutputStream(vtf)) {
-
-            // Perform actual copy
-            IOUtils.copy(bis, bos);
-        }
-        vtf.close();
-
-        // To support LockNullResource, a 0-byte XML document can received. Since 0-byte
+        // To support LockNullResource, a 0-byte XML document can be received. Since 0-byte
         // XML documents are not supported a small file will be created.
-        if (mime.isXMLType() && vtf.length() == 0L) {
 
-            if (LOG.isDebugEnabled())
+        if(mime.isXMLType() && length == 0) {
+            if (LOG.isDebugEnabled()) {
                 LOG.debug(String.format("Creating dummy XML file for null resource lock '%s'", newNameUri));
+            }
 
-            vtf = new VirtualTempFile();
-            IOUtils.write("<null_resource/>", vtf);
-            vtf.close();
+            is = new FastByteArrayInputStream("<null_resource/>".getBytes(UTF_8));
         }
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
@@ -351,28 +341,26 @@ public class ExistCollection extends ExistResource {
             }
 
 
-            if (mime.isXMLType()) {
+            try(final FilterInputStreamCache cache = FilterInputStreamCacheFactory.getCacheInstance(() -> (String) brokerPool.getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY), is);
+                    final InputStream cfis = new CachingFilterInputStream(cache)) {
+                if (mime.isXMLType()) {
+                    if (LOG.isDebugEnabled())
+                        LOG.debug(String.format("Inserting XML document '%s'", mime.getName()));
 
-                if (LOG.isDebugEnabled())
-                    LOG.debug(String.format("Inserting XML document '%s'", mime.getName()));
-
-                // Stream into database
-                try (final VirtualTempFileInputSource vtfis = new VirtualTempFileInputSource(vtf)) {
-                    IndexInfo info = collection.validateXMLResource(txn, broker, newNameUri, vtfis);
-                    DocumentImpl doc = info.getDocument();
+                    // Stream into database
+                    cfis.mark(Integer.MAX_VALUE);
+                    final IndexInfo info = collection.validateXMLResource(txn, broker, newNameUri, new InputSource(cfis));
+                    final DocumentImpl doc = info.getDocument();
                     doc.getMetadata().setMimeType(mime.getName());
-                    collection.store(txn, broker, info, vtfis);
-                }
+                    cfis.reset();
+                    collection.store(txn, broker, info, new InputSource(cfis));
+                } else {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(String.format("Inserting BINARY document '%s'", mime.getName()));
+                    }
 
-            } else {
-
-                if (LOG.isDebugEnabled())
-                    LOG.debug(String.format("Inserting BINARY document '%s'", mime.getName()));
-
-                // Stream into database
-                try (final InputStream fis = vtf.getByteStream();
-                     final InputStream bis = new BufferedInputStream(fis)) {
-                    collection.addBinaryResource(txn, broker, newNameUri, bis, mime.getName(), length);
+                    // Stream into database
+                    collection.addBinaryResource(txn, broker, newNameUri, cfis, mime.getName(), length);
                 }
             }
 
@@ -397,11 +385,6 @@ public class ExistCollection extends ExistResource {
             throw e;
 
         } finally {
-
-            if (vtf != null) {
-                vtf.delete();
-            }
-
             // TODO: check if can be done earlier
             if (collection != null) {
                 collection.release(LockMode.WRITE_LOCK);

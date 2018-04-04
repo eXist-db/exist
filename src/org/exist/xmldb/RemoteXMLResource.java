@@ -26,9 +26,9 @@ import org.apache.xmlrpc.XmlRpcException;
 import org.exist.Namespaces;
 import org.exist.dom.persistent.DocumentTypeImpl;
 import org.exist.util.MimeType;
+import org.exist.util.io.TemporaryFileManager;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.VirtualTempFile;
 import org.exist.xquery.value.StringValue;
 
 import org.w3c.dom.Document;
@@ -54,11 +54,9 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.TransformerException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringReader;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -241,9 +239,8 @@ public class RemoteXMLResource
     @Override
     public void setContentAsDOM(final Node root) throws XMLDBException {
         try {
-            final VirtualTempFile vtmpfile = new VirtualTempFile();
-
-            try (final OutputStreamWriter osw = new OutputStreamWriter(vtmpfile, "UTF-8")) {
+            final Path tempFile = TemporaryFileManager.getInstance().getTemporaryFile();
+            try (final Writer osw = Files.newBufferedWriter(tempFile, UTF_8)) {
                 final DOMSerializer xmlout = new DOMSerializer(osw, getProperties());
 
                 final short type = root.getNodeType();
@@ -252,14 +249,8 @@ public class RemoteXMLResource
                 } else {
                     throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "invalid node type");
                 }
-            } finally {
-                try {
-                    vtmpfile.close();
-                } catch (final IOException ioe) {
-                    LOG.warn(ioe.getMessage(), ioe);
-                }
             }
-            setContent(vtmpfile);
+            setContent(tempFile);
         } catch (final TransformerException | IOException ioe) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
         }
@@ -290,8 +281,8 @@ public class RemoteXMLResource
     }
 
     private class InternalXMLSerializer extends SAXSerializer {
-        VirtualTempFile vtmpfile = null;
-        OutputStreamWriter writer = null;
+        private Path tempFile = null;
+        private Writer writer = null;
 
         public InternalXMLSerializer() {
             super();
@@ -300,9 +291,9 @@ public class RemoteXMLResource
         @Override
         public void startDocument() throws SAXException {
             try {
-                vtmpfile = new VirtualTempFile();
+                tempFile = TemporaryFileManager.getInstance().getTemporaryFile();
 
-                writer = new OutputStreamWriter(vtmpfile, "UTF-8");
+                writer = Files.newBufferedWriter(tempFile, UTF_8);
                 setOutput(writer, new Properties());
 
             } catch (final IOException ioe) {
@@ -321,11 +312,7 @@ public class RemoteXMLResource
                     writer.close();
                 }
 
-                if (vtmpfile != null) {
-                    vtmpfile.close();
-                }
-
-                setContent(vtmpfile);
+                setContent(tempFile);
             } catch (final IOException | XMLDBException e) {
                 throw new SAXException("Unable to set file content containing serialized data", e);
             }

@@ -19,8 +19,10 @@
  */
 package org.exist.xmlrpc;
 
-import org.exist.util.VirtualTempFile;
+import org.exist.util.io.TemporaryFileManager;
 import org.exist.xquery.XPathException;
+
+import java.nio.file.Path;
 
 /**
  * Simple container for the results of a query. Used to cache
@@ -29,16 +31,16 @@ import org.exist.xquery.XPathException;
  * @author jmfernandez
  */
 public class SerializedResult extends AbstractCachedResult {
-    protected VirtualTempFile result;
+    protected Path result;
 
     // set upon failure
     protected XPathException exception = null;
 
-    public SerializedResult(final VirtualTempFile result) {
+    public SerializedResult(final Path result) {
         this(result, 0);
     }
 
-    public SerializedResult(final VirtualTempFile result, final long queryTime) {
+    public SerializedResult(final Path result, final long queryTime) {
         super(queryTime);
         this.result = result;
     }
@@ -51,14 +53,14 @@ public class SerializedResult extends AbstractCachedResult {
      * @return Returns the result.
      */
     @Override
-    public VirtualTempFile getResult() {
+    public Path getResult() {
         return result;
     }
 
     @Override
-    public void free() {
+    public void close() {
         if (result != null) {
-            result.delete();
+            TemporaryFileManager.getInstance().returnTemporaryFile(result);
             result = null;
         }
     }

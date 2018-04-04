@@ -20,10 +20,12 @@
 package org.exist.xmldb;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
-import java.util.function.Function;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 import javax.xml.transform.OutputKeys;
@@ -35,7 +37,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.storage.serializers.EXistOutputKeys;
-import org.exist.util.VirtualTempFile;
+import org.exist.util.io.TemporaryFileManager;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;
@@ -100,9 +102,9 @@ public class RemoteResourceSet implements ResourceSet {
         params.add(outputProperties);
 
         try {
-            VirtualTempFile vtmpfile = null;
-            try {
-                vtmpfile = new VirtualTempFile();
+
+            final Path tmpfile = TemporaryFileManager.getInstance().getTemporaryFile();
+            try (final OutputStream os = Files.newOutputStream(tmpfile)) {
 
                 Map<?, ?> table = (Map<?, ?>) collection.getClient().execute("retrieveAllFirstChunk", params);
 
@@ -119,10 +121,10 @@ public class RemoteResourceSet implements ResourceSet {
                     dec.setInput(data);
                     do {
                         decLength = dec.inflate(decResult);
-                        vtmpfile.write(decResult, 0, decLength);
+                        os.write(decResult, 0, decLength);
                     } while (decLength == decResult.length || !dec.needsInput());
                 } else {
-                    vtmpfile.write(data);
+                    os.write(data);
                 }
                 while (offset > 0) {
                     params.clear();
@@ -136,10 +138,10 @@ public class RemoteResourceSet implements ResourceSet {
                         dec.setInput(data);
                         do {
                             decLength = dec.inflate(decResult);
-                            vtmpfile.write(decResult, 0, decLength);
+                            os.write(decResult, 0, decLength);
                         } while (decLength == decResult.length || !dec.needsInput());
                     } else {
-                        vtmpfile.write(data);
+                        os.write(data);
                     }
                 }
                 if (dec != null) {
@@ -147,7 +149,7 @@ public class RemoteResourceSet implements ResourceSet {
                 }
 
                 final RemoteXMLResource res = new RemoteXMLResource(collection, handle, 0, XmldbURI.EMPTY_URI, Optional.empty());
-                res.setContent(vtmpfile);
+                res.setContent(tmpfile);
                 res.setProperties(outputProperties);
                 return res;
             } catch (final XmlRpcException xre) {
@@ -166,15 +168,9 @@ public class RemoteResourceSet implements ResourceSet {
                 return res;
             } catch (final IOException | DataFormatException ioe) {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
-            } finally {
-                if (vtmpfile != null) {
-                    try {
-                        vtmpfile.close();
-                    } catch (final IOException ioe) {
-                        //IgnoreIT(R)
-                    }
-                }
             }
+        } catch (final IOException ioe) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
         } catch (final XmlRpcException xre) {
             throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
         }

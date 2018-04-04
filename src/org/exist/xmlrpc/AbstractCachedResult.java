@@ -19,6 +19,8 @@
  */
 package org.exist.xmlrpc;
 
+import java.io.Closeable;
+
 /**
  * Simple abstract container for serialized resources or results of a query.
  * Used to cache them that may be retrieved by chunks later by the client.
@@ -26,7 +28,7 @@ package org.exist.xmlrpc;
  * @author wolf
  * @author jmfernandez
  */
-public abstract class AbstractCachedResult {
+public abstract class AbstractCachedResult implements Closeable {
 
     protected long queryTime = 0;
     protected long creationTimestamp = 0;
@@ -71,11 +73,19 @@ public abstract class AbstractCachedResult {
         return creationTimestamp;
     }
 
+    @Override
+    public abstract void close();
+
     /**
      * This abstract method must be used
      * to free internal variables.
+     *
+     * @deprecated Call {@link #close()} instead.
      */
-    public abstract void free();
+    @Deprecated
+    public final void free() {
+        close();
+    }
 
     /**
      * This abstract method returns the cached result
@@ -89,7 +99,7 @@ public abstract class AbstractCachedResult {
     protected void finalize() throws Throwable {
         // Calling free to reclaim pinned resources
         try {
-            free();
+            close();
         }
         finally {
             super.finalize();
