@@ -24,10 +24,12 @@ package org.expath.httpclient.model.exist;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import javax.xml.transform.Source;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.memtree.DocumentImpl;
@@ -64,7 +66,7 @@ public class EXistResult implements Result {
     }
 
     @Override
-    public void add(final Reader reader) throws HttpClientException {
+    public void add(final Reader reader, final Charset charset) throws HttpClientException {
 
         // START TEMP
         //TODO(AR) - replace with a deferred StringReader when eXist has this soon.
@@ -85,7 +87,7 @@ public class EXistResult implements Result {
             }
         }
         // END TEMP
-        
+
         result.add(new StringValue(builder.toString()));
     }
 
