@@ -24,22 +24,22 @@ package org.expath.httpclient.model.exist;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import javax.xml.transform.Source;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.memtree.DocumentImpl;
+import org.exist.util.io.TemporaryFileManager;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.TypeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
-import org.exist.xquery.value.Base64BinaryValueType;
-import org.exist.xquery.value.BinaryValueFromInputStream;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.ValueSequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.expath.httpclient.HttpClientException;
 import org.expath.httpclient.HttpResponse;
 import org.expath.httpclient.model.Result;
@@ -66,7 +66,7 @@ public class EXistResult implements Result {
     }
 
     @Override
-    public void add(final Reader reader) throws HttpClientException {
+    public void add(final Reader reader, final Charset charset) throws HttpClientException {
 
         // START TEMP
         //TODO(AR) - replace with a deferred StringReader when eXist has this soon.
@@ -87,16 +87,27 @@ public class EXistResult implements Result {
             }
         }
         // END TEMP
-        
+
         result.add(new StringValue(builder.toString()));
     }
 
     @Override
     public void add(final InputStream is) throws HttpClientException {
         try {
-            result.add(BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), is));
-        } catch(final XPathException xpe) {
+            // we have to make a temporary copy of the data stream, as the socket will be closed shortly
+            final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+            final Path tempFile = temporaryFileManager.getTemporaryFile();
+            Files.copy(is, tempFile, StandardCopyOption.REPLACE_EXISTING);
+
+            result.add(BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(), tempFile, (isClosed, file) -> temporaryFileManager.returnTemporaryFile(file)));
+        } catch(final XPathException | IOException xpe) {
             throw new HttpClientException("Unable to add binary value to result:" + xpe.getMessage(), xpe);
+        } finally {
+            try {
+                is.close();
+            } catch(final IOException ioe) {
+                logger.warn(ioe.getMessage(), ioe);
+            }
         }
     }
 

@@ -14,6 +14,8 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.nio.file.Path;
+import java.util.Optional;
+import java.util.function.BiConsumer;
 
 /**
  * Representation of an XSD binary value e.g. (xs:base64Binary or xs:hexBinary)
@@ -26,27 +28,35 @@ public class BinaryValueFromFile extends BinaryValue {
     private final Path file;
     private final FileChannel channel;
     private final MappedByteBuffer buf;
+    private final Optional<BiConsumer<Boolean, Path>> closeListener;
 
-    protected BinaryValueFromFile(final BinaryValueManager manager, final BinaryValueType binaryValueType, final Path file) throws XPathException {
+    protected BinaryValueFromFile(final BinaryValueManager manager, final BinaryValueType binaryValueType, final Path file, final Optional<BiConsumer<Boolean, Path>> closeListener) throws XPathException {
         super(manager, binaryValueType);
         try {
             this.file = file;
             this.channel = new RandomAccessFile(file.toFile(), "r").getChannel();
             this.buf = channel.map(MapMode.READ_ONLY, 0, channel.size());
+            this.closeListener = closeListener;
         } catch (final IOException ioe) {
             throw new XPathException(ioe);
         }
     }
 
     public static BinaryValueFromFile getInstance(final BinaryValueManager manager, final BinaryValueType binaryValueType, final Path file) throws XPathException {
-        final BinaryValueFromFile binaryFile = new BinaryValueFromFile(manager, binaryValueType, file);
+        final BinaryValueFromFile binaryFile = new BinaryValueFromFile(manager, binaryValueType, file, Optional.empty());
+        manager.registerBinaryValueInstance(binaryFile);
+        return binaryFile;
+    }
+
+    public static BinaryValueFromFile getInstance(final BinaryValueManager manager, final BinaryValueType binaryValueType, final Path file, final BiConsumer<Boolean, Path> closeListener) throws XPathException {
+        final BinaryValueFromFile binaryFile = new BinaryValueFromFile(manager, binaryValueType, file, Optional.of(closeListener));
         manager.registerBinaryValueInstance(binaryFile);
         return binaryFile;
     }
 
     @Override
     public BinaryValue convertTo(final BinaryValueType binaryValueType) throws XPathException {
-        final BinaryValueFromFile binaryFile = new BinaryValueFromFile(getManager(), binaryValueType, file);
+        final BinaryValueFromFile binaryFile = new BinaryValueFromFile(getManager(), binaryValueType, file, Optional.empty());
         getManager().registerBinaryValueInstance(binaryFile);
         return binaryFile;
     }
@@ -81,7 +91,14 @@ public class BinaryValueFromFile extends BinaryValue {
 
     @Override
     public void close() throws IOException {
-        channel.close();
+        boolean closed = false;
+        try {
+            channel.close();
+            closed = true;
+        } finally {
+            final boolean finalClosed = closed;
+            closeListener.ifPresent(cl -> cl.accept(finalClosed, file));
+        }
     }
 
     @Override
