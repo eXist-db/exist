@@ -639,43 +639,51 @@ public class RpcConnection implements RpcAPI {
 
             // A tweak for very large resources, VirtualTempFile
             final Map<String, Object> result = new HashMap<>();
-            VirtualTempFile vtempFile = null;
-            try {
-                vtempFile = new VirtualTempFile(MAX_DOWNLOAD_CHUNK_SIZE, MAX_DOWNLOAD_CHUNK_SIZE);
+            final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+            final Path tempFile = temporaryFileManager.getTemporaryFile();
 
-                // binary check TODO dwes
-                if (document.getResourceType() == DocumentImpl.XML_FILE) {
-                    final Serializer serializer = broker.getSerializer();
-                    serializer.setProperties(toProperties(parameters));
+            if (document.getResourceType() == DocumentImpl.XML_FILE) {
+                final Serializer serializer = broker.getSerializer();
+                serializer.setProperties(toProperties(parameters));
 
-                    try (final Writer writer = new OutputStreamWriter(vtempFile, encoding)) {
-                        serializer.serialize(document, writer);
-                    }
-                } else {
-                    broker.readBinaryResource((BinaryDocument) document, vtempFile);
+                try (final Writer writer = Files.newBufferedWriter(tempFile, encoding)) {
+                    serializer.serialize(document, writer);
                 }
-            } finally {
-                if (vtempFile != null) {
-                    vtempFile.close();
+            } else {
+                try (final OutputStream os = Files.newOutputStream(tempFile)) {
+                    broker.readBinaryResource((BinaryDocument) document, os);
                 }
             }
 
-            final byte[] firstChunk = vtempFile.getChunk(0);
+            final byte[] firstChunk = getChunk(tempFile, 0);
+
             result.put("data", firstChunk);
             int offset = 0;
-            if (vtempFile.length() > MAX_DOWNLOAD_CHUNK_SIZE) {
+            if (Files.size(tempFile) > MAX_DOWNLOAD_CHUNK_SIZE) {
                 offset = firstChunk.length;
 
-                final int handle = factory.resultSets.add(new SerializedResult(vtempFile));
+                final int handle = factory.resultSets.add(new SerializedResult(tempFile));
                 result.put("handle", Integer.toString(handle));
                 result.put("supports-long-offset", Boolean.TRUE);
             } else {
-                vtempFile.delete();
+                temporaryFileManager.returnTemporaryFile(tempFile);
             }
             result.put("offset", offset);
 
             return result;
         });
+    }
+
+    private byte[] getChunk(final Path file, final int offset) throws IOException {
+        final long available = Files.size(file);
+        final int len = (int)Math.min(Math.min(available, MAX_DOWNLOAD_CHUNK_SIZE), Integer.MAX_VALUE);
+
+        final byte[] chunk = new byte[len];
+        try(final InputStream is = Files.newInputStream(file)) {
+            is.skip(offset);
+            is.read(chunk);
+        }
+        return chunk;
     }
 
     @Override
@@ -690,19 +698,19 @@ public class RpcConnection implements RpcAPI {
             }
             // This will keep the serialized result in the cache
             sr.touch();
-            final VirtualTempFile vfile = sr.result;
+            final Path tempFile = sr.result;
 
-            if (offset <= 0 || offset > vfile.length()) {
+            if (offset <= 0 || offset > Files.size(tempFile)) {
                 factory.resultSets.remove(resultId);
                 throw new EXistException("No more data available");
             }
-            final byte[] chunk = vfile.getChunk(offset);
+            final byte[] chunk = getChunk(tempFile, offset);
             final long nextChunk = offset + chunk.length;
 
             final Map<String, Object> result = new HashMap<>();
             result.put("data", chunk);
             result.put("handle", handle);
-            if (nextChunk > (long) Integer.MAX_VALUE || nextChunk == vfile.length()) {
+            if (nextChunk > (long) Integer.MAX_VALUE || nextChunk == Files.size(tempFile)) {
                 factory.resultSets.remove(resultId);
                 result.put("offset", 0);
             } else {
@@ -726,20 +734,20 @@ public class RpcConnection implements RpcAPI {
             }
             // This will keep the serialized result in the cache
             sr.touch();
-            final VirtualTempFile vfile = sr.result;
+            final Path tempFile = sr.result;
 
             final long longOffset = Long.parseLong(offset);
-            if (longOffset < 0 || longOffset > vfile.length()) {
+            if (longOffset < 0 || longOffset > Files.size(tempFile)) {
                 factory.resultSets.remove(resultId);
                 throw new EXistException("No more data available");
             }
-            final byte[] chunk = vfile.getChunk(longOffset);
+            final byte[] chunk = getChunk(tempFile, (int)longOffset);
             final long nextChunk = longOffset + chunk.length;
 
             final Map<String, Object> result = new HashMap<>();
             result.put("data", chunk);
             result.put("handle", handle);
-            if (nextChunk == vfile.length()) {
+            if (nextChunk == Files.size(tempFile)) {
                 factory.resultSets.remove(resultId);
                 result.put("offset", Long.toString(0));
             } else {
@@ -1410,7 +1418,7 @@ public class RpcConnection implements RpcAPI {
 
 
             // get the source for parsing
-            SupplierE<VirtualTempFileInputSource, IOException> sourceSupplier;
+            SupplierE<FileInputSource, IOException> sourceSupplier;
             try {
                 final int handle = Integer.parseInt(localFile);
                 final SerializedResult sr = factory.resultSets.getSerializedResult(handle);
@@ -1419,7 +1427,7 @@ public class RpcConnection implements RpcAPI {
                 }
 
                 sourceSupplier = () -> {
-                    final VirtualTempFileInputSource source = new VirtualTempFileInputSource(sr.result);
+                    final FileInputSource source = new FileInputSource(sr.result);
                     sr.result = null; // de-reference the VirtualTempFile in the SerializeResult
                     factory.resultSets.remove(handle);
                     return source;
@@ -1433,11 +1441,11 @@ public class RpcConnection implements RpcAPI {
                     throw new EXistException("unable to read file " + path.toAbsolutePath().toString());
                 }
 
-                sourceSupplier = () -> new VirtualTempFileInputSource(path);
+                sourceSupplier = () -> new FileInputSource(path);
             }
 
             // parse the source
-            try (final VirtualTempFileInputSource source = sourceSupplier.get()) {
+            try (final FileInputSource source = sourceSupplier.get()) {
                 final MimeType mime = Optional.ofNullable(MimeTable.getInstance().getContentType(mimeType)).orElse(MimeType.BINARY_TYPE);
                 final boolean treatAsXML = (isXML != null && isXML) || (isXML == null && mime.isXMLType());
 
@@ -1512,11 +1520,11 @@ public class RpcConnection implements RpcAPI {
 
     public String upload(final byte[] chunk, final int length, String fileName, final boolean compressed)
             throws EXistException, IOException {
-        VirtualTempFile vtempFile;
+        final Path tempFile;
         if (fileName == null || fileName.length() == 0) {
             // create temporary file
-            vtempFile = new VirtualTempFile(MAX_DOWNLOAD_CHUNK_SIZE, MAX_DOWNLOAD_CHUNK_SIZE);
-            final int handle = factory.resultSets.add(new SerializedResult(vtempFile));
+            tempFile = TemporaryFileManager.getInstance().getTemporaryFile();
+            final int handle = factory.resultSets.add(new SerializedResult(tempFile));
             fileName = Integer.toString(handle);
         } else {
 //            if(LOG.isDebugEnabled()) {
@@ -1530,15 +1538,18 @@ public class RpcConnection implements RpcAPI {
                 }
                 // This will keep the serialized result in the cache
                 sr.touch();
-                vtempFile = sr.result;
+                tempFile = sr.result;
             } catch (final NumberFormatException nfe) {
                 throw new EXistException("Syntactically invalid handle specified");
             }
         }
-        if (compressed) {
-            Compressor.uncompress(chunk, vtempFile);
-        } else {
-            vtempFile.write(chunk, 0, length);
+
+        try (final OutputStream os = Files.newOutputStream(tempFile)) {
+            if (compressed) {
+                Compressor.uncompress(chunk, os);
+            } else {
+                os.write(chunk, 0, length);
+            }
         }
 
         return fileName;
@@ -2107,47 +2118,29 @@ public class RpcConnection implements RpcAPI {
             serializer.setProperties(toProperties(parameters));
 
             final Map<String, Object> result = new HashMap<>();
-            VirtualTempFile vtempFile = new VirtualTempFile(MAX_DOWNLOAD_CHUNK_SIZE, MAX_DOWNLOAD_CHUNK_SIZE);
+            final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+            final Path tempFile = temporaryFileManager.getTemporaryFile();
 
-            OutputStream os = null;
-            if (compression) {
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("retrieveFirstChunk with compression");
-                }
-                os = new DeflaterOutputStream(vtempFile);
-            } else {
-                os = vtempFile;
-            }
-            try {
-                try (final Writer writer = new OutputStreamWriter(os, getEncoding(parameters))) {
-                    serializer.serialize(node, writer);
-                }
-            } finally {
-                try {
-                    os.close();
-                } catch (final IOException ioe) {
-                    //IgnoreIT(R)
-                }
-                if (os != vtempFile) {
-                    try {
-                        vtempFile.close();
-                    } catch (final IOException ioe) {
-                        //IgnoreIT(R)
-                    }
-                }
+            if (compression && LOG.isDebugEnabled()) {
+                LOG.debug("retrieveFirstChunk with compression");
             }
 
-            final byte[] firstChunk = vtempFile.getChunk(0);
+            try (final OutputStream os = compression ? new DeflaterOutputStream(Files.newOutputStream(tempFile)) : Files.newOutputStream(tempFile);
+                    final Writer writer = new OutputStreamWriter(os, getEncoding(parameters))) {
+                serializer.serialize(node, writer);
+            }
+
+            final byte[] firstChunk = getChunk(tempFile, 0);
             result.put("data", firstChunk);
             int offset = 0;
-            if (vtempFile.length() > MAX_DOWNLOAD_CHUNK_SIZE) {
+            if (Files.size(tempFile) > MAX_DOWNLOAD_CHUNK_SIZE) {
                 offset = firstChunk.length;
 
-                final int handle = factory.resultSets.add(new SerializedResult(vtempFile));
+                final int handle = factory.resultSets.add(new SerializedResult(tempFile));
                 result.put("handle", Integer.toString(handle));
                 result.put("supports-long-offset", Boolean.TRUE);
             } else {
-                vtempFile.delete();
+                temporaryFileManager.returnTemporaryFile(tempFile);
             }
             result.put("offset", offset);
             return result;
@@ -2227,61 +2220,43 @@ public class RpcConnection implements RpcAPI {
             }
 
             final Map<String, Object> result = new HashMap<>();
-            VirtualTempFile vtempFile = new VirtualTempFile(MAX_DOWNLOAD_CHUNK_SIZE, MAX_DOWNLOAD_CHUNK_SIZE);
+            final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+            final Path tempFile = temporaryFileManager.getTemporaryFile();
 
-            OutputStream os;
-            if (compression) {
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("retrieveFirstChunk with compression");
-                }
-                os = new DeflaterOutputStream(vtempFile);
-            } else {
-                os = vtempFile;
-            }
-            try {
-                try (final Writer writer = new OutputStreamWriter(os, getEncoding(parameters))) {
-                    if (Type.subTypeOf(item.getType(), Type.NODE)) {
-                        final NodeValue nodeValue = (NodeValue) item;
-                        final Serializer serializer = broker.getSerializer();
-                        serializer.reset();
-                        for (final Map.Entry<Object, Object> entry : qr.serialization.entrySet()) {
-                            parameters.put(entry.getKey().toString(), entry.getValue().toString());
-                        }
-                        serializer.setProperties(toProperties(parameters));
-
-                        serializer.serialize(nodeValue, writer);
-                    } else {
-                        writer.write(item.getStringValue());
-                    }
-                } catch (final XPathException e) {
-                    throw new EXistException(e);
-                }
-            } finally {
-                try {
-                    os.close();
-                } catch (final IOException ioe) {
-                    //IgnoreIT(R)
-                }
-                if (os != vtempFile) {
-                    try {
-                        vtempFile.close();
-                    } catch (final IOException ioe) {
-                        //IgnoreIT(R)
-                    }
-                }
+            if (compression && LOG.isDebugEnabled()) {
+                LOG.debug("retrieveFirstChunk with compression");
             }
 
-            final byte[] firstChunk = vtempFile.getChunk(0);
+            try (final OutputStream os = compression ? new DeflaterOutputStream(Files.newOutputStream(tempFile)) : Files.newOutputStream(tempFile);
+                    final Writer writer = new OutputStreamWriter(os, getEncoding(parameters))) {
+                if (Type.subTypeOf(item.getType(), Type.NODE)) {
+                    final NodeValue nodeValue = (NodeValue) item;
+                    final Serializer serializer = broker.getSerializer();
+                    serializer.reset();
+                    for (final Map.Entry<Object, Object> entry : qr.serialization.entrySet()) {
+                        parameters.put(entry.getKey().toString(), entry.getValue().toString());
+                    }
+                    serializer.setProperties(toProperties(parameters));
+
+                    serializer.serialize(nodeValue, writer);
+                } else {
+                    writer.write(item.getStringValue());
+                }
+            } catch (final XPathException e) {
+                throw new EXistException(e);
+            }
+
+            final byte[] firstChunk = getChunk(tempFile, 0);
             result.put("data", firstChunk);
             int offset = 0;
-            if (vtempFile.length() > MAX_DOWNLOAD_CHUNK_SIZE) {
+            if (Files.size(tempFile) > MAX_DOWNLOAD_CHUNK_SIZE) {
                 offset = firstChunk.length;
 
-                final int handle = factory.resultSets.add(new SerializedResult(vtempFile));
+                final int handle = factory.resultSets.add(new SerializedResult(tempFile));
                 result.put("handle", Integer.toString(handle));
                 result.put("supports-long-offset", Boolean.TRUE);
             } else {
-                vtempFile.delete();
+                temporaryFileManager.returnTemporaryFile(tempFile);
             }
             result.put("offset", offset);
             return result;
@@ -2368,82 +2343,65 @@ public class RpcConnection implements RpcAPI {
             final SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 
             final Map<String, Object> result = new HashMap<>();
-            VirtualTempFile vtempFile = new VirtualTempFile(MAX_DOWNLOAD_CHUNK_SIZE, MAX_DOWNLOAD_CHUNK_SIZE);
+            final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+            final Path tempFile = temporaryFileManager.getTemporaryFile();
 
-            OutputStream os;
-            if (compression) {
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("retrieveAllFirstChunk compression");
-                }
-                os = new DeflaterOutputStream(vtempFile);
-            } else {
-                os = vtempFile;
+            if (compression && LOG.isDebugEnabled()) {
+                LOG.debug("retrieveAllFirstChunk with compression");
             }
-            try {
-                try (final Writer writer = new OutputStreamWriter(os, getEncoding(parameters))) {
-                    handler.setOutput(writer, toProperties(parameters));
 
-                    // serialize results
-                    handler.startDocument();
-                    handler.startPrefixMapping("exist", Namespaces.EXIST_NS);
-                    final AttributesImpl attribs = new AttributesImpl();
-                    attribs.addAttribute(
-                            "",
-                            "hitCount",
-                            "hitCount",
-                            "CDATA",
-                            Integer.toString(qr.result.getItemCount()));
-                    handler.startElement(
-                            Namespaces.EXIST_NS,
-                            "result",
-                            "exist:result",
-                            attribs);
-                    Item current;
-                    char[] value;
-                    try {
-                        for (final SequenceIterator i = qr.result.iterate(); i.hasNext(); ) {
-                            current = i.nextItem();
-                            if (Type.subTypeOf(current.getType(), Type.NODE)) {
-                                ((NodeValue) current).toSAX(broker, handler, null);
-                            } else {
-                                value = current.toString().toCharArray();
-                                handler.characters(value, 0, value.length);
-                            }
-                        }
-                    } catch (final XPathException e) {
-                        throw new EXistException(e);
-                    }
-                    handler.endElement(Namespaces.EXIST_NS, "result", "exist:result");
-                    handler.endPrefixMapping("exist");
-                    handler.endDocument();
-                    SerializerPool.getInstance().returnObject(handler);
-                }
-            } finally {
+            try (final OutputStream os = compression ? new DeflaterOutputStream(Files.newOutputStream(tempFile)) : Files.newOutputStream(tempFile);
+                 final Writer writer = new OutputStreamWriter(os, getEncoding(parameters))) {
+                handler.setOutput(writer, toProperties(parameters));
+
+                // serialize results
+                handler.startDocument();
+                handler.startPrefixMapping("exist", Namespaces.EXIST_NS);
+                final AttributesImpl attribs = new AttributesImpl();
+                attribs.addAttribute(
+                        "",
+                        "hitCount",
+                        "hitCount",
+                        "CDATA",
+                        Integer.toString(qr.result.getItemCount()));
+                handler.startElement(
+                        Namespaces.EXIST_NS,
+                        "result",
+                        "exist:result",
+                        attribs);
+                Item current;
+                char[] value;
                 try {
-                    os.close();
-                } catch (final IOException ioe) {
-                    //IgnoreIT(R)
-                }
-                if (os != vtempFile) {
-                    try {
-                        vtempFile.close();
-                    } catch (final IOException ioe) {
-                        //IgnoreIT(R)
+                    for (final SequenceIterator i = qr.result.iterate(); i.hasNext(); ) {
+                        current = i.nextItem();
+                        if (Type.subTypeOf(current.getType(), Type.NODE)) {
+                            ((NodeValue) current).toSAX(broker, handler, null);
+                        } else {
+                            value = current.toString().toCharArray();
+                            handler.characters(value, 0, value.length);
+                        }
                     }
+                } catch (final XPathException e) {
+                    throw new EXistException(e);
                 }
+                handler.endElement(Namespaces.EXIST_NS, "result", "exist:result");
+                handler.endPrefixMapping("exist");
+                handler.endDocument();
+                SerializerPool.getInstance().returnObject(handler);
             }
 
-            final byte[] firstChunk = vtempFile.getChunk(0);
+
+            final byte[] firstChunk = getChunk(tempFile, 0);
             result.put("data", firstChunk);
             int offset = 0;
-            if (vtempFile.length() > MAX_DOWNLOAD_CHUNK_SIZE) {
+            if (Files.size(tempFile) > MAX_DOWNLOAD_CHUNK_SIZE) {
                 offset = firstChunk.length;
 
-                final int handle = factory.resultSets.add(new SerializedResult(vtempFile));
+                final int handle = factory.resultSets.add(new SerializedResult(tempFile));
                 result.put("handle", Integer.toString(handle));
                 result.put("supports-long-offset", Boolean.TRUE);
             } else {
-                vtempFile.delete();
+                temporaryFileManager.returnTemporaryFile(tempFile);
             }
             result.put("offset", offset);
             return result;

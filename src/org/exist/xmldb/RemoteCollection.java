@@ -26,6 +26,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -38,6 +40,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.util.Compressor;
 import org.exist.util.EXistInputSource;
+import org.exist.util.FileUtils;
 import org.xml.sax.InputSource;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -474,9 +477,15 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
     @Override
     public void storeResource(final Resource res, final Date a, final Date b) throws XMLDBException {
         final Object content = (res instanceof ExtendedResource) ? ((ExtendedResource) res).getExtendedContent() : res.getContent();
-        if (content instanceof File || content instanceof InputSource) {
+        if (content instanceof Path || content instanceof File || content instanceof InputSource) {
             long fileLength = -1;
-            if (content instanceof File) {
+            if (content instanceof Path) {
+                final Path file = (Path) content;
+                if (!Files.isReadable(file)) {
+                    throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Failed to read resource from file " + file.toAbsolutePath());
+                }
+                fileLength = FileUtils.sizeQuietly(file);
+            } else if (content instanceof File) {
                 final File file = (File) content;
                 if (!file.canRead()) {
                     throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Failed to read resource from file " + file.getAbsolutePath());

@@ -26,6 +26,7 @@
  */
 package org.exist.util.io;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
@@ -35,7 +36,7 @@ import java.io.IOException;
  * @author Tobi Krebs <tobi.krebs AT gmail.com>
  * @version 1.1
  */
-public interface FilterInputStreamCache {
+public interface FilterInputStreamCache extends Closeable {
 
     public final static int END_OF_STREAM = -1;
     public final static String INPUTSTREAM_CLOSED = "The underlying InputStream has been closed";
@@ -118,11 +119,6 @@ public interface FilterInputStreamCache {
      * @see java.io.InputStream
      */
     public int available() throws IOException;
-
-    /**
-     * @see java.io.InputStream
-     */
-    public void close() throws IOException;
 
     /**
      * @see java.io.InputStream

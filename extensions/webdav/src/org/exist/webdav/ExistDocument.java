@@ -37,7 +37,6 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
-import org.exist.util.VirtualTempFile;
 import org.exist.webdav.exceptions.DocumentAlreadyLockedException;
 import org.exist.webdav.exceptions.DocumentNotLockedException;
 import org.exist.xmldb.XmldbURI;
@@ -180,10 +179,7 @@ public class ExistDocument extends ExistResource {
                             w.flush();
                         }
 
-                        // don;t flush
-                        if (!(os instanceof VirtualTempFile)) {
-                            os.flush();
-                        }
+                        os.flush();
 
                     } catch (SAXException e) {
                         LOG.error(e);

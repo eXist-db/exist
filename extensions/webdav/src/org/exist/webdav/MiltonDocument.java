@@ -30,7 +30,6 @@ import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
-import org.exist.util.VirtualTempFile;
 import org.exist.webdav.ExistResource.Mode;
 import org.exist.webdav.exceptions.DocumentAlreadyLockedException;
 import org.exist.webdav.exceptions.DocumentNotLockedException;
@@ -39,7 +38,6 @@ import org.exist.xmldb.XmldbURI;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Map;
@@ -59,12 +57,10 @@ public class MiltonDocument extends MiltonResource
     public static final String GET_METHOD_XML_SIZE = "org.exist.webdav.GET_METHOD_XML_SIZE";
     private static SIZE_METHOD propfindSizeMethod = null;
     private static SIZE_METHOD getSizeMethod = null;
-    ;
+
     private static UserAgentHelper userAgentHelper = null;
     private ExistDocument existDocument;
 
-    ;
-    private VirtualTempFile vtf = null;
     // Only for PROPFIND the estimate size for an XML document must be shown
     private boolean isPropFind = false;
 
@@ -172,29 +168,18 @@ public class MiltonDocument extends MiltonResource
 
     @Override
     public void sendContent(OutputStream out, Range range, Map<String, String> params, String contentType)
-            throws IOException, NotAuthorizedException, BadRequestException {
+            throws IOException, NotAuthorizedException {
         try {
-            if (vtf == null) {
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("Serializing from database");
-                existDocument.stream(out);
-
-            } else {
-                // Experimental. Does not work right, the virtual file
-                // Often does not contain the right amount of bytes.
-
-                LOG.debug("Serializing from buffer");
-                InputStream is = vtf.getByteStream();
-                IOUtils.copy(is, out);
-                out.flush();
-                IOUtils.closeQuietly(is);
-                vtf.delete();
-                vtf = null;
             }
+            existDocument.stream(out);
 
         } catch (PermissionDeniedException e) {
-            LOG.debug(e.getMessage());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(e.getMessage());
+            }
             throw new NotAuthorizedException(this);
-
         } finally {
             IOUtils.closeQuietly(out);
         }
@@ -250,96 +235,36 @@ public class MiltonDocument extends MiltonResource
 
         if (existDocument.isXmlDocument()) {
             // XML document, exact size is not (directly) known)
+            if (isMacFinder || SIZE_METHOD.EXACT == propfindSizeMethod) {
 
-            if (isPropFind) {
+                // Returns the exact size, default behaviour for Finder,
+                // or when set by a system property
 
-                // PROPFIND
-                // In this scensario the XML document is not actually
-                // downloaded, only the size needs to be known.
-                // This is the most expensive scenario
-
-                if (isMacFinder || SIZE_METHOD.EXACT == propfindSizeMethod) {
-
-                    // Returns the exact size, default behaviour for Finder,
-                    // or when set by a system property
-
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(String.format("Serializing XML to /dev/null to determine size (%s) MacFinder=%s",
-                                resourceXmldbUri, isMacFinder));
-                    }
-
-                    // Stream document to '/dev/null' and count bytes
-                    ByteCountOutputStream counter = new ByteCountOutputStream();
-                    try {
-                        existDocument.stream(counter);
-
-                    } catch (Exception ex) {
-                        LOG.error(ex);
-                    }
-
-                    size = counter.getByteCount();
-
-
-                } else if (SIZE_METHOD.NULL == propfindSizeMethod) {
-
-                    // Returns size unknown. This is not supported
-                    // by MacOsX finder
-
-                    size = null;
-
-
-                } else {
-                    // Returns the estimated document size. This is the
-                    // default value, but not suitable for MacOsX Finder.
-                    size = existDocument.getContentLength();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("Serializing XML to /dev/null to determine size (%s) MacFinder=%s",
+                            resourceXmldbUri, isMacFinder));
                 }
 
+                // Stream document to '/dev/null' and count bytes
+                try (final ByteCountOutputStream counter = new ByteCountOutputStream()) {
+                    existDocument.stream(counter);
+                    size = counter.getByteCount();
+                } catch (Exception ex) {
+                    LOG.error(ex);
+                }
+
+            } else if (SIZE_METHOD.NULL == propfindSizeMethod) {
+
+                // Returns size unknown. This is not supported
+                // by MacOsX finder
+
+                size = null;
 
             } else {
-
-                // GET
-                // In this scenario, the document will actually be downloaded
-                // in the next step.
-
-                if (SIZE_METHOD.EXACT == getSizeMethod) {
-
-                    // Return the exact size by pre-serializing the document
-                    // to a buffer first. isMacFinder is not needed
-
-                    try {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug(String.format("Serializing XML to virtual file (%s)", resourceXmldbUri));
-                        }
-
-                        vtf = new VirtualTempFile();
-                        existDocument.stream(vtf);
-                        vtf.close();
-
-                    } catch (Exception ex) {
-                        LOG.error(ex);
-                    }
-
-                    size = vtf.length();
-
-
-                } else if (SIZE_METHOD.APPROXIMATE == getSizeMethod) {
-
-                    // Return approximate size, be warned to use this
-
-                    size = existDocument.getContentLength();
-                    vtf = null; // force live serialization
-
-                } else {
-
-                    // Return no size, the whole file will be downloaded
-                    // Works well for macosx finder
-
-                    size = null;
-                    vtf = null; // force live serialization
-                }
+                // Returns the estimated document size. This is the
+                // default value, but not suitable for MacOsX Finder.
+                size = existDocument.getContentLength();
             }
-
-
         } else {
             // Non XML document, actual size is known
             size = existDocument.getContentLength();

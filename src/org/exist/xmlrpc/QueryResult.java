@@ -76,7 +76,7 @@ public class QueryResult extends AbstractCachedResult {
     }
 
     @Override
-    public void free() {
+    public void close() {
         if (result != null) {
 
             //cleanup any binary values
