@@ -49,6 +49,9 @@ import java.util.function.Supplier;
  * Typically this is envisaged only being used for development or debugging purposes, and is unlikely to be compiled
  * into a production application as the reflection overhead would likely be too much of a performance drain.
  *
+ * When compiled into eXist-db, the aspect may be disabled by setting the system
+ * property `exist.ensurelocking.disabled=true`.
+ *
  * Throws a LockException(s) if the appropriate locks are not held and
  * the System property `exist.ensurelocking.enforce=true` is set.
  *
@@ -78,11 +81,13 @@ import java.util.function.Supplier;
 @Aspect
 public class EnsureLockingAspect {
 
+    public static final String PROP_DISABLED = "exist.ensurelocking.disabled";
     public static final String PROP_ENFORCE = "exist.ensurelocking.enforce";
     public static final String PROP_OUTPUT = "exist.ensurelocking.output";
     public static final String PROP_OUTPUT_STACK_DEPTH = "exist.ensurelocking.output.stack.depth";
     public static final String PROP_TRACE = "exist.ensurelocking.trace";
 
+    private static final boolean DISABLED = Boolean.parseBoolean(System.getProperty(PROP_DISABLED, "false"));
     private static final boolean ENFORCE = Boolean.parseBoolean(System.getProperty(PROP_ENFORCE, "false"));
     private static final boolean OUTPUT_TO_CONSOLE = System.getProperty(PROP_OUTPUT, "console").equals("console");
     private static final int OUTPUT_STACK_DEPTH = Integer.parseInt(System.getProperty(PROP_OUTPUT_STACK_DEPTH, "0"));
@@ -125,6 +130,10 @@ public class EnsureLockingAspect {
      */
     @Before("methodWithEnsureLockedParameters()")
     public void enforceEnsureLockedParameters(final JoinPoint joinPoint) throws LockException {
+
+        if(DISABLED) {
+            return;
+        }
 
         final MethodSignature ms = (MethodSignature)joinPoint.getSignature();
         final Method method = ms.getMethod();
@@ -198,6 +207,10 @@ public class EnsureLockingAspect {
     @AfterReturning(value = "methodWithEnsureLockedReturnType()", returning = "result")
     public void enforceEnsureLockedReturnType(final JoinPoint joinPoint, final Object result) throws Throwable {
 
+        if(DISABLED) {
+            return;
+        }
+
         final MethodSignature ms = (MethodSignature)joinPoint.getSignature();
         final Method method = ms.getMethod();
 
@@ -262,6 +275,10 @@ public class EnsureLockingAspect {
      */
     @Before("methodWithEnsureContainerLocked() && target(container)")
     public void enforceEnsureLockedContainer(final JoinPoint joinPoint, final Object container) throws LockException {
+
+        if(DISABLED) {
+            return;
+        }
 
         final MethodSignature ms = (MethodSignature)joinPoint.getSignature();
         final Method method = ms.getMethod();
@@ -336,6 +353,10 @@ public class EnsureLockingAspect {
     @Before("methodWithEnsureUnlockedParameters()")
     public void enforceEnsureUnlockedParameters(final JoinPoint joinPoint) throws LockException {
 
+        if(DISABLED) {
+            return;
+        }
+
         final MethodSignature ms = (MethodSignature)joinPoint.getSignature();
         final Method method = ms.getMethod();
         final Object[] args = joinPoint.getArgs();
@@ -408,6 +429,10 @@ public class EnsureLockingAspect {
     @AfterReturning(value = "methodWithEnsureUnlockedReturnType()", returning = "result")
     public void enforceEnsureUnlockedReturnType(final JoinPoint joinPoint, final Object result) throws Throwable {
 
+        if(DISABLED) {
+            return;
+        }
+
         final MethodSignature ms = (MethodSignature)joinPoint.getSignature();
         final Method method = ms.getMethod();
 
@@ -472,6 +497,10 @@ public class EnsureLockingAspect {
      */
     @Before("methodWithEnsureContainerUnlocked() && target(container)")
     public void enforceEnsureUnlockedContainer(final JoinPoint joinPoint, final Object container) throws LockException {
+
+        if(DISABLED) {
+            return;
+        }
 
         final MethodSignature ms = (MethodSignature)joinPoint.getSignature();
         final Method method = ms.getMethod();
