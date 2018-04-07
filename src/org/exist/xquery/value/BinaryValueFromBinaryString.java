@@ -119,6 +119,6 @@ public class BinaryValueFromBinaryString extends BinaryValue {
 
     @Override
     public void incrementSharedReferences() {
-        throw new UnsupportedOperationException();
+        // we don't need reference counting, as there is nothing to cleanup when all references are returned
     }
 }
