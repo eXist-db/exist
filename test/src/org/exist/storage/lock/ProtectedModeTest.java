@@ -28,7 +28,6 @@ import org.exist.xmldb.EXistXPathQueryService;
 import org.exist.xmldb.IndexQueryService;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -74,60 +73,45 @@ public class ProtectedModeTest {
 			+ "   </chapter>" + "</book>";
 
     @Test
-    public void queryCollection() {
+    public void queryCollection() throws XMLDBException {
+        final Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", "");
+        final EXistXPathQueryService service = (EXistXPathQueryService) root.getService("XQueryService", "1.0");
         try {
-            Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", "");
-            EXistXPathQueryService service = (EXistXPathQueryService) root.getService("XQueryService", "1.0");
-            try {
-                service.beginProtected();
-                ResourceSet result = service.query("collection('/db/protected/test5')//book");
-                assertEquals(result.getSize(), DOCUMENT_COUNT);
-            } finally {
-                service.endProtected();
-            }
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
+            service.beginProtected();
+            final ResourceSet result = service.query("collection('/db/protected/test5')//book");
+            assertEquals(result.getSize(), DOCUMENT_COUNT);
+        } finally {
+            service.endProtected();
         }
     }
 
     @Test
-    public void queryRoot() {
+    public void queryRoot() throws XMLDBException {
+        final Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", "");
+        final EXistXPathQueryService service = (EXistXPathQueryService) root.getService("XQueryService", "1.0");
         try {
-            Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", "");
-            EXistXPathQueryService service = (EXistXPathQueryService) root.getService("XQueryService", "1.0");
-            try {
-                service.beginProtected();
-                ResourceSet result = service.query("//book");
-                assertEquals(result.getSize(), COLLECTION_COUNT * DOCUMENT_COUNT);
-            } finally {
-                service.endProtected();
-            }
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
+            service.beginProtected();
+            final ResourceSet result = service.query("//book");
+            assertEquals(result.getSize(), COLLECTION_COUNT * DOCUMENT_COUNT);
+        } finally {
+            service.endProtected();
         }
     }
 
     @Test
-    public void queryDocs() {
-        try {
-            Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", "");
-            EXistXPathQueryService service = (EXistXPathQueryService) root.getService("XQueryService", "1.0");
-            Random random = new Random();
-            for (int i = 0; i < COLLECTION_COUNT; i++) {
-                String docURI = "doc('/db/protected/test" + i + "/xdb" + random.nextInt(DOCUMENT_COUNT) + ".xml')";
-                try {
-                    service.beginProtected();
-                    ResourceSet result = service.query(docURI + "//book");
-                    assertEquals(result.getSize(), 1);
-                } finally {
-                    service.endProtected();
-                }
+    public void queryDocs() throws XMLDBException {
+        final Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", "");
+        final EXistXPathQueryService service = (EXistXPathQueryService) root.getService("XQueryService", "1.0");
+        final Random random = new Random();
+        for (int i = 0; i < COLLECTION_COUNT; i++) {
+            String docURI = "doc('/db/protected/test" + i + "/xdb" + random.nextInt(DOCUMENT_COUNT) + ".xml')";
+            try {
+                service.beginProtected();
+                final ResourceSet result = service.query(docURI + "//book");
+                assertEquals(result.getSize(), 1);
+            } finally {
+                service.endProtected();
             }
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
 
@@ -158,7 +142,7 @@ public class ProtectedModeTest {
 
     @AfterClass
     public static void cleanupDb() throws XMLDBException {
-        CollectionManagementService cmgr = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService cmgr = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
         cmgr.removeCollection("protected");
     }
 }
