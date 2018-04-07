@@ -92,7 +92,7 @@ public class FileMove extends BasicFunction {
         final Path dest = FileModuleHelper.getFile(inputPath2);
 
 		try {
-			Files.move(src, dest, StandardCopyOption.ATOMIC_MOVE);
+			Files.move(src, dest);
 			return BooleanValue.TRUE;
 		} catch(final IOException ioe) {
 			LOG.error(ioe);
