@@ -23,8 +23,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
 
+import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.Namespaces;
 import org.exist.dom.persistent.DocumentTypeImpl;
+import org.exist.util.Leasable;
 import org.exist.util.MimeType;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.util.serializer.DOMSerializer;
@@ -83,19 +85,20 @@ public class RemoteXMLResource
     private Properties outputProperties = null;
     private LexicalHandler lexicalHandler = null;
 
-    public RemoteXMLResource(final RemoteCollection parent, final XmldbURI docId, final Optional<String> id)
+    public RemoteXMLResource(final Leasable<XmlRpcClient>.Lease xmlRpcClientLease, final RemoteCollection parent, final XmldbURI docId, final Optional<String> id)
             throws XMLDBException {
-        this(parent, -1, -1, docId, id);
+        this(xmlRpcClientLease, parent, -1, -1, docId, id);
     }
 
     public RemoteXMLResource(
+            final Leasable<XmlRpcClient>.Lease xmlRpcClientLease,
             final RemoteCollection parent,
             final int handle,
             final int pos,
             final XmldbURI docId,
             final Optional<String> id)
             throws XMLDBException {
-        super(parent, docId, MimeType.XML_TYPE.getName());
+        super(xmlRpcClientLease, parent, docId, MimeType.XML_TYPE.getName());
         this.handle = handle;
         this.pos = pos;
         this.id = id;
@@ -341,7 +344,7 @@ public class RemoteXMLResource
         params.add(path.toString());
 
         try {
-            final Object[] request = (Object[]) collection.getClient().execute("getDocType", params);
+            final Object[] request = (Object[]) xmlRpcClientLease.get().execute("getDocType", params);
             final DocumentType result;
             if (!"".equals(request[0])) {
                 result = new DocumentTypeImpl((String) request[0], (String) request[1], (String) request[2]);
@@ -364,7 +367,7 @@ public class RemoteXMLResource
             params.add(doctype.getSystemId() == null ? "" : doctype.getSystemId());
 
             try {
-                collection.getClient().execute("setDocType", params);
+                xmlRpcClientLease.get().execute("setDocType", params);
             } catch (final XmlRpcException e) {
                 throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
             }

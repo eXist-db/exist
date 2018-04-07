@@ -36,7 +36,9 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.Leasable;
 import org.exist.util.io.TemporaryFileManager;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
@@ -46,6 +48,8 @@ import org.xmldb.api.base.XMLDBException;
 
 public class RemoteResourceSet implements ResourceSet {
 
+    private final Leasable<XmlRpcClient> leasableXmlRpcClient;
+    private final XmlRpcClient xmlRpcClient;
     private final RemoteCollection collection;
     private int handle = -1;
     private int hash = -1;
@@ -54,7 +58,9 @@ public class RemoteResourceSet implements ResourceSet {
 
     private static Logger LOG = LogManager.getLogger(RemoteResourceSet.class.getName());
 
-    public RemoteResourceSet(final RemoteCollection col, final Properties properties, final Object[] resources, final int handle, final int hash) {
+    public RemoteResourceSet(final Leasable<XmlRpcClient> leasableXmlRpcClient, final XmlRpcClient xmlRpcClient, final RemoteCollection col, final Properties properties, final Object[] resources, final int handle, final int hash) {
+        this.leasableXmlRpcClient = leasableXmlRpcClient;
+        this.xmlRpcClient = xmlRpcClient;
         this.handle = handle;
         this.hash = hash;
         this.resources = new ArrayList(Arrays.asList(resources));
@@ -77,7 +83,7 @@ public class RemoteResourceSet implements ResourceSet {
         if (hash > -1)
             params.add(hash);
         try {
-            collection.getClient().execute("releaseQueryResult", params);
+            xmlRpcClient.execute("releaseQueryResult", params);
         } catch (final XmlRpcException e) {
             LOG.error("Failed to release query result on server: " + e.getMessage(), e);
         }
@@ -106,7 +112,7 @@ public class RemoteResourceSet implements ResourceSet {
             final Path tmpfile = TemporaryFileManager.getInstance().getTemporaryFile();
             try (final OutputStream os = Files.newOutputStream(tmpfile)) {
 
-                Map<?, ?> table = (Map<?, ?>) collection.getClient().execute("retrieveAllFirstChunk", params);
+                Map<?, ?> table = (Map<?, ?>) xmlRpcClient.execute("retrieveAllFirstChunk", params);
 
                 long offset = ((Integer) table.get("offset")).intValue();
                 byte[] data = (byte[]) table.get("data");
@@ -130,7 +136,7 @@ public class RemoteResourceSet implements ResourceSet {
                     params.clear();
                     params.add(table.get("handle"));
                     params.add(Long.toString(offset));
-                    table = (Map<?, ?>) collection.getClient().execute("getNextExtendedChunk", params);
+                    table = (Map<?, ?>) xmlRpcClient.execute("getNextExtendedChunk", params);
                     offset = Long.parseLong((String) table.get("offset"));
                     data = (byte[]) table.get("data");
                     // One for the local cached file
@@ -148,12 +154,12 @@ public class RemoteResourceSet implements ResourceSet {
                     dec.end();
                 }
 
-                final RemoteXMLResource res = new RemoteXMLResource(collection, handle, 0, XmldbURI.EMPTY_URI, Optional.empty());
+                final RemoteXMLResource res = new RemoteXMLResource(leasableXmlRpcClient.lease(), collection, handle, 0, XmldbURI.EMPTY_URI, Optional.empty());
                 res.setContent(tmpfile);
                 res.setProperties(outputProperties);
                 return res;
             } catch (final XmlRpcException xre) {
-                final byte[] data = (byte[]) collection.getClient().execute("retrieveAll", params);
+                final byte[] data = (byte[]) xmlRpcClient.execute("retrieveAll", params);
                 String content;
                 try {
                     content = new String(data, outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8"));
@@ -161,7 +167,7 @@ public class RemoteResourceSet implements ResourceSet {
                     LOG.warn(ue);
                     content = new String(data);
                 }
-                final RemoteXMLResource res = new RemoteXMLResource(collection, handle, 0,
+                final RemoteXMLResource res = new RemoteXMLResource(leasableXmlRpcClient.lease(), collection, handle, 0,
                         XmldbURI.EMPTY_URI, Optional.empty());
                 res.setContent(content);
                 res.setProperties(outputProperties);
@@ -224,7 +230,7 @@ public class RemoteResourceSet implements ResourceSet {
 
         final RemoteCollection parent;
         if (docUri.startsWith(XmldbURI.DB)) {
-            parent = RemoteCollection.instance(collection.getClient(), docUri.removeLastSegment());
+            parent = RemoteCollection.instance(leasableXmlRpcClient, docUri.removeLastSegment());
         } else {
             //fake to provide a RemoteCollection for local files that have been transferred by xml-rpc
             parent = collection;
@@ -232,13 +238,13 @@ public class RemoteResourceSet implements ResourceSet {
 
 
         parent.setProperties(outputProperties);
-        final RemoteXMLResource res = new RemoteXMLResource(parent, handle, pos, docUri, s_id);
+        final RemoteXMLResource res = new RemoteXMLResource(leasableXmlRpcClient.lease(), parent, handle, pos, docUri, s_id);
         res.setProperties(outputProperties);
         return res;
     }
 
     private RemoteXMLResource getResourceValue(final int pos, final Map<String, String> valueDetail) throws XMLDBException {
-        final RemoteXMLResource res = new RemoteXMLResource(collection, handle, pos, XmldbURI.create(Long.toString(pos)), Optional.empty());
+        final RemoteXMLResource res = new RemoteXMLResource(leasableXmlRpcClient.lease(), collection, handle, pos, XmldbURI.create(Long.toString(pos)), Optional.empty());
         res.setContent(valueDetail.get("value"));
         res.setProperties(outputProperties);
         return res;
@@ -254,7 +260,7 @@ public class RemoteResourceSet implements ResourceSet {
             throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e);
         }
 
-        final RemoteBinaryResource res = new RemoteBinaryResource(collection, XmldbURI.create(Integer.toString(pos)), type, content);
+        final RemoteBinaryResource res = new RemoteBinaryResource(leasableXmlRpcClient.lease(), collection, XmldbURI.create(Integer.toString(pos)), type, content);
         res.setProperties(outputProperties);
         return res;
     }
