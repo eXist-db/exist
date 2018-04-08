@@ -31,6 +31,8 @@ import org.exist.test.TestConstants;
 import org.exist.util.MimeType;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
+
+import static org.exist.xmlrpc.RpcConnection.MAX_DOWNLOAD_CHUNK_SIZE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -206,6 +208,90 @@ public class XmlRpcTest {
         params.add(Boolean.TRUE);
         result = (Boolean) xmlrpc.execute("storeBinary", params);
         assertTrue(result);
+    }
+
+    @Test
+    public void getDocumentDataChunked_nextChunk() throws IOException, XmlRpcException {
+        final XmlRpcClient xmlrpc = getClient();
+        List<Object> params = new ArrayList<>();
+        params.add(TARGET_COLLECTION.toString());
+        Boolean result = (Boolean) xmlrpc.execute("createCollection", params);
+        assertTrue(result);
+
+        params.clear();
+        final String generatedXml = generateXml((int)(MAX_DOWNLOAD_CHUNK_SIZE * 1.5));
+        params.add(generatedXml);
+        params.add(TARGET_RESOURCE.toString());
+        params.add(1);
+        result = (Boolean) xmlrpc.execute("parse", params);
+        assertTrue(result);
+
+        params.clear();
+        final Map<String, Object> parameters = new HashMap<>();
+        parameters.put(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        parameters.put(OutputKeys.INDENT, "no");
+        params.add(TARGET_RESOURCE.toString());
+        params.add(parameters);
+        Map table = (Map) xmlrpc.execute("getDocumentData", params);
+
+        try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+            int offset = (int) table.get("offset");
+            byte[] data = (byte[]) table.get("data");
+            os.write(data);
+            while (offset > 0) {
+                params.clear();
+                params.add(table.get("handle"));
+                params.add(offset);
+                table = (Map<?, ?>) xmlrpc.execute("getNextChunk", params);
+                offset = (int)table.get("offset");
+                data = (byte[]) table.get("data");
+                os.write(data);
+            }
+            data = os.toByteArray();
+            assertEquals(generatedXml, new String(data));
+        }
+    }
+
+    @Test
+    public void getDocumentDataChunked_nextExtendedChunk() throws IOException, XmlRpcException {
+        final XmlRpcClient xmlrpc = getClient();
+        List<Object> params = new ArrayList<>();
+        params.add(TARGET_COLLECTION.toString());
+        Boolean result = (Boolean) xmlrpc.execute("createCollection", params);
+        assertTrue(result);
+
+        params.clear();
+        final String generatedXml = generateXml((int)(MAX_DOWNLOAD_CHUNK_SIZE * 1.75));
+        params.add(generatedXml);
+        params.add(TARGET_RESOURCE.toString());
+        params.add(1);
+        result = (Boolean) xmlrpc.execute("parse", params);
+        assertTrue(result);
+
+        params.clear();
+        final Map<String, Object> parameters = new HashMap<>();
+        parameters.put(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        parameters.put(OutputKeys.INDENT, "no");
+        params.add(TARGET_RESOURCE.toString());
+        params.add(parameters);
+        Map table = (Map) xmlrpc.execute("getDocumentData", params);
+
+        try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+            long offset = (int) table.get("offset");
+            byte[] data = (byte[]) table.get("data");
+            os.write(data);
+            while (offset > 0) {
+                params.clear();
+                params.add(table.get("handle"));
+                params.add(String.valueOf(offset));
+                table = (Map<?, ?>) xmlrpc.execute("getNextExtendedChunk", params);
+                offset = Long.valueOf((String) table.get("offset"));
+                data = (byte[]) table.get("data");
+                os.write(data);
+            }
+            data = os.toByteArray();
+            assertEquals(generatedXml, new String(data));
+        }
     }
 
     @Test
@@ -464,6 +550,29 @@ public class XmlRpcTest {
 
         // execute the call
         byte[] data = (byte[]) xmlrpc.execute("getDocument", params);
+    }
+
+    private String generateXml(final int minBytes) {
+        int bytes = 0;
+        final StringBuilder builder = new StringBuilder("<container>");
+        bytes += 11;
+
+        int i = 0;
+        while (bytes < minBytes) {
+            builder.append("<num>");
+            bytes += 5;
+
+            final String n = String.valueOf(++i);
+            builder.append(n);
+            bytes += n.length();
+
+            builder.append("</num>");
+            bytes += 6;
+        }
+
+        builder.append("</container>");
+
+        return builder.toString();
     }
 
     protected XmlRpcClient getClient() throws MalformedURLException {
