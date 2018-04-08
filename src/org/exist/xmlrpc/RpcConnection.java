@@ -125,7 +125,7 @@ public class RpcConnection implements RpcAPI {
 
     private final static Logger LOG = LogManager.getLogger(RpcConnection.class);
 
-    private final static int MAX_DOWNLOAD_CHUNK_SIZE = 0x40000;
+    public final static int MAX_DOWNLOAD_CHUNK_SIZE = 1024 * 1024;  // 1 MB
     private final static Charset DEFAULT_ENCODING = StandardCharsets.UTF_8;
 
     private final XmldbRequestProcessorFactory factory;
@@ -676,12 +676,15 @@ public class RpcConnection implements RpcAPI {
 
     private byte[] getChunk(final Path file, final int offset) throws IOException {
         final long available = Files.size(file);
-        final int len = (int)Math.min(Math.min(available, MAX_DOWNLOAD_CHUNK_SIZE), Integer.MAX_VALUE);
+        final int len = (int)Math.min(Math.min(available - offset, MAX_DOWNLOAD_CHUNK_SIZE), Integer.MAX_VALUE);
 
         final byte[] chunk = new byte[len];
-        try(final InputStream is = Files.newInputStream(file)) {
+        try (final InputStream is = Files.newInputStream(file)) {
             is.skip(offset);
-            is.read(chunk);
+            final int read = is.read(chunk);
+            if(read != len) {
+                throw new IOException("Unable to read full chunk at offset: " + offset + ", from file: " + file.toAbsolutePath().toString());
+            }
         }
         return chunk;
     }
@@ -710,7 +713,7 @@ public class RpcConnection implements RpcAPI {
             final Map<String, Object> result = new HashMap<>();
             result.put("data", chunk);
             result.put("handle", handle);
-            if (nextChunk > (long) Integer.MAX_VALUE || nextChunk == Files.size(tempFile)) {
+            if (nextChunk > (long) Integer.MAX_VALUE || nextChunk >= Files.size(tempFile)) {
                 factory.resultSets.remove(resultId);
                 result.put("offset", 0);
             } else {
@@ -747,7 +750,7 @@ public class RpcConnection implements RpcAPI {
             final Map<String, Object> result = new HashMap<>();
             result.put("data", chunk);
             result.put("handle", handle);
-            if (nextChunk == Files.size(tempFile)) {
+            if (nextChunk >= Files.size(tempFile)) {
                 factory.resultSets.remove(resultId);
                 result.put("offset", Long.toString(0));
             } else {
