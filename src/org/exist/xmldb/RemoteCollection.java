@@ -110,13 +110,7 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
     }
 
     @Override
-    public void close() throws XMLDBException {
-        try {
-            xmlRpcClientLease.get().execute("sync", Collections.EMPTY_LIST);
-        } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "failed to close collection", e);
-        }
-
+    public void close() {
         xmlRpcClientLease.close();
     }
 
