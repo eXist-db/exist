@@ -45,7 +45,7 @@
             classname="com.oracle.appbundler.AppBundlerTask"
             classpath="${appbundler.jar}" />
         <bundleapp
-                jvmrequired="1.8"
+                jvmrequired="1.9"
                 outputdirectory="${dist}"
                 name="${project.name}"
                 displayname="${project.name}"
