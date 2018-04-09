@@ -22,6 +22,7 @@ package org.exist.xmldb;
 import java.util.*;
 import java.util.stream.Stream;
 import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.Account;
@@ -45,8 +46,11 @@ import org.exist.security.internal.aider.ACEAider;
  */
 public class RemoteUserManagementService extends AbstractRemote implements EXistUserManagementService {
 
-    public RemoteUserManagementService(final RemoteCollection collection) {
+    private final XmlRpcClient client;
+
+    public RemoteUserManagementService(final XmlRpcClient client, final RemoteCollection collection) {
         super(collection);
+        this.client = client;
     }
 
     @Override
@@ -76,7 +80,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             }
             params.add(metadata);
 
-            collection.getClient().execute("addAccount", params);
+            client.execute("addAccount", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -95,7 +99,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             }
             params.add(metadata);
 
-            collection.getClient().execute("addGroup", params);
+            client.execute("addGroup", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -108,7 +112,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
         params.add(groupName);
 
         try {
-            collection.getClient().execute("setUserPrimaryGroup", params);
+            client.execute("setUserPrimaryGroup", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -137,7 +141,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
                 params.add(getACEs(perm));
             }
 
-            collection.getClient().execute("setPermissions", params);
+            client.execute("setPermissions", params);
 
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
@@ -157,7 +161,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
                 params.add(getACEs(perm));
             }
 
-            collection.getClient().execute("setPermissions", params);
+            client.execute("setPermissions", params);
 
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
@@ -177,7 +181,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
                 params.add(aces);
             }
 
-            collection.getClient().execute("setPermissions", params);
+            client.execute("setPermissions", params);
 
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
@@ -197,7 +201,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
                 params.add(aces);
             }
 
-            collection.getClient().execute("setPermissions", params);
+            client.execute("setPermissions", params);
 
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
@@ -212,7 +216,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             final List<Object> params = new ArrayList<>();
             params.add(path);
             params.add(mode);
-            collection.getClient().execute("setPermissions", params);
+            client.execute("setPermissions", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -226,7 +230,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             final List<Object> params = new ArrayList<>();
             params.add(path);
             params.add(mode);
-            collection.getClient().execute("setPermissions", params);
+            client.execute("setPermissions", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -239,7 +243,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             params.add(collection.getPath());
             params.add(mode);
 
-            collection.getClient().execute("setPermissions", params);
+            client.execute("setPermissions", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -252,7 +256,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             params.add(collection.getPath());
             params.add(mode);
 
-            collection.getClient().execute("setPermissions", params);
+            client.execute("setPermissions", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -266,7 +270,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             final List<Object> params = new ArrayList<>();
             params.add(path);
             params.add(u.getName());
-            collection.getClient().execute("lockResource", params);
+            client.execute("lockResource", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -279,7 +283,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
         try {
             final List<Object> params = new ArrayList<>();
             params.add(path);
-            final String userName = (String) collection.getClient().execute("hasUserLock", params);
+            final String userName = (String) client.execute("hasUserLock", params);
             return userName != null && userName.length() > 0 ? userName : null;
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
@@ -293,7 +297,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
         try {
             final List<Object> params = new ArrayList<>();
             params.add(path);
-            collection.getClient().execute("unlockResource", params);
+            client.execute("unlockResource", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -306,7 +310,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             params.add(collection.getPath());
             params.add(group);
 
-            collection.getClient().execute("chgrp", params);
+            client.execute("chgrp", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -319,7 +323,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             params.add(collection.getPath());
             params.add(u.getName());
 
-            collection.getClient().execute("chown", params);
+            client.execute("chown", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -333,7 +337,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             params.add(u.getName());
             params.add(group);
 
-            collection.getClient().execute("chown", params);
+            client.execute("chown", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -348,7 +352,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             params.add(path);
             params.add(group);
 
-            collection.getClient().execute("chgrp", params);
+            client.execute("chgrp", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -363,7 +367,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             params.add(path);
             params.add(u.getName());
 
-            collection.getClient().execute("chown", params);
+            client.execute("chown", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -379,7 +383,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             params.add(u.getName());
             params.add(group);
 
-            collection.getClient().execute("chown", params);
+            client.execute("chown", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -401,7 +405,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
                 params.add(((RemoteCollection) cParent).getPath());
                 params.add(name);
 
-                creationTime = (Long)collection.getClient().execute("getSubCollectionCreationTime", params);
+                creationTime = (Long)client.execute("getSubCollectionCreationTime", params);
             }
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
@@ -426,7 +430,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
                 params.add(((RemoteCollection) cParent).getPath());
                 params.add(name);
 
-                final Map result = (Map) collection.getClient().execute("getSubCollectionPermissions", params);
+                final Map result = (Map) client.execute("getSubCollectionPermissions", params);
 
                 final String owner = (String) result.get("owner");
                 final String group = (String) result.get("group");
@@ -460,7 +464,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
                 params.add(((RemoteCollection) cParent).getPath());
                 params.add(name);
 
-                final Map result = (Map) collection.getClient().execute("getSubResourcePermissions", params);
+                final Map result = (Map) client.execute("getSubResourcePermissions", params);
 
                 final String owner = (String) result.get("owner");
                 final String group = (String) result.get("group");
@@ -488,7 +492,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             final List<Object> params = new ArrayList<>();
             params.add(((RemoteCollection) coll).getPath());
 
-            final Map result = (Map) collection.getClient().execute("getPermissions", params);
+            final Map result = (Map) client.execute("getPermissions", params);
 
             final String owner = (String) result.get("owner");
             final String group = (String) result.get("group");
@@ -515,7 +519,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             final List<Object> params = new ArrayList<>();
             params.add(path);
 
-            final Map result = (Map) collection.getClient().execute("getPermissions", params);
+            final Map result = (Map) client.execute("getPermissions", params);
 
             final String owner = (String) result.get("owner");
             final String group = (String) result.get("group");
@@ -536,7 +540,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
         try {
             final List<Object> params = new ArrayList<>();
             params.add(collection.getPath());
-            final Map result = (Map) collection.getClient().execute("listDocumentPermissions", params);
+            final Map result = (Map) client.execute("listDocumentPermissions", params);
             final Permission perm[] = new Permission[result.size()];
             final String[] resources = collection.listResources();
             Object[] t;
@@ -563,7 +567,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
         try {
             final List<Object> params = new ArrayList<>();
             params.add(collection.getPath());
-            final Map result = (Map) collection.getClient().execute("listCollectionPermissions", params);
+            final Map result = (Map) client.execute("listCollectionPermissions", params);
             final Permission perm[] = new Permission[result.size()];
             final String collections[] = collection.listChildCollections();
             Object[] t;
@@ -596,7 +600,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
 
             final List<Object> params = new ArrayList<>();
             params.add(name);
-            final Map tab = (Map) collection.getClient().execute("getAccount", params);
+            final Map tab = (Map) client.execute("getAccount", params);
 
             if (tab == null || tab.isEmpty()) {
                 return null;
@@ -648,7 +652,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
     @Override
     public Account[] getAccounts() throws XMLDBException {
         try {
-            final Object[] users = (Object[]) collection.getClient().execute("getAccounts", Collections.EMPTY_LIST);
+            final Object[] users = (Object[]) client.execute("getAccounts", Collections.EMPTY_LIST);
 
             final UserAider[] u = new UserAider[users.length];
             for (int i = 0; i < u.length; i++) {
@@ -691,7 +695,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             final List<Object> params = new ArrayList<>();
             params.add(name);
 
-            final Map<String, Object> tab = (Map<String, Object>) collection.getClient().execute("getGroup", params);
+            final Map<String, Object> tab = (Map<String, Object>) client.execute("getGroup", params);
 
             if (tab != null && !tab.isEmpty()) {
                 final Group group = new GroupAider((Integer) tab.get("id"), (String) tab.get("realmId"), (String) tab.get("name"));
@@ -725,7 +729,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
         try {
             final List<Object> params = new ArrayList<>();
             params.add(u.getName());
-            collection.getClient().execute("removeAccount", params);
+            client.execute("removeAccount", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -736,7 +740,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
         try {
             final List<Object> params = new ArrayList<>();
             params.add(role.getName());
-            collection.getClient().execute("removeGroup", params);
+            client.execute("removeGroup", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -767,7 +771,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
                 metadata.put(key.getNamespace(), user.getMetadataValue(key));
             }
             params.add(metadata);
-            collection.getClient().execute("updateAccount", params);
+            client.execute("updateAccount", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -791,7 +795,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             }
             params.add(metadata);
 
-            collection.getClient().execute("updateGroup", params);
+            client.execute("updateGroup", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } catch (final PermissionDeniedException pde) {
@@ -805,7 +809,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             final List<Object> params = new ArrayList<>();
             params.add(groupName);
 
-            final Object[] groupMembersResults = (Object[]) collection.getClient().execute("getGroupMembers", params);
+            final Object[] groupMembersResults = (Object[]) client.execute("getGroupMembers", params);
 
             final String[] groupMembers = new String[groupMembersResults.length];
             for (int i = 0; i < groupMembersResults.length; i++) {
@@ -824,7 +828,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             params.add(accountName);
             params.add(groupName);
 
-            collection.getClient().execute("addAccountToGroup", params);
+            client.execute("addAccountToGroup", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -837,7 +841,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             params.add(manager);
             params.add(groupName);
 
-            collection.getClient().execute("addGroupManager", params);
+            client.execute("addGroupManager", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -850,7 +854,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             params.add(groupName);
             params.add(manager);
 
-            collection.getClient().execute("removeGroupManager", params);
+            client.execute("removeGroupManager", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -863,7 +867,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             params.add(user.getName());
             final String[] gl = user.getGroups();
             params.add(gl);
-            collection.getClient().execute("updateAccount", params);
+            client.execute("updateAccount", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -875,7 +879,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             final List<Object> params = new ArrayList<>();
             params.add(group);
             params.add(account);
-            collection.getClient().execute("removeGroupMember", params);
+            client.execute("removeGroupMember", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -884,7 +888,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
     @Override
     public String[] getGroups() throws XMLDBException {
         try {
-            final Object[] v = (Object[]) collection.getClient().execute("getGroups", Collections.EMPTY_LIST);
+            final Object[] v = (Object[]) client.execute("getGroups", Collections.EMPTY_LIST);
             final String[] groups = new String[v.length];
             System.arraycopy(v, 0, groups, 0, v.length);
             return groups;

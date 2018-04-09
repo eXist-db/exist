@@ -23,7 +23,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 
+import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.util.EXistInputSource;
+import org.exist.util.Leasable;
 import org.exist.util.MimeType;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.ext.LexicalHandler;
@@ -43,12 +45,12 @@ public class RemoteBinaryResource
     private String type = null;
     private byte[] content = null;  // only used for binary results from an XQuery execution, where we have been sent the result
 
-    public RemoteBinaryResource(final RemoteCollection parent, final XmldbURI documentName) throws XMLDBException {
-        super(parent, documentName, MimeType.BINARY_TYPE.getName());
+    public RemoteBinaryResource(final Leasable<XmlRpcClient>.Lease xmlRpcClientLease, final RemoteCollection parent, final XmldbURI documentName) throws XMLDBException {
+        super(xmlRpcClientLease, parent, documentName, MimeType.BINARY_TYPE.getName());
     }
 
-    public RemoteBinaryResource(final RemoteCollection parent, final XmldbURI documentName, final String type, final byte[] content) throws XMLDBException {
-        super(parent, documentName, MimeType.BINARY_TYPE.getName());
+    public RemoteBinaryResource(final Leasable<XmlRpcClient>.Lease xmlRpcClientLease, final RemoteCollection parent, final XmldbURI documentName, final String type, final byte[] content) throws XMLDBException {
+        super(xmlRpcClientLease, parent, documentName, MimeType.BINARY_TYPE.getName());
         this.type = type;
         this.content = content;
     }

@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcClient;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
@@ -36,9 +37,11 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 
 	private final static Logger LOG = LogManager.getLogger(RemoteXUpdateQueryService.class);
 
+    private final XmlRpcClient client;
     private RemoteCollection parent;
 
-    public RemoteXUpdateQueryService(final RemoteCollection parent) {
+    public RemoteXUpdateQueryService(final XmlRpcClient client, final RemoteCollection parent) {
+        this.client = client;
         this.parent = parent;
     }
 
@@ -61,7 +64,7 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
         params.add(parent.getPath());
         params.add(xupdateData);
         try {
-            final int mods = (int) parent.getClient().execute("xupdate", params);
+            final int mods = (int) client.execute("xupdate", params);
             LOG.debug("processed " + mods + " modifications");
             return mods;
         } catch (final XmlRpcException e) {
@@ -78,7 +81,7 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
         params.add(parent.getPath() + "/" + id);
         params.add(xupdateData);
         try {
-            final int mods = (int) parent.getClient().execute("xupdateResource", params);
+            final int mods = (int) client.execute("xupdateResource", params);
             LOG.debug("processed " + mods + " modifications");
             return mods;
         } catch (final XmlRpcException e) {
