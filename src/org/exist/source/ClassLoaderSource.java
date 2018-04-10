@@ -65,4 +65,8 @@ public class ClassLoaderSource extends URLSource {
         }
         return "Classloader";
     }
+
+    public String getSource() {
+        return source;
+    }
 }
