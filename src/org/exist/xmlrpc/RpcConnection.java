@@ -102,9 +102,7 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.*;
 import java.util.zip.DeflaterOutputStream;
 import javax.annotation.Nullable;
@@ -112,6 +110,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 
 import org.xmldb.api.base.*;
+
+import static java.nio.file.StandardOpenOption.*;
 
 /**
  * This class implements the actual methods defined by
@@ -1521,18 +1521,26 @@ public class RpcConnection implements RpcAPI {
         });
     }
 
-    public String upload(final byte[] chunk, final int length, String fileName, final boolean compressed)
+    public String upload(final byte[] chunk, final int length, @Nullable String fileName, final boolean compressed)
             throws EXistException, IOException {
+        final OpenOption[] openOptions;
         final Path tempFile;
         if (fileName == null || fileName.length() == 0) {
+            // no fileName, so new file
+            openOptions = new OpenOption[] { CREATE, TRUNCATE_EXISTING, WRITE };
+
             // create temporary file
             tempFile = TemporaryFileManager.getInstance().getTemporaryFile();
             final int handle = factory.resultSets.add(new SerializedResult(tempFile));
             fileName = Integer.toString(handle);
         } else {
-//            if(LOG.isDebugEnabled()) {
-//                LOG.debug("appending to file " + fileName);
-//            }
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Appending to file " + fileName);
+            }
+
+            // fileName was specified so this is an append
+            openOptions = new OpenOption[] { CREATE, APPEND, WRITE };
+
             try {
                 final int handle = Integer.parseInt(fileName);
                 final SerializedResult sr = factory.resultSets.getSerializedResult(handle);
@@ -1547,7 +1555,7 @@ public class RpcConnection implements RpcAPI {
             }
         }
 
-        try (final OutputStream os = Files.newOutputStream(tempFile)) {
+        try (final OutputStream os = Files.newOutputStream(tempFile, openOptions)) {
             if (compressed) {
                 Compressor.uncompress(chunk, os);
             } else {
