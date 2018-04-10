@@ -58,21 +58,21 @@ public class CollectionConfigurationManager implements BrokerPoolService {
 
     private static final Logger LOG = LogManager.getLogger(CollectionConfigurationManager.class);
 
-    public final static String CONFIG_COLLECTION = XmldbURI.SYSTEM_COLLECTION + "/config";
+    public static final String CONFIG_COLLECTION = XmldbURI.SYSTEM_COLLECTION + "/config";
 
     /** /db/system/config **/
-    public final static XmldbURI CONFIG_COLLECTION_URI = XmldbURI.create(CONFIG_COLLECTION);
+    public static final XmldbURI CONFIG_COLLECTION_URI = XmldbURI.create(CONFIG_COLLECTION);
 
     /** /db/system/config/db **/
-    public final static XmldbURI ROOT_COLLECTION_CONFIG_URI = CONFIG_COLLECTION_URI.append(XmldbURI.ROOT_COLLECTION_NAME);
+    public static final XmldbURI ROOT_COLLECTION_CONFIG_URI = CONFIG_COLLECTION_URI.append(XmldbURI.ROOT_COLLECTION_NAME);
 
-    public final static String COLLECTION_CONFIG_FILENAME = "collection.xconf";
+    public static final String COLLECTION_CONFIG_FILENAME = "collection.xconf";
 
-    public final static CollectionURI COLLECTION_CONFIG_PATH = new CollectionURI(CONFIG_COLLECTION_URI.getRawCollectionPath());
+    public static final CollectionURI COLLECTION_CONFIG_PATH = new CollectionURI(CONFIG_COLLECTION_URI.getRawCollectionPath());
 
-    private Map<CollectionURI, CollectionConfiguration> configurations = new HashMap<CollectionURI, CollectionConfiguration>();
+    private final Map<CollectionURI, CollectionConfiguration> configurations = new HashMap<>();
 
-    private Locked latch = new Locked();
+    private final Locked latch = new Locked();
 
     private final CollectionConfiguration defaultConfig;
 

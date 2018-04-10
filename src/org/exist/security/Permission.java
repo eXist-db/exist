@@ -29,107 +29,107 @@ import org.exist.util.SyntaxException;
 
 public interface Permission {
 	
-    public final static int DEFAULT_COLLECTION_PERM = 0777;
-    public final static int DEFAULT_RESOURCE_PERM = 0666;
-    public final static int DEFAULT_UMASK = 022;
+    int DEFAULT_COLLECTION_PERM = 0777;
+    int DEFAULT_RESOURCE_PERM = 0666;
+    int DEFAULT_UMASK = 022;
     
-    public final static int DEFAULT_SYSTEM_COLLECTION_PERM = 0755;
-    public final static int DEFAULT_SYSTSEM_RESOURCE_PERM = 0770;
+    int DEFAULT_SYSTEM_COLLECTION_PERM = 0755;
+    int DEFAULT_SYSTSEM_RESOURCE_PERM = 0770;
     
-    public final static int DEFAULT_SYSTEM_ETC_COLLECTION_PERM = 0755;
-    public final static int DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM = 0770;
+    int DEFAULT_SYSTEM_ETC_COLLECTION_PERM = 0755;
+    int DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM = 0770;
     
-    public final static int DEFAULT_TEMPORARY_DOCUMENT_PERM = 0771;
+    int DEFAULT_TEMPORARY_DOCUMENT_PERM = 0771;
 
-    public final static int SET_UID = 04;
-    public final static int SET_GID = 02;
-    public final static int STICKY = 01;
+    int SET_UID = 04;
+    int SET_GID = 02;
+    int STICKY = 01;
 
-    public final static int READ = 04;
-    public final static int WRITE = 02;
-    public final static int EXECUTE = 01;
+    int READ = 04;
+    int WRITE = 02;
+    int EXECUTE = 01;
 	
-    public final static String USER_STRING = "user";
-    public final static String GROUP_STRING = "group";
-    public final static String OTHER_STRING = "other";
+    String USER_STRING = "user";
+    String GROUP_STRING = "group";
+    String OTHER_STRING = "other";
 
-    public final static String READ_STRING = "read";
-    public final static String WRITE_STRING = "write";
-    public final static String EXECUTE_STRING = "execute";
+    String READ_STRING = "read";
+    String WRITE_STRING = "write";
+    String EXECUTE_STRING = "execute";
 
-    public final static char SETUID_CHAR = 's';
-    public final static char SETUID_CHAR_NO_EXEC = 'S';
-    public final static char SETGID_CHAR = 's';
-    public final static char SETGID_CHAR_NO_EXEC = 'S';
-    public final static char STICKY_CHAR = 't';
-    public final static char STICKY_CHAR_NO_EXEC = 'T';
-    public final static char READ_CHAR = 'r';
-    public final static char WRITE_CHAR = 'w';
-    public final static char EXECUTE_CHAR = 'x';
-    public final static char UNSET_CHAR = '-';
+    char SETUID_CHAR = 's';
+    char SETUID_CHAR_NO_EXEC = 'S';
+    char SETGID_CHAR = 's';
+    char SETGID_CHAR_NO_EXEC = 'S';
+    char STICKY_CHAR = 't';
+    char STICKY_CHAR_NO_EXEC = 'T';
+    char READ_CHAR = 'r';
+    char WRITE_CHAR = 'w';
+    char EXECUTE_CHAR = 'x';
+    char UNSET_CHAR = '-';
 
-    public final static char ALL_CHAR = 'a';
-    public final static char USER_CHAR = 'u';
-    public final static char GROUP_CHAR = 'g';
-    public final static char OTHER_CHAR = 'o';
+    char ALL_CHAR = 'a';
+    char USER_CHAR = 'u';
+    char GROUP_CHAR = 'g';
+    char OTHER_CHAR = 'o';
     
-    public int getGroupMode();
+    int getGroupMode();
 
     /**
      * Gets the user who owns this resource
      *
      * @return The owner value
      */
-    public Account getOwner();
+    Account getOwner();
 
     /**
      * Gets the group 
      *
      * @return The group value
      */
-    public Group getGroup();
+    Group getGroup();
 
     /**
      * Get the mode
      *
      * @return The mode value
      */
-    public int getMode();
+    int getMode();
 
     /**
      * Get the active mode for others
      *
      * @return The mode value
      */
-    public int getOtherMode();
+    int getOtherMode();
 
     /**
      * Get the active mode for the owner
      *
      * @return The mode value
      */
-    public int getOwnerMode();
+    int getOwnerMode();
     
     /**
      * Set the owner group by group id
      *
      * @param  id  The group id
      */
-    public void setGroup(int id) throws PermissionDeniedException;
+    void setGroup(int id) throws PermissionDeniedException;
 
     /**
      * Set the owner group
      *
      * @param  group  The group value
      */
-    public void setGroup(Group group) throws PermissionDeniedException;
+    void setGroup(Group group) throws PermissionDeniedException;
 
     /**
      * Set the owner group
      *
      * @param  name The group's name
      */
-    public void setGroup(String name) throws PermissionDeniedException;
+    void setGroup(String name) throws PermissionDeniedException;
 
     /**
      * Set the owner group
@@ -143,35 +143,35 @@ public interface Permission {
      * 
      * @param other Another permissions object
      */
-    public void setGroupFrom(Permission other) throws PermissionDeniedException;
+    void setGroupFrom(Permission other) throws PermissionDeniedException;
     
     /**
      * Sets mode for group
      *
      * @param  perm  The new group mode value
      */
-    public void setGroupMode(int perm) throws PermissionDeniedException;
+    void setGroupMode(int perm) throws PermissionDeniedException;
 
     /**
      * Set the owner passed as account id
      *
      * @param  id  The new owner id
      */
-    public void setOwner(int id) throws PermissionDeniedException;
+    void setOwner(int id) throws PermissionDeniedException;
 
     /**
      * Set the owner passed as User object
      *
      * @param  user  The new owner value
      */
-    public void setOwner(Account user) throws PermissionDeniedException;
+    void setOwner(Account user) throws PermissionDeniedException;
 
     /**
      * Set the owner
      *
      * @param  user  The new owner value
      */
-    public void setOwner(String user) throws PermissionDeniedException;
+    void setOwner(String user) throws PermissionDeniedException;
 
     /**
      * Set mode using a string.
@@ -188,36 +188,36 @@ public interface Permission {
      * @param  str                  The new mode
      * @exception  SyntaxException  Description of the Exception
      */
-    public void setMode(String modeStr) throws SyntaxException, PermissionDeniedException;
+    void setMode(String modeStr) throws SyntaxException, PermissionDeniedException;
 
     /**
      *  Set mode
      *
      *@param  mode  The new mode value
      */
-    public void setMode(int mode) throws PermissionDeniedException;
+    void setMode(int mode) throws PermissionDeniedException;
 
     /**
      *  Set mode for others
      *
      *@param  perm  The new mode value
      */
-    public void setOtherMode(int perm) throws PermissionDeniedException;
+    void setOtherMode(int perm) throws PermissionDeniedException;
 
     /**
      *  Set mode for the owner
      *
      *@param  other  The new mode value
      */
-    public void setOwnerMode(int other) throws PermissionDeniedException;
+    void setOwnerMode(int other) throws PermissionDeniedException;
 
-    public boolean isSetUid();
-    public boolean isSetGid();
-    public boolean isSticky();
+    boolean isSetUid();
+    boolean isSetGid();
+    boolean isSticky();
 
-    public void setSetUid(boolean setUid) throws PermissionDeniedException;
-    public void setSetGid(boolean setGid) throws PermissionDeniedException;
-    public void setSticky(boolean sticky) throws PermissionDeniedException;
+    void setSetUid(boolean setUid) throws PermissionDeniedException;
+    void setSetGid(boolean setGid) throws PermissionDeniedException;
+    void setSticky(boolean sticky) throws PermissionDeniedException;
 
     /**
      *  Check  if user has the requested mode for this resource.
@@ -226,17 +226,17 @@ public interface Permission {
      *@param  mode  The requested mode
      *@return       true if user has the requested mode
      */
-    public boolean validate(Subject user, int mode);
+    boolean validate(Subject user, int mode);
 
-    public void write(VariableByteOutputStream ostream) throws IOException;
+    void write(VariableByteOutputStream ostream) throws IOException;
 
-    public void read(VariableByteInput istream) throws IOException;
+    void read(VariableByteInput istream) throws IOException;
 
-    public boolean isCurrentSubjectDBA();
+    boolean isCurrentSubjectDBA();
 
-    public boolean isCurrentSubjectOwner();
+    boolean isCurrentSubjectOwner();
 
-    public boolean isCurrentSubjectInGroup();
+    boolean isCurrentSubjectInGroup();
 
-    public boolean isCurrentSubjectInGroup(int groupId);
+    boolean isCurrentSubjectInGroup(int groupId);
 }
