@@ -167,8 +167,6 @@ public class DynamicAttributeConstructor extends NodeConstructor {
         //normalize xml:id
     	if (qn.equals(Namespaces.XML_ID_QNAME)) {
     		value = StringValue.trimWhitespace(StringValue.collapseWhitespace(value));
-            if (!XMLChar.isValidNCName(value))
-                {throw new XPathException(expr, ErrorCodes.XQDY0091, "Value of xml:id attribute is not a valid NCName: " + value);}
     	}
     	return value;
     }
