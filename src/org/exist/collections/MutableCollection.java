@@ -92,7 +92,6 @@ public class MutableCollection implements Collection {
     @GuardedBy("lock") private ObjectHashSet<XmldbURI> subCollections = new ObjectHashSet<>(19);
     private long address = BFile.UNKNOWN_ADDRESS;  // Storage address of the collection in the BFile
     private long created = 0;
-    private volatile boolean collectionConfigEnabled = true;
     private boolean triggersEnabled = true;
     private XMLReader userReader;
     private boolean isTempCollection;
@@ -1253,7 +1252,6 @@ public class MutableCollection implements Collection {
             document.getUpdateLock().release(LockMode.WRITE_LOCK);
             broker.getBrokerPool().getProcessMonitor().endJob();
         }
-        setCollectionConfigEnabled(true);
         broker.deleteObservers();
         
         if(info.isCreating()) {
@@ -1413,13 +1411,6 @@ public class MutableCollection implements Collection {
             indexer.setDocument(document, config);
             addObserversToIndexer(broker, indexer);
             indexer.setValidating(true);
-            
-            if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(name)) {
-                // we are updating collection.xconf. Notify configuration manager
-                //CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
-                //confMgr.invalidateAll(getURI());
-                setCollectionConfigEnabled(false);
-            }
             
             final DocumentTriggers trigger = new DocumentTriggers(broker, indexer, this, isTriggersEnabled() ? config : null);
             trigger.setValidating(true);
@@ -1757,37 +1748,12 @@ public class MutableCollection implements Collection {
 
     @Override
     public CollectionConfiguration getConfiguration(final DBBroker broker) {
-        if(!isCollectionConfigEnabled()) {
-            return null;
-        }
-        
         final CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
-        if(manager == null) {
+        if (manager == null) {
             return null;
         }
         //Attempt to get configuration
-        CollectionConfiguration configuration = null;
-        try {
-            //TODO: AR: if a Trigger throws CollectionConfigurationException
-            //from its configure() method, is the rest of the collection 
-            //configuration (indexes etc.) ignored even though they might be fine?
-            configuration = manager.getConfiguration(broker, this);
-            setCollectionConfigEnabled(true);
-        } catch(final CollectionConfigurationException e) {
-            setCollectionConfigEnabled(false);
-            LOG.warn("Failed to load collection configuration for '" + getURI() + "'", e);
-        }
-        return configuration;
-    }
-
-    @Override
-    public void setCollectionConfigEnabled(final boolean collectionConfigEnabled) {
-        this.collectionConfigEnabled = collectionConfigEnabled;
-    }
-
-    @Override
-    public boolean isCollectionConfigEnabled() {
-        return collectionConfigEnabled;
+        return manager.getConfiguration(this);
     }
 
     @Override

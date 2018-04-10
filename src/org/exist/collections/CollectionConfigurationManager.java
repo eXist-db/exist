@@ -74,7 +74,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
 
     private Locked latch = new Locked();
 
-    private CollectionConfiguration defaultConfig;
+    private final CollectionConfiguration defaultConfig;
 
     public CollectionConfigurationManager(final BrokerPool brokerPool) {
         this.defaultConfig = new CollectionConfiguration(brokerPool);
@@ -117,7 +117,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
 
             XmldbURI configurationDocumentName = null;
             // Replaces the current configuration file if there is one
-            final CollectionConfiguration conf = getConfiguration(broker, collection);
+            final CollectionConfiguration conf = getConfiguration(collection);
             if (conf != null) {
                 configurationDocumentName = conf.getDocName();
                 if (configurationDocumentName != null) {
@@ -200,13 +200,11 @@ public class CollectionConfigurationManager implements BrokerPoolService {
      * Retrieve the collection configuration instance for the given collection.
      * This creates a new CollectionConfiguration object and recursively scans
      * the collection hierarchy for available configurations.
-     * 
-     * @param broker
+     *
      * @param collection
      * @return The collection configuration
-     * @throws CollectionConfigurationException
      */
-    protected CollectionConfiguration getConfiguration(DBBroker broker, Collection collection) throws CollectionConfigurationException {
+    protected CollectionConfiguration getConfiguration(final Collection collection) {
 
         final CollectionURI path = new CollectionURI(COLLECTION_CONFIG_PATH);
         path.append(collection.getURI().getRawCollectionPath());
@@ -218,24 +216,17 @@ public class CollectionConfigurationManager implements BrokerPoolService {
          * the root, stopping at the first config file it finds. This should be
          * more efficient, and fit more appropriately will the XmldbURI api
          */
-        return latch.read(new Callable<CollectionConfiguration>() {
-
-            @Override
-            public CollectionConfiguration call() throws Exception {
-
-                CollectionConfiguration conf = null;
-
-                while(!path.equals(COLLECTION_CONFIG_PATH)) {
-                    conf = configurations.get(path);
-                    if (conf != null) {
-                        return conf;
-                    }
-                    path.removeLastSegment();
+        return latch.read(() -> {
+            while(!path.equals(COLLECTION_CONFIG_PATH)) {
+                final CollectionConfiguration conf = configurations.get(path);
+                if (conf != null) {
+                    return conf;
                 }
-
-                // use default configuration
-                return defaultConfig;
+                path.removeLastSegment();
             }
+
+            // use default configuration
+            return defaultConfig;
         });
     }
 
@@ -451,7 +442,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
                     transact.abort(txn);
                     throw new EXistException("collection " + XmldbURI.ROOT_COLLECTION_URI + " not found!");
                 }
-                final CollectionConfiguration conf = getConfiguration(broker, collection);
+                final CollectionConfiguration conf = getConfiguration(collection);
                 if (conf != null) {
                     // We already have a configuration document : do not erase
                     // it

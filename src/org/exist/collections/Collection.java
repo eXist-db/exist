@@ -26,6 +26,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
@@ -180,27 +181,11 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
     void setCreationTime(long timestamp);
 
     /**
-     * Is the Collection Configuration enabled for this Collection
-     *
-     * @return true if the Collection Configuration is enabled
-     */
-    boolean isCollectionConfigEnabled();
-
-    /**
-     * Enables/disables the Should the collection configuration for this Collection.
-     *
-     * Called by {@link org.exist.storage.NativeBroker} before doing a re-index.
-     *
-     * @param collectionConfigEnabled true if the Collection Configuration should be enabled, false otherwise
-     */
-    void setCollectionConfigEnabled(boolean collectionConfigEnabled);
-
-    /**
      * Get the Collection Configuration of this Collection
      *
      * @param broker The database broker
      */
-    CollectionConfiguration getConfiguration(DBBroker broker);
+    @Nullable CollectionConfiguration getConfiguration(DBBroker broker);
 
     /**
      * Get the index configuration for this collection

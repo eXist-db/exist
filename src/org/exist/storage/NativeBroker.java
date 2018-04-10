@@ -2882,9 +2882,6 @@ public class NativeBroker extends DBBroker {
      */
     @Override
     public void reindexXMLResource(final Txn transaction, final DocumentImpl doc, final IndexMode mode) {
-        if(doc.isCollectionConfig()) {
-            doc.getCollection().setCollectionConfigEnabled(false);
-        }
         final StreamListener listener = indexController.getStreamListener(doc, ReindexMode.STORE);
         indexController.startIndexDocument(transaction, listener);
         try {
@@ -2902,9 +2899,6 @@ public class NativeBroker extends DBBroker {
             indexController.endIndexDocument(transaction, listener);
         }
         flush();
-        if(doc.isCollectionConfig()) {
-            doc.getCollection().setCollectionConfigEnabled(true);
-        }
     }
 
     @Override
