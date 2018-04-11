@@ -64,9 +64,9 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
 
     // Max size of a resource to be send to the server.
     // If the resource exceeds this limit, the data is split into
-    // junks and uploaded to the server via the update() call
+    // chunks and uploaded to the server via the update() call
     private static final int MAX_CHUNK_LENGTH = 512 * 1024; //512KB
-    private static final int MAX_UPLOAD_CHUNK = 10 * 1024 * 1024; //10 MB
+    public static final int MAX_UPLOAD_CHUNK = 10 * 1024 * 1024; //10 MB
 
     private final XmldbURI path;
     private final Leasable<XmlRpcClient> leasableXmlRpcClient;
@@ -603,11 +603,9 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
             try {
                 int len;
                 String fileName = null;
-                List<Object> params;
-                byte[] compressed;
                 while ((len = is.read(chunk)) > -1) {
-                    compressed = Compressor.compress(chunk, len);
-                    params = new ArrayList<>();
+                    final byte[] compressed = Compressor.compress(chunk, len);
+                    final List<Object> params = new ArrayList<>();
                     if (fileName != null) {
                         params.add(fileName);
                     }
@@ -617,13 +615,14 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
                 }
                 // Zero length stream? Let's get a fileName!
                 if (fileName == null) {
-                    compressed = Compressor.compress(new byte[0], 0);
-                    params = new ArrayList<>();
+                    final byte[] compressed = Compressor.compress(new byte[0], 0);
+                    final List<Object> params = new ArrayList<>();
                     params.add(compressed);
                     params.add(0);
                     fileName = (String) xmlRpcClientLease.get().execute("uploadCompressed", params);
                 }
-                params = new ArrayList<>();
+
+                final List<Object>params = new ArrayList<>();
                 final List<Object> paramsEx = new ArrayList<>();
                 params.add(fileName);
                 paramsEx.add(fileName);
