@@ -376,12 +376,6 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
         root = null;
         return new InternalXMLSerializer();
     }
-        
-    @Override
-    public void freeResources() throws XMLDBException {
-        //dO nothing
-        //TODO consider unifying close() code into freeResources()
-    }
 
     @Override
     public boolean getSAXFeature(final String name) throws SAXNotRecognizedException, SAXNotSupportedException {

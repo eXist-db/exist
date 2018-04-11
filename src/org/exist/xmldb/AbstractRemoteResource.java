@@ -59,6 +59,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     protected InputSource inputSource = null;
     private long contentLen = 0L;
     private Permission permissions = null;
+    private boolean closed;
 
     Date dateCreated = null;
     Date dateModified = null;
@@ -95,27 +96,6 @@ public abstract class AbstractRemoteResource extends AbstractRemote
             }
         }
         return res;
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            freeResources();
-        }
-        finally {
-            super.finalize();
-        }
-    }
-
-    @Override
-    public void freeResources() {
-        file = null;
-        inputSource = null;
-        if (contentFile != null) {
-            TemporaryFileManager.getInstance().returnTemporaryFile(contentFile);
-            contentFile = null;
-        }
-        xmlRpcClientLease.close();
     }
 
     /**
@@ -557,7 +537,38 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     }
 
     @Override
-    public void close() throws IOException {
-        freeResources();
+    public final boolean isClosed() {
+        return closed;
+    }
+
+    @Override
+    public final void close() {
+        if (!isClosed()) {
+            try {
+                file = null;
+                inputSource = null;
+                if (contentFile != null) {
+                    TemporaryFileManager.getInstance().returnTemporaryFile(contentFile);
+                    contentFile = null;
+                }
+                xmlRpcClientLease.close();
+            } finally {
+                closed = true;
+            }
+        }
+    }
+
+    @Override
+    public final void freeResources() {
+        close();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            close();
+        } finally {
+            super.finalize();
+        }
     }
 }

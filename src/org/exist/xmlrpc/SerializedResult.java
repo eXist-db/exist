@@ -58,7 +58,7 @@ public class SerializedResult extends AbstractCachedResult {
     }
 
     @Override
-    public void close() {
+    protected void doClose() {
         if (result != null) {
             TemporaryFileManager.getInstance().returnTemporaryFile(result);
             result = null;

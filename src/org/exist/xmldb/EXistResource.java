@@ -19,7 +19,6 @@
  */
 package org.exist.xmldb;
 
-import java.io.Closeable;
 import java.util.Date;
 import java.util.Properties;
 
@@ -37,7 +36,7 @@ import javax.annotation.Nullable;
  *
  * @author wolf
  */
-public interface EXistResource extends Resource, Closeable {
+public interface EXistResource extends Resource, AutoCloseable {
 
     Date getCreationTime() throws XMLDBException;
 
@@ -64,4 +63,9 @@ public interface EXistResource extends Resource, Closeable {
     void setProperties(Properties properties);
 
     @Nullable Properties getProperties();
+
+    boolean isClosed();
+
+    @Override
+    void close() throws XMLDBException;
 }
