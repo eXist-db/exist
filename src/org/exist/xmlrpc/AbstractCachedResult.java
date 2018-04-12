@@ -19,6 +19,8 @@
  */
 package org.exist.xmlrpc;
 
+import org.xmldb.api.base.XMLDBException;
+
 import java.io.Closeable;
 
 /**
@@ -33,6 +35,7 @@ public abstract class AbstractCachedResult implements Closeable {
     protected long queryTime = 0;
     protected long creationTimestamp = 0;
     protected long timestamp = 0;
+    private boolean closed;
 
     public AbstractCachedResult() {
         this(0);
@@ -73,8 +76,43 @@ public abstract class AbstractCachedResult implements Closeable {
         return creationTimestamp;
     }
 
+    /**
+     * This abstract method returns the cached result
+     * or null
+     *
+     * @return The object which is being cached
+     */
+    public abstract Object getResult();
+
+    /**
+     * Returns true if the Cached Result
+     * has been closed.
+     */
+    public final boolean isClosed() {
+        return closed;
+    }
+
+    /**
+     * Implement this in your sub-class if you need
+     * to do cleanup.
+     *
+     * The method will only be called once, no matter
+     * how many times the user calls {@link #close()}.
+     */
+    protected void doClose() {
+        //no-op
+    }
+
     @Override
-    public abstract void close();
+    public final void close() {
+        if(!isClosed()) {
+            try {
+                doClose();
+            } finally {
+                closed = true;
+            }
+        }
+    }
 
     /**
      * This abstract method must be used
@@ -87,21 +125,12 @@ public abstract class AbstractCachedResult implements Closeable {
         close();
     }
 
-    /**
-     * This abstract method returns the cached result
-     * or null
-     *
-     * @return The object which is being cached
-     */
-    public abstract Object getResult();
-
     @Override
     protected void finalize() throws Throwable {
         // Calling free to reclaim pinned resources
         try {
             close();
-        }
-        finally {
+        } finally {
             super.finalize();
         }
     }

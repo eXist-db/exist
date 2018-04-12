@@ -46,7 +46,7 @@ import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
-public class RemoteResourceSet implements ResourceSet {
+public class RemoteResourceSet implements ResourceSet, AutoCloseable {
 
     private final Leasable<XmlRpcClient> leasableXmlRpcClient;
     private final XmlRpcClient xmlRpcClient;
@@ -55,6 +55,7 @@ public class RemoteResourceSet implements ResourceSet {
     private int hash = -1;
     private final List resources;
     private final Properties outputProperties;
+    private boolean closed;
 
     private static Logger LOG = LogManager.getLogger(RemoteResourceSet.class.getName());
 
@@ -275,10 +276,25 @@ public class RemoteResourceSet implements ResourceSet {
         resources.remove(pos);
     }
 
+    public final boolean isClosed() {
+        return closed;
+    }
+
+    @Override
+    public final void close() throws XMLDBException {
+        if (!isClosed()) {
+            try {
+                clear();
+            } finally {
+                closed = true;
+            }
+        }
+    }
+
     @Override
     protected void finalize() throws Throwable {
         try {
-            clear();
+            close();
         } finally {
             super.finalize();
         }
