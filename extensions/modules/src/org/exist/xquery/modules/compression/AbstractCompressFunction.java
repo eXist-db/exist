@@ -432,7 +432,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
 		} else if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
 			// binary file
             try (final InputStream is = context.getBroker().getBinaryResource((BinaryDocument)doc);
-                 final FastByteArrayOutputStream baos = new FastByteArrayOutputStream((int)doc.getContentLength())) {
+                 final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
                 baos.write(is);
                 value = baos.toByteArray();
             }
