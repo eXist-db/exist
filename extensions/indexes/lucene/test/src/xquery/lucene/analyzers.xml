@@ -15,7 +15,7 @@
                     <!-- Lucene index is configured below -->
                     <lucene>
                         <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
-                        <analyzer id="keyword" class="org.apache.lucene.analysis.KeywordAnalyzer"/>
+                        <analyzer id="keyword" class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
                         <analyzer id="de" class="org.apache.lucene.analysis.de.GermanAnalyzer"/>
                         <text field="line" qname="l"/>
                         <text qname="l" analyzer="de"/>
