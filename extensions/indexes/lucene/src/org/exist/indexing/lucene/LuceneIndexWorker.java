@@ -971,7 +971,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         List<QName> indexes = new ArrayList<>(20);
         if (qnames != null && !qnames.isEmpty()) {
             for (QName qname : qnames) {
-                if (qname.getLocalPart() == null || qname.getNamespaceURI() == null)
+                if (qname.getLocalPart() == null || qname.getLocalPart().equals(QName.WILDCARD)
+                        || qname.getNamespaceURI() == null || qname.getNamespaceURI().equals(QName.WILDCARD))
                     getDefinedIndexesFor(qname, indexes);
                 else
                     indexes.add(qname);
@@ -996,10 +997,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private static boolean matchQName(QName qname, QName candidate) {
         boolean match = true;
-        if (qname.getLocalPart() != null)
+        if (qname.getLocalPart() != null && (!qname.getLocalPart().equals(QName.WILDCARD))) {
             match = qname.getLocalPart().equals(candidate.getLocalPart());
-        if (match && qname.getNamespaceURI() != null && qname.getNamespaceURI().length() > 0)
+        }
+        if (match && qname.getNamespaceURI() != null && (!qname.getNamespaceURI().equals(QName.WILDCARD)) && qname.getNamespaceURI().length() > 0) {
             match = qname.getNamespaceURI().equals(candidate.getNamespaceURI());
+        }
         return match;
     }
 

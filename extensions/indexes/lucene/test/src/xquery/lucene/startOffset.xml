@@ -1,5 +1,5 @@
 <TestSet xmlns:exist="http://exist.sourceforge.net/NS/exist">
-    <testName>tests for correct offset calculation of util:expand()</testName>
+    <testName>tests for correct offset calculation of util:expand</testName>
     <description>
         <p>These tests whether util:expand() calculates correct start offsets. Since there seems to be a 
         problem with first matching strings of certain nodes, tests come in pairs: one matching the first word, 

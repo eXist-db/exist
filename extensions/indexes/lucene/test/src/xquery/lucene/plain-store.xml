@@ -8,23 +8,6 @@
     </description>
     
     <setup>
-        <create-collection parent="/db/system" name="config"/>
-        <create-collection parent="/db/system/config" name="db"/>
-        <store collection="/db/system/config/db" name="collection.xconf">
-            <collection xmlns="http://exist-db.org/collection-config/1.0">
-                <index>
-                    <!-- Disable the standard full text index -->
-                    <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
-                    <analyzer id="nl" class="org.apache.lucene.analysis.nl.DutchAnalyzer"/>
-                    
-                    <fieldType id="author" analyzer="nl"/>
-                    <fieldType id="para" analyzer="nl" store="yes"/>
-            
-                    <fieldType id="title" store="yes"/>
-                    <fieldType id="speech" store="yes"/>
-                </index>
-            </collection>
-        </store>
         <create-collection parent="/db" name="morebinary"/>
         <store collection="/db/morebinary" name="index1.txt" type="text/plain">AAAAAA</store>
         <store collection="/db/morebinary" name="index2.txt" type="text/plain">BBBBBB</store>
@@ -35,7 +18,6 @@
     
     <tearDown>
         <!--remove-collection collection="/db/morebinary"/-->
-        <remove-document collection="/db/system/config/db" name="collection.xconf"/>
     </tearDown>
 
     <test output="xml" > <!-- trace="yes" -->
@@ -45,7 +27,7 @@
         <doc>
             <field name="author" store="yes">Dannes Wessels</field>
             <field name="para">Some text for a paragraph</field>
-        </doc> )
+        </doc>)
         ]]>
         </code>
     </test>     
@@ -68,7 +50,7 @@
         ft:index( "/db/morebinary/index3.txt", 
         <doc>
             <field name="author">Harry Potter</field>
-            <field name="para">Some blah for a paragraph Some blah for a paragraph Some blah for a paragraph paragraph paragraph.</field>
+            <field name="para" store="yes">Some blah for a paragraph Some blah for a paragraph Some blah for a paragraph paragraph paragraph.</field>
         </doc> )
         ]]>
         </code>
@@ -120,7 +102,7 @@
         <task>Validate scores</task>
         <code><![CDATA[ 
         let $results := ft:search("/db/morebinary/", "para:paragraph")
-        let $score := for $s in $results//@score return xs:double($s)
+        let $score := for $s in $results//@score order by xs:double($s) descending return xs:double($s)
         return
             ( $score[1]>$score[2] , $score[2]>$score[3] , $score[1] > $score[3] )
         ]]></code>
@@ -139,7 +121,7 @@
         </expected>
     </test>
     
-    <test output="xml" >
+    <test output="text" >
         <task>Add additional index to XML document</task>
         <code><![CDATA[ 
 xquery version "1.0";
@@ -161,11 +143,9 @@ let $doc := doc($path)
 let $index := 
     for $scene in $doc//SCENE return ft:index($path, local:index-data($scene))
 return
-    ft:search($path, 'speech:"boil and bake"')//field
+    count(ft:search($path, 'speech:"boil and bake"')//search)
         ]]></code>
-        <expected>
-            <field name="speech">Second Witch Fillet of a fenny snake, In the cauldron <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">boil and bake</exist:match>; Eye of newt and toe of frog, Wool of bat and tongue of dog, Adder's fork and blind-worm's sting, Lizard's leg and owlet's wing, For a charm of powerful trouble, Like a hell-broth boil and bubble.</field>
-        </expected>
+        <expected>1</expected>
     </test>
     
     <test output="text" ignore="true">
