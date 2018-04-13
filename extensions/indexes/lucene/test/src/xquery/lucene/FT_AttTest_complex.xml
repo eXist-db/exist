@@ -1,7 +1,7 @@
 <TestSet>
-    <testName>tests for queries on different indexes on differrent collection contexts</testName>
+    <testName>tests for queries on different indexes on different collection contexts</testName>
     <description>
-        <p>tests for queries on different indexes on differrent collection contexts</p>
+        <p>tests for queries on different indexes on different collection contexts</p>
         <author>Ron Van den Branden</author>
     </description>
     <setup>
@@ -38,70 +38,6 @@
         <remove-collection collection="/db/coll"/>
         <remove-collection collection="/db/system/config/db/coll"/>
     </tearDown>
-    <test output="text">
-        <task>[query] old FT index (qname), attribute context (@)</task>
-        <code><![CDATA[
-            collection('/db/coll')//p/@att1[text:match-any(., 'val1')]/string()
-            ]]></code>
-        <expected>val1</expected>
-    </test>
-    <test output="text">
-        <task>[query] old FT index (path), attribute context (@)</task>
-        <code><![CDATA[
-            collection('/db/coll')//p/@att2[text:match-any(., 'val2')]/string()
-            ]]></code>
-        <expected>val2</expected>
-    </test>
-    <test output="text" ignore="yes">
-        <task>[query] old FT index (qname), attribute context (attribute::)</task>
-        <code><![CDATA[
-            collection('/db/coll')//p/attribute::att1[text:match-any(., 'val1')]/string()
-            ]]></code>
-        <expected>val1</expected>
-    </test>
-    <test output="text">
-        <task>[query] old FT index (path), attribute context, path (attribute::)</task>
-        <code><![CDATA[
-            collection('/db/coll')//p/attribute::att2[text:match-any(., 'val2')]/string()
-            ]]></code>
-        <expected>val2</expected>
-    </test>
-    <test output="xml">
-        <task>[query] old FT index (qname), element context</task>
-        <code><![CDATA[
-            collection('/db/coll')//p[text:match-any(@att1, 'val1')]
-            ]]></code>
-        <expected>
-            <p att1="val1" att2="val2">this is a test document</p>
-        </expected>
-    </test>
-    <test output="xml">
-        <task>[query] old FT index (path), element context</task>
-        <code><![CDATA[
-            collection('/db/coll')//p[text:match-any(@att2, 'val2')]
-            ]]></code>
-        <expected>
-            <p att1="val1" att2="val2">this is a test document</p>
-        </expected>
-    </test>
-    <test output="xml">
-        <task>[query] old FT index (qname), attribute context inside predicate</task>
-        <code><![CDATA[
-            collection('/db/coll')/*[descendant-or-self::p/@att1[text:match-any(., 'val1')]]
-            ]]></code>
-        <expected>
-            <p att1="val1" att2="val2">this is a test document</p>
-        </expected>
-    </test>
-    <test output="xml">
-        <task>[query] old FT index (path), attribute context inside predicate</task>
-        <code><![CDATA[
-            collection('/db/coll')/*[descendant-or-self::p/@att2[text:match-any(., 'val2')]]
-            ]]></code>
-        <expected>
-            <p att1="val1" att2="val2">this is a test document</p>
-        </expected>
-    </test>
     <test output="text">
         <task>[query] lucene FT index (qname), attribute context (@)</task>
         <code><![CDATA[
@@ -167,66 +103,6 @@
         </expected>
     </test>
     <!-- index usage tests -->
-    <test output="xml">
-        <task>[index] old FT index (qname), attribute context (@)</task>
-        <code><![CDATA[
-            let $a := collection('/db/coll')//p/@att1
-            return text:index-terms($a,'', util:function(xs:QName('local:term-callback'), 2), 100) 
-            ]]></code>
-        <expected>
-            <term>val1</term>
-        </expected>
-    </test>
-    <test output="xml">
-        <task>[index] old FT index (path), attribute context (@)</task>
-        <code><![CDATA[
-            let $a := collection('/db/coll')//p/@att2
-            return text:index-terms($a,'', util:function(xs:QName('local:term-callback'), 2), 100) 
-            ]]></code>
-        <expected>
-            <term>val2</term>
-        </expected>
-    </test>
-    <test output="xml">
-        <task>[index] old FT index (qname), attribute context (attribute::)</task>
-        <code><![CDATA[
-            let $a := collection('/db/coll')//p/attribute::att1
-            return text:index-terms($a,'', util:function(xs:QName('local:term-callback'), 2), 100) 
-            ]]></code>
-        <expected>
-            <term>val1</term>
-        </expected>
-    </test>
-    <test output="xml">
-        <task>[index] old FT index (path), attribute context (attribute::)</task>
-        <code><![CDATA[
-            let $a := collection('/db/coll')//p/attribute::att2
-            return text:index-terms($a,'', util:function(xs:QName('local:term-callback'), 2), 100) 
-            ]]></code>
-        <expected>
-            <term>val2</term>
-        </expected>
-    </test>
-    <test output="xml">
-        <task>[index] old FT index (qname), element context</task>
-        <code><![CDATA[
-            let $a := collection('/db/coll')//p
-            return text:index-terms($a/@att1,'', util:function(xs:QName('local:term-callback'), 2), 100) 
-            ]]></code>
-        <expected>
-            <term>val1</term>
-        </expected>
-    </test>
-    <test output="xml">
-        <task>[index] old FT index, element context</task>
-        <code><![CDATA[
-            let $a := collection('/db/coll')//p
-            return text:index-terms($a/@att2,'', util:function(xs:QName('local:term-callback'), 2), 100) 
-            ]]></code>
-        <expected>
-            <term>val2</term>
-        </expected>
-    </test>
     <test output="xml">
         <task>[index] lucene FT index (qname), attribute context (@)</task>
         <code><![CDATA[
