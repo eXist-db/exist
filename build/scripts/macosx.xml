@@ -230,6 +230,8 @@
         <!-- Create a temporary Disk Image (Mac) -->
         <exec executable="/usr/bin/hdiutil" os="Mac OS X" failonerror="true">
             <arg value="create"/>
+            <arg value="-fs"/>
+            <arg value="HFS+"/>
             <arg value="-srcfolder"/>
             <arg value="${app.dir}"/>
             <arg value="-volname"/>
