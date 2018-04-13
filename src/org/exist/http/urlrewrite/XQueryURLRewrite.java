@@ -775,15 +775,14 @@ public class XQueryURLRewrite extends HttpServlet {
     private @Nullable
     DocumentImpl findDbControllerXql(final DBBroker broker, final XmldbURI collectionUri, final String[] pathComponents) {
         Collection collection = null;
+        DocumentImpl controller = null;
         try {
             collection = broker.openCollection(collectionUri, LockMode.READ_LOCK);
             if (collection == null) {
                 return null;
             }
 
-            if (pathComponents.length == 0 || !collection.hasChildCollection(broker, XmldbURI.createInternal(pathComponents[0]))) {
-                return collection.getDocumentWithLock(broker, XQUERY_CONTROLLER_URI, LockMode.READ_LOCK);
-            }
+            controller = collection.getDocumentWithLock(broker, XQUERY_CONTROLLER_URI, LockMode.READ_LOCK);
         } catch (final PermissionDeniedException e) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Permission denied while scanning for XQueryURLRewrite controllers: " + e.getMessage(), e);
@@ -800,12 +799,21 @@ public class XQueryURLRewrite extends HttpServlet {
             }
         }
 
-        final XmldbURI subCollectionUri = collectionUri.append(pathComponents[0]);
-        final String[] subPathComponents = new String[pathComponents.length - 1];
-        if (subPathComponents.length > 0) {
-            System.arraycopy(pathComponents, 1, subPathComponents, 0, subPathComponents.length);
+        if (pathComponents.length > 0) {
+            final XmldbURI subCollectionUri = collectionUri.append(pathComponents[0]);
+            final String[] subPathComponents = new String[pathComponents.length - 1];
+            if (subPathComponents.length > 0) {
+                System.arraycopy(pathComponents, 1, subPathComponents, 0, subPathComponents.length);
+            }
+            final DocumentImpl nestedController = findDbControllerXql(broker, subCollectionUri, subPathComponents);
+            if (nestedController != null) {
+                if (controller != null) {
+                    controller.getUpdateLock().release(LockMode.READ_LOCK);
+                }
+                return nestedController;
+            }
         }
-        return findDbControllerXql(broker, subCollectionUri, subPathComponents);
+        return controller;
     }
 
     private SourceInfo findSourceFromFs(final String basePath, final String[] components) {
