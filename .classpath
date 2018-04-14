@@ -112,9 +112,9 @@
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-4.10.4.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-queries-4.10.4.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-queryparser-4.10.4.jar"/>
-	<classpathentry kind="lib" path="tools/ant/lib/ant-1.10.2.jar"/>
+	<classpathentry kind="lib" path="tools/ant/lib/ant-1.10.4.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/ant-antunit-1.3.jar"/>
-	<classpathentry kind="lib" path="tools/ant/lib/ant-launcher-1.10.2.jar"/>
+	<classpathentry kind="lib" path="tools/ant/lib/ant-launcher-1.10.4.jar"/>
 	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjrt-1.9.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/cglib-nodep-3.2.6.jar"/>
 	<classpathentry kind="lib" path="lib/core/clj-ds-0.0.4.jar"/>
