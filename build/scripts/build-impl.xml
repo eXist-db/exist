@@ -252,6 +252,12 @@
             </classpath>
         </javac>
 
+        <copy todir="${junit.reports}/classes/org/exist/test/runner">
+            <fileset dir="${junit.reports}/src/org/exist/test/runner">
+                <include name="*.xq"/>
+            </fileset>
+        </copy>
+
     </target>
 
 
@@ -500,7 +506,7 @@
             <include name="org/exist/xquery/functions/session/**"/>
         </jar>
         <echo message="Creating exist-testkit.jar ..."/>
-        <jar basedir="${junit.reports}/classes" compress="true" jarfile="exist-testkit.jar">
+        <jar compress="true" jarfile="exist-testkit.jar">
             <manifest>
                 <attribute name="Implementation-Title" value="${project.name} Test Kit"/>
                 <attribute name="Implementation-Version" value="${project.version}"/>
@@ -523,10 +529,15 @@
                 <attribute name="Description" value="eXist XML Native Database Test Kit"/>
                 <attribute name="Created-By" value="${ant.version}"/>
             </manifest>
-            <include name="org/exist/TestUtils.class"/>
-            <include name="org/exist/test/**"/>
-            <include name="xquery/TestRunner.class"/>
-            <include name="xquery/TestRunnerMain.class"/>
+            <fileset dir="${junit.reports}/classes">
+                <include name="org/exist/TestUtils.class"/>
+                <include name="org/exist/test/**"/>
+                <include name="xquery/TestRunner.class"/>
+                <include name="xquery/TestRunnerMain.class"/>
+            </fileset>
+            <fileset dir="${build.classes}">
+                <include name="org/exist/xquery/lib/xqsuite/xqsuite.xql"/>
+            </fileset>
         </jar>
     </target>
 
