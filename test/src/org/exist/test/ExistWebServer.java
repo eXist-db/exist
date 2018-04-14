@@ -39,6 +39,7 @@ public class ExistWebServer extends ExternalResource {
     private final boolean disableAutoDeploy;
     private final boolean useTemporaryStorage;
     private Optional<Path> temporaryStorage = Optional.empty();
+    private final boolean jettyStandaloneMode;
 
     public ExistWebServer() {
         this(false);
@@ -57,10 +58,15 @@ public class ExistWebServer extends ExternalResource {
     }
 
     public ExistWebServer(final boolean useRandomPort, final boolean cleanupDbOnShutdown, final boolean disableAutoDeploy, final boolean useTemporaryStorage) {
+        this(useRandomPort, cleanupDbOnShutdown, disableAutoDeploy, useTemporaryStorage, true);
+    }
+
+    public ExistWebServer(final boolean useRandomPort, final boolean cleanupDbOnShutdown, final boolean disableAutoDeploy, final boolean useTemporaryStorage, final boolean jettyStandaloneMode) {
         this.useRandomPort = useRandomPort;
         this.cleanupDbOnShutdown = cleanupDbOnShutdown;
         this.disableAutoDeploy = disableAutoDeploy;
         this.useTemporaryStorage = useTemporaryStorage;
+        this.jettyStandaloneMode = jettyStandaloneMode;
     }
 
     public final int getPort() {
@@ -94,7 +100,7 @@ public class ExistWebServer extends ExternalResource {
                     System.setProperty(PROP_JETTY_SSL_PORT, Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT)));
 
                     server = new JettyStart();
-                    server.run();
+                    server.run(jettyStandaloneMode);
                 }
             } else {
                 server = new JettyStart();
