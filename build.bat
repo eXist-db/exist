@@ -27,11 +27,7 @@ set EXIST_HOME=%CD%
 set ANT_HOME=%EXIST_HOME%\tools\ant
 set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher-1.10.4.jar
 
-rem You must set
-rem -Djavax.xml.transform.TransformerFactory=org.apache.xalan.processor.TransformerFactoryImpl
-rem Otherwise Ant will fail to do junitreport with Saxon, as it has a direct dependency on Xalan.
-rem This is also true for installer target which uses {http://exslt.org/strings}tokenize(). /ljo
-set _JAVA_OPTS=-Xms512m -Xmx512m -Dant.home="%ANT_HOME%" -Dexist.home="%EXIST_HOME%" -Djavax.xml.transform.TransformerFactory="org.apache.xalan.processor.TransformerFactoryImpl" %JAVA_OPTS%
+set _JAVA_OPTS=-Xms512m -Xmx512m -Dant.home="%ANT_HOME%" -Dexist.home="%EXIST_HOME%" -Djavax.xml.transform.TransformerFactory="net.sf.saxon.TransformerFactoryImpl" %JAVA_OPTS%
 
 echo eXist Build
 echo -------------------
