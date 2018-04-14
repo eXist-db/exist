@@ -132,13 +132,10 @@
             <report format="frames" todir="${junit.reports.html}">
                 <classpath>
                     <fileset dir="lib/endorsed">
-                        <include name="xalan*.jar"/>
-                        <include name="xml-apis*.jar"/>
-                        <include name="xercesImpl*.jar"/>
-                        <include name="serializer*.jar"/>
+                        <include name="Saxon*.jar"/>
                     </fileset>
                 </classpath>
-                <factory name="org.apache.xalan.processor.TransformerFactoryImpl"/>
+                <factory name="net.sf.saxon.TransformerFactoryImpl"/>
             </report>
         </junitreport>
     </target>
