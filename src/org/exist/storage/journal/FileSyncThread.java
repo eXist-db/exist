@@ -19,6 +19,8 @@
  */
 package org.exist.storage.journal;
 
+import net.jcip.annotations.GuardedBy;
+
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 
@@ -36,12 +38,11 @@ import java.nio.channels.FileChannel;
  */
 public class FileSyncThread extends Thread {
 
-    // guarded by latch
-    private FileChannel endOfLog;
+    @GuardedBy("latch") private FileChannel endOfLog;
     private final Object latch;
 
     // guarded by this
-    private boolean syncTriggered = false;
+    @GuardedBy("this") private boolean syncTriggered = false;
 
     // used as termination flag, volatile semantics are sufficient
     private volatile boolean shutdown = false;

@@ -210,7 +210,7 @@ public class ReentrantReadWriteLock implements Lock {
 
     @Override
     public synchronized void wakeUp() {
-        notify();
+        notifyAll();
     }
 
     @Override

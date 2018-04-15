@@ -193,7 +193,8 @@ public abstract class Serializer implements XMLReader {
     protected Subject user = null;
     
     protected HttpContext httpContext = null;
-    public class HttpContext
+
+    public static class HttpContext
     {
     	private RequestWrapper request = null;
     	private ResponseWrapper response = null;
