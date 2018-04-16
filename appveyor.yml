@@ -1,6 +1,6 @@
 version: '{branch}-{build}'
-environment:
-  EXIST_HOME: c:\projects\exist
+install:
+- cmd: set EXIST_HOME=%APPVEYOR_BUILD_FOLDER%
 build_script:
 - cmd: build.bat
 test_script:
