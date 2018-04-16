@@ -1,7 +1,10 @@
 package org.exist.xquery.functions.inspect;
 
 import org.exist.dom.QName;
+import org.exist.security.PermissionDeniedException;
 import org.exist.source.FileSource;
+import org.exist.source.Source;
+import org.exist.source.SourceFactory;
 import org.exist.xquery.*;
 import org.exist.xquery.Module;
 import org.exist.xquery.functions.fn.FunOnFunctions;
@@ -9,6 +12,8 @@ import org.exist.xquery.functions.fn.LoadXQueryModule;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.*;
 
+import javax.xml.xpath.XPath;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -67,20 +72,22 @@ public class ModuleFunctions extends BasicFunction {
                 if (isCalledAs("module-functions-by-uri")) {
                     module = tempContext.importModule(args[0].getStringValue(), null, null);
                 } else {
-                    final URI locationUri = ((AnyURIValue)args[0]).toURI();
-                    tempContext.setSource(new FileSource(Paths.get(locationUri), false));
+                    final URI locationUri = ((AnyURIValue) args[0]).toURI();
+                    try {
+                        final Source source = SourceFactory.getSource(context.getBroker(), null, locationUri.toString(), false);
+                        tempContext.setSource(source);
+                    } catch (final IllegalArgumentException e) {
+                        throw new XPathException(this, e.getMessage());
+                    }
                     module = tempContext.importModule(null, null, args[0].getStringValue());
                 }
-                
+            } catch (final IOException | PermissionDeniedException e) {
+                throw new XPathException(this, e.getMessage());
             } catch (final XPathException e) {
-                LOG.debug("Failed to import module: " + args[0].getStringValue() + ": " + e.getMessage(), e);
-
+                LOG.error("Failed to import module: " + args[0].getStringValue() + ": " + e.getMessage(), e);
                 if (e.getErrorCode().equals(ErrorCodes.XPST0003)) {
                     throw new XPathException(this, e.getMessage());
                 }
-
-            } catch (final Exception e) {
-                LOG.debug("Failed to import module: " + args[0].getStringValue() + ": " + e.getMessage(), e);
             }
             
             if (module == null) {
