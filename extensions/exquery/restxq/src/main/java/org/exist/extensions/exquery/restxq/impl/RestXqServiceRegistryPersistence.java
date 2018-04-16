@@ -181,7 +181,7 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
                     final Path registry = optRegistry.get();
 
                     //replace the original registry with the new registry
-                    final Path localTmpNewRegistry = Files.copy(tmpNewRegistry, registry.getParent());
+                    final Path localTmpNewRegistry = Files.copy(tmpNewRegistry, registry.getParent().resolve(tmpNewRegistry.getFileName()));
                     Files.move(localTmpNewRegistry, registry, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
 
                     log.info("Replaced RESTXQ registry: " + FileUtils.fileName(tmpNewRegistry) + " -> " + FileUtils.fileName(registry));
