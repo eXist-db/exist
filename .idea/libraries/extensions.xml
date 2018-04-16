@@ -6,11 +6,13 @@
       <root url="file://$PROJECT_DIR$/extensions/xqdoc/lib" />
       <root url="file://$PROJECT_DIR$/extensions/webdav/lib" />
       <root url="file://$PROJECT_DIR$/extensions/modules/lib" />
+      <root url="file://$PROJECT_DIR$/extensions/betterform/main/lib" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
       <root url="jar://$USER_HOME$/.ideaLibSources/lucene-analyzers-common-4.10.4-sources.jar!/" />
     </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/extensions/betterform/main/lib" recursive="false" />
     <jarDirectory url="file://$PROJECT_DIR$/extensions/fluent/lib" recursive="false" />
     <jarDirectory url="file://$PROJECT_DIR$/extensions/indexes/lucene/lib" recursive="false" />
     <jarDirectory url="file://$PROJECT_DIR$/extensions/modules/lib" recursive="false" />
