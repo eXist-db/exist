@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-17 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -16,100 +16,74 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
  */
 package org.exist.storage;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Optional;
 
+import org.apache.commons.io.input.CountingInputStream;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock.LockMode;
-import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.test.ExistEmbeddedServer;
-import org.exist.test.TestConstants;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
-import org.junit.Rule;
-import org.junit.Test;
+import org.exist.xmldb.XmldbURI;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * @author wolf
- *
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class RecoverBinaryTest {
+public class RecoverBinaryTest extends AbstractRecoverTest {
 
-    @Rule
-    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
-
-    @Test
-    public void storeAndLoad() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
-        store();
-        existEmbeddedServer.restart();
-        load();
+    @Override
+    protected Path getTestFile1() throws IOException {
+        return resolveTestFile("LICENSE");
     }
 
-    private void store() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
-
-    	BrokerPool.FORCE_CORRUPTION = true;
-
-    	final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        final TransactionManager transact = pool.getTransactionManager();
-
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            try(final Txn transaction = transact.beginTransaction()) {
-            
-    	        final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-        	    assertNotNull(root);
-            	broker.saveCollection(transaction, root);
-    
-	            final String existHome = System.getProperty("exist.home");
-                Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
-                existDir = existDir.normalize();
-
-                final byte[] bin = Files.readAllBytes(existDir.resolve("LICENSE"));
-                BinaryDocument doc =
-                    root.addBinaryResource(transaction, broker, TestConstants.TEST_BINARY_URI, bin, "text/text");
-                assertNotNull(doc);
-
-				transact.commit(transaction);
-			}
-            
-            // the following transaction will not be committed. It will thus be rolled back by recovery
-//          final Txn transaction = transact.beginTransaction();
-//          root.removeBinaryResource(transaction, broker, doc);
-            
-            //TODO : remove ?
-            pool.getJournalManager().get().flush(true, false);
-		}
+    @Override
+    protected Path getTestFile2() throws IOException {
+        return resolveTestFile("README.md");
     }
-    
-    private void load() throws EXistException, PermissionDeniedException, IOException {
 
-        BrokerPool.FORCE_CORRUPTION = false;
+    @Override
+    protected void storeAndVerify(final DBBroker broker, final Txn transaction, final Collection collection,
+            final Path file, final String dbFilename) throws EXistException, PermissionDeniedException, IOException,
+            TriggerException, LockException {
 
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
-            final BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append(TestConstants.TEST_BINARY_URI), LockMode.READ_LOCK);
-            assertNotNull("Binary document is null", binDoc);
+        final byte[] data = Files.readAllBytes(file);
+        final BinaryDocument doc = collection.addBinaryResource(transaction, broker, XmldbURI.create(dbFilename), data, "application/octet-stream");
 
-            try(final InputStream is = broker.getBinaryResource(binDoc)) {
-                final byte[] bdata = new byte[(int) broker.getBinaryResourceSize(binDoc)];
-                is.read(bdata);
-                final String data = new String(bdata);
-                assertNotNull(data);
-            }
-	    }
+        assertNotNull(doc);
+        assertEquals(Files.size(file), doc.getContentLength());
+    }
+
+    @Override
+    protected void readAndVerify(final DBBroker broker, final DocumentImpl doc, final Path file,
+            final String dbFilename) throws IOException {
+
+        final BinaryDocument binDoc = (BinaryDocument)doc;
+
+        // verify the size, to ensure it is the correct content
+        final long expectedSize = Files.size(file);
+        assertEquals(expectedSize, binDoc.getContentLength());
+
+        // check the actual content too!
+        final byte[] bdata = new byte[(int) binDoc.getContentLength()];
+        try (final CountingInputStream cis = new CountingInputStream(broker.getBinaryResource(binDoc))) {
+            final int read = cis.read(bdata);
+            assertEquals(bdata.length, read);
+
+            final String data = new String(bdata);
+            assertNotNull(data);
+
+            assertEquals(expectedSize, cis.getByteCount());
+        }
     }
 }
