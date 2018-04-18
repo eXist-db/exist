@@ -20,9 +20,7 @@
 package org.exist.indexing;
 
 import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
 import org.exist.storage.btree.BTree;
-import org.exist.storage.btree.DBException;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 
@@ -39,12 +37,13 @@ public abstract class AbstractIndex implements Index {
     	return ID;
     }
 
-    protected BrokerPool pool;    
+    protected BrokerPool pool;
     //Probably not useful for every kind of index. Anyway...
     private Path dataDir = null;
     protected String name = null;    
 
-    public void configure(BrokerPool pool, Path dataDir, Element config)
+    @Override
+    public void configure(final BrokerPool pool, final Path dataDir, final Element config)
             throws DatabaseConfigurationException {
         this.pool = pool;
         this.dataDir = dataDir; 
@@ -52,18 +51,21 @@ public abstract class AbstractIndex implements Index {
             {name = config.getAttribute("id");}
     }
 
+    @Override
     public String getIndexId() {
     	return getID();
     }
 
+    @Override
     public String getIndexName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
+    @Override
     public BrokerPool getBrokerPool() {
         return pool;
     }
@@ -71,19 +73,7 @@ public abstract class AbstractIndex implements Index {
     //TODO : declare in interface ?
     public Path getDataDir() {
         return dataDir;
-    } 
-
-    public abstract void open() throws DatabaseConfigurationException;
-
-    public abstract void close() throws DBException;
-
-    public abstract void sync() throws DBException;	
-
-    public abstract void remove() throws DBException;
-
-    public abstract IndexWorker getWorker(DBBroker broker);
-
-    public abstract boolean checkIndex(DBBroker broker);
+    }
 
     @Override
     public BTree getStorage() {

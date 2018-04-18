@@ -40,7 +40,7 @@ import java.util.Date;
  */
 public class XMLDBTouch extends XMLDBAbstractCollectionManipulator {
 
-    private static final Logger logger = LogManager.getLogger(XMLDBCreated.class);
+    private static final Logger logger = LogManager.getLogger(XMLDBTouch.class);
 
     private final static QName qnTouch = new QName("touch", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX);
 
