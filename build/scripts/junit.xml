@@ -321,6 +321,8 @@
             <formatter type="plain"/>
             <formatter type="xml"/>
             <test name="org.exist.storage.AllStorageTests" todir="${junit.reports.dat}"/>
+            <test name="org.exist.storage.RecoverBinaryTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.storage.RecoverXmlTest" todir="${junit.reports.dat}"/>
         </junit>
     </target>
 
