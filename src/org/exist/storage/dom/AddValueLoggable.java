@@ -33,20 +33,18 @@ public class AddValueLoggable extends AbstractLoggable {
     protected long pageNum;
     protected short tid;
     protected byte[] value;
+    protected boolean isOverflow = false;
 
     public AddValueLoggable() {
         super(DOMFile.LOG_ADD_VALUE, 0);
     }
 
-    public AddValueLoggable(final Txn transaction, final long pageNum, final short tid, final byte[] value) {
-        this(DOMFile.LOG_ADD_VALUE, transaction, pageNum, tid, value);
-    }
-
-    protected AddValueLoggable(final byte id, final Txn transaction, final long pageNum, final short tid, final byte[] value) {
+    protected AddValueLoggable(final byte id, final Txn transaction, final long pageNum, final short tid, final byte[] value, final boolean isOverflow) {
         super(id, transaction.getId());
         this.pageNum = pageNum;
         this.tid = tid;
         this.value = value;
+        this.isOverflow = isOverflow;
     }
 
     public AddValueLoggable(final DBBroker broker, final long transactionId) {
@@ -58,18 +56,23 @@ public class AddValueLoggable extends AbstractLoggable {
         this.domDb = ((NativeBroker) broker).getDOMFile();
     }
 
-    public void clear(final Txn transaction, final long pageNum, final short tid, final byte[] value) {
+    public void clear(final Txn transaction, final long pageNum, final short tid, final byte[] value, final boolean isOverflow) {
         super.clear(transaction.getId());
         this.pageNum = pageNum;
         this.tid = tid;
         this.value = value;
+        this.isOverflow = isOverflow;
     }
 
     @Override
     public void write(final ByteBuffer out) {
         out.putInt((int) pageNum);
         out.putShort(tid);
-        out.putShort((short) value.length);
+        if (isOverflow) {
+            out.putShort((short)0);
+        } else {
+            out.putShort((short) value.length);
+        }
         out.put(value);
     }
 
@@ -77,7 +80,9 @@ public class AddValueLoggable extends AbstractLoggable {
     public void read(final ByteBuffer in) {
         pageNum = in.getInt();
         tid = in.getShort();
-        value = new byte[in.getShort()];
+        final short vlen = in.getShort();
+        isOverflow = vlen == 0;
+        value = isOverflow ? new byte[8] : new byte[vlen];
         in.get(value);
     }
 
