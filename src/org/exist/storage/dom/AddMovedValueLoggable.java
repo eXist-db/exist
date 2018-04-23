@@ -34,7 +34,7 @@ public class AddMovedValueLoggable extends AddValueLoggable {
 
     public AddMovedValueLoggable(final Txn transaction, final long pageNum, final short tid, final byte[] value,
                                  final long backLink) {
-        super(DOMFile.LOG_ADD_MOVED_REC, transaction, pageNum, tid, value);
+        super(DOMFile.LOG_ADD_MOVED_REC, transaction, pageNum, tid, value, false);
         this.backLink = backLink;
     }
 

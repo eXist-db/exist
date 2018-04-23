@@ -399,7 +399,7 @@ public class DOMFile extends BTree implements Lockable {
         final DOMFilePageHeader currentPageHeader = currentPage.getPageHeader();
         final short tupleID = currentPageHeader.getNextTupleID();
         if (transaction != null && isRecoveryEnabled()) {
-                addValueLog.clear(transaction, currentPage.getPageNum(), tupleID, value);
+                addValueLog.clear(transaction, currentPage.getPageNum(), tupleID, value, overflowPage);
             writeToLog(addValueLog, currentPage.page);
         }
         //Save tuple identifier
@@ -2249,7 +2249,7 @@ public class DOMFile extends BTree implements Lockable {
                 // save data length
                 // overflow pages have length 0
                 final short vlen = (short) loggable.value.length;
-                ByteConversion.shortToByte(vlen, page.data, page.len);
+                ByteConversion.shortToByte(loggable.isOverflow ? OVERFLOW : vlen, page.data, page.len);
                 page.len += LENGTH_DATA_LENGTH;
                 // save data
                 System.arraycopy(loggable.value, 0, page.data, page.len, vlen);
@@ -2273,12 +2273,12 @@ public class DOMFile extends BTree implements Lockable {
         final DOMPage page = getDOMPage(loggable.pageNum);
         final DOMFilePageHeader pageHeader = page.getPageHeader();
         final RecordPos pos = page.findRecord(ItemId.getId(loggable.tid));
-        SanityCheck.ASSERT(pos != null, "Record not found!");
+        SanityCheck.ASSERT(pos != null, "Record not found! isOverflow: " + loggable.isOverflow);
         //TODO : throw exception ? -pb
         //Position the stream at the very beginning of the record
         final int startOffset = pos.offset - LENGTH_TID;
         //Get the record length
-        final short vlen = ByteConversion.byteToShort(page.data, pos.offset);
+        final short vlen = loggable.isOverflow ? 8 : ByteConversion.byteToShort(page.data, pos.offset);
         //End offset
         final int end = startOffset + LENGTH_TID + LENGTH_DATA_LENGTH + vlen;
         final int dlen = pageHeader.getDataLength();
