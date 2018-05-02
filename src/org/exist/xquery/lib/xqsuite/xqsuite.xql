@@ -212,6 +212,7 @@ declare %private function test:test($func as function(*), $meta as element(funct
                             <report>
                                 <failure message="Expected error {$assertError/value/string()}."
                                     type="failure-error-code-1"/>
+                                <output>{ $result }</output>
                             </report>
                         )
                     else
