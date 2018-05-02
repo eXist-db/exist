@@ -640,7 +640,7 @@ declare %private function test:assertEmpty($result as item()*) as element(report
     else
         <report>
             <failure message="assertEmpty failed."
-                type="failure-error-code-1"/>,
+                type="failure-error-code-1"/>
             <output>{ $result }</output>
         </report>
 };
@@ -654,7 +654,7 @@ declare %private function test:assertExists($result as item()*) as element(repor
     else
         <report>
             <failure message="assertExists failed."
-                type="failure-error-code-1"/>,
+                type="failure-error-code-1"/>
             <output>{ $result }</output>
         </report>
 };
@@ -668,7 +668,7 @@ declare %private function test:assertTrue($result as item()*) as element(report)
     else
         <report>
             <failure message="assertExists failed."
-                type="failure-error-code-1"/>,
+                type="failure-error-code-1"/>
             <output>{ $result }</output>
         </report>
 };
@@ -682,7 +682,7 @@ declare %private function test:assertError($value as xs:string, $result as item(
     else
         <report>
             <failure message="assertError failed. Expected error {$value}"
-                type="failure-error-code-1"/>,
+                type="failure-error-code-1"/>
             <output>{ $result }</output>
         </report>
 };
@@ -696,7 +696,7 @@ declare %private function test:assertFalse($result as item()*) as element(report
     else
         <report>
             <failure message="assertExists failed."
-                type="failure-error-code-1"/>,
+                type="failure-error-code-1"/>
             <output>{ $result }</output>
         </report>
 };
@@ -746,7 +746,7 @@ declare %private function test:assertXPath($annotation as element(annotation), $
         else
             <report>
                 <failure message="assertXPath failed."
-                    type="failure-error-code-1">{ $expr }</failure>,
+                    type="failure-error-code-1">{ $expr }</failure>
                 <output>{ $result }</output>
             </report>
 };
