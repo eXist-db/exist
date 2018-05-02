@@ -667,7 +667,7 @@ declare %private function test:assertTrue($result as item()*) as element(report)
         ()
     else
         <report>
-            <failure message="assertExists failed."
+            <failure message="assertTrue failed."
                 type="failure-error-code-1"/>
             <output>{ $result }</output>
         </report>
@@ -695,7 +695,7 @@ declare %private function test:assertFalse($result as item()*) as element(report
         ()
     else
         <report>
-            <failure message="assertExists failed."
+            <failure message="assertFalse failed."
                 type="failure-error-code-1"/>
             <output>{ $result }</output>
         </report>
