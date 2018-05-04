@@ -101,4 +101,29 @@ public class SourceFactoryTest {
         assertTrue(source instanceof ClassLoaderSource);
         assertEquals(getClass().getResource("library.xqm"), source.getKey());
     }
+
+    @Test
+    public void getSourceFromResource_contextAbsoluteFileUrl_locationRelativeUrl() throws IOException, PermissionDeniedException {
+        final String contextPath = "resource:org/exist/source/main.xq";
+        final String location = "library.xqm";
+
+        final Source source = SourceFactory.getSource(null, contextPath, location, false);
+
+        assertTrue(source instanceof ClassLoaderSource);
+        assertEquals(getClass().getResource("library.xqm"), source.getKey());
+    }
+
+    @Test
+    public void getSourceFromResource_contextAbsoluteFileUrl_locationRelativeUrl_basedOnSource() throws IOException, PermissionDeniedException {
+        final String contextPath = "resource:org/exist/source/main.xq";
+        final String location = "library.xqm";
+
+        final Source mainSource = SourceFactory.getSource(null, "", contextPath, false);
+        assertTrue(mainSource instanceof ClassLoaderSource);
+
+        final Source relativeSource = SourceFactory.getSource(null, ((ClassLoaderSource)mainSource).getSource(), location, false);
+
+        assertTrue(relativeSource instanceof ClassLoaderSource);
+        assertEquals(getClass().getResource(location), relativeSource.getKey());
+    }
 }
