@@ -160,6 +160,7 @@ public class IndexManager implements BrokerPoolService {
 
     public void unregisterIndex(final Index index) throws DBException {
         indexers.remove(index.getIndexId(), index);
+        index.close();
         if (LOG.isInfoEnabled()) {
             LOG.info("Unregistered index " + index.getClass() + " as " + index.getIndexId());
         }
