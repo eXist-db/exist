@@ -33,6 +33,7 @@ import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
+import org.exist.indexing.Index;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.StreamListener;
 import org.exist.indexing.StructuralIndex;
@@ -114,9 +115,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     protected String id;
 
-    protected IndexController indexController;
-
-    long config_timestamp = 0;
+    private final TimestampedReference<IndexController> indexController = new TimestampedReference<>();
 
     public DBBroker(final BrokerPool pool, final Configuration config) {
         this.config = config;
@@ -125,15 +124,27 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
             caseSensitive = temp.booleanValue();
         }
         this.pool = pool;
-        initIndexModules();
     }
 
-    public void initIndexModules() {
-        if (indexController == null
-            || getBrokerPool().getIndexManager().getConfigurationTimestamp() != config_timestamp) {
+    /**
+     * Prepares the broker for (re-)use,
+     * when (re-)leased from BrokerPool.
+     */
+    public void prepare() {
+        /**
+         * Index modules should always be re-loaded in case
+         * {@link org.exist.indexing.IndexManager#registerIndex(Index)} or
+         * {@link org.exist.indexing.IndexManager#unregisterIndex(Index)}
+         * has been called since the previous lease of this broker.
+         */
+        loadIndexModules();
+    }
 
-            indexController = new IndexController(this);
-        }
+    /**
+     * Loads the index modules via an IndexController
+     */
+    protected void loadIndexModules() {
+        indexController.setIfExpiredOrNull(getBrokerPool().getIndexManager().getConfigurationTimestamp(), () -> new IndexController(this));
     }
 
     /**
@@ -199,7 +210,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     }
 
     public IndexController getIndexController() {
-        return indexController;
+        return indexController.get();
     }
 
     public abstract ElementIndex getElementIndex();

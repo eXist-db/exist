@@ -1189,7 +1189,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                     }
             }
             broker = inactiveBrokers.pop();
-            broker.initIndexModules();
+            broker.prepare();
 
             //activate the broker
             activeBrokers.put(Thread.currentThread(), broker);
@@ -1346,6 +1346,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
         inServiceMode = true;
         final DBBroker broker = inactiveBrokers.peek();
+        broker.prepare();
         checkpoint = true;
         sync(broker, Sync.MAJOR);
         checkpoint = false;
@@ -1456,6 +1457,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 //TODO : use get() then release the broker ?
                 // No, might lead to a deadlock.
                 final DBBroker broker = inactiveBrokers.pop();
+                broker.prepare();
                 //Do the synchronization job
                 sync(broker, syncEvent);
                 inactiveBrokers.push(broker);
@@ -1600,6 +1602,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
                     try {
                         if (broker != null) {
+                            broker.prepare();
                             broker.pushSubject(securityManager.getSystemSubject());
                         }
 

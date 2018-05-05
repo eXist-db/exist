@@ -40,40 +40,37 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.Occurrences;
 import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.XQueryContext;
-import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 
 public class IndexManagerTest {
 
   @ClassRule
   public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-  private static final String INDEX_ID = "test";
-
   @Test
   public void configurationChangeRuntime() throws Exception  {
-
-    TestIndex index = new TestIndex();
-
     final BrokerPool pool = existEmbeddedServer.getBrokerPool();
     try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-      pool.getIndexManager().registerIndex(index);
-
-      Assert.assertNull(broker.getIndexController().getWorkerByIndexId(INDEX_ID));
+      pool.getIndexManager().registerIndex(new TestIndex());
+      assertNull(broker.getIndexController().getWorkerByIndexId(TestIndex.INDEX_ID));
     }
 
     try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-      Assert.assertNotNull(broker.getIndexController().getWorkerByIndexId(INDEX_ID));
+      assertNotNull(broker.getIndexController().getWorkerByIndexId(TestIndex.INDEX_ID));
     }
-
   }
 
-  class TestIndex implements Index {
+  private static class TestIndex implements Index {
 
-    BrokerPool pool;
+    public static final String INDEX_ID = "test";
+
+    private BrokerPool pool;
 
     @Override
     public String getIndexId() {
@@ -91,9 +88,8 @@ public class IndexManagerTest {
     }
 
     @Override
-    public void configure(BrokerPool pool, Path dataDir, Element config) {
+    public void configure(final BrokerPool pool, final Path dataDir, final Element config) {
       this.pool = pool;
-
     }
 
     @Override
@@ -113,7 +109,7 @@ public class IndexManagerTest {
     }
 
     @Override
-    public IndexWorker getWorker(DBBroker broker) {
+    public IndexWorker getWorker(final DBBroker broker) {
       return new IndexWorker() {
 
         @Override
@@ -127,24 +123,21 @@ public class IndexManagerTest {
         }
 
         @Override
-        public Object configure(IndexController controller, NodeList configNodes,
-            Map<String, String> namespaces) {
+        public Object configure(final IndexController controller, final NodeList configNodes,
+            final Map<String, String> namespaces) {
           return null;
         }
 
         @Override
-        public void setDocument(DocumentImpl doc) {
-
+        public void setDocument(final DocumentImpl doc) {
         }
 
         @Override
-        public void setDocument(DocumentImpl doc, ReindexMode mode) {
-
+        public void setDocument(final DocumentImpl doc, final ReindexMode mode) {
         }
 
         @Override
-        public void setMode(ReindexMode mode) {
-
+        public void setMode(final ReindexMode mode) {
         }
 
         @Override
@@ -158,9 +151,9 @@ public class IndexManagerTest {
         }
 
         @Override
-        public <T extends IStoredNode> IStoredNode getReindexRoot(IStoredNode<T> node,
-            NodePath path,
-            boolean insert, boolean includeSelf) {
+        public <T extends IStoredNode> IStoredNode getReindexRoot(
+            final IStoredNode<T> node, final NodePath path,
+            final boolean insert, final boolean includeSelf) {
           return null;
         }
 
@@ -170,39 +163,38 @@ public class IndexManagerTest {
         }
 
         @Override
-        public MatchListener getMatchListener(DBBroker broker, NodeProxy proxy) {
+        public MatchListener getMatchListener(final DBBroker broker, final NodeProxy proxy) {
           return null;
         }
 
         @Override
         public void flush() {
-
         }
 
         @Override
-        public void removeCollection(Collection collection, DBBroker broker, boolean reindex) {
+        public void removeCollection(final Collection collection, final DBBroker broker, final boolean reindex) {
         }
 
         @Override
-        public boolean checkIndex(DBBroker broker) {
+        public boolean checkIndex(final DBBroker broker) {
           return false;
         }
 
         @Override
-        public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet,
-            Map<?, ?> hints) {
+        public Occurrences[] scanIndex(final XQueryContext context, final DocumentSet docs, final NodeSet contextSet,
+            final Map<?, ?> hints) {
           return new Occurrences[0];
         }
 
         @Override
-        public QueryRewriter getQueryRewriter(XQueryContext context) {
+        public QueryRewriter getQueryRewriter(final XQueryContext context) {
           return null;
         }
       };
     }
 
     @Override
-    public boolean checkIndex(DBBroker broker) {
+    public boolean checkIndex(final DBBroker broker) {
       return false;
     }
 
@@ -211,5 +203,4 @@ public class IndexManagerTest {
       return null;
     }
   }
-
 }

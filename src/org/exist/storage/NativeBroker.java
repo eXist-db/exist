@@ -1532,7 +1532,7 @@ public class NativeBroker extends DBBroker {
                 notifyDropIndex(collection);
 
                 // Drop custom indexes
-                indexController.removeCollection(collection, this, false);
+                getIndexController().removeCollection(collection, this, false);
 
                 if(!isRoot) {
                     // remove from parent collection
@@ -1863,7 +1863,7 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on collection " + collection.getURI());
         }
         notifyDropIndex(collection);
-        indexController.removeCollection(collection, this, reindex);
+        getIndexController().removeCollection(collection, this, reindex);
         try {
             for (final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
                 final DocumentImpl doc = i.next();
@@ -2521,7 +2521,7 @@ public class NativeBroker extends DBBroker {
         if (LOG.isDebugEnabled())
             LOG.debug("Copying document " + oldDoc.getFileURI() + " to " + newDoc.getURI());
         final long start = System.currentTimeMillis();
-        final StreamListener listener = indexController.getStreamListener(newDoc, ReindexMode.STORE);
+        final StreamListener listener = getIndexController().getStreamListener(newDoc, ReindexMode.STORE);
         final NodeList nodes = oldDoc.getChildNodes();
         for(int i = 0; i < nodes.getLength(); i++) {
             final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
@@ -2747,7 +2747,7 @@ public class NativeBroker extends DBBroker {
     }
 
     private void dropIndex(final Txn transaction, final DocumentImpl document) throws ReadOnlyException {
-        final StreamListener listener = indexController.getStreamListener(document, ReindexMode.REMOVE_ALL_NODES);
+        final StreamListener listener = getIndexController().getStreamListener(document, ReindexMode.REMOVE_ALL_NODES);
         listener.startIndexDocument(transaction);
         final NodeList nodes = document.getChildNodes();
         for(int i = 0; i < nodes.getLength(); i++) {
@@ -2761,7 +2761,7 @@ public class NativeBroker extends DBBroker {
         }
         listener.endIndexDocument(transaction);
         notifyDropIndex(document);
-        indexController.flush();
+        getIndexController().flush();
     }
 
     @Override
@@ -2882,8 +2882,8 @@ public class NativeBroker extends DBBroker {
      */
     @Override
     public void reindexXMLResource(final Txn transaction, final DocumentImpl doc, final IndexMode mode) {
-        final StreamListener listener = indexController.getStreamListener(doc, ReindexMode.STORE);
-        indexController.startIndexDocument(transaction, listener);
+        final StreamListener listener = getIndexController().getStreamListener(doc, ReindexMode.STORE);
+        getIndexController().startIndexDocument(transaction, listener);
         try {
             final NodeList nodes = doc.getChildNodes();
             for (int i = 0; i < nodes.getLength(); i++) {
@@ -2896,7 +2896,7 @@ public class NativeBroker extends DBBroker {
                 }
             }
         } finally {
-            indexController.endIndexDocument(transaction, listener);
+            getIndexController().endIndexDocument(transaction, listener);
         }
         flush();
     }
@@ -2932,7 +2932,7 @@ public class NativeBroker extends DBBroker {
             final DocumentImpl tempDoc = new DocumentImpl(pool, doc.getCollection(), doc.getFileURI());
             tempDoc.copyOf(doc, true);
             tempDoc.setDocId(doc.getDocId());
-            final StreamListener listener = indexController.getStreamListener(doc, ReindexMode.STORE);
+            final StreamListener listener = getIndexController().getStreamListener(doc, ReindexMode.STORE);
             // copy the nodes
             final NodeList nodes = doc.getChildNodes();
             for(int i = 0; i < nodes.getLength(); i++) {
@@ -3588,7 +3588,7 @@ public class NativeBroker extends DBBroker {
             LOG.error("Failed to reopen index files after repair: " + e.getMessage(), e);
         }
 
-        initIndexModules();
+        loadIndexModules();
         LOG.info("Reindexing database files ...");
         //Reindex from root collection
         reindexCollection(null, getCollection(XmldbURI.ROOT_COLLECTION_URI), IndexMode.REPAIR);
@@ -3624,7 +3624,7 @@ public class NativeBroker extends DBBroker {
         } catch(final EXistException e) {
             LOG.error(e);
         }
-        indexController.flush();
+        getIndexController().flush();
         nodesCount = 0;
     }
 
