@@ -1054,8 +1054,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         inactiveBrokers.push(broker);
         brokersCount++;
         broker.setId(broker.getClass().getName() + '_' + instanceName + "_" + brokersCount);
-        LOG.debug(
-            "created broker '" + broker.getId() + " for database instance '" + instanceName + "'");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Created broker '" + broker.getId() + " for database instance '" + instanceName + "'");
+        }
         return broker;
     }
 
