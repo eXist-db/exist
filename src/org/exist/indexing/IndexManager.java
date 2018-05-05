@@ -19,6 +19,7 @@
  */
 package org.exist.indexing;
 
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.backup.RawDataBackup;
@@ -34,11 +35,14 @@ import org.w3c.dom.Element;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
  * Manages all custom indexes registered with the database instance.
  */
+@ThreadSafe
 public class IndexManager implements BrokerPoolService {
 
     private final static Logger LOG = LogManager.getLogger(IndexManager.class);
@@ -52,12 +56,12 @@ public class IndexManager implements BrokerPoolService {
 
     private final BrokerPool pool;
 
-    private Map<String, Index> indexers = new HashMap<>();
+    private final Map<String, Index> indexers = new ConcurrentHashMap<>();
 
     private Configuration.IndexModuleConfig modConfigs[];
     private Path dataDir;
 
-    private long configurationTimestamp = System.currentTimeMillis();
+    private AtomicLong configurationTimestamp = new AtomicLong(System.currentTimeMillis());
 
     /**
      * @param pool   the BrokerPool representing the current database instance
@@ -67,7 +71,14 @@ public class IndexManager implements BrokerPoolService {
     }
 
     private void configurationChanged() {
-        this.configurationTimestamp = System.currentTimeMillis();
+        while (true) {
+            long prev = configurationTimestamp.get();
+            long now = System.currentTimeMillis();
+
+            if(now > prev && configurationTimestamp.compareAndSet(prev, now)) {
+                return;
+            }
+        }
     }
 
     /**
@@ -78,7 +89,7 @@ public class IndexManager implements BrokerPoolService {
      *      last updated.
      */
     public long getConfigurationTimestamp() {
-        return configurationTimestamp;
+        return configurationTimestamp.get();
     }
 
     @Override
