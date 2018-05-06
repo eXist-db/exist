@@ -171,7 +171,7 @@ public class RealmImpl extends AbstractRealm {
             return false;
         }
         
-        usersByName.<PermissionDeniedException, EXistException>modify2E(principalDb -> {
+        usersByName.<PermissionDeniedException, EXistException>write2E(principalDb -> {
             final AbstractAccount remove_account = (AbstractAccount)principalDb.get(account.getName());
             if(remove_account == null){
                 throw new IllegalArgumentException("No such account exists!");
@@ -209,7 +209,7 @@ public class RealmImpl extends AbstractRealm {
         if(group == null)
             {return false;}
         
-        groupsByName.<PermissionDeniedException, EXistException>modify2E(principalDb -> {
+        groupsByName.<PermissionDeniedException, EXistException>write2E(principalDb -> {
             final AbstractPrincipal remove_group = (AbstractPrincipal)principalDb.get(group.getName());
             if(remove_group == null)
                 {throw new IllegalArgumentException("Group does '" + group.getName() + "' not exist!");}

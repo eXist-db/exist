@@ -31,12 +31,9 @@ import java.util.Properties;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -67,6 +64,7 @@ import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.ConcurrentValueWrapper;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
 import org.quartz.JobDataMap;
@@ -509,7 +507,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
 
     private int getNextGroupId() {
         final AtomicInteger nextId = new AtomicInteger();
-        groupsById.modify(principalDb -> {
+        groupsById.write(principalDb -> {
             if(lastGroupId + 1 >= MAX_GROUP_ID) {
                 throw new RuntimeException("System has no more group-ids available");
             }
@@ -522,7 +520,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
 
     private int getNextAccountId() {
         final AtomicInteger nextId = new AtomicInteger();
-        usersById.modify(principalDb -> {
+        usersById.write(principalDb -> {
             if(lastAccountId +1 >= MAX_USER_ID) {
                 throw new RuntimeException("System has no more user-ids available");
             }
@@ -706,13 +704,13 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
                 return;
             }
             
-            sm.sessions.modify(db -> db.entrySet().removeIf(entry -> entry == null || !entry.getValue().isValid()));
+            sm.sessions.write(db -> db.entrySet().removeIf(entry -> entry == null || !entry.getValue().isValid()));
         }
     }
 
     @Override
     public void registerSession(final Session session) {
-        sessions.modify(db -> db.put(session.getId(), session));
+        sessions.write(db -> db.put(session.getId(), session));
     }
 
     @Override
@@ -743,7 +741,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
      */
     @Override
     public void registerGroup(final Group group) {
-        groupsById.modify(principalDb -> {
+        groupsById.write(principalDb -> {
 
             final int id = group.getId();
 
@@ -762,7 +760,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
      */
     @Override
     public void registerAccount(final Account account) {
-        usersById.modify(principalDb -> {
+        usersById.write(principalDb -> {
 
             final int id = account.getId();
 
@@ -914,7 +912,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
                     		final Account current = realm.getAccount(name);
 	            	        accountLocks.getWriteLock(current).lock();
 	            	        try {
-	            	            usersById.modify(principalDb -> {
+	            	            usersById.write(principalDb -> {
                                     principalDb.remove(oldId);
                                     principalDb.put(newId, current);
                                 });
@@ -979,50 +977,16 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     }
 
     @ThreadSafe
-    private static class SessionDb {
-        private final Map<String, Session> db = new HashMap<>();
-        private final ReadWriteLock lock = new ReentrantReadWriteLock();
-
-        public <R> R read(final Function<Map<String, Session>, R> readFn) {
-            lock.readLock().lock();
-            try {
-                return readFn.apply(db);
-            } finally {
-                lock.readLock().unlock();
-            }
-        }
-
-        public void modify(final Consumer<Map<String, Session>> modifyFn) {
-            lock.writeLock().lock();
-            try {
-                modifyFn.accept(db);
-            } finally {
-                lock.writeLock().unlock();
-            }
+    private static class SessionDb extends ConcurrentValueWrapper<Map<String, Session>> {
+        public SessionDb() {
+            super(new HashMap<>());
         }
     }
 
     @ThreadSafe
-    private static class PrincipalDbById<V extends Principal> {
-        private final Int2ObjectHashMap<V> db = new Int2ObjectHashMap<>(65);
-        private final ReadWriteLock lock = new ReentrantReadWriteLock();
-
-        public <R> R read(final Function<Int2ObjectHashMap<V>, R> readFn) {
-            lock.readLock().lock();
-            try {
-                return readFn.apply(db);
-            } finally {
-                lock.readLock().unlock();
-            }
-        }
-
-        public void modify(final Consumer<Int2ObjectHashMap<V>> writeOp) {
-            lock.writeLock().lock();
-            try {
-                writeOp.accept(db);
-            } finally {
-                lock.writeLock().unlock();
-            }
+    private static class PrincipalDbById<V extends Principal> extends ConcurrentValueWrapper<Int2ObjectHashMap<V>> {
+        public PrincipalDbById() {
+            super(new Int2ObjectHashMap<>(65));
         }
     }
 

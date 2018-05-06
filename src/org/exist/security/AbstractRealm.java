@@ -26,11 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
@@ -49,9 +44,8 @@ import org.exist.security.utils.Utils;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.ConcurrentValueWrapper;
 import org.exist.util.LockException;
-import com.evolvedbinary.j8fu.function.Consumer2E;
-import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -119,7 +113,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
                 final Configuration conf = Configurator.parse(broker.getBrokerPool(), i.next());
                 final String name = conf.getProperty("name");
                 
-                groupsByName.modifyE(principalDb -> {
+                groupsByName.writeE(principalDb -> {
                     if(name != null && !principalDb.containsKey(name)) {
 
                         //Group group = instantiateGroup(this, conf);
@@ -168,7 +162,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
                 final Configuration conf = Configurator.parse(broker.getBrokerPool(), doc);
                 final String name = conf.getProperty("name");
                 
-                usersByName.modifyE(principalDb -> {
+                usersByName.writeE(principalDb -> {
                     if(name != null && !principalDb.containsKey(name)) {
                         //A account = instantiateAccount(this, conf);
                         final Account account;
@@ -243,7 +237,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
     //Accounts management methods
     public final Account registerAccount(final Account account) {
-        usersByName.modify(principalDb -> {
+        usersByName.write(principalDb -> {
             if(principalDb.containsKey(account.getName())) {
                 throw new IllegalArgumentException("Account " + account.getName() + " exist.");
             }
@@ -255,7 +249,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
     
     public final Group registerGroup(final Group group) {
-        groupsByName.modify(principalDb -> {
+        groupsByName.write(principalDb -> {
             if(principalDb.containsKey(group.getName())) {
                 throw new IllegalArgumentException("Group " + group.getName() + " already exists.");
             }
@@ -491,44 +485,9 @@ public abstract class AbstractRealm implements Realm, Configurable {
         return Collections.emptyList();
     }
     
-    protected static class PrincipalDbByName<V extends Principal> {
-        private final Map<String, V> db = new HashMap<>(65);
-        private final ReadWriteLock lock = new ReentrantReadWriteLock();
-
-        public <R> R read(final Function<Map<String, V>, R> readOp) {
-            lock.readLock().lock();
-            try {
-                return readOp.apply(db);
-            } finally {
-                lock.readLock().unlock();
-            }
-        }
-
-        public final void modify(final Consumer<Map<String, V>> writeOp) {
-            lock.writeLock().lock();
-            try {
-                writeOp.accept(db);
-            } finally {
-                lock.writeLock().unlock();
-            }
-        }
-
-        public final <E extends Throwable> void modifyE(final ConsumerE<Map<String, V>, E> writeOp) throws E {
-            lock.writeLock().lock();
-            try {
-                writeOp.accept(db);
-            } finally {
-                lock.writeLock().unlock();
-            }
-        }
-
-        public final <E1 extends Exception, E2 extends Exception> void modify2E(final Consumer2E<Map<String, V>, E1, E2> writeOp) throws E1, E2 {
-            lock.writeLock().lock();
-            try {
-                writeOp.accept(db);
-            } finally {
-                lock.writeLock().unlock();
-            }
+    protected static class PrincipalDbByName<V extends Principal> extends ConcurrentValueWrapper<Map<String, V>> {
+        public PrincipalDbByName() {
+            super(new HashMap<>(65));
         }
     }
 }
