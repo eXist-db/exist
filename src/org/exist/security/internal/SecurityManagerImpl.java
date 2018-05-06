@@ -31,9 +31,8 @@ import java.util.Properties;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -66,6 +65,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ConcurrentValueWrapper;
+import org.exist.util.WeakLazyStripes;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
 import org.quartz.JobDataMap;
@@ -917,22 +917,17 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
 
     @ThreadSafe
     private static class PrincipalLocks<T extends Principal> {
-        private final Map<Integer, ReentrantReadWriteLock> locks = new HashMap<>();
+        private final WeakLazyStripes<Integer, ReadWriteLock> lockStripes = new WeakLazyStripes<>(id -> new ReentrantReadWriteLock());
 
-        private synchronized ReentrantReadWriteLock getLock(final T principal) {
-            ReentrantReadWriteLock lock = locks.get(principal.getId());
-            if(lock == null) {
-                lock = new ReentrantReadWriteLock();
-                locks.put(principal.getId(), lock);
-            }
-            return lock;
+        private ReadWriteLock getLock(final T principal) {
+            return lockStripes.get(principal.getId());
         }
 
-        public ReadLock getReadLock(final T principal) {
+        public Lock getReadLock(final T principal) {
             return getLock(principal).readLock();
         }
 
-        public WriteLock getWriteLock(final T principal) {
+        public Lock getWriteLock(final T principal) {
             return getLock(principal).writeLock();
         }
     }
