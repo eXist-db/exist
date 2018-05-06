@@ -29,6 +29,7 @@ import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.journal.Journal;
 import org.exist.util.Configuration;
 import org.exist.util.Leasable;
 import org.exist.util.SSLHelper;
@@ -42,6 +43,7 @@ import org.xmldb.api.base.XMLDBException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -84,6 +86,8 @@ public class DatabaseImpl implements Database {
 
     private boolean autoCreate = false;
     private String configuration = null;
+    private String dataDir = null;
+    private String journalDir = null;
     private String currentInstanceName = null;
 
     private final Map<String, Leasable<XmlRpcClient>> rpcClients = new HashMap<>();
@@ -109,6 +113,13 @@ public class DatabaseImpl implements Database {
     private void configure(final String instanceName) throws XMLDBException {
         try {
             final Configuration config = new Configuration(configuration, Optional.empty());
+            if (dataDir != null) {
+                config.setProperty(BrokerPool.PROPERTY_DATA_DIR, Paths.get(dataDir));
+            }
+            if (journalDir != null) {
+                config.setProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR, Paths.get(journalDir));
+            }
+
             BrokerPool.configure(instanceName, 1, 5, config);
             if (shutdown != null) {
                 BrokerPool.getInstance(instanceName).registerShutdownListener(shutdown);
@@ -365,6 +376,8 @@ public class DatabaseImpl implements Database {
     public final static String CREATE_DATABASE = "create-database";
     public final static String DATABASE_ID = "database-id";
     public final static String CONFIGURATION = "configuration";
+    public final static String DATA_DIR = "data-dir";
+    public final static String JOURNAL_DIR = "journal-dir";
     public final static String SSL_ENABLE = "ssl-enable";
     public final static String SSL_ALLOW_SELF_SIGNED = "ssl-allow-self-signed";
     public final static String SSL_VERIFY_HOSTNAME = "ssl-verify-hostname";
@@ -383,6 +396,14 @@ public class DatabaseImpl implements Database {
 
             case CONFIGURATION:
                 value = configuration;
+                break;
+
+            case DATA_DIR:
+                value = dataDir;
+                break;
+
+            case JOURNAL_DIR:
+                value = journalDir;
                 break;
 
             case SSL_ENABLE:
@@ -416,6 +437,14 @@ public class DatabaseImpl implements Database {
 
             case CONFIGURATION:
                 this.configuration = value;
+                break;
+
+            case DATA_DIR:
+                this.dataDir = value;
+                break;
+
+            case JOURNAL_DIR:
+                this.journalDir = value;
                 break;
 
             case SSL_ENABLE:

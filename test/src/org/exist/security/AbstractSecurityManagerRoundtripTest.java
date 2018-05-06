@@ -24,7 +24,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
 
     protected abstract String getBaseUri();
 
-    protected abstract void restartServer() throws XMLDBException;
+    protected abstract void restartServer() throws XMLDBException, IOException;
 
     @Test
     public void checkGroupMembership() throws XMLDBException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {

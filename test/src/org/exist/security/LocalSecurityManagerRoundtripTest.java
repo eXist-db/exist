@@ -25,6 +25,8 @@ import org.junit.ClassRule;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
+import java.io.IOException;
+
 /**
  * Security Manager round trip tests against the XML:DB Local API
  *
@@ -41,7 +43,7 @@ public class LocalSecurityManagerRoundtripTest extends AbstractSecurityManagerRo
     }
 
     @Override
-    protected void restartServer() throws XMLDBException {
+    protected void restartServer() throws XMLDBException, IOException {
         try {
             existXmldbEmbeddedServer.restart();
         } catch (final ClassNotFoundException | InstantiationException | IllegalAccessException e) {
