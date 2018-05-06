@@ -141,7 +141,7 @@ public class XMLTestRunner extends AbstractTestRunner {
             final Source query = new ClassLoaderSource(pkgName + "/xml-test-runner.xq");
 
             final List<java.util.function.Function<XQueryContext, Tuple2<String, Object>>> externalVariableDeclarations = Arrays.asList(
-                context -> new Tuple2<String, Object>("doc", doc),
+                context -> new Tuple2<>("doc", doc),
                 context -> new Tuple2<>("id", Sequence.EMPTY_SEQUENCE),
 
                 // set callback functions for notifying junit!

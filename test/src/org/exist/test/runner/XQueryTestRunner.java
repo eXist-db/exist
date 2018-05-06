@@ -161,7 +161,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
             final URI testModuleUri = path.toAbsolutePath().toUri();
 
             final List<java.util.function.Function<XQueryContext, Tuple2<String, Object>>> externalVariableDeclarations = Arrays.asList(
-                    context -> new Tuple2<String, Object>("test-module-uri", new AnyURIValue(testModuleUri)),
+                    context -> new Tuple2<>("test-module-uri", new AnyURIValue(testModuleUri)),
 
                     // set callback functions for notifying junit!
                     context -> new Tuple2<>("test-ignored-function", new FunctionReference(new FunctionCall(context, new ExtTestIgnoredFunction(context, getSuiteName(), notifier)))),
