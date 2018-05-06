@@ -56,6 +56,10 @@ public interface SecurityManager extends Configurable {
    Database getDatabase();
    Database database();
 
+   void registerAccount(Account account);
+
+   void registerGroup(Group group);
+
    Account getAccount(int id);
 
    boolean hasAccount(String name);

@@ -744,6 +744,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
      *
      * @param group
      */
+    @Override
     public void registerGroup(final Group group) {
         groupsById.modify(principalDb -> {
 
@@ -762,6 +763,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
      *
      * @param account
      */
+    @Override
     public void registerAccount(final Account account) {
         usersById.modify(principalDb -> {
 

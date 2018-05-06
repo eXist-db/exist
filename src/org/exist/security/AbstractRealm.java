@@ -61,10 +61,8 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
     protected final PrincipalDbByName<Account> usersByName = new PrincipalDbByName<>();
     protected final PrincipalDbByName<Group> groupsByName = new PrincipalDbByName<>();
-    
 
-    private SecurityManagerImpl sm;
-
+    private final SecurityManager sm;
     protected Configuration configuration;
 
     protected Collection collectionRealm = null;
@@ -73,7 +71,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     protected Collection collectionRemovedAccounts = null;
     protected Collection collectionRemovedGroups = null;
 	
-    public AbstractRealm(SecurityManagerImpl sm, Configuration config) {
+    public AbstractRealm(final SecurityManager sm, final Configuration config) {
         this.sm = sm;
         this.configuration = Configurator.configure(this, config);
     }
@@ -84,7 +82,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
-    public SecurityManagerImpl getSecurityManager() {
+    public SecurityManager getSecurityManager() {
         return sm;
     }
     
