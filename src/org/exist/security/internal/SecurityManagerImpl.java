@@ -19,7 +19,7 @@
  */
 package org.exist.security.internal;
 
-import net.jcip.annotations.GuardedBy;
+import com.evolvedbinary.j8fu.lazy.AtomicLazyVal;
 import net.jcip.annotations.ThreadSafe;
 import org.exist.scheduler.JobDescription;
 import org.exist.security.AbstractRealm;
@@ -102,9 +102,8 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
 
     private Database db;
 
-    // lazily initialized
-    @GuardedBy("this") private Subject systemSubject = null;
-    @GuardedBy("this") private Subject guestSubject = null;
+    private AtomicLazyVal<Subject> systemSubject;
+    private AtomicLazyVal<Subject> guestSubject;
 
     private final Map<XmldbURI, Integer> saving = new ConcurrentHashMap<>();
 
@@ -138,6 +137,8 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         try {
             this.defaultRealm = new RealmImpl(null, this, null);
             realms.add(defaultRealm);
+            this.systemSubject = new AtomicLazyVal<>(() -> new SubjectAccreditedImpl(defaultRealm.ACCOUNT_SYSTEM, this));
+            this.guestSubject =  new AtomicLazyVal<>(() -> new SubjectAccreditedImpl((AccountImpl) defaultRealm.getAccount(SecurityManager.GUEST_USER), this));
         } catch(final EXistException e) {
             throw new BrokerPoolServiceException(e);
         }
@@ -456,26 +457,12 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
 
     @Override
     public Subject getSystemSubject() {
-        if (systemSubject == null) {
-            synchronized (this) {
-                if (systemSubject == null) {
-                    systemSubject = new SubjectAccreditedImpl(defaultRealm.ACCOUNT_SYSTEM, this);
-                }
-            }
-        }
-        return systemSubject; 
+        return systemSubject.get();
     }
 
     @Override
     public Subject getGuestSubject() {
-        if (guestSubject == null) {
-            synchronized (this) {
-                if (guestSubject == null) {
-                    guestSubject = new SubjectAccreditedImpl((AccountImpl) defaultRealm.getAccount(SecurityManager.GUEST_USER), this);
-                }
-            }
-        }
-        return guestSubject;
+        return guestSubject.get();
     }
 
     @Override
