@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
@@ -105,7 +106,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     @GuardedBy("this") private Subject systemSubject = null;
     @GuardedBy("this") private Subject guestSubject = null;
 
-    private final Map<XmldbURI, Integer> saving = new HashMap<>();
+    private final Map<XmldbURI, Integer> saving = new ConcurrentHashMap<>();
 
     @ConfigurationFieldAsAttribute("version")
     @SuppressWarnings("unused")
