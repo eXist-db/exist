@@ -123,7 +123,7 @@ public class BackupRestoreSecurityPrincipalsTest {
         assertUser(SecurityManagerImpl.INITIAL_LAST_ACCOUNT_ID + 2, "jack", ((XMLResource) result.getResource(3)).getContentAsDOM());
 
         //check the last user id
-        assertEquals(SecurityManagerImpl.INITIAL_LAST_ACCOUNT_ID + 2, sm.lastAccountId); //last account id should be that of 'jack'
+        assertEquals(SecurityManagerImpl.INITIAL_LAST_ACCOUNT_ID + 2, sm.getLastAccountId()); //last account id should be that of 'jack'
 
         //create a test collection and give everyone access
         final CollectionManagementService cms = (CollectionManagementService)server.getRoot().getService("CollectionManagementService", "1.0");
@@ -159,7 +159,7 @@ public class BackupRestoreSecurityPrincipalsTest {
         assertUser(SecurityManagerImpl.INITIAL_LAST_ACCOUNT_ID + 3, JOE_USER, ((XMLResource) result.getResource(4)).getContentAsDOM());
 
         //check the last user id after the restore
-        assertEquals(SecurityManagerImpl.INITIAL_LAST_ACCOUNT_ID + 3, sm.lastAccountId); //last account id should be that of 'joe'
+        assertEquals(SecurityManagerImpl.INITIAL_LAST_ACCOUNT_ID + 3, sm.getLastAccountId()); //last account id should be that of 'joe'
 
         //check the owner of frank's document after restore
         final Resource fDoc = test.getResource(FRANKS_DOCUMENT);

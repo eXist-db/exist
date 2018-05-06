@@ -110,8 +110,8 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     private final Map<XmldbURI, Integer> saving = new HashMap<>();
 
     //calculated at runtime
-    private int lastAccountId = INITIAL_LAST_ACCOUNT_ID;
-    private int lastGroupId = INITIAL_LAST_GROUP_ID;
+    @GuardedBy("usersById") private int lastAccountId = INITIAL_LAST_ACCOUNT_ID;
+    @GuardedBy("groupsById") private int lastGroupId = INITIAL_LAST_GROUP_ID;
 
     @ConfigurationFieldAsAttribute("version")
     @SuppressWarnings("unused")
@@ -498,6 +498,15 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         return db;
     }
 
+    /**
+     * For internal testing use only!
+     *
+     * @return The last group id
+     */
+    int getLastGroupId() {
+        return groupsById.read(principalDb -> lastGroupId);
+    }
+
     private int getNextGroupId() {
         final AtomicInteger nextId = new AtomicInteger();
         groupsById.modify(principalDb -> {
@@ -521,6 +530,15 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         });
 
         return nextId.get();
+    }
+
+    /**
+     * For internal testing use only!
+     *
+     * @return The last account id
+     */
+    int getLastAccountId() {
+        return usersById.read(principalDb -> lastAccountId);
     }
 
     @Override
