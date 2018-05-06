@@ -29,11 +29,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -93,8 +93,8 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     static final int INITIAL_LAST_ACCOUNT_ID = 10;
     static final int INITIAL_LAST_GROUP_ID = 10;
 
-    private final PrincipalDbById<Group> groupsById = new PrincipalDbById<>();
-    private final PrincipalDbById<Account> usersById = new PrincipalDbById<>();
+    private final PrincipalDbById<Group> groupsById = new PrincipalDbById<>(INITIAL_LAST_GROUP_ID);
+    private final PrincipalDbById<Account> usersById = new PrincipalDbById<>(INITIAL_LAST_ACCOUNT_ID);
     private final PrincipalLocks<Account> accountLocks = new PrincipalLocks<>();
     private final PrincipalLocks<Group> groupLocks = new PrincipalLocks<>();
     private final SessionDb sessions = new SessionDb();
@@ -106,10 +106,6 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     @GuardedBy("this") private Subject guestSubject = null;
 
     private final Map<XmldbURI, Integer> saving = new HashMap<>();
-
-    //calculated at runtime
-    @GuardedBy("usersById") private int lastAccountId = INITIAL_LAST_ACCOUNT_ID;
-    @GuardedBy("groupsById") private int lastGroupId = INITIAL_LAST_GROUP_ID;
 
     @ConfigurationFieldAsAttribute("version")
     @SuppressWarnings("unused")
@@ -502,32 +498,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
      * @return The last group id
      */
     int getLastGroupId() {
-        return groupsById.read(principalDb -> lastGroupId);
-    }
-
-    private int getNextGroupId() {
-        final AtomicInteger nextId = new AtomicInteger();
-        groupsById.write(principalDb -> {
-            if(lastGroupId + 1 >= MAX_GROUP_ID) {
-                throw new RuntimeException("System has no more group-ids available");
-            }
-            nextId.set(++lastGroupId);
-        });
-
-        return nextId.get();
-
-    }
-
-    private int getNextAccountId() {
-        final AtomicInteger nextId = new AtomicInteger();
-        usersById.write(principalDb -> {
-            if(lastAccountId +1 >= MAX_USER_ID) {
-                throw new RuntimeException("System has no more user-ids available");
-            }
-            nextId.set(++lastAccountId);
-        });
-
-        return nextId.get();
+        return groupsById.getCurrentPrincipalId();
     }
 
     /**
@@ -536,7 +507,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
      * @return The last account id
      */
     int getLastAccountId() {
-        return usersById.read(principalDb -> lastAccountId);
+        return usersById.getCurrentPrincipalId();
     }
 
     @Override
@@ -593,7 +564,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         if(group.getId() != Group.UNDEFINED_ID) {
             id = group.getId();
         } else {
-            id = getNextGroupId();
+            id = groupsById.getNextPrincipalId();
         }
         
         final AbstractRealm registeredRealm = (AbstractRealm)findRealmForRealmId(group.getRealmId());
@@ -642,7 +613,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         if(account.getId() != Account.UNDEFINED_ID) {
             id = account.getId();
         } else {
-            id = getNextAccountId();
+            id = usersById.getNextPrincipalId();
         }
 
         final AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
@@ -741,14 +712,15 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
      */
     @Override
     public void registerGroup(final Group group) {
-        groupsById.write(principalDb -> {
-
+        groupsById.update((principalDb, principalId) -> {
             final int id = group.getId();
 
             principalDb.put(id, group);
 
             if (id < MAX_GROUP_ID) {
-                lastGroupId = Math.max(lastGroupId, id);
+                return Math.max(principalId, id);
+            } else {
+                return principalId;
             }
         });
     }
@@ -760,14 +732,15 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
      */
     @Override
     public void registerAccount(final Account account) {
-        usersById.write(principalDb -> {
-
+        usersById.update((principalDb, principalId) -> {
             final int id = account.getId();
 
             principalDb.put(id, account);
 
             if (id < MAX_USER_ID) {
-                lastAccountId = Math.max(lastAccountId, id);
+                return Math.max(principalId, id);
+            } else {
+                return principalId;
             }
         });
     }
@@ -985,8 +958,36 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
 
     @ThreadSafe
     private static class PrincipalDbById<V extends Principal> extends ConcurrentValueWrapper<Int2ObjectHashMap<V>> {
-        public PrincipalDbById() {
+        private int principalId;
+
+        public PrincipalDbById(final int initialLastId) {
             super(new Int2ObjectHashMap<>(65));
+            this.principalId = initialLastId;
+        }
+
+        public int getNextPrincipalId() {
+            return writeAndReturn(principalDb -> {
+                if(principalId + 1 >= MAX_GROUP_ID) {
+                    throw new RuntimeException("System has no more ids available for principal type");
+                }
+                return ++principalId;
+            });
+        }
+
+        private int getCurrentPrincipalId() {
+            return read(principalDb -> principalId);
+        }
+
+        /**
+         * Allows updates to the principal db,
+         * and principal id.
+         *
+         * @param updateFn A function which updates the principal db and returns a new principal id.
+         */
+        public void update(final BiFunction<Int2ObjectHashMap<V>, Integer, Integer> updateFn) {
+            write(principalDb -> {
+                this.principalId = updateFn.apply(principalDb, principalId);
+            });
         }
     }
 
@@ -997,11 +998,11 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
 
     @Override
     public final void preAllocateAccountId(final PrincipalIdReceiver receiver) {
-        receiver.allocate(getNextAccountId());
+        receiver.allocate(usersById.getNextPrincipalId());
     }
 
     @Override
     public final void preAllocateGroupId(final PrincipalIdReceiver receiver) {
-        receiver.allocate(getNextGroupId());
+        receiver.allocate(groupsById.getNextPrincipalId());
     }
 }
