@@ -24,14 +24,12 @@ package org.exist.security.realm;
 import java.util.Collection;
 import java.util.List;
 import org.exist.Database;
-import org.exist.EXistException;
 import org.exist.LifeCycle;
 import org.exist.security.Account;
 import org.exist.security.Group;
 import org.exist.security.SecurityManager;
 import org.exist.security.management.AccountsManagement;
 import org.exist.security.management.GroupsManagement;
-import org.exist.storage.DBBroker;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -39,27 +37,31 @@ import org.exist.storage.DBBroker;
  */
 public interface Realm extends AuthenticatingRealm, AuthorizingRealm, AccountsManagement, GroupsManagement, LifeCycle {
 	
-    public String getId();
+    String getId();
 
-    public Collection<Account> getAccounts();
+    Collection<Account> getAccounts();
 
-    public Collection<Group> getGroups();
+    Collection<Group> getGroups();
+
+    /**
+     * @deprecated Use {@link #getGroups()}.
+     */
     @Deprecated //use getGroups (remove after 1.6)
-    public Collection<Group> getRoles();
+    Collection<Group> getRoles();
 
-    public Database getDatabase();
+    Database getDatabase();
 
-    public Group getExternalGroup(final String name);
+    Group getExternalGroup(final String name);
 
-    public List<String> findUsernamesWhereNameStarts(String startsWith);
-    public List<String> findUsernamesWhereNamePartStarts(String startsWith);
-    public List<String> findUsernamesWhereUsernameStarts(String startsWith);
-    public List<String> findAllGroupNames();
-    public List<String> findAllGroupMembers(final String groupName);
-    public List<String> findAllUserNames();
+    List<String> findUsernamesWhereNameStarts(String startsWith);
+    List<String> findUsernamesWhereNamePartStarts(String startsWith);
+    List<String> findUsernamesWhereUsernameStarts(String startsWith);
+    List<String> findAllGroupNames();
+    List<String> findAllGroupMembers(final String groupName);
+    List<String> findAllUserNames();
 
-    public SecurityManager getSecurityManager();
+    SecurityManager getSecurityManager();
 
-    public Collection<? extends String> findGroupnamesWhereGroupnameStarts(String startsWith);
-    public Collection<? extends String> findGroupnamesWhereGroupnameContains(String fragment);
+    Collection<? extends String> findGroupnamesWhereGroupnameStarts(String startsWith);
+    Collection<? extends String> findGroupnamesWhereGroupnameContains(String fragment);
 }
