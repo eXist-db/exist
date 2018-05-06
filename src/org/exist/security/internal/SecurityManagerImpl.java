@@ -111,7 +111,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     protected int lastGroupId = INITIAL_LAST_GROUP_ID;
 
     @ConfigurationFieldAsAttribute("version")
-    private String version = "2.0";
+    private String version = "2.1";
 
     @ConfigurationFieldAsElement("authentication-entry-point")
     public final static String authenticationEntryPoint = "/authentication/login";
