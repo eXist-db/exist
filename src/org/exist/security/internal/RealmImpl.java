@@ -19,6 +19,7 @@
  */
 package org.exist.security.internal;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,12 +56,12 @@ import org.exist.xmldb.XmldbURI;
  *
  */
 public class RealmImpl extends AbstractRealm {
-	
-    public static String ID = "exist"; //TODO: final "eXist-db";
 
     private final static Logger LOG = LogManager.getLogger(RealmImpl.class);
 
-    static public void setPasswordRealm(String value) {
+    public static String ID = "exist"; //TODO: final "eXist-db";
+
+    static public void setPasswordRealm(final String value) {
         ID = value;
     }
 
@@ -73,15 +74,15 @@ public class RealmImpl extends AbstractRealm {
     public final static int GUEST_GROUP_ID = 1048574;
     public final static int UNKNOWN_GROUP_ID = 1048573;
 
-    protected final AccountImpl ACCOUNT_SYSTEM;
-    protected final AccountImpl ACCOUNT_UNKNOWN;
+    final AccountImpl ACCOUNT_SYSTEM;
+    final AccountImpl ACCOUNT_UNKNOWN;
     
-    protected final GroupImpl GROUP_DBA;
-    protected final GroupImpl GROUP_GUEST;
-    protected final GroupImpl GROUP_UNKNOWN;
+    final GroupImpl GROUP_DBA;
+    final GroupImpl GROUP_GUEST;
+    final GroupImpl GROUP_UNKNOWN;
     
-    private final static String DEFAULT_ADMIN_PASSWORD = "";
-    private final static String DEFAULT_GUEST_PASSWORD = "guest";
+    private static final String DEFAULT_ADMIN_PASSWORD = "";
+    private static final String DEFAULT_GUEST_PASSWORD = "guest";
 
     //@ConfigurationFieldAsElement("allow-guest-authentication")
     public boolean allowGuestAuthentication = true;
@@ -117,7 +118,7 @@ public class RealmImpl extends AbstractRealm {
 
         //unknown account and group
         GROUP_UNKNOWN = new GroupImpl(broker, this, UNKNOWN_GROUP_ID, "");
-    	ACCOUNT_UNKNOWN = new AccountImpl(broker, this, UNKNOWN_ACCOUNT_ID, "", (String)null, GROUP_UNKNOWN);
+    	ACCOUNT_UNKNOWN = new AccountImpl(broker, this, UNKNOWN_ACCOUNT_ID, "", null, GROUP_UNKNOWN);
         
         //XXX: GROUP_DBA._addManager(ACCOUNT_ADMIN);
     	//XXX: GROUP_GUEST._addManager(ACCOUNT_ADMIN);
@@ -129,7 +130,7 @@ public class RealmImpl extends AbstractRealm {
         try {
             createAdminAndGuestIfNotExist(broker);
         } catch(final PermissionDeniedException pde) {
-            final boolean exportOnly =  (Boolean) broker.getConfiguration().getProperty(BrokerPool.PROPERTY_EXPORT_ONLY, false);
+            final boolean exportOnly = broker.getConfiguration().getProperty(BrokerPool.PROPERTY_EXPORT_ONLY, false);
             if(!exportOnly) {
             	throw new EXistException(pde.getMessage(), pde);
             }
@@ -140,7 +141,6 @@ public class RealmImpl extends AbstractRealm {
     	
         //Admin account
         if(getSecurityManager().getAccount(ADMIN_ACCOUNT_ID) == null) {
-            //AccountImpl actAdmin = new AccountImpl(broker, this, ADMIN_ACCOUNT_ID, SecurityManager.DBA_USER, "", GROUP_DBA, true);
             final UserAider actAdmin = new UserAider(ADMIN_ACCOUNT_ID, getId(), SecurityManager.DBA_USER);
             actAdmin.setPassword(DEFAULT_ADMIN_PASSWORD);
             actAdmin.setMetadataValue(AXSchemaType.FULLNAME, SecurityManager.DBA_USER);
@@ -151,7 +151,6 @@ public class RealmImpl extends AbstractRealm {
 
         //Guest account
         if(getSecurityManager().getAccount(GUEST_ACCOUNT_ID) == null) {
-            //AccountImpl actGuest = new AccountImpl(broker, this, GUEST_ACCOUNT_ID, SecurityManager.GUEST_USER, SecurityManager.GUEST_USER, GROUP_GUEST, false);
             final UserAider actGuest = new UserAider(GUEST_ACCOUNT_ID, getId(), SecurityManager.GUEST_USER);
             actGuest.setMetadataValue(AXSchemaType.FULLNAME, SecurityManager.GUEST_USER);
             actGuest.setMetadataValue(EXistSchemaType.DESCRIPTION, "Anonymous User");
@@ -182,7 +181,7 @@ public class RealmImpl extends AbstractRealm {
                 final Account user = broker.getCurrentSubject();
 
                 if(!(account.getName().equals(user.getName()) || user.hasDbaRole()) ) {
-                    throw new PermissionDeniedException("You are not allowed to delete '" +account.getName() + "' user");
+                    throw new PermissionDeniedException("You are not allowed to delete '" + account.getName() + "' user");
                 }
 
                 remove_account.setRemoved(true);
@@ -213,7 +212,7 @@ public class RealmImpl extends AbstractRealm {
         groupsByName.<PermissionDeniedException, EXistException>modify2E(principalDb -> {
             final AbstractPrincipal remove_group = (AbstractPrincipal)principalDb.get(group.getName());
             if(remove_group == null)
-                {throw new IllegalArgumentException("Group does '"+group.getName()+"' not exist!");}
+                {throw new IllegalArgumentException("Group does '" + group.getName() + "' not exist!");}
 
             final DBBroker broker = getDatabase().getActiveBroker();
             final Subject subject = broker.getCurrentSubject();
@@ -310,18 +309,18 @@ public class RealmImpl extends AbstractRealm {
                 principalDb.values()
                 .stream()
                 .filter(account -> account.hasGroup(groupName))
-                .map(account -> account.getName())
+                .map(Principal::getName)
                 .collect(Collectors.toList())
         );
     }
 
     @Override
     public List<String> findUsernamesWhereNameStarts(final String startsWith) {
-        return Collections.EMPTY_LIST;    //TODO at present exist users cannot have personal name details
+        return Collections.emptyList();    //TODO at present exist users cannot have personal name details, used in LDAP realm
     }
 
     @Override
     public List<String> findUsernamesWhereNamePartStarts(final String startsWith) {
-        return Collections.EMPTY_LIST;    //TODO at present exist users cannot have personal name details
+        return Collections.emptyList();    //TODO at present exist users cannot have personal name details, used in LDAP realm
     }
 }
