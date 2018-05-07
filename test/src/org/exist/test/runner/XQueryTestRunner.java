@@ -23,7 +23,7 @@ package org.exist.test.runner;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
-import org.exist.source.FileSource;
+import org.exist.source.ClassLoaderSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.util.DatabaseConfigurationException;
@@ -42,7 +42,6 @@ import org.w3c.dom.NodeList;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -157,11 +156,12 @@ public class XQueryTestRunner extends AbstractTestRunner {
     @Override
     public void run(final RunNotifier notifier) {
         try {
-            final Source query = new FileSource(Paths.get("test/src/org/exist/test/runner/xquery-test-runner.xq"), false);
+            final String pkgName = getClass().getPackage().getName().replace('.', '/');
+            final Source query = new ClassLoaderSource(pkgName + "/xquery-test-runner.xq");
             final URI testModuleUri = path.toAbsolutePath().toUri();
 
             final List<java.util.function.Function<XQueryContext, Tuple2<String, Object>>> externalVariableDeclarations = Arrays.asList(
-                    context -> new Tuple2<String, Object>("test-module-uri", new AnyURIValue(testModuleUri)),
+                    context -> new Tuple2<>("test-module-uri", new AnyURIValue(testModuleUri)),
 
                     // set callback functions for notifying junit!
                     context -> new Tuple2<>("test-ignored-function", new FunctionReference(new FunctionCall(context, new ExtTestIgnoredFunction(context, getSuiteName(), notifier)))),

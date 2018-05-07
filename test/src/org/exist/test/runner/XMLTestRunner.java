@@ -25,7 +25,7 @@ import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
-import org.exist.source.FileSource;
+import org.exist.source.ClassLoaderSource;
 import org.exist.source.Source;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.*;
@@ -44,7 +44,6 @@ import javax.annotation.Nullable;
 import javax.xml.parsers.*;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -138,10 +137,11 @@ public class XMLTestRunner extends AbstractTestRunner {
     @Override
     public void run(final RunNotifier notifier) {
         try {
-            final Source query = new FileSource(Paths.get("test/src/org/exist/test/runner/xml-test-runner.xq"), false);
+            final String pkgName = getClass().getPackage().getName().replace('.', '/');
+            final Source query = new ClassLoaderSource(pkgName + "/xml-test-runner.xq");
 
             final List<java.util.function.Function<XQueryContext, Tuple2<String, Object>>> externalVariableDeclarations = Arrays.asList(
-                context -> new Tuple2<String, Object>("doc", doc),
+                context -> new Tuple2<>("doc", doc),
                 context -> new Tuple2<>("id", Sequence.EMPTY_SEQUENCE),
 
                 // set callback functions for notifying junit!
