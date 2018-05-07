@@ -22,9 +22,12 @@
 package org.exist.plugin;
 
 import java.io.*;
-import java.lang.reflect.Constructor;
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.*;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,6 +54,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import static java.lang.invoke.MethodType.methodType;
 
 /**
  * Plugins manager.
@@ -129,14 +134,19 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         //load plugins by META-INF/services/
         try {
 
-            for (final Class<? extends Plug> plugin : listServices(Plug.class)) {
-                //System.out.println("found plugin "+plugin);
+            final MethodHandles.Lookup lookup = MethodHandles.lookup();
 
+            for (final Class<? extends Plug> pluginClazz : listServices(Plug.class)) {
                 try {
-                    final Constructor<? extends Plug> ctor = plugin.getConstructor(PluginsManager.class);
-                    final Plug plgn = ctor.newInstance(this);
+                    final MethodHandle methodHandle = lookup.findConstructor(pluginClazz, methodType(void.class, PluginsManager.class));
+                    final Function<PluginsManager, Plug> ctor = (Function<PluginsManager, Plug>)
+                            LambdaMetafactory.metafactory(
+                                    lookup, "apply", methodType(Function.class),
+                                    methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
 
-                    jacks.put(plugin.getName(), plgn);
+                    final Plug plgn = ctor.apply(this);
+
+                    jacks.put(pluginClazz.getName(), plgn);
                 } catch (final Throwable e) {
                     e.printStackTrace();
                 }
@@ -196,12 +206,18 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
 			{return;}
 		
 		try {
-			final Class<? extends Plug> plugin = (Class<? extends Plug>) Class.forName(className);
-			
-			final Constructor<? extends Plug> ctor = plugin.getConstructor(PluginsManager.class);
-			final Plug plgn = ctor.newInstance(this);
-			
-			jacks.put(plugin.getName(), plgn);
+			final Class<? extends Plug> pluginClazz = (Class<? extends Plug>) Class.forName(className);
+
+            final MethodHandles.Lookup lookup = MethodHandles.lookup();
+            final MethodHandle methodHandle = lookup.findConstructor(pluginClazz, methodType(void.class, PluginsManager.class));
+            final Function<PluginsManager, Plug> ctor = (Function<PluginsManager, Plug>)
+                    LambdaMetafactory.metafactory(
+                            lookup, "apply", methodType(Function.class),
+                            methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
+
+			final Plug plgn = ctor.apply(this);
+
+			jacks.put(pluginClazz.getName(), plgn);
 			runPlugins.add(className);
 			
 			//TODO: if (jack instanceof Startable) { ((Startable) jack).startUp(broker); }

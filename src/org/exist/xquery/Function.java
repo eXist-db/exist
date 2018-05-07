@@ -19,7 +19,9 @@
  */
 package org.exist.xquery;
 
-import java.lang.reflect.Constructor;
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 import org.exist.dom.QName;
@@ -31,6 +33,8 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import static java.lang.invoke.MethodType.methodType;
 
 /**
  * Abstract base class for all built-in and user-defined functions.
@@ -47,6 +51,8 @@ import org.exist.xquery.value.Type;
  * @author wolf
  */
 public abstract class Function extends PathExpr {
+
+    private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
     // Declare it in Namespaces instead? /ljo
     public final static String BUILTIN_FUNCTION_NS =
@@ -119,44 +125,44 @@ public abstract class Function extends PathExpr {
         if (def == null) {
             throw new XPathException(ast.getLine(), ast.getColumn(), "Class for function is null");
         }
-        final Class<? extends Function> fclass = def.getImplementingClass();
-        if (fclass == null) {
+        final Class<? extends Function> fclazz = def.getImplementingClass();
+        if (fclazz == null) {
             throw new XPathException(ast.getLine(), ast.getColumn(), "Class for function is null");
         }
+
         try {
-            Object initArgs[] = {context};
-            Class<?> constructorArgs[] = {XQueryContext.class};
-            Constructor<?> construct = null;
+
+            Function function = null;
             try {
-                construct = fclass.getConstructor(constructorArgs);
-            } catch (final NoSuchMethodException e) {
-                //Don't ignore ? -pb
-            }
-            //Not found: check if the constructor takes two arguments
-            if (construct == null) {
-                constructorArgs = new Class[2];
-                constructorArgs[0] = XQueryContext.class;
-                constructorArgs[1] = FunctionSignature.class;
-                construct = fclass.getConstructor(constructorArgs);
-                if (construct == null) {
+                // attempt for a constructor that takes 1 argument
+                final MethodHandle methodHandle = LOOKUP.findConstructor(fclazz, methodType(void.class, XQueryContext.class));
+                final java.util.function.Function<XQueryContext, Function> ctor = (java.util.function.Function<XQueryContext, Function>)
+                        LambdaMetafactory.metafactory(
+                                LOOKUP, "apply", methodType(java.util.function.Function.class),
+                                methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
+                function = ctor.apply(context);
+
+            } catch (final NoSuchMethodException nsme1) {
+                try {
+                    // attempt for a constructor that takes 2 arguments
+                    final MethodHandle methodHandle = LOOKUP.findConstructor(fclazz, methodType(void.class, XQueryContext.class, FunctionSignature.class));
+                    final java.util.function.BiFunction<XQueryContext, FunctionSignature, Function> ctor = (java.util.function.BiFunction<XQueryContext, FunctionSignature, Function>)
+                            LambdaMetafactory.metafactory(
+                                    LOOKUP, "apply", methodType(java.util.function.BiFunction.class),
+                                    methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
+                    function = ctor.apply(context, def.getSignature());
+                } catch (final NoSuchMethodException nsme2) {
                     throw new XPathException(ast.getLine(), ast.getColumn(), "Constructor not found");
                 }
-                initArgs = new Object[2];
-                initArgs[0] = context;
-                initArgs[1] = def.getSignature();
             }
-            final Object obj = construct.newInstance(initArgs);
-            if (obj instanceof Function) {
-                ((Function) obj).setLocation(ast.getLine(), ast.getColumn());
-                return (Function) obj;
-            } else {
-                throw new XPathException(ast.getLine(), ast.getColumn(),
-                        "Function object does not implement interface function");
-            }
-        } catch (final Exception e) {
+
+            function.setLocation(ast.getLine(), ast.getColumn());
+            return function;
+
+        } catch (final Throwable e) {
             LOG.debug(e.getMessage(), e);
             throw new XPathException(ast.getLine(), ast.getColumn(),
-                    "Function implementation class " + fclass.getName() + " not found");
+                    "Function implementation class " + fclazz.getName() + " not found", e);
         }
     }
 

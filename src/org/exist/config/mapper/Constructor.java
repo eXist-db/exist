@@ -20,7 +20,12 @@
 package org.exist.config.mapper;
 
 import java.io.InputStream;
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
@@ -30,6 +35,8 @@ import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.config.annotation.NewClass;
+
+import static java.lang.invoke.MethodType.methodType;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -50,15 +57,15 @@ public class Constructor {
         final String url = newClazz.mapper();
         if (url == null) {
             Configurator.LOG.error("Field must have 'ConfigurationFieldClassMask' annotation or " +
-                "registered mapping instruction for class '" + newClazz.name() + "' [" + conf.getName() + "], " +
-                "skip instance creation.");
+                    "registered mapping instruction for class '" + newClazz.name() + "' [" + conf.getName() + "], " +
+                    "skip instance creation.");
             return null;
         }
 
         final InputStream is = instance.getClass().getClassLoader().getResourceAsStream(url);
         if (is == null) {
             Configurator.LOG.error("Registered mapping instruction for class '" + newClazz.name() + "' " +
-                "missing resource '" + url + "', skip instance creation.");
+                    "missing resource '" + url + "', skip instance creation.");
             return null;
         }
 
@@ -84,11 +91,17 @@ public class Constructor {
                                 return null;
                             }
 
-                            final String clazzName = reader.getAttributeValue(0);
-                            final Class<?> clazz = Class.forName(clazzName);
-                            final java.lang.reflect.Constructor<?> constructor = clazz.getConstructor();
+                                final String clazzName = reader.getAttributeValue(0);
+                                final Class<?> clazz = Class.forName(clazzName);
+                                final MethodHandles.Lookup lookup = MethodHandles.lookup();
+                                final MethodHandle methodHandle = lookup.findConstructor(clazz, methodType(void.class));
+                                final Supplier<Object> constructor =
+                                        (Supplier<Object>)
+                                                LambdaMetafactory.metafactory(
+                                                        lookup, "get", methodType(Supplier.class),
+                                                        methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
 
-                            Object newInstance = constructor.newInstance();
+                            Object newInstance = constructor.get();
                             if (obj == null) {
                                 obj = newInstance;
                             }
@@ -132,7 +145,7 @@ public class Constructor {
             configurations.put(obj, conf);
             return obj;
 
-        } catch (final Exception e) {
+        } catch (final Throwable e) {
             Configurator.LOG.error(e);
         }
         return null;

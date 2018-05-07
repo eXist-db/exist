@@ -30,13 +30,16 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.lang.reflect.Constructor;
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.BiFunction;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.XMLConstants;
@@ -61,6 +64,8 @@ import org.exist.dom.persistent.DocumentMetadata;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.XMLUtil;
+
+import static java.lang.invoke.MethodType.methodType;
 import static org.exist.http.RESTServerParameter.*;
 
 import org.exist.http.servlets.EXistServlet;
@@ -115,6 +120,7 @@ import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.value.*;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
+import org.exquery.http.HttpRequest;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -178,7 +184,7 @@ public class RESTServer {
 
     //EXQuery Request Module details
     private String xqueryContextExqueryRequestAttribute = null;
-    private Constructor cstrHttpServletRequestAdapter = null;
+    private BiFunction<HttpServletRequest, FilterInputStreamCacheConfiguration, HttpRequest> cstrHttpServletRequestAdapter = null;
     
     // Constructor
     public RESTServer(final BrokerPool pool, final String formEncoding,
@@ -202,13 +208,20 @@ public class RESTServer {
                     if(this.xqueryContextExqueryRequestAttribute != null) {
                         clazz = Class.forName("org.exist.extensions.exquery.restxq.impl.adapters.HttpServletRequestAdapter");
                         if(clazz != null) {
-                            this.cstrHttpServletRequestAdapter = clazz.getConstructor(HttpServletRequest.class, FilterInputStreamCacheConfiguration.class);
+                            final MethodHandles.Lookup lookup = MethodHandles.lookup();
+                            final MethodHandle methodHandle = lookup.findConstructor(clazz, methodType(void.class, HttpServletRequest.class, FilterInputStreamCacheConfiguration.class));
+
+                            this.cstrHttpServletRequestAdapter =
+                                    (BiFunction<HttpServletRequest, FilterInputStreamCacheConfiguration, HttpRequest>)
+                                            LambdaMetafactory.metafactory(
+                                                    lookup, "apply", methodType(BiFunction.class),
+                                                    methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
                         }
                     }
                     
                 }
             }
-        } catch(final Exception e) {
+        } catch(final Throwable e) {
             if(LOG.isDebugEnabled()) {
                 LOG.debug("EXQuery Request Module is not present: " + e.getMessage(), e);
             }
@@ -1376,12 +1389,7 @@ public class RESTServer {
         //enable EXQuery Request Module (if present)
         try { 
             if(xqueryContextExqueryRequestAttribute != null && cstrHttpServletRequestAdapter != null) {
-                final Object exqueryRequestAdapter = cstrHttpServletRequestAdapter.newInstance(request, new FilterInputStreamCacheConfiguration(){
-                    @Override
-                    public String getCacheClass() {
-                        return (String)context.getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
-                    }
-                });
+                final HttpRequest exqueryRequestAdapter = cstrHttpServletRequestAdapter.apply(request, () -> (String)context.getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY));
 
                 if(exqueryRequestAdapter != null) {
                     context.setAttribute(xqueryContextExqueryRequestAttribute, exqueryRequestAdapter);

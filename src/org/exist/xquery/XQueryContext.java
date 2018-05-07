@@ -22,6 +22,9 @@ package org.exist.xquery;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -84,11 +87,9 @@ import antlr.TokenStreamException;
 import antlr.collections.AST;
 import org.w3c.dom.Node;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import static java.lang.invoke.MethodType.methodType;
 
 /**
  * The current XQuery execution context. Contains the static as well as the dynamic
@@ -1688,14 +1689,17 @@ public class XQueryContext implements BinaryValueManager, Context
     }
 
 
-    protected Module instantiateModule( String namespaceURI, Class<Module> mClass, Map<String, Map<String, List<? extends Object>>> moduleParameters) {
+    protected Module instantiateModule( String namespaceURI, Class<Module> mClazz, Map<String, Map<String, List<? extends Object>>> moduleParameters) {
         Module module = null;
 
         try {
-
-            final Constructor<Module> cnstr = mClass.getConstructor(Map.class);
-            
-            module = cnstr.newInstance(moduleParameters.get(namespaceURI));
+            final MethodHandles.Lookup lookup = MethodHandles.lookup();
+            final MethodHandle methodHandle = lookup.findConstructor(mClazz, methodType(void.class, Map.class));
+            final java.util.function.Function<Map, Module> ctor = (java.util.function.Function<Map, Module>)
+                    LambdaMetafactory.metafactory(
+                            lookup, "apply", methodType(java.util.function.Function.class),
+                            methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
+            module = ctor.apply(moduleParameters.get(namespaceURI));
 
             if(namespaceURI != null && !module.getNamespaceURI().equals(namespaceURI)) {
                 LOG.warn( "the module declares a different namespace URI. Expected: " + namespaceURI + " found: " + module.getNamespaceURI() );
@@ -1708,16 +1712,8 @@ public class XQueryContext implements BinaryValueManager, Context
 
             modules.put(module.getNamespaceURI(), module);
             allModules.put(module.getNamespaceURI(), module);
-        } catch(final InstantiationException ie) {
-            LOG.warn("error while instantiating module class " + mClass.getName(), ie);
-        } catch(final IllegalAccessException iae) {
-            LOG.warn("error while instantiating module class " + mClass.getName(), iae);
-        } catch(final XPathException xpe) {
-            LOG.warn("error while instantiating module class " + mClass.getName(), xpe);
-        } catch(final NoSuchMethodException nsme) {
-            LOG.warn("error while instantiating module class " + mClass.getName(), nsme);
-        } catch(final InvocationTargetException ite) {
-            LOG.warn("error while instantiating module class " + mClass.getName(), ite);
+        } catch(final Throwable e) {
+            LOG.warn("error while instantiating module class " + mClazz.getName(), e);
         }
         
         return module;

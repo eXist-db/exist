@@ -20,9 +20,8 @@
 package org.exist.indexing.lucene;
 
 import java.io.Reader;
-import java.lang.reflect.Constructor;
+import java.lang.invoke.*;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -46,6 +45,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import static java.lang.invoke.MethodType.methodType;
 
 public class AnalyzerConfig {
 
@@ -82,6 +83,7 @@ public class AnalyzerConfig {
 
      */
     private static final Logger LOG = LogManager.getLogger(AnalyzerConfig.class);
+    private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
     private static final String ID_ATTRIBUTE = "id";
 
@@ -250,25 +252,19 @@ public class AnalyzerConfig {
     private static Analyzer createInstance(final Class<?> clazz, final Class<?>[] vcParamClasses,
         final Object[] vcParamValues, final boolean warnOnError) {
 
-        String className = clazz.getName();
+        final String className = clazz.getName();
+
+        MethodType constructorType = methodType(void.class);
+        for (final Class<?> vcParamClazz : vcParamClasses) {
+            constructorType = constructorType.appendParameterTypes(vcParamClazz);
+        }
 
         try {
-            final Constructor<?> cstr = clazz.getDeclaredConstructor(vcParamClasses);
-            cstr.setAccessible(true);
-
+            final MethodHandle methodHandle = LOOKUP.findConstructor(clazz, constructorType);
             if (LOG.isDebugEnabled()) {
                 LOG.debug(String.format("Using analyzer %s", className));
             }
-
-            return (Analyzer) cstr.newInstance(vcParamValues);
-
-        } catch (final IllegalArgumentException | IllegalAccessException | InstantiationException | InvocationTargetException | SecurityException e) {
-            final String message = String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage());
-            if (warnOnError) {
-                LOG.warn(message + ". Will retry...");
-            } else {
-                LOG.error(message, e);
-            }
+            return (Analyzer)methodHandle.invokeWithArguments(vcParamValues);
         } catch (final NoSuchMethodException e) {
             final String message = String.format("Could not find matching analyzer class constructor%s: %s", className, e.getMessage());
             if (warnOnError) {
@@ -276,8 +272,14 @@ public class AnalyzerConfig {
             } else {
                 LOG.error(message, e);
             }
+        } catch (final Throwable e) {
+            final String message = String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage());
+            if (warnOnError) {
+                LOG.warn(message + ". Will retry...");
+            } else {
+                LOG.error(message, e);
+            }
         }
-
         return null;
     }
 

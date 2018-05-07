@@ -19,21 +19,29 @@
  */
 package org.exist.storage;
 
-import java.lang.reflect.Constructor;
+import java.lang.invoke.*;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.BiFunction;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.util.Configuration;
 
+import static java.lang.invoke.MethodType.methodType;
+
 public class BrokerFactory {
+
+    private final static Logger LOG = LogManager.getLogger(BrokerFactory.class);
 
     public static final String PROPERTY_DATABASE = "database";
 
     private static Class<?> constructorArgs[] = { BrokerPool.class, Configuration.class };
 
     private static Map<String, Class<? extends DBBroker>> objClasses =  new HashMap<>();
+    private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
     public static void plug(String id, Class<? extends DBBroker> clazz) {
         objClasses.put(id.toUpperCase(Locale.ENGLISH), clazz);
@@ -56,11 +64,28 @@ public class BrokerFactory {
         }
 
         try {
+            final long start = System.currentTimeMillis();
             final Class<? extends DBBroker> clazz = objClasses.get(brokerID);
-            final Constructor<? extends DBBroker> constructor = clazz.getConstructor(constructorArgs);
-            return constructor.newInstance(database, conf);
-            
-        } catch (final Exception e) {
+            final MethodHandle methodHandle = LOOKUP.findConstructor(clazz, methodType(void.class, constructorArgs));
+
+            // see https://stackoverflow.com/questions/50211216/how-to-invoke-constructor-using-lambdametafactory#50211536
+            final BiFunction<BrokerPool, Configuration, DBBroker> constructor =
+                    (BiFunction<BrokerPool, Configuration, DBBroker>)
+                            LambdaMetafactory.metafactory(
+                                    LOOKUP, "apply", methodType(BiFunction.class),
+                                    methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
+
+            // TODO(AR) ideally we want to cache the constructor for re-use on subsequent calls to further reduce overhead
+
+            final DBBroker broker = constructor.apply(database, conf);
+
+            if (LOG.isTraceEnabled()) {
+                final long end = System.currentTimeMillis();
+                LOG.trace("Constructed DBBroker in : " + (end - start) + " ms");
+            }
+
+            return broker;
+        } catch (final Throwable e) {
             throw new RuntimeException("Can't get database backend " + brokerID, e);
         }
     }
