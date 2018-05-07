@@ -19,6 +19,7 @@
  */
 package org.exist.config.mapper;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
@@ -43,16 +44,16 @@ import static java.lang.invoke.MethodType.methodType;
  */
 public class Constructor {
 
-    private static Map<Object, Configuration> configurations = new HashMap<Object, Configuration>();
+    private static Map<Object, Configuration> configurations = new HashMap<>();
 
-    public static Configuration getConfiguration(Object obj) {
+    public static Configuration getConfiguration(final Object obj) {
         return configurations.get(obj);
     }
 
     /**
      * Create new java object by mapping instructions.
      */
-    public static Object load(NewClass newClazz, Configurable instance, Configuration conf) {
+    public static Object load(final NewClass newClazz, final Configurable instance, final Configuration conf) {
 
         final String url = newClazz.mapper();
         if (url == null) {
@@ -62,46 +63,46 @@ public class Constructor {
             return null;
         }
 
-        final InputStream is = instance.getClass().getClassLoader().getResourceAsStream(url);
-        if (is == null) {
-            Configurator.LOG.error("Registered mapping instruction for class '" + newClazz.name() + "' " +
-                    "missing resource '" + url + "', skip instance creation.");
-            return null;
-        }
+        try (final InputStream is = instance.getClass().getClassLoader().getResourceAsStream(url)) {
+            if (is == null) {
+                Configurator.LOG.error("Registered mapping instruction for class '" + newClazz.name() + "' " +
+                        "missing resource '" + url + "', skip instance creation.");
+                return null;
+            }
 
-        final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-        try {
-            final XMLStreamReader reader = inputFactory.createXMLStreamReader(is);
+            final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+            try {
+                final XMLStreamReader reader = inputFactory.createXMLStreamReader(is);
 
             Object obj = null;
             final Deque<Object> objs = new ArrayDeque<>();
             final Deque<CallMethod> instructions = new ArrayDeque<>();
 
-            int eventType;
-            while (reader.hasNext()) {
-                eventType = reader.next();
+                int eventType;
+                while (reader.hasNext()) {
+                    eventType = reader.next();
 
-                switch (eventType) {
-                    case XMLEvent.START_ELEMENT:
-                        String localName = reader.getLocalName();
+                    switch (eventType) {
+                        case XMLEvent.START_ELEMENT:
+                            String localName = reader.getLocalName();
 
-                        if ("class".equals(localName)) {
-                            if (!"name".equals(reader.getAttributeLocalName(0))) {
-                                Configurator.LOG.error("class element first attribute must be 'name', skip instance creation.");
-                                return null;
-                            }
+                            if ("class".equals(localName)) {
+                                if (!"name".equals(reader.getAttributeLocalName(0))) {
+                                    Configurator.LOG.error("class element first attribute must be 'name', skip instance creation.");
+                                    return null;
+                                }
 
-                                final String clazzName = reader.getAttributeValue(0);
-                                final Class<?> clazz = Class.forName(clazzName);
-                                final MethodHandles.Lookup lookup = MethodHandles.lookup();
-                                final MethodHandle methodHandle = lookup.findConstructor(clazz, methodType(void.class));
-                                final Supplier<Object> constructor =
-                                        (Supplier<Object>)
-                                                LambdaMetafactory.metafactory(
-                                                        lookup, "get", methodType(Supplier.class),
-                                                        methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
+                            final String clazzName = reader.getAttributeValue(0);
+                            final Class<?> clazz = Class.forName(clazzName);
+                            final MethodHandles.Lookup lookup = MethodHandles.lookup();
+                            final MethodHandle methodHandle = lookup.findConstructor(clazz, methodType(void.class));
+                            final Supplier<Object> constructor =
+                                    (Supplier<Object>)
+                                            LambdaMetafactory.metafactory(
+                                                    lookup, "get", methodType(Supplier.class),
+                                                    methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
 
-                            Object newInstance = constructor.get();
+                            final Object newInstance = constructor.get();
                             if (obj == null) {
                                 obj = newInstance;
                             }
@@ -111,18 +112,18 @@ public class Constructor {
                                 instructions.peek().setValue(newInstance);
                             }
 
-                        } else if ("callMethod".equals(localName)) {
+                            } else if ("callMethod".equals(localName)) {
 
                             Configuration _conf_ = conf;
                             if (!instructions.isEmpty()) {
                                 _conf_ = instructions.peek().getConfiguration();
                             }
 
-                            final CallMethod call = new CallMethod(objs.peek(), _conf_);
+                                final CallMethod call = new CallMethod(objs.peek(), _conf_);
 
-                            for (int i = 0; i < reader.getAttributeCount(); i++) {
-                                call.set(reader.getAttributeLocalName(i), reader.getAttributeValue(i));
-                            }
+                                for (int i = 0; i < reader.getAttributeCount(); i++) {
+                                    call.set(reader.getAttributeLocalName(i), reader.getAttributeValue(i));
+                                }
 
                             instructions.push(call);
                         }
@@ -131,23 +132,28 @@ public class Constructor {
                         localName = reader.getLocalName();
                         //System.out.println("END_ELEMENT "+localName);
 
-                        if ("class".equals(localName)) {
-                            objs.pop();
-                        } else if ("callMethod".equals(localName)) {
-                            final CallMethod call = instructions.pop();
-                            call.eval();
-                        }
+                            if ("class".equals(localName)) {
+                                objs.pop();
+                            } else if ("callMethod".equals(localName)) {
+                                final CallMethod call = instructions.pop();
+                                call.eval();
+                            }
 
-                        break;
+                            break;
+                    }
                 }
+
+                configurations.put(obj, conf);
+                return obj;
+
+            } catch (final Throwable e) {
+                Configurator.LOG.error(e);
             }
-
-            configurations.put(obj, conf);
-            return obj;
-
-        } catch (final Throwable e) {
-            Configurator.LOG.error(e);
+            return null;
+        } catch (final IOException e) {
+            Configurator.LOG.error("Registered mapping instruction for class '" + newClazz.name() + "' " +
+                    "missing resource '" + url + "', skip instance creation.");
+            return null;
         }
-        return null;
     }
 }
