@@ -807,7 +807,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     }
     
     @Override
-    public void processPramatterBeforeSave(final DBBroker broker, final DocumentImpl document) {
+    public void processParameterBeforeSave(final DBBroker broker, final DocumentImpl document) {
         XmldbURI uri = document.getCollection().getURI();
         
         final boolean isRemoved = uri.endsWith(SecurityManager.REMOVED_COLLECTION_URI);
@@ -829,7 +829,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     }
 
     @Override
-    public void processPramatter(final DBBroker broker, final DocumentImpl document) throws ConfigurationException {
+    public void processParameter(final DBBroker broker, final DocumentImpl document) throws ConfigurationException {
 
         XmldbURI uri = document.getCollection().getURI();
 

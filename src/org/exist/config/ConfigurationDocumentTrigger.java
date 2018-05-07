@@ -145,7 +145,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         final XmldbURI uri = document.getCollection().getURI();
         if (uri.startsWith(SecurityManager.SECURITY_COLLECTION_URI)) {
             try {
-                broker.getBrokerPool().getSecurityManager().processPramatter(broker, document);
+                broker.getBrokerPool().getSecurityManager().processParameter(broker, document);
             } catch (final ConfigurationException e) {
                 LOG.error("Configuration can't be processed [" + document.getURI() + "]", e);
                 //TODO : raise exception ? -pb
@@ -170,7 +170,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         if (uri.startsWith(SecurityManager.SECURITY_COLLECTION_URI)) {
             try {
                 broker.getBrokerPool().getSecurityManager()
-                .processPramatterBeforeSave(broker, document);
+                .processParameterBeforeSave(broker, document);
             } catch (final ConfigurationException e) {
                 LOG.error("Configuration can't be processed [" + document.getURI() + "]", e);
                 //TODO : raise exception ? -pb
@@ -190,7 +190,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         final XmldbURI uri = document.getCollection().getURI();
         if (uri.startsWith(SecurityManager.SECURITY_COLLECTION_URI)) {
             try {
-                broker.getBrokerPool().getSecurityManager().processPramatter(broker, document);
+                broker.getBrokerPool().getSecurityManager().processParameter(broker, document);
             } catch (final ConfigurationException e) {
                 LOG.error("Configuration can't be processed [" + document.getURI() + "]", e);
                 //TODO : raise exception ? -pb
