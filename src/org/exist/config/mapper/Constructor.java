@@ -20,9 +20,7 @@
 package org.exist.config.mapper;
 
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
@@ -69,8 +67,8 @@ public class Constructor {
             final XMLStreamReader reader = inputFactory.createXMLStreamReader(is);
 
             Object obj = null;
-            final Stack<Object> objs = new Stack<>();
-            final Stack<CallMethod> instructions = new Stack<>();
+            final Deque<Object> objs = new ArrayDeque<>();
+            final Deque<CallMethod> instructions = new ArrayDeque<>();
 
             int eventType;
             while (reader.hasNext()) {
@@ -94,16 +92,16 @@ public class Constructor {
                             if (obj == null) {
                                 obj = newInstance;
                             }
-                            objs.add(newInstance);
+                            objs.push(newInstance);
 
-                            if (!instructions.empty()) {
+                            if (!instructions.isEmpty()) {
                                 instructions.peek().setValue(newInstance);
                             }
 
                         } else if ("callMethod".equals(localName)) {
 
                             Configuration _conf_ = conf;
-                            if (!instructions.empty()) {
+                            if (!instructions.isEmpty()) {
                                 _conf_ = instructions.peek().getConfiguration();
                             }
 
@@ -113,7 +111,7 @@ public class Constructor {
                                 call.set(reader.getAttributeLocalName(i), reader.getAttributeValue(i));
                             }
 
-                            instructions.add(call);
+                            instructions.push(call);
                         }
                         break;
                     case XMLEvent.END_ELEMENT:
