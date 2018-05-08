@@ -21,6 +21,7 @@
  */
 package org.exist.management;
 
+import org.exist.management.impl.PerInstanceMBean;
 import org.exist.storage.BrokerPool;
 import org.exist.util.DatabaseConfigurationException;
 
@@ -31,27 +32,27 @@ import org.exist.util.DatabaseConfigurationException;
 public class DummyAgent implements Agent {
 
     @Override
-    public void initDBInstance(BrokerPool instance) {
+    public void initDBInstance(final BrokerPool instance) {
         // do nothing
     }
 
     @Override
-    public void closeDBInstance(BrokerPool instance) {
+    public void closeDBInstance(final BrokerPool instance) {
         // nothing to do
     }
 
     @Override
-    public void addMBean(String dbInstance, String name, Object mbean) throws DatabaseConfigurationException {
+    public void addMBean(final PerInstanceMBean mbean) throws DatabaseConfigurationException {
         // just do nothing
     }
 
     @Override
-    public void changeStatus(BrokerPool instance, TaskStatus actualStatus) {
+    public void changeStatus(final BrokerPool instance, final TaskStatus actualStatus) {
         // nothing to do
     }
 
     @Override
-    public void updateStatus(BrokerPool instance, int percentage) {
+    public void updateStatus(final BrokerPool instance, final int percentage) {
         // nothing to do
     }
 }

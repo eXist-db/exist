@@ -19,6 +19,7 @@
  */
 package org.exist.management.impl;
 
+import org.exist.storage.BrokerPool;
 import org.exist.util.io.FileFilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheMonitor;
@@ -26,12 +27,37 @@ import org.exist.util.io.FilterInputStreamCacheMonitor.FilterInputStreamCacheInf
 import org.exist.util.io.MemoryMappedFileFilterInputStreamCache;
 import org.exist.management.impl.BinaryInputStreamCacheInfo.CacheType;
 
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public class BinaryValues implements BinaryValuesMXBean {
+    private final String instanceId;
+
+    public BinaryValues(final BrokerPool pool) {
+        this.instanceId = pool.getId();
+    }
+
+    public static String getAllInstancesQuery() {
+        return getName("*");
+    }
+
+    private static String getName(final String instanceId) {
+        return "org.exist.management." + instanceId + ":type=BinaryValues";
+    }
+
+    @Override
+    public ObjectName getName() throws MalformedObjectNameException {
+        return new ObjectName(getName(instanceId));
+    }
+
+    @Override
+    public String getInstanceId() {
+        return instanceId;
+    }
 
     @Override
     public List<BinaryInputStreamCacheInfo> getCacheInstances() {
@@ -39,16 +65,16 @@ public class BinaryValues implements BinaryValuesMXBean {
         final Collection<FilterInputStreamCacheInfo> cacheInstances = monitor.getActive();
 
         final List<BinaryInputStreamCacheInfo> results = new ArrayList<>();
-        for(final FilterInputStreamCacheInfo cacheInstance : cacheInstances) {
+        for (final FilterInputStreamCacheInfo cacheInstance : cacheInstances) {
 
             final BinaryInputStreamCacheInfo result;
             final FilterInputStreamCache cache = cacheInstance.getCache();
-            if(cache instanceof FileFilterInputStreamCache) {
+            if (cache instanceof FileFilterInputStreamCache) {
                 result = new BinaryInputStreamCacheInfo(CacheType.FILE, cacheInstance.getRegistered(),
-                        Optional.of(((FileFilterInputStreamCache)cache).getFilePath()), cache.getLength());
-            } else if(cache instanceof MemoryMappedFileFilterInputStreamCache) {
+                        Optional.of(((FileFilterInputStreamCache) cache).getFilePath()), cache.getLength());
+            } else if (cache instanceof MemoryMappedFileFilterInputStreamCache) {
                 result = new BinaryInputStreamCacheInfo(CacheType.MEMORY_MAPPED_FILE, cacheInstance.getRegistered(),
-                        Optional.of(((MemoryMappedFileFilterInputStreamCache)cache).getFilePath()), cache.getLength());
+                        Optional.of(((MemoryMappedFileFilterInputStreamCache) cache).getFilePath()), cache.getLength());
             } else {
                 result = new BinaryInputStreamCacheInfo(CacheType.MEMORY, cacheInstance.getRegistered(),
                         Optional.empty(), cache.getLength());

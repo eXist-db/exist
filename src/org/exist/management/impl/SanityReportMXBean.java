@@ -24,23 +24,23 @@ package org.exist.management.impl;
 import java.util.Date;
 import java.util.List;
 
-public interface SanityReportMXBean {
+public interface SanityReportMXBean extends PerInstanceMBean {
 
-    public Date getLastCheckStart();
+    Date getLastCheckStart();
 
-    public Date getLastCheckEnd();
+    Date getLastCheckEnd();
 
-    public String getLastActionInfo();
+    String getLastActionInfo();
 
-    public Date getActualCheckStart();
+    Date getActualCheckStart();
 
-    public String getStatus();
+    String getStatus();
 
-    public long getPingTime();
+    long getPingTime();
     
-    public List<Error> getErrors();
+    List<Error> getErrors();
 
-    public void triggerCheck(String output, String backup, String incremental);
+    void triggerCheck(String output, String backup, String incremental);
     
-    public long ping(boolean checkQueryEngine);
+    long ping(boolean checkQueryEngine);
 }

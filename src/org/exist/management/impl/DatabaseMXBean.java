@@ -23,9 +23,7 @@ import java.util.List;
 *
 * $Id$
 */
-public interface DatabaseMXBean {
-
-    String getInstanceId();
+public interface DatabaseMXBean extends PerInstanceMBean {
     
     int getMaxBrokers();
 

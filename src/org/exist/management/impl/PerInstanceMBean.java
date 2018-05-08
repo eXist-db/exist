@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2017 The eXist Project
+ * Copyright (C) 2001-2018 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -20,19 +20,10 @@
 
 package org.exist.management.impl;
 
-import org.exist.collections.CollectionCache;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 
-/**
- * JMX MXBean interface for examining the CollectionCache
- *
- * @author Adam Retter <adam@evolvedbinary.com>
- */
-public interface CollectionCacheMXBean extends PerInstanceMBean {
-
-    /**
-     * Get a statistics snapshot of the Collection Cache
-     *
-     * @return Statistics for the Collection Cache
-     */
-    CollectionCache.Statistics getStatistics();
+public interface PerInstanceMBean {
+    String getInstanceId();
+    ObjectName getName() throws MalformedObjectNameException;
 }

@@ -22,9 +22,7 @@
 package org.exist.management.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.exist.scheduler.ScheduledJobInfo;
 import org.exist.scheduler.Scheduler;
@@ -32,30 +30,39 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.ProcessMonitor;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-import javax.management.openmbean.TabularData;
-import javax.management.openmbean.OpenType;
-import javax.management.openmbean.SimpleType;
-import javax.management.openmbean.CompositeType;
-import javax.management.openmbean.TabularType;
-import javax.management.openmbean.TabularDataSupport;
-import javax.management.openmbean.OpenDataException;
-import javax.management.openmbean.CompositeDataSupport;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 import org.exist.storage.ProcessMonitor.QueryHistory;
 
 public class ProcessReport implements ProcessReportMXBean {
+    private final String instanceId;
+    private final ProcessMonitor processMonitor;
+    private final Scheduler scheduler;
 
-    private final static Logger LOG = LogManager.getLogger(ProcessReport.class);
+    public ProcessReport(final BrokerPool pool) {
+        this.instanceId = pool.getId();
+        this.processMonitor = pool.getProcessMonitor();
+        this.scheduler = pool.getScheduler();
+    }
 
-    private ProcessMonitor processMonitor;
+    public static String getAllInstancesQuery() {
+        return getName("*");
+    }
 
-    private Scheduler scheduler;
+    private static String getName(final String instanceId) {
+        return "org.exist.management." + instanceId + ":type=ProcessReport";
+    }
 
-    public ProcessReport(BrokerPool pool) {
-        processMonitor = pool.getProcessMonitor();
-        scheduler = pool.getScheduler();
+    @Override
+    public ObjectName getName() throws MalformedObjectNameException {
+        return new ObjectName(getName(instanceId));
+    }
+
+    @Override
+    public String getInstanceId() {
+        return instanceId;
     }
 
     @Override
@@ -96,13 +103,14 @@ public class ProcessReport implements ProcessReportMXBean {
         return queries;
     }
 
-    public void killQuery(int id) {
+    @Override
+    public void killQuery(final int id) {
         final XQueryWatchDog[] watchdogs = processMonitor.getRunningXQueries();
         for (XQueryWatchDog watchdog : watchdogs) {
             final XQueryContext context = watchdog.getContext();
 
-            if( id == context.hashCode() ) {
-                if( !watchdog.isTerminating() ) {
+            if (id == context.hashCode()) {
+                if (!watchdog.isTerminating()) {
                     watchdog.kill(1000);
                 }
                 break;
@@ -115,7 +123,7 @@ public class ProcessReport implements ProcessReportMXBean {
         final List<RecentQueryHistory> history = new ArrayList<>();
         final QueryHistory[] queryHistories = processMonitor.getRecentQueryHistory();
         int i = 0;
-        for(final QueryHistory queryHistory : queryHistories) {
+        for (final QueryHistory queryHistory : queryHistories) {
             history.add(new RecentQueryHistory(i++, queryHistory));
         }
         return history;
@@ -128,7 +136,7 @@ public class ProcessReport implements ProcessReportMXBean {
      * @param time
      */
     @Override
-    public void setHistoryTimespan(long time) {
+    public void setHistoryTimespan(final long time) {
         processMonitor.setHistoryTimespan(time);
     }
 
@@ -144,7 +152,7 @@ public class ProcessReport implements ProcessReportMXBean {
      * @param time
      */
     @Override
-    public void setMinTime(long time) {
+    public void setMinTime(final long time) {
         processMonitor.setMinTime(time);
     }
 
@@ -161,7 +169,7 @@ public class ProcessReport implements ProcessReportMXBean {
      * @param track
      */
     @Override
-    public void setTrackRequestURI(boolean track) {
+    public void setTrackRequestURI(final boolean track) {
         processMonitor.setTrackRequestURI(track);
     }
 
@@ -177,11 +185,11 @@ public class ProcessReport implements ProcessReportMXBean {
      *                        (see {@link ProcessMonitor#setMinTime(long)}).
      * @param historyTimespan The max duration (in milliseconds) for which queries are tracked in the query history
      *                        (see {@link ProcessMonitor#setHistoryTimespan(long)}).
-     * @param trackURI Set to true if the class should attempt to determine the HTTP URI through which the query was triggered
-     *                 (see {@link ProcessMonitor#setHistoryTimespan(long)}).
+     * @param trackURI        Set to true if the class should attempt to determine the HTTP URI through which the query was triggered
+     *                        (see {@link ProcessMonitor#setHistoryTimespan(long)}).
      */
     @Override
-    public void configure(long minTimeRecorded, long historyTimespan, boolean trackURI) {
+    public void configure(final long minTimeRecorded, final long historyTimespan, final boolean trackURI) {
         processMonitor.setMinTime(minTimeRecorded);
         processMonitor.setHistoryTimespan(historyTimespan);
         processMonitor.setTrackRequestURI(trackURI);

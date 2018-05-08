@@ -1,18 +1,33 @@
 package org.exist.management;
 
-/**
- * Created by IntelliJ IDEA.
- * User: wolf
- * Date: Jun 10, 2007
- * Time: 8:31:15 AM
- * To change this template use File | Settings | File Templates.
- */
-public class CacheManager implements CacheManagerMXBean {
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 
+public class CacheManager implements CacheManagerMXBean {
+    private final String instanceId;
     private final org.exist.storage.CacheManager manager;
 
-    public CacheManager(org.exist.storage.CacheManager manager) {
+    public CacheManager(final String instanceId, final org.exist.storage.CacheManager manager) {
+        this.instanceId = instanceId;
         this.manager = manager;
+    }
+
+    public static String getAllInstancesQuery() {
+        return "org.exist.management." + '*' + ":type=CacheManager";
+    }
+
+    private static ObjectName getName(final String instanceId) throws MalformedObjectNameException {
+        return new ObjectName("org.exist.management." + instanceId + ":type=CacheManager");
+    }
+
+    @Override
+    public ObjectName getName() throws MalformedObjectNameException {
+        return getName(instanceId);
+    }
+
+    @Override
+    public String getInstanceId() {
+        return instanceId;
     }
 
     @Override

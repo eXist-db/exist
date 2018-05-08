@@ -36,6 +36,8 @@ import java.util.Map;
  */
 public class LockTable implements LockTableMXBean {
 
+    public static final String OBJECT_NAME = "org.exist.management:type=LockTable";
+
     @Override
     public Map<String, Map<LockType, Map<Lock.LockMode, Map<String, Integer>>>> getAcquired() {
         return org.exist.storage.lock.LockTable.getInstance().getAcquired();

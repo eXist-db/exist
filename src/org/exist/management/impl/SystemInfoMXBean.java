@@ -26,20 +26,19 @@ package org.exist.management.impl;
  * @author wessels
  * @author ljo
  */
-public interface SystemInfoMXBean
-{
-    public String getExistVersion();
-    
-    public String getExistBuild();
+public interface SystemInfoMXBean {
+    String getExistVersion();
+
+    String getExistBuild();
 
     @Deprecated
-    public String getSvnRevision();
-    
-    public String getGitCommit();
+    String getSvnRevision();
 
-    public String getOperatingSystem();
-    
-    public String getDefaultLocale();
-    
-    public String getDefaultEncoding();
+    String getGitCommit();
+
+    String getOperatingSystem();
+
+    String getDefaultLocale();
+
+    String getDefaultEncoding();
 }

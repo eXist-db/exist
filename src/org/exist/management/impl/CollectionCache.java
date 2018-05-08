@@ -22,6 +22,9 @@ package org.exist.management.impl;
 
 import org.exist.storage.BrokerPool;
 
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 /**
  * JMX MXBean for examining the CollectionCache
  *
@@ -33,6 +36,24 @@ public class CollectionCache implements CollectionCacheMXBean {
 
     public CollectionCache(final BrokerPool instance) {
         this.instance = instance;
+    }
+
+    public static String getAllInstancesQuery() {
+        return getName("*");
+    }
+
+    private static String getName(final String instanceId) {
+        return "org.exist.management." + instanceId + ":type=CollectionCache";
+    }
+
+    @Override
+    public ObjectName getName() throws MalformedObjectNameException {
+        return new ObjectName(getName(instance.getId()));
+    }
+
+    @Override
+    public String getInstanceId() {
+        return instance.getId();
     }
 
     @Override

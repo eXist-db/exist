@@ -23,7 +23,7 @@ package org.exist.management.impl;
 
 import java.util.List;
 
-public interface ProcessReportMXBean {
+public interface ProcessReportMXBean extends PerInstanceMBean {
 
     List<Job> getScheduledJobs();
 
@@ -40,9 +40,9 @@ public interface ProcessReportMXBean {
      *
      * @param minTimeRecorded minimum execution time of queries recorded in the recent query history
      * @param historyTimespan time span (in milliseconds) for which the stats for an executed query should
-     * be kept in the recent query history
-     * @param trackURI Enable request tracking: for every executed query, try to figure out which HTTP
-     * URL triggered it (if applicable)
+     *                        be kept in the recent query history
+     * @param trackURI        Enable request tracking: for every executed query, try to figure out which HTTP
+     *                        URL triggered it (if applicable)
      */
     void configure(long minTimeRecorded, long historyTimespan, boolean trackURI);
 

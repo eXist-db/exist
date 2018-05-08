@@ -27,37 +27,33 @@ package org.exist.management.impl;
  *
  * @author dizzzz@exist-db.org
  */
-public interface DiskUsageMXBean
-{
+public interface DiskUsageMXBean extends PerInstanceMBean {
 
     /**
      * No disk space could be determined.
      */
-    public static final long NO_VALUE = -1;
+    long NO_VALUE = -1;
 
     /**
      * Directory is not defined.
      */
-    public static final String NOT_CONFIGURED = "NOT_CONFIGURED";
+    String NOT_CONFIGURED = "NOT_CONFIGURED";
 
-    public String getDataDirectory();
-    
-    public long getDataDirectoryUsableSpace();
-    
-    public long getDataDirectoryTotalSpace();
-    
-    public long getDataDirectoryUsedSpace();
-    
-    public String getJournalDirectory();
-    
-    public long getJournalDirectoryUsableSpace();
-    
-    public long getJournalDirectoryTotalSpace();
-    
-    public long getJournalDirectoryUsedSpace();
-    
-    public long getJournalDirectoryNumberOfFiles();
-    
+    String getDataDirectory();
+
+    long getDataDirectoryUsableSpace();
+
+    long getDataDirectoryTotalSpace();
+
+    long getDataDirectoryUsedSpace();
+
+    String getJournalDirectory();
+
+    long getJournalDirectoryUsableSpace();
+
+    long getJournalDirectoryTotalSpace();
+
+    long getJournalDirectoryUsedSpace();
+
+    long getJournalDirectoryNumberOfFiles();
 }
-
-

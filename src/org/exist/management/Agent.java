@@ -21,6 +21,7 @@
  */
 package org.exist.management;
 
+import org.exist.management.impl.PerInstanceMBean;
 import org.exist.storage.BrokerPool;
 import org.exist.util.DatabaseConfigurationException;
 
@@ -34,7 +35,7 @@ public interface Agent {
 
     void closeDBInstance(BrokerPool instance);
 
-    void addMBean(String dbInstance, String name, Object mbean) throws DatabaseConfigurationException;
+    void addMBean(PerInstanceMBean mbean) throws DatabaseConfigurationException;
 
     void changeStatus(BrokerPool instance, TaskStatus actualStatus);
 

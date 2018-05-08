@@ -36,6 +36,9 @@ import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
 import com.evolvedbinary.j8fu.function.FunctionE;
 
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 /**
  * Class DiskUsage. Retrieves data from the java File object
  *
@@ -45,18 +48,38 @@ public class DiskUsage implements DiskUsageMXBean {
 
     private final static Logger LOG = LogManager.getLogger(DiskUsage.class);
 
-    private Optional<Path> journalDir;
-    private Optional<Path> dataDir;
+    private final String instanceId;
+    private final Optional<Path> journalDir;
+    private final Optional<Path> dataDir;
 
     public DiskUsage(final BrokerPool pool) {
+        this.instanceId = pool.getId();
 
         final Configuration config = pool.getConfiguration();
 
-        this.journalDir = Optional.ofNullable((Path)config.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR))
+        this.journalDir = Optional.ofNullable((Path) config.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR))
                 .filter(Files::isDirectory);
 
-        this.dataDir = Optional.ofNullable((Path)config.getProperty(BrokerPool.PROPERTY_DATA_DIR))
+        this.dataDir = Optional.ofNullable((Path) config.getProperty(BrokerPool.PROPERTY_DATA_DIR))
                 .filter(Files::isDirectory);
+    }
+
+    public static String getAllInstancesQuery() {
+        return getName("*");
+    }
+
+    private static String getName(final String instanceId) {
+        return "org.exist.management." + instanceId + ":type=DiskUsage";
+    }
+
+    @Override
+    public ObjectName getName() throws MalformedObjectNameException {
+        return new ObjectName(getName(instanceId));
+    }
+
+    @Override
+    public String getInstanceId() {
+        return instanceId;
     }
 
     @Override
@@ -98,7 +121,7 @@ public class DiskUsage implements DiskUsageMXBean {
     @Override
     public long getDataDirectoryUsedSpace() {
         return dataDir.map(d -> {
-            try(final Stream<Path> files = Files.list(d)) {
+            try (final Stream<Path> files = Files.list(d)) {
                 return files
                         .filter(this::isDbxFile)
                         .mapToLong(p -> {
@@ -106,7 +129,7 @@ public class DiskUsage implements DiskUsageMXBean {
                             return size == NO_VALUE ? 0 : size;
                         })
                         .sum();
-            } catch(final IOException ioe) {
+            } catch (final IOException ioe) {
                 LOG.error(ioe);
                 return NO_VALUE;
             }
@@ -116,7 +139,7 @@ public class DiskUsage implements DiskUsageMXBean {
     @Override
     public long getJournalDirectoryUsedSpace() {
         return dataDir.map(d -> {
-            try(final Stream<Path> files = Files.list(d)) {
+            try (final Stream<Path> files = Files.list(d)) {
                 return files
                         .filter(this::isJournalFile)
                         .mapToLong(p -> {
@@ -124,7 +147,7 @@ public class DiskUsage implements DiskUsageMXBean {
                             return size == NO_VALUE ? 0 : size;
                         })
                         .sum();
-            } catch(final IOException ioe) {
+            } catch (final IOException ioe) {
                 LOG.error(ioe);
                 return NO_VALUE;
             }
@@ -134,7 +157,7 @@ public class DiskUsage implements DiskUsageMXBean {
     @Override
     public long getJournalDirectoryNumberOfFiles() {
         return journalDir.map(j -> {
-            try(final Stream<Path> files = Files.list(j)) {
+            try (final Stream<Path> files = Files.list(j)) {
                 return files
                         .filter(this::isJournalFile)
                         .count();

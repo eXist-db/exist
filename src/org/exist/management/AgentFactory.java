@@ -24,6 +24,11 @@ package org.exist.management;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+
+import static java.lang.invoke.MethodType.methodType;
+
 public class AgentFactory {
 
     private final static Logger LOG = LogManager.getLogger(AgentFactory.class);
@@ -38,16 +43,33 @@ public class AgentFactory {
                 if (!Agent.class.isAssignableFrom(clazz)) {
                     LOG.warn("Class " + className + " does not implement interface Agent. Using fallback.");
                 } else {
-                    instance = (Agent) clazz.newInstance();
+                    final MethodHandles.Lookup lookup = MethodHandles.publicLookup();
+
+                    // 1. try for default constructor
+                    try {
+                        final MethodHandle mhConstructor = lookup.findConstructor(clazz, methodType(void.class));
+                        instance = (Agent) mhConstructor.invokeExact();
+                    } catch (final NoSuchMethodException | IllegalAccessException e) {
+                        LOG.warn("No default constructor found for Agent: " + className + ". Will try singleton pattern...");
+
+                        // 2. try for singleton with static getInstance()
+                        try {
+                            final MethodHandle methodHandle = lookup.findStatic(clazz, "getInstance", methodType(Agent.class));
+                            instance = (Agent) methodHandle.invokeExact();
+                        } catch (final NoSuchMethodException | IllegalAccessException e2) {
+                            LOG.warn("No singleton pattern found for Agent: " + className);
+                        }
+                    }
                 }
-            } catch (final ClassNotFoundException e) {
-                LOG.warn("Class not found for JMX agent: " + className);
-            } catch (final IllegalAccessException | InstantiationException e) {
-                LOG.warn("Failed to instantiate class for JMX agent: " + className);
+            } catch (final Throwable e) {
+                LOG.error("Unable to instantiate JMX agent: " + className + ". JMX will be unavailable!", e);
             }
-            if (instance == null)
-                {instance = new DummyAgent();}
+
+            if (instance == null) {
+                instance = new DummyAgent();
+            }
         }
+
         return instance;
     }
 }
