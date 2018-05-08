@@ -86,7 +86,7 @@ public class JMXtoXML {
 
         // eXist cross-instance
         putCategory("system", SystemInfo.OBJECT_NAME);
-        putCategory("locking", "org.exist.management:type=LockManager");
+        putCategory("locking", LockTable.OBJECT_NAME);
 
         // eXist per-instance
         putCategory("instances", Database.getAllInstancesQuery());
