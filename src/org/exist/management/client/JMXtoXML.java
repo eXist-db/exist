@@ -91,11 +91,12 @@ public class JMXtoXML {
         // eXist per-instance
         putCategory("instances", Database.getAllInstancesQuery());
         putCategory("disk", DiskUsage.getAllInstancesQuery());
+        putCategory("collectioncaches", CollectionCache.getAllInstancesQuery());
         putCategory("caches",
                 CacheManager.getAllInstancesQuery(),
-                "org.exist.management.exist:type=CollectionCacheManager",
                 Cache.getAllInstancesQuery()
         );
+        putCategory("binarystreamcaches", BinaryValues.getAllInstancesQuery());
         putCategory("processes", ProcessReport.getAllInstancesQuery());
         putCategory("sanity", SanityReport.getAllInstancesQuery());
 
