@@ -160,6 +160,11 @@ public abstract class Function extends PathExpr {
             return function;
 
         } catch (final Throwable e) {
+            if (e instanceof InterruptedException) {
+                // NOTE: must set interrupted flag
+                Thread.currentThread().interrupt();
+            }
+
             LOG.debug(e.getMessage(), e);
             throw new XPathException(ast.getLine(), ast.getColumn(),
                     "Function implementation class " + fclazz.getName() + " not found", e);

@@ -1713,6 +1713,11 @@ public class XQueryContext implements BinaryValueManager, Context
             modules.put(module.getNamespaceURI(), module);
             allModules.put(module.getNamespaceURI(), module);
         } catch(final Throwable e) {
+            if (e instanceof InterruptedException) {
+                // NOTE: must set interrupted flag
+                Thread.currentThread().interrupt();
+            }
+
             LOG.warn("error while instantiating module class " + mClazz.getName(), e);
         }
         

@@ -80,6 +80,11 @@ public class FilterInputStreamCacheFactory {
                             methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
             return constructor.apply(is);
         } catch (final Throwable e) {
+            if (e instanceof InterruptedException) {
+                // NOTE: must set interrupted flag
+                Thread.currentThread().interrupt();
+            }
+
             LOG.error(e.getMessage(), e);
             return null;
         }

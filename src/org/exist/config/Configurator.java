@@ -77,7 +77,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import static java.lang.invoke.MethodType.methodType;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * This class handle all configuration needs: extracting and saving,
@@ -660,7 +659,7 @@ public class Configurator {
      * @return The Configurable or null
      */
     private static Configurable create(final Configuration conf, final Configurable instance, final Class<?> clazz) {
-        
+        boolean interrupted = false;
         try {
             final MethodHandles.Lookup lookup = MethodHandles.lookup();
             Configurable obj = null;
@@ -674,7 +673,14 @@ public class Configurator {
 
                 obj = constructor.apply(instance, conf);
             } catch (final Throwable e) {
-                LOG.debug("Unable to invoke Constructor on Configurable instance '" + e.getMessage() + "', so creating new Constructor...");
+                if (e instanceof InterruptedException) {
+                    interrupted = true;
+                }
+
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Unable to invoke Constructor on Configurable instance '" + e.getMessage() + "', so creating new Constructor...");
+                }
+
                 try {
                     final MethodHandle methodHandle = lookup.findConstructor(clazz, methodType(void.class, Configuration.class));
                     final Function<Configuration, Configurable> constructor =
@@ -684,9 +690,13 @@ public class Configurator {
                                             methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
                     obj = constructor.apply(conf);
                 } catch (final Throwable ee) {
-                        LOG.warn("Instantiation exception on " + clazz
-                                + " creation '" + ee.getMessage() + "', skipping instance creation.");
-                        LOG.debug(e.getMessage(), ee);
+                    if (ee instanceof InterruptedException) {
+                        interrupted = true;
+                    }
+
+                    LOG.warn("Instantiation exception on " + clazz
+                            + " creation '" + ee.getMessage() + "', skipping instance creation.");
+                    LOG.debug(e.getMessage(), ee);
                 }
             }
             
@@ -718,10 +728,14 @@ public class Configurator {
             LOG.warn("Database exception on " + clazz
                     + " startup '" + ee.getMessage() + "', skipping instance creation.");
             LOG.debug(ee.getMessage(), ee);
-            
+
+            return null;
+        } finally {
+            if (interrupted) {
+                // NOTE: must set interrupted flag
+                Thread.currentThread().interrupt();
+            }
         }
-        
-        return null;
     }
 
     public static Configuration parse(final File file) throws ConfigurationException {

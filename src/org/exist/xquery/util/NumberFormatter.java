@@ -158,6 +158,11 @@ public abstract class NumberFormatter {
                             methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
             return constructor.apply(locale);
         } catch (final Throwable e) {
+            if (e instanceof InterruptedException) {
+                // NOTE: must set interrupted flag
+                Thread.currentThread().interrupt();
+            }
+
             return new NumberFormatter_en(locale);
         }
     }

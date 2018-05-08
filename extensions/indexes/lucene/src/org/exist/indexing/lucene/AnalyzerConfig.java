@@ -266,13 +266,18 @@ public class AnalyzerConfig {
             }
             return (Analyzer)methodHandle.invokeWithArguments(vcParamValues);
         } catch (final NoSuchMethodException e) {
-            final String message = String.format("Could not find matching analyzer class constructor%s: %s", className, e.getMessage());
+            final String message = String.format("Could not find matching analyzer class constructor %s: %s", className, e.getMessage());
             if (warnOnError) {
                 LOG.warn(message + ". Will retry...");
             } else {
                 LOG.error(message, e);
             }
         } catch (final Throwable e) {
+            if (e instanceof InterruptedException) {
+                // NOTE: must set interrupted flag
+                Thread.currentThread().interrupt();
+            }
+
             final String message = String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage());
             if (warnOnError) {
                 LOG.warn(message + ". Will retry...");

@@ -64,7 +64,13 @@ public abstract class QueryParserWrapper {
 
                 return constructor.apply(field, analyzer);
             }
+
         } catch (final Throwable e) {
+            if (e instanceof InterruptedException) {
+                // NOTE: must set interrupted flag
+                Thread.currentThread().interrupt();
+            }
+
             LOG.warn("Failed to instantiate lucene query parser wrapper class: " + className, e);
         }
         return null;

@@ -55,6 +55,11 @@ public abstract class BinaryValueType<T extends FilterOutputStream> {
             final T f = c.apply(stream, encoder);
             return f;
         } catch (final Throwable e) {
+            if (e instanceof InterruptedException) {
+                // NOTE: must set interrupted flag
+                Thread.currentThread().interrupt();
+            }
+
             throw new IOException("Unable to get binary coder '" + coder.getName() + "': " + e.getMessage(), e);
         }
     }

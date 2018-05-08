@@ -147,6 +147,11 @@ public class Constructor {
                 return obj;
 
             } catch (final Throwable e) {
+                if (e instanceof InterruptedException) {
+                    // NOTE: must set interrupted flag
+                    Thread.currentThread().interrupt();
+                }
+
                 Configurator.LOG.error(e);
             }
             return null;

@@ -51,7 +51,13 @@ public class RangeIndexAnalyzer extends Analyzer {
                         LambdaMetafactory.metafactory(
                                 lookup, "apply", methodType(Function.class),
                                 methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
+
             } catch (final Throwable e) {
+                if (e instanceof InterruptedException) {
+                    // NOTE: must set interrupted flag
+                    Thread.currentThread().interrupt();
+                }
+
                 throw new DatabaseConfigurationException("Filter not found: " + className, e);
             }
         }

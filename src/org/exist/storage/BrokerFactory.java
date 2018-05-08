@@ -107,7 +107,13 @@ public class BrokerFactory {
                     methodType(BiFunction.class),
                     methodHandle.type().erase(), methodHandle, methodHandle.type()
             ).getTarget().invokeExact());
+
         } catch (final Throwable e) {
+            if (e instanceof InterruptedException) {
+                // NOTE: must set interrupted flag
+                Thread.currentThread().interrupt();
+            }
+
             return Left(new RuntimeException("Can't get database backend: " + brokerId, e));
         }
     }

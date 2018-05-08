@@ -222,6 +222,11 @@ public class RESTServer {
                 }
             }
         } catch(final Throwable e) {
+            if (e instanceof InterruptedException) {
+                // NOTE: must set interrupted flag
+                Thread.currentThread().interrupt();
+            }
+
             if(LOG.isDebugEnabled()) {
                 LOG.debug("EXQuery Request Module is not present: " + e.getMessage(), e);
             }

@@ -171,7 +171,12 @@ public class ExistRepository extends Observable implements BrokerPoolService {
         } catch (final NoSuchMethodException nsme) {
             throw new XPathException("Cannot find suitable constructor " +
                 "for module from EXPath repository: " + clazz.getName(), nsme);
-        } catch (final Throwable lce) {
+        } catch (final Throwable e) {
+            if (e instanceof InterruptedException) {
+                // NOTE: must set interrupted flag
+                Thread.currentThread().interrupt();
+            }
+
             throw new XPathException("Unable to instantiate module from EXPath" +
                     "repository: " + clazz.getName());
         }
