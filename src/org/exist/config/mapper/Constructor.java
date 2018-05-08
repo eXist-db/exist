@@ -25,7 +25,6 @@ import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.xml.stream.XMLInputFactory;
@@ -53,7 +52,8 @@ public class Constructor {
     /**
      * Create new java object by mapping instructions.
      */
-    public static Object load(final NewClass newClazz, final Configurable instance, final Configuration conf) {
+    public static Object load(final NewClass newClazz,
+            final Configurable instance, final Configuration conf) {
 
         final String url = newClazz.mapper();
         if (url == null) {

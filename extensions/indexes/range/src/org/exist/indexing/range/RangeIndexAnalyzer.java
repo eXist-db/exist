@@ -1,7 +1,6 @@
 package org.exist.indexing.range;
 
 import com.ibm.icu.text.Collator;
-import org.apache.logging.log4j.LogManager;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
@@ -11,7 +10,6 @@ import org.apache.lucene.collation.ICUCollationAttributeFactory;
 import org.apache.lucene.util.AttributeFactory;
 import org.exist.util.Collations;
 import org.exist.util.DatabaseConfigurationException;
-import org.apache.logging.log4j.Logger;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Element;
 
@@ -32,12 +30,10 @@ import static java.lang.invoke.MethodType.methodType;
  */
 public class RangeIndexAnalyzer extends Analyzer {
 
-    private final static Logger LOG = LogManager.getLogger(RangeIndexAnalyzer.class);
-
     private static class FilterConfig {
-        Function<TokenStream, TokenStream> constructor;
+        private Function<TokenStream, TokenStream> constructor;
 
-        FilterConfig(Element config) throws DatabaseConfigurationException {
+        FilterConfig(final Element config) throws DatabaseConfigurationException {
             final String className = config.getAttribute("class");
             if (className == null) {
                 throw new DatabaseConfigurationException("No class specified for filter");
