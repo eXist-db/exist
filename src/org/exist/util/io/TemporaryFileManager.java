@@ -55,11 +55,11 @@ public class TemporaryFileManager {
 
     private final static Log LOG = LogFactory.getLog(TemporaryFileManager.class);
 
-    private final static String FOLDER_PREFIX = "_mmtfm_";
+    private static final String FOLDER_PREFIX = "_mmtfm_";
     private final Deque<Path> available = new ConcurrentLinkedDeque<>();
     private final Path tmpFolder;
 
-    private final static TemporaryFileManager instance = new TemporaryFileManager();
+    private static final TemporaryFileManager instance = new TemporaryFileManager();
 
     public static TemporaryFileManager getInstance() {
         return instance;
@@ -78,7 +78,7 @@ public class TemporaryFileManager {
         //unfortunately this does not always work on all (e.g. Windows) platforms
         //will be recovered on restart by cleanupOldTempFolders
         tmpFolder.toFile().deleteOnExit();
-        
+
         LOG.info("Temporary folder is: " + tmpFolder.toAbsolutePath().toString());
     }
 
@@ -104,7 +104,9 @@ public class TemporaryFileManager {
             try {
                 deleted = Files.deleteIfExists(tempFile);
             } catch(final IOException e) {
-                LOG.error("Unable to delete temporary file: " + tempFile.toAbsolutePath().toString(), e);
+                // this can often occur on Microsoft Windows :-/
+                LOG.warn("Unable to delete temporary file: " + tempFile.toAbsolutePath().toString() + " due to: "
+                        + e.getMessage());
             }
             if(deleted) {
                 if (LOG.isDebugEnabled()) {
@@ -140,7 +142,7 @@ public class TemporaryFileManager {
                     .filter(path -> Files.isDirectory(path) && path.startsWith(FOLDER_PREFIX))
                     .forEach(FileUtils::deleteQuietly);
         } catch(final IOException ioe) {
-            LOG.error("Unable to delete old temporary folders", ioe);
+            LOG.warn("Unable to delete old temporary folders", ioe);
         }
     }
 
