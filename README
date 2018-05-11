@@ -3,7 +3,7 @@ eXist Native XML Database
 =========================
 
 For instructions on how to install and start eXist, please
-refer to http://exist-db.org/quickstart.html. Alternatively 
+refer to https://exist-db.org/exist/apps/doc/quickstart.xml. Alternatively 
 you may directly start the database with the included Jetty 
 webserver and read the documentation which will be available at
 

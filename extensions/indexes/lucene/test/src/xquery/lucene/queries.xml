@@ -10,7 +10,7 @@
 		<create-collection parent="/db/system/config" name="db"/>
 		<create-collection parent="/db/system/config/db" name="lucene"/>
 		<store collection="/db/system/config/db/lucene" name="collection.xconf">
-			<collection xmlns="http://exist-db.org/collection-config/1.0">
+			<collection xmlns="http://exist-db.org/collection-config/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:tt="urn:test">
 				<index>
 					<!-- Lucene index is configured below -->
 					<lucene>
@@ -18,11 +18,12 @@
 						<analyzer id="stop" class="org.apache.lucene.analysis.core.StopAnalyzer"/>
 						<analyzer id="keyword" class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
 						<text qname="p"/>
+						<text qname="tt:p"/>
 						<text qname="tei:p"/>
 						<text qname="id" field="id" analyzer="keyword"/>
 						<text qname="para" analyzer="stop"/>
 						<text qname="b"/>
-						<text xmlns:t="urn:test" qname="t:note"/>
+						<text qname="tt:note"/>
 						<text qname="z"/>
 						<text field="lines" qname="LINE"/>
 						<!-- Additional index on LINE -->
@@ -257,7 +258,7 @@
 		<task>XML query test 15: near with regex</task>
 		<code><![CDATA[
 			let $qu := <query><near slop="5"><regex>[ei][ei]ns</regex><regex>s.ch.</regex></near></query>
-			for $hit in doc("/db/test/test1.xml")//p[ft:query(., $qu)]
+			for $hit in doc("/db/lucene/text1.xml")//p[ft:query(., $qu)]
 			return
 			$hit
 		]]></code>
@@ -330,12 +331,12 @@
 	<test output="xml">
 		<task>Query test: wildcard context with prefix wildcard</task>
 		<code> doc("/db/lucene/text1.xml")/test[ft:query(*:p, "acht")] </code>
-		<xpath>$output/p</xpath>
+		<xpath>$output/*:p</xpath>
 	</test>
 	<test output="xml">
 		<task>Query test: wildcard context with prefix wildcard 2</task>
 		<code> doc("/db/lucene/text1.xml")/test[ft:query(*:note, "namespace")] </code>
-		<xpath>$output/p</xpath>
+		<xpath>$output/*:note</xpath>
 	</test>
 	<test output="xml">
 		<task>Query test: wildcard context with namespace</task>

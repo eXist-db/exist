@@ -14,6 +14,10 @@ public abstract class EXistInputSource extends InputSource implements Closeable 
 		super();
 	}
 
+	/**
+	 * @Deprecated Should be avoided, trying to get the length of a stream will ultimately involve buffering
+	 */
+	@Deprecated
 	public abstract long getByteStreamLength();
 	
 	public abstract String getSymbolicPath();

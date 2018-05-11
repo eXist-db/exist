@@ -1704,7 +1704,7 @@ public class RESTServer {
             serializer.reset();
 
             //setup the http context
-            final HttpContext httpContext = serializer.new HttpContext();
+            final HttpContext httpContext = new HttpContext();
             final HttpRequestWrapper reqw = new HttpRequestWrapper(request, formEncoding, containerEncoding);
             httpContext.setRequest(reqw);
             httpContext.setSession(reqw.getSession(false));

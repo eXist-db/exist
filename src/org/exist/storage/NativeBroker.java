@@ -375,7 +375,7 @@ public class NativeBroker extends DBBroker {
             try {
                 observer.flush();
             } catch(final DBException e) {
-                LOG.warn(e);
+                LOG.error(e);
                 //Ignore the exception ; try to continue on other files
             }
         }
@@ -587,7 +587,7 @@ public class NativeBroker extends DBBroker {
         try {
             return new NodeIterator(this, domDb, node, false);
         } catch(final BTreeException | IOException e) {
-            LOG.warn("failed to create node iterator", e);
+            LOG.error("failed to create node iterator", e);
         }
         return null;
     }
@@ -803,7 +803,7 @@ public class NativeBroker extends DBBroker {
                 }
                 return new Tuple2<>(created, current);
             } catch(final LockException e) {
-                LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
+                LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
                 return null;
             } catch(final ReadOnlyException e) {
                 throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
@@ -854,7 +854,7 @@ public class NativeBroker extends DBBroker {
             //LOG.error("Unable to encode '" + uri + "' in UTF-8");
             //return null;
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
+            LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
             //return null;
         } catch(final TerminatedException | IOException | BTreeException e) {
             LOG.error(e.getMessage(), e);
@@ -883,7 +883,7 @@ public class NativeBroker extends DBBroker {
                     final Value key = new CollectionStore.CollectionKey(uri.toString());
                     final VariableByteInput is = collectionsDb.getAsStream(key);
                     if(is == null) {
-                        LOG.warn("Could not read collection entry for: " + uri);
+                        LOG.error("Could not read collection entry for: " + uri);
                         return;
                     }
 
@@ -893,7 +893,7 @@ public class NativeBroker extends DBBroker {
                 } catch(final UnsupportedEncodingException e) {
                     LOG.error("Unable to encode '" + uri + "' in UTF-8");
                 } catch(final LockException e) {
-                    LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
+                    LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
                 } catch(final IOException e) {
                     LOG.error(e.getMessage(), e);
                 } finally {
@@ -951,7 +951,7 @@ public class NativeBroker extends DBBroker {
                     LOG.error("Unable to encode '" + uri + "' in UTF-8");
                     return null;
                 } catch(final LockException e) {
-                    LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
+                    LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
                     return null;
                 } catch(final IOException e) {
                     LOG.error(e.getMessage(), e);
@@ -983,7 +983,7 @@ public class NativeBroker extends DBBroker {
             try {
                 collection.getLock().acquire(lockMode);
             } catch(final LockException e) {
-                LOG.warn("Failed to acquire lock on collection '" + uri + "'");
+                LOG.error("Failed to acquire lock on collection '" + uri + "'");
             }
         }
         return collection;
@@ -1201,7 +1201,7 @@ public class NativeBroker extends DBBroker {
             try {
                 child = openCollection(name.append(childName), LockMode.READ_LOCK);
                 if (child == null) {
-                    LOG.warn("Child collection '" + childName + "' not found");
+                    LOG.error("Child collection '" + childName + "' not found");
                 } else {
                     doCopyCollection(transaction, trigger, child, destCollection._2, childName, true);
                 }
@@ -1325,7 +1325,7 @@ public class NativeBroker extends DBBroker {
                         try {
                             logManager.get().journal(loggable);
                         } catch (final JournalException e) {
-                            LOG.warn(e.getMessage(), e);
+                            LOG.error(e.getMessage(), e);
                         }
                     }
                 } else {
@@ -1340,7 +1340,7 @@ public class NativeBroker extends DBBroker {
                 try {
                     logManager.get().journal(loggable);
                 } catch (final JournalException e) {
-                    LOG.warn(e.getMessage(), e);
+                    LOG.error(e.getMessage(), e);
                 }
             }
         }
@@ -1421,7 +1421,7 @@ public class NativeBroker extends DBBroker {
                 //TODO : resolve URIs !!! name.resolve(childName)
                 final Collection child = openCollection(uri.append(childName), LockMode.WRITE_LOCK);
                 if(child == null) {
-                    LOG.warn("Child collection " + childName + " not found");
+                    LOG.error("Child collection " + childName + " not found");
                 } else {
                     try {
                         moveCollectionRecursive(transaction, trigger, child, collection, childName, true);
@@ -1552,7 +1552,7 @@ public class NativeBroker extends DBBroker {
                             saveCollection(transaction, parentCollection);
                         }
                     } catch(final LockException e) {
-                        LOG.warn("LockException while removing collection '" + collName + "'");
+                        LOG.error("LockException while removing collection '" + collName + "'");
                     } finally {
                         if(parentCollection != null) {
                             parentCollection.getLock().release(LockMode.WRITE_LOCK);
@@ -1584,13 +1584,13 @@ public class NativeBroker extends DBBroker {
                         saveCollection(transaction, collection);
                     }
                 } catch(final LockException e) {
-                    LOG.warn("Failed to acquire lock on '" + FileUtils.fileName(collectionsDb.getFile()) + "'");
+                    LOG.error("Failed to acquire lock on '" + FileUtils.fileName(collectionsDb.getFile()) + "'");
                 }
                 //catch(ReadOnlyException e) {
                 //throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
                 //}
                 catch(final BTreeException | IOException e) {
-                    LOG.warn("Exception while removing collection: " + e.getMessage(), e);
+                    LOG.error("Exception while removing collection: " + e.getMessage(), e);
                 } finally {
                     lock.release(LockMode.WRITE_LOCK);
                 }
@@ -1620,11 +1620,11 @@ public class NativeBroker extends DBBroker {
                                     final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
                                     domDb.remove(transaction, query, null);
                                 } catch (final BTreeException e) {
-                                    LOG.warn("btree error while removing document", e);
+                                    LOG.error("btree error while removing document", e);
                                 } catch (final IOException e) {
-                                    LOG.warn("io error while removing document", e);
+                                    LOG.error("io error while removing document", e);
                                 } catch (final TerminatedException e) {
-                                    LOG.warn("method terminated", e);
+                                    LOG.error("method terminated", e);
                                 }
                                 return null;
                             }
@@ -1674,7 +1674,7 @@ public class NativeBroker extends DBBroker {
                             try {
                                 logManager.get().journal(loggable);
                             } catch (final JournalException e) {
-                                LOG.warn(e.getMessage(), e);
+                                LOG.error(e.getMessage(), e);
                             }
                         }
                     }
@@ -1733,7 +1733,7 @@ public class NativeBroker extends DBBroker {
                 final long address = collectionsDb.put(transaction, name, os.data(), true);
                 if (address == BFile.UNKNOWN_ADDRESS) {
                     //TODO : exception !!! -pb
-                    LOG.warn("could not store collection data for '" + collection.getURI() + "'");
+                    LOG.error("could not store collection data for '" + collection.getURI() + "'");
                     return;
                 }
                 collection.setAddress(address);
@@ -1741,7 +1741,7 @@ public class NativeBroker extends DBBroker {
         } catch(final ReadOnlyException e) {
             LOG.warn(DATABASE_IS_READ_ONLY);
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
+            LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
         } finally {
             lock.release(LockMode.WRITE_LOCK);
         }
@@ -1772,7 +1772,7 @@ public class NativeBroker extends DBBroker {
             collectionsDb.put(transaction, key, d, true);
             return nextCollectionId;
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
+            LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
             return Collection.UNKNOWN_COLLECTION_ID;
             //TODO : rethrow ? -pb
         } finally {
@@ -1806,7 +1806,7 @@ public class NativeBroker extends DBBroker {
             transact.commit(transaction);
 
         } catch(final Exception e) {
-            LOG.warn("An error occurred during reindex: " + e.getMessage(), e);
+            LOG.error("An error occurred during reindex: " + e.getMessage(), e);
 
         } finally {
             pool.getProcessMonitor().endJob();
@@ -1840,7 +1840,7 @@ public class NativeBroker extends DBBroker {
                     //TODO : resolve URIs !!! (collection.getURI().resolve(next))
                     final Collection child = getCollection(collection.getURI().append(next));
                     if (child == null) {
-                        LOG.warn("Collection '" + next + "' not found");
+                        LOG.error("Collection '" + next + "' not found");
                     } else {
                         reindexCollection(transaction, child, mode);
                     }
@@ -1878,13 +1878,13 @@ public class NativeBroker extends DBBroker {
                             domDb.remove(transaction, query, null);
                             domDb.flush();
                         } catch (final BTreeException e) {
-                            LOG.warn("btree error while removing document", e);
+                            LOG.error("btree error while removing document", e);
                         } catch (final DBException e) {
-                            LOG.warn("db error while removing document", e);
+                            LOG.error("db error while removing document", e);
                         } catch (final IOException e) {
-                            LOG.warn("io error while removing document", e);
+                            LOG.error("io error while removing document", e);
                         } catch (final TerminatedException e) {
-                            LOG.warn("method terminated", e);
+                            LOG.error("method terminated", e);
                         }
                         return null;
                     }
@@ -1954,7 +1954,7 @@ public class NativeBroker extends DBBroker {
                 transact.commit(transaction);
                 return targetDoc;
             } catch (final Exception e) {
-                LOG.warn("Failed to store temporary fragment: " + e.getMessage(), e);
+                LOG.error("Failed to store temporary fragment: " + e.getMessage(), e);
                 //abort the transaction
             }
         } finally {
@@ -1981,7 +1981,7 @@ public class NativeBroker extends DBBroker {
             removeCollection(transaction, temp);
             transact.commit(transaction);
         } catch(final Exception e) {
-            LOG.warn("Failed to remove temp collection: " + e.getMessage(), e);
+            LOG.error("Failed to remove temp collection: " + e.getMessage(), e);
         }
     }
 
@@ -2171,7 +2171,7 @@ public class NativeBroker extends DBBroker {
             try {
                 logManager.get().journal(loggable);
             } catch (final JournalException e) {
-                LOG.warn(e.getMessage(), e);
+                LOG.error(e.getMessage(), e);
             }
         }
     }
@@ -2254,7 +2254,7 @@ public class NativeBroker extends DBBroker {
             }
             return doc;
         } catch(final LockException e) {
-            LOG.warn("Could not acquire lock on document " + fileName, e);
+            LOG.error("Could not acquire lock on document " + fileName, e);
             //TODO : exception ? -pb
         } finally {
             if(collection != null) {
@@ -2311,9 +2311,9 @@ public class NativeBroker extends DBBroker {
 
             collectionsDb.query(query, new DocumentCallback(collectionInternalAccess));
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
+            LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
         } catch(final IOException | BTreeException | TerminatedException e) {
-            LOG.warn("Exception while reading document data", e);
+            LOG.error("Exception while reading document data", e);
         } finally {
             lock.release(LockMode.READ_LOCK);
         }
@@ -2332,9 +2332,9 @@ public class NativeBroker extends DBBroker {
                 collectionsDb.query(query, callback);
             }
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
+            LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
         } catch(final IOException | BTreeException e) {
-            LOG.warn("Exception while reading document data", e);
+            LOG.error("Exception while reading document data", e);
         } finally {
             lock.release(LockMode.READ_LOCK);
         }
@@ -2349,9 +2349,9 @@ public class NativeBroker extends DBBroker {
             final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
             collectionsDb.query(query, callback);
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
+            LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
         } catch(final IOException | BTreeException e) {
-            LOG.warn("Exception while reading document data", e);
+            LOG.error("Exception while reading document data", e);
         } finally {
             lock.release(LockMode.READ_LOCK);
         }
@@ -2508,7 +2508,7 @@ public class NativeBroker extends DBBroker {
                 trigger.afterCopyDocument(this, transaction, newDocument, oldUri);
 
             } catch(final IOException e) {
-                LOG.warn("An error occurred while copying resource", e);
+                LOG.error("An error occurred while copying resource", e);
             } catch(final TriggerException e) {
                 throw new PermissionDeniedException(e.getMessage(), e);
             } finally {
@@ -2667,7 +2667,7 @@ public class NativeBroker extends DBBroker {
                     try {
                         logManager.get().journal(loggable);
                     } catch (final JournalException e) {
-                        LOG.warn(e.getMessage(), e);
+                        LOG.error(e.getMessage(), e);
                     }
                 }
             }
@@ -2725,9 +2725,9 @@ public class NativeBroker extends DBBroker {
                     try {
                         domDb.remove(transaction, idx, null);
                     } catch(final BTreeException | IOException e) {
-                        LOG.warn("start() - " + "error while removing doc", e);
+                        LOG.error("start() - " + "error while removing doc", e);
                     } catch(final TerminatedException e) {
-                        LOG.warn("method terminated", e);
+                        LOG.error("method terminated", e);
                     }
                     return null;
                 }
@@ -2740,9 +2740,9 @@ public class NativeBroker extends DBBroker {
             }
 
         } catch(final ReadOnlyException e) {
-            LOG.warn("removeDocument(String) - " + DATABASE_IS_READ_ONLY);
+            LOG.error("removeDocument(String) - " + DATABASE_IS_READ_ONLY);
         } catch(final TriggerException e) {
-            LOG.warn(e);
+            LOG.error(e);
         }
     }
 
@@ -2756,7 +2756,7 @@ public class NativeBroker extends DBBroker {
                 iterator.next();
                 scanNodes(transaction, iterator, node, new NodePath(), IndexMode.REMOVE, listener);
             } catch(final IOException ioe) {
-                LOG.warn("Unable to close node iterator", ioe);
+                LOG.error("Unable to close node iterator", ioe);
             }
         }
         listener.endIndexDocument(transaction);
@@ -2785,7 +2785,7 @@ public class NativeBroker extends DBBroker {
                     try {
                         logManager.get().journal(loggable);
                     } catch (final JournalException e) {
-                        LOG.warn(e.getMessage(), e);
+                        LOG.error(e.getMessage(), e);
                     }
                 }
             } else {
@@ -2813,7 +2813,7 @@ public class NativeBroker extends DBBroker {
             final Value key = new CollectionStore.DocumentKey(document.getCollection().getId(), document.getResourceType(), document.getDocId());
             collectionsDb.remove(transaction, key);
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
+            LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
         } finally {
             lock.release(LockMode.WRITE_LOCK);
         }
@@ -2862,7 +2862,7 @@ public class NativeBroker extends DBBroker {
             //return DocumentImpl.UNKNOWN_DOCUMENT_ID;
             //TODO : rethrow ? -pb
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
+            LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
             //TODO : rethrow ? -pb
         } finally {
             lock.release(LockMode.WRITE_LOCK);
@@ -2882,9 +2882,6 @@ public class NativeBroker extends DBBroker {
      */
     @Override
     public void reindexXMLResource(final Txn transaction, final DocumentImpl doc, final IndexMode mode) {
-        if(doc.isCollectionConfig()) {
-            doc.getCollection().setCollectionConfigEnabled(false);
-        }
         final StreamListener listener = indexController.getStreamListener(doc, ReindexMode.STORE);
         indexController.startIndexDocument(transaction, listener);
         try {
@@ -2895,16 +2892,13 @@ public class NativeBroker extends DBBroker {
                     iterator.next();
                     scanNodes(transaction, iterator, node, new NodePath(), mode, listener);
                 } catch (final IOException ioe) {
-                    LOG.warn("Unable to close node iterator", ioe);
+                    LOG.error("Unable to close node iterator", ioe);
                 }
             }
         } finally {
             indexController.endIndexDocument(transaction, listener);
         }
         flush();
-        if(doc.isCollectionConfig()) {
-            doc.getCollection().setCollectionConfigEnabled(true);
-        }
     }
 
     @Override
@@ -2927,9 +2921,9 @@ public class NativeBroker extends DBBroker {
                         domDb.remove(transaction, idx, null);
                         domDb.flush();
                     } catch(final IOException | DBException e) {
-                        LOG.warn("start() - " + "error while removing doc", e);
+                        LOG.error("start() - " + "error while removing doc", e);
                     } catch(final TerminatedException e) {
-                        LOG.warn("method terminated", e);
+                        LOG.error("method terminated", e);
                     }
                     return null;
                 }
@@ -2957,7 +2951,7 @@ public class NativeBroker extends DBBroker {
                     try {
                         domDb.flush();
                     } catch(final DBException e) {
-                        LOG.warn("start() - error while removing doc", e);
+                        LOG.error("start() - error while removing doc", e);
                     }
                     return null;
                 }
@@ -3036,7 +3030,7 @@ public class NativeBroker extends DBBroker {
                     try {
                         domDb.findKeys(idx);
                     } catch(final BTreeException | IOException e) {
-                        LOG.warn("start() - " + "error while removing doc", e);
+                        LOG.error("start() - " + "error while removing doc", e);
                     }
                     return null;
                 }
@@ -3071,7 +3065,7 @@ public class NativeBroker extends DBBroker {
                     address = domDb.put(transaction, new NodeRef(doc.getDocId(), node.getNodeId()), data);
                 }
                 if(address == BFile.UNKNOWN_ADDRESS) {
-                    LOG.warn("address is missing");
+                    LOG.error("address is missing");
                 }
                 //TODO : how can we continue here ? -pb
                 node.setInternalAddress(address);
@@ -3104,12 +3098,12 @@ public class NativeBroker extends DBBroker {
             ByteArrayPool.releaseByteArray(data);
         } catch(final Exception e) {
             final Value oldVal = domDb.get(node.getInternalAddress());
-            
+
             //TODO what can we do about abstracting this out?
             final IStoredNode old = StoredNode.deserialize(oldVal.data(),
                 oldVal.start(), oldVal.getLength(),
                 node.getOwnerDocument(), false);
-            LOG.warn(
+            LOG.error(
                 "Exception while storing "
                     + node.getNodeName()
                     + "; gid = "
@@ -3318,7 +3312,7 @@ public class NativeBroker extends DBBroker {
                 removeNode(transaction, next.node, next.path, next.content);
             }
         } catch(final IOException ioe) {
-            LOG.warn("Unable to close node iterator", ioe);
+            LOG.error("Unable to close node iterator", ioe);
         }
     }
 
@@ -3578,20 +3572,20 @@ public class NativeBroker extends DBBroker {
         try {
             pool.getIndexManager().removeIndexes();
         } catch(final DBException e) {
-            LOG.warn("Failed to remove index files during repair: " + e.getMessage(), e);
+            LOG.error("Failed to remove index files during repair: " + e.getMessage(), e);
         }
 
         LOG.info("Recreating index files ...");
         try {
             this.valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
         } catch(final DBException e) {
-            LOG.warn("Exception during repair: " + e.getMessage(), e);
+            LOG.error("Exception during repair: " + e.getMessage(), e);
         }
 
         try {
             pool.getIndexManager().reopenIndexes();
         } catch(final DatabaseConfigurationException e) {
-            LOG.warn("Failed to reopen index files after repair: " + e.getMessage(), e);
+            LOG.error("Failed to reopen index files after repair: " + e.getMessage(), e);
         }
 
         initIndexModules();
@@ -3616,7 +3610,7 @@ public class NativeBroker extends DBBroker {
             btree.rebuild();
             LOG.info("Index " + FileUtils.fileName(btree.getFile()) + " was rebuilt.");
         } catch(LockException | IOException | TerminatedException | DBException e) {
-            LOG.warn("Caught error while rebuilding core index " + FileUtils.fileName(btree.getFile()) + ": " + e.getMessage(), e);
+            LOG.error("Caught error while rebuilding core index " + FileUtils.fileName(btree.getFile()) + ": " + e.getMessage(), e);
         } finally {
             lock.release(LockMode.WRITE_LOCK);
         }
@@ -3628,7 +3622,7 @@ public class NativeBroker extends DBBroker {
         try {
             pool.getSymbols().flush();
         } catch(final EXistException e) {
-            LOG.warn(e);
+            LOG.error(e);
         }
         indexController.flush();
         nodesCount = 0;
@@ -3648,7 +3642,7 @@ public class NativeBroker extends DBBroker {
                     try {
                         domDb.flush();
                     } catch(final DBException e) {
-                        LOG.warn("error while flushing dom.dbx", e);
+                        LOG.error("error while flushing dom.dbx", e);
                     }
                     return null;
                 }
@@ -3659,7 +3653,7 @@ public class NativeBroker extends DBBroker {
                     lock.acquire(LockMode.WRITE_LOCK);
                     collectionsDb.flush();
                 } catch(final LockException e) {
-                    LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
+                    LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
                 } finally {
                     lock.release(LockMode.WRITE_LOCK);
                 }
@@ -3680,7 +3674,7 @@ public class NativeBroker extends DBBroker {
             }
         } catch(final DBException dbe) {
             dbe.printStackTrace();
-            LOG.warn(dbe);
+            LOG.error(dbe);
         }
     }
 
@@ -3693,7 +3687,7 @@ public class NativeBroker extends DBBroker {
             collectionsDb.close();
             notifyClose();
         } catch(final Exception e) {
-            LOG.warn(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
         }
         super.shutdown();
     }
@@ -3789,7 +3783,7 @@ public class NativeBroker extends DBBroker {
 
         public <T extends IStoredNode> void reset(final Txn transaction, final IStoredNode<T> node, final NodePath currentPath, IndexSpec indexSpec) {
             if(node.getNodeId() == null) {
-                LOG.warn("illegal node: " + node.getNodeName());
+                LOG.error("illegal node: " + node.getNodeName());
             }
             //TODO : why continue processing ? return ? -pb
             this.transaction = transaction;
@@ -3918,7 +3912,7 @@ public class NativeBroker extends DBBroker {
                         try {
                             domDb.addValue(transaction, new NodeRef(doc.getDocId(), node.getNodeId()), address);
                         } catch(final BTreeException | IOException e) {
-                            LOG.warn(EXCEPTION_DURING_REINDEX, e);
+                            LOG.error(EXCEPTION_DURING_REINDEX, e);
                         }
                         return null;
                     }

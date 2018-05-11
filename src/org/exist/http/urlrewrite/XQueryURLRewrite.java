@@ -723,8 +723,11 @@ public class XQueryURLRewrite extends HttpServlet {
         DocumentImpl controllerDoc = null;
         try {
             final XmldbURI locationUri = XmldbURI.xmldbUriFor(basePath);
-
-            controllerDoc = findDbControllerXql(broker, locationUri, components);
+            XmldbURI resourceUri = locationUri;
+            for(final String component : components) {
+                resourceUri = resourceUri.append(component);
+            }
+            controllerDoc = findDbControllerXql(broker, locationUri, resourceUri);
 
             if (controllerDoc == null) {
                 LOG.warn("XQueryURLRewrite controller could not be found for path: " + path);
@@ -757,32 +760,35 @@ public class XQueryURLRewrite extends HttpServlet {
     /**
      * Finds a `controller.xql` file within a Collection hierarchy.
      * Most specific collections are considered first.
-     * <p>
+     *
      * For example, given the collectionUri `/db/apps`
-     * and the pathPomponents `['myapp', 'data']`, the
+     * and the resourceUri /db/apps/myapp/data, the
      * order or search will be:
-     * <p>
-     * /db/apps/myapp/data/collection.xconf
-     * /db/apps/myapp/collection.xconf
-     * /db/apps/collection.xconf
+     *
+     * /db/apps/myapp/data/controller.xql
+     * /db/apps/myapp/controller.xql
+     * /db/apps/controller.xql
      *
      * @param broker         The database broker
      * @param collectionUri  The root collection URI, below which we should not descend
-     * @param pathComponents The path within the collectionUri to the most specific Collection
+     * @param resourceUri The path to the most specific document or collection for which we should find a controller
      * @return The most relevant controller.xql document (with a READ_LOCK), or null if it could not be found.
      */
     //@tailrec
     private @Nullable
-    DocumentImpl findDbControllerXql(final DBBroker broker, final XmldbURI collectionUri, final String[] pathComponents) {
+    DocumentImpl findDbControllerXql(final DBBroker broker, final XmldbURI collectionUri, final XmldbURI resourceUri) {
+        if (collectionUri.compareTo(resourceUri) > 0) {
+            return null;
+        }
+
         Collection collection = null;
         try {
-            collection = broker.openCollection(collectionUri, LockMode.READ_LOCK);
-            if (collection == null) {
-                return null;
-            }
-
-            if (pathComponents.length == 0 || !collection.hasChildCollection(broker, XmldbURI.createInternal(pathComponents[0]))) {
-                return collection.getDocumentWithLock(broker, XQUERY_CONTROLLER_URI, LockMode.READ_LOCK);
+            collection = broker.openCollection(resourceUri, LockMode.READ_LOCK);
+            if (collection != null) {
+                final DocumentImpl doc = collection.getDocumentWithLock(broker, XQUERY_CONTROLLER_URI, LockMode.READ_LOCK);
+                if (doc != null) {
+                    return doc;
+                }
             }
         } catch (final PermissionDeniedException e) {
             if (LOG.isDebugEnabled()) {
@@ -800,12 +806,12 @@ public class XQueryURLRewrite extends HttpServlet {
             }
         }
 
-        final XmldbURI subCollectionUri = collectionUri.append(pathComponents[0]);
-        final String[] subPathComponents = new String[pathComponents.length - 1];
-        if (subPathComponents.length > 0) {
-            System.arraycopy(pathComponents, 1, subPathComponents, 0, subPathComponents.length);
+        if(resourceUri.numSegments() == 2) {
+            return null;
         }
-        return findDbControllerXql(broker, subCollectionUri, subPathComponents);
+        final XmldbURI subResourceUri = resourceUri.removeLastSegment();
+
+        return findDbControllerXql(broker, collectionUri, subResourceUri);
     }
 
     private SourceInfo findSourceFromFs(final String basePath, final String[] components) {

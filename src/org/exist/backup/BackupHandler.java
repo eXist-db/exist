@@ -33,9 +33,9 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public interface BackupHandler {
 
-	public void backup(Collection collection, AttributesImpl attrs);
-	public void backup(Collection collection, SAXSerializer serializer) throws SAXException;
+	void backup(Collection collection, AttributesImpl attrs);
+	void backup(Collection collection, SAXSerializer serializer) throws SAXException;
 
-	public void backup(Document document, AttributesImpl attrs);
-	public void backup(Document document, SAXSerializer serializer) throws SAXException;
+	void backup(Document document, AttributesImpl attrs);
+	void backup(Document document, SAXSerializer serializer) throws SAXException;
 }

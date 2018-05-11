@@ -28,10 +28,12 @@ import java.util.zip.Inflater;
 
 import org.apache.xmlrpc.XmlRpcException;
 
+import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
+import org.exist.util.Leasable;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.io.TemporaryFileManager;
@@ -48,6 +50,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public abstract class AbstractRemoteResource extends AbstractRemote
         implements EXistResource, ExtendedResource, Resource {
 
+    protected final Leasable<XmlRpcClient>.Lease xmlRpcClientLease;
     protected final XmldbURI path;
     private String mimeType;
 
@@ -56,13 +59,14 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     protected InputSource inputSource = null;
     private long contentLen = 0L;
     private Permission permissions = null;
+    private boolean closed;
 
     Date dateCreated = null;
     Date dateModified = null;
 
-    protected AbstractRemoteResource(final RemoteCollection parent, final XmldbURI documentName, final String mimeType)
-            throws XMLDBException {
+    protected AbstractRemoteResource(final Leasable<XmlRpcClient>.Lease xmlRpcClientLease, final RemoteCollection parent, final XmldbURI documentName, final String mimeType) {
         super(parent);
+        this.xmlRpcClientLease = xmlRpcClientLease;
         if (documentName.numSegments() > 1) {
             this.path = documentName;
         } else {
@@ -92,26 +96,6 @@ public abstract class AbstractRemoteResource extends AbstractRemote
             }
         }
         return res;
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            freeResources();
-        }
-        finally {
-            super.finalize();
-        }
-    }
-
-    @Override
-    public void freeResources() {
-        file = null;
-        inputSource = null;
-        if (contentFile != null) {
-            TemporaryFileManager.getInstance().returnTemporaryFile(contentFile);
-            contentFile = null;
-        }
     }
 
     /**
@@ -166,7 +150,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
             params.add(dateModified.getTime());
 
             try {
-                collection.getClient().execute("setLastModified", params);
+                xmlRpcClientLease.get().execute("setLastModified", params);
             } catch (final XmlRpcException e) {
                 throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
             }
@@ -281,7 +265,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
             final TemporaryFileManager tempFileManager = TemporaryFileManager.getInstance();
             final Path tempFile = tempFileManager.getTemporaryFile();
 
-            Map table = (Map) collection.getClient().execute(command, params);
+            Map table = (Map) xmlRpcClientLease.get().execute(command, params);
 
             final String method;
             final boolean useLongOffset;
@@ -328,7 +312,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
                     params.clear();
                     params.add(table.get("handle"));
                     params.add(useLongOffset ? Long.toString(offset) : Integer.valueOf((int) offset));
-                    table = (Map<?, ?>) collection.getClient().execute(method, params);
+                    table = (Map<?, ?>) xmlRpcClientLease.get().execute(method, params);
                     offset = useLongOffset ? Long.parseLong((String) table.get("offset")) : ((Integer) table.get("offset"));
                     data = (byte[]) table.get("data");
 
@@ -486,7 +470,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
             params.add(path.toString());
             params.add(getProperties());
             try {
-                final Map table = (Map) collection.getClient().execute("describeResource", params);
+                final Map table = (Map) xmlRpcClientLease.get().execute("describeResource", params);
                 if (table.containsKey("content-length-64bit")) {
                     final Object o = table.get("content-length-64bit");
                     if (o instanceof Long) {
@@ -553,7 +537,38 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     }
 
     @Override
-    public void close() throws IOException {
-        freeResources();
+    public final boolean isClosed() {
+        return closed;
+    }
+
+    @Override
+    public final void close() {
+        if (!isClosed()) {
+            try {
+                file = null;
+                inputSource = null;
+                if (contentFile != null) {
+                    TemporaryFileManager.getInstance().returnTemporaryFile(contentFile);
+                    contentFile = null;
+                }
+                xmlRpcClientLease.close();
+            } finally {
+                closed = true;
+            }
+        }
+    }
+
+    @Override
+    public final void freeResources() {
+        close();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            close();
+        } finally {
+            super.finalize();
+        }
     }
 }

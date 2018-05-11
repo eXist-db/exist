@@ -65,13 +65,9 @@ public class XMLDBSize extends XMLDBAbstractCollectionManipulator {
 		super(context, signature);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.functions.xmldb.XMLDBAbstractCollectionManipulator#evalWithCollection(org.xmldb.api.base.Collection, org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	protected Sequence evalWithCollection(Collection collection, Sequence[] args,
-			Sequence contextSequence)
-        throws XPathException {
-
+	@Override
+	protected Sequence evalWithCollection(final Collection collection, final Sequence[] args,
+			final Sequence contextSequence) throws XPathException {
         try {
 			final Resource resource = collection.getResource(new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString());
 			return new IntegerValue(((EXistResource)resource).getContentLength(), Type.LONG);

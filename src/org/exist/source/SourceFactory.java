@@ -106,7 +106,7 @@ public class SourceFactory {
                 }
             }
 
-            if (source == null) {
+            if (source == null && contextPath != null) {
                 try {
                     final Path p3 = Paths.get(contextPath).toAbsolutePath().resolve(location);
                     if (Files.isReadable(p3)) {

@@ -37,29 +37,29 @@ import java.util.Iterator;
  */
 public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
 
-    public static final int ANCESTOR = 0;
-    public static final int DESCENDANT = 1;
-    public static final int PRECEDING = 2;
-    public static final int FOLLOWING = 3;
+    static final int ANCESTOR = 0;
+    static final int DESCENDANT = 1;
+    static final int PRECEDING = 2;
+    static final int FOLLOWING = 3;
 
     /**
      * Constant representing an empty node set.
      */
-    public static final NodeSet EMPTY_SET = new EmptyNodeSet();
+    static final NodeSet EMPTY_SET = new EmptyNodeSet();
 
     /**
      * Get a copy of this node set which can be modified.
      *
      * @return the copy
      */
-    public NodeSet copy();
+    NodeSet copy();
 
     /**
      * Return an iterator on the nodes in this list. The iterator returns nodes
      * according to the internal ordering of nodes (i.e. level first), not in document-
      * order.
      */
-    public NodeSetIterator iterator();
+    NodeSetIterator iterator();
 
     /**
      * Check if this node set contains a node matching the document and
@@ -67,19 +67,19 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *
      * @param proxy
      */
-    public boolean contains(NodeProxy proxy);
+    boolean contains(NodeProxy proxy);
 
     /**
      * Returns a DocumentSet containing all documents referenced
      * in this node set.
      */
-    public DocumentSet getDocumentSet();
+    DocumentSet getDocumentSet();
 
     /**
      * Return an iterator on all collections referenced by documents
      * contained in this node set.
      */
-    public Iterator<Collection> getCollectionIterator();
+    Iterator<Collection> getCollectionIterator();
 
     /**
      * Add a new proxy object to the node set. Please note: node set
@@ -87,7 +87,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *
      * @param proxy
      */
-    public void add(NodeProxy proxy);
+    void add(NodeProxy proxy);
 
     /**
      * Add a proxy object to the node set. The sizeHint parameter
@@ -97,21 +97,21 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      * @param proxy
      * @param sizeHint
      */
-    public void add(NodeProxy proxy, int sizeHint);
+    void add(NodeProxy proxy, int sizeHint);
 
     /**
      * Add all nodes from the given node set.
      *
      * @param other
      */
-    public void addAll(NodeSet other);
+    void addAll(NodeSet other);
 
     /**
      * Get the node at position pos within this node set.
      *
      * @param pos
      */
-    public NodeProxy get(int pos);
+    NodeProxy get(int pos);
 
     /**
      * Get a node from this node set matching the document and node id of
@@ -119,9 +119,9 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *
      * @param p
      */
-    public NodeProxy get(NodeProxy p);
+    NodeProxy get(NodeProxy p);
 
-    public NodeProxy get(DocumentImpl doc, NodeId nodeId);
+    NodeProxy get(DocumentImpl doc, NodeId nodeId);
 
     /**
      * Check if any child nodes are found within this node set for a given
@@ -135,7 +135,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      * @param al   a node set containing potential parent nodes
      * @param mode selection mode
      */
-    public NodeSet selectParentChild(NodeSet al, int mode);
+    NodeSet selectParentChild(NodeSet al, int mode);
 
     /**
      * Check if any child nodes are found within this node set for a given
@@ -153,9 +153,9 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *                  will be added to each result of the of the selection.
      */
 
-    public NodeSet selectParentChild(NodeSet al, int mode, int contextId);
+    NodeSet selectParentChild(NodeSet al, int mode, int contextId);
 
-    public boolean matchParentChild(NodeSet al, int mode, int contextId);
+    boolean matchParentChild(NodeSet al, int mode, int contextId);
 
     /**
      * Check if any descendant nodes are found within this node set for a given
@@ -174,10 +174,10 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *                    expressions. If contextId != {@link org.exist.xquery.Expression#NO_CONTEXT_ID}, the current context
      *                    will be added to each result of the of the selection.
      */
-    public NodeSet selectAncestorDescendant(NodeSet al, int mode, boolean includeSelf,
+    NodeSet selectAncestorDescendant(NodeSet al, int mode, boolean includeSelf,
                                             int contextId, boolean copyMatches);
 
-    public boolean matchAncestorDescendant(NodeSet al, int mode, boolean includeSelf,
+    boolean matchAncestorDescendant(NodeSet al, int mode, boolean includeSelf,
                                            int contextId, boolean copyMatches);
 
     /**
@@ -191,7 +191,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *                    expressions. If contextId != {@link org.exist.xquery.Expression#NO_CONTEXT_ID}, the current context
      *                    will be added to each result of the of the selection.
      */
-    public NodeSet selectAncestors(NodeSet descendants, boolean includeSelf, int contextId);
+    NodeSet selectAncestors(NodeSet descendants, boolean includeSelf, int contextId);
 
     /**
      * Select all nodes from the passed node set, which
@@ -203,7 +203,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *                  expressions. If contextId != {@link org.exist.xquery.Expression#NO_CONTEXT_ID}, the current context
      *                  will be added to each result of the of the selection.
      */
-    public NodeSet selectPrecedingSiblings(NodeSet siblings, int contextId);
+    NodeSet selectPrecedingSiblings(NodeSet siblings, int contextId);
 
     /**
      * Select all nodes from the passed node set, which
@@ -215,15 +215,15 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *                  expressions. If contextId != {@link org.exist.xquery.Expression#NO_CONTEXT_ID}, the current context
      *                  will be added to each result of the of the selection.
      */
-    public NodeSet selectFollowingSiblings(NodeSet siblings, int contextId);
+    NodeSet selectFollowingSiblings(NodeSet siblings, int contextId);
 
-    public NodeSet selectPreceding(NodeSet preceding, int contextId) throws XPathException;
+    NodeSet selectPreceding(NodeSet preceding, int contextId) throws XPathException;
 
-    public NodeSet selectPreceding(NodeSet preceding, int position, int contextId) throws XPathException, UnsupportedOperationException;
+    NodeSet selectPreceding(NodeSet preceding, int position, int contextId) throws XPathException, UnsupportedOperationException;
 
-    public NodeSet selectFollowing(NodeSet following, int contextId) throws XPathException;
+    NodeSet selectFollowing(NodeSet following, int contextId) throws XPathException;
 
-    public NodeSet selectFollowing(NodeSet following, int position, int contextId) throws XPathException;
+    NodeSet selectFollowing(NodeSet following, int position, int contextId) throws XPathException;
 
     /**
      * Check if the node identified by its node id has an ancestor contained in this node set
@@ -236,7 +236,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      * If includeSelf is true, the method returns also true if
      * the node itself is contained in the node set.
      */
-    public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean directParent, boolean includeSelf);
+    NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean directParent, boolean includeSelf);
 
     /**
      * Check if the given node has an ancestor contained in this node set
@@ -249,15 +249,15 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      * If includeSelf is true, the method returns also true if
      * the node itself is contained in the node set.
      */
-    public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent, boolean includeSelf, int level);
+    NodeProxy parentWithChild(NodeProxy proxy, boolean directParent, boolean includeSelf, int level);
 
     /**
      * Return a new node set containing the parent nodes of all nodes in the
      * current set.
      */
-    public NodeSet getParents(int contextId);
+    NodeSet getParents(int contextId);
 
-    public NodeSet getAncestors(int contextId, boolean includeSelf);
+    NodeSet getAncestors(int contextId, boolean includeSelf);
 
     /**
      * Optimized method to select attributes. Use this if the context has just one or
@@ -268,9 +268,9 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *                  expressions. If contextId != {@link org.exist.xquery.Expression#NO_CONTEXT_ID}, the current context
      *                  will be added to each result of the of the selection.
      */
-    public NodeSet directSelectAttribute(DBBroker broker, org.exist.xquery.NodeTest test, int contextId);
+    NodeSet directSelectAttribute(DBBroker broker, org.exist.xquery.NodeTest test, int contextId);
 
-    public boolean directMatchAttribute(DBBroker broker, org.exist.xquery.NodeTest test, int contextId);
+    boolean directMatchAttribute(DBBroker broker, org.exist.xquery.NodeTest test, int contextId);
 
     /**
      * If all nodes in this set have an index, returns the common
@@ -281,7 +281,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      * @see org.exist.xquery.GeneralComparison
      * @see org.exist.xquery.ValueComparison
      */
-    public int getIndexType();
+    int getIndexType();
 
     /**
      * Get a hint about how many nodes in this node set belong to the
@@ -291,7 +291,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *
      * @param doc
      */
-    public int getSizeHint(DocumentImpl doc);
+    int getSizeHint(DocumentImpl doc);
 
     /**
      * Return a new node set, which represents the intersection of the current
@@ -299,7 +299,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *
      * @param other
      */
-    public NodeSet intersection(NodeSet other);
+    NodeSet intersection(NodeSet other);
 
     /**
      * Return a new node set, containing all nodes in this node set that
@@ -307,7 +307,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *
      * @param other
      */
-    public NodeSet deepIntersection(NodeSet other);
+    NodeSet deepIntersection(NodeSet other);
 
     /**
      * Return a new node set which represents the union of the
@@ -315,7 +315,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *
      * @param other
      */
-    public NodeSet union(NodeSet other);
+    NodeSet union(NodeSet other);
 
     /**
      * Return a new node set containing all nodes from this node set
@@ -323,7 +323,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *
      * @param other
      */
-    public NodeSet except(NodeSet other);
+    NodeSet except(NodeSet other);
 
     /**
      * Create a new node set from this set containing only nodes in documents
@@ -331,11 +331,11 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *
      * @param otherSet
      */
-    public NodeSet filterDocuments(NodeSet otherSet);
+    NodeSet filterDocuments(NodeSet otherSet);
 
-    public void setProcessInReverseOrder(boolean inReverseOrder);
+    void setProcessInReverseOrder(boolean inReverseOrder);
 
-    public boolean getProcessInReverseOrder();
+    boolean getProcessInReverseOrder();
 
     /**
      * Returns all context nodes associated with the nodes in
@@ -345,10 +345,10 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *                  expressions. If contextId != {@link org.exist.xquery.Expression#NO_CONTEXT_ID}, the current context
      *                  will be added to each result of the of the selection.
      */
-    public NodeSet getContextNodes(int contextId);
+    NodeSet getContextNodes(int contextId);
 
-    public boolean getTrackMatches();
+    boolean getTrackMatches();
 
-    public void setTrackMatches(boolean track);
+    void setTrackMatches(boolean track);
 
 }

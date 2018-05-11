@@ -101,6 +101,10 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     }
 
     public synchronized void run() {
+        run(true);
+    }
+
+    public synchronized void run(final boolean standalone) {
         final String jettyProperty = Optional.ofNullable(System.getProperty(JETTY_HOME_PROP))
                 .orElseGet(() -> {
                     final Optional<Path> home = ConfigurationHelper.getExistHome();
@@ -110,8 +114,13 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                     return jettyPath;
                 });
 
-        final Path standaloneFile = Paths.get(jettyProperty).resolve("etc").resolve(Main.STANDALONE_ENABLED_JETTY_CONFIGS);
-        run(new String[] { standaloneFile.toAbsolutePath().toString() }, null);
+        final Path jettyConfig;
+        if (standalone) {
+            jettyConfig = Paths.get(jettyProperty).resolve("etc").resolve(Main.STANDALONE_ENABLED_JETTY_CONFIGS);
+        } else {
+            jettyConfig = Paths.get(jettyProperty).resolve("etc").resolve(Main.STANDARD_ENABLED_JETTY_CONFIGS);
+        }
+        run(new String[] { jettyConfig.toAbsolutePath().toString() }, null);
     }
     
     public synchronized void run(final String[] args, final Observer observer) {

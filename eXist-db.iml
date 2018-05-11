@@ -67,7 +67,6 @@
     <orderEntry type="library" exported="" name="optional" level="project" />
     <orderEntry type="library" exported="" name="user" level="project" />
     <orderEntry type="library" exported="" name="test" level="project" />
-    <orderEntry type="library" exported="" name="ant" level="project" />
     <orderEntry type="library" exported="" name="tools" level="project" />
     <orderEntry type="library" name="exquery-restxq" level="project" />
     <orderEntry type="library" name="exquery-core" level="project" />

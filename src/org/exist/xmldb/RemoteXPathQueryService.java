@@ -24,7 +24,9 @@ import java.io.Writer;
 import java.util.*;
 
 import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.source.Source;
+import org.exist.util.Leasable;
 import org.exist.xmlrpc.RpcAPI;
 import org.exist.xquery.XPathException;
 import org.xmldb.api.base.Collection;
@@ -41,6 +43,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class RemoteXPathQueryService extends AbstractRemote implements EXistXPathQueryService, EXistXQueryService {
 
+    private final Leasable<XmlRpcClient> leasableXmlRpcClient;
+    private final XmlRpcClient xmlRpcClient;
     private final Map<String, String> namespaceMappings = new HashMap<>();
     private final Map<String, Object> variableDecls = new HashMap<>();
     private final Properties outputProperties;
@@ -52,8 +56,10 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
      *
      * @param collection a <code>RemoteCollection</code> value
      */
-    public RemoteXPathQueryService(final RemoteCollection collection) {
+    public RemoteXPathQueryService(final Leasable<XmlRpcClient> leasableXmlRpcClient, final XmlRpcClient xmlRpcClient, final RemoteCollection collection) {
         super(collection);
+        this.leasableXmlRpcClient = leasableXmlRpcClient;
+        this.xmlRpcClient = xmlRpcClient;
         this.outputProperties = collection.getProperties();
     }
 
@@ -97,7 +103,7 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
             final List<Object> params = new ArrayList<>();
             params.add(query.getBytes(UTF_8));
             params.add(optParams);
-            final Map result = (Map) collection.getClient().execute("queryPT", params);
+            final Map result = (Map) xmlRpcClient.execute("queryPT", params);
 
             if (result.get(RpcAPI.ERROR) != null) {
                 throwException(result);
@@ -110,7 +116,7 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
                 handle = (Integer) result.get("id");
                 hash = (Integer) result.get("hash");
             }
-            return new RemoteResourceSet(collection, outputProperties, resources, handle, hash);
+            return new RemoteResourceSet(leasableXmlRpcClient, xmlRpcClient, collection, outputProperties, resources, handle, hash);
         } catch (final XmlRpcException xre) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
         }
@@ -143,7 +149,7 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
             final List<Object> params = new ArrayList<>();
             params.add(query.getBytes(UTF_8));
             params.add(optParams);
-            final Map result = (Map) collection.getClient().execute("compile", params);
+            final Map result = (Map) xmlRpcClient.execute("compile", params);
 
             if (result.get(RpcAPI.ERROR) != null) {
                 throwXPathException(result);
@@ -191,7 +197,7 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
         params.add(new HashMap<String, Object>());
 
         try {
-            final Map result = (Map) collection.getClient().execute("executeT", params);
+            final Map result = (Map) xmlRpcClient.execute("executeT", params);
 
             if (result.get(RpcAPI.ERROR) != null) {
                 throwException(result);
@@ -204,7 +210,7 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
                 handle = (Integer) result.get("id");
                 hash = (Integer) result.get("hash");
             }
-            return new RemoteResourceSet(collection, outputProperties, resources, handle, hash);
+            return new RemoteResourceSet(leasableXmlRpcClient, xmlRpcClient, collection, outputProperties, resources, handle, hash);
         } catch (final XmlRpcException xre) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
         }
@@ -244,7 +250,7 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
             params.add(resource.path.toString());
             params.add(resource.idIsPresent() ? resource.getNodeId() : "");
             params.add(optParams);
-            final Map result = (Map) collection.getClient().execute("queryPT", params);
+            final Map result = (Map) xmlRpcClient.execute("queryPT", params);
 
             if (result.get(RpcAPI.ERROR) != null) {
                 throwException(result);
@@ -257,7 +263,7 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
                 handle = (Integer) result.get("id");
                 hash = (Integer) result.get("hash");
             }
-            return new RemoteResourceSet(collection, outputProperties, resources, handle, hash);
+            return new RemoteResourceSet(leasableXmlRpcClient, xmlRpcClient, collection, outputProperties, resources, handle, hash);
         } catch (final XmlRpcException xre) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
         }
@@ -371,7 +377,7 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
         params.add(query);
         params.add(optParams);
         try {
-            final String dump = (String) collection.getClient().execute("printDiagnostics", params);
+            final String dump = (String) xmlRpcClient.execute("printDiagnostics", params);
             writer.write(dump);
         } catch (final XmlRpcException | IOException e) {
             throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);

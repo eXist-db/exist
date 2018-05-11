@@ -653,10 +653,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
                     // type to ID
                     attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
 
-                    if (!XMLChar.isValidNCName(attr.getValue())) {
-                        throw new SAXException("Value of xml:id attribute is not a valid NCName: " + attr.getValue());
-                    }
-
                     attr.setType(AttrImpl.ID);
                 } else if (attr.getQName().equals(Namespaces.XML_SPACE_QNAME)) {
                     node.setPreserveSpace("preserve".equals(attr.getValue()));

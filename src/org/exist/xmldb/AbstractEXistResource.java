@@ -32,7 +32,6 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
-import java.io.IOException;
 import java.util.Date;
 
 /**
@@ -45,6 +44,7 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
 
     protected Date datecreated = null;
     protected Date datemodified = null;
+    private boolean closed;
     
     public AbstractEXistResource(final Subject user, final BrokerPool pool, final LocalCollection parent, final XmldbURI docId, final String mimeType) {
         super(user, pool, parent);
@@ -192,11 +192,34 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
     }
 
     @Override
-    public void close() throws IOException {
-        try {
-            freeResources();
-        } catch (final XMLDBException e) {
-            throw new IOException(e);
+    public final boolean isClosed() {
+        return closed;
+    }
+
+    /**
+     * Implement this in your sub-class if you need
+     * to do cleanup.
+     *
+     * The method will only be called once, no matter
+     * how many times the user calls {@link #close()}.
+     */
+    protected void doClose() throws XMLDBException {
+        //no-op
+    }
+
+    @Override
+    public final void close() throws XMLDBException {
+        if(!isClosed()) {
+            try {
+                doClose();
+            } finally {
+                closed = true;
+            }
         }
+    }
+
+    @Override
+    public final void freeResources() throws XMLDBException{
+        close();
     }
 }

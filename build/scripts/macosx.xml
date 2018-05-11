@@ -230,6 +230,8 @@
         <!-- Create a temporary Disk Image (Mac) -->
         <exec executable="/usr/bin/hdiutil" os="Mac OS X" failonerror="true">
             <arg value="create"/>
+            <arg value="-fs"/>
+            <arg value="HFS+"/>
             <arg value="-srcfolder"/>
             <arg value="${app.dir}"/>
             <arg value="-volname"/>
@@ -318,7 +320,7 @@
         </exec>
 
         <!-- Add a symbolic link to the Applications directory -->
-        <symlink link="${app.dest}" resource="/Applications"/>
+        <symlink link="${app.dest}/Applications" resource="/Applications"/>
 
         <!-- Detach the temporary image (Mac) -->
         <exec executable="/usr/bin/hdiutil" os="Mac OS X" failonerror="true">

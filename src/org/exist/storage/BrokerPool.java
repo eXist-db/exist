@@ -1165,6 +1165,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 LOG.debug("Db instance is in service mode. Waiting for db to become available again ...");
                 wait();
             } catch(final InterruptedException e) {
+                Thread.currentThread().interrupt();
+                LOG.error("Interrupt detected");
             }
         }
 

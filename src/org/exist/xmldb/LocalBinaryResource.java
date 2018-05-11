@@ -178,21 +178,6 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
             return null;
         });
     }
-	
-    @Override
-    public void freeResources() throws XMLDBException {
-        if(!isExternal && file != null) {
-            file = null;
-        }
-
-        if(binaryValue != null) {
-            try {
-                binaryValue.close();
-            } catch(final IOException e) {
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "error while closing binary resource " + getId(), e);
-            }
-        }
-    }
 
     @Override
     public long getStreamLength() throws XMLDBException {
@@ -264,5 +249,20 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
     @Override
     @Nullable public Properties getProperties() {
         return null;
+    }
+
+    @Override
+    protected void doClose() throws XMLDBException {
+        if(!isExternal && file != null) {
+            file = null;
+        }
+
+        if(binaryValue != null) {
+            try {
+                binaryValue.close();
+            } catch(final IOException e) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "error while closing binary resource " + getId(), e);
+            }
+        }
     }
 }

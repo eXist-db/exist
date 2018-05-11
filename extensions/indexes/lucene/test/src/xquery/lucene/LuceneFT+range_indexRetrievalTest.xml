@@ -54,7 +54,7 @@
     </setup>
     <functions><![CDATA[
         declare function local:term-callback($term as xs:string, $data as xs:int+) as element() {
-        <entry> <term>{$term}</term> <frequency>{$data[1]}</frequency> <documents>{$data[2]}</documents> <position>{$data[3]}</position> </entry>
+        <entry> <term>{normalize-space($term)}</term> <frequency>{$data[1]}</frequency> <documents>{$data[2]}</documents> <position>{$data[3]}</position> </entry>
         }; 
         ]]>
     </functions>
@@ -151,13 +151,13 @@
             ]]></code>
         <expected>
             <entry>
-                <term>some text inside a paragraph</term>
+                <term>some text inside an element</term>
                 <frequency>2</frequency>
                 <documents>2</documents>
                 <position>1</position>
             </entry>
             <entry>
-                <term>some text inside an element</term>
+                <term>some text inside a paragraph</term>
                 <frequency>2</frequency>
                 <documents>2</documents>
                 <position>2</position>
@@ -173,13 +173,13 @@
             ]]></code>
         <expected>
             <entry>
-                <term>some text inside a paragraph</term>
+                <term>some text inside an element</term>
                 <frequency>2</frequency>
                 <documents>2</documents>
                 <position>1</position>
             </entry>
             <entry>
-                <term>some text inside an element</term>
+                <term>some text inside a paragraph</term>
                 <frequency>2</frequency>
                 <documents>2</documents>
                 <position>2</position>
