@@ -24,6 +24,8 @@ package org.exist.xquery;
 import org.custommonkey.xmlunit.DetailedDiff;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.EXistXPathQueryService;
+import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
 import org.w3c.dom.Element;
@@ -38,8 +40,12 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XQueryService;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.builder.Input;
+import org.xmlunit.diff.Diff;
 
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -1101,6 +1107,32 @@ public class XQueryTest {
         result.getResource(0).getContent();
         assertXMLEqual("<div xmlns='http://www.w3.org/1999/xhtml'><a>Link</a></div>",
                 result.getResource(0).getContent().toString());
+    }
+
+    @Test
+    public void importExternalClasspathModule() throws XMLDBException {
+        final long timestamp = System.currentTimeMillis();
+        final Collection testCollection = getTestCollection();
+        final Resource doc = testCollection.createResource("import-external-classpath.xq", "BinaryResource");
+        doc.setContent(
+                "import module namespace ext1 = \"http://import-external-classpath-test.com\" at \"resource:org/exist/xquery/external-classpath-module.xqm\";\n"
+                + "ext1:echo(" + timestamp + ")"
+        );
+        ((EXistResource) doc).setMimeType("application/xquery");
+        testCollection.storeResource(doc);
+
+        final EXistXPathQueryService service = (EXistXPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+        final ResourceSet resourceSet = service.executeStoredQuery("/db/test/import-external-classpath.xq");
+
+        assertEquals(1, resourceSet.getSize());
+
+        final Resource resource = resourceSet.getResource(0);
+        final Source expected = Input.fromString("<echo>" + timestamp + "</echo>").build();
+        final Source actual = Input.fromString(resource.getContent().toString()).build();
+        final Diff diff = DiffBuilder.compare(expected).withTest(actual)
+                .checkForIdentical()
+                .build();
+        assertFalse(diff.toString(), diff.hasDifferences());
     }
 
     @Test
