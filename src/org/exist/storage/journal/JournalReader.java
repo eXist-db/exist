@@ -41,7 +41,7 @@ import org.exist.storage.DBBroker;
  * @author wolf
  *
  */
-public class JournalReader {
+public class JournalReader implements AutoCloseable {
 
     private static final Logger LOG = LogManager.getLogger(JournalReader.class);
 
@@ -189,6 +189,7 @@ public class JournalReader {
         }
     }
 
+    @Override
     public void close() {
         try {
             fc.close();

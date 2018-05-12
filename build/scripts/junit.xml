@@ -220,6 +220,7 @@
                     <exclude name="**/xmlrpc/*.java"/>
                     <exclude name="**/http/*.java"/>
                     <exclude name="**/storage/*.java"/>
+                    <exclude name="**/storage/journal/AbstractJournalTest.java"/>
                     <exclude name="**/storage/serializers/*.java"/>
                     <exclude name="**/storage/lock/*.java"/>
                     <exclude name="**/soap/*.java"/>
