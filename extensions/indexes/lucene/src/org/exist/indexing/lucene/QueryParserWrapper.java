@@ -19,6 +19,7 @@
  */
 package org.exist.indexing.lucene;
 
+import com.evolvedbinary.j8fu.function.TriFunction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -26,8 +27,12 @@ import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfigur
 import org.apache.lucene.search.Query;
 import org.exist.xquery.XPathException;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.util.function.BiFunction;
+
+import static java.lang.invoke.MethodType.methodType;
 
 /**
  * Wrapper around Lucene's parser classes, which unfortunately do not all inherit
@@ -37,7 +42,8 @@ import java.lang.reflect.InvocationTargetException;
  */
 public abstract class QueryParserWrapper {
 
-    private final static Logger LOG = LogManager.getLogger(QueryParserWrapper.class);
+    private static final Logger LOG = LogManager.getLogger(QueryParserWrapper.class);
+    private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
     public QueryParserWrapper(String field, Analyzer analyzer) {
     }
@@ -46,17 +52,25 @@ public abstract class QueryParserWrapper {
 
     public abstract Query parse(String query) throws XPathException;
 
-    public static QueryParserWrapper create(String className, String field, Analyzer analyzer) {
+    public static QueryParserWrapper create(final String className, final String field, final Analyzer analyzer) {
         try {
-            Class<?> clazz = Class.forName(className);
+            final Class<?> clazz = Class.forName(className);
             if (QueryParserWrapper.class.isAssignableFrom(clazz)) {
-                final Class<?> cParamClasses[] = new Class<?>[] {
-                    String.class, Analyzer.class
-                };
-                final Constructor<?> cstr = clazz.getDeclaredConstructor(cParamClasses);
-                return (QueryParserWrapper) cstr.newInstance(field, analyzer);
+                final MethodHandle methodHandle = LOOKUP.findConstructor(clazz, methodType(void.class, String.class, Analyzer.class));
+                final BiFunction<String, Analyzer, QueryParserWrapper> constructor = (BiFunction<String, Analyzer, QueryParserWrapper>)
+                        LambdaMetafactory.metafactory(
+                                LOOKUP, "apply", methodType(TriFunction.class),
+                                methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
+
+                return constructor.apply(field, analyzer);
             }
-        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+
+        } catch (final Throwable e) {
+            if (e instanceof InterruptedException) {
+                // NOTE: must set interrupted flag
+                Thread.currentThread().interrupt();
+            }
+
             LOG.warn("Failed to instantiate lucene query parser wrapper class: " + className, e);
         }
         return null;

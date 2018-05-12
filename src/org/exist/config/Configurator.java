@@ -21,8 +21,10 @@ package org.exist.config;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -33,6 +35,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -72,7 +76,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.lang.invoke.MethodType.methodType;
 
 /**
  * This class handle all configuration needs: extracting and saving,
@@ -655,18 +659,45 @@ public class Configurator {
      * @return The Configurable or null
      */
     private static Configurable create(final Configuration conf, final Configurable instance, final Class<?> clazz) {
-        
+        boolean interrupted = false;
         try {
-
+            final MethodHandles.Lookup lookup = MethodHandles.lookup();
             Configurable obj = null;
             try {
-                final Constructor<Configurable> constructor = (Constructor<Configurable>) clazz.getConstructor(instance.getClass(), Configuration.class);
-                obj = constructor.newInstance(instance, conf);
-                
-            } catch (final NoSuchMethodException e) {
-                LOG.debug("Unable to invoke Constructor on Configurable instance '" + e.getMessage() + "', so creating new Constructor...");
-                final Constructor<Configurable> constructor = (Constructor<Configurable>) clazz.getConstructor(Configuration.class);
-                obj = constructor.newInstance(conf);
+                final MethodHandle methodHandle = lookup.findConstructor(clazz, methodType(void.class, instance.getClass(), Configuration.class));
+                final BiFunction<Configurable, Configuration, Configurable> constructor =
+                        (BiFunction<Configurable, Configuration, Configurable>)
+                                LambdaMetafactory.metafactory(
+                                        lookup, "apply", methodType(BiFunction.class),
+                                        methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
+
+                obj = constructor.apply(instance, conf);
+            } catch (final Throwable e) {
+                if (e instanceof InterruptedException) {
+                    interrupted = true;
+                }
+
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Unable to invoke Constructor on Configurable instance '" + e.getMessage() + "', so creating new Constructor...");
+                }
+
+                try {
+                    final MethodHandle methodHandle = lookup.findConstructor(clazz, methodType(void.class, Configuration.class));
+                    final Function<Configuration, Configurable> constructor =
+                            (Function<Configuration, Configurable>)
+                                    LambdaMetafactory.metafactory(
+                                            lookup, "apply", methodType(Function.class),
+                                            methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
+                    obj = constructor.apply(conf);
+                } catch (final Throwable ee) {
+                    if (ee instanceof InterruptedException) {
+                        interrupted = true;
+                    }
+
+                    LOG.warn("Instantiation exception on " + clazz
+                            + " creation '" + ee.getMessage() + "', skipping instance creation.");
+                    LOG.debug(e.getMessage(), ee);
+                }
             }
             
             if (obj == null) {
@@ -693,40 +724,18 @@ public class Configurator {
             }
             return obj;
 
-        } catch (final SecurityException se) {
-            LOG.warn("Security exception on class [" + clazz
-                    + "] creation '" + se.getMessage() + "' ,skipping instance creation.");
-            LOG.debug(se.getMessage(), se);
-            
-        } catch (final NoSuchMethodException nsme) {
-            LOG.warn(clazz + " constructor "
-                    + "(" + instance.getClass().getName() + ", " + Configuration.class.getName() + ")"
-                    + " or "
-                    + "(" + Configuration.class.getName() + ")"
-                    + "not found '" + nsme.getMessage() + "', skipping instance creation.");
-            LOG.debug(nsme.getMessage(), nsme);
-            
-        } catch (final InstantiationException ie) {
-            LOG.warn("Instantiation exception on " + clazz
-                    + " creation '" + ie.getMessage() + "', skipping instance creation.");
-            LOG.debug(ie.getMessage(), ie);
-            
-        } catch (final InvocationTargetException ite) {
-            LOG.warn("Invocation target exception on "
-                    + clazz + " creation '" + ite.getMessage() + "', skipping instance creation.");
-            LOG.debug(ite.getMessage(), ite);
-            
         } catch (final EXistException ee) {
             LOG.warn("Database exception on " + clazz
                     + " startup '" + ee.getMessage() + "', skipping instance creation.");
             LOG.debug(ee.getMessage(), ee);
-            
-        } catch (final IllegalAccessException iae) {
-            LOG.warn(iae.getMessage());
-            LOG.debug(iae.getMessage(), iae);
+
+            return null;
+        } finally {
+            if (interrupted) {
+                // NOTE: must set interrupted flag
+                Thread.currentThread().interrupt();
+            }
         }
-        
-        return null;
     }
 
     public static Configuration parse(final File file) throws ConfigurationException {

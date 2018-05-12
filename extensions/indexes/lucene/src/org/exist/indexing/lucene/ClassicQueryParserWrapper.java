@@ -19,6 +19,7 @@
  */
 package org.exist.indexing.lucene;
 
+import com.evolvedbinary.j8fu.function.TriFunction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -30,8 +31,11 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
 import org.exist.xquery.XPathException;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+
+import static java.lang.invoke.MethodType.methodType;
 
 /**
  * Wrapper around Lucene parsers which are based on
@@ -41,24 +45,32 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class ClassicQueryParserWrapper extends QueryParserWrapper {
 
-    private final static Logger LOG = LogManager.getLogger(ClassicQueryParserWrapper.class);
+    private static final Logger LOG = LogManager.getLogger(ClassicQueryParserWrapper.class);
+    private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
     private QueryParserBase parser = null;
 
-    public ClassicQueryParserWrapper(String className, String field, Analyzer analyzer) {
+    public ClassicQueryParserWrapper(final String className, final String field, final Analyzer analyzer) {
         super(field, analyzer);
         try {
-            Class<?> clazz = Class.forName(className);
+            final Class<?> clazz = Class.forName(className);
             if (QueryParserBase.class.isAssignableFrom(clazz)) {
-                final Class<?> cParamClasses[] = new Class<?>[] {
-                        Version.class, String.class, Analyzer.class
-                };
-                final Constructor<?> cstr = clazz.getDeclaredConstructor(cParamClasses);
-                parser = (QueryParserBase) cstr.newInstance(LuceneIndex.LUCENE_VERSION_IN_USE, field, analyzer);
+
+                final MethodHandle methodHandle = LOOKUP.findConstructor(clazz, methodType(void.class, Version.class, String.class, Analyzer.class));
+                final TriFunction<Version, String, Analyzer, QueryParserBase> constructor = (TriFunction<Version, String, Analyzer, QueryParserBase>)
+                        LambdaMetafactory.metafactory(
+                                LOOKUP, "apply", methodType(TriFunction.class),
+                                methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
+
+                parser = constructor.apply(LuceneIndex.LUCENE_VERSION_IN_USE, field, analyzer);
             }
-        } catch (ClassNotFoundException | IllegalAccessException | InvocationTargetException e) {
-            LOG.warn("Failed to instantiate lucene query parser class: " + className, e);
-        } catch (NoSuchMethodException | InstantiationException e) {
+
+        } catch (final Throwable e) {
+            if (e instanceof InterruptedException) {
+                // NOTE: must set interrupted flag
+                Thread.currentThread().interrupt();
+            }
+
             LOG.warn("Failed to instantiate lucene query parser class: " + className + ": " + e.getMessage(), e);
         }
     }

@@ -28,11 +28,15 @@ package org.exist.util.io;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import static java.lang.invoke.MethodType.methodType;
 
 /**
  * Factory to instantiate a cache object
@@ -42,6 +46,7 @@ import org.apache.logging.log4j.Logger;
 public class FilterInputStreamCacheFactory {
 
     private static final Logger LOG = LogManager.getLogger(FilterInputStreamCacheFactory.class);
+    private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
     public interface FilterInputStreamCacheConfiguration {
         String getCacheClass();
@@ -66,18 +71,21 @@ public class FilterInputStreamCacheFactory {
     private FilterInputStreamCache instantiate(final FilterInputStreamCacheConfiguration cacheConfiguration, final InputStream is) {
         try {
             final Class clazz = Class.forName(cacheConfiguration.getCacheClass());
-            final Constructor ctor = clazz.getDeclaredConstructor(InputStream.class);
-            ctor.setAccessible(true);
-            final Object obj = ctor.newInstance(is);
 
-            if (!(obj instanceof FilterInputStreamCache)) {
-                LOG.error("Invalid cache class: " + clazz.getName());
-                return null;
+            final MethodHandle methodHandle = LOOKUP.findConstructor(clazz, methodType(void.class, InputStream.class));
+
+            final Function<InputStream, FilterInputStreamCache> constructor = (Function<InputStream, FilterInputStreamCache>)
+                    LambdaMetafactory.metafactory(
+                            LOOKUP, "apply", methodType(Function.class),
+                            methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
+            return constructor.apply(is);
+        } catch (final Throwable e) {
+            if (e instanceof InterruptedException) {
+                // NOTE: must set interrupted flag
+                Thread.currentThread().interrupt();
             }
 
-            return (FilterInputStreamCache) obj;
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | ClassNotFoundException ex) {
-            LOG.error(ex.getMessage(), ex);
+            LOG.error(e.getMessage(), e);
             return null;
         }
     }

@@ -2,12 +2,16 @@ package org.exist.xquery.util;
 
 import org.exist.xquery.XPathException;
 
-import java.lang.reflect.Constructor;
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.text.DateFormatSymbols;
 import java.time.DayOfWeek;
 import java.time.Month;
 import java.time.format.TextStyle;
 import java.util.Locale;
+
+import static java.lang.invoke.MethodType.methodType;
 
 /**
  * Formatter for numbers and dates. Concrete implementations are language-dependant.
@@ -141,14 +145,24 @@ public abstract class NumberFormatter {
         return count;
     }
 
-    public static NumberFormatter getInstance(String language) {
+    public static NumberFormatter getInstance(final String language) {
         final String className = NumberFormatter.class.getName() + "_" + language;
         final Locale locale = new Locale(language);
         try {
-            final Class langClass = Class.forName(className);
-            final Constructor constructor = langClass.getConstructor(Locale.class);
-            return (NumberFormatter) constructor.newInstance(locale);
-        } catch (final Exception e) {
+            final Class langClazz = Class.forName(className);
+            final MethodHandles.Lookup lookup = MethodHandles.lookup();
+            final MethodHandle methodHandle = lookup.findConstructor(langClazz, methodType(void.class, Locale.class));
+            final java.util.function.Function<Locale, NumberFormatter> constructor = (java.util.function.Function<Locale, NumberFormatter>)
+                    LambdaMetafactory.metafactory(
+                            lookup, "apply", methodType(java.util.function.Function.class),
+                            methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
+            return constructor.apply(locale);
+        } catch (final Throwable e) {
+            if (e instanceof InterruptedException) {
+                // NOTE: must set interrupted flag
+                Thread.currentThread().interrupt();
+            }
+
             return new NumberFormatter_en(locale);
         }
     }
