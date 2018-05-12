@@ -108,8 +108,10 @@ public class ExistEmbeddedServer extends ExternalResource {
                 }
             });
 
-            if(useTemporaryStorage) {
-                this.temporaryStorage = Optional.of(Files.createTempDirectory("org.exist.test.ExistEmbeddedServer"));
+            if (useTemporaryStorage) {
+                if (!temporaryStorage.isPresent()) {
+                    this.temporaryStorage = Optional.of(Files.createTempDirectory("org.exist.test.ExistEmbeddedServer"));
+                }
                 config.setProperty(BrokerPool.PROPERTY_DATA_DIR, temporaryStorage.get());
                 config.setProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR, temporaryStorage.get());
                 System.out.println("Using temporary storage location: " + temporaryStorage.get().toAbsolutePath().toString());
@@ -127,8 +129,12 @@ public class ExistEmbeddedServer extends ExternalResource {
     }
 
     public void restart() throws EXistException, DatabaseConfigurationException, IOException {
+        restart(false);
+    }
+
+    public void restart(final boolean clearTemporaryStorage) throws EXistException, DatabaseConfigurationException, IOException {
         if(pool != null) {
-            stopDb();
+            stopDb(clearTemporaryStorage);
             startDb();
         } else {
             throw new IllegalStateException("ExistEmbeddedServer already stopped");
@@ -143,13 +149,17 @@ public class ExistEmbeddedServer extends ExternalResource {
     }
 
     public void stopDb() {
+        stopDb(true);
+    }
+
+    private void stopDb(final boolean clearTemporaryStorage) {
         if(pool != null) {
             pool.shutdown();
 
             // clear instance variables
             pool = null;
 
-            if(useTemporaryStorage && temporaryStorage.isPresent()) {
+            if(useTemporaryStorage && temporaryStorage.isPresent() && clearTemporaryStorage) {
                 FileUtils.deleteQuietly(temporaryStorage.get());
                 temporaryStorage = Optional.empty();
             }
