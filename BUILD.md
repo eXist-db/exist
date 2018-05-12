@@ -42,4 +42,4 @@ Otherwise, you may wish to deploy eXist into a Web Application Server as a WAR f
 $ ./build.sh dist-war
 ```
 
-For more build options, see the [eXist Build Documentation](http://www.exist-db.org/exist/apps/doc/building.xml "How to build eXist").
+For more build options, see the [eXist Build Documentation](http://www.exist-db.org/exist/apps/doc/exist-building.xml "How to build eXist").
