@@ -1,14 +1,19 @@
 version: '{branch}-{build}'
+
 environment:
   matrix:
     - JAVA_HOME: C:\Program Files\Java\jdk1.8.0
     - JAVA_HOME: C:\Program Files\Java\jdk9
+
 install:
-- cmd: set EXIST_HOME=%APPVEYOR_BUILD_FOLDER%
+  - cmd: set EXIST_HOME=%APPVEYOR_BUILD_FOLDER%
+
 build_script:
-- cmd: build.bat
+  - cmd: build.bat
+
 test_script:
-- cmd: build.bat -Dexist.autodeploy=off -Dtest.haltonerror=true -Dtest.haltonfailure=true travis
+  - cmd: build.bat -Dexist.autodeploy=off -Dtest.haltonerror=true -Dtest.haltonfailure=true travis
+
 after_test:
   - ps: >-
       $wc = New-Object 'System.Net.WebClient'
