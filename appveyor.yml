@@ -21,4 +21,5 @@ after_test:
         $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", $file.FullName)
       }
 
-
+artifacts:
+  - path: test\junit
