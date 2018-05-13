@@ -9,3 +9,11 @@ build_script:
 - cmd: build.bat
 test_script:
 - cmd: build.bat -Dexist.autodeploy=off -Dtest.haltonerror=true -Dtest.haltonfailure=true travis
+after_test:
+  - ps: >-
+      $wc = New-Object 'System.Net.WebClient'
+      foreach ($file in Get-ChildItem -Path "$($env:APPVEYOR_BUILD_FOLDER)\test\junit\data\" -Filter *.xml) {
+        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", $file.FullName)
+      }
+
+
