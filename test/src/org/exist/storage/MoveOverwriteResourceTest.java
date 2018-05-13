@@ -91,15 +91,17 @@ public class MoveOverwriteResourceTest {
     public void moveAndOverwriteXML() throws Exception  {
         final Database db = startDB();
 
+        final DefaultDocumentSet docs = new DefaultDocumentSet();
+
         try (final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
             store(broker);
-
-            final DefaultDocumentSet docs = new DefaultDocumentSet();
             docs.add(test1.getDocument(broker, doc1Name));
             docs.add(test2.getDocument(broker, doc2Name));
+        }
 
-            move(broker);
+        move(db);
 
+        try (final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
             docs.add(test2.getDocument(broker, doc2Name));
 
             checkIndex(broker, docs);
@@ -129,10 +131,11 @@ public class MoveOverwriteResourceTest {
         col.store(txn, broker, info, data);
     }
 
-    private void move(final DBBroker broker) throws Exception {
+    private void move(final Database db) throws Exception {
         TestIndex index = new TestIndex();
-        broker.getBrokerPool().getIndexManager().registerIndex(index);
-        broker.initIndexModules();
+        try (final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
+            broker.getBrokerPool().getIndexManager().registerIndex(index);
+        }
 
         //remove
         index.expectingDocument.add(test2.getURI().append(doc2Name));
@@ -141,7 +144,8 @@ public class MoveOverwriteResourceTest {
         //create
         index.expectingDocument.add(test2.getURI().append(doc2Name));
 
-        try(final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
+        try (final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()));
+                final Txn transaction = db.getTransactionManager().beginTransaction()) {
             final DocumentImpl doc = test1.getDocument(broker, doc1Name);
             broker.moveResource(transaction, doc, test2, doc2Name);
             transaction.commit();

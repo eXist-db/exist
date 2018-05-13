@@ -19,6 +19,7 @@
  */
 package org.exist.indexing;
 
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.backup.RawDataBackup;
@@ -34,11 +35,14 @@ import org.w3c.dom.Element;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
  * Manages all custom indexes registered with the database instance.
  */
+@ThreadSafe
 public class IndexManager implements BrokerPoolService {
 
     private final static Logger LOG = LogManager.getLogger(IndexManager.class);
@@ -52,10 +56,12 @@ public class IndexManager implements BrokerPoolService {
 
     private final BrokerPool pool;
 
-    private Map<String, Index> indexers = new HashMap<>();
+    private final Map<String, Index> indexers = new ConcurrentHashMap<>();
 
     private Configuration.IndexModuleConfig modConfigs[];
     private Path dataDir;
+
+    private AtomicLong configurationTimestamp = new AtomicLong(System.currentTimeMillis());
 
     /**
      * @param pool   the BrokerPool representing the current database instance
@@ -64,11 +70,34 @@ public class IndexManager implements BrokerPoolService {
         this.pool = pool;
     }
 
+    private void configurationChanged() {
+        while (true) {
+            long prev = configurationTimestamp.get();
+            long now = System.currentTimeMillis();
+
+            if(now > prev && configurationTimestamp.compareAndSet(prev, now)) {
+                return;
+            }
+        }
+    }
+
+    /**
+     * Get the timestamp of when the index manager's configuration was last
+     * updated.
+     *
+     * @return the timestamp of when the index managers configuration was
+     *      last updated.
+     */
+    public long getConfigurationTimestamp() {
+        return configurationTimestamp.get();
+    }
+
     @Override
     public void configure(final Configuration configuration) throws BrokerPoolServiceException {
         this.modConfigs = (Configuration.IndexModuleConfig[])
                 configuration.getProperty(PROPERTY_INDEXER_MODULES);
         this.dataDir = (Path) configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+        configurationChanged();
     }
 
     /**
@@ -100,6 +129,8 @@ public class IndexManager implements BrokerPoolService {
             }
         } catch(final DatabaseConfigurationException e) {
             throw new BrokerPoolServiceException(e);
+        } finally {
+            configurationChanged();
         }
     }
 
@@ -132,14 +163,20 @@ public class IndexManager implements BrokerPoolService {
         if (LOG.isInfoEnabled()) {
             LOG.info("Registered index " + index.getClass() + " as " + index.getIndexId());
         }
+
+        configurationChanged();
+
         return index;
     }
 
     public void unregisterIndex(final Index index) throws DBException {
         indexers.remove(index.getIndexId(), index);
+        index.close();
         if (LOG.isInfoEnabled()) {
             LOG.info("Unregistered index " + index.getClass() + " as " + index.getIndexId());
         }
+
+        configurationChanged();
     }
 
     /**

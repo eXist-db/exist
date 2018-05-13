@@ -53,7 +53,6 @@ import org.exist.scheduler.impl.SystemTaskJobImpl;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.SecurityManagerImpl;
-import org.exist.storage.btree.DBException;
 import org.exist.storage.journal.JournalManager;
 import org.exist.storage.lock.DeadlockDetection;
 import org.exist.storage.lock.FileLockService;
@@ -1055,8 +1054,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         inactiveBrokers.push(broker);
         brokersCount++;
         broker.setId(broker.getClass().getName() + '_' + instanceName + "_" + brokersCount);
-        LOG.debug(
-            "created broker '" + broker.getId() + " for database instance '" + instanceName + "'");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Created broker '" + broker.getId() + " for database instance '" + instanceName + "'");
+        }
         return broker;
     }
 
@@ -1190,6 +1190,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                     }
             }
             broker = inactiveBrokers.pop();
+            broker.prepare();
+
             //activate the broker
             activeBrokers.put(Thread.currentThread(), broker);
 
@@ -1345,6 +1347,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
         inServiceMode = true;
         final DBBroker broker = inactiveBrokers.peek();
+        broker.prepare();
         checkpoint = true;
         sync(broker, Sync.MAJOR);
         checkpoint = false;
@@ -1455,6 +1458,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 //TODO : use get() then release the broker ?
                 // No, might lead to a deadlock.
                 final DBBroker broker = inactiveBrokers.pop();
+                broker.prepare();
                 //Do the synchronization job
                 sync(broker, syncEvent);
                 inactiveBrokers.push(broker);
@@ -1599,6 +1603,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
                     try {
                         if (broker != null) {
+                            broker.prepare();
                             broker.pushSubject(securityManager.getSystemSubject());
                         }
 

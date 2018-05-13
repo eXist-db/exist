@@ -25,8 +25,6 @@ import org.exist.dom.persistent.*;
 import org.exist.indexing.*;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.btree.DBException;
-import org.exist.util.DatabaseConfigurationException;
 import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQueryContext;
@@ -34,6 +32,7 @@ import org.junit.Test;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XQueryService;
 
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import static org.easymock.EasyMock.*;
@@ -52,15 +51,17 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
 
         final AbstractIndex index = new TestIndex(worker);
 
-        final BrokerPool db = BrokerPool.getInstance();
-        try (final DBBroker broker = db.authenticate("admin", "")) {
+        final BrokerPool pool = BrokerPool.getInstance();
 
-            expect(worker.getIndexId()).andStubReturn("TestIndex");
+        expect(worker.getIndexId()).andStubReturn("TestIndex");
 
-            control.replay();
+        control.replay();
 
-            db.getIndexManager().registerIndex(index);
-            broker.initIndexModules();
+        pool.getIndexManager().registerIndex(index);
+
+        // acquire the broker to reload the Index Manager config so registerIndex is noticed
+
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             control.verify();
             control.resetToStrict();
@@ -82,9 +83,7 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
             control.resetToStrict();
 
             index.close();
-            db.getIndexManager().unregisterIndex(index);
-            broker.initIndexModules();
-
+            pool.getIndexManager().unregisterIndex(index);
         } finally {
             control.resetToStrict();
         }
@@ -242,8 +241,8 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
     }
 
     private static class AttributeMatcher implements IArgumentMatcher {
-        final String name;
-        final String value;
+        private final String name;
+        private final String value;
 
         AttributeMatcher(final String name, final String value) {
             this.name = name;
@@ -265,7 +264,7 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
         }
     }
 
-    class TestIndex extends AbstractIndex {
+    private static class TestIndex extends AbstractIndex {
         final IndexWorker worker;
 
         TestIndex(final IndexWorker worker) {
@@ -283,20 +282,19 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
         }
 
         @Override
-        public void open() throws DatabaseConfigurationException {
+        public void open() {
         }
 
         @Override
-        public void close() throws DBException {
+        public void close() {
         }
 
         @Override
-        public void sync() throws DBException {
+        public void sync() {
         }
 
         @Override
-        public void remove() throws DBException {
-
+        public void remove() {
         }
 
         @Override
