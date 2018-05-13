@@ -79,8 +79,9 @@ public final class Journal {
 
     public final static String RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE = "sync-on-commit";
     public final static String RECOVERY_JOURNAL_DIR_ATTRIBUTE = "journal-dir";
-    public final static String RECOVERY_SIZE_LIMIT_ATTRIBUTE = "size"; 
+    public final static String RECOVERY_SIZE_LIMIT_ATTRIBUTE = "size";
 
+    public final static String PROPERTY_RECOVERY_SIZE_MIN = "db-connection.recovery.size-min";
     public final static String PROPERTY_RECOVERY_SIZE_LIMIT = "db-connection.recovery.size-limit";
     public final static String PROPERTY_RECOVERY_JOURNAL_DIR = "db-connection.recovery.journal-dir";
     public final static String PROPERTY_RECOVERY_SYNC_ON_COMMIT = "db-connection.recovery.sync-on-commit";
@@ -100,7 +101,14 @@ public final class Journal {
     public final static int DEFAULT_MAX_SIZE = 10; //MB
 
     /** minimal size the journal needs to have to be replaced by a new file during a checkpoint */
-    private static final long MIN_REPLACE = 1024 * 1024;
+    private static final int DEFAULT_MIN_SIZE = 1; // MB
+
+    /**
+     * Minimum size limit for the journal file before it is replaced by a new file.
+     */
+    @ConfigurationFieldAsAttribute("minSize")
+    //TODO: conf.xml refactoring <recovery minSize=""> => <journal minSize="">
+    private final long journalSizeMin;
 
     /** 
      * size limit for the journal file. A checkpoint will be triggered if the file
@@ -108,7 +116,7 @@ public final class Journal {
      */
     @ConfigurationFieldAsAttribute("size")
     //TODO: conf.xml refactoring <recovery size=""> => <journal size="">
-    private final int journalSizeLimit;
+    private final long journalSizeLimit;
 
     /** the current output channel 
      * Only valid after switchFiles() was called at least once! */
@@ -207,6 +215,7 @@ public final class Journal {
             LOG.debug("Using directory for the journal: " + dir.toAbsolutePath().toString());
         }
 
+        this.journalSizeMin = 1024 * 1024 * pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SIZE_MIN, DEFAULT_MIN_SIZE);
         this.journalSizeLimit = 1024 * 1024 * pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SIZE_LIMIT, DEFAULT_MAX_SIZE);
     }
 
@@ -328,7 +337,7 @@ public final class Journal {
     /**
      * Write a checkpoint record to the journal and flush it. If switchLogFiles is true,
      * a new journal will be started, but only if the file is larger than
-     * {@link #MIN_REPLACE}. The old log is removed.
+     * {@link #journalSizeMin}. The old log is removed.
      *
      * @param txnId The transaction id
      * @param switchLogFiles Indicates whether a new journal file should be started
@@ -345,7 +354,7 @@ public final class Journal {
             flushToLog(true, true);
         }
         try {
-            if (switchLogFiles && channel != null && channel.position() > MIN_REPLACE) {
+            if (switchLogFiles && channel != null && channel.position() > journalSizeMin) {
                 final Path oldFile = getFile(currentFile);
                 final RemoveThread rt = new RemoveThread(channel, oldFile);
                 try {
@@ -539,7 +548,7 @@ public final class Journal {
      * @param fileNum
      * @return The file name
      */
-    private static String getFileName(final int fileNum) {
+    static String getFileName(final int fileNum) {
         String hex = Integer.toHexString(fileNum);
         hex = "0000000000".substring(hex.length()) + hex;
         return hex + '.' + LOG_FILE_SUFFIX;

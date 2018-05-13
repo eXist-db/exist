@@ -83,6 +83,10 @@ public class CreateBinaryLoggable extends AbstractLoggable {
         }
     }
 
+    public Path getCreatedFile() {
+        return original;
+    }
+
     @Override
     public String dump() {
         return super.dump() + " - create binary " + original;

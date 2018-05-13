@@ -103,6 +103,10 @@ public class RenameBinaryLoggable extends AbstractLoggable {
         }
     }
 
+    public Path getRenamedFile() {
+        return original;
+    }
+
     @Override
     public String dump() {
         return super.dump() + " - rename " + original + " to " + backup;
