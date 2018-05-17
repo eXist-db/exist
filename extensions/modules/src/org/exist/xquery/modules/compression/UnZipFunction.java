@@ -110,7 +110,7 @@ public class UnZipFunction extends AbstractExtractFunction {
 
             final Sequence results = new ValueSequence();
 
-            while((entry = zis.getNextEntry()) != null) {
+            while ((entry = zis.getNextEntry()) != null) {
                 final Sequence processCompressedEntryResults = processCompressedEntry(entry.getName(), entry.isDirectory(), zis, filterParam, storeParam);
                 results.addAll(processCompressedEntryResults);
 
@@ -118,6 +118,17 @@ public class UnZipFunction extends AbstractExtractFunction {
             }
 
             return results;
+        } catch (final IllegalArgumentException e) {
+            final StackTraceElement trace[] = e.getStackTrace();
+            if (trace.length >= 1) {
+                if (trace[0].getClassName().equals("java.lang.StringCoding")
+                        && trace[0].getMethodName().equals("throwMalformed")) {
+                    // handle errors from invalid encoding in the zip file (JDK 10)
+                    LOG.error(e.getMessage(), e);
+                    throw new XPathException(this, e.getMessage(), e);
+                }
+            }
+            throw e;
         } catch(final IOException ioe) {
             LOG.error(ioe.getMessage(), ioe);
             throw new XPathException(this, ioe.getMessage(), ioe);

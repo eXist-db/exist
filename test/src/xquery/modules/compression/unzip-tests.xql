@@ -62,7 +62,7 @@ function uz:fnUzipUtf8ContentWrongEncoding() {
 
 declare
     %test:user("guest", "guest")
-	%test:assertError("MALFORMED")
+	%test:assertError("(?:MALFORMED)|(?:malformed)")
 function uz:fnUzipCp437ContentWrongEncoding() {
     (: This case is not working because the Unicode extended filename table is not present in non unicode encoded Zip :)
     compression:unzip($uz:myStaticCP437ContentBase64, util:function(xs:QName("local:entry-filter"), 3), (), util:function(xs:QName("local:entry-data"), 4), (), "UTF8")
