@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="AjcSettings">
-    <option name="ajcPath" value="$PROJECT_DIR$/tools/aspectj/lib/aspectjtools-1.9.0.jar" />
+    <option name="ajcPath" value="$PROJECT_DIR$/tools/aspectj/lib/aspectjtools-1.9.1.jar" />
     <option name="delegateToJavac" value="true" />
   </component>
   <component name="CompilerConfiguration">
