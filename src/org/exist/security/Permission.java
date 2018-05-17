@@ -185,7 +185,7 @@ public interface Permission {
      * The eXist symbolic format should be avoided
      * in new applications as it is deprecated
      * 
-     * @param  str                  The new mode
+     * @param modeStr The new mode
      * @exception  SyntaxException  Description of the Exception
      */
     void setMode(String modeStr) throws SyntaxException, PermissionDeniedException;

@@ -33,7 +33,7 @@ import org.exist.security.SimpleACLPermission;
  */
 public class SimpleACLPermissionAider extends UnixStylePermissionAider implements ACLPermission {
 
-    private final List<ACEAider> aces = new ArrayList<ACEAider>();
+    private final List<ACEAider> aces = new ArrayList<>();
 
     public SimpleACLPermissionAider() {
         super();

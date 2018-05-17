@@ -1,9 +1,12 @@
 package org.exist.security;
 
 import java.util.Arrays;
+
+import org.exist.TestUtils;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.test.ExistWebServer;
+import org.exist.test.TestConstants;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.EXistXPathQueryService;
@@ -1840,7 +1843,7 @@ public class XMLDBSecurityTest {
      */
     @Before
     public void setup() throws XMLDBException {
-        final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
+        final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
 
         ums.chmod("rwxr-xr-x"); //ensure /db is always 755
@@ -1916,7 +1919,7 @@ public class XMLDBSecurityTest {
         // full permissions for all
         ums.chmod(0777);
 
-        // create a collection /db/securityTest1 as user "sub1"
+        // create a sub-collection /db/securityTest1/sub1 as user "test1"
         cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
         Collection sub1 = cms.createCollection("sub1");
         ums = (UserManagementService) sub1.getService("UserManagementService", "1.0");

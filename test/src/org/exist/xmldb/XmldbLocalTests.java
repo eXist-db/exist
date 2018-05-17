@@ -21,11 +21,6 @@
  */
 package org.exist.xmldb;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import org.exist.TestUtils;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
