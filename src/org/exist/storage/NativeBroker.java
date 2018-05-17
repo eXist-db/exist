@@ -2544,14 +2544,6 @@ public class NativeBroker extends DBBroker {
             LOG.debug("Copy took " + (System.currentTimeMillis() - start) + "ms.");
     }
 
-    /**
-     * Move (and/or rename) a Resource to another collection
-     *
-     * @param doc         source document
-     * @param destination the destination collection
-     * @param newName     the new name for the resource
-     * @throws TriggerException
-     */
     @Override
     public void moveResource(final Txn transaction, final DocumentImpl doc, final Collection destination, XmldbURI newName) throws PermissionDeniedException, LockException, IOException, TriggerException {
 

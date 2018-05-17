@@ -23,12 +23,12 @@ package org.exist.security.internal.aider;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.exist.security.ACLPermission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SimpleACLPermission;
 
 /**
- *
  * @author Adam Retter <adam@exist-db.org>
  */
 public class SimpleACLPermissionAider extends UnixStylePermissionAider implements ACLPermission {
@@ -39,11 +39,11 @@ public class SimpleACLPermissionAider extends UnixStylePermissionAider implement
         super();
     }
 
-    public SimpleACLPermissionAider(int mode) {
+    public SimpleACLPermissionAider(final int mode) {
         super(mode);
     }
 
-    public SimpleACLPermissionAider(String user, String group, int mode) {
+    public SimpleACLPermissionAider(final String user, final String group, final int mode) {
         super(user, group, mode);
     }
 
@@ -53,7 +53,7 @@ public class SimpleACLPermissionAider extends UnixStylePermissionAider implement
     }
 
     @Override
-    public void addACE(ACE_ACCESS_TYPE access_type, ACE_TARGET target, String who, int mode) throws PermissionDeniedException {
+    public void addACE(final ACE_ACCESS_TYPE access_type, final ACE_TARGET target, final String who, final int mode) throws PermissionDeniedException {
         //TODO validate()
         aces.add(new ACEAider(access_type, target, who, mode));
     }
@@ -91,22 +91,22 @@ public class SimpleACLPermissionAider extends UnixStylePermissionAider implement
     }
 
     @Override
-    public ACE_ACCESS_TYPE getACEAccessType(int index) {
+    public ACE_ACCESS_TYPE getACEAccessType(final int index) {
         return aces.get(index).getAccessType();
     }
 
     @Override
-    public ACE_TARGET getACETarget(int index) {
+    public ACE_TARGET getACETarget(final int index) {
         return aces.get(index).getTarget();
     }
 
     @Override
-    public String getACEWho(int index) {
+    public String getACEWho(final int index) {
         return aces.get(index).getWho();
     }
 
     @Override
-    public int getACEMode(int index) {
+    public int getACEMode(final int index) {
         return aces.get(index).getMode();
     }
 
@@ -144,14 +144,14 @@ public class SimpleACLPermissionAider extends UnixStylePermissionAider implement
         return true;
     }
 
-    private int modeStrToMode(String modeStr) throws PermissionDeniedException {
-        if(modeStr == null || modeStr.length() == 0 || modeStr.length() > 3) {
+    private int modeStrToMode(final String modeStr) throws PermissionDeniedException {
+        if (modeStr == null || modeStr.length() == 0 || modeStr.length() > 3) {
             throw new PermissionDeniedException("Invalid mode string '" + modeStr + "'");
         }
 
         int mode = 0;
-        for(final char c : modeStr.toCharArray()) {
-            switch(c) {
+        for (final char c : modeStr.toCharArray()) {
+            switch (c) {
                 case READ_CHAR:
                     mode |= READ;
                     break;
