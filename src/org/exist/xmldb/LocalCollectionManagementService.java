@@ -21,12 +21,16 @@ package org.exist.xmldb;
 
 import java.net.URISyntaxException;
 import java.util.Date;
+import java.util.Optional;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.security.Permission;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker.PreserveType;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
@@ -72,10 +76,7 @@ public class LocalCollectionManagementService extends AbstractLocalService imple
 
         withDb((broker, transaction) -> {
             try {
-                final org.exist.collections.Collection coll = broker.getOrCreateCollection(transaction, collName);
-                if (created != null) {
-                    coll.setCreationTime(created.getTime());
-                }
+                final org.exist.collections.Collection coll = broker.getOrCreateCollection(transaction, collName, Optional.ofNullable(created).map(c -> new Tuple2<>(null, c.getTime())));
                 broker.saveCollection(transaction, coll);
                 return null;
             } catch (final TriggerException e) {
@@ -174,7 +175,7 @@ public class LocalCollectionManagementService extends AbstractLocalService imple
     @Override
     public void copy(final String collectionPath, final String destinationPath, final String newName) throws XMLDBException {
     	try{
-    		copy(XmldbURI.xmldbUriFor(collectionPath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
+    		copy(XmldbURI.xmldbUriFor(collectionPath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName), PreserveType.DEFAULT);
     	} catch(final URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
@@ -182,6 +183,15 @@ public class LocalCollectionManagementService extends AbstractLocalService imple
 
     @Override
     public void copy(final XmldbURI src, final XmldbURI dest, final XmldbURI name) throws XMLDBException {
+        copy(src, dest, name, PreserveType.DEFAULT);
+    }
+
+    @Override
+    public void copy(final XmldbURI src, final XmldbURI dest, final XmldbURI name, final String preserveType) throws XMLDBException {
+        copy(src, dest, name, PreserveType.valueOf(preserveType));
+    }
+
+    private void copy(final XmldbURI src, final XmldbURI dest, final XmldbURI name, final PreserveType preserve) throws XMLDBException {
         final XmldbURI srcPath = resolve(src);
         final XmldbURI destPath = dest == null ? srcPath.removeLastSegment() : resolve(dest);
         final XmldbURI newName;
@@ -195,7 +205,7 @@ public class LocalCollectionManagementService extends AbstractLocalService imple
                 read(broker, transaction, srcPath).apply((source, b1, t1) ->
                         modify(b1, t1, destPath).apply((destination, b2, t2) -> {
                             try {
-                                b2.copyCollection(t2, source, destination, newName);
+                                b2.copyCollection(t2, source, destination, newName, preserve);
                                 return null;
                             } catch (final EXistException e) {
                                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "failed to move collection " + srcPath, e);
@@ -208,7 +218,7 @@ public class LocalCollectionManagementService extends AbstractLocalService imple
     @Override
     public void copyResource(final String resourcePath, final String destinationPath, final String newName) throws XMLDBException {
     	try{
-    		copyResource(XmldbURI.xmldbUriFor(resourcePath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
+    		copyResource(XmldbURI.xmldbUriFor(resourcePath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName), PreserveType.DEFAULT);
     	} catch(final URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
@@ -216,6 +226,15 @@ public class LocalCollectionManagementService extends AbstractLocalService imple
 
     @Override
     public void copyResource(final XmldbURI src, final XmldbURI dest, final XmldbURI name) throws XMLDBException {
+        copyResource(src, dest, name, PreserveType.DEFAULT);
+    }
+
+    @Override
+    public void copyResource(final XmldbURI src, final XmldbURI dest, final XmldbURI name, final String preserveType) throws XMLDBException {
+        copyResource(src, dest, name, PreserveType.valueOf(preserveType));
+    }
+
+    private void copyResource(final XmldbURI src, final XmldbURI dest, final XmldbURI name, final PreserveType preserve) throws XMLDBException {
         final XmldbURI srcPath = resolve(src);
         final XmldbURI destPath = dest == null ? srcPath.removeLastSegment() : resolve(dest);
         final XmldbURI newName;
@@ -226,21 +245,21 @@ public class LocalCollectionManagementService extends AbstractLocalService imple
         }
 
         withDb((broker, transaction) ->
-            read(broker, transaction, srcPath.removeLastSegment()).apply((sourceCol, b1, t1) -> {
-                final DocumentImpl source = sourceCol.getDocument(b1, srcPath.lastSegment());
-                if(source == null) {
-                    throw new XMLDBException(ErrorCodes.NO_SUCH_RESOURCE, "Resource " + srcPath + " not found");
-                }
-
-                return modify(b1, t1, destPath).apply((destinationCol, b2, t2) -> {
-                    try {
-                        b2.copyResource(t2, source, destinationCol, newName);
-                        return null;
-                    } catch (final EXistException e) {
-                        throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "failed to copy resource " + srcPath, e);
+                read(broker, transaction, srcPath.removeLastSegment()).apply((sourceCol, b1, t1) -> {
+                    final DocumentImpl source = sourceCol.getDocument(b1, srcPath.lastSegment());
+                    if(source == null) {
+                        throw new XMLDBException(ErrorCodes.NO_SUCH_RESOURCE, "Resource " + srcPath + " not found");
                     }
-                });
-            })
+
+                    return modify(b1, t1, destPath).apply((destinationCol, b2, t2) -> {
+                        try {
+                            b2.copyResource(t2, source, destinationCol, newName, preserve);
+                            return null;
+                        } catch (final EXistException e) {
+                            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "failed to copy resource " + srcPath, e);
+                        }
+                    });
+                })
         );
     }
 

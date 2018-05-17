@@ -923,7 +923,13 @@ public interface RpcAPI {
     boolean copyCollection(String collectionPath, String destinationPath, String newName)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
+    boolean copyCollection(String collectionPath, String destinationPath, String newName, final String preserveType)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
+
     boolean copyResource(String docPath, String destinationPath, String newName)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
+
+    boolean copyResource(String docPath, String destinationPath, String newName, final String preserveType)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
     boolean reindexCollection(String name)

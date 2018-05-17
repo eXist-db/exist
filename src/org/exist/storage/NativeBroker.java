@@ -637,7 +637,7 @@ public class NativeBroker extends DBBroker {
         throws LockException, PermissionDeniedException, IOException, TriggerException {
         try {
             pushSubject(pool.getSecurityManager().getSystemSubject());
-            final Tuple2<Boolean, Collection> temp = getOrCreateCollectionExplicit(transaction, XmldbURI.TEMP_COLLECTION_URI);
+            final Tuple2<Boolean, Collection> temp = getOrCreateCollectionExplicit(transaction, XmldbURI.TEMP_COLLECTION_URI, Optional.empty());
             if (temp._1) {
                 temp._2.setPermissions(this, DEFAULT_TEMPORARY_COLLECTION_PERM);
                 saveCollection(transaction, temp._2);
@@ -674,14 +674,19 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public Collection getOrCreateCollection(final Txn transaction, XmldbURI name) throws PermissionDeniedException, IOException, TriggerException {
-        return getOrCreateCollectionExplicit(transaction, name)._2;
+        return getOrCreateCollectionExplicit(transaction, name, Optional.empty())._2;
+    }
+
+    @Override
+    public Collection getOrCreateCollection(final Txn transaction, XmldbURI name, final Optional<Tuple2<Permission, Long>> creationAttributes) throws PermissionDeniedException, IOException, TriggerException {
+        return getOrCreateCollectionExplicit(transaction, name, creationAttributes)._2;
     }
 
     /**
      * @return A tuple whose first boolean value is set to true if the
      * collection was created, or false if the collection already existed
      */
-    private Tuple2<Boolean, Collection> getOrCreateCollectionExplicit(final Txn transaction, XmldbURI name) throws PermissionDeniedException, IOException, TriggerException {
+    private Tuple2<Boolean, Collection> getOrCreateCollectionExplicit(final Txn transaction, XmldbURI name, final Optional<Tuple2<Permission, Long>> creationAttributes) throws PermissionDeniedException, IOException, TriggerException {
         name = prepend(name.normalizeCollectionPath());
 
         final CollectionCache collectionsCache = pool.getCollectionsCache();
@@ -705,7 +710,6 @@ public class NativeBroker extends DBBroker {
 
                     current = new MutableCollection(this, XmldbURI.ROOT_COLLECTION_URI);
                     current.setId(getNextCollectionId(transaction));
-                    current.setCreationTime(System.currentTimeMillis());
 
                     if(transaction != null) {
                         transaction.acquireLock(current.getLock(), LockMode.WRITE_LOCK);
@@ -779,7 +783,8 @@ public class NativeBroker extends DBBroker {
                         final CollectionTrigger trigger = new CollectionTriggers(this, current);
                         trigger.beforeCreateCollection(this, transaction, path);
 
-                        sub = new MutableCollection(this, path);
+                        final XmldbURI subPath = path;
+                        sub = creationAttributes.map(attrs -> new MutableCollection(this, subPath, attrs._1, attrs._2)).orElseGet(() -> new MutableCollection(this, subPath));
                         //inherit the group to the sub-collection if current collection is setGid
                         if (current.getPermissions().isSetGid()) {
                             sub.getPermissions().setGroupFrom(current.getPermissions()); //inherit group
@@ -792,7 +797,7 @@ public class NativeBroker extends DBBroker {
                         }
 
                         //TODO : acquire lock manually if transaction is null ?
-                        current.addCollection(this, sub, true);
+                        current.addCollection(this, sub);
                         saveCollection(transaction, current);
                         created = true;
 
@@ -1051,12 +1056,13 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-
-    /* (non-Javadoc)
-     * @see org.exist.storage.DBBroker#copyCollection(org.exist.storage.txn.Txn, org.exist.collections.Collection, org.exist.collections.Collection, org.exist.xmldb.XmldbURI)
-     */
     @Override
     public void copyCollection(final Txn transaction, final Collection collection, final Collection destination, final XmldbURI newName) throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException {
+        copyCollection(transaction, collection, destination, newName, PreserveType.DEFAULT);
+    }
+
+    @Override
+    public void copyCollection(final Txn transaction, final Collection collection, final Collection destination, final XmldbURI newName, final PreserveType preserve) throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException {
         if(isReadOnly()) {
             throw new IOException(DATABASE_IS_READ_ONLY);
         }
@@ -1102,7 +1108,7 @@ public class NativeBroker extends DBBroker {
 
                 final DocumentTrigger docTrigger = new DocumentTriggers(this);
 
-                final Collection newCollection = doCopyCollection(transaction, docTrigger, collection, destination, newName, true);
+                final Collection newCollection = doCopyCollection(transaction, docTrigger, collection, destination, newName, true, preserve);
 
                 trigger.afterCopyCollection(this, transaction, newCollection, srcURI);
             } finally {
@@ -1112,7 +1118,7 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    private Collection doCopyCollection(final Txn transaction, final DocumentTrigger trigger, final Collection collection, final Collection destination, XmldbURI newName, final boolean copyCollectionMode) throws PermissionDeniedException, IOException, EXistException, TriggerException, LockException {
+    private Collection doCopyCollection(final Txn transaction, final DocumentTrigger trigger, final Collection collection, final Collection destination, XmldbURI newName, final boolean copyCollectionMode, final PreserveType preserve) throws PermissionDeniedException, IOException, EXistException, TriggerException, LockException {
 
         if(newName == null) {
             newName = collection.getURI().lastSegment();
@@ -1123,13 +1129,26 @@ public class NativeBroker extends DBBroker {
             LOG.debug("Copying collection to '" + newName + "'");
         }
 
-        final Tuple2<Boolean, Collection> destCollection = getOrCreateCollectionExplicit(transaction, newName);
+        // permissions and attributes for the destCollection (if we have to create it)
+        final Permission createCollectionPerms = PermissionFactory.getDefaultCollectionPermission(getBrokerPool().getSecurityManager());
+        copyModeAndAcl(collection.getPermissions(), createCollectionPerms);
+        final long created;
+        if (preserveOnCopy(preserve)) {
+            // only copy the owner and group from the source if we are creating a new collection and we are the DBA
+            if (getCurrentSubject().hasDbaRole()) {
+                PermissionFactory.chown(this, createCollectionPerms, Optional.of(collection.getPermissions().getOwner().getName()), Optional.of(collection.getPermissions().getGroup().getName()));
+            }
 
-        //if required, copy just the mode and acl of the permissions to the dest collection
-        if (copyCollectionMode && destCollection._1) {
-            final Permission srcPerms = collection.getPermissions();
-            final Permission destPerms = destCollection._2.getPermissions();
-            copyModeAndAcl(srcPerms, destPerms);
+            created = collection.getMetadata().getCreated();
+        } else {
+            created = 0;
+        }
+
+        final Tuple2<Boolean, Collection> destCollection = getOrCreateCollectionExplicit(transaction, newName, Optional.of(new Tuple2<>(createCollectionPerms, created)));
+
+        // if we didn't create destCollection but we need to preserve the attributes
+        if((!destCollection._1) && preserveOnCopy(preserve)) {
+            copyModeAndAcl(collection.getPermissions(), destCollection._2.getPermissions());
         }
 
         // inherit the group to the destCollection if destination is setGid
@@ -1159,7 +1178,28 @@ public class NativeBroker extends DBBroker {
             }
 
             DocumentImpl createdDoc;
-            if(child.getResourceType() == DocumentImpl.XML_FILE) {
+            if(child.getResourceType() == DocumentImpl.BINARY_FILE) {
+                final BinaryDocument newDoc;
+                if (oldDoc != null) {
+                    newDoc = new BinaryDocument(pool, destCollection._2, oldDoc);
+                } else {
+                    newDoc = new BinaryDocument(pool, destCollection._2, child.getFileURI());
+                }
+                newDoc.copyOf(this, child, oldDoc);
+                newDoc.setDocId(getNextResourceId(transaction, destination));
+
+                if(preserveOnCopy(preserve)) {
+                    copyResource_preserve(this, child, newDoc, oldDoc != null);
+                }
+
+                try (final InputStream is = getBinaryResource((BinaryDocument) child)) {
+                    storeBinaryResource(transaction, newDoc, is);
+                }
+                storeXMLResource(transaction, newDoc);
+                destCollection._2.addDocument(transaction, this, newDoc);
+
+                createdDoc = newDoc;
+            } else {
                 //TODO : put a lock on newDoc ?
                 final DocumentImpl newDoc;
                 if (oldDoc != null) {
@@ -1170,22 +1210,8 @@ public class NativeBroker extends DBBroker {
                 newDoc.copyOf(this, child, oldDoc);
                 newDoc.setDocId(getNextResourceId(transaction, destination));
                 copyXMLResource(transaction, child, newDoc);
-                storeXMLResource(transaction, newDoc);
-                destCollection._2.addDocument(transaction, this, newDoc);
-
-                createdDoc = newDoc;
-            } else {
-                final BinaryDocument newDoc;
-                if (oldDoc != null) {
-                    newDoc = new BinaryDocument(pool, destCollection._2, oldDoc);
-                } else {
-                    newDoc = new BinaryDocument(pool, destCollection._2, child.getFileURI());
-                }
-                newDoc.copyOf(this, child, oldDoc);
-                newDoc.setDocId(getNextResourceId(transaction, destination));
-
-                try(final InputStream is = getBinaryResource((BinaryDocument) child)) {
-                    storeBinaryResource(transaction, newDoc, is);
+                if (preserveOnCopy(preserve)) {
+                    copyResource_preserve(this, child, newDoc, oldDoc != null);
                 }
                 storeXMLResource(transaction, newDoc);
                 destCollection._2.addDocument(transaction, this, newDoc);
@@ -1207,7 +1233,7 @@ public class NativeBroker extends DBBroker {
                 if (child == null) {
                     LOG.error("Child collection '" + childName + "' not found");
                 } else {
-                    doCopyCollection(transaction, trigger, child, destCollection._2, childName, true);
+                    doCopyCollection(transaction, trigger, child, destCollection._2, childName, true, preserve);
                 }
             } finally {
                 if(child != null) {
@@ -1405,8 +1431,7 @@ public class NativeBroker extends DBBroker {
                 collectionsDb.remove(transaction, key);
                 //TODO : resolve URIs destination.getURI().resolve(newName)
                 collection.setPath(destination.getURI().append(newName));
-                collection.setCreationTime(System.currentTimeMillis());
-                destination.addCollection(this, collection, false);
+                destination.addCollection(this, collection);
                 if(parent != null) {
                     saveCollection(transaction, parent);
                 }
@@ -2407,14 +2432,13 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    /**
-     * @param doc         src document
-     * @param destination destination collection
-     * @param newName     the new name for the document
-     */
     @Override
-    public void copyResource(final Txn transaction, final DocumentImpl doc, final Collection destination, XmldbURI newName) throws PermissionDeniedException, LockException, EXistException, IOException {
+    public void copyResource(final Txn transaction, final DocumentImpl doc, final Collection destination, final XmldbURI newName) throws PermissionDeniedException, LockException, EXistException, IOException {
+        copyResource(transaction, doc, destination, newName, PreserveType.DEFAULT);
+    }
 
+    @Override
+    public void copyResource(final Txn transaction, final DocumentImpl doc, final Collection destination, XmldbURI newName, final PreserveType preserve) throws PermissionDeniedException, LockException, EXistException, IOException {
         if(isReadOnly()) {
             throw new IOException(DATABASE_IS_READ_ONLY);
         }
@@ -2486,9 +2510,24 @@ public class NativeBroker extends DBBroker {
                             newDoc = new BinaryDocument(getBrokerPool(), destination, newName);
                         }
                         newDoc.copyOf(this, doc, oldDoc);
+                        newDoc.setDocId(getNextResourceId(transaction, destination));
                         newDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
                         try {
-                            destination.addBinaryResource(transaction, this, newDoc, is, doc.getMetadata().getMimeType(), -1, null, null);
+                            final Date created;
+                            final Date lastModified;
+                            if(preserveOnCopy(preserve)) {
+                                copyResource_preserve(this, doc, newDoc, oldDoc != null);
+                                if (oldDoc != null) {
+                                    created = new Date(oldDoc.getMetadata().getLastModified());
+                                } else {
+                                    created = new Date(doc.getMetadata().getLastModified());
+                                }
+                                lastModified = new Date(doc.getMetadata().getLastModified());
+                            } else {
+                                created = null;
+                                lastModified = null;
+                            }
+                            destination.addBinaryResource(transaction, this, newDoc, is, doc.getMetadata().getMimeType(), -1, created, lastModified, preserve);
                         } finally {
                             newDoc.getUpdateLock().release(LockMode.WRITE_LOCK);
                         }
@@ -2505,6 +2544,9 @@ public class NativeBroker extends DBBroker {
                     newDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
                     try {
                         copyXMLResource(transaction, doc, newDoc);
+                        if (preserveOnCopy(preserve)) {
+                            copyResource_preserve(this, doc, newDoc, oldDoc != null);
+                        }
                         destination.addDocument(transaction, this, newDoc);
                         storeXMLResource(transaction, newDoc);
                     } finally {
@@ -2522,6 +2564,50 @@ public class NativeBroker extends DBBroker {
             } finally {
                 lock.release(LockMode.WRITE_LOCK);
             }
+        }
+    }
+
+    /**
+     * Preserves attributes when copying a resource.
+     * e.g. `cp --preserve`
+     *
+     * @param srcDocument The source document.
+     * @param destDocument The destination document.
+     */
+    public static void copyResource_preserve(final DBBroker broker, final DocumentImpl srcDocument, final DocumentImpl destDocument, final boolean overwrittingDest) throws PermissionDeniedException {
+        final Permission srcPermissions = srcDocument.getPermissions();
+        final Permission destPermissions = destDocument.getPermissions();
+
+        // only copy the owner and group from the source if we are creating a new file and we are the DBA
+        if ((!overwrittingDest) && broker.getCurrentSubject().hasDbaRole()) {
+            PermissionFactory.chown(broker, destPermissions, Optional.of(srcPermissions.getOwner().getName()), Optional.of(srcPermissions.getGroup().getName()));
+        }
+
+        copyModeAcl(broker, srcPermissions, destPermissions);
+
+        // btime (birth time)
+        if (!overwrittingDest) {
+            destDocument.getMetadata().setCreated(srcDocument.getMetadata().getLastModified());  // Indeed! ...the birth time of the dest file is the last modified time of the source file
+        }
+
+        // mtime (modified time)
+        destDocument.getMetadata().setLastModified(srcDocument.getMetadata().getLastModified());
+
+    }
+
+    /**
+     * Copies the Mode and ACL (if present) from one
+     * object to another.
+     *
+     * @param srcPermissions The permissions of the source object.
+     * @param destPermissions The permissions of the destination object.
+     */
+    private static void copyModeAcl(final DBBroker broker, final Permission srcPermissions, final Permission destPermissions) throws PermissionDeniedException {
+        PermissionFactory.chmod(broker, destPermissions, Optional.of(srcPermissions.getMode()), Optional.empty());
+        if (srcPermissions instanceof SimpleACLPermission && destPermissions instanceof SimpleACLPermission) {
+            PermissionFactory.chacl(destPermissions, newAcl ->
+                ((SimpleACLPermission)newAcl).copyAclOf((SimpleACLPermission)srcPermissions)
+            );
         }
     }
 

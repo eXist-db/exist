@@ -25,21 +25,21 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.URISyntaxException;
-import org.exist.dom.QName;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+
+import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.functions.xmldb.XMLDBModule.functionSignatures;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -47,24 +47,48 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
     private static final Logger logger = LogManager.getLogger(XMLDBCopy.class);
-    public final static FunctionSignature signatures[] = {
-        new FunctionSignature(
-			      new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			      "Copy the collection $source-collection-uri to the collection $target-collection-uri. " + XMLDBModule.COLLECTION_URI,
-			      new SequenceType[]{
-				  new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The source collection URI"),
-				  new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The target collection URI")},
-			      new SequenceType(Type.ITEM, Cardinality.EMPTY)),
-        new FunctionSignature(
-			      new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			      "Copy the resource $resource in $source-collection-uri to collection $target-collection-uri. " +
-			      XMLDBModule.COLLECTION_URI,
-			      new SequenceType[]{
-				  new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The source collection URI"),
-				  new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the target collection URI"),
-			      new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource to copy")},
-			      new SequenceType(Type.ITEM, Cardinality.EMPTY))
-    };
+
+    private static final String FS_COPY_NAME = "copy";
+    private static final FunctionParameterSequenceType FS_PARAM_SOURCE_COLLECTION_URI = param("source-collection-uri", Type.STRING, "The source URI");
+    private static final FunctionParameterSequenceType FS_PARAM_TARGET_COLLECTION_URI = param("target-collection-uri", Type.STRING, "The target URI");
+    private static final FunctionParameterSequenceType FS_PARAM_PRESERVE = param("preserve", Type.BOOLEAN, "Cause the copy process to preserve the following attributes of each source in the copy: modification time, file mode, user ID, and group ID, as allowed by permissions. Access Control Lists (ACLs) will also be preserved");
+    private static final FunctionParameterSequenceType FS_PARAM_RESOURCE = param("resource", Type.STRING,"The resource to copy");
+
+    static final FunctionSignature[] FS_COPY_COLLECTION = functionSignatures(
+            FS_COPY_NAME,
+            "Copy the collection $source-collection-uri to the collection $target-collection-uri.",
+            returnsNothing(),
+            arities(
+                    arity(
+                            FS_PARAM_SOURCE_COLLECTION_URI,
+                            FS_PARAM_TARGET_COLLECTION_URI
+                    ),
+                    arity(
+                            FS_PARAM_SOURCE_COLLECTION_URI,
+                            FS_PARAM_TARGET_COLLECTION_URI,
+                            FS_PARAM_PRESERVE
+                    )
+            )
+    );
+
+    static final FunctionSignature[] FS_COPY_RESOURCE = functionSignatures(
+            FS_COPY_NAME,
+            "Copy the resource $resource in $source-collection-uri to collection $target-collection-uri.",
+            returnsNothing(),
+            arities(
+                    arity(
+                            FS_PARAM_SOURCE_COLLECTION_URI,
+                            FS_PARAM_TARGET_COLLECTION_URI,
+                            FS_PARAM_RESOURCE
+                    ),
+                    arity(
+                            FS_PARAM_SOURCE_COLLECTION_URI,
+                            FS_PARAM_TARGET_COLLECTION_URI,
+                            FS_PARAM_RESOURCE,
+                            FS_PARAM_PRESERVE
+                    )
+            )
+    );
 
     public XMLDBCopy(XQueryContext context, FunctionSignature signature) {
         super(context, signature);

@@ -42,6 +42,7 @@ import java.util.Optional;
 import static org.exist.TestUtils.ADMIN_DB_PWD;
 import static org.exist.TestUtils.ADMIN_DB_USER;
 import static org.exist.security.SecurityManager.DBA_GROUP;
+import static org.exist.storage.DBBroker.PreserveType.*;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -80,7 +81,7 @@ public class CopyCollectionTest {
     @Test
     public void copyToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
-        copyCol(user1, USER1_COL1, USER1_NEW_COL);
+        copyCol(user1, NO_PRESERVE, USER1_COL1, USER1_NEW_COL);
         checkAttributes(USER1_NEW_COL, USER1_NAME, USER1_NAME, USER1_COL1_MODE, not(getCreated(USER1_COL1)));
     }
 
@@ -90,7 +91,7 @@ public class CopyCollectionTest {
     @Test
     public void copyToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
-        copyCol(user1, USER1_COL1, USER1_COL2);
+        copyCol(user1, NO_PRESERVE, USER1_COL1, USER1_COL2);
         checkAttributes(USER1_COL2, USER1_NAME, USER1_NAME, USER1_COL2_MODE, equalTo(getCreated(USER1_COL2)));
     }
 
@@ -100,7 +101,7 @@ public class CopyCollectionTest {
     @Test
     public void copyToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
-        copyCol(adminUser, USER1_COL1, USER1_NEW_COL);
+        copyCol(adminUser, NO_PRESERVE, USER1_COL1, USER1_NEW_COL);
         checkAttributes(USER1_NEW_COL, ADMIN_DB_USER, DBA_GROUP, USER1_COL1_MODE, not(getCreated(USER1_COL1)));
     }
 
@@ -110,7 +111,7 @@ public class CopyCollectionTest {
     @Test
     public void copyToExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
-        copyCol(adminUser, USER1_COL1, USER1_COL2);
+        copyCol(adminUser, NO_PRESERVE, USER1_COL1, USER1_COL2);
         checkAttributes(USER1_COL2, USER1_NAME, USER1_NAME, USER1_COL2_MODE, equalTo(getCreated(USER1_COL2)));
     }
 
@@ -120,7 +121,7 @@ public class CopyCollectionTest {
     @Test
     public void copyToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
-        copyCol(user2, USER1_COL1, USER2_NEW_COL);
+        copyCol(user2, NO_PRESERVE, USER1_COL1, USER2_NEW_COL);
         checkAttributes(USER2_NEW_COL, USER2_NAME, USER2_NAME, USER1_COL1_MODE, not(getCreated(USER1_COL1)));
     }
 
@@ -130,11 +131,80 @@ public class CopyCollectionTest {
     @Test
     public void copyToExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
-        copyCol(user2, USER1_COL1, USER2_COL2);
+        copyCol(user2, NO_PRESERVE, USER1_COL1, USER2_COL2);
         checkAttributes(USER2_COL2, USER2_NAME, USER2_NAME, USER2_COL2_MODE, equalTo(getCreated(USER2_COL2)));
     }
 
-    private void copyCol(final Subject execAsUser, final XmldbURI srcColName, final XmldbURI destColName) throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
+    /**
+     * Whilst preserving attributes,
+     * as the owner copy {@link #USER1_COL1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_COL}.
+     */
+    @Test
+    public void copyPreserveToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+        final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);;
+        copyCol(user1, PRESERVE, USER1_COL1, USER1_NEW_COL);
+        checkAttributes(USER1_NEW_COL, USER1_NAME, USER1_NAME, USER1_COL1_MODE, equalTo(getCreated(USER1_COL1)));
+    }
+
+    /**
+     * Whilst preserving attributes,
+     * as the owner copy {@link #USER1_COL1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_COL2}.
+     */
+    @Test
+    public void copyPreserveToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+        final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
+        final long originalCol2Created = getCreated(USER1_COL2);
+        copyCol(user1, PRESERVE, USER1_COL1, USER1_COL2);
+        checkAttributes(USER1_COL2, USER1_NAME, USER1_NAME, USER1_COL1_MODE, equalTo(originalCol2Created));
+    }
+
+    /**
+     * Whilst preserving attributes,
+     * as a DBA copy {@link #USER1_COL1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_COL}.
+     */
+    @Test
+    public void copyPreserveToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+        final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
+        copyCol(adminUser, PRESERVE, USER1_COL1, USER1_NEW_COL);
+        checkAttributes(USER1_NEW_COL, USER1_NAME, USER1_NAME, USER1_COL1_MODE, equalTo(getCreated(USER1_COL1)));
+    }
+
+    /**
+     * Whilst preserving attributes,
+     * as a DBA copy {@link #USER1_COL1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_COL2}.
+     */
+    @Test
+    public void copyPreserveToExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+        final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
+        final long originalCol2Created = getCreated(USER1_COL2);
+        copyCol(adminUser, PRESERVE, USER1_COL1, USER1_COL2);
+        checkAttributes(USER1_COL2, USER1_NAME, USER1_NAME, USER1_COL1_MODE, equalTo(originalCol2Created));
+    }
+
+    /**
+     * Whilst preserving attributes,
+     * as some other (non-owner) user copy {@link #USER1_COL1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER2_NEW_COL}.
+     */
+    @Test
+    public void copyPreserveToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+        final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
+        copyCol(user2, PRESERVE, USER1_COL1, USER2_NEW_COL);
+        checkAttributes(USER2_NEW_COL, USER2_NAME, USER2_NAME, USER1_COL1_MODE, equalTo(getCreated(USER1_COL1)));
+    }
+
+    /**
+     * Whilst preserving attributes,
+     * as some other (non-owner) user copy {@link #USER1_COL1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER2_COL2}.
+     */
+    @Test
+    public void copyPreserveToExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+        final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
+        final long originalCol2Created = getCreated(USER2_COL2);
+        copyCol(user2, PRESERVE, USER1_COL1, USER2_COL2);
+        checkAttributes(USER2_COL2, USER2_NAME, USER2_NAME, USER1_COL1_MODE, equalTo(originalCol2Created));
+    }
+
+    private void copyCol(final Subject execAsUser, final DBBroker.PreserveType preserve, final XmldbURI srcColName, final XmldbURI destColName) throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
         final XmldbURI src = TEST_COLLECTION_URI.append(srcColName);
         final XmldbURI dest = TEST_COLLECTION_URI.append(destColName);
 
@@ -150,7 +220,7 @@ public class CopyCollectionTest {
                 try {
                     destCol = broker.openCollection(dest.removeLastSegment(), LockMode.WRITE_LOCK);
 
-                    broker.copyCollection(transaction, srcCol, destCol, dest.lastSegment());
+                    broker.copyCollection(transaction, srcCol, destCol, dest.lastSegment(), preserve);
 
                 } finally {
                     if (destCol != null) {

@@ -234,7 +234,7 @@ public class RemoteCollectionManagementService extends AbstractRemote implements
     public void copy(final String collectionPath, final String destinationPath,
                      final String newName) throws XMLDBException {
         try {
-            copy(XmldbURI.xmldbUriFor(collectionPath), XmldbURI.xmldbUriFor(destinationPath), XmldbURI.xmldbUriFor(newName));
+            copy(XmldbURI.xmldbUriFor(collectionPath), XmldbURI.xmldbUriFor(destinationPath), XmldbURI.xmldbUriFor(newName), "DEFAULT");
         } catch (final URISyntaxException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI, e);
         }
@@ -242,6 +242,11 @@ public class RemoteCollectionManagementService extends AbstractRemote implements
 
     @Override
     public void copy(final XmldbURI src, final XmldbURI dest, final XmldbURI name) throws XMLDBException {
+        copy(src, dest, name, "DEFAULT");
+    }
+
+    @Override
+    public void copy(final XmldbURI src, final XmldbURI dest, final XmldbURI name, final String preserveType) throws XMLDBException {
         final XmldbURI srcPath = resolve(src);
         final XmldbURI destPath = dest == null ? srcPath.removeLastSegment() : resolve(dest);
         final XmldbURI newName;
@@ -255,6 +260,7 @@ public class RemoteCollectionManagementService extends AbstractRemote implements
         params.add(srcPath.toString());
         params.add(destPath.toString());
         params.add(newName.toString());
+        params.add(preserveType);
         try {
             client.execute("copyCollection", params);
         } catch (final XmlRpcException xre) {
@@ -270,9 +276,9 @@ public class RemoteCollectionManagementService extends AbstractRemote implements
     @Deprecated
     @Override
     public void copyResource(final String resourcePath, final String destinationPath,
-                             final String newName) throws XMLDBException {
+            final String newName) throws XMLDBException {
         try {
-            copyResource(XmldbURI.xmldbUriFor(resourcePath), XmldbURI.xmldbUriFor(destinationPath), XmldbURI.xmldbUriFor(newName));
+            copyResource(XmldbURI.xmldbUriFor(resourcePath), XmldbURI.xmldbUriFor(destinationPath), XmldbURI.xmldbUriFor(newName), "DEFAULT");
         } catch (final URISyntaxException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI, e);
         }
@@ -280,6 +286,12 @@ public class RemoteCollectionManagementService extends AbstractRemote implements
 
     @Override
     public void copyResource(final XmldbURI src, final XmldbURI dest, final XmldbURI name)
+            throws XMLDBException {
+        copyResource(src, dest, name, "DEFAULT");
+    }
+
+    @Override
+    public void copyResource(final XmldbURI src, final XmldbURI dest, final XmldbURI name, final String preserveType)
             throws XMLDBException {
         final XmldbURI srcPath = resolve(src);
         final XmldbURI destPath = dest == null ? srcPath.removeLastSegment() : resolve(dest);
@@ -293,6 +305,7 @@ public class RemoteCollectionManagementService extends AbstractRemote implements
         params.add(srcPath.toString());
         params.add(destPath.toString());
         params.add(newName.toString());
+        params.add(preserveType);
         try {
             client.execute("copyResource", params);
         } catch (final XmlRpcException xre) {
