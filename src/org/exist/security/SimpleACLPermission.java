@@ -67,6 +67,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
         addACE(access_type, ACE_TARGET.GROUP, groupId, mode);
     }
 
+    @Override
     public void addACE(ACE_ACCESS_TYPE access_type, ACE_TARGET target, String name, String modeStr) throws PermissionDeniedException {
         addACE(access_type, target, lookupTargetId(target, name), modeStrToMode(modeStr));
     }
@@ -96,6 +97,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
         insertACE(index, access_type, ACE_TARGET.GROUP, groupId, mode);
     }
 
+    @Override
     public void insertACE(int index, ACE_ACCESS_TYPE access_type, ACE_TARGET target, String name, String modeStr) throws PermissionDeniedException {
         insertACE(index, access_type, target, lookupTargetId(target, name), modeStrToMode(modeStr));
     }
@@ -181,6 +183,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
     }
 
     @PermissionRequired(user = IS_DBA | IS_OWNER, mode = ACL_WRITE)
+    @Override
     public void removeACE(int index) throws PermissionDeniedException {
 
         if(index < 0 || index >= acl.length) {
@@ -193,11 +196,13 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
         this.acl = newAcl;
     }
 
+    @Override
     public void modifyACE(int index, ACE_ACCESS_TYPE access_type, String modeStr) throws PermissionDeniedException {
         modifyACE(index, access_type, modeStrToMode(modeStr));
     }
 
     @PermissionRequired(user = IS_DBA | IS_OWNER, mode = ACL_WRITE)
+    @Override
     public void modifyACE(int index, ACE_ACCESS_TYPE access_type, int mode) throws PermissionDeniedException {
 
         if(index < 0 || index >= acl.length) {

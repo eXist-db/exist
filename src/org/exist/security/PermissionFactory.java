@@ -65,7 +65,7 @@ public class PermissionFactory {
      */
     public static Permission getDefaultResourcePermission(final SecurityManager sm) {
         
-        //TODO consider loading Permission.DEFAULT_PERM from conf.xml instead
+        //TODO(AR) consider loading Permission.DEFAULT_PERM from conf.xml instead
 
         final Subject currentSubject = sm.getDatabase().getActiveBroker().getCurrentSubject();
         final int mode = Permission.DEFAULT_RESOURCE_PERM & ~ currentSubject.getUserMask();
@@ -79,7 +79,7 @@ public class PermissionFactory {
      */
     public static Permission getDefaultCollectionPermission(final SecurityManager sm) {
         
-        //TODO consider loading Permission.DEFAULT_PERM from conf.xml instead
+        //TODO(AR) consider loading Permission.DEFAULT_PERM from conf.xml instead
         
         final Subject currentSubject = sm.getDatabase().getActiveBroker().getCurrentSubject();
         final int mode = Permission.DEFAULT_COLLECTION_PERM & ~ currentSubject.getUserMask();
@@ -122,7 +122,7 @@ public class PermissionFactory {
         return permission;
     }
 
-    public static void updatePermissions(final DBBroker broker, final XmldbURI pathUri, final ConsumerE<Permission, PermissionDeniedException> permissionModifier) throws PermissionDeniedException {
+    private static void updatePermissions(final DBBroker broker, final XmldbURI pathUri, final ConsumerE<Permission, PermissionDeniedException> permissionModifier) throws PermissionDeniedException {
         final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
         try(final Txn transaction = transact.beginTransaction()) {
             Collection collection = null;
@@ -436,7 +436,7 @@ public class PermissionFactory {
                 To change the permission bits of a file, the effective user ID of the process must be equal to the owner ID
                 of the file, or the process must have superuser permissions.
             */
-            if ((!permission.isCurrentSubjectDBA()) && !permission.isCurrentSubjectOwner()) {
+            if ((changeMode || changeAcl) && (!permission.isCurrentSubjectDBA()) && !permission.isCurrentSubjectOwner()) {
                 throw new PermissionDeniedException("Only a DBA or the resources owner can change the mode of a resource.");
             }
 
@@ -478,6 +478,43 @@ public class PermissionFactory {
         } catch (final SyntaxException se) {
             throw new PermissionDeniedException("Unrecognised mode syntax: " + se.getMessage(), se);
         }
+    }
+
+    /**
+     * Changes the ACL of permissions in the database
+     * inline with the rules for chmod of POSIX.1-2017 (Issue 7, 2018 edition).
+     *
+     * @param broker the database broker.
+     * @param pathUri the URI to a resource in the database.
+     * @param permissionModifier a function which will modify the ACL.
+     *
+     * @throws PermissionDeniedException if the calling process has insufficient permissions.
+     */
+    public static void chacl(final DBBroker broker, final XmldbURI pathUri, final ConsumerE<ACLPermission, PermissionDeniedException> permissionModifier) throws PermissionDeniedException {
+        updatePermissions(broker, pathUri, permission -> {
+            if(permission instanceof SimpleACLPermission) {
+                chacl((SimpleACLPermission)permission, permissionModifier);
+            } else {
+                throw new PermissionDeniedException("ACL like permissions have not been enabled");
+            }
+        });
+    }
+
+    public static void chacl(final SimpleACLPermission permission, final ConsumerE<ACLPermission, PermissionDeniedException> permissionModifier) throws PermissionDeniedException {
+        if (permissionModifier == null) {
+            throw new IllegalArgumentException("permissionModifier must be provided");
+        }
+
+        /*
+            To change the permission bits of a file, the effective user ID of the process must be equal to the owner ID
+            of the file, or the process must have superuser permissions.
+        */
+        if ((!permission.isCurrentSubjectDBA()) && !permission.isCurrentSubjectOwner()) {
+            throw new PermissionDeniedException("Only a DBA or the resources owner can change the ACL of a resource.");
+        }
+
+        // change the acl
+        permissionModifier.accept(permission);
     }
 
     /**

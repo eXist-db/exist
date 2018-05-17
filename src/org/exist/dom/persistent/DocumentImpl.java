@@ -65,6 +65,7 @@ import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.dom.QName.Validity.ILLEGAL_FORMAT;
@@ -355,14 +356,14 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             }
 
             //copy mode and acl from prev file
-            copyModeAcl(prev._1, permissions);
+            copyModeAcl(broker, prev._1, permissions);
 
             // set birth time to same as prev file
             metadata.setCreated(prev._2);
 
         } else {
             // copy mode and acl from source file
-            copyModeAcl(other.getPermissions(), permissions);
+            copyModeAcl(broker, other.getPermissions(), permissions);
 
             // set birth time to the current timestamp
             metadata.setCreated(timestamp);
@@ -375,15 +376,16 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         metadata.setPageCount(0);
     }
 
-    private void copyModeAcl(final Permission srcPermissions, final Permission destPermissions) throws PermissionDeniedException {
-        if (destPermissions.getMode() != srcPermissions.getMode()) {
-            destPermissions.setMode(srcPermissions.getMode());
-        }
+    private void copyModeAcl(final DBBroker broker, final Permission srcPermissions, final Permission destPermissions) throws PermissionDeniedException {
+        PermissionFactory.chmod(broker, destPermissions, Optional.of(srcPermissions.getMode()), Optional.empty());
+
         if (srcPermissions instanceof SimpleACLPermission && destPermissions instanceof SimpleACLPermission) {
             final SimpleACLPermission srcAclPermissions = (SimpleACLPermission)srcPermissions;
             final SimpleACLPermission destAclPermissions = (SimpleACLPermission)destPermissions;
             if (!destAclPermissions.equalsAcl(srcAclPermissions)) {
-                destAclPermissions.copyAclOf(srcAclPermissions);
+                PermissionFactory.chacl(destAclPermissions, newAcl ->
+                    ((SimpleACLPermission)newAcl).copyAclOf(srcAclPermissions)
+                );
             }
         }
     }

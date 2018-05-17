@@ -183,7 +183,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
                     return;
                 }
 
-                systemCollection.setPermissions(Permission.DEFAULT_SYSTEM_COLLECTION_PERM);
+                systemCollection.setPermissions(broker, Permission.DEFAULT_SYSTEM_COLLECTION_PERM);
                 broker.saveCollection(txn, systemCollection);
             }
             transaction.commit(txn);
@@ -200,7 +200,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
                     return;
                 }
 
-                collection.setPermissions(Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
+                collection.setPermissions(broker, Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
                 broker.saveCollection(txn, collection);
             }
             transaction.commit(txn);

@@ -23,6 +23,7 @@ package org.exist.backup.restore;
 
 import java.io.IOException;
 
+import org.exist.security.PermissionFactory;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -47,6 +48,7 @@ import org.exist.xquery.value.DateTimeValue;
 import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Optional;
 import java.util.Stack;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -546,18 +548,9 @@ public class SystemImportHandler extends DefaultHandler {
                 final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
                 try(final Txn txn = txnManager.beginTransaction()) {
                     final Permission permission = getTarget().getPermissions();
-	                permission.setOwner(getOwner());
-	                permission.setGroup(getGroup());
-	                permission.setMode(getMode());
-	                if(permission instanceof ACLPermission) {
-	                    final ACLPermission aclPermission = (ACLPermission)permission;
-	                    aclPermission.clear();
-	                    for(final ACEAider ace : getAces()) {
-	                        aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
-	                    }
-	                }
+                    PermissionFactory.chown(broker, permission, Optional.ofNullable(getOwner()), Optional.ofNullable(getGroup()));
+                    PermissionFactory.chmod(broker, permission, Optional.of(getMode()), Optional.ofNullable(permission instanceof ACLPermission ? getAces() : null));
 	                broker.saveCollection(txn, getTarget());
-	                
 	                txnManager.commit(txn);
             	} finally {
                 	getTarget().release(LockMode.WRITE_LOCK);
@@ -585,21 +578,11 @@ public class SystemImportHandler extends DefaultHandler {
             	final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
 
                 try(final Txn txn = txnManager.beginTransaction()) {
-	            	
 	            	final Permission permission = getTarget().getPermissions();
-	                permission.setOwner(getOwner());
-	                permission.setGroup(getGroup());
-	                permission.setMode(getMode());
-	                if(permission instanceof ACLPermission) {
-	                    final ACLPermission aclPermission = (ACLPermission)permission;
-	                    aclPermission.clear();
-	                    for(final ACEAider ace : getAces()) {
-	                        aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
-	                    }
-	                }
+                    PermissionFactory.chown(broker, permission, Optional.ofNullable(getOwner()), Optional.ofNullable(getGroup()));
+                    PermissionFactory.chmod(broker, permission, Optional.of(getMode()), Optional.ofNullable(permission instanceof ACLPermission ? getAces() : null));
 	                broker.storeXMLResource(txn, getTarget());
 	                txnManager.commit(txn);
-	            	
 	            } finally {
 	                getTarget().getUpdateLock().release(LockMode.WRITE_LOCK);
 	            }

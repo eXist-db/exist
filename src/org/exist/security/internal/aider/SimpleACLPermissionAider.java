@@ -59,6 +59,33 @@ public class SimpleACLPermissionAider extends UnixStylePermissionAider implement
     }
 
     @Override
+    public void addACE(final ACE_ACCESS_TYPE access_type, final ACE_TARGET target, final String name, final String modeStr) throws PermissionDeniedException {
+        addACE(access_type, target, name, modeStrToMode(modeStr));
+    }
+
+    @Override
+    public void insertACE(final int index, final ACE_ACCESS_TYPE access_type, final ACE_TARGET target, final String name, final String modeStr) throws PermissionDeniedException {
+        aces.add(index, new ACEAider(access_type, target, name, modeStrToMode(modeStr)));
+    }
+
+    @Override
+    public void modifyACE(final int index, final ACE_ACCESS_TYPE access_type, final String modeStr) throws PermissionDeniedException {
+        modifyACE(index, access_type, modeStrToMode(modeStr));
+    }
+
+    @Override
+    public void modifyACE(final int index, final ACE_ACCESS_TYPE access_type, final int mode) throws PermissionDeniedException {
+        final ACEAider ace = aces.get(index);
+        ace.setAccessType(access_type);
+        ace.setMode(mode);
+    }
+
+    @Override
+    public void removeACE(final int index) throws PermissionDeniedException {
+        aces.remove(index);
+    }
+
+    @Override
     public int getACECount() {
         return aces.size();
     }
@@ -115,5 +142,31 @@ public class SimpleACLPermissionAider extends UnixStylePermissionAider implement
         }
 
         return true;
+    }
+
+    private int modeStrToMode(String modeStr) throws PermissionDeniedException {
+        if(modeStr == null || modeStr.length() == 0 || modeStr.length() > 3) {
+            throw new PermissionDeniedException("Invalid mode string '" + modeStr + "'");
+        }
+
+        int mode = 0;
+        for(final char c : modeStr.toCharArray()) {
+            switch(c) {
+                case READ_CHAR:
+                    mode |= READ;
+                    break;
+                case WRITE_CHAR:
+                    mode |= WRITE;
+                    break;
+                case EXECUTE_CHAR:
+                    mode |= EXECUTE;
+                    break;
+                case UNSET_CHAR:
+                    break;
+                default:
+                    throw new PermissionDeniedException("Unknown char '" + c + "' in mode string '" + modeStr + "'");
+            }
+        }
+        return mode;
     }
 }

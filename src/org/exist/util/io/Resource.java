@@ -85,9 +85,6 @@ public class Resource extends File {
         XML_OUTPUT_PROPERTIES.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
     }
 
-    public final static int DEFAULT_COLLECTION_PERM = 0777;
-    public final static int DEFAULT_RESOURCE_PERM = 0644;
-
 
     private static final SecureRandom random = new SecureRandom();
 
@@ -659,14 +656,12 @@ public class Resource extends File {
                     final String str = "<empty/>";
                     final IndexInfo info = collection.validateXMLResource(transaction, broker, fileName, str);
                     info.getDocument().getMetadata().setMimeType(mimeType.getName());
-                    info.getDocument().getPermissions().setMode(DEFAULT_RESOURCE_PERM);
                     collection.store(transaction, broker, info, str);
 
                 } else {
                     // store as binary resource
                     try (final InputStream is = new FastByteArrayInputStream(new byte[0])) {
                         final BinaryDocument blob = new BinaryDocument(db, collection, fileName);
-                        blob.getPermissions().setMode(DEFAULT_RESOURCE_PERM);
                         collection.addBinaryResource(transaction, broker, blob, is,
                                 mimeType.getName(), 0L, new Date(), new Date());
                     }

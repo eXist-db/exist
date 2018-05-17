@@ -341,9 +341,8 @@ public class CopyCollectionTest {
         sm.updateGroup(userGroup);
     }
 
-
     private static void chmod(final DBBroker broker, final XmldbURI pathUri, final int mode) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(broker, pathUri, permission -> permission.setMode(mode));
+        PermissionFactory.chmod(broker, pathUri, Optional.of(mode), Optional.empty());
     }
 
     private static void removeUser(final SecurityManager sm, final String username) throws PermissionDeniedException, EXistException {

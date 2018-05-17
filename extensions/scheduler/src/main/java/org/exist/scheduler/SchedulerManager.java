@@ -75,7 +75,7 @@ public class SchedulerManager implements Plug {
         try {
             systemCollection = broker.getCollection(XmldbURI.SYSTEM);
             if(systemCollection == null) {
-                throw new EXistException("/db/system collecton does not exist!");
+                throw new EXistException("/db/system collection does not exist!");
             }
         } catch(final PermissionDeniedException e) {
             throw new EXistException(e);
@@ -95,7 +95,7 @@ public class SchedulerManager implements Plug {
                 //if db corrupted it can lead to unrunnable issue
                 //throw new ConfigurationException("Collection '/db/system/scheduler' can't be created.");
 
-                collection.setPermissions(0770);
+                collection.setPermissions(broker,0770);
                 broker.saveCollection(txn, collection);
 
                 transaction.commit(txn);

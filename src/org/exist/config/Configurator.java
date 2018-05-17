@@ -59,6 +59,7 @@ import org.exist.dom.QName;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.PermissionFactory;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
@@ -1295,7 +1296,7 @@ public class Configurator {
             final IndexInfo info = collection.validateXMLResource(txn, broker, uri, data);
             final DocumentImpl doc = info.getDocument();
             doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
-            doc.getPermissions().setMode(Permission.DEFAULT_SYSTSEM_RESOURCE_PERM);
+            PermissionFactory.chmod(broker, doc.getPermissions(), Optional.of(Permission.DEFAULT_SYSTSEM_RESOURCE_PERM), Optional.empty());
             fullURI = getFullURI(pool, doc.getURI());
             saving.add(fullURI);
             collection.store(txn, broker, info, data);

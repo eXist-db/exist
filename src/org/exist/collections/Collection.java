@@ -138,30 +138,12 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
     Permission getPermissionsNoLock();
 
     /**
-     * Get the mode of the Collection permissions
+     * Set the mode of the Collection.
      *
+     * @param broker The database broker.
      * @param mode The unix like mode of the Collection permissions
      */
-    void setPermissions(int mode) throws LockException, PermissionDeniedException;
-
-    /**
-     * Set the mode of the Collection permissions
-     *
-     * @param mode The unix like mode of the Collection permissions
-     */
-    @Deprecated
-    void setPermissions(String mode) throws SyntaxException, LockException, PermissionDeniedException;
-
-    /**
-     * Set permissions for the collection.
-     *
-     * @param permissions the permissions to set on the Collection
-     *
-     * @deprecated This function is considered a security problem
-     * and should be removed, move code to copyOf or Constructor
-     */
-    @Deprecated
-    void setPermissions(Permission permissions) throws LockException;
+    void setPermissions(DBBroker broker, int mode) throws LockException, PermissionDeniedException;
 
     /**
      * Gets the creation timestamp of this Collection

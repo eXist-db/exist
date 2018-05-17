@@ -120,7 +120,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
                     //if db corrupted it can lead to unrunnable issue
                     //throw new ConfigurationException("Collection '/db/system/plugins' can't be created.");
 
-                    collection.setPermissions(Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
+                    collection.setPermissions(broker, Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
                     broker.saveCollection(txn, collection);
                 }
 

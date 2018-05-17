@@ -77,7 +77,17 @@ public interface ACLPermission {
 
     public short getVersion();
 
+    void addACE(ACE_ACCESS_TYPE access_type, ACE_TARGET target, String name, String modeStr) throws PermissionDeniedException;
+
     public void addACE(ACE_ACCESS_TYPE access_type, ACE_TARGET target, String name, int mode) throws PermissionDeniedException;
+
+    void insertACE(int index, ACE_ACCESS_TYPE access_type, ACE_TARGET target, String name, String modeStr) throws PermissionDeniedException;
+
+    void modifyACE(int index, ACE_ACCESS_TYPE access_type, String modeStr) throws PermissionDeniedException;
+
+    void modifyACE(int index, ACE_ACCESS_TYPE access_type, int mode) throws PermissionDeniedException;
+
+    void removeACE(int index) throws PermissionDeniedException;
 
     public int getACECount();
 
