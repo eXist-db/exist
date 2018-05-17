@@ -2426,10 +2426,10 @@ public class RpcConnection implements RpcAPI {
     }
 
     @Override
-    public boolean chgrp(final String resource, final String ownerGroup) throws EXistException, PermissionDeniedException, URISyntaxException {
+    public boolean chgrp(final String resource, final String group) throws EXistException, PermissionDeniedException, URISyntaxException {
         final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
-            PermissionFactory.updatePermissions(broker, uri, permission -> permission.setGroup(ownerGroup));
+            PermissionFactory.chown(broker, uri, Optional.empty(), Optional.ofNullable(group));
             return true;
         });
     }
@@ -2438,73 +2438,54 @@ public class RpcConnection implements RpcAPI {
     public boolean chown(final String resource, final String owner) throws EXistException, PermissionDeniedException, URISyntaxException {
         final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
-            PermissionFactory.updatePermissions(broker, uri, permission -> permission.setOwner(owner));
+            PermissionFactory.chown(broker, uri, Optional.ofNullable(owner), Optional.empty());
             return true;
         });
     }
 
     @Override
-    public boolean chown(final String resource, final String owner, final String ownerGroup) throws EXistException, PermissionDeniedException, URISyntaxException {
+    public boolean chown(final String resource, final String owner, final String group) throws EXistException, PermissionDeniedException, URISyntaxException {
         final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
-            PermissionFactory.updatePermissions(broker, uri, permission -> {
-                permission.setOwner(owner);
-                permission.setGroup(ownerGroup);
-            });
+            PermissionFactory.chown(broker, uri, Optional.ofNullable(owner), Optional.ofNullable(group));
             return true;
         });
     }
 
     @Override
-    public boolean setPermissions(final String resource, final int permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
+    public boolean setPermissions(final String resource, final int mode) throws EXistException, PermissionDeniedException, URISyntaxException {
         final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
-            PermissionFactory.updatePermissions(broker, uri, permission -> permission.setMode(permissions));
+            PermissionFactory.chmod(broker, uri, Optional.of(mode), Optional.empty());
             return true;
         });
     }
 
     @Override
-    public boolean setPermissions(final String resource, final String permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
+    public boolean setPermissions(final String resource, final String mode) throws EXistException, PermissionDeniedException, URISyntaxException {
         final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
-            PermissionFactory.updatePermissions(broker, uri, permission -> {
-                try {
-                    permission.setMode(permissions);
-                } catch (final SyntaxException se) {
-                    throw new PermissionDeniedException("Unrecognised mode syntax: " + se.getMessage(), se);
-                }
-            });
+            PermissionFactory.chmod_str(broker, uri, Optional.ofNullable(mode), Optional.empty());
             return true;
         });
     }
 
     @Override
-    public boolean setPermissions(final String resource, final String owner, final String ownerGroup, final String permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
+    public boolean setPermissions(final String resource, final String owner, final String group, final String mode) throws EXistException, PermissionDeniedException, URISyntaxException {
         final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
-            PermissionFactory.updatePermissions(broker, uri, permission -> {
-                permission.setOwner(owner);
-                permission.setGroup(ownerGroup);
-                try {
-                    permission.setMode(permissions);
-                } catch (final SyntaxException se) {
-                    throw new PermissionDeniedException("Unrecognised mode syntax: " + se.getMessage(), se);
-                }
-            });
+            PermissionFactory.chown(broker, uri, Optional.ofNullable(owner), Optional.ofNullable(group));
+            PermissionFactory.chmod_str(broker, uri, Optional.ofNullable(mode), Optional.empty());
             return true;
         });
     }
 
     @Override
-    public boolean setPermissions(final String resource, final String owner, final String ownerGroup, final int permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
+    public boolean setPermissions(final String resource, final String owner, final String group, final int mode) throws EXistException, PermissionDeniedException, URISyntaxException {
         final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
-            PermissionFactory.updatePermissions(broker, uri, permission -> {
-                permission.setOwner(owner);
-                permission.setGroup(ownerGroup);
-                permission.setMode(permissions);
-            });
+            PermissionFactory.chown(broker, uri, Optional.ofNullable(owner), Optional.ofNullable(group));
+            PermissionFactory.chmod(broker, uri, Optional.of(mode), Optional.empty());
             return true;
         });
     }
@@ -2513,18 +2494,8 @@ public class RpcConnection implements RpcAPI {
     public boolean setPermissions(final String resource, final String owner, final String group, final int mode, final List<ACEAider> aces) throws EXistException, PermissionDeniedException, URISyntaxException {
         final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
-            PermissionFactory.updatePermissions(broker, uri, permission -> {
-                permission.setOwner(owner);
-                permission.setGroup(group);
-                permission.setMode(mode);
-                if (permission instanceof ACLPermission) {
-                    final ACLPermission aclPermission = ((ACLPermission) permission);
-                    aclPermission.clear();
-                    for (final ACEAider ace : aces) {
-                        aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
-                    }
-                }
-            });
+            PermissionFactory.chown(broker, uri, Optional.ofNullable(owner), Optional.ofNullable(group));
+            PermissionFactory.chmod(broker, uri, Optional.of(mode), Optional.ofNullable(aces));
             return true;
         });
     }

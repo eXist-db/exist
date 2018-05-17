@@ -33,22 +33,24 @@ import java.lang.annotation.Target;
 @Target(value = {ElementType.METHOD, ElementType.PARAMETER})
 public @interface PermissionRequired {
     
-    //int mode() default UNDEFINED;
-    int user() default UNDEFINED;
-    int group() default UNDEFINED;
-    int mode() default UNDEFINED;
+    // int mode() default UNDEFINED;
+    byte user() default UNDEFINED;
+    byte group() default UNDEFINED;
+    byte mode() default UNDEFINED;
 
-    public final static int UNDEFINED = 0;
+    int UNDEFINED = 0;
 
-    //user flags
-    public final static int IS_DBA = 04;
-    public final static int IS_OWNER = 02;
+    // test that POSIX_CHOWN_RESTRICTED is not set
+    byte NOT_POSIX_CHOWN_RESTRICTED = (byte)0x80;
 
-    //group flags
-    public final static int IS_MEMBER = 40;
+    // user and group flags
+    byte IS_MEMBER = 0x4;
+    byte IS_DBA = 0x2;
+    byte IS_OWNER = 0x1;
+
     
-    //mode flags
-    public final static int ACL_WRITE = 04;
-    public final static int IS_SET_UID = 02;
-    public final static int IS_SET_GID = 01;
+    // mode flags
+    byte ACL_WRITE = 0x4;
+    byte IS_SET_UID = 0x2;
+    byte IS_SET_GID = 0x1;
 }

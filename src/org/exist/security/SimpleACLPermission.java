@@ -411,4 +411,31 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
     public void copyAclOf(final SimpleACLPermission simpleACLPermission) {
         this.acl = Arrays.copyOf(simpleACLPermission.acl, simpleACLPermission.acl.length);
     }
+
+    @Override
+    public boolean aclEquals(final ACLPermission other) {
+        if (other == null) {
+            return false;
+        }
+
+        if (other instanceof SimpleACLPermission) {
+            // optimisation for when both are the same type
+            return Arrays.equals(acl, ((SimpleACLPermission)other).acl);
+        } else {
+            if (getACECount() != other.getACECount()) {
+                return false;
+            }
+
+            for (int i = 0; i < getACECount(); i++) {
+                if (getACEAccessType(i) != other.getACEAccessType(i)
+                        || getACETarget(i) != other.getACETarget(i)
+                        || (!getACEWho(i).equals(other.getACEWho(i)))
+                        || getACEMode(i) != other.getACEMode(i)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
 }

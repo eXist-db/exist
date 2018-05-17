@@ -240,5 +240,7 @@ public interface Permission {
 
     boolean isCurrentSubjectInGroup(int groupId);
 
+    boolean isPosixChownRestricted();
+
     Permission copy();
 }

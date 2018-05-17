@@ -22,12 +22,18 @@
 package org.exist.security;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import com.evolvedbinary.j8fu.Either;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.security.internal.aider.ACEAider;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionException;
@@ -35,8 +41,14 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.util.LockException;
+import org.exist.util.SyntaxException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
+
+import static org.exist.security.AbstractUnixStylePermission.SIMPLE_SYMBOLIC_MODE_PATTERN;
+import static org.exist.security.AbstractUnixStylePermission.UNIX_SYMBOLIC_MODE_PATTERN;
+import static org.exist.security.Permission.*;
+import static org.exist.storage.DBBroker.POSIX_CHOWN_RESTRICTED_PROPERTY;
 
 /**
  * Instantiates an appropriate Permission class based on the current configuration
@@ -158,5 +170,409 @@ public class PermissionFactory {
         } catch(final XPathException | PermissionDeniedException | IOException | TriggerException | TransactionException | LockException e) {
             throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getCurrentSubject().getName() + "' on '" + pathUri.toString() + "': " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Changes the ownership of a resource in the database
+     * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
+     *
+     * @param broker the database broker.
+     * @param pathUri the URI to a resource in the database.
+     * @param owner the new owner for the resource.
+     * @param group thr new group for the resource.
+     *
+     * @throws PermissionDeniedException if the calling process has insufficient permissions.
+     */
+    public static void chown(final DBBroker broker, final XmldbURI pathUri, final Optional<String> owner, final Optional<String> group) throws PermissionDeniedException {
+        updatePermissions(broker, pathUri, permission -> chown(broker, permission, owner, group));
+    }
+
+    /**
+     * Changes the ownership of a Collection in the database
+     * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
+     *
+     * @param broker the database broker.
+     * @param collection the URI to a Collection in the database.
+     * @param owner the new owner for the collection.
+     * @param group thr new group for the collection.
+     *
+     * @throws PermissionDeniedException if the calling process has insufficient permissions.
+     */
+    public static void chown(final DBBroker broker, final Collection collection, final Optional<String> owner, final Optional<String> group) throws PermissionDeniedException {
+        chown(broker, collection.getPermissions(), owner, group);
+    }
+
+    /**
+     * Changes the ownership of a Document in the database
+     * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
+     *
+     * @param broker the database broker.
+     * @param document the URI to a Document in the database.
+     * @param owner the new owner for the document.
+     * @param group thr new group for the document.
+     *
+     * @throws PermissionDeniedException if the calling process has insufficient permissions.
+     */
+    public static void chown(final DBBroker broker, final DocumentImpl document, final Optional<String> owner, final Optional<String> group) throws PermissionDeniedException {
+        chown(broker, document.getPermissions(), owner, group);
+    }
+
+    public static void chown(final DBBroker broker, final Permission permission, final Optional<String> owner, final Optional<String> group) throws PermissionDeniedException {
+        if ((!owner.isPresent()) && !group.isPresent()) {
+            throw new IllegalArgumentException("Either owner or group must be provided");
+        }
+
+        final boolean changeOwner = owner.map(desiredOwner -> !permission.getOwner().getName().equals(desiredOwner)).orElse(false);
+        final boolean changeGroup = group.map(desiredGroup -> !permission.getGroup().getName().equals(desiredGroup)).orElse(false);
+
+        // enforce security checks
+        final boolean posixChownRestricted = broker.getConfiguration().getProperty(POSIX_CHOWN_RESTRICTED_PROPERTY, true);
+        if (posixChownRestricted) {
+            if (changeOwner && !permission.isCurrentSubjectDBA()) {
+                // Only a superuser process can change the user ID of the file.
+
+                throw new PermissionDeniedException("Only a DBA can change the user ID of a resource when posix-chown-restricted is in effect.");
+            }
+
+            if (changeGroup && !permission.isCurrentSubjectDBA()) {
+
+                /*
+                    A non-superuser process can change the group ID of the file if the process owns the file
+                    (the effective user ID equals the user ID of the file)
+                 */
+                if (!permission.isCurrentSubjectOwner()) {
+                    throw new PermissionDeniedException("You cannot change the group ID of a file you do not own when posix-chown-restricted is in effect.");
+                }
+                // and, group equals either the effective group ID of the process or one of the process’s supplementary group IDs.
+                final int desiredGroupId = broker.getBrokerPool().getSecurityManager().getGroup(group.get()).getId();
+                if (!permission.isCurrentSubjectInGroup(desiredGroupId)) {
+                    throw new PermissionDeniedException("You cannot change the group ID of a file to a group of which you are not a member when posix-chown-restricted is in effect.");
+                }
+            }
+        } else {
+            if (changeOwner) {
+                if ((!permission.isCurrentSubjectDBA()) && !permission.isCurrentSubjectOwner()) {
+                    throw new PermissionDeniedException("Only a DBA or the resources owner can change the user ID of a resource.");
+                }
+            }
+
+            if (changeGroup) {
+                if ((!permission.isCurrentSubjectDBA()) && !permission.isCurrentSubjectOwner()) {
+                    throw new PermissionDeniedException("Only a DBA or the resources owner can change the group ID of a resource.");
+                }
+            }
+        }
+
+        if (!permission.isCurrentSubjectDBA()) {
+            /*
+                If this is called by a process other than a superuser process, on successful return,
+                both the set-user-ID and the set-group-ID bits are cleared.
+
+                MUST be done before changing the owner or group to prevent a privilege escalation attack
+             */
+
+            if (permission.isSetUid()) {
+                permission.setSetUid(false);
+            }
+
+            if (permission.isSetGid()) {
+                permission.setSetGid(false);
+            }
+        }
+
+        // change the owner
+        if (changeOwner) {
+            permission.setOwner(owner.get());
+        }
+
+        // change the group
+        if (changeGroup) {
+            permission.setGroup(group.get());
+        }
+    }
+
+    /**
+     * Changes the mode of a resource in the database
+     * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
+     *
+     * @param broker the database broker.
+     * @param pathUri the URI to a resource in the database.
+     * @param modeStr the new mode for the resource.
+     * @param acl the new ACL for the resource.
+     *
+     * @throws PermissionDeniedException if the calling process has insufficient permissions.
+     */
+    public static void chmod_str(final DBBroker broker, final XmldbURI pathUri, final Optional<String> modeStr, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
+        updatePermissions(broker, pathUri, permission -> chmod_impl(broker, permission, modeStr.map(Either::Left), acl));
+    }
+
+    /**
+     * Changes the mode of a Collection in the database
+     * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
+     *
+     * @param broker the database broker.
+     * @param collection the URI to a Collection in the database.
+     * @param modeStr the new mode for the collection.
+     * @param acl the new ACL for the collection.
+     *
+     * @throws PermissionDeniedException if the calling process has insufficient permissions.
+     */
+    public static void chmod_str(final DBBroker broker, final Collection collection, final Optional<String> modeStr, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
+        chmod_impl(broker, collection.getPermissions(), modeStr.map(Either::Left), acl);
+    }
+
+    /**
+     * Changes the mode of a Document in the database
+     * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
+     *
+     * @param broker the database broker.
+     * @param document the URI to a Document in the database.
+     * @param modeStr the new mode for the document.
+     * @param acl the new ACL for the document.
+     *
+     * @throws PermissionDeniedException if the calling process has insufficient permissions.
+     */
+    public static void chmod_str(final DBBroker broker, final DocumentImpl document, final Optional<String> modeStr, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
+        chmod_impl(broker, document.getPermissions(), modeStr.map(Either::Left), acl);
+    }
+
+    /**
+     * Changes the mode of a resource in the database
+     * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
+     *
+     * @param broker the database broker.
+     * @param pathUri the URI to a resource in the database.
+     * @param mode the new mode for the resource.
+     * @param acl the new ACL for the resource.
+     *
+     * @throws PermissionDeniedException if the calling process has insufficient permissions.
+     */
+    public static void chmod(final DBBroker broker, final XmldbURI pathUri, final Optional<Integer> mode, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
+        updatePermissions(broker, pathUri, permission -> chmod_impl(broker, permission, mode.map(Either::Right), acl));
+    }
+
+    /**
+     * Changes the mode of a Collection in the database
+     * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
+     *
+     * @param broker the database broker.
+     * @param collection the URI to a Collection in the database.
+     * @param mode the new mode for the collection.
+     * @param acl the new ACL for the collection.
+     *
+     * @throws PermissionDeniedException if the calling process has insufficient permissions.
+     */
+    public static void chmod(final DBBroker broker, final Collection collection, final Optional<Integer> mode, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
+        chmod_impl(broker, collection.getPermissions(), mode.map(Either::Right), acl);
+    }
+
+    /**
+     * Changes the mode of a Document in the database
+     * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
+     *
+     * @param broker the database broker.
+     * @param document the URI to a Document in the database.
+     * @param mode the new mode for the document.
+     * @param acl the new ACL for the document.
+     *
+     * @throws PermissionDeniedException if the calling process has insufficient permissions.
+     */
+    public static void chmod(final DBBroker broker, final DocumentImpl document, final Optional<Integer> mode, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
+        chmod_impl(broker, document.getPermissions(), mode.map(Either::Right), acl);
+    }
+
+    /**
+     * Changes the mode of permissions in the database
+     * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
+     *
+     * @param broker the database broker.
+     * @param permissions the permissions in the database.
+     * @param mode the new mode for the permissions.
+     * @param acl the new ACL for the permissions.
+     *
+     * @throws PermissionDeniedException if the calling process has insufficient permissions.
+     */
+    public static void chmod_str(final DBBroker broker, final Permission permissions, final Optional<String> mode, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
+        chmod_impl(broker, permissions, mode.map(Either::Left), acl);
+    }
+
+    /**
+     * Changes the mode of permissions in the database
+     * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
+     *
+     * @param broker the database broker.
+     * @param permissions the permissions in the database.
+     * @param mode the new mode for the permissions.
+     * @param acl the new ACL for the permissions.
+     *
+     * @throws PermissionDeniedException if the calling process has insufficient permissions.
+     */
+    public static void chmod(final DBBroker broker, final Permission permissions, final Optional<Integer> mode, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
+        chmod_impl(broker, permissions, mode.map(Either::Right), acl);
+    }
+
+    private static void chmod_impl(final DBBroker broker, final Permission permission, final Optional<Either<String, Integer>> mode, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
+        if ((!mode.isPresent()) && !acl.isPresent()) {
+            throw new IllegalArgumentException("Either mode or acl must be provided");
+        }
+
+        try {
+            final boolean changeMode;
+            if (mode.isPresent()) {
+                if (mode.get().isLeft()) {
+                    final Subject effectiveUser = broker.getCurrentSubject();
+                    final Permission other = new UnixStylePermission(broker.getBrokerPool().getSecurityManager(), effectiveUser.getId(), effectiveUser.getDefaultGroup().getId(), 0);
+                    other.setMode(mode.get().left().get());
+                    changeMode = permission.getMode() != other.getMode();
+                } else {
+                    changeMode = permission.getMode() != mode.get().right().get().intValue();
+                }
+            } else {
+                changeMode = false;
+            }
+            final boolean changeAcl = acl.map(desiredAces -> !aclEquals(permission, desiredAces)).orElse(false);
+
+            /*
+                To change the permission bits of a file, the effective user ID of the process must be equal to the owner ID
+                of the file, or the process must have superuser permissions.
+            */
+            if ((!permission.isCurrentSubjectDBA()) && !permission.isCurrentSubjectOwner()) {
+                throw new PermissionDeniedException("Only a DBA or the resources owner can change the mode of a resource.");
+            }
+
+            // change the mode
+            if (changeMode) {
+
+                final boolean matchedGroup = permission.isCurrentSubjectInGroup();
+                if (permission.isCurrentSubjectDBA() || matchedGroup) {
+                    if (mode.get().isLeft()) {
+                        permission.setMode(mode.get().left().get());
+                    } else {
+                        permission.setMode(mode.get().right().get());
+                    }
+
+                } else {
+                /*
+                    If the group ID of the file does not equal either the effective group ID of the process or one of
+                    the process’s supplementary group IDs and if the process does not have superuser privileges,
+                    then the set-group-ID bit is automatically turned off.
+                    This prevents a user from creating a set-group-ID file owned by a group that the user doesn’t
+                    belong to.
+                */
+                    if (mode.get().isLeft()) {
+                        permission.setMode(removeSetGid(mode.get().left().get()));
+                    } else {
+                        permission.setMode(removeSetGid(mode.get().right().get()));
+                    }
+                }
+            }
+
+            // change the acl
+            if (changeAcl) {
+                final ACLPermission aclPermission = (ACLPermission) permission;
+                aclPermission.clear();
+                for (final ACEAider ace : acl.get()) {
+                    aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
+                }
+            }
+        } catch (final SyntaxException se) {
+            throw new PermissionDeniedException("Unrecognised mode syntax: " + se.getMessage(), se);
+        }
+    }
+
+    /**
+     * Compares the ACEs in a permission's ACL against the provides ACEs.
+     *
+     * @param permission The permission ACL to compare against the otherAces.
+     * @param otherAces The ACEs to compare against the permissions's ACL.
+     *
+     * @return true if the {@code permission}'s ACL has the same ACEs as {@code otherAces}, false otherwise.
+     */
+    private static boolean aclEquals(final Permission permission, final List<ACEAider> otherAces) {
+        if (!(permission instanceof ACLPermission)) {
+            return false;
+        }
+
+        final ACLPermission aclPermission = (ACLPermission)permission;
+        if (aclPermission.getACECount() != otherAces.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < otherAces.size(); i++) {
+            final ACEAider other = otherAces.get(i);
+
+            if (aclPermission.getACEAccessType(i) != other.getAccessType()
+                    || aclPermission.getACETarget(i) != other.getTarget()
+                    || (!aclPermission.getACEWho(i).equals(other.getWho()))
+                    || aclPermission.getACEMode(i) != other.getMode()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Removes any setGid bit from the provided mode string.
+     *
+     * @param modeStr The provided mode string.
+     *
+     * @return The mode string without a setGid bit.
+     */
+    private static String removeSetGid(final String modeStr) {
+        if (SIMPLE_SYMBOLIC_MODE_PATTERN.matcher(modeStr).matches()) {
+            final char groupExecute = modeStr.charAt(5);
+            if (groupExecute == SETGID_CHAR_NO_EXEC) {
+                return modeStr.substring(0, 5) + UNSET_CHAR + modeStr.substring(5);
+            } else if (groupExecute == SETGID_CHAR) {
+                return modeStr.substring(0, 5) + EXECUTE_CHAR + modeStr.substring(5);
+            }
+        } else {
+            if (UNIX_SYMBOLIC_MODE_PATTERN.matcher(modeStr).matches()) {
+
+                // check for 'g+s' or 'g=s'
+                final Pattern ptnExtractGroupMode = Pattern.compile("[^g]*(g\\+|=)([^,s]*s[^,s]*)[^g]*");
+                final Matcher mtcExtractGroupMode = ptnExtractGroupMode.matcher(modeStr);
+                if (mtcExtractGroupMode.matches()) {
+                    final String requestedGroupOp = mtcExtractGroupMode.group(1);
+                    final String requestedGroupMode = mtcExtractGroupMode.group(2);
+                    final String noSetGidGroupMode = requestedGroupMode.replace("s", "");
+                    if (noSetGidGroupMode.isEmpty()) {
+                        return modeStr.replace(requestedGroupOp + requestedGroupMode, "");
+                    } else {
+                        return modeStr.replace(requestedGroupOp + requestedGroupMode, requestedGroupOp + noSetGidGroupMode);
+                    }
+                } else {
+                    // check for 'a+s' or 'a=s'
+                    final Pattern ptnExtractAllMode = Pattern.compile("[^a]*a(\\+|=)([^,s]*s[^,s]*)[^a]*");
+                    final Matcher mtcExtractAllMode = ptnExtractAllMode.matcher(modeStr);
+                    if (mtcExtractAllMode.matches()) {
+                        final String requestedAllOpSymbol = mtcExtractAllMode.group(1);
+                        final String requestedAllMode = mtcExtractAllMode.group(2);
+                        final String noSetGidGroupMode = requestedAllMode.replace("s", "");
+
+                        return
+                                USER_CHAR + requestedAllOpSymbol + requestedAllMode + "," +
+                                (noSetGidGroupMode.isEmpty() ? "" : (GROUP_CHAR + requestedAllOpSymbol + noSetGidGroupMode + ",")) +
+                                OTHER_CHAR + requestedAllMode + requestedAllMode;
+                    }
+                }
+            }
+
+            // NOTE: we don't need to do anything for EXIST_SYMBOLIC_MODE_PATTERN as it does not support setting setGid
+        }
+
+        return modeStr;
+    }
+
+    /**
+     * Removes any setGid bit from the provided mode.
+     *
+     * @param mode The provided mode.
+     *
+     * @return The mode without a setGid bit.
+     */
+    private static int removeSetGid(final int mode) {
+        return mode & ~0x800;
     }
 }

@@ -127,9 +127,9 @@ public class Document extends NamedResource {
 	 */
 	public static class MetadataFacet extends NamedResource.MetadataFacet {
 		private final DocumentMetadata docMetadata;
-		private MetadataFacet(Permission permissions, DocumentMetadata docMetadata, Database db) {
-			super(permissions, db);
-			this.docMetadata = docMetadata;
+		private MetadataFacet(final DocumentImpl doc, final Database db) {
+			super(doc, db);
+			this.docMetadata = doc.getMetadata();
 		}
 		@Override public Date creationDate() {return new Date(docMetadata.getCreated());}
 		
@@ -199,7 +199,7 @@ public class Document extends NamedResource {
 	}
 	
 	@Override public MetadataFacet metadata() {
-		if (metadata == null) metadata = new MetadataFacet(doc.getPermissions(), doc.getMetadata(), db);
+		if (metadata == null) metadata = new MetadataFacet(doc, db);
 		return metadata;
 	}
 	

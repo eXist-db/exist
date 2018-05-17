@@ -95,5 +95,25 @@ public class SimpleACLPermissionAider extends UnixStylePermissionAider implement
         return true;
     }
 
+    @Override
+    public boolean aclEquals(final ACLPermission other) {
+        if (other == null) {
+            return false;
+        }
 
+        if (getACECount() != other.getACECount()) {
+            return false;
+        }
+
+        for (int i = 0; i < getACECount(); i++) {
+            if (getACEAccessType(i) != other.getACEAccessType(i)
+                    || getACETarget(i) != other.getACETarget(i)
+                    || (!getACEWho(i).equals(other.getACEWho(i)))
+                    || getACEMode(i) != other.getACEMode(i)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

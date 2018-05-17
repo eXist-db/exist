@@ -815,24 +815,24 @@ public interface RpcAPI {
 
     boolean updateAccount(final String name, final List<String> groups) throws EXistException, PermissionDeniedException;
 
-    boolean setPermissions(String resource, String permissions)
+    boolean setPermissions(String resource, String mode)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
-    boolean setPermissions(String resource, int permissions)
-            throws EXistException, PermissionDeniedException, URISyntaxException;
-
-    boolean setPermissions(
-            String resource,
-            String owner,
-            String ownerGroup,
-            String permissions)
+    boolean setPermissions(String resource, int mode)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
     boolean setPermissions(
             String resource,
             String owner,
-            String ownerGroup,
-            int permissions)
+            String group,
+            String mode)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
+
+    boolean setPermissions(
+            String resource,
+            String owner,
+            String group,
+            int mode)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
     boolean setPermissions(
@@ -845,7 +845,7 @@ public interface RpcAPI {
 
     boolean chgrp(
             final String resource,
-            final String ownerGroup)
+            final String group)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
     boolean chown(
@@ -856,7 +856,7 @@ public interface RpcAPI {
     boolean chown(
             final String resource,
             final String owner,
-            final String ownerGroup)
+            final String group)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
     boolean lockResource(String path, String userName)

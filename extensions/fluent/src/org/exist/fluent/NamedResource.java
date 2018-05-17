@@ -5,6 +5,7 @@ import java.util.regex.*;
 
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.PermissionFactory;
 import org.exist.storage.DBBroker;
 
 /**
@@ -25,12 +26,12 @@ public abstract class NamedResource extends Resource {
 			Pattern.compile("(a|(u?g?o?){1,3})((=r?w?u?)|([-+](r?w?u?){1,3}))(,(a|(u?g?o?){1,3})((=r?w?u?)|([-+](r?w?u?){1,3})))*");
 		private static final Pattern SEGMENT_REGEX = Pattern.compile("([augo]+)([-+=])([rwu]*)");
 		
-		private Permission permissions;
-                private final Database db;
+		private org.exist.Resource resource;
+		private final Database db;
 
-		protected MetadataFacet(Permission permissions, Database db) {
-			this.permissions = permissions;
-                        this.db = db;
+		protected MetadataFacet(final org.exist.Resource resource, final Database db) {
+			this.resource = resource;
+			this.db = db;
 		}
 		
 		/**
@@ -45,52 +46,40 @@ public abstract class NamedResource extends Resource {
 		 * 
 		 * @return the owner of this resource
 		 */
-		public String owner() {return permissions.getOwner().getName();}
+		public String owner() {return resource.getPermissions().getOwner().getName();}
 		
 		/**
 		 * Set the owner of this resource for purposes of permission management.
 		 *
 		 * @param owner the new owner of this resource
 		 */
-		public void owner(String owner) {
-                    DBBroker broker = null;
-                    try {
-                        broker = db.acquireBroker();
-                        permissions.setOwner(owner);
-                    } catch(PermissionDeniedException pde) {
-                        throw new DatabaseException(pde.getMessage(), pde);
-                    } finally {
-                        if(broker != null) {
-                            db.releaseBroker(broker);
-                        }
-                    }
-                }
+		public void owner(final String owner) {
+			try (final DBBroker broker = db.acquireBroker()) {
+				PermissionFactory.chown(broker, resource.getPermissions(), Optional.ofNullable(owner), Optional.empty());
+			} catch (final PermissionDeniedException pde) {
+				throw new DatabaseException(pde.getMessage(), pde);
+			}
+		}
 		
 		/**
 		 * Return the group who has privileged access to this resource for purposes of permission management.
 		 * 
 		 * @return the owning group of this resource
 		 */
-		public String group() {return permissions.getGroup().getName();}
+		public String group() {return resource.getPermissions().getGroup().getName();}
 		
 		/**
 		 * Set the group that will have privileged access to this resource for purposes of permission management.
 		 *
 		 * @param group the new owning group of this resource
 		 */
-		public void group(String group) {
-                    DBBroker broker = null;
-                    try {
-                        broker = db.acquireBroker();
-                        permissions.setGroup(group);
-                    } catch(PermissionDeniedException pde) {
-                        throw new DatabaseException(pde.getMessage(), pde);
-                    } finally {
-                        if(broker != null) {
-                            db.releaseBroker(broker);
-                        }
-                    }
-                }
+		public void group(final String group) {
+			try (final DBBroker broker = db.acquireBroker()) {
+				PermissionFactory.chown(broker, resource.getPermissions(), Optional.empty(), Optional.ofNullable(group));
+			} catch (final PermissionDeniedException pde) {
+				throw new DatabaseException(pde.getMessage(), pde);
+			}
+		}
 		
 		/**
 		 * Return whether the given subject has the given permission.  The "who" character refers to
@@ -129,10 +118,10 @@ public abstract class NamedResource extends Resource {
 				default:
 					throw new IllegalArgumentException("illegal permission \"who\" code '" + who + "'");
 			}
-			return (permissions.getMode() & mask) == mask;
+			return (resource.getPermissions().getMode() & mask) == mask;
 		}
 		
-		private int convertPermissionBit(char what) {
+		private int convertPermissionBit(final char what) {
 			switch(what) {
 				case Permission.READ_CHAR: return Permission.READ;
 				case Permission.WRITE_CHAR: return Permission.WRITE;
@@ -141,7 +130,7 @@ public abstract class NamedResource extends Resource {
 			}
 		}
 		
-		private int convertPermissionBits(String what) {
+		private int convertPermissionBits(final String what) {
 			int perms = 0;
 			for (int i=0; i<what.length(); i++) perms |= convertPermissionBit(what.charAt(i));
 			return perms;
@@ -172,11 +161,13 @@ public abstract class NamedResource extends Resource {
 		 * 
 		 * @param instructions an instruction string encoding the desired changes to the permissions
 		 */
-		public void changePermissions(String instructions) {
-                    if (!INSTRUCTIONS_REGEX.matcher(instructions).matches())
-                            throw new IllegalArgumentException("bad permissions instructions: " + instructions);
-                    StringTokenizer tokenizer = new StringTokenizer(instructions, ",");
+		public void changePermissions(final String instructions) {
+                    if (!INSTRUCTIONS_REGEX.matcher(instructions).matches()) {
+						throw new IllegalArgumentException("bad permissions instructions: " + instructions);
+					}
+                    final StringTokenizer tokenizer = new StringTokenizer(instructions, ",");
 
+                    final Permission permissions = resource.getPermissions();
                     try {
                         while (tokenizer.hasMoreTokens()) {
                                 Matcher matcher = SEGMENT_REGEX.matcher(tokenizer.nextToken());
@@ -201,15 +192,20 @@ public abstract class NamedResource extends Resource {
                                         default:
 											throw new RuntimeException("internal error: illegal segment operator got through syntax regex, instruction string " + instructions);
                                 }
-                                permissions.setMode(newPerms);
+
+								try (final DBBroker broker = db.acquireBroker()) {
+									PermissionFactory.chmod(broker, resource.getPermissions(), Optional.of(newPerms), Optional.empty());
+								}
                         }
                     } catch(PermissionDeniedException pde) {
                         throw new DatabaseException(pde.getMessage(), pde);
                     }
 		}
-		
+
+		@Override
 		public String toString() {
-			StringBuilder buf = new StringBuilder();
+			final StringBuilder buf = new StringBuilder();
+			final Permission permissions = resource.getPermissions();
 			if (permissions.getOwnerMode() == permissions.getGroupMode()
 					&& permissions.getOwnerMode() == permissions.getOtherMode()) {
 				appendPermissions('a', 'u', buf); buf.append(' ');

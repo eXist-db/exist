@@ -20,16 +20,15 @@
 package org.exist.security;
 
 import java.io.IOException;
-import static org.exist.security.PermissionRequired.IS_DBA;
-import static org.exist.security.PermissionRequired.IS_MEMBER;
-import static org.exist.security.PermissionRequired.IS_OWNER;
-import static org.exist.security.PermissionRequired.IS_SET_GID;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.security.internal.RealmImpl;
+import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
+
+import static org.exist.security.PermissionRequired.*;
 
 /**
  * Manages the permissions assigned to a resource. This includes
@@ -149,8 +148,8 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
         }
     }
 
-    @PermissionRequired(user = IS_DBA)
-    private void setOwnerId(final int ownerId) {
+    @PermissionRequired(user = IS_DBA | IS_OWNER)
+    private void setOwnerId(@PermissionRequired(user = IS_DBA | NOT_POSIX_CHOWN_RESTRICTED) final int ownerId) {
         this.vector =
             ((long)ownerId << 32) | //left shift new ownerId into position
             (vector & 4294967295L); //extract everything from current permission except ownerId
@@ -209,7 +208,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
     
     @PermissionRequired(user = IS_DBA | IS_OWNER)
-    private void setGroupId(@PermissionRequired(user = IS_DBA | IS_MEMBER) final int groupId) {
+    private void setGroupId(@PermissionRequired(user = IS_DBA | IS_MEMBER | NOT_POSIX_CHOWN_RESTRICTED) final int groupId) {
         /*
         This function wrapper is really just used as a place
         to focus PermissionRequired checks for several public
@@ -492,13 +491,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
 
     @Override
     public boolean isCurrentSubjectInGroup() {
-        final int groupId = getGroupId();
-        for(final int currentSubjectGroupId : getCurrentSubject().getGroupIds()) {
-            if(groupId == currentSubjectGroupId) {
-                return true;
-            }
-        }
-        return false;
+        return isCurrentSubjectInGroup(getGroupId());
     }
     
     @Override
@@ -514,5 +507,10 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     @Override
     public UnixStylePermission copy() {
         return new UnixStylePermission(sm, vector);
+    }
+
+    @Override
+    public boolean isPosixChownRestricted() {
+        return sm.getDatabase().getConfiguration().getProperty(DBBroker.POSIX_CHOWN_RESTRICTED_PROPERTY, true);
     }
 }

@@ -27,12 +27,7 @@ import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 
-import static org.exist.security.PermissionRequired.UNDEFINED;
-import static org.exist.security.PermissionRequired.IS_DBA;
-import static org.exist.security.PermissionRequired.IS_OWNER;
-import static org.exist.security.PermissionRequired.IS_MEMBER;
-import static org.exist.security.PermissionRequired.ACL_WRITE;
-import static org.exist.security.PermissionRequired.IS_SET_GID;
+import static org.exist.security.PermissionRequired.*;
 
 /**
  * @author Adam Retter <adam@exist-db.org>
@@ -50,24 +45,33 @@ public class PermissionRequiredAspect {
     @Before("methodParameterWithPermissionRequired(permission, o)")
     public void enforcePermissionsOnParameter(JoinPoint joinPoint, Permission permission, Object o) throws PermissionDeniedException {
         
-        //the next two lines can be replaced when this aspectj bug is closed - https://bugs.eclipse.org/bugs/show_bug.cgi?id=259416
+        //TODO(AR) the next two lines can be replaced when this aspectj bug is closed - https://bugs.eclipse.org/bugs/show_bug.cgi?id=259416
         final MethodSignature ms = (MethodSignature)joinPoint.getSignature(); 
         final PermissionRequired parameterPermissionRequired = (PermissionRequired)ms.getMethod().getParameterAnnotations()[0][0];
         
-        //1) check if we should allow DBA access
+        // 1) check if we should allow DBA access
         if(((parameterPermissionRequired.user() & IS_DBA) == IS_DBA) && permission.isCurrentSubjectDBA()) {
             return;
         }
         
-        //2) check if the user is in the target group
+        // 2) check if the user is in the target group
         if((parameterPermissionRequired.user() & IS_MEMBER) == IS_MEMBER) {
             final Integer groupId = (Integer)o;
             if(permission.isCurrentSubjectInGroup(groupId)) {
                return; 
             }
         }
-        
-        //3) check if we are looking for setGID
+
+        //  3) check if we should allow access when POSIX_CHOWN_RESTRICTED is not set
+        if((parameterPermissionRequired.user() & NOT_POSIX_CHOWN_RESTRICTED) == NOT_POSIX_CHOWN_RESTRICTED
+                && !permission.isPosixChownRestricted()) {
+            final PermissionRequired methodPermissionRequired = ms.getMethod().getAnnotation(PermissionRequired.class);
+            if ((methodPermissionRequired.user() & IS_OWNER) == IS_OWNER && permission.isCurrentSubjectOwner()) {
+                return;
+            }
+        }
+
+        // 4) check if we are looking for setGID
         if((parameterPermissionRequired.mode() & IS_SET_GID) == IS_SET_GID) {
             final Permission other = (Permission)o;
             if(other.isSetGid()) {
@@ -119,7 +123,7 @@ public class PermissionRequiredAspect {
         throw new PermissionDeniedException("You do not have appropriate access rights to modify permissions on this object");
     }
 
-    //TODO change Pointcut so that @annotation values are directly bound. see - https://bugs.eclipse.org/bugs/show_bug.cgi?id=347684
+    //TODO(AR) change Pointcut so that @annotation values are directly bound. see - https://bugs.eclipse.org/bugs/show_bug.cgi?id=347684
     /*
     @Pointcut("execution(@org.exist.security.PermissionRequired * *(..)) && this(permission) && @annotation(org.exist.security.PermissionRequired(mode,user,group))")
     public void methodWithPermissionRequired(Permission permission, int mode, int user, int group) {

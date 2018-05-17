@@ -99,4 +99,13 @@ public interface ACLPermission {
     public void clear() throws PermissionDeniedException;
     
     public boolean isCurrentSubjectCanWriteACL();
+
+    /**
+     * Determines if this ACL is equal to another ACL.
+     *
+     * @param other Another ACL to compare against.
+     *
+     * @return true if this ACL is equal to the other ACL.
+     */
+    boolean aclEquals(final ACLPermission other);
 }

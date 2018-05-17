@@ -28,11 +28,7 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 import javax.xml.transform.OutputKeys;
 
@@ -49,6 +45,7 @@ import org.exist.dom.persistent.DocumentMetadata;
 import org.exist.dom.persistent.LockToken;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.PermissionFactory;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -1027,20 +1024,20 @@ public class Resource extends File {
             modifyMetadata(new ModifyMetadata() {
 
                 @Override
-                public void modify(DocumentImpl resource) throws IOException {
-                    Permission perm = resource.getPermissions();
+                public void modify(final DBBroker broker, final DocumentImpl resource) throws IOException {
+                    final Permission perm = resource.getPermissions();
                     try {
-                        perm.setMode(perm.getMode() | (READ << 6) & ~(WRITE << 6));
+                        PermissionFactory.chmod(broker, perm, Optional.of(perm.getMode() | (READ << 6) & ~(WRITE << 6)), Optional.empty());
                     } catch (PermissionDeniedException e) {
                         throw new IOException(e);
                     }
                 }
 
                 @Override
-                public void modify(Collection collection) throws IOException {
-                    Permission perm = collection.getPermissionsNoLock();
+                public void modify(final DBBroker broker, final Collection collection) throws IOException {
+                    final Permission perm = collection.getPermissionsNoLock();
                     try {
-                        perm.setMode(perm.getMode() | (READ << 6) & ~(WRITE << 6));
+                        PermissionFactory.chmod(broker, perm, Optional.of(perm.getMode() | (READ << 6) & ~(WRITE << 6)), Optional.empty());
                     } catch (PermissionDeniedException e) {
                         throw new IOException(e);
                     }
@@ -1059,20 +1056,20 @@ public class Resource extends File {
             modifyMetadata(new ModifyMetadata() {
 
                 @Override
-                public void modify(DocumentImpl resource) throws IOException {
-                    Permission perm = resource.getPermissions();
+                public void modify(final DBBroker broker, final DocumentImpl resource) throws IOException {
+                    final Permission perm = resource.getPermissions();
                     try {
-                        perm.setMode(perm.getMode() | (EXECUTE << 6));
+                        PermissionFactory.chmod(broker, perm, Optional.of(perm.getMode() | (EXECUTE << 6)), Optional.empty());
                     } catch (PermissionDeniedException e) {
                         throw new IOException(e);
                     }
                 }
 
                 @Override
-                public void modify(Collection collection) throws IOException {
-                    Permission perm = collection.getPermissionsNoLock();
+                public void modify(final DBBroker broker, final Collection collection) throws IOException {
+                    final Permission perm = collection.getPermissionsNoLock();
                     try {
-                        perm.setMode(perm.getMode() | (EXECUTE << 6));
+                        PermissionFactory.chmod(broker, perm, Optional.of(perm.getMode() | (EXECUTE << 6)), Optional.empty());
                     } catch (PermissionDeniedException e) {
                         throw new IOException(e);
                     }
@@ -1111,12 +1108,12 @@ public class Resource extends File {
             modifyMetadata(new ModifyMetadata() {
 
                 @Override
-                public void modify(DocumentImpl resource) throws IOException {
+                public void modify(final DBBroker broker, DocumentImpl resource) throws IOException {
                     resource.getMetadata().setLastModified(time);
                 }
 
                 @Override
-                public void modify(Collection collection) throws IOException {
+                public void modify(final DBBroker broker, Collection collection) throws IOException {
                     throw new IOException("LastModified can't be set for collection.");
                 }
 
@@ -1147,9 +1144,8 @@ public class Resource extends File {
     }
 
     interface ModifyMetadata {
-        public void modify(DocumentImpl resource) throws IOException;
-
-        public void modify(Collection collection) throws IOException;
+        void modify(DBBroker broker, DocumentImpl resource) throws IOException;
+        void modify(DBBroker broker, Collection collection) throws IOException;
     }
 
     private void modifyMetadata(ModifyMetadata method) throws IOException {
@@ -1186,7 +1182,7 @@ public class Resource extends File {
                         }
 
                         try (final Txn txn = tm.beginTransaction()) {
-                            method.modify(collection);
+                            method.modify(broker, collection);
                             broker.saveCollection(txn, collection);
 
                             tm.commit(txn);
@@ -1196,7 +1192,7 @@ public class Resource extends File {
                         collection = resource.getCollection();
 
                         try (final Txn txn = tm.beginTransaction()) {
-                            method.modify(resource);
+                            method.modify(broker, resource);
                             broker.storeMetadata(txn, resource);
 
                             tm.commit(txn);

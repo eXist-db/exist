@@ -49,6 +49,7 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 import javax.xml.XMLConstants;
+import java.util.Optional;
 
 /**
  *
@@ -338,30 +339,28 @@ public class PermissionsFunction extends BasicFunction {
     }
 
     private Sequence functionChMod(final XmldbURI pathUri, final String modeStr) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri, permission -> {
-            try {
-                permission.setMode(modeStr);
-            } catch(final SyntaxException se) {
-                throw new PermissionDeniedException("Unrecognised mode syntax: " + se.getMessage(), se);
-            }
-        });
+        PermissionFactory.chmod_str(context.getBroker(), pathUri, Optional.ofNullable(modeStr), Optional.empty());
         return Sequence.EMPTY_SEQUENCE;
     }
 
     private Sequence functionChOwn(final XmldbURI pathUri, final String owner) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri, permission -> {
-            if(owner.indexOf(OWNER_GROUP_SEPARATOR) > -1) {
-                permission.setOwner(owner.substring(0, owner.indexOf((OWNER_GROUP_SEPARATOR))));
-                permission.setGroup(owner.substring(owner.indexOf(OWNER_GROUP_SEPARATOR) + 1));
-            } else {
-                permission.setOwner(owner);
-            }
-        });
+        final Optional<String> newOwner;
+        final Optional<String> newGroup;
+        if (owner.indexOf(OWNER_GROUP_SEPARATOR) > -1) {
+            newOwner = Optional.of(owner.substring(0, owner.indexOf((OWNER_GROUP_SEPARATOR)))).filter(s -> !s.isEmpty());
+            newGroup = Optional.of(owner.substring(owner.indexOf(OWNER_GROUP_SEPARATOR) + 1)).filter(s -> !s.isEmpty());
+        } else {
+            newOwner = Optional.of(owner).filter(s -> !s.isEmpty());
+            newGroup = Optional.empty();
+        }
+
+        PermissionFactory.chown(context.getBroker(), pathUri, newOwner, newGroup);
         return Sequence.EMPTY_SEQUENCE;
     }
 
     private Sequence functionChGrp(final XmldbURI pathUri, final String groupname) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri, permission -> permission.setGroup(groupname));
+        final Optional<String> newGroup = Optional.ofNullable(groupname).filter(s -> !s.isEmpty());
+        PermissionFactory.chown(context.getBroker(), pathUri, Optional.empty(), newGroup);
         return Sequence.EMPTY_SEQUENCE;
     }
     
