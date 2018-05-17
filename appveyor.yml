@@ -2,17 +2,29 @@ version: '{branch}-{build}'
 
 environment:
   matrix:
-    - JAVA_HOME: C:\Program Files\Java\jdk1.8.0
-    - JAVA_HOME: C:\Program Files\Java\jdk9
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      JAVA_HOME: C:\Program Files\Java\jdk1.8.0
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      JAVA_HOME: C:\Program Files\Java\jdk9
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+      JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+# Disabled Ubuntu OpenJDK due to AspectJ bug - https://bugs.eclipse.org/bugs/show_bug.cgi?id=534801
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+#      JAVA_HOME: /usr/lib/jvm/java-9-openjdk-amd64
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+      JAVA_HOME: /usr/lib/jvm/java-10-openjdk-amd64
 
 install:
   - cmd: set EXIST_HOME=%APPVEYOR_BUILD_FOLDER%
+  - sh: export EXIST_HOME=$APPVEYOR_BUILD_FOLDER
 
 build_script:
   - cmd: build.bat
+  - sh: cd $EXIST_HOME && ./build.sh clean && ./build.sh
 
 test_script:
   - cmd: build.bat -Dexist.autodeploy=off -Dtest.haltonerror=true -Dtest.haltonfailure=true travis
+  - sh:  cd $EXIST_HOME && ./build.sh -Dexist.autodeploy=off -Dtest.haltonerror=true -Dtest.haltonfailure=true travis
 
 after_test:
   - ps: |
