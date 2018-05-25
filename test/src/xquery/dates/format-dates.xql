@@ -552,3 +552,22 @@ declare
 function fd:language-fr($date as xs:date) {
     format-date($date, "[FNn], [D1o] [MNn] [Y]", "fr", (), ())
 };
+
+declare
+    %test:args("2018-05-21Z")
+    %test:assertEquals("Monday")
+    %test:args("2018-05-22Z")
+    %test:assertEquals("Tuesday")
+    %test:args("2018-05-23Z")
+    %test:assertEquals("Wednesday")
+    %test:args("2018-05-24Z")
+    %test:assertEquals("Thursday")
+    %test:args("2018-05-25Z")
+    %test:assertEquals("Friday")
+    %test:args("2018-05-26Z")
+    %test:assertEquals("Saturday")
+    %test:args("2018-05-27Z")
+    %test:assertEquals("Sunday")
+function fd:written-day-en($date-str as xs:string) {
+    format-date(xs:date(date-str), "[FNn]", "en", (), ())
+};

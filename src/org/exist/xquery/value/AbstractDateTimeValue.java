@@ -462,6 +462,14 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         return calendar.hashCode();
     }
 
+    /**
+     * Get's the numeric day of the week.
+     *
+     * Note that numbering starts from {@link Calendar#SUNDAY} which
+     * is day 1.
+     *
+     * @return the day of the week.
+     */
     public int getDayOfWeek() {
         return calendar.toGregorianCalendar().get(Calendar.DAY_OF_WEEK);
     }
