@@ -4,8 +4,7 @@ $Id$
  */
 package org.exist.xmldb;
 
-import java.util.ArrayList;
-
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.xquery.util.URIUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -17,6 +16,13 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+
 import static org.junit.Assert.*;
 
 /** A test case for accessing collections remotely
@@ -25,7 +31,7 @@ import static org.junit.Assert.*;
  */
 public class RemoteCollectionTest extends RemoteDBTest {
 
-	private final static String XML_CONTENT = "<xml/>";
+    private final static String XML_CONTENT = "<xml/>";
 	private final static String BINARY_CONTENT = "TEXT";
 
 	@Before
@@ -67,7 +73,7 @@ public class RemoteCollectionTest extends RemoteDBTest {
 	}
 
     @Test
-	public void createResource() throws XMLDBException {
+	public void createStringResource() throws XMLDBException {
         Collection collection = getCollection();
         { // XML resource:
             Resource resource = collection.createResource("testresource", "XMLResource");
@@ -84,6 +90,31 @@ public class RemoteCollectionTest extends RemoteDBTest {
             collection.storeResource(resource);
         }
 	}
+
+    @Test /* issue 1874 */
+    public void createXMLFileResource() throws XMLDBException, IOException {
+        Collection collection = getCollection();
+        final Resource resource = collection.createResource("testresource", "XMLResource");
+        assertNotNull(resource);
+        assertEquals(collection, resource.getParentCollection());
+
+        final String sometxt = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        final Path path = Paths.get("tmp.xml");
+        try {
+            final StringBuilder sb = new StringBuilder();
+            sb.append("<?xml version='1.0'?><xml>");
+            for (int i = 0; i < 5000; i++) {
+                sb.append("<element>").append(sometxt).append("</element>");
+            }
+            sb.append("</xml>");
+            Files.copy(new FastByteArrayInputStream(sb.toString().getBytes()), path, StandardCopyOption.REPLACE_EXISTING);
+            resource.setContent(path);
+            collection.storeResource(resource);
+
+        } finally {
+            Files.delete(path);
+        }
+    }
 
     @Test
 	public void getNonExistentResource() throws XMLDBException {
