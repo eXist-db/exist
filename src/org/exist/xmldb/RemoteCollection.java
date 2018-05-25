@@ -19,18 +19,6 @@
  */
 package org.exist.xmldb;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.Stream;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
@@ -44,12 +32,16 @@ import org.exist.util.FileUtils;
 import org.exist.util.Leasable;
 import org.xml.sax.InputSource;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.ErrorCodes;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.Service;
-import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
+
+import java.io.*;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * A remote implementation of the Collection interface. This implementation
@@ -596,6 +588,10 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
                     if (content instanceof EXistInputSource) {
                         descString = ((EXistInputSource) content).getSymbolicPath();
                     }
+                } else if (content instanceof String) {
+                    is = new ByteArrayInputStream(((String) content).getBytes());
+                } else {
+                    LOG.error("Unable to get content from {}", content);
                 }
             }
 
