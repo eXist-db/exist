@@ -30,6 +30,7 @@ import org.exist.util.Compressor;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
 import org.exist.util.Leasable;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.xml.sax.InputSource;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.*;
@@ -589,7 +590,7 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
                         descString = ((EXistInputSource) content).getSymbolicPath();
                     }
                 } else if (content instanceof String) {
-                    is = new ByteArrayInputStream(((String) content).getBytes());
+                    is = new FastByteArrayInputStream(((String) content).getBytes());
                 } else {
                     LOG.error("Unable to get content from {}", content);
                 }
