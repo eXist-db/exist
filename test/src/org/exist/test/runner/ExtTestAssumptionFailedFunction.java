@@ -23,8 +23,10 @@ package org.exist.test.runner;
 import org.exist.xquery.Annotation;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.junit.AssumptionViolatedException;
 import org.junit.runner.Description;
@@ -49,10 +51,44 @@ public class ExtTestAssumptionFailedFunction extends JUnitIntegrationFunction {
         final Sequence arg1 = getCurrentArguments()[0];
         final String name = arg1.itemAt(0).getStringValue();
 
+        final Sequence arg2 = getCurrentArguments().length == 2 ? getCurrentArguments()[1] : null;
+        final MapType assumption = arg2 != null ? (MapType)arg2.itemAt(0) : null;
+
+        final Description description = Description.createTestDescription(suiteName, name, new Annotation[0]);
+
         // notify JUnit
-        //TODO(AR) figure out what info to pass from failed assumption to AssumptionViolationException
-        notifier.fireTestAssumptionFailed(new Failure(Description.createTestDescription(suiteName, name, new Annotation[0]), new AssumptionViolatedException("TODO integrate values from XQuery")));
+        try {
+            final AssumptionViolatedException assumptionFailureReason = assumptionMapAsAssumptionViolationException(assumption);
+
+            // NOTE: We remove the StackTrace, because it is not useful to have a Java Stack Trace pointing into the XML XQuery Test Suite code
+            assumptionFailureReason.setStackTrace(new StackTraceElement[0]);
+
+            notifier.fireTestAssumptionFailed(new Failure(description, assumptionFailureReason));
+        } catch (final XPathException e) {
+            //signal internal failure
+            notifier.fireTestFailure(new Failure(description, e));
+        }
 
         return Sequence.EMPTY_SEQUENCE;
+    }
+
+    public AssumptionViolatedException assumptionMapAsAssumptionViolationException(final MapType assumptionMap) throws XPathException {
+        final Sequence seqName = assumptionMap.get(new StringValue("name"));
+        final String name;
+        if(seqName != null && !seqName.isEmpty()) {
+            name = seqName.itemAt(0).getStringValue();
+        } else {
+            name = "";
+        }
+
+        final Sequence seqValue = assumptionMap.get(new StringValue("value"));
+        final String value;
+        if(seqValue != null && !seqValue.isEmpty()) {
+            value = seqValue.itemAt(0).getStringValue();
+        } else {
+            value = "";
+        }
+
+        return new AssumptionViolatedException("Assumption %" + name + " does not hold for: " + value);
     }
 }

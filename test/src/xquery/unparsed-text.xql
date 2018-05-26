@@ -5,7 +5,9 @@ xquery version "3.1";
  :)
 module namespace upt="http://exist-db.org/xquery/test/unparsed-text";
 
+import module namespace system="http://exist-db.org/xquery/system";
 import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
+import module namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 declare
     %test:setUp
@@ -23,25 +25,29 @@ function upt:cleanup() {
     xmldb:remove("/db/test-unparsed-text")
 };
 
-declare 
+declare
+    %test:assumeInternetAccess("https://raw.githubusercontent.com")
     %test:assertXPath("contains($result, 'eXist')")
 function upt:unparsed-text-from-url() {
     unparsed-text("https://raw.githubusercontent.com/eXist-db/exist/develop/test/src/xquery/README")
 };
 
-declare 
+declare
+    %test:assumeInternetAccess("https://raw.githubusercontent.com")
     %test:assertXPath("contains($result, '----')")
 function upt:unparsed-text-lines-from-url() {
     unparsed-text-lines("https://raw.githubusercontent.com/eXist-db/exist/develop/test/src/xquery/README")[2]
 };
 
-declare 
+declare
+    %test:assumeInternetAccess("https://raw.githubusercontent.com")
     %test:assertEquals(6)
 function upt:unparsed-text-lines-from-url-count() {
     count(unparsed-text-lines("https://raw.githubusercontent.com/eXist-db/exist/develop/test/src/xquery/README"))
 };
 
-declare 
+declare
+    %test:assumeInternetAccess("https://raw.githubusercontent.com")
     %test:assertXPath("contains($result, 'eXist')")
 function upt:unparsed-text-from-url-encoding() {
     unparsed-text("https://raw.githubusercontent.com/eXist-db/exist/develop/test/src/xquery/README", "UTF-8")
@@ -137,13 +143,15 @@ function upt:windows-path() {
     unparsed-text-lines("C:\file-might-exist.txt", "utf-8")
 };
 
-declare 
+declare
+    %test:assumeInternetAccess("https://raw.githubusercontent.com")
     %test:assertTrue
 function upt:unparsed-text-available-from-url() {
     unparsed-text-available("https://raw.githubusercontent.com/eXist-db/exist/develop/test/src/xquery/README")
 };
 
-declare 
+declare
+    %test:assumeInternetAccess("https://raw.githubusercontent.com")
     %test:assertTrue
 function upt:unparsed-text-available-from-url-encoding() {
     unparsed-text-available("https://raw.githubusercontent.com/eXist-db/exist/develop/test/src/xquery/README", "UTF-8")
