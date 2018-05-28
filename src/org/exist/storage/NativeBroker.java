@@ -1154,7 +1154,7 @@ public class NativeBroker extends DBBroker {
             if(child.getResourceType() == DocumentImpl.XML_FILE) {
                 //TODO : put a lock on newDoc ?
                 final DocumentImpl newDoc = new DocumentImpl(pool, destCollection._2, child.getFileURI());
-                newDoc.copyOf(child, false);
+                newDoc.copyOf(this, child, oldDoc);
                 if(oldDoc != null) {
                     //preserve permissions from existing doc we are replacing
                     newDoc.setPermissions(oldDoc.getPermissions()); //TODO use newDoc.copyOf(oldDoc) ideally, but we cannot currently access oldDoc without READ access to it, which we may not have (and should not need for this)!
@@ -1173,7 +1173,7 @@ public class NativeBroker extends DBBroker {
                 createdDoc = newDoc;
             } else {
                 final BinaryDocument newDoc = new BinaryDocument(pool, destCollection._2, child.getFileURI());
-                newDoc.copyOf(child, false);
+                newDoc.copyOf(this, child, oldDoc);
                 if(oldDoc != null) {
                     //preserve permissions from existing doc we are replacing
                     newDoc.setPermissions(oldDoc.getPermissions()); //TODO use newDoc.copyOf(oldDoc) ideally, but we cannot currently access oldDoc without READ access to it, which we may not have (and should not need for this)!
@@ -2480,19 +2480,30 @@ public class NativeBroker extends DBBroker {
                 trigger.beforeCopyDocument(this, transaction, doc, newURI);
 
                 DocumentImpl newDocument = null;
-                if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                    InputStream is = null;
-                    try {
-                        is = getBinaryResource((BinaryDocument) doc);
-                        newDocument = destination.addBinaryResource(transaction, this, newName, is, doc.getMetadata().getMimeType(), -1);
-                    } finally {
-                        if(is != null) {
-                            is.close();
+                if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                    try (final InputStream is = getBinaryResource((BinaryDocument) doc)) {
+                        final BinaryDocument newDoc;
+                        if (oldDoc != null) {
+                            newDoc = new BinaryDocument(oldDoc);
+                        } else {
+                            newDoc = new BinaryDocument(getBrokerPool(), destination, newName);
+                        }
+                        newDoc.copyOf(this, doc, oldDoc);
+                        newDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
+                        try {
+                            destination.addBinaryResource(transaction, this, newDoc, is, doc.getMetadata().getMimeType(), -1, null, null);
+                        } finally {
+                            newDoc.getUpdateLock().release(LockMode.WRITE_LOCK);
                         }
                     }
                 } else {
-                    final DocumentImpl newDoc = new DocumentImpl(pool, destination, newName);
-                    newDoc.copyOf(doc, oldDoc != null);
+                    final DocumentImpl newDoc;
+                    if (oldDoc != null) {
+                        newDoc = new DocumentImpl(oldDoc);
+                    } else {
+                        newDoc = new DocumentImpl(pool, destination, newName);
+                    }
+                    newDoc.copyOf(this, doc, oldDoc);
                     newDoc.setDocId(getNextResourceId(transaction, destination));
                     newDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
                     try {
@@ -2930,7 +2941,7 @@ public class NativeBroker extends DBBroker {
             }.run();
             // create a copy of the old doc to copy the nodes into it
             final DocumentImpl tempDoc = new DocumentImpl(pool, doc.getCollection(), doc.getFileURI());
-            tempDoc.copyOf(doc, true);
+            tempDoc.copyOf(this, doc, doc);
             tempDoc.setDocId(doc.getDocId());
             final StreamListener listener = getIndexController().getStreamListener(doc, ReindexMode.STORE);
             // copy the nodes
@@ -2965,7 +2976,7 @@ public class NativeBroker extends DBBroker {
                 LOG.debug("Defragmentation took " + (System.currentTimeMillis() - start) + "ms.");
         } catch(final ReadOnlyException e) {
             LOG.warn(DATABASE_IS_READ_ONLY, e);
-        } catch(final IOException e) {
+        } catch(final PermissionDeniedException | IOException e) {
             LOG.error(e);
         }
     }

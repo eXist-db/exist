@@ -239,4 +239,6 @@ public interface Permission {
     boolean isCurrentSubjectInGroup();
 
     boolean isCurrentSubjectInGroup(int groupId);
+
+    Permission copy();
 }
