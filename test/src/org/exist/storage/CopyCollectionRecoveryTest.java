@@ -206,7 +206,7 @@ public class CopyCollectionRecoveryTest {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
             final DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination/test3/test.xml"), LockMode.READ_LOCK);
-            assertNotNull("Document should be null", doc);
+            assertNull("Document should not exist as copy was not committed", doc);
         }
     }
 
