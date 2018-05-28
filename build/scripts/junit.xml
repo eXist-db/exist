@@ -578,7 +578,4 @@
         </junit>
     </target>
     
-    <!-- Build and test for travis service -->
-    <target name="travis" depends="clean,clean-all,all,test-prepare,test-local,test-wrapup"/>
-        
 </project>

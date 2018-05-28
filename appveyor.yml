@@ -23,8 +23,8 @@ build_script:
   - sh: cd $EXIST_HOME && ./build.sh clean && ./build.sh
 
 test_script:
-  - cmd: build.bat -Dexist.autodeploy=off -Dtest.haltonerror=true -Dtest.haltonfailure=true travis
-  - sh:  cd $EXIST_HOME && ./build.sh -Dexist.autodeploy=off -Dtest.haltonerror=true -Dtest.haltonfailure=true travis
+  - cmd: build.bat -Dexist.autodeploy=off -Dtest.haltonerror=true -Dtest.haltonfailure=true test
+  - sh:  cd $EXIST_HOME && ./build.sh -Dexist.autodeploy=off -Dtest.haltonerror=true -Dtest.haltonfailure=true test
 
 after_test:
   - ps: |
