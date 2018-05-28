@@ -31,6 +31,7 @@ import org.junit.runners.Suite;
         ReindexTest.class,
         ShutdownTest.class,
         CollectionTest.class,
+        CopyResourceTest.class,
         CopyResourceRecoveryTest.class,
         MoveResourceRecoveryTest.class,
         CopyCollectionRecoveryTest.class,
