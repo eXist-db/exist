@@ -68,6 +68,17 @@ public class BinaryDocument extends DocumentImpl {
         super(prevDoc);
     }
 
+    /**
+     * Creates a new persistent binary Document instance to replace an existing document instance.
+     *
+     * @param collection The Collection which holds this document
+     * @param prevDoc The previous Document object that we are overwriting
+     * @param prevDoc The previous binary Document object that we are overwriting
+     */
+    public BinaryDocument(final BrokerPool pool, final Collection collection, final Collection.CollectionEntry prevDoc) {
+        super(pool, collection, prevDoc);
+    }
+
     @Override
     public byte getResourceType() {
         return BINARY_FILE;

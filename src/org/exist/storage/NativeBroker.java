@@ -778,7 +778,7 @@ public class NativeBroker extends DBBroker {
 
                         sub = new MutableCollection(this, path);
                         //inherit the group to the sub-collection if current collection is setGid
-                        if(current.getPermissions().isSetGid()) {
+                        if (current.getPermissions().isSetGid()) {
                             sub.getPermissions().setGroupFrom(current.getPermissions()); //inherit group
                             sub.getPermissions().setSetGid(true); //inherit setGid bit
                         }
@@ -1099,7 +1099,7 @@ public class NativeBroker extends DBBroker {
 
                 final DocumentTrigger docTrigger = new DocumentTriggers(this);
 
-                final Collection newCollection = doCopyCollection(transaction, docTrigger, collection, destination, newName, false);
+                final Collection newCollection = doCopyCollection(transaction, docTrigger, collection, destination, newName, true);
 
                 trigger.afterCopyCollection(this, transaction, newCollection, srcURI);
             } finally {
@@ -1123,10 +1123,16 @@ public class NativeBroker extends DBBroker {
         final Tuple2<Boolean, Collection> destCollection = getOrCreateCollectionExplicit(transaction, newName);
 
         //if required, copy just the mode and acl of the permissions to the dest collection
-        if(copyCollectionMode && destCollection._1) {
+        if (copyCollectionMode && destCollection._1) {
             final Permission srcPerms = collection.getPermissions();
             final Permission destPerms = destCollection._2.getPermissions();
             copyModeAndAcl(srcPerms, destPerms);
+        }
+
+        // inherit the group to the destCollection if destination is setGid
+        if (destination.getPermissions().isSetGid()) {
+            destCollection._2.getPermissions().setGroupFrom(destination.getPermissions()); //inherit group
+            destCollection._2.getPermissions().setSetGid(true); //inherit setGid bit
         }
 
         for(final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
@@ -1136,8 +1142,7 @@ public class NativeBroker extends DBBroker {
                 LOG.debug("Copying resource: '" + child.getURI() + "'");
             }
 
-            //TODO The code below seems quite different to that in NativeBroker#copyResource presumably should be the same?
-
+            // TODO(AR) The code below seems quite different to that in NativeBroker#copyResource presumably should be the same?
 
             final XmldbURI newUri = destCollection._2.getURI().append(child.getFileURI());
             trigger.beforeCopyDocument(this, transaction, child, newUri);
@@ -1153,18 +1158,13 @@ public class NativeBroker extends DBBroker {
             DocumentImpl createdDoc;
             if(child.getResourceType() == DocumentImpl.XML_FILE) {
                 //TODO : put a lock on newDoc ?
-                final DocumentImpl newDoc = new DocumentImpl(pool, destCollection._2, child.getFileURI());
-                newDoc.copyOf(this, child, oldDoc);
-                if(oldDoc != null) {
-                    //preserve permissions from existing doc we are replacing
-                    newDoc.setPermissions(oldDoc.getPermissions()); //TODO use newDoc.copyOf(oldDoc) ideally, but we cannot currently access oldDoc without READ access to it, which we may not have (and should not need for this)!
+                final DocumentImpl newDoc;
+                if (oldDoc != null) {
+                    newDoc = new DocumentImpl(pool, destCollection._2, oldDoc);
                 } else {
-                    //copy just the mode and acl of the permissions to the dest document
-                    final Permission srcPerm = child.getPermissions();
-                    final Permission destPerm = newDoc.getPermissions();
-                    copyModeAndAcl(srcPerm, destPerm);
+                    newDoc = new DocumentImpl(pool, destCollection._2, child.getFileURI());
                 }
-
+                newDoc.copyOf(this, child, oldDoc);
                 newDoc.setDocId(getNextResourceId(transaction, destination));
                 copyXMLResource(transaction, child, newDoc);
                 storeXMLResource(transaction, newDoc);
@@ -1172,12 +1172,13 @@ public class NativeBroker extends DBBroker {
 
                 createdDoc = newDoc;
             } else {
-                final BinaryDocument newDoc = new BinaryDocument(pool, destCollection._2, child.getFileURI());
-                newDoc.copyOf(this, child, oldDoc);
-                if(oldDoc != null) {
-                    //preserve permissions from existing doc we are replacing
-                    newDoc.setPermissions(oldDoc.getPermissions()); //TODO use newDoc.copyOf(oldDoc) ideally, but we cannot currently access oldDoc without READ access to it, which we may not have (and should not need for this)!
+                final BinaryDocument newDoc;
+                if (oldDoc != null) {
+                    newDoc = new BinaryDocument(pool, destCollection._2, oldDoc);
+                } else {
+                    newDoc = new BinaryDocument(pool, destCollection._2, child.getFileURI());
                 }
+                newDoc.copyOf(this, child, oldDoc);
                 newDoc.setDocId(getNextResourceId(transaction, destination));
 
                 try(final InputStream is = getBinaryResource((BinaryDocument) child)) {

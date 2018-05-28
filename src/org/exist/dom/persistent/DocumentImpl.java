@@ -145,6 +145,17 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         this(prevDoc.pool, prevDoc.collection, prevDoc.fileURI, prevDoc.permissions.copy());
     }
 
+    /**
+     * Creates a new persistent Document instance to replace an existing document instance.
+     *
+     * @param pool The broker pool
+     * @param collection The Collection which holds this document
+     * @param prevDoc The previous Document object that we are overwriting
+     */
+    public DocumentImpl(final BrokerPool pool, final Collection collection, final Collection.CollectionEntry prevDoc) {
+        this(pool, collection, prevDoc.getUri().lastSegment(), prevDoc.getPermissions().copy());
+    }
+
     private DocumentImpl(final BrokerPool pool, final Collection collection, final XmldbURI fileURI, final Permission permissions) {
         this.pool = pool;
         this.collection = collection;
