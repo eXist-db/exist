@@ -1,23 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2014 The eXist Project
- *  http://exist-db.org
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2018 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.storage;
 
@@ -40,20 +38,17 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-/**
- * @author wolf
- * 
- */
-public class CopyResourceTest {
+public class CopyResourceRecoveryTest {
 
-    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    @Rule
+    public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
     public void storeAndRead() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException {
@@ -61,14 +56,12 @@ public class CopyResourceTest {
         final String subCollection = "storeAndRead";
 
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = startDb();
-        store(pool, testCollectionName, subCollection);
+        store(testCollectionName, subCollection);
 
-        stopDb();
+        existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        pool = startDb();
-        read(pool, testCollectionName);
+        read(testCollectionName);
     }
 
     @Test
@@ -78,18 +71,17 @@ public class CopyResourceTest {
 
 
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = startDb();
-        storeAborted(pool, testCollectionName, subCollection);
+        storeAborted(testCollectionName, subCollection);
 
-        stopDb();
+        existEmbeddedServer.restart();
 
-        pool = startDb();
-        readAborted(pool, testCollectionName, subCollection);
+        readAborted(testCollectionName, subCollection);
     }
 
-	private void store(final BrokerPool pool, final String testCollectionName, final String subCollection) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, DatabaseConfigurationException {
+    private void store(final String testCollectionName, final String subCollection) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
-		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection testCollection;
             IndexInfo info;
@@ -123,29 +115,31 @@ public class CopyResourceTest {
 
                 transact.commit(transaction);
             }
-		}
-	}
+        }
+    }
 
-	private void read(final BrokerPool pool, final String testCollectionName) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException {
-		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-			final Serializer serializer = broker.getSerializer();
-			serializer.reset();
+    private void read(final String testCollectionName) throws EXistException, PermissionDeniedException, SAXException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            final Serializer serializer = broker.getSerializer();
+            serializer.reset();
 
-			DocumentImpl doc = null;
-			try {
-				doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append("new_test.xml"), LockMode.READ_LOCK);
-				assertNotNull("Document should not be null", doc);
-				final String data = serializer.serialize(doc);
-				assertNotNull(data);
-			} finally {
-				if(doc != null) {
-					doc.getUpdateLock().release(LockMode.READ_LOCK);
-				}
-			}
-		}
-	}
+            DocumentImpl doc = null;
+            try {
+                doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append("new_test.xml"), LockMode.READ_LOCK);
+                assertNotNull("Document should not be null", doc);
+                final String data = serializer.serialize(doc);
+                assertNotNull(data);
+            } finally {
+                if(doc != null) {
+                    doc.getUpdateLock().release(LockMode.READ_LOCK);
+                }
+            }
+        }
+    }
 
-    private void storeAborted(final BrokerPool pool, final String testCollectionName, final String subCollection) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, LockException {
+    private void storeAborted(final String testCollectionName, final String subCollection) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
@@ -175,45 +169,41 @@ public class CopyResourceTest {
                 transact.commit(transaction);
             }
 
-			final Txn transaction = transact.beginTransaction();
+            final Txn transaction = transact.beginTransaction();
 
-			broker.copyResource(transaction, info.getDocument(), testCollection, XmldbURI.create("new_test2.xml"));
-			broker.saveCollection(transaction, testCollection);
+            broker.copyResource(transaction, info.getDocument(), testCollection, XmldbURI.create("new_test2.xml"));
+            broker.saveCollection(transaction, testCollection);
 
 //DO NOT COMMIT TRANSACTION
-			pool.getJournalManager().get().flush(true, false);
-		}
-	}
+            pool.getJournalManager().get().flush(true, false);
+        }
+    }
 
-	private void readAborted(final BrokerPool pool, final String testCollectionName, final String subCollection) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException {
-		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-			final Serializer serializer = broker.getSerializer();
-			serializer.reset();
+    private void readAborted(final String testCollectionName, final String subCollection) throws EXistException, PermissionDeniedException, SAXException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            final Serializer serializer = broker.getSerializer();
+            serializer.reset();
 
-			DocumentImpl doc = null;
-			try {
-				doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append(subCollection).append("test2.xml"), LockMode.READ_LOCK);
-				assertNotNull("Document should not be null", doc);
-				final String data = serializer.serialize(doc);
-				assertNotNull(data);
-			} finally {
-				if(doc != null) {
-					doc.getUpdateLock().release(LockMode.READ_LOCK);
-				}
-			}
+            DocumentImpl doc = null;
+            try {
+                doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append(subCollection).append("test2.xml"), LockMode.READ_LOCK);
+                assertNotNull("Document should not be null", doc);
+                final String data = serializer.serialize(doc);
+                assertNotNull(data);
+            } finally {
+                if(doc != null) {
+                    doc.getUpdateLock().release(LockMode.READ_LOCK);
+                }
+            }
 
-			doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append("new_test2.xml"), LockMode.READ_LOCK);
-			assertNull("Document should not exist", doc);
-		}
-	}
-
-    private BrokerPool startDb() throws EXistException, IOException, DatabaseConfigurationException {
-        existEmbeddedServer.startDb();
-        return existEmbeddedServer.getBrokerPool();
+            doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append("new_test2.xml"), LockMode.READ_LOCK);
+            assertNull("Document should not exist as copy was not committed", doc);
+        }
     }
 
     @After
-    public void stopDb() {
-        existEmbeddedServer.stopDb();
+    public void cleanup() {
+        BrokerPool.FORCE_CORRUPTION = false;
     }
 }

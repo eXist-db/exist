@@ -1,23 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
- *  http://exist-db.org
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2013 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.storage;
 
@@ -39,12 +37,14 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
-import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.DatabaseImpl;
+import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -53,57 +53,54 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
-public class CopyCollectionTest {
+public class CopyCollectionRecoveryTest {
 
-    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    @Rule
+    public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void storeAndRead() throws EXistException, InstantiationException, DatabaseConfigurationException, LockException, IllegalAccessException, PermissionDeniedException, SAXException, IOException, XMLDBException, ClassNotFoundException {
+    public void storeAndRead() throws EXistException, DatabaseConfigurationException, LockException, PermissionDeniedException, SAXException, IOException {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = startDb();
-        store(pool);
+        store();
 
-        stopDb();
+        existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        pool = startDb();
-        read(pool);
+        read();
     }
 
     @Test
-    public void storeAndReadAborted() throws EXistException, InstantiationException, DatabaseConfigurationException, LockException, IllegalAccessException, PermissionDeniedException, SAXException, IOException, XMLDBException, ClassNotFoundException {
+    public void storeAndReadAborted() throws EXistException, DatabaseConfigurationException, LockException, PermissionDeniedException, SAXException, IOException {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = startDb();
-        storeAborted(pool);
+        storeAborted();
 
-        stopDb();
+        existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        pool = startDb();
-        readAborted(pool);
+        readAborted();
     }
 
     @Test
-    public void storeAndReadXmldb() throws DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, IOException {
+    public void storeAndReadXmldb() throws DatabaseConfigurationException, XMLDBException, EXistException, IOException {
+        // initialize xml:db driver
+        final Database database = new DatabaseImpl();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
+
+
         BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDb();
+        xmldbStore();
 
-        xmldbStore(pool);
-
-        stopDb();
+        existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        pool = startDb();
-        xmldbRead(pool);
+        xmldbRead();
     }
 
     @Test(expected = PermissionDeniedException.class)
     public void copyToSubCollection() throws Exception {
-        final BrokerPool pool = startDb();
-
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
-
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
@@ -121,11 +118,11 @@ public class CopyCollectionTest {
         }
     }
 
-    private void store(final BrokerPool pool) throws DatabaseConfigurationException, XMLDBException, EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    private void store() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
-        
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-                final Txn transaction = transact.beginTransaction()) {
+            final Txn transaction = transact.beginTransaction()) {
 
             final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             broker.saveCollection(transaction, root);
@@ -137,26 +134,27 @@ public class CopyCollectionTest {
             final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
                     new InputSource(f.toUri().toASCIIString()));
             test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
-            
+
             final Collection dest = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("destination"));
             broker.saveCollection(transaction, dest);
-            
+
             broker.copyCollection(transaction, test, dest, XmldbURI.create("test3"));
 
             transact.commit(transaction);
         }
     }
 
-    private void read(final BrokerPool pool) throws DatabaseConfigurationException, XMLDBException, EXistException, PermissionDeniedException, SAXException {
+    private void read() throws EXistException, PermissionDeniedException, SAXException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Serializer serializer = broker.getSerializer();
-            serializer.reset(); 
-            
+            serializer.reset();
+
             DocumentImpl doc = null;
             try {
                 doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination/test3/test.xml"), LockMode.READ_LOCK);
                 assertNotNull("Document should not be null", doc);
-                final String data = serializer.serialize(doc);
+                serializer.serialize(doc);
             } finally {
                 if(doc != null) {
                     doc.getUpdateLock().release(LockMode.READ_LOCK);
@@ -165,7 +163,8 @@ public class CopyCollectionTest {
         }
     }
 
-    private void storeAborted(final BrokerPool pool) throws DatabaseConfigurationException, XMLDBException, EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    private void storeAborted() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
@@ -188,7 +187,7 @@ public class CopyCollectionTest {
 
                 transact.commit(transaction);
             }
-            
+
             final Txn transaction = transact.beginTransaction();
 
             final Collection dest = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("destination"));
@@ -201,8 +200,9 @@ public class CopyCollectionTest {
         }
     }
 
-    private void readAborted(final BrokerPool pool) throws DatabaseConfigurationException, XMLDBException, EXistException, PermissionDeniedException {
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+    private void readAborted() throws EXistException, PermissionDeniedException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
             final DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination/test3/test.xml"), LockMode.READ_LOCK);
@@ -210,11 +210,11 @@ public class CopyCollectionTest {
         }
     }
 
-    private void xmldbStore(final BrokerPool pool) throws DatabaseConfigurationException, XMLDBException, EXistException {
+    private void xmldbStore() throws XMLDBException {
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         assertNotNull(root);
         EXistCollectionManagementService mgr = (EXistCollectionManagementService)
-            root.getService("CollectionManagementService", "1.0");
+                root.getService("CollectionManagementService", "1.0");
         assertNotNull(mgr);
 
         org.xmldb.api.base.Collection test = root.getChildCollection("test");
@@ -244,7 +244,7 @@ public class CopyCollectionTest {
         mgr.copy(TestConstants.TEST_COLLECTION_URI2, XmldbURI.ROOT_COLLECTION_URI.append("destination"), XmldbURI.create("test3"));
     }
 
-    private void xmldbRead(final BrokerPool pool) throws DatabaseConfigurationException, XMLDBException, EXistException {
+    private void xmldbRead() throws XMLDBException {
         final org.xmldb.api.base.Collection test = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/destination/test3", "admin", "");
         assertNotNull(test);
         final Resource res = test.getResource("test_xmldb.xml");
@@ -253,7 +253,7 @@ public class CopyCollectionTest {
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         assertNotNull(root);
         final EXistCollectionManagementService mgr = (EXistCollectionManagementService)
-            root.getService("CollectionManagementService", "1.0");
+                root.getService("CollectionManagementService", "1.0");
         assertNotNull(mgr);
         mgr.removeCollection("destination");
     }
@@ -262,19 +262,8 @@ public class CopyCollectionTest {
         return TestUtils.resolveSample("biblio.rdf");
     }
 
-    private BrokerPool startDb() throws EXistException, IOException, DatabaseConfigurationException, XMLDBException {
-        existEmbeddedServer.startDb();
-
-        // initialize driver
-        final Database database = new DatabaseImpl();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-
-        return existEmbeddedServer.getBrokerPool();
-    }
-
     @After
-    public void stopDb() {
-        existEmbeddedServer.stopDb();
+    public void cleanup() {
+        BrokerPool.FORCE_CORRUPTION = false;
     }
 }
