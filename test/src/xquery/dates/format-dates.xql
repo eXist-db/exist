@@ -527,28 +527,47 @@ function fd:time-format-in-format-date() {
 };
 
 declare
-    %test:args("2012-06-27T10:21:55.082+02:00")
+    %test:args("2012-06-27Z")
     %test:assertEquals("Mittwoch, 27. Juni 2012")
-    %test:args("1970-10-07T10:21:55.082+02:00")
+    %test:args("1970-10-07Z")
     %test:assertEquals("Mittwoch, 7. Oktober 1970")
-function fd:language($date as xs:dateTime) {
+function fd:language-de($date as xs:date) {
     format-date($date, "[FNn], [D1o] [MNn] [Y]", "de", (), ())
 };
 
 declare
-    %test:args("2012-06-27T10:21:55.082+02:00")
-    %test:assertEquals("Среда, 27 Июня 2012")
-    %test:args("1970-10-07T10:21:55.082+02:00")
-    %test:assertEquals("Среда, 7 Октября 1970")
-function fd:language-ru($date as xs:dateTime) {
+    %test:args("2012-06-01Z")
+    %test:assertEquals("пятница, 1 июня 2012")
+    %test:args("1970-10-07Z")
+    %test:assertEquals("среда, 7 октября 1970")
+function fd:language-ru($date as xs:date) {
     format-date($date, "[FNn], [D1o] [MNn] [Y]", "ru", (), ())
 };
 
 declare
-%test:args("2012-06-01")
-%test:assertEquals("jeudi, 1er juin 2012")
-%test:args("1970-10-07")
-%test:assertEquals("jeudi, 7 octobre 1970")
+%test:args("2012-06-01Z")
+%test:assertEquals("vendredi, 1er juin 2012")
+%test:args("1970-10-07Z")
+%test:assertEquals("mercredi, 7 octobre 1970")
 function fd:language-fr($date as xs:date) {
     format-date($date, "[FNn], [D1o] [MNn] [Y]", "fr", (), ())
+};
+
+declare
+    %test:args("2018-05-21Z")
+    %test:assertEquals("Monday")
+    %test:args("2018-05-22Z")
+    %test:assertEquals("Tuesday")
+    %test:args("2018-05-23Z")
+    %test:assertEquals("Wednesday")
+    %test:args("2018-05-24Z")
+    %test:assertEquals("Thursday")
+    %test:args("2018-05-25Z")
+    %test:assertEquals("Friday")
+    %test:args("2018-05-26Z")
+    %test:assertEquals("Saturday")
+    %test:args("2018-05-27Z")
+    %test:assertEquals("Sunday")
+function fd:written-day-en($date-str as xs:string) {
+    format-date(xs:date($date-str), "[FNn]", "en", (), ())
 };
