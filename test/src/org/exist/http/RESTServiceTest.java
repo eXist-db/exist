@@ -53,9 +53,12 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeThat;
 
 /**
  * A test case for accessing a remote server via REST-Style Web API.
@@ -380,6 +383,8 @@ try {
 
     @Test
     public void testPutPlus() throws IOException {
+        assumeThat("Requires non-Windows platform", System.getProperty("os.name").toLowerCase(), not(containsString("win")));
+
         final int r = uploadDataPlus();
         assertEquals("Server returned response code " + r, HttpStatus.CREATED_201, r);
 
