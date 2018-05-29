@@ -161,25 +161,26 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             processMonitor.queryStarted(xqueryContext.getWatchDog());
             
             //create a function call
-            final FunctionReference fnRef = new FunctionReference(new FunctionCall(xqueryContext, fn));
-            
-            //convert the arguments
-            final org.exist.xquery.value.Sequence[] fnArgs = convertToExistFunctionArguments(xqueryContext, fn, arguments);
-            
-            //execute the function call
-            fnRef.analyze(new AnalyzeContextInfo());
+            try (final FunctionReference fnRef = new FunctionReference(new FunctionCall(xqueryContext, fn))) {
 
-            //if setUid/setGid, determine the effectiveSubject to use for execution
-            final Optional<EffectiveSubject> effectiveSubject = getEffectiveSubject(xquery);
+                //convert the arguments
+                final org.exist.xquery.value.Sequence[] fnArgs = convertToExistFunctionArguments(xqueryContext, fn, arguments);
 
-            try {
-                effectiveSubject.ifPresent(broker::pushSubject);  //switch to effective user if setUid/setGid
-                final org.exist.xquery.value.Sequence result = fnRef.evalFunction(null, null, fnArgs);
-                return new SequenceAdapter(result);
-            } finally {
-                //switch back from effective user if setUid/setGid
-                if(effectiveSubject.isPresent()) {
-                    broker.popSubject();
+                //execute the function call
+                fnRef.analyze(new AnalyzeContextInfo());
+
+                //if setUid/setGid, determine the effectiveSubject to use for execution
+                final Optional<EffectiveSubject> effectiveSubject = getEffectiveSubject(xquery);
+
+                try {
+                    effectiveSubject.ifPresent(broker::pushSubject);  //switch to effective user if setUid/setGid
+                    final org.exist.xquery.value.Sequence result = fnRef.evalFunction(null, null, fnArgs);
+                    return new SequenceAdapter(result);
+                } finally {
+                    //switch back from effective user if setUid/setGid
+                    if (effectiveSubject.isPresent()) {
+                        broker.popSubject();
+                    }
                 }
             }
 

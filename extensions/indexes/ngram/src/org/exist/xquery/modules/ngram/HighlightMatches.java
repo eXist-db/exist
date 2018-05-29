@@ -78,41 +78,42 @@ public class HighlightMatches extends BasicFunction {
         if (args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
 
-        FunctionReference func = (FunctionReference) args[1].itemAt(0);
+        try (FunctionReference func = (FunctionReference) args[1].itemAt(0)) {
 
-        NGramIndexWorker index = (NGramIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(NGramIndex.ID);
-        MemTreeBuilder builder = context.getDocumentBuilder();
-        DocumentBuilderReceiver docBuilder = new DocumentBuilderReceiver(builder);
-        MatchCallback matchCb = new MatchCallback(func, docBuilder);
-        Serializer serializer = context.getBroker().getSerializer();
-        serializer.reset();
-        ValueSequence result = new ValueSequence();
-        for (SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
-            NodeValue v = (NodeValue) i.nextItem();
-            try {
-                int nodeNr = builder.getDocument().getLastNode();
-                if (v.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
-                    ((NodeImpl)v).copyTo(context.getBroker(), docBuilder);
-                } else {
-                    NodeProxy p = (NodeProxy) v;
-                    MatchListener ml = index.getMatchListener(context.getBroker(), p, matchCb);
-                    Receiver receiver;
-                    if (ml == null)
-                        receiver = docBuilder;
-                    else {
-                        ml.setNextInChain(docBuilder);
-                        receiver = ml;
+            NGramIndexWorker index = (NGramIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(NGramIndex.ID);
+            MemTreeBuilder builder = context.getDocumentBuilder();
+            DocumentBuilderReceiver docBuilder = new DocumentBuilderReceiver(builder);
+            MatchCallback matchCb = new MatchCallback(func, docBuilder);
+            Serializer serializer = context.getBroker().getSerializer();
+            serializer.reset();
+            ValueSequence result = new ValueSequence();
+            for (SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
+                NodeValue v = (NodeValue) i.nextItem();
+                try {
+                    int nodeNr = builder.getDocument().getLastNode();
+                    if (v.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
+                        ((NodeImpl) v).copyTo(context.getBroker(), docBuilder);
+                    } else {
+                        NodeProxy p = (NodeProxy) v;
+                        MatchListener ml = index.getMatchListener(context.getBroker(), p, matchCb);
+                        Receiver receiver;
+                        if (ml == null)
+                            receiver = docBuilder;
+                        else {
+                            ml.setNextInChain(docBuilder);
+                            receiver = ml;
+                        }
+                        serializer.setReceiver(receiver);
+                        serializer.toReceiver((NodeProxy) v, false);
                     }
-                    serializer.setReceiver(receiver);
-                    serializer.toReceiver((NodeProxy) v, false);
+                    result.add(builder.getDocument().getNode(++nodeNr));
+                } catch (SAXException e) {
+                    LOG.warn(e.getMessage(), e);
+                    throw new XPathException(this, e.getMessage());
                 }
-                result.add(builder.getDocument().getNode(++nodeNr));
-            } catch (SAXException e) {
-                LOG.warn(e.getMessage(), e);
-                throw new XPathException(this, e.getMessage());
             }
+            return result;
         }
-        return result;
     }
 
     private class MatchCallback implements NGramMatchCallback {

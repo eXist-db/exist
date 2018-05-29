@@ -1,5 +1,6 @@
 package org.exist.xquery.functions.array;
 
+import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -293,23 +294,24 @@ public class ArrayFunction extends BasicFunction {
                     case REVERSE:
                         return array.reverse();
                     case FOR_EACH:
-                        return array.forEach(getFunction(args[1]));
+                        return getFunction(args[1], array::forEach);
                     case FILTER:
-                        return array.filter(getFunction(args[1]));
+                        return getFunction(args[1], array::filter);
                     case FOLD_LEFT:
-                        return array.foldLeft(getFunction(args[2]), args[1]);
+                        return getFunction(args[2], ref -> array.foldLeft(ref, args[1]));
                     case FOLD_RIGHT:
-                        return array.foldRight(getFunction(args[2]), args[1]);
+                        return getFunction(args[2], ref -> array.foldRight(ref, args[1]));
                     case FOR_EACH_PAIR:
-                        return array.forEachPair((ArrayType) args[1].itemAt(0), getFunction(args[2]));
+                        return getFunction(args[2], ref -> array.forEachPair((ArrayType) args[1].itemAt(0), ref));
                 }
         }
         throw new XPathException(this, "Unknown function: " + getName());
     }
 
-    private FunctionReference getFunction(Sequence arg) throws XPathException {
-        final FunctionReference ref = (FunctionReference) arg.itemAt(0);
-        ref.analyze(cachedContextInfo);
-        return ref;
+    private Sequence getFunction(Sequence arg, FunctionE<FunctionReference, Sequence, XPathException> action) throws XPathException {
+        try (final FunctionReference ref = (FunctionReference) arg.itemAt(0)) {
+            ref.analyze(cachedContextInfo);
+            return action.apply(ref);
+        }
     }
 }

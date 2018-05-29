@@ -141,88 +141,98 @@ public class FunHigherOrderFun extends BasicFunction {
 			throws XPathException {
         Sequence result = new ValueSequence();
         if (isCalledAs("map")) {
-            final FunctionReference ref = (FunctionReference) args[0].itemAt(0);
-            ref.analyze(cachedContextInfo);
-            for (final SequenceIterator i = args[1].iterate(); i.hasNext(); ) {
-                final Item item = i.nextItem();
-                final Sequence r = ref.evalFunction(contextSequence, null, new Sequence[]{item.toSequence()});
-                result.addAll(r);
-            }
+            try (final FunctionReference ref = (FunctionReference) args[0].itemAt(0)) {
+				ref.analyze(cachedContextInfo);
+				for (final SequenceIterator i = args[1].iterate(); i.hasNext(); ) {
+					final Item item = i.nextItem();
+					final Sequence r = ref.evalFunction(contextSequence, null, new Sequence[]{item.toSequence()});
+					result.addAll(r);
+				}
+			}
         } else if (isCalledAs("for-each")) {
-            final FunctionReference ref = (FunctionReference) args[1].itemAt(0);
-            ref.analyze(cachedContextInfo);
-            for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
-                final Item item = i.nextItem();
-                final Sequence r = ref.evalFunction(contextSequence, null, new Sequence[]{item.toSequence()});
-                result.addAll(r);
-            }
+            try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
+				ref.analyze(cachedContextInfo);
+				for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
+					final Item item = i.nextItem();
+					final Sequence r = ref.evalFunction(contextSequence, null, new Sequence[]{item.toSequence()});
+					result.addAll(r);
+				}
+			}
         } else if (isCalledAs("filter")) {
-            FunctionReference ref;
-            Sequence seq;
+            final FunctionReference refParam;
+            final Sequence seq;
             // Hack: switch parameters for backwards compatibility
             if (Type.subTypeOf(args[1].getItemType(), Type.FUNCTION_REFERENCE)) {
-                ref = (FunctionReference) args[1].itemAt(0);
+                refParam = (FunctionReference) args[1].itemAt(0);
                 seq = args[0];
             } else {
-                ref = (FunctionReference) args[0].itemAt(0);
+                refParam = (FunctionReference) args[0].itemAt(0);
                 seq = args[1];
             }
 
-            ref.analyze(cachedContextInfo);
-        	for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-	        	final Item item = i.nextItem();
-	        	final Sequence r = ref.evalFunction(contextSequence, null, new Sequence[] { item.toSequence() });
-	        	if (r.effectiveBooleanValue())
-	        		{result.add(item);}
-	        }
-        } else if (isCalledAs("fold-left")) {
-            final FunctionReference ref = (FunctionReference) args[2].itemAt(0);
-            ref.analyze(cachedContextInfo);
-            final Sequence seq = args[0];
-            final Sequence zero = args[1];
-            result = foldLeft(ref, zero, seq.iterate(), contextSequence);
-        } else if (isCalledAs("fold-right")) {
-            final FunctionReference ref = (FunctionReference) args[2].itemAt(0);
-            ref.analyze(cachedContextInfo);
-        	final Sequence zero = args[1];
-        	final Sequence seq = args[0];
-            if(seq instanceof ValueSequence) {
-                result = foldRightNonRecursive(ref, zero, ((ValueSequence) seq).iterateInReverse(), contextSequence);
-            } else if(seq instanceof RangeSequence) {
-                result = foldRightNonRecursive(ref, zero, ((RangeSequence)seq).iterateInReverse(), contextSequence);
-            } else {
-                result = foldRight(ref, zero, seq, contextSequence);
-            }
-        } else if (isCalledAs("map-pairs")) {
-            final FunctionReference ref = (FunctionReference) args[0];
-            ref.analyze(cachedContextInfo);
-        	final SequenceIterator i1 = args[1].iterate();
-        	final SequenceIterator i2 = args[2].iterate();
-        	while (i1.hasNext() && i2.hasNext()) {
-        		final Sequence r = ref.evalFunction(contextSequence, null, 
-        				new Sequence[] { i1.nextItem().toSequence(), i2.nextItem().toSequence() });
-        		result.addAll(r);
-        	}
-        } else if (isCalledAs("for-each-pair")) {
-            final FunctionReference ref = (FunctionReference) args[2].itemAt(0);
-            ref.analyze(cachedContextInfo);
-            final SequenceIterator i1 = args[0].iterate();
-            final SequenceIterator i2 = args[1].iterate();
-            while (i1.hasNext() && i2.hasNext()) {
-                final Sequence r = ref.evalFunction(contextSequence, null,
-                        new Sequence[] { i1.nextItem().toSequence(), i2.nextItem().toSequence() });
-                result.addAll(r);
-            }
-        } else if (isCalledAs("apply")) {
-			final FunctionReference ref = (FunctionReference) args[0].itemAt(0);
-			ref.analyze(cachedContextInfo);
-			final ArrayType array = (ArrayType) args[1].itemAt(0);
-			if (!ref.getSignature().isOverloaded() && ref.getSignature().getArgumentCount() != array.getSize()) {
-				throw new XPathException(this, ErrorCodes.FOAP0001, "Number of arguments supplied to fn:apply does not match function signature. Expected: " +
-					ref.getSignature().getArgumentCount() + ", got: " + array.getSize());
+            try (final FunctionReference ref = refParam) {
+				ref.analyze(cachedContextInfo);
+				for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+					final Item item = i.nextItem();
+					final Sequence r = ref.evalFunction(contextSequence, null, new Sequence[]{item.toSequence()});
+					if (r.effectiveBooleanValue()) {
+						result.add(item);
+					}
+				}
 			}
-			final Sequence[] fargs = array.toArray();
-			return ref.evalFunction(null, null, fargs);
+        } else if (isCalledAs("fold-left")) {
+            try (final FunctionReference ref = (FunctionReference) args[2].itemAt(0)) {
+				ref.analyze(cachedContextInfo);
+				final Sequence seq = args[0];
+				final Sequence zero = args[1];
+				result = foldLeft(ref, zero, seq.iterate(), contextSequence);
+			}
+        } else if (isCalledAs("fold-right")) {
+            try (final FunctionReference ref = (FunctionReference) args[2].itemAt(0)) {
+				ref.analyze(cachedContextInfo);
+				final Sequence zero = args[1];
+				final Sequence seq = args[0];
+				if (seq instanceof ValueSequence) {
+					result = foldRightNonRecursive(ref, zero, ((ValueSequence) seq).iterateInReverse(), contextSequence);
+				} else if (seq instanceof RangeSequence) {
+					result = foldRightNonRecursive(ref, zero, ((RangeSequence) seq).iterateInReverse(), contextSequence);
+				} else {
+					result = foldRight(ref, zero, seq, contextSequence);
+				}
+			}
+        } else if (isCalledAs("map-pairs")) {
+            try (final FunctionReference ref = (FunctionReference) args[0]) {
+				ref.analyze(cachedContextInfo);
+				final SequenceIterator i1 = args[1].iterate();
+				final SequenceIterator i2 = args[2].iterate();
+				while (i1.hasNext() && i2.hasNext()) {
+					final Sequence r = ref.evalFunction(contextSequence, null,
+							new Sequence[]{i1.nextItem().toSequence(), i2.nextItem().toSequence()});
+					result.addAll(r);
+				}
+			}
+        } else if (isCalledAs("for-each-pair")) {
+            try (final FunctionReference ref = (FunctionReference) args[2].itemAt(0)) {
+				ref.analyze(cachedContextInfo);
+				final SequenceIterator i1 = args[0].iterate();
+				final SequenceIterator i2 = args[1].iterate();
+				while (i1.hasNext() && i2.hasNext()) {
+					final Sequence r = ref.evalFunction(contextSequence, null,
+							new Sequence[]{i1.nextItem().toSequence(), i2.nextItem().toSequence()});
+					result.addAll(r);
+				}
+			}
+        } else if (isCalledAs("apply")) {
+			try (final FunctionReference ref = (FunctionReference) args[0].itemAt(0)) {
+				ref.analyze(cachedContextInfo);
+				final ArrayType array = (ArrayType) args[1].itemAt(0);
+				if (!ref.getSignature().isOverloaded() && ref.getSignature().getArgumentCount() != array.getSize()) {
+					throw new XPathException(this, ErrorCodes.FOAP0001, "Number of arguments supplied to fn:apply does not match function signature. Expected: " +
+							ref.getSignature().getArgumentCount() + ", got: " + array.getSize());
+				}
+				final Sequence[] fargs = array.toArray();
+				return ref.evalFunction(null, null, fargs);
+			}
 		}
 		return result;
 	}

@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author wolf
  */
-public class FunctionReference extends AtomicValue {
+public class FunctionReference extends AtomicValue implements AutoCloseable {
 
     private final static Logger LOG = LogManager.getLogger(FunctionReference.class);
 
@@ -95,6 +95,11 @@ public class FunctionReference extends AtomicValue {
 
     public void setContext(XQueryContext context) {
         functionCall.setContext(context);
+    }
+
+    @Override
+    public void close() {
+        resetState(false);
     }
 
     public void resetState(boolean postOptimization) {
