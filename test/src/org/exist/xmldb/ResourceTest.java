@@ -46,6 +46,7 @@ import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.XMLFilenameFilter;
 import org.junit.*;
 
+import static org.exist.xmldb.AbstractLocal.PROP_JOIN_TRANSACTION_IF_PRESENT;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
@@ -72,6 +73,16 @@ public class ResourceTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
     private final static String TEST_COLLECTION = "testResource";
+
+    @BeforeClass
+    public static void prepareXmldbJoinTransactions() {
+        System.setProperty(PROP_JOIN_TRANSACTION_IF_PRESENT, "true");
+    }
+
+    @AfterClass
+    public static void releaseXmldbJoinTransactions() {
+        System.clearProperty(PROP_JOIN_TRANSACTION_IF_PRESENT);
+    }
 
     @Test
     public void readNonExistingResource() throws XMLDBException {
