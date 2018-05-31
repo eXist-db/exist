@@ -278,6 +278,10 @@ public class UserDefinedFunction extends Function implements Cloneable {
     
     public void setClosureVariables(List<ClosureVariable> vars) {
     	this.closureVariables = vars;
+    	if (vars != null) {
+    		// register the closure with the context so it gets cleared after execution
+    		context.pushClosure(this);
+		}
     }
 
     public List<ClosureVariable> getClosureVariables() {
