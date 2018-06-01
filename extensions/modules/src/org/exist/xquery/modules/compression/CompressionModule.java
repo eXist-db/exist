@@ -50,7 +50,8 @@ public class CompressionModule extends AbstractInternalModule {
             ),
             functionDefs(UnZipFunction.class,
                     UnZipFunction.FS_UNZIP[0],
-                    UnZipFunction.FS_UNZIP[1]
+                    UnZipFunction.FS_UNZIP[1],
+                    UnZipFunction.FS_UNZIP[2]
             ),
             functionDefs(GZipFunction.class,
                     GZipFunction.signatures[0]
@@ -65,12 +66,15 @@ public class CompressionModule extends AbstractInternalModule {
             ),
             functionDefs(UnTarFunction.class,
                     UnTarFunction.FS_UNTAR[0],
-                    UnTarFunction.FS_UNTAR[1]
+                    UnTarFunction.FS_UNTAR[1],
+                    UnTarFunction.FS_UNTAR[2]
             ),
             functionDefs(EntryFunctions.class,
                     EntryFunctions.FS_NO_FILTER[0],
                     EntryFunctions.FS_NO_FILTER[1],
+                    EntryFunctions.FS_FS_STORE_ENTRY3,
                     EntryFunctions.FS_FS_STORE_ENTRY4,
+                    EntryFunctions.FS_DB_STORE_ENTRY3,
                     EntryFunctions.FS_DB_STORE_ENTRY4
             )
     );

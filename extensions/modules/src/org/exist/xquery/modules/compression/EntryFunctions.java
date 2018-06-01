@@ -70,16 +70,24 @@ public class EntryFunctions extends BasicFunction {
             "Does not filter any entries.",
             returns(Type.BOOLEAN, "Always true, so that no entries are filtered. Parameters are ignored."),
             arities(
-                arity(
-                    FS_PARAM_PATH,
-                    FS_PARAM_DATA_TYPE
-                ),
-                arity(
-                    FS_PARAM_PATH,
-                    FS_PARAM_DATA_TYPE,
-                    FS_PARAM_PARAM
-                )
+                    arity(
+                            FS_PARAM_PATH,
+                            FS_PARAM_DATA_TYPE
+                    ),
+                    arity(
+                            FS_PARAM_PATH,
+                            FS_PARAM_DATA_TYPE,
+                            FS_PARAM_PARAM
+                    )
             )
+    );
+
+    private static final String FS_FS_STORE_ENTRY_NAME3 = "fs-store-entry3";
+    static final FunctionSignature FS_FS_STORE_ENTRY3 = functionSignature(
+            FS_FS_STORE_ENTRY_NAME3,
+            "Stores an entry to the filesystem. This method is only available to the DBA role. Attempts to guard against exit attacks; If an exit attack is detected then the error `compression:archive-exit-attack is raised`.",
+            returns(Type.FUNCTION_REFERENCE, "A function suitable for passing as the $entry-data#3"),
+            FS_PARAM_FS_DEST_PATH
     );
 
     private static final String FS_FS_STORE_ENTRY_NAME4 = "fs-store-entry4";
@@ -88,6 +96,14 @@ public class EntryFunctions extends BasicFunction {
             "Stores an entry to the filesystem. This method is only available to the DBA role. Attempts to guard against exit attacks; If an exit attack is detected then the error `compression:archive-exit-attack is raised`.",
             returns(Type.FUNCTION_REFERENCE, "A function suitable for passing as the $entry-data#4"),
             FS_PARAM_FS_DEST_PATH
+    );
+
+    private static final String FS_DB_STORE_ENTRY_NAME3 = "db-store-entry3";
+    static final FunctionSignature FS_DB_STORE_ENTRY3 = functionSignature(
+            FS_DB_STORE_ENTRY_NAME3,
+            "Stores an entry to the database. Attempts to guard against exit attacks; If an exit attack is detected then the error `compression:archive-exit-attack is raised`.",
+            returns(Type.FUNCTION_REFERENCE, "A function suitable for passing as the $entry-data#3"),
+            FS_PARAM_DB_DEST_COLLECTION
     );
 
     private static final String FS_DB_STORE_ENTRY_NAME4 = "db-store-entry4";
@@ -109,9 +125,16 @@ public class EntryFunctions extends BasicFunction {
             case FS_NO_FILTER_NAME:
                 return BooleanValue.TRUE;
 
+            case FS_FS_STORE_ENTRY_NAME3:
+                checkIsDBA();
+                return fsStoreEntry3(args);
+
             case FS_FS_STORE_ENTRY_NAME4:
                 checkIsDBA();
                 return fsStoreEntry4(args);
+
+            case FS_DB_STORE_ENTRY_NAME3:
+                return dbStoreEntry3(args);
 
             case FS_DB_STORE_ENTRY_NAME4:
                 return dbStoreEntry4(args);
@@ -129,10 +152,24 @@ public class EntryFunctions extends BasicFunction {
         }
     }
 
+    // returns a function reference like: ($path as xs:string, $data-type as xs:string, $data as item()?) as empty-sequence()
+    private FunctionReference fsStoreEntry3(final Sequence[] args) throws XPathException {
+        final Path fsDest = getFile(args[0].itemAt(0).toString());
+        return new FunctionReference(new FunctionCall(context, new StoreFsFunction3(context, fsDest)));
+
+    }
+
     // returns a function reference like: ($path as xs:string, $data-type as xs:string, $data as item()?, $param as item()*) as empty-sequence()
     private FunctionReference fsStoreEntry4(final Sequence[] args) throws XPathException {
         final Path fsDest = getFile(args[0].itemAt(0).toString());
         return new FunctionReference(new FunctionCall(context, new StoreFsFunction4(context, fsDest)));
+    }
+
+    // returns a function reference like: ($path as xs:string, $data-type as xs:string, $data as item()?) as empty-sequence()
+    private FunctionReference dbStoreEntry3(final Sequence[] args) throws XPathException {
+        final XmldbURI destCollection = XmldbURI.create(args[0].itemAt(0).toString());
+        return new FunctionReference(new FunctionCall(context, new StoreDbFunction3(context, destCollection)));
+
     }
 
     // returns a function reference like: ($path as xs:string, $data-type as xs:string, $data as item()?, $param as item()*) as empty-sequence()
@@ -141,9 +178,21 @@ public class EntryFunctions extends BasicFunction {
         return new FunctionReference(new FunctionCall(context, new StoreDbFunction4(context, destCollection)));
     }
 
+    private static class StoreFsFunction3 extends StoreFsFunction {
+        public StoreFsFunction3(final XQueryContext context, final Path fsDest) {
+            super(context, fsDest, FS_FS_STORE_ENTRY_NAME3 + "-store", FS_PARAM_PATH, FS_PARAM_DATA_TYPE, FS_PARAM_DATA);
+        }
+    }
+
     private static class StoreFsFunction4 extends StoreFsFunction {
         public StoreFsFunction4(final XQueryContext context, final Path fsDest) {
             super(context, fsDest, FS_FS_STORE_ENTRY_NAME4 + "-store", FS_PARAM_PATH, FS_PARAM_DATA_TYPE, FS_PARAM_DATA, FS_PARAM_PARAM);
+        }
+    }
+
+    private static class StoreDbFunction3 extends StoreDbFunction {
+        public StoreDbFunction3(final XQueryContext context, final XmldbURI destCollection) {
+            super(context, destCollection, FS_DB_STORE_ENTRY_NAME3 + "-store", FS_PARAM_PATH, FS_PARAM_DATA_TYPE, FS_PARAM_DATA);
         }
     }
 
