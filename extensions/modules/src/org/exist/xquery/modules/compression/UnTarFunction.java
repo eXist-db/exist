@@ -60,14 +60,19 @@ public class UnTarFunction extends AbstractExtractFunction {
                 		"user:untar-entry-filter($path as xs:string, $data-type as xs:string, $param as item()*) as xs:boolean. " +
                 		"$data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters, " +
                 		"for example a list of extracted files. If the return type is true() it indicates the entry " +
-                		"should be processed and passed to the entry-data function, else the resource is skipped."),
+                		"should be processed and passed to the entry-data function, else the resource is skipped. " +
+                        "If you wish to extract all resources you can use the provided compression:no-filter#3 function."
+                ),
                 new FunctionParameterSequenceType("entry-filter-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with an additional parameters for filtering function."),
                 new FunctionParameterSequenceType("entry-data", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, 
                 		"A user defined function for storing an extracted resource from the tar file. The function takes 4 parameters e.g. " +
                 		"user:untar-entry-data($path as xs:string, $data-type as xs:string, $data as item()?, $param as item()*). " +
                 		"Or a user defined function wich returns path for storing an extracted resource from the tar file. The function takes 3 parameters e.g. " +
                 		"user:entry-path($path as xs:string, $data-type as xs:string, $param as item()*) as xs:anyURI. " +
-                		"$data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters"),
+                		"$data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters" +
+                        "Functions for storing the entries to a folder on the filesystem or a collection in the database " +
+                        "provided by compression:fs-store-entry4($dest) and compression:db-store-entry4($dest)."
+                ),
                 new FunctionParameterSequenceType("entry-data-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with an additional parameters for storing function."),
             },
             new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
@@ -84,14 +89,19 @@ public class UnTarFunction extends AbstractExtractFunction {
                 		"user:untar-entry-filter($path as xs:string, $data-type as xs:string, $param as item()*) as xs:boolean. " +
                 		"$data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters, " +
                 		"for example a list of extracted files. If the return type is true() it indicates the entry " +
-                		"should be processed and passed to the entry-data function, else the resource is skipped."),
+                		"should be processed and passed to the entry-data function, else the resource is skipped. " +
+                        "If you wish to extract all resources you can use the provided compression:no-filter#3 function."
+                ),
                 new FunctionParameterSequenceType("entry-filter-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with an additional parameters for filtering function."),
                 new FunctionParameterSequenceType("entry-data", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, 
                 		"A user defined function for storing an extracted resource from the tar file. The function takes 4 parameters e.g. " +
                 		"user:untar-entry-data($path as xs:string, $data-type as xs:string, $data as item()?, $param as item()*). " +
                 		"Or a user defined function wich returns path for storing an extracted resource from the tar file. The function takes 3 parameters e.g. " +
                 		"user:entry-path($path as xs:string, $data-type as xs:string, $param as item()*) as xs:anyURI. " +
-                		"$data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters"),
+                		"$data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters" +
+                        "Functions for storing the entries to a folder on the filesystem or a collection in the database " +
+                        "provided by compression:fs-store-entry4($dest) and compression:db-store-entry4($dest)."
+                ),
                 new FunctionParameterSequenceType("entry-data-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with an additional parameters for storing function."),
 				new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "The encoding to be used during uncompressing eg: UTF8 or Cp437 from https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html"),
             },
