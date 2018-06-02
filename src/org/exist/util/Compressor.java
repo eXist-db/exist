@@ -81,8 +81,7 @@ public class Compressor {
     throws IOException {
         try (final FastByteArrayInputStream bais = new FastByteArrayInputStream(whatToUncompress);
              final ZipInputStream gzis = new ZipInputStream(bais)) {
-            final ZipEntry zipentry = gzis.getNextEntry();
-            Integer.parseInt(zipentry.getName());
+            gzis.getNextEntry();    // move to the first entry in the zip stream!
             final byte[] buf = new byte[512];
             int bread;
             while ((bread = gzis.read(buf)) != -1)
