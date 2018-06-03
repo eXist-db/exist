@@ -47,6 +47,13 @@
             <param-value>true</param-value>
         </init-param>
         <init-param>
+            <!--
+            When no user is specified in an XML-RPC request,
+            the guest user account will be used.
+
+            When useDefaultUser is set to false, the guest user
+            is prohibited from accessing the XML-RPC API.
+            -->
             <param-name>useDefaultUser</param-name>
             <param-value>true</param-value>
         </init-param>
