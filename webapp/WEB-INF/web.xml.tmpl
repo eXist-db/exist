@@ -57,6 +57,19 @@
             <param-name>useDefaultUser</param-name>
             <param-value>true</param-value>
         </init-param>
+        <init-param>
+            <!--
+            The Apache XML-RPC servlet does not set a charset
+            in the HTTP response, so the default HTTP charset
+            of ISO-8859-1 is implied.
+
+            We override that to make the default UTF-8 here.
+            You may choose any charset supported by
+            java.nio.charset.Charset
+            -->
+            <param-name>charset</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
     </servlet>
 
     <!--
