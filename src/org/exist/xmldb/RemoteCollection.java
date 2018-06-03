@@ -610,14 +610,25 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
                 int len;
                 String fileName = null;
                 while ((len = is.read(chunk)) > -1) {
-                    final byte[] compressed = Compressor.compress(chunk, len);
                     final List<Object> params = new ArrayList<>();
                     if (fileName != null) {
                         params.add(fileName);
                     }
-                    params.add(compressed);
-                    params.add(len);
-                    fileName = (String) xmlRpcClientLease.get().execute("uploadCompressed", params);
+
+                    /*
+                    Only compress the chunk if it is larger than 256 bytes,
+                    otherwise the compression framing overhead results in a larger chunk
+                    */
+                    if (len < 256) {
+                        params.add(chunk);
+                        params.add(len);
+                        fileName = (String) xmlRpcClientLease.get().execute("upload", params);
+                    } else {
+                        final byte[] compressed = Compressor.compress(chunk, len);
+                        params.add(compressed);
+                        params.add(len);
+                        fileName = (String) xmlRpcClientLease.get().execute("uploadCompressed", params);
+                    }
                 }
                 // Zero length stream? Let's get a fileName!
                 if (fileName == null) {
