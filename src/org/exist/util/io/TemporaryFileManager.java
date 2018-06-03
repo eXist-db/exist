@@ -30,9 +30,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Deque;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
@@ -40,14 +37,37 @@ import org.apache.commons.logging.LogFactory;
 import org.exist.util.FileUtils;
 
 /**
- * Temporary File Manager
+ * Temporary File Manager.
  *
- * Attempts to create and delete temporary files working around the issues of
- * some JDK platforms (e.g. Windows). Where deleting files is impossible, used
- * but finished with temporary files will be re-used where possible if they
- * cannot be deleted.
+ * Provides temporary files for use by eXist-db and deals with cleaning them
+ * up.
  *
- * @version 1.1
+ * Previously when returning a temporary file if it could not be deleted
+ * (which often occurred on Microsoft Windows) we would add it to a queue
+ * for reuse the next time a temporary file was required.
+ *
+ * On Microsoft Windows platforms this was shown to be unreliable. If the
+ * temporary file had been Memory Mapped, there would be a lingering open file
+ * handle which would only be closed when the GC reclaims the ByteBuffer
+ * objects resulting from the mapping. This exhibited two problems:
+ *     1. The previously memory mapped file could only be reused for further
+ *         memory mapped I/O. Any traditional I/O or file system operations
+ *         (e.g. copy, move, etc.) would result in a
+ *         java.nio.file.FileSystemException.
+ *     2. Keeping the previously memory mapped file in a queue, may result in
+ *     strong indirect references to the ByteBuffer objects meaning that they
+ *     will never be subject to GC, and therefore the file handles would never
+ *     be released.
+ * As such, we now never recycle temporary file objects. Instead we rely on the
+ * GC to eventually close the file handles of any previously memory mapped files
+ * and the Operating System to manage it's temporary file space.
+ *
+ * Relevant articles on the above described problems are:
+ *     1.https://bugs.java.com/view_bug.do?bug_id=4715154
+ *     2. https://bugs.openjdk.java.net/browse/JDK-8028683
+ *     3. https://bugs.java.com/view_bug.do?bug_id=4724038
+ *
+ * @version 2.0
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
@@ -55,8 +75,8 @@ public class TemporaryFileManager {
 
     private final static Log LOG = LogFactory.getLog(TemporaryFileManager.class);
 
-    private static final String FOLDER_PREFIX = "_mmtfm_";
-    private final Deque<Path> available = new ConcurrentLinkedDeque<>();
+    private static final String FOLDER_PREFIX = "exist-db-temp-file-manager";
+    private static final String FILE_PREFIX = "exist-db-temp";
     private final Path tmpFolder;
 
     private static final TemporaryFileManager instance = new TemporaryFileManager();
@@ -69,64 +89,44 @@ public class TemporaryFileManager {
         cleanupOldTempFolders();
 
         try {
-            this.tmpFolder = Files.createTempDirectory(FOLDER_PREFIX + UUID.randomUUID().toString());
+            this.tmpFolder = Files.createTempDirectory(FOLDER_PREFIX + '-');
         } catch(final IOException ioe) {
             throw new RuntimeException("Unable to create temporary folder", ioe);
         }
 
-        //add hook to JVM to delete the file on exit
-        //unfortunately this does not always work on all (e.g. Windows) platforms
-        //will be recovered on restart by cleanupOldTempFolders
+        /*
+        Add hook to JVM to delete the file on exit
+        unfortunately this does not always work on all (e.g. Windows) platforms
+        will be recovered on restart by cleanupOldTempFolders
+         */
         tmpFolder.toFile().deleteOnExit();
 
         LOG.info("Temporary folder is: " + tmpFolder.toAbsolutePath().toString());
     }
 
     public final Path getTemporaryFile() throws IOException {
-        Path tempFile = available.poll();
+        final Path tempFile = Files.createTempFile(tmpFolder, FILE_PREFIX + '-', ".tmp");
 
-        if(tempFile == null) {
-            tempFile = Files.createTempFile(tmpFolder, "mmtf_" + System.currentTimeMillis(), ".tmp");
-
-            //add hook to JVM to delete the file on exit
-            //unfortunately this does not always work on all (e.g. Windows) platforms
-            tempFile.toFile().deleteOnExit();
-        }
+        /*
+        add hook to JVM to delete the file on exit
+        unfortunately this does not always work on all (e.g. Windows) platforms
+         */
+        tempFile.toFile().deleteOnExit();
 
         return tempFile;
     }
 
     public void returnTemporaryFile(final Path tempFile) {
-        //Check if tempFile is still present ..
-        if (Files.exists(tempFile)) {
-
-            boolean deleted = false;
-            try {
-                deleted = Files.deleteIfExists(tempFile);
-            } catch(final IOException e) {
-                // this can often occur on Microsoft Windows :-/
-                LOG.warn("Unable to delete temporary file: " + tempFile.toAbsolutePath().toString() + " due to: "
-                        + e.getMessage());
-            }
-            if(deleted) {
+        try {
+            if (Files.deleteIfExists(tempFile)) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Deleted temporary file: " + tempFile.toAbsolutePath().toString());
                 }
-            } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Could not delete temporary file: " + tempFile.toAbsolutePath().toString() + ". Returning to stack for re-use.");
-                }
-
-                //if we couldn't delete it, add it to the deque of available files
-                //for reuse in the future.
-                //Typically there are problems deleting these files on Windows
-                //platforms which is why this facility was added
-                available.push(tempFile);
             }
-        } else {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Trying to delete non existing file: " + tempFile.toAbsolutePath().toString());
-            }
+        } catch (final IOException e) {
+            // this can often occur on Microsoft Windows (especially if the file was memory mapped!) :-/
+            LOG.warn("Unable to delete temporary file: " + tempFile.toAbsolutePath().toString() + " due to: "
+                    + e.getMessage());
         }
     }
 
@@ -149,14 +149,9 @@ public class TemporaryFileManager {
     @Override
     protected void finalize() throws Throwable {
         try {
-
-            //remove references to available files
-            available.clear();
-
             //try and remove our temporary folder
             FileUtils.deleteQuietly(tmpFolder);
-        }
-        finally {
+        } finally {
             super.finalize();
         }
     }
