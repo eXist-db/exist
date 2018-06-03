@@ -27,10 +27,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.exist.util.io;
 
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.stream.Stream;
+import java.nio.file.StandardOpenOption;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -77,7 +78,9 @@ public class TemporaryFileManager {
 
     private static final String FOLDER_PREFIX = "exist-db-temp-file-manager";
     private static final String FILE_PREFIX = "exist-db-temp";
+    private static final String LOCK_FILENAME = FOLDER_PREFIX + ".lck";
     private final Path tmpFolder;
+    private final FileChannel lockChannel;
 
     private static final TemporaryFileManager instance = new TemporaryFileManager();
 
@@ -90,6 +93,8 @@ public class TemporaryFileManager {
 
         try {
             this.tmpFolder = Files.createTempDirectory(FOLDER_PREFIX + '-');
+            this.lockChannel = FileChannel.open(tmpFolder.resolve(LOCK_FILENAME), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE, StandardOpenOption.DELETE_ON_CLOSE);
+            lockChannel.lock();
         } catch(final IOException ioe) {
             throw new RuntimeException("Unable to create temporary folder", ioe);
         }
@@ -137,10 +142,28 @@ public class TemporaryFileManager {
      */
     private void cleanupOldTempFolders() {
         final Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
-        try(final Stream<Path> tmpFiles = Files.list(tmpDir)) {
-            tmpFiles
-                    .filter(path -> Files.isDirectory(path) && path.startsWith(FOLDER_PREFIX))
-                    .forEach(FileUtils::deleteQuietly);
+
+        try {
+            for(final Path dir : FileUtils.list(tmpDir, path -> Files.isDirectory(path) && path.startsWith(FOLDER_PREFIX))) {
+                final Path lockPath = dir.resolve(LOCK_FILENAME);
+                if(!Files.exists(lockPath)) {
+                    // no lock file present, so not in use
+                    FileUtils.deleteQuietly(dir);
+                } else {
+                    // there is a lock file present, we must determine if it is locked (by another eXist-db instance)
+                    final FileChannel otherLockChannel = FileChannel.open(lockPath, StandardOpenOption.WRITE);
+                    try {
+                        if (otherLockChannel.tryLock() != null) {
+                            // not locked... so we now have the lock
+
+                            FileUtils.deleteQuietly(dir);
+                        }
+                    } finally {
+                        // will release the lock
+                        otherLockChannel.close();
+                    }
+                }
+            }
         } catch(final IOException ioe) {
             LOG.warn("Unable to delete old temporary folders", ioe);
         }
@@ -149,6 +172,8 @@ public class TemporaryFileManager {
     @Override
     protected void finalize() throws Throwable {
         try {
+            lockChannel.close();  // will release the lock on the lock file, and the lock file should be deleted
+
             //try and remove our temporary folder
             FileUtils.deleteQuietly(tmpFolder);
         } finally {
