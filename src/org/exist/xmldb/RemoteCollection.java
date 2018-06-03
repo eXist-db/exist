@@ -596,7 +596,16 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
                 }
             }
 
-            final byte[] chunk = new byte[MAX_UPLOAD_CHUNK];
+            final byte[] chunk;
+            if (res instanceof ExtendedResource) {
+                if(res instanceof AbstractRemoteResource) {
+                    chunk = new byte[(int)Math.min(((AbstractRemoteResource)res).getContentLength(), MAX_UPLOAD_CHUNK)];
+                } else {
+                    chunk = new byte[(int)Math.min(((ExtendedResource)res).getStreamLength(), MAX_UPLOAD_CHUNK)];
+                }
+            } else {
+                chunk = new byte[MAX_UPLOAD_CHUNK];
+            }
             try {
                 int len;
                 String fileName = null;
