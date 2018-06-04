@@ -21,4 +21,5 @@ Please always add the following information
 - Java version (e.g. Java8u121)
 - Operating system (Windows 7, Linux, MacOs)
 - 32 or 64 bit
+- How is eXist-db installed? (JAR installer, DMG, WAR file, clone from GitHub)
 - Any custom changes in e.g. conf.xml

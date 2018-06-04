@@ -22,6 +22,7 @@
 package org.exist.xquery.modules.file;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
@@ -103,9 +104,12 @@ public class DirectoryCreate extends BasicFunction {
                 Files.createDirectories(file);
                 created = BooleanValue.TRUE;
             }
-            return created;
-        } catch(final IOException ioe) {
-            throw new XPathException(this, ioe);
+        } catch (final FileAlreadyExistsException e) {
+            created = BooleanValue.FALSE;
+        } catch(final IOException e) {
+            throw new XPathException(this, e);
         }
+
+        return created;
     }
 }

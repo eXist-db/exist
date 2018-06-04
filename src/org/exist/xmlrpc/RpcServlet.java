@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2017 The eXist Project
+ * Copyright (C) 2001-2018 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -41,6 +41,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -48,6 +49,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import static com.evolvedbinary.j8fu.Either.*;
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 public class RpcServlet extends XmlRpcServlet {
 
@@ -56,6 +58,7 @@ public class RpcServlet extends XmlRpcServlet {
     private static final boolean DEFAULT_USE_DEFAULT_USER = true;
 
     private boolean useDefaultUser = DEFAULT_USE_DEFAULT_USER;
+    private Charset charset = null;
 
     @Override
     public void init(final ServletConfig pConfig) throws ServletException {
@@ -66,7 +69,12 @@ public class RpcServlet extends XmlRpcServlet {
             this.useDefaultUser = DEFAULT_USE_DEFAULT_USER;
         }
 
-        super.init(new FilteredServletConfig(pConfig, paramName -> !"useDefaultUser".equals(paramName)));
+        final String charset = pConfig.getInitParameter("charset");
+        if (charset != null) {
+            this.charset = Charset.forName(charset);
+        }
+
+        super.init(new FilteredServletConfig(pConfig, paramName -> (!"useDefaultUser".equals(paramName)) && (!"charset".equals(paramName))));
     }
 
     @Override
@@ -80,11 +88,14 @@ public class RpcServlet extends XmlRpcServlet {
                 // need the request InputStream, which is consumed when read.
                 final String cacheClass = (String) BrokerPool.getInstance().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
                 request =
-                        new HttpServletRequestWrapper(() -> cacheClass, request, /*formEncoding*/ "utf-8");
+                        new HttpServletRequestWrapper(() -> cacheClass, request, /*formEncoding*/ charset != null ? charset.displayName() : ISO_8859_1.displayName());
                 descriptor.doLogRequestInReplayLog(request);
             }
 
             try {
+                if (charset != null) {
+                    response.setCharacterEncoding(charset.displayName());
+                }
                 super.doPost(request, response);
             } catch (final Throwable e) {
                 LOG.error("Problem during XmlRpc execution", e);

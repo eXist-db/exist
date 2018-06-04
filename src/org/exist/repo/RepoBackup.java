@@ -86,19 +86,23 @@ public class RepoBackup {
      * @param outdir Output directory
      */
     public static void unzip(final Path zipfile, final Path outdir) throws IOException {
-        try(final ZipInputStream zin = new ZipInputStream(Files.newInputStream(zipfile))) {
+        try (final ZipInputStream zin = new ZipInputStream(Files.newInputStream(zipfile))) {
             ZipEntry entry;
-            String name, dir;
-            while ((entry = zin.getNextEntry()) != null)
-            {
-                name = entry.getName();
-                if(entry.isDirectory() ) {
+            while ((entry = zin.getNextEntry()) != null) {
+                final String name = entry.getName();
+                final Path out = outdir.resolve(name);
+
+                if (!out.startsWith(outdir)) {
+                    throw new IOException("Detected archive exit attack! zipFile=" + zipfile.toAbsolutePath().normalize().toString() + ", entry=" + name + ", outdir=" + outdir.toAbsolutePath().normalize().toString());
+                }
+
+                if (entry.isDirectory() ) {
                     Files.createDirectories(outdir.resolve(name));
                     continue;
                 }
 
-                dir = dirpart(name);
-                if(dir != null) {
+                final String dir = dirpart(name);
+                if (dir != null) {
                     Files.createDirectories(outdir.resolve(name));
                 }
 
