@@ -751,7 +751,7 @@ public class InteractiveClient {
                     messageln("missing argument.");
                     return true;
                 }
-                final boolean r = parseZip(args[1]);
+                final boolean r = parseZip(Paths.get(args[1]));
                 getResources();
                 return r;
 
@@ -1566,18 +1566,15 @@ public class InteractiveClient {
     }
 
     /**
-     * stores given Resource
+     * stores given Resource.
      *
-     * @param fileName simple file or directory
+     * @param zipPath Path to a zip file
+     *
      * @throws XMLDBException
      */
-    protected synchronized boolean parseZip(String fileName) throws XMLDBException {
-        fileName = fileName.replace('/', java.io.File.separatorChar).replace('\\', java.io.File.separatorChar);
-
+    protected synchronized boolean parseZip(final Path zipPath) throws XMLDBException {
         try {
-            final ZipFile zfile = new ZipFile(fileName);
-            Resource document;
-            // String xml;
+            final ZipFile zfile = new ZipFile(zipPath.toFile());
             if (current instanceof Observable && options.verbose) {
                 final ProgressObserver observer = new ProgressObserver();
                 ((Observable) current).addObserver(observer);
@@ -1585,7 +1582,6 @@ public class InteractiveClient {
 
             final long start0 = System.currentTimeMillis();
             long bytes = 0;
-            MimeType mimeType;
             final Enumeration<? extends ZipEntry> e = zfile.entries();
             int number = 0;
 
@@ -1595,6 +1591,11 @@ public class InteractiveClient {
                 number++;
                 final ZipEntry ze = e.nextElement();
                 final String zeName = ze.getName().replace('\\', '/');
+
+                if (!Paths.get("/db").resolve(zeName).normalize().startsWith(Paths.get("/db"))) {
+                    throw new IOException("Detected archive exit attack! zipFile=" + zipPath.toAbsolutePath().toString() + ", entry=" + ze.getName());
+                }
+
                 final String[] pathSteps = zeName.split("/");
                 final StringBuilder currStr = new StringBuilder(pathSteps[0]);
                 for (int i = 1; i < pathSteps.length - 1; i++) {
@@ -1622,11 +1623,11 @@ public class InteractiveClient {
                 if (!ze.isDirectory()) {
                     final String localName = pathSteps[pathSteps.length - 1];
                     final long start = System.currentTimeMillis();
-                    mimeType = MimeTable.getInstance().getContentTypeFor(localName);
+                    MimeType mimeType = MimeTable.getInstance().getContentTypeFor(localName);
                     if (mimeType == null) {
                         mimeType = MimeType.BINARY_TYPE;
                     }
-                    document = base.createResource(localName, mimeType.getXMLDBType());
+                    final Resource document = base.createResource(localName, mimeType.getXMLDBType());
                     message("storing Zip-entry document " + localName + " (" + (number)
                             + " of " + zfile.size() + ") ...");
                     document.setContent(new ZipEntryInputSource(zfile, ze));
@@ -1641,9 +1642,9 @@ public class InteractiveClient {
             messageln("parsed " + bytes + " bytes in "
                     + (System.currentTimeMillis() - start0) + "ms.");
         } catch (final URISyntaxException e) {
-            errorln("uri syntax exception parsing a ZIP entry from " + fileName + ": " + e.getMessage());
+            errorln("uri syntax exception parsing a ZIP entry from " +  zipPath.toString()+ ": " + e.getMessage());
         } catch (final IOException e) {
-            errorln("could not parse ZIP file " + fileName + ": " + e.getMessage());
+            errorln("could not parse ZIP file " + zipPath.toAbsolutePath() + ": " + e.getMessage());
         }
         return true;
     }
