@@ -22,97 +22,244 @@
 
 package org.exist.protocolhandler.embedded;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.net.MalformedURLException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
+import com.evolvedbinary.j8fu.Either;
+import com.evolvedbinary.j8fu.lazy.LazyValE;
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.exist.EXistException;
+import org.exist.collections.Collection;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.protocolhandler.xmldb.XmldbURL;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.storage.serializers.Serializer;
+import org.exist.util.io.CloseNotifyingInputStream;
+import org.exist.util.io.TemporaryFileManager;
+import org.exist.xmldb.XmldbURI;
+import org.xml.sax.SAXException;
+
+import javax.annotation.Nullable;
+
+import static com.evolvedbinary.j8fu.Either.Left;
+import static com.evolvedbinary.j8fu.Either.Right;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Read document from embedded database as an InputStream
+ * Read document from embedded database as an InputStream.
  *
+ * @author Adam Retter <adam@exist-db.org>
  * @author Dannes Wessels
  */
+@NotThreadSafe
 public class EmbeddedInputStream extends InputStream {
     
     private static final Logger LOG = LogManager.getLogger(EmbeddedInputStream.class);
-    
-    private final PipedInputStream  bis;
-    private final PipedOutputStream bos;
-    private final EmbeddedDownloadThread rt;
-    
-    /**
-     *  Constructor of EmbeddedInputStream. 
-     * 
-     * @param xmldbURL Location of document in database.
-     * @throws MalformedURLException Thrown for illegalillegal URLs.
-     */
-    public EmbeddedInputStream(final XmldbURL xmldbURL) throws IOException {
-        this(null, xmldbURL);
-    }
+    private final XmldbURL url;
+    private final LazyValE<InputStream, IOException> underlyingStream;
+    private boolean closed = false;
 
     /**
-     *  Constructor of EmbeddedInputStream.
+     * @param url Location of document in database.
      *
-     * @param xmldbURL Location of document in database.
-     * @throws MalformedURLException Thrown for illegalillegal URLs.
+     * @throws IOException if there is a problem accessing the database instance.
      */
-    public EmbeddedInputStream(final BrokerPool brokerPool, final XmldbURL xmldbURL) throws IOException {
-
-        if(LOG.isDebugEnabled()) {
-            LOG.debug("Initializing EmbeddedInputStream");
-        }
-
-        this.bis = new PipedInputStream(4096);
-        this.bos = new PipedOutputStream(bis);
-        this.rt = new EmbeddedDownloadThread(brokerPool, xmldbURL , bos);
-
-        if(LOG.isDebugEnabled()) {
-            LOG.debug("Initializing EmbeddedInputStream done");
-        }
-
-        rt.start();
+    public EmbeddedInputStream(final XmldbURL url) throws IOException {
+        this(null, url);
     }
-    
+
+    /**
+     * @param brokerPool the database instance.
+     * @param url Location of document in database.
+     *
+     * @throws IOException if there is a problem accessing the database instance.
+     */
+    public EmbeddedInputStream(@Nullable final BrokerPool brokerPool, final XmldbURL url) throws IOException {
+        try {
+            this.url = url;
+            final BrokerPool pool = brokerPool == null ? BrokerPool.getInstance(url.getInstanceName()) : brokerPool;
+            this.underlyingStream = new LazyValE<>(() -> openStream(pool, url));
+        } catch (final EXistException e) {
+            throw new IOException(e);
+        }
+    }
+
+    private static Either<IOException, InputStream> openStream(final BrokerPool pool, final XmldbURL url) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Begin document download");
+        }
+
+        try {
+            final XmldbURI path = XmldbURI.create(url.getPath());
+
+            try (final DBBroker broker = pool.getBroker()) {
+
+                DocumentImpl resource = null;
+                Collection collection = null;
+                try {
+                    resource = broker.getXMLResource(path, Lock.LockMode.READ_LOCK);
+                    if (resource == null) {
+                        // Test for collection
+                        collection = broker.openCollection(path, Lock.LockMode.READ_LOCK);
+                        if (collection == null) {
+                            // No collection, no document
+                            return Left(new IOException("Resource " + url.getPath() + " not found."));
+
+                        } else {
+                            // Collection
+                            return Left(new IOException("Resource " + url.getPath() + " is a collection."));
+                        }
+
+                    } else {
+                        if (resource.getResourceType() == DocumentImpl.XML_FILE) {
+                            final Serializer serializer = broker.getSerializer();
+                            serializer.reset();
+
+                            // Preserve doctype
+                            serializer.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
+
+                            // serialize the XML to a temporary file
+                            final TemporaryFileManager tempFileManager = TemporaryFileManager.getInstance();
+                            final Path tempFile = tempFileManager.getTemporaryFile();
+                            try (final Writer writer = Files.newBufferedWriter(tempFile, UTF_8, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
+                                serializer.serialize(resource, writer);
+                            }
+
+                            // NOTE: the temp file will be returned to the manager when the InputStream is closed
+                            return Right(new CloseNotifyingInputStream(Files.newInputStream(tempFile, StandardOpenOption.READ), () -> tempFileManager.returnTemporaryFile(tempFile)));
+
+                        } else if (resource.getResourceType() == BinaryDocument.BINARY_FILE) {
+                            return Right(broker.getBinaryResource((BinaryDocument) resource));
+
+                        } else {
+                            return Left(new IOException("Unknown resource type " + url.getPath() + ": " + resource.getResourceType()));
+                        }
+                    }
+                } finally {
+                    if (collection != null) {
+                        collection.release(Lock.LockMode.READ_LOCK);
+                    }
+
+                    if (resource != null) {
+                        resource.getUpdateLock().release(Lock.LockMode.READ_LOCK);
+                    }
+
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("End document download");
+                    }
+                }
+            }
+        } catch (final EXistException | PermissionDeniedException | SAXException e) {
+            LOG.error(e);
+            return Left(new IOException(e.getMessage(), e));
+        } catch (final IOException e) {
+            return Left(e);
+        }
+    }
     
     @Override
     public int read(final byte[] b, final int off, final int len) throws IOException {
-        return bis.read(b, off, len);
+        if (closed) {
+            throw new IOException("The underlying stream is closed");
+        }
+
+        return underlyingStream.get().read(b, off, len);
     }
     
     @Override
     public int read(final byte[] b) throws IOException {
-        return bis.read(b, 0, b.length);
+        if (closed) {
+            throw new IOException("The underlying stream is closed");
+        }
+
+        return underlyingStream.get().read(b, 0, b.length);
     }
     
     @Override
     public long skip(final long n) throws IOException {
-        return bis.skip(n);
+        if (closed) {
+            throw new IOException("The underlying stream is closed");
+        }
+
+        return underlyingStream.get().skip(n);
     }
-    
+
+    @Override
+    public boolean markSupported() {
+        if (closed) {
+            return false;
+        }
+
+        try {
+            return underlyingStream.get().markSupported();
+        } catch (final IOException e) {
+            LOG.error(e);
+            return false;
+        }
+    }
+
+    @Override
+    public void mark(final int readlimit) {
+        if (closed) {
+            return;
+        }
+
+        try {
+            underlyingStream.get().mark(readlimit);
+        } catch (final IOException e) {
+            LOG.error(e);
+        }
+    }
+
     @Override
     public void reset() throws IOException {
-        bis.reset();
+        if (closed) {
+            return;
+        }
+
+        underlyingStream.get().reset();
     }
     
     @Override
     public int read() throws IOException {
-        return bis.read();
+        if (closed) {
+            return -1;
+        }
+
+        return underlyingStream.get().read();
     }
 
     @Override
     public void close() throws IOException {
-        bis.close();
+        if (closed) {
+            return;
+        }
+
+        try {
+            if (underlyingStream.isInitialized()) {
+                underlyingStream.get().close();
+            }
+        } finally {
+            closed = true;
+        }
     }
 
     @Override
     public int available() throws IOException {
-        return bis.available();
+        if (closed) {
+            return 0;
+        }
+
+        return underlyingStream.get().available();
     }
 }

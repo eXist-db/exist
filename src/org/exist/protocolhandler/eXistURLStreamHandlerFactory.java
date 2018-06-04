@@ -38,9 +38,9 @@ public class eXistURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
     private final static Logger LOG = LogManager.getLogger(eXistURLStreamHandlerFactory.class);
 
-    private URLStreamHandler handler;
+    private final URLStreamHandler handler;
 
-    eXistURLStreamHandlerFactory(Mode mode) {
+    eXistURLStreamHandlerFactory(final Mode mode) {
         handler = new Handler(mode);
     }
 

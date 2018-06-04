@@ -43,25 +43,21 @@ public class InMemoryURLConnection extends URLConnection {
     /**
      * Constructs a URL connection to the specified URL.
       */
-    protected InMemoryURLConnection(URL url) {
+    protected InMemoryURLConnection(final URL url) {
         super(url);
 
         setDoInput(true);
         setDoOutput(true);
     }
 
-    /**
-     * @see URLConnection#connect
-     */
-    public void connect() throws IOException {
+    @Override
+    public void connect() {
         if (LOG.isDebugEnabled()) {
             LOG.debug("connect: "+url);
         }
     }
 
-    /**
-     * @see URLConnection#getInputStream
-     */
+    @Override
     public InputStream getInputStream() throws IOException {
         final XmldbURL xmldbURL = new XmldbURL(url);
 
@@ -72,10 +68,7 @@ public class InMemoryURLConnection extends URLConnection {
         }
     }
 
-
-    /**
-     * @see URLConnection#getOutputStream
-     */
+    @Override
     public OutputStream getOutputStream() throws IOException {
         final XmldbURL xmldbURL = new XmldbURL(url);
         

@@ -17,30 +17,34 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.protocolhandler;
+package org.exist.util.io;
+
+import com.evolvedbinary.j8fu.function.RunnableE;
+
+import java.io.*;
 
 /**
- * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
+ * An Output Stream filter which executes a callback
+ * after the stream has been closed.
+ *
+ * @author Adam Retter <adam@exist-db.org>
  */
-public enum Mode {
-  /**
-   * low memory requirements, but it have design bugs:
-   *  - broker hold while io stream in "use";
-   *  - require 2 threads per operation.
-   *
-   * @deprecated Threads are no longer used. This is now just an acronym for {@link #DISK}.
-   */
-  @Deprecated
-  THREADS,
+public class CloseNotifyingOutputStream extends FilterOutputStream {
 
-  /**
-   * Keep stream's data on disk to solve {@link #THREADS} design bugs,
-   * and issues with memory use of {@link #MEMORY}.
-   */
-  DISK,
+    private final RunnableE<IOException> closedCallback;
 
-  /**
-   * Keep stream's data in memory to solve {@link #THREADS} design bugs.
-   */
-  MEMORY
+    /**
+     * @param os The output stream.
+     * @param closedCallback the callback to execute when this stream is closed.
+     */
+    public CloseNotifyingOutputStream(final OutputStream os, final RunnableE<IOException> closedCallback) {
+        super(os);
+        this.closedCallback = closedCallback;
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+        closedCallback.run();
+    }
 }

@@ -51,30 +51,32 @@ public class EmbeddedURLConnection extends URLConnection {
     /**
      * Constructs a URL connection to the specified URL.
       */
-    protected EmbeddedURLConnection(URL url) {
+    protected EmbeddedURLConnection(final URL url) {
         super(url);
-        LOG.debug(url);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(url);
+        }
         
         setDoInput(true);
         setDoOutput(true);
     }
     
-    /**
-     * @see java.net.URLConnection#connect
-     */
-    public void connect() throws IOException {
-        LOG.debug(url) ;
+    @Override
+    public void connect() {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(url);
+        }
     }
     
-    /**
-     * @see java.net.URLConnection#getInputStream
-     */
+    @Override
     public InputStream getInputStream() throws IOException {
-        LOG.debug(url) ;
-        
-        InputStream inputstream=null;
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(url);
+        }
+
         final XmldbURL xmldbURL = new XmldbURL(url);
-        
+
+        final InputStream inputstream;
         if(xmldbURL.isEmbedded()){
             inputstream = new EmbeddedInputStream( xmldbURL );
         } else {
@@ -83,17 +85,16 @@ public class EmbeddedURLConnection extends URLConnection {
         
         return inputstream;
     }
-    
-    
-    /**
-     * @see java.net.URLConnection#getOutputStream
-     */
+
+    @Override
     public OutputStream getOutputStream() throws IOException {
-        LOG.debug(url) ;
-        
-        OutputStream outputstream=null;
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(url);
+        }
+
         final XmldbURL xmldbURL = new XmldbURL(url);
-        
+
+        final OutputStream outputstream;
         if(xmldbURL.isEmbedded()){
             outputstream = new EmbeddedOutputStream( xmldbURL );
         } else {
