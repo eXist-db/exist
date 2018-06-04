@@ -73,14 +73,14 @@ public class DynamicFunctionCall extends AbstractExpression {
 	        ref.analyze(new AnalyzeContextInfo(cachedContextInfo));
 	        // Evaluate the function
             try {
-                final Sequence result = ref.eval(contextSequence);
-                ref.resetState(false);
-                return result;
+                return ref.eval(contextSequence);
             } catch (XPathException e) {
                 if (e.getLine() <= 0) {
                     e.setLocation(getLine(), getColumn(), getSource());
                 }
                 throw e;
+            } finally {
+                ref.close();
             }
         }
     }

@@ -85,7 +85,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
             throw new XPathException("entry-filter function must take at least 3 arguments.");
 
         filterParam = args[2];
-        
+
         //get the entry-data function and check its types
         if(!(args[3].itemAt(0) instanceof FunctionReference))
             throw new XPathException("No entry-data function provided.");
@@ -109,7 +109,10 @@ public abstract class AbstractExtractFunction extends BasicFunction
             return processCompressedData(compressedData, encoding);
         } catch(final UnsupportedCharsetException | XMLDBException e) {
             throw new XPathException(this, e.getMessage(), e);
-		}
+		} finally {
+            entryDataFunction.close();
+            entryFilterFunction.close();
+        }
     }
 
     /**

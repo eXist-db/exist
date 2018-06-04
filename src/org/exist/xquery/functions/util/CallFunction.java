@@ -82,16 +82,17 @@ public class CallFunction extends Function {
         final Item item0 = arg0.itemAt(0);
         if(item0.getType() != Type.FUNCTION_REFERENCE)
             {throw new XPathException(this, "Type error: expected function, got " + Type.getTypeName(item0.getType()));}
-        final FunctionReference ref = (FunctionReference)item0;
-        
-        // pass the remaining parameters to the function call
-        final List<Expression> params = new ArrayList<Expression>(getArgumentCount() - 1);
-        for(int i = 1; i < getArgumentCount(); i++) {
-            params.add(getArgument(i));
+        try (final FunctionReference ref = (FunctionReference)item0) {
+
+            // pass the remaining parameters to the function call
+            final List<Expression> params = new ArrayList<Expression>(getArgumentCount() - 1);
+            for (int i = 1; i < getArgumentCount(); i++) {
+                params.add(getArgument(i));
+            }
+            ref.setArguments(params);
+            ref.analyze(new AnalyzeContextInfo(this, 0));
+            // Evaluate the function
+            return ref.eval(contextSequence);
         }
-        ref.setArguments(params);
-        ref.analyze(new AnalyzeContextInfo(this, 0));
-        // Evaluate the function
-        return ref.eval(contextSequence);
     }
 }
