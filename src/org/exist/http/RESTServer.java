@@ -1770,7 +1770,7 @@ public class RESTServer {
                 serializer.toSAX(resource);
 
                 writer.flush();
-                writer.close();
+                writer.close(); // DO NOT use in try-write-resources, otherwise ther response stream is always closed, and we can't report the errors
             } catch (final SAXException saxe) {
                 LOG.warn(saxe);
                 throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
