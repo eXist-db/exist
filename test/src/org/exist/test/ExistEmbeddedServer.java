@@ -20,7 +20,7 @@ import java.util.Properties;
 import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
 
 /**
- * Exist embedded Server Rule for JUnit
+ * Exist embedded Server Rule for JUnit.
  */
 public class ExistEmbeddedServer extends ExternalResource {
 
