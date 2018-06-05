@@ -19,6 +19,7 @@
  */
 package org.exist.xmldb;
 
+import com.evolvedbinary.j8fu.function.ConsumerE;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -29,6 +30,7 @@ import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.MimeType;
 import org.exist.util.serializer.DOMSerializer;
@@ -154,20 +156,20 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
         // Case 5: content is a document or internal node, we MUST serialize it
         } else {
             content = withDb((broker, transaction) -> {
-                final Serializer serializer = broker.newSerializer();
+                final Serializer serializer = broker.getSerializer();
                 serializer.setUser(user);
 
                 try {
                     serializer.setProperties(getProperties());
 
                     if (root != null) {
-                        return serializer.serialize((NodeValue) root);
+                        return serialize(broker, saxSerializer -> saxSerializer.toSAX((NodeValue) root));
                     } else if (proxy != null) {
-                        return serializer.serialize(proxy);
+                        return serialize(broker, saxSerializer -> saxSerializer.toSAX(proxy));
                     } else {
                         return this.<String>read(broker, transaction).apply((document, broker1, transaction1) -> {
                             try {
-                                return serializer.serialize(document);
+                                return serialize(broker, saxSerializer -> saxSerializer.toSAX(document));
                             } catch (final SAXException e) {
                                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
                             }
@@ -178,6 +180,31 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
                 }
             });
             return content;
+        }
+    }
+
+    private String serialize(final DBBroker broker, final ConsumerE<Serializer, SAXException> toSaxFunction) throws SAXException, IOException {
+        final Serializer serializer = broker.getSerializer();
+        serializer.setUser(user);
+        serializer.setProperties(getProperties());
+
+        SAXSerializer saxSerializer = null;
+        try {
+            saxSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+
+            try (final StringWriter writer = new StringWriter()) {
+                saxSerializer.setOutput(writer, getProperties());
+                serializer.setSAXHandlers(saxSerializer, saxSerializer);
+
+                toSaxFunction.accept(serializer);
+
+                writer.flush();
+                return writer.toString();
+            }
+        } finally {
+            if (saxSerializer != null) {
+                SerializerPool.getInstance().returnObject(saxSerializer);
+            }
         }
     }
 

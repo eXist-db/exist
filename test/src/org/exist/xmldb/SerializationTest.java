@@ -25,11 +25,14 @@ import static org.junit.Assert.assertNotNull;
 
 public class SerializationTest {
 
+	private static final String EOL = System.getProperty("line.separator");
+
 	@ClassRule
 	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
 	private static final String TEST_COLLECTION_NAME = "test";
 
+	private static final String XML_DOC_NAME = "defaultns.xml";
 	private static final String XML =
 		"<root xmlns=\"http://foo.com\">" +
 		"	<entry>1</entry>" +
@@ -54,6 +57,13 @@ public class SerializationTest {
 		"    </c:Site>\n" +
 		"</exist:result>";
 
+	private static final String XML_UPDATED_EXPECTED =
+		"<root xmlns=\"http://foo.com\">" +
+		"	<entry>1</entry>" +
+		"	<entry>2</entry>" +
+		"	<entry xmlns=\"\" xml:id=\"aargh\"/>" +
+		"</root>";
+
 	private Collection testCollection;
 
 	@Test
@@ -63,13 +73,7 @@ public class SerializationTest {
 		assertEquals(2, result.getSize());
 
 		final Resource resource = result.getMembersAsResource();
-
-		final Source expected = Input.fromString(XML_EXPECTED1).build();
-		final Source actual = Input.fromString(resource.getContent().toString()).build();
-		final Diff diff = DiffBuilder.compare(expected).withTest(actual)
-				.checkForIdentical()
-				.build();
-		assertFalse(diff.toString(), diff.hasDifferences());
+		assertXMLEquals(XML_EXPECTED1, resource);
 	}
 
 	//TODO : THIS IS BUGGY !
@@ -86,11 +90,41 @@ public class SerializationTest {
 		assertEquals(1, result.getSize());
 
 		final Resource resource = result.getMembersAsResource();
+		assertXMLEquals(XML_EXPECTED2, resource);
+	}
 
-		final Source expected = Input.fromString(XML_EXPECTED2).build();
-		final Source actual = Input.fromString(resource.getContent().toString()).build();
-		final Diff diff = DiffBuilder.compare(expected).withTest(actual)
+	@Test
+	public void xqueryUpdateNsTest() throws XMLDBException {
+		final XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+		final ResourceSet result = service.query(
+				"xquery version \"1.0\";" + EOL +
+				"declare namespace foo=\"http://foo.com\";" + EOL +
+				"let $in-memory :=" + EOL + XML + EOL +
+				"let $on-disk := doc('/db/" + TEST_COLLECTION_NAME + '/' + XML_DOC_NAME + "')" + EOL +
+				"let $new-node := <entry xml:id='aargh'/>" + EOL +
+				"let $update := update insert $new-node into $on-disk/foo:root" + EOL +
+				"return" + EOL +
+				"    (" + EOL +
+				"        $in-memory," + EOL +
+				"        $on-disk" + EOL +
+				"    )" + EOL
+		);
+
+		assertEquals(2, result.getSize());
+
+		final Resource inMemoryResource = result.getResource(0);
+		assertXMLEquals(XML, inMemoryResource);
+
+		final Resource onDiskResource = result.getResource(1);
+		assertXMLEquals(XML_UPDATED_EXPECTED, onDiskResource);
+	}
+
+	private static void assertXMLEquals(final String expected, final Resource actual) throws XMLDBException {
+		final Source srcExpected = Input.fromString(expected).build();
+		final Source srcActual = Input.fromString(actual.getContent().toString()).build();
+		final Diff diff = DiffBuilder.compare(srcExpected).withTest(srcActual)
 				.checkForIdentical()
+				.ignoreWhitespace()
 				.build();
 		assertFalse(diff.toString(), diff.hasDifferences());
 	}
@@ -104,8 +138,7 @@ public class SerializationTest {
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
         assertNotNull(testCollection);
 
-        XMLResource res = (XMLResource)
-            testCollection.createResource("defaultns.xml", "XMLResource");
+        final XMLResource res = (XMLResource) testCollection.createResource(XML_DOC_NAME, "XMLResource");
         res.setContent(XML);
         testCollection.storeResource(res);
     }
