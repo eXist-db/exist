@@ -1,11 +1,15 @@
 package org.exist.xmldb;
 
 import org.exist.Namespaces;
-import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.TestUtils;
+import org.exist.test.ExistWebServer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
@@ -19,16 +23,38 @@ import org.xmlunit.diff.Diff;
 
 import javax.xml.transform.Source;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
+@RunWith(Parameterized.class)
 public class SerializationTest {
 
-	private static final String EOL = System.getProperty("line.separator");
-
 	@ClassRule
-	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
+	public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
+	private static final String PORT_PLACEHOLDER = "${PORT}";
+
+	@Parameterized.Parameters(name = "{0}")
+	public static java.util.Collection<Object[]> data() {
+		return Arrays.asList(new Object[][] {
+				{ "local", "xmldb:exist://" },
+				{ "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" }
+		});
+	}
+
+	@Parameterized.Parameter
+	public String apiName;
+
+	@Parameterized.Parameter(value = 1)
+	public String baseUri;
+
+	private final String getBaseUri() {
+		return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
+	}
+
+	private static final String EOL = System.getProperty("line.separator");
 
 	private static final String TEST_COLLECTION_NAME = "test";
 
@@ -126,10 +152,8 @@ public class SerializationTest {
 
     @Before
 	public void setUp() throws XMLDBException {
-        final CollectionManagementService service =
-            (CollectionManagementService) existEmbeddedServer.getRoot().getService(
-                "CollectionManagementService",
-                "1.0");
+		final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+        final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
         assertNotNull(testCollection);
 
@@ -140,10 +164,8 @@ public class SerializationTest {
 
     @After
     public void tearDown() throws XMLDBException {
-        final CollectionManagementService service =
-            (CollectionManagementService) existEmbeddedServer.getRoot().getService(
-                "CollectionManagementService",
-                "1.0");
+		final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+		final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
         service.removeCollection(TEST_COLLECTION_NAME);
         testCollection = null;
     }
