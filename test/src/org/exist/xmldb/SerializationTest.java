@@ -40,28 +40,24 @@ public class SerializationTest {
 		"</root>";
 
 	private static final String XML_EXPECTED1 =
-		"<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" hitCount=\"2\">\n" +
-		"    <entry xmlns=\"http://foo.com\">1</entry>\n" +
-		"    <entry xmlns=\"http://foo.com\">2</entry>\n" +
+		"<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" hitCount=\"2\">" + EOL +
+		"    <entry xmlns=\"http://foo.com\">1</entry>" + EOL +
+		"    <entry xmlns=\"http://foo.com\">2</entry>" + EOL +
 		"</exist:result>";
 
 	private static final String XML_EXPECTED2 =
-		"<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" hitCount=\"1\">\n" +
-		"    <c:Site xmlns:c=\"urn:content\" xmlns=\"urn:content\">\n"+
-		//BUG : we should have
-		//<config xmlns="urn:config">123</config>
-        "        <config>123</config>\n" +
-        //BUG : we should have
-        //<serverconfig xmlns="urn:config">123</serverconfig>
-        "        <serverconfig>123</serverconfig>\n" +
-		"    </c:Site>\n" +
+		"<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" hitCount=\"1\">" + EOL +
+		"    <c:Site xmlns:c=\"urn:content\" xmlns=\"urn:content\">" + EOL +
+        "        <config xmlns=\"urn:config\">123</config>" + EOL +
+        "        <serverconfig xmlns=\"urn:config\">123</serverconfig>" + EOL +
+		"    </c:Site>" + EOL +
 		"</exist:result>";
 
 	private static final String XML_UPDATED_EXPECTED =
-		"<root xmlns=\"http://foo.com\">" +
-		"	<entry>1</entry>" +
-		"	<entry>2</entry>" +
-		"	<entry xmlns=\"\" xml:id=\"aargh\"/>" +
+		"<root xmlns=\"http://foo.com\">" + EOL +
+		"	<entry>1</entry>" + EOL +
+		"	<entry>2</entry>" + EOL +
+		"	<entry xmlns=\"\" xml:id=\"aargh\"/>" + EOL +
 		"</root>";
 
 	private Collection testCollection;
@@ -76,14 +72,13 @@ public class SerializationTest {
 		assertXMLEquals(XML_EXPECTED1, resource);
 	}
 
-	//TODO : THIS IS BUGGY !
 	@Test
 	public void wrappedNsTest2() throws XMLDBException {
 		final XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
 		final ResourceSet result = service.query("declare namespace config='urn:config'; " +
 				"declare namespace c='urn:content'; "  +
-				"declare variable $config {<config xmlns='urn:config'>123</config>}; " +
-				"declare variable $serverConfig {<serverconfig xmlns='urn:config'>123</serverconfig>}; " +
+				"declare variable $config := <config xmlns='urn:config'>123</config>; " +
+				"declare variable $serverConfig := <serverconfig xmlns='urn:config'>123</serverconfig>; " +
 				"<c:Site xmlns='urn:content' xmlns:c='urn:content'> " +
 				"{($config,$serverConfig)} " +
 				"</c:Site>");
