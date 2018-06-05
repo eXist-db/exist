@@ -37,6 +37,8 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.serializer.SerializerPool;
 import org.exist.webdav.exceptions.DocumentAlreadyLockedException;
 import org.exist.webdav.exceptions.DocumentNotLockedException;
 import org.exist.xmldb.XmldbURI;
@@ -48,6 +50,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URISyntaxException;
 import java.util.Optional;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Class for accessing the Collection class of the exist-db native API.
@@ -165,22 +169,10 @@ public class ExistDocument extends ExistResource {
 
                 if (document.getResourceType() == DocumentImpl.XML_FILE) {
                     // Stream XML document
-                    Serializer serializer = broker.getSerializer();
-                    serializer.reset();
+
                     try {
-                        // Set custom serialization options when available
-                        if (!configuration.isEmpty()) {
-                            serializer.setProperties(configuration);
-                        }
-
-                        // Serialize document
-                        try (Writer w = new OutputStreamWriter(os, "UTF-8")) {
-                            serializer.serialize(document, w);
-                            w.flush();
-                        }
-
+                        serialize(broker, document, os);
                         os.flush();
-
                     } catch (SAXException e) {
                         LOG.error(e);
                         throw new IOException(String.format("Error while serializing XML document: %s", e.getMessage()), e);
@@ -210,6 +202,33 @@ public class ExistDocument extends ExistResource {
             }
         }
 
+    }
+
+    private void serialize(final DBBroker broker, final DocumentImpl document, final OutputStream os) throws SAXException, IOException {
+        final Serializer serializer = broker.getSerializer();
+        // Set custom serialization options when available
+        if (!configuration.isEmpty()) {
+            serializer.setProperties(configuration);
+        }
+
+        SAXSerializer saxSerializer = null;
+        try {
+            saxSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+
+            // Serialize document
+            try (final Writer writer = new OutputStreamWriter(os, UTF_8)) {
+                saxSerializer.setOutput(writer, configuration.isEmpty() ? null : configuration);
+                serializer.setSAXHandlers(saxSerializer, saxSerializer);
+
+                serializer.toSAX(document);
+
+                writer.flush();
+            }
+        } finally {
+            if (saxSerializer != null) {
+                SerializerPool.getInstance().returnObject(saxSerializer);
+            }
+        }
     }
 
     /**
