@@ -373,27 +373,40 @@ public class XMLWriter {
         }
     }
 
-    public void cdataSection(final char[] ch, final int start, final int len) throws TransformerException {
+    public void startCdataSection() throws TransformerException {
         if(tagIsOpen) {
             closeStartTag(false);
         }
-        
+
         try {
             writer.write("<![CDATA[");
-            writer.write(ch, start, len);
+        } catch(final IOException ioe) {
+            throw new TransformerException(ioe.getMessage(), ioe);
+        }
+    }
+
+    public void endCdataSection() throws TransformerException {
+        try {
             writer.write("]]>");
         } catch(final IOException ioe) {
             throw new TransformerException(ioe.getMessage(), ioe);
         }
     }
 
-    public void documentType(final String name, final String publicId, final String systemId) throws TransformerException {
+    public void cdataSection(final char[] ch, final int start, final int len) throws TransformerException {
+        startCdataSection();
+        try {
+            writer.write(ch, start, len);
+        } catch(final IOException ioe) {
+            throw new TransformerException(ioe.getMessage(), ioe);
+        }
+        endCdataSection();
+    }
+
+    public void startDocumentType(final String name, final String publicId, final String systemId) throws TransformerException {
         if(!declarationWritten) {
             writeDeclaration();
         }
-
-        //if(publicId == null && systemId == null)
-        //  return;
 
         try {
             writer.write("<!DOCTYPE ");
@@ -402,18 +415,30 @@ public class XMLWriter {
                 //writer.write(" PUBLIC \"" + publicId + "\"");
                 writer.write(" PUBLIC \"" + publicId.replaceAll("&#160;", " ") + "\"");	//workaround for XHTML doctype, declare does not allow spaces so use &#160; instead and then replace each &#160; with a space here - Adam
             }
-            
+
             if(systemId != null) {
                 if(publicId == null) {
                     writer.write(" SYSTEM");
                 }
                 writer.write(" \"" + systemId + "\"");
             }
-            writer.write(">");
         } catch(final IOException ioe) {
             throw new TransformerException(ioe.getMessage(), ioe);
         }
-        doctypeWritten = true;
+    }
+
+    public void endDocumentType() throws TransformerException {
+        try {
+            writer.write(">");
+            doctypeWritten = true;
+        } catch(final IOException ioe) {
+            throw new TransformerException(ioe.getMessage(), ioe);
+        }
+    }
+
+    public void documentType(final String name, final String publicId, final String systemId) throws TransformerException {
+        startDocumentType(name, publicId, systemId);
+        endDocumentType();
     }
 
     protected void closeStartTag(final boolean isEmpty) throws TransformerException {

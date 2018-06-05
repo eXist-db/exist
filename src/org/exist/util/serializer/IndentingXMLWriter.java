@@ -141,8 +141,8 @@ public class IndentingXMLWriter extends XMLWriter {
     }
 
     @Override
-    public void documentType(final String name, final String publicId, final String systemId) throws TransformerException {
-        super.documentType(name, publicId, systemId);
+    public void endDocumentType() throws TransformerException {
+        super.endDocumentType();
         super.characters("\n");
         sameline = false;
     }
