@@ -6,7 +6,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
@@ -14,16 +13,20 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.builder.Input;
+import org.xmlunit.diff.Diff;
 
-import java.io.IOException;
+import javax.xml.transform.Source;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 public class SerializationTest {
 
 	@ClassRule
-	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
 	private static final String TEST_COLLECTION_NAME = "test";
 
@@ -54,28 +57,46 @@ public class SerializationTest {
 	private Collection testCollection;
 
 	@Test
-	public void queryResults() throws XMLDBException, IOException, SAXException {
-		XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
-		ResourceSet result = service.query("declare namespace foo=\"http://foo.com\"; //foo:entry");
-		Resource resource = result.getMembersAsResource();
-		String str = resource.getContent().toString();
-		assertXMLEqual(XML_EXPECTED1, str);
+	public void wrappedNsTest1() throws XMLDBException {
+		final XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+		final ResourceSet result = service.query("declare namespace foo=\"http://foo.com\"; //foo:entry");
+		assertEquals(2, result.getSize());
 
-		//TODO : THIS IS BUGGY !
-		result = service.query("declare namespace config='urn:config'; " +
+		final Resource resource = result.getMembersAsResource();
+
+		final Source expected = Input.fromString(XML_EXPECTED1).build();
+		final Source actual = Input.fromString(resource.getContent().toString()).build();
+		final Diff diff = DiffBuilder.compare(expected).withTest(actual)
+				.checkForIdentical()
+				.build();
+		assertFalse(diff.toString(), diff.hasDifferences());
+	}
+
+	//TODO : THIS IS BUGGY !
+	@Test
+	public void wrappedNsTest2() throws XMLDBException {
+		final XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+		final ResourceSet result = service.query("declare namespace config='urn:config'; " +
 				"declare namespace c='urn:content'; "  +
 				"declare variable $config {<config xmlns='urn:config'>123</config>}; " +
 				"declare variable $serverConfig {<serverconfig xmlns='urn:config'>123</serverconfig>}; " +
 				"<c:Site xmlns='urn:content' xmlns:c='urn:content'> " +
 				"{($config,$serverConfig)} " +
 				"</c:Site>");
-		resource = result.getMembersAsResource();
-		str = resource.getContent().toString();
-		assertXMLEqual(XML_EXPECTED2, str);
+		assertEquals(1, result.getSize());
+
+		final Resource resource = result.getMembersAsResource();
+
+		final Source expected = Input.fromString(XML_EXPECTED2).build();
+		final Source actual = Input.fromString(resource.getContent().toString()).build();
+		final Diff diff = DiffBuilder.compare(expected).withTest(actual)
+				.checkForIdentical()
+				.build();
+		assertFalse(diff.toString(), diff.hasDifferences());
 	}
 
     @Before
-	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+	public void setUp() throws XMLDBException {
         final CollectionManagementService service =
             (CollectionManagementService) existEmbeddedServer.getRoot().getService(
                 "CollectionManagementService",
