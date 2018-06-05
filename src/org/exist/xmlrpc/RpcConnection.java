@@ -19,6 +19,7 @@
  */
 package org.exist.xmlrpc;
 
+import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -618,10 +619,33 @@ public class RpcConnection implements RpcAPI {
 
     private String getDocumentAsString(final XmldbURI docUri, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
         return this.<String>readDocument(docUri).apply((document, broker, transaction) -> {
-            final Serializer serializer = broker.getSerializer();
-            serializer.setProperties(toProperties(parameters));
-            return serializer.serialize(document);
+            try (final StringWriter writer = new StringWriter()) {
+                serialize(broker, toProperties(parameters), saxSerializer -> saxSerializer.toSAX(document), writer);
+                return writer.toString();
+            }
         });
+    }
+
+    private void serialize(final DBBroker broker, final Properties properties, final ConsumerE<Serializer, SAXException> toSaxFunction, final Writer writer) throws SAXException, IOException {
+        final Serializer serializer = broker.getSerializer();
+        serializer.setUser(user);
+        serializer.setProperties(properties);
+
+        SAXSerializer saxSerializer = null;
+        try {
+            saxSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+
+            saxSerializer.setOutput(writer, properties);
+            serializer.setSAXHandlers(saxSerializer, saxSerializer);
+
+            toSaxFunction.accept(serializer);
+
+            writer.flush();
+        } finally {
+            if (saxSerializer != null) {
+                SerializerPool.getInstance().returnObject(saxSerializer);
+            }
+        }
     }
 
     @Override
@@ -643,11 +667,8 @@ public class RpcConnection implements RpcAPI {
             final Path tempFile = temporaryFileManager.getTemporaryFile();
 
             if (document.getResourceType() == DocumentImpl.XML_FILE) {
-                final Serializer serializer = broker.getSerializer();
-                serializer.setProperties(toProperties(parameters));
-
                 try (final Writer writer = Files.newBufferedWriter(tempFile, encoding)) {
-                    serializer.serialize(document, writer);
+                    serialize(broker, toProperties(parameters), saxSerializer -> saxSerializer.toSAX(document), writer);
                 }
             } else {
                 try (final OutputStream os = Files.newOutputStream(tempFile)) {
@@ -1567,7 +1588,7 @@ public class RpcConnection implements RpcAPI {
     }
 
     protected String printAll(final DBBroker broker, final Sequence resultSet, int howmany,
-                              int start, final Map<String, Object> properties, final long queryTime) throws EXistException, SAXException, XPathException {
+                              int start, final Map<String, Object> properties, final long queryTime) throws EXistException, SAXException, XPathException, IOException {
         if (resultSet.isEmpty()) {
             final StringBuilder buf = new StringBuilder();
             final String opt = (String) properties.get(OutputKeys.OMIT_XML_DECLARATION);
@@ -1597,9 +1618,7 @@ public class RpcConnection implements RpcAPI {
         writer.write(Integer.toString(howmany));
         writer.write("\">\n");
 
-        final Serializer serializer = broker.getSerializer();
-        serializer.reset();
-        serializer.setProperties(toProperties(properties));
+        final Properties serializationProps = toProperties(properties);
 
         Item item;
         for (int i = --start; i < start + howmany; i++) {
@@ -1609,7 +1628,7 @@ public class RpcConnection implements RpcAPI {
             }
             if (item.getType() == Type.ELEMENT) {
                 final NodeValue node = (NodeValue) item;
-                writer.write(serializer.serialize(node));
+                serialize(broker, serializationProps, saxSerializer -> saxSerializer.toSAX(node), writer);
             } else {
                 writer.write("<exist:value type=\"");
                 writer.write(Type.getTypeName(item.getType()));
@@ -2101,10 +2120,11 @@ public class RpcConnection implements RpcAPI {
         return this.<String>readDocument(docUri).apply((document, broker, transaction) -> {
             final NodeId nodeId = factory.getBrokerPool().getNodeFactory().createFromString(s_id);
             final NodeProxy node = new NodeProxy(document, nodeId);
-            final Serializer serializer = broker.getSerializer();
-            serializer.reset();
-            serializer.setProperties(toProperties(parameters));
-            return serializer.serialize(node);
+
+            try (final StringWriter writer = new StringWriter()) {
+                serialize(broker, toProperties(parameters), saxSerializer -> saxSerializer.serialize(node), writer);
+                return writer.toString();
+            }
         });
     }
 
@@ -2124,10 +2144,6 @@ public class RpcConnection implements RpcAPI {
             final NodeId nodeId = factory.getBrokerPool().getNodeFactory().createFromString(id);
             final NodeProxy node = new NodeProxy(document, nodeId);
 
-            final Serializer serializer = broker.getSerializer();
-            serializer.reset();
-            serializer.setProperties(toProperties(parameters));
-
             final Map<String, Object> result = new HashMap<>();
             final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
             final Path tempFile = temporaryFileManager.getTemporaryFile();
@@ -2138,7 +2154,7 @@ public class RpcConnection implements RpcAPI {
 
             try (final OutputStream os = compression ? new DeflaterOutputStream(Files.newOutputStream(tempFile)) : Files.newOutputStream(tempFile);
                     final Writer writer = new OutputStreamWriter(os, getEncoding(parameters))) {
-                serializer.serialize(node, writer);
+                serialize(broker, toProperties(parameters), saxSerializer -> saxSerializer.toSAX(node), writer);
             }
 
             final byte[] firstChunk = getChunk(tempFile, 0);
@@ -2196,13 +2212,13 @@ public class RpcConnection implements RpcAPI {
 
             if (Type.subTypeOf(item.getType(), Type.NODE)) {
                 final NodeValue nodeValue = (NodeValue) item;
-                final Serializer serializer = broker.getSerializer();
-                serializer.reset();
                 for (final Map.Entry<Object, Object> entry : qr.serialization.entrySet()) {
                     parameters.put(entry.getKey().toString(), entry.getValue().toString());
                 }
-                serializer.setProperties(toProperties(parameters));
-                return serializer.serialize(nodeValue);
+                try (final StringWriter writer = new StringWriter()) {
+                  serialize(broker, toProperties(parameters), saxSerializer -> saxSerializer.toSAX(nodeValue), writer);
+                  return writer.toString();
+                }
             } else {
                 try {
                     return item.getStringValue();
@@ -2242,14 +2258,10 @@ public class RpcConnection implements RpcAPI {
                     final Writer writer = new OutputStreamWriter(os, getEncoding(parameters))) {
                 if (Type.subTypeOf(item.getType(), Type.NODE)) {
                     final NodeValue nodeValue = (NodeValue) item;
-                    final Serializer serializer = broker.getSerializer();
-                    serializer.reset();
                     for (final Map.Entry<Object, Object> entry : qr.serialization.entrySet()) {
                         parameters.put(entry.getKey().toString(), entry.getValue().toString());
                     }
-                    serializer.setProperties(toProperties(parameters));
-
-                    serializer.serialize(nodeValue, writer);
+                    serialize(broker, toProperties(parameters), saxSerializer -> saxSerializer.toSAX(nodeValue), writer);
                 } else {
                     writer.write(item.getStringValue());
                 }
@@ -2288,9 +2300,6 @@ public class RpcConnection implements RpcAPI {
                 throw new EXistException("result set unknown or timed out");
             }
             qr.touch();
-            final Serializer serializer = broker.getSerializer();
-            serializer.reset();
-            serializer.setProperties(qr.serialization);
 
             final SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
             final StringWriter writer = new StringWriter();
@@ -2345,12 +2354,9 @@ public class RpcConnection implements RpcAPI {
                 throw new EXistException("result set unknown or timed out");
             }
             qr.touch();
-            final Serializer serializer = broker.getSerializer();
-            serializer.reset();
             for (final Map.Entry<Object, Object> entry : qr.serialization.entrySet()) {
                 parameters.put(entry.getKey().toString(), entry.getValue().toString());
             }
-            serializer.setProperties(toProperties(parameters));
             final SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 
             final Map<String, Object> result = new HashMap<>();

@@ -2267,25 +2267,14 @@ public class NativeBroker extends DBBroker {
     @Override
     public void readBinaryResource(final BinaryDocument blob, final OutputStream os)
         throws IOException {
-        InputStream is = null;
-        try {
-            is = getBinaryResource(blob);
-            final byte[] buffer = new byte[BINARY_RESOURCE_BUF_SIZE];
-            int len;
-            while((len = is.read(buffer)) >= 0) {
-                os.write(buffer, 0, len);
-            }
-        } finally {
-            if(is != null) {
-                is.close();
-            }
-        }
+        final Path binFile = getBinaryFile(blob);
+        Files.copy(binFile, os);
     }
 
     @Override
     public long getBinaryResourceSize(final BinaryDocument blob)
         throws IOException {
-        final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), false);
+        final Path binFile = getBinaryFile(blob);
         return Files.size(binFile);
     }
 
@@ -2297,7 +2286,7 @@ public class NativeBroker extends DBBroker {
     @Override
     public InputStream getBinaryResource(final BinaryDocument blob)
         throws IOException {
-        return Files.newInputStream(getCollectionFile(getFsDir(), blob.getURI(), false));
+        return Files.newInputStream(getBinaryFile(blob));
     }
 
     //TODO : consider a better cooperation with Collection -pb

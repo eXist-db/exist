@@ -128,8 +128,29 @@ public class MicroXmlWriter extends IndentingXMLWriter {
     }
 
     @Override
+    public void startCdataSection() {
+        // empty
+    }
+
+    @Override
+    public void endCdataSection() {
+        // empty
+    }
+
+    @Override
     public void cdataSection(final char[] ch, final int start, final int len) throws TransformerException {
         //no-op
+    }
+
+
+    @Override
+    public void startDocumentType(final String name, final String publicId, final String systemId) {
+        // empty
+    }
+
+    @Override
+    public void endDocumentType() {
+        // empty
     }
 
     @Override

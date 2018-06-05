@@ -96,7 +96,7 @@ public class NativeSerializer extends Serializer {
         }
 
         try(final INodeIterator domIter = broker.getNodeIterator(p)) {
-            serializeToReceiver(null, domIter, p.getOwnerDocument(), checkAttributes, p.getMatches(), new TreeSet<String>());
+            serializeToReceiver(null, domIter, p.getOwnerDocument(), checkAttributes, p.getMatches(), new TreeSet<>());
         } catch(final IOException e) {
             LOG.warn("Unable to close node iterator", e);
         }

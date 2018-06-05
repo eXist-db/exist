@@ -152,7 +152,17 @@ public class TEXTWriter extends XMLWriter {
     public void comment(final CharSequence data) throws TransformerException {
         // empty
     }
-    
+
+    @Override
+    public void startCdataSection() {
+        // empty
+    }
+
+    @Override
+    public void endCdataSection() {
+        // empty
+    }
+
     @Override
     public void cdataSection(final char[] ch, final int start, final int len) throws TransformerException {
         
@@ -163,7 +173,18 @@ public class TEXTWriter extends XMLWriter {
             throw new TransformerException(ioe.getMessage(), ioe);
         }
     }
-    
+
+
+    @Override
+    public void startDocumentType(final String name, final String publicId, final String systemId) {
+        // empty
+    }
+
+    @Override
+    public void endDocumentType() {
+        // empty
+    }
+
     @Override
     public void documentType(final String name, final String publicId, final String systemId) throws TransformerException {
         // empty

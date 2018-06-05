@@ -40,7 +40,8 @@ import org.junit.runners.Suite;
     ContentAsDOMTest.class,
     XmldbURITest.class,
     CollectionConfigurationTest.class,
-    CollectionTest.class
+    CollectionTest.class,
+    SerializationTest.class
     /* MultiDBTest.class */
 })
 public class XmldbLocalTests {
