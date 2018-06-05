@@ -84,7 +84,13 @@ public class PersistentLoginFunctions extends UserSwitchingBasicFunction {
             } else {
                 callback = null;
             }
-            return register(user, pass, timeToLive, callback);
+            try {
+                return register(user, pass, timeToLive, callback);
+            } finally {
+                if (callback != null) {
+                    callback.close();
+                }
+            }
         } else if (isCalledAs("login")) {
             final String token = args[0].getStringValue();
             final FunctionReference callback;
@@ -93,7 +99,13 @@ public class PersistentLoginFunctions extends UserSwitchingBasicFunction {
             } else {
                 callback = null;
             }
-            return authenticate(token, callback);
+            try {
+                return authenticate(token, callback);
+            } finally {
+                if (callback != null) {
+                    callback.close();
+                }
+            }
         } else {
             PersistentLogin.getInstance().invalidate(args[0].getStringValue());
             return Sequence.EMPTY_SEQUENCE;

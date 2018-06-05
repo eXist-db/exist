@@ -96,10 +96,6 @@ public class InlineFunction extends AbstractExpression {
     @Override
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
-        // clear closure variables set on inline function
-		if (!postOptimization) {
-			calls.forEach(call -> call.getFunction().setClosureVariables(null));
-		}
         calls.clear();
         function.resetState(postOptimization);
     }

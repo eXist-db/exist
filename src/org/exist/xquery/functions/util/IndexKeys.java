@@ -130,85 +130,91 @@ public class IndexKeys extends BasicFunction {
             nodes = args[0].toNodeSet();
             docs = nodes.getDocumentSet();
         }
-        final FunctionReference ref = (FunctionReference) args[2].itemAt(0);
-        int max = -1;
-        if (args[3].hasOne())
-            {max = ((IntegerValue) args[3].itemAt(0)).getInt();}
         final Sequence result = new ValueSequence();
-        // if we have 5 arguments, query the user-specified index
-        if (this.getArgumentCount() == 5) {
-        	final IndexWorker indexWorker = context.getBroker().getIndexController().getWorkerByIndexName(args[4].itemAt(0).getStringValue());
-        	//Alternate design
-        	//IndexWorker indexWorker = context.getBroker().getBrokerPool().getIndexManager().getIndexByName(args[4].itemAt(0).getStringValue()).getWorker();
-        	if (indexWorker == null)
-        		{throw new XPathException(this, "Unknown index: " + args[4].itemAt(0).getStringValue());}
-        	final Map<String, Object> hints = new HashMap<String, Object>();
-            if (max != -1)
-        	    {hints.put(IndexWorker.VALUE_COUNT, new IntegerValue(max));}
-        	if (indexWorker instanceof OrderedValuesIndex)
-        		{hints.put(OrderedValuesIndex.START_VALUE, args[1].getStringValue());}
-        	else
-        		{logger.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '" + args[1] + "' ignored." );}
-            if (qnames != null) {
-                final List<QName> qnameList = new ArrayList<QName>(qnames.getItemCount());
-                for (final SequenceIterator i = qnames.iterate(); i.hasNext();) {
-                    final QNameValue qv = (QNameValue) i.nextItem();
-                    qnameList.add(qv.getQName());
+        try (final FunctionReference ref = (FunctionReference) args[2].itemAt(0)) {
+            int max = -1;
+            if (args[3].hasOne()) {
+                max = ((IntegerValue) args[3].itemAt(0)).getInt();
+            }
+            // if we have 5 arguments, query the user-specified index
+            if (this.getArgumentCount() == 5) {
+                final IndexWorker indexWorker = context.getBroker().getIndexController().getWorkerByIndexName(args[4].itemAt(0).getStringValue());
+                //Alternate design
+                //IndexWorker indexWorker = context.getBroker().getBrokerPool().getIndexManager().getIndexByName(args[4].itemAt(0).getStringValue()).getWorker();
+                if (indexWorker == null) {
+                    throw new XPathException(this, "Unknown index: " + args[4].itemAt(0).getStringValue());
                 }
-                hints.put(QNamedKeysIndex.QNAMES_KEY, qnameList);
-            }
-        	final Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);
-        	//TODO : add an extra argument to pass the END_VALUE ?
-	        final int len = (max != -1 && occur.length > max ? max : occur.length);
-	        final Sequence params[] = new Sequence[2];
-	        ValueSequence data = new ValueSequence();
-	        for (int j = 0; j < len; j++) {
-	            params[0] = new StringValue(occur[j].getTerm().toString());
-	            data.add(new IntegerValue(occur[j].getOccurrences(),
-	                    Type.UNSIGNED_INT));
-	            data.add(new IntegerValue(occur[j].getDocuments(),
-	                    Type.UNSIGNED_INT));
-	            data.add(new IntegerValue(j + 1, Type.UNSIGNED_INT));
-	            params[1] = data;
-	
-	            result.addAll(ref.evalFunction(Sequence.EMPTY_SEQUENCE, null, params));
-	            data.clear();
-	        }
-	    // no index specified: use the range index
-        } else {
-            final Indexable indexable = (Indexable) args[1].itemAt(0);
-            ValueOccurrences occur[] = null;
-            // First check for indexes defined on qname
-            final QName[] allQNames = getDefinedIndexes(context.getBroker(), docs);
-            if (allQNames.length > 0)
-                {occur = context.getBroker().getValueIndex().scanIndexKeys(docs, nodes, allQNames, indexable);}
-            // Also check if there's an index defined by path
-            ValueOccurrences occur2[] = context.getBroker().getValueIndex().scanIndexKeys(docs, nodes, indexable);
-            // Merge the two results
-            if (occur == null || occur.length == 0)
-                {occur = occur2;}
-            else {
-                ValueOccurrences t[] = new ValueOccurrences[occur.length + occur2.length];
-                System.arraycopy(occur, 0, t, 0, occur.length);
-                System.arraycopy(occur2, 0, t, occur.length, occur2.length);
-                occur = t;
-            }
+                final Map<String, Object> hints = new HashMap<String, Object>();
+                if (max != -1) {
+                    hints.put(IndexWorker.VALUE_COUNT, new IntegerValue(max));
+                }
+                if (indexWorker instanceof OrderedValuesIndex) {
+                    hints.put(OrderedValuesIndex.START_VALUE, args[1].getStringValue());
+                } else {
+                    logger.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '" + args[1] + "' ignored.");
+                }
+                if (qnames != null) {
+                    final List<QName> qnameList = new ArrayList<QName>(qnames.getItemCount());
+                    for (final SequenceIterator i = qnames.iterate(); i.hasNext(); ) {
+                        final QNameValue qv = (QNameValue) i.nextItem();
+                        qnameList.add(qv.getQName());
+                    }
+                    hints.put(QNamedKeysIndex.QNAMES_KEY, qnameList);
+                }
+                final Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);
+                //TODO : add an extra argument to pass the END_VALUE ?
+                final int len = (max != -1 && occur.length > max ? max : occur.length);
+                final Sequence params[] = new Sequence[2];
+                ValueSequence data = new ValueSequence();
+                for (int j = 0; j < len; j++) {
+                    params[0] = new StringValue(occur[j].getTerm().toString());
+                    data.add(new IntegerValue(occur[j].getOccurrences(),
+                            Type.UNSIGNED_INT));
+                    data.add(new IntegerValue(occur[j].getDocuments(),
+                            Type.UNSIGNED_INT));
+                    data.add(new IntegerValue(j + 1, Type.UNSIGNED_INT));
+                    params[1] = data;
 
-            final int len = (max != -1 && occur.length > max ? max : occur.length);
-		    final Sequence params[] = new Sequence[2];
-		    ValueSequence data = new ValueSequence();
-		    for (int j = 0; j < len; j++) {
-		        params[0] = occur[j].getValue();
-		        data.add(new IntegerValue(occur[j].getOccurrences(),
-		                Type.UNSIGNED_INT));
-		        data.add(new IntegerValue(occur[j].getDocuments(),
-		                Type.UNSIGNED_INT));
-		        data.add(new IntegerValue(j + 1, Type.UNSIGNED_INT));
-		        params[1] = data;
-		
-		        result.addAll(ref.evalFunction(Sequence.EMPTY_SEQUENCE, null, params));
-		        data.clear();
-		    }
+                    result.addAll(ref.evalFunction(Sequence.EMPTY_SEQUENCE, null, params));
+                    data.clear();
+                }
+                // no index specified: use the range index
+            } else {
+                final Indexable indexable = (Indexable) args[1].itemAt(0);
+                ValueOccurrences occur[] = null;
+                // First check for indexes defined on qname
+                final QName[] allQNames = getDefinedIndexes(context.getBroker(), docs);
+                if (allQNames.length > 0) {
+                    occur = context.getBroker().getValueIndex().scanIndexKeys(docs, nodes, allQNames, indexable);
+                }
+                // Also check if there's an index defined by path
+                ValueOccurrences occur2[] = context.getBroker().getValueIndex().scanIndexKeys(docs, nodes, indexable);
+                // Merge the two results
+                if (occur == null || occur.length == 0) {
+                    occur = occur2;
+                } else {
+                    ValueOccurrences t[] = new ValueOccurrences[occur.length + occur2.length];
+                    System.arraycopy(occur, 0, t, 0, occur.length);
+                    System.arraycopy(occur2, 0, t, occur.length, occur2.length);
+                    occur = t;
+                }
+
+                final int len = (max != -1 && occur.length > max ? max : occur.length);
+                final Sequence params[] = new Sequence[2];
+                ValueSequence data = new ValueSequence();
+                for (int j = 0; j < len; j++) {
+                    params[0] = occur[j].getValue();
+                    data.add(new IntegerValue(occur[j].getOccurrences(),
+                            Type.UNSIGNED_INT));
+                    data.add(new IntegerValue(occur[j].getDocuments(),
+                            Type.UNSIGNED_INT));
+                    data.add(new IntegerValue(j + 1, Type.UNSIGNED_INT));
+                    params[1] = data;
+
+                    result.addAll(ref.evalFunction(Sequence.EMPTY_SEQUENCE, null, params));
+                    data.clear();
+                }
+            }
         }
     	logger.debug("Returning: " + result.getItemCount());
         return result;

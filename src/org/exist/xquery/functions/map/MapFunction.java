@@ -264,13 +264,14 @@ public class MapFunction extends BasicFunction {
 
     private Sequence forEach(final Sequence[] args) throws XPathException {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
-        final FunctionReference ref = (FunctionReference) args[1].itemAt(0);
-        ref.analyze(cachedContextInfo);
-        final ValueSequence result = new ValueSequence();
-        for (final Map.Entry<AtomicValue, Sequence> entry : map) {
-            final Sequence s = ref.evalFunction(null, null, new Sequence[] { entry.getKey(), entry.getValue() });
-            result.addAll(s);
+        try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
+            ref.analyze(cachedContextInfo);
+            final ValueSequence result = new ValueSequence();
+            for (final Map.Entry<AtomicValue, Sequence> entry : map) {
+                final Sequence s = ref.evalFunction(null, null, new Sequence[]{entry.getKey(), entry.getValue()});
+                result.addAll(s);
+            }
+            return result;
         }
-        return result;
     }
 }

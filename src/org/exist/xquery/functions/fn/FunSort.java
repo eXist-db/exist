@@ -92,28 +92,27 @@ public class FunSort extends BasicFunction {
     Sequence seq = args[0];
 
     Collator collator = collator(args, 1);
-
-    FunctionReference ref = function(args, 2);
-
     ArrayList<Sequence> keys = new ArrayList<>(seq.getItemCount());
 
-    final Sequence refArgs[] = new Sequence[1];
+    try (FunctionReference ref = function(args, 2)) {
 
-    Item item;
-    Sequence value;
+      final Sequence refArgs[] = new Sequence[1];
 
-    for (final SequenceIterator i = seq.iterate(); i.hasNext();) {
-      item = i.nextItem();
-      if (ref != null) {
-        refArgs[0] = item.toSequence();
-        value = ref.evalFunction(contextSequence, null, refArgs);
-      } else {
-        value = item.toSequence();
+      Item item;
+      Sequence value;
+
+      for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+        item = i.nextItem();
+        if (ref != null) {
+          refArgs[0] = item.toSequence();
+          value = ref.evalFunction(contextSequence, null, refArgs);
+        } else {
+          value = item.toSequence();
+        }
+
+        keys.add(Atomize.atomize(value));
       }
-
-      keys.add(Atomize.atomize(value));
     }
-
     return sort(seq, keys, collator);
   }
 

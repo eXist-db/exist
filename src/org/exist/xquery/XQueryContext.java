@@ -177,6 +177,9 @@ public class XQueryContext implements BinaryValueManager, Context
     // Unresolved references to user defined functions
     protected Deque<FunctionCall>                      forwardReferences                                = new ArrayDeque<>();
 
+    // Inline functions using closures need to be cleared after execution
+    protected Deque<UserDefinedFunction>               closures                                         = new ArrayDeque<>();
+
     // List of options declared for this query at compile time - i.e. declare option
     protected List<Option>                             staticOptions                                    = null;
 
@@ -1399,6 +1402,11 @@ public class XQueryContext implements BinaryValueManager, Context
         if( !isShared ) {
             lastVar = null;
         }
+
+        // clear inline functions using closures
+        closures.forEach(func -> func.setClosureVariables(null));
+        closures.clear();
+
         fragmentStack = new Stack<MemTreeBuilder>();
         callStack.clear();
         protectedDocuments = null;
@@ -2060,7 +2068,7 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     public List<ClosureVariable> getLocalStack() {
 
-        final List<ClosureVariable> closure = new ArrayList<>(6);
+        List<ClosureVariable> closure = null;
 
     	final LocalVariable end = contextStack.isEmpty() ? null : contextStack.peek();
 
@@ -2070,6 +2078,9 @@ public class XQueryContext implements BinaryValueManager, Context
                 break;
             }
 
+            if (closure == null) {
+                closure = new ArrayList<>(6);
+            }
             closure.add( new ClosureVariable(var) );
         }
 
@@ -2610,6 +2621,16 @@ public class XQueryContext implements BinaryValueManager, Context
         }
         lastVar = var;
         variableStackSize--;
+    }
+
+    /**
+     * Register a inline function using closure variables so it can be cleared
+     * after query execution.
+     *
+     * @param func an inline function definition using closure variables
+     */
+    public void pushClosure(final UserDefinedFunction func) {
+        closures.add(func);
     }
 
     /**

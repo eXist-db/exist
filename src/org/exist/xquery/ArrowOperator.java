@@ -109,18 +109,20 @@ public class ArrowOperator extends AbstractExpression {
             }
             fref = (FunctionReference)item0;
         }
-        final List<Expression> fparams = new ArrayList<>(parameters.size() + 1);
-        fparams.add(new ContextParam(context, contextSequence));
-        fparams.addAll(parameters);
+        try {
+            final List<Expression> fparams = new ArrayList<>(parameters.size() + 1);
+            fparams.add(new ContextParam(context, contextSequence));
+            fparams.addAll(parameters);
 
-        fref.setArguments(fparams);
-        // need to create a new AnalyzeContextInfo to avoid memory leak
-        // cachedContextInfo will stay in memory
-        fref.analyze(new AnalyzeContextInfo(cachedContextInfo));
-        // Evaluate the function
-        final Sequence result = fref.eval(contextSequence);
-        fref.resetState(false);
-        return result;
+            fref.setArguments(fparams);
+            // need to create a new AnalyzeContextInfo to avoid memory leak
+            // cachedContextInfo will stay in memory
+            fref.analyze(new AnalyzeContextInfo(cachedContextInfo));
+            // Evaluate the function
+            return fref.eval(contextSequence);
+        } finally {
+            fref.close();
+        }
     }
 
     @Override
