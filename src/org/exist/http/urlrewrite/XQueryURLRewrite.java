@@ -128,6 +128,7 @@ public class XQueryURLRewrite extends HttpServlet {
     // path to the query
     private String query = null;
     private boolean compiledCache = true;
+    private boolean sendChallenge = true;
     private RewriteConfig rewriteConfig;
     private Authenticator authenticator;
 
@@ -138,11 +139,15 @@ public class XQueryURLRewrite extends HttpServlet {
 
         query = filterConfig.getInitParameter("xquery");
 
-        final String opt = filterConfig.getInitParameter("compiled-cache");
-        if (opt != null) {
-            compiledCache = opt.equalsIgnoreCase("true");
+        final String optCompiledCache = filterConfig.getInitParameter("compiled-cache");
+        if (optCompiledCache != null) {
+            compiledCache = optCompiledCache.equalsIgnoreCase("true");
         }
 
+        final String optSendChallenge = filterConfig.getInitParameter("send-challenge");
+        if (optSendChallenge != null) {
+            sendChallenge = optSendChallenge.equalsIgnoreCase("true");
+        }
     }
 
     @Override
@@ -178,7 +183,7 @@ public class XQueryURLRewrite extends HttpServlet {
             // Secondly try basic authentication
             final String auth = request.getHeader("Authorization");
             if (auth != null) {
-                requestUser = authenticator.authenticate(request, response, true);
+                requestUser = authenticator.authenticate(request, response, sendChallenge);
                 if (requestUser != null) {
                     user = requestUser;
                 }
