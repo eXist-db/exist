@@ -175,13 +175,11 @@
                     Trigger for registering eXists XML:DB URL handler with Java
                 -->
                 <trigger class="org.exist.protocolhandler.URLStreamHandlerStartupTrigger">
-                    <!-- Keep stream's data in memory -->
+                    <!-- Keeps stream data on disk (temporary files are used for XML documents) -->
+                    <parameter name="mode" value="disk"/>
+
+                    <!-- Keep's stream data in memory -->
                     <parameter name="mode" value="memory"/>
-                    <!-- low memory requirements, but also it have design bugs:
-                          - broker hold while io stream in "use";
-                          - require 2 threads per operation
-                    -->
-                    <!--<parameter name="mode" value="threads"/>-->
                 </trigger>
 
                 <!-- 

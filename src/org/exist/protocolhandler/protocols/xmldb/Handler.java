@@ -46,13 +46,15 @@ public class Handler extends URLStreamHandler {
     public static final String XMLDB        = "xmldb:";
     public static final String PATTERN      = "xmldb:[\\w]+:\\/\\/.*";
 
-    Mode mode;
+    private final Mode mode;
 
     /**
      * Creates a new instance of Handler
      */
-    public Handler(Mode mode) {
-        LOG.debug("Setup \"xmldb:\" handler");
+    public Handler(final Mode mode) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Setup \"xmldb:\" handler");
+        }
 
         this.mode = mode;
     }
@@ -64,8 +66,11 @@ public class Handler extends URLStreamHandler {
      * this information as a parameter to the url, format __instance=XXXXX
      * Should we clean all other params? remove #?
      */
-    protected void parseURL(URL url, String spec, int start, int limit) {
-        LOG.debug(spec);
+    @Override
+    protected void parseURL(final URL url, final String spec, final int start, final int limit) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(spec);
+        }
         
         if(spec.startsWith(XMLDB_EXIST+"//")){
             LOG.debug("Parsing xmldb:exist:// URL.");
@@ -97,12 +102,11 @@ public class Handler extends URLStreamHandler {
         }
     }
     
-    /**
-     * @see java.net.URLStreamHandler#openConnection(java.net.URL)
-     */
-    protected URLConnection openConnection(URL u) throws IOException {
+    @Override
+    protected URLConnection openConnection(final URL u) throws IOException {
         switch (mode) {
             case THREADS:
+            case DISK:
                 return new EmbeddedURLConnection(u);
             case MEMORY:
                 return new InMemoryURLConnection(u);

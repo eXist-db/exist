@@ -59,7 +59,7 @@ public class URLStreamHandlerStartupTrigger implements StartupTrigger {
             }
         }
 
-        registerStreamHandlerFactory(mode == null ? Mode.THREADS : Mode.valueOf(mode.toUpperCase()));
+        registerStreamHandlerFactory(mode == null ? Mode.DISK : Mode.valueOf(mode.toUpperCase()));
     }
 
     private void registerStreamHandlerFactory(Mode mode) {
