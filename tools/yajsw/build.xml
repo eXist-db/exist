@@ -21,8 +21,20 @@
     <property name="logs" value="${wrapper.dir}/logs"/>
     <property name="work" value="${wrapper.dir}/work"/>
 
-
     <property name="build.compiler" value="modern"/>
+
+    <condition property="java.available">
+        <or>
+            <isset property="env.JAVA_HOME"/>
+            <and>
+                <available file="java" filepath="${env.PATH}"/>
+                <available file="javac" filepath="${env.PATH}"/>
+            </and>
+        </or>
+    </condition>
+    <condition property="java.bin" value="${env.JAVA_HOME}/bin/java" else="java">
+        <isset property="env.JAVA_HOME"/>
+    </condition>
     
     <path id="classpath.wrapper">
         <pathelement path="wrapperApp.jar"/>
@@ -43,21 +55,20 @@
     <!-- =================================================================== -->
     <target name="create-conf" unless="conf.available">
         <echo message="Creating wrapper config files for installer and direct local repo use..."/>
-        
+
 	    <fail unless="env.EXIST_HOME" message="EXIST_HOME environment variable not set. Please set it and start the build again. If run from commandline just prepend it."/>
-	    <fail unless="env.JAVA_HOME" message="JAVA_HOME environment variable not set. Please set it and start the build again. If run from commandline just prepend it."/>
 
         <filter token="app.name" value="eXist-db"/>
         <filter token="app.long.name" value="eXist-db Native XML Database"/>
         <filter token="app.description" value="eXist-db Database Server"/>
         <filter token="app.long.description" value="Start and stop the eXist-db Database Server wrapper"/>
         <filter token="jetty.dir" value="${jetty.dir}"/>
-        <filter token="java.vm" value="${env.JAVA_HOME}/bin/java"/>
+        <filter token="java.vm" value="${java.bin}"/>
         <filter token="server.dir" value="${env.EXIST_HOME}"/>
         <filter token="memory.max" value="${memory.max}"/>
         <copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf" filtering="true" overwrite="true" />
         
-        <filter token="java.vm" value="${JAVA_HOME}/bin/java"/>
+        <filter token="java.vm" value="${java.bin}"/>
         <filter token="server.dir" value="${INSTALL_PATH}"/>
         <filter token="memory.max" value="${MAX_MEMORY}"/>
         <copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf.install" filtering="true" overwrite="true"/>
@@ -70,8 +81,15 @@
     <target name="prepare" depends="create-conf">
         <fail unless="env.EXIST_HOME" message="EXIST_HOME environment variable not set. Please set it and start the build again. If run from commandline just prepend it."/>
 
+        <fail unless="java.available" message="Could not find java and javac. Java is not available on the PATH environment variable and the JAVA_HOME environment variable is not set. Please either set JAVA_HOME or add java and javac to your PATH. and restart the build."/>
+
         <echo message="--------------------------------------------------"/>
         <echo message="Setting up Java Service Wrapper"/>
+        <echo message=""/>
+        <echo message="Java Vendor: ${java.vendor}"/>
+        <echo message="Java Version: ${java.runtime.version}"/>
+        <echo message="Java VM: ${java.vm.name} ${java.vm.version}"/>
+        <echo message="${ant.version}"/>
         <echo message="--------------------------------------------------"/>
        
         <mkdir dir="${classes}"/>
