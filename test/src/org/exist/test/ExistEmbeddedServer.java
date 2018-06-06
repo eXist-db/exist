@@ -152,7 +152,7 @@ public class ExistEmbeddedServer extends ExternalResource {
         stopDb(true);
     }
 
-    private void stopDb(final boolean clearTemporaryStorage) {
+    public void stopDb(final boolean clearTemporaryStorage) {
         if(pool != null) {
             pool.shutdown();
 

@@ -83,6 +83,6 @@ public class SerializeTest {
 
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
-        assertXpathEvaluatesTo("2.0","/test//@version",r);
+        assertXpathEvaluatesTo("2.1","/test//@version",r);
     }    
 }

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -19,21 +19,21 @@
  */
 package org.exist.security.internal;
 
+import com.evolvedbinary.j8fu.lazy.AtomicLazyVal;
+import net.jcip.annotations.ThreadSafe;
 import org.exist.scheduler.JobDescription;
 import org.exist.security.AbstractRealm;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -64,11 +64,12 @@ import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.ConcurrentValueWrapper;
+import org.exist.util.WeakLazyStripes;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.quartz.SimpleTrigger;
 
 /**
@@ -86,35 +87,33 @@ import org.quartz.SimpleTrigger;
 @ConfigurationClass("security-manager")
 public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
 
+    private static final Logger LOG = LogManager.getLogger(SecurityManager.class);
 
-    public final static int MAX_USER_ID = 1048571;  //1 less than RealmImpl.UNKNOWN_ACCOUNT_ID
-    public final static int MAX_GROUP_ID = 1048572; //1 less than RealmImpl.UNKNOWN_GROUP_ID
+    public static final int MAX_USER_ID = 1048571;  //1 less than RealmImpl.UNKNOWN_ACCOUNT_ID
+    public static final int MAX_GROUP_ID = 1048572; //1 less than RealmImpl.UNKNOWN_GROUP_ID
+    static final int INITIAL_LAST_ACCOUNT_ID = 10;
+    static final int INITIAL_LAST_GROUP_ID = 10;
 
-    public final static Logger LOG = LogManager.getLogger(SecurityManager.class);
+    private final PrincipalDbById<Group> groupsById = new PrincipalDbById<>(INITIAL_LAST_GROUP_ID);
+    private final PrincipalDbById<Account> usersById = new PrincipalDbById<>(INITIAL_LAST_ACCOUNT_ID);
+    private final PrincipalLocks<Account> accountLocks = new PrincipalLocks<>();
+    private final PrincipalLocks<Group> groupLocks = new PrincipalLocks<>();
+    private final SessionDb sessions = new SessionDb();
 
     private Database db;
 
-    protected PrincipalDbById<Group> groupsById = new PrincipalDbById<>();
-    protected PrincipalDbById<Account> usersById = new PrincipalDbById<>();
+    private AtomicLazyVal<Subject> systemSubject;
+    private AtomicLazyVal<Subject> guestSubject;
 
-    private final PrincipalLocks<Account> accountLocks = new PrincipalLocks<>();
-    private final PrincipalLocks<Group> groupLocks = new PrincipalLocks<>();
-
-    //TODO: validate & remove if session timeout
-    private SessionDb sessions = new SessionDb();
-
-    @ConfigurationFieldAsAttribute("last-account-id")
-    protected int lastUserId = 0;
-
-    @ConfigurationFieldAsAttribute("last-group-id")
-    protected int lastGroupId = 0;
+    private final Map<XmldbURI, Integer> saving = new ConcurrentHashMap<>();
 
     @ConfigurationFieldAsAttribute("version")
-    private String version = "2.0";
+    @SuppressWarnings("unused")
+    private String version = "2.1";
 
     @ConfigurationFieldAsElement("authentication-entry-point")
-    public final static String authenticationEntryPoint = "/authentication/login";
-    
+    private static final String authenticationEntryPoint = "/authentication/login";
+
     private RealmImpl defaultRealm;
     
     @ConfigurationFieldAsElement("realm")
@@ -138,6 +137,8 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         try {
             this.defaultRealm = new RealmImpl(null, this, null);
             realms.add(defaultRealm);
+            this.systemSubject = new AtomicLazyVal<>(() -> new SubjectAccreditedImpl(defaultRealm.ACCOUNT_SYSTEM, this));
+            this.guestSubject =  new AtomicLazyVal<>(() -> new SubjectAccreditedImpl((AccountImpl) defaultRealm.getAccount(SecurityManager.GUEST_USER), this));
         } catch(final EXistException e) {
             throw new BrokerPoolServiceException(e);
         }
@@ -153,10 +154,10 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     }
 
     @Override
-    public void startPreMultiUserSystem(final DBBroker systemBroker) throws BrokerPoolServiceException {
+    public void startPreMultiUserSystem(final DBBroker systemBroker) {
         final Properties params = new Properties();
         params.put(getClass().getName(), this);
-        db.getScheduler().createPeriodicJob(TIMEOUT_CHECK_PERIOD, new SessionsCheck(), TIMEOUT_CHECK_PERIOD, params, SimpleTrigger.REPEAT_INDEFINITELY, false);
+        db.getScheduler().createPeriodicJob(SessionsCheck.TIMEOUT_CHECK_PERIOD, new SessionsCheck(), SessionsCheck.TIMEOUT_CHECK_PERIOD, params, SimpleTrigger.REPEAT_INDEFINITELY, false);
     }
 
     /**
@@ -165,22 +166,19 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
      * Checks if the file users.xml exists in the system collection of the database.
      * If not, it is created with two default users: admin and guest.
      *  
-     * @param broker
+     * @param broker the database broker
      */
     @Override
     public void attach(final DBBroker broker) throws EXistException {
-        //groups = new Int2ObjectHashMap<Group>(65);
-        //users = new Int2ObjectHashMap<User>(65);
-
         db = broker.getDatabase(); //TODO: check that db is same?
 
         final TransactionManager transaction = db.getTransactionManager();
 
-        Collection systemCollection = null;
+        Collection systemCollection;
         try(final Txn txn = transaction.beginTransaction()) {
-            systemCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
+            systemCollection = broker.getCollection(XmldbURI.SYSTEM);
             if(systemCollection == null) {
-                systemCollection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM_COLLECTION_URI);
+                systemCollection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM);
                 if (systemCollection == null) {
                     return;
                 }
@@ -190,8 +188,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             }
             transaction.commit(txn);
         } catch (final Exception e) {
-            e.printStackTrace();
-            LOG.debug("loading acl failed: " + e.getMessage());
+            LOG.error("Setting /db/system permissions failed: " + e.getMessage(), e);
         }
 
         try(final Txn txn = transaction.beginTransaction()) {
@@ -199,11 +196,9 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             if (collection == null) {
                 collection = broker.getOrCreateCollection(txn, SECURITY_COLLECTION_URI);
                 if (collection == null) {
+                    LOG.error("Collection '/db/system/security' can't be created. Database may be corrupt!");
                     return;
                 }
-
-                //if db corrupted it can lead to unrunnable issue
-                //throw new ConfigurationException("Collection '/db/system/security' can't be created.");
 
                 collection.setPermissions(Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
                 broker.saveCollection(txn, collection);
@@ -211,12 +206,11 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             transaction.commit(txn);
         } catch (final Exception e) {
             e.printStackTrace();
-            LOG.debug("loading configuration failed: " + e.getMessage());
+            LOG.error("Loading security configuration failed: " + e.getMessage(), e);
         }
 
         final Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
         configuration = Configurator.configure(this, _config_);
-
 
         for (final Realm realm : realms) {
             realm.start(broker);
@@ -307,18 +301,16 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
 
     @Override
     public Account getAccount(final String name) {
-//        if (SYSTEM.equals(name)) {
-//            return defaultRealm.ACCOUNT_SYSTEM;
-//        }
-
         for(final Realm realm : realms) {
             final Account account = realm.getAccount(name);
             if (account != null) {
                 return account;
             }
         }
-        
-        LOG.debug("Account for '" + name + "' not found!");
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Account for '" + name + "' not found!");
+        }
         return null;
     }
 
@@ -382,7 +374,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     @Override
     public Subject authenticate(final String username, final Object credentials) throws AuthenticationException {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Authentication try for '"+username+"'.");
+            LOG.debug("Authentication try for '" + username + "'.");
         }
 
         if (username == null) {
@@ -403,7 +395,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             }
 
             final Subject subject = sessions.read(db1 -> {
-                final Session session = db1.get(credentials);
+                final Session session = db1.get(credentials.toString());
                 if (session == null) {
                     return null;
                 }
@@ -462,32 +454,15 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             "Account [" + username + "] not found"
         );
     }
-    
-    protected Subject systemSubject = null;
-    protected Subject guestSubject = null;
 
     @Override
     public Subject getSystemSubject() {
-        if (systemSubject == null) {
-            synchronized (this) {
-                if (systemSubject == null) {
-                    systemSubject = new SubjectAccreditedImpl(defaultRealm.ACCOUNT_SYSTEM, this);
-                }
-            }
-        }
-        return systemSubject; 
+        return systemSubject.get();
     }
 
     @Override
     public Subject getGuestSubject() {
-        if (guestSubject == null) {
-            synchronized (this) {
-                if (guestSubject == null) {
-                    guestSubject = new SubjectAccreditedImpl((AccountImpl) defaultRealm.getAccount(SecurityManager.GUEST_USER), this);
-                }
-            }
-        }
-        return guestSubject;
+        return guestSubject.get();
     }
 
     @Override
@@ -505,18 +480,22 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         return db;
     }
 
-    private synchronized int getNextGroupId() {
-        if(lastGroupId + 1 == MAX_GROUP_ID) {
-            throw new RuntimeException("System has no more group-ids available");            
-        }
-        return ++lastGroupId;
+    /**
+     * For internal testing use only!
+     *
+     * @return The last group id
+     */
+    int getLastGroupId() {
+        return groupsById.getCurrentPrincipalId();
     }
 
-    private synchronized int getNextAccountId() {
-        if(lastUserId +1 == MAX_USER_ID) {
-            throw new RuntimeException("System has no more user-ids available");
-        }
-        return ++lastUserId;
+    /**
+     * For internal testing use only!
+     *
+     * @return The last account id
+     */
+    int getLastAccountId() {
+        return usersById.getCurrentPrincipalId();
     }
 
     @Override
@@ -573,7 +552,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         if(group.getId() != Group.UNDEFINED_ID) {
             id = group.getId();
         } else {
-            id = getNextGroupId();
+            id = groupsById.getNextPrincipalId();
         }
         
         final AbstractRealm registeredRealm = (AbstractRealm)findRealmForRealmId(group.getRealmId());
@@ -590,11 +569,9 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         final Lock lock = groupLocks.getWriteLock(newGroup);
         lock.lock();
         try {
-            groupsById.modify(principalDb -> principalDb.put(id, newGroup));
-            
+            registerGroup(newGroup);
             registeredRealm.registerGroup(newGroup);
 
-            save(broker);
             newGroup.save(broker);
 
             return newGroup;
@@ -604,7 +581,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     }
 
     @Override
-    public final Account addAccount(final Account account) throws  PermissionDeniedException, EXistException {
+    public final Account addAccount(final Account account) throws  PermissionDeniedException, EXistException{
         try(final DBBroker broker = db.getBroker()) {
             return addAccount(broker, account);
         }
@@ -624,7 +601,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         if(account.getId() != Account.UNDEFINED_ID) {
             id = account.getId();
         } else {
-            id = getNextAccountId();
+            id = usersById.getNextPrincipalId();
         }
 
         final AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
@@ -633,29 +610,14 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         final Lock lock = accountLocks.getWriteLock(newAccount);
         lock.lock();
         try {
-            usersById.modify(principalDb -> principalDb.put(id, newAccount));
-            
+            registerAccount(newAccount);
             registeredRealm.registerAccount(newAccount);
 
-            //XXX: one transaction?
-            save(broker);
             newAccount.save(broker);
 
             return newAccount;
         } finally {
             lock.unlock();
-        }
-    }
-
-    private void save() throws PermissionDeniedException, EXistException {
-        if (configuration != null) {
-            configuration.save();
-        }
-    }
-        
-    private void save(final DBBroker broker) throws PermissionDeniedException, EXistException {
-        if (configuration != null) {
-            configuration.save(broker);
         }
     }
 
@@ -670,15 +632,10 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     }
     
     //Session management part
-    
-    public final static long TIMEOUT_CHECK_PERIOD = 20000; //20 sec
-
     public static class SessionsCheck implements JobDescription, org.quartz.Job {
+        public static final long TIMEOUT_CHECK_PERIOD = 20000; //20 sec
 
-        boolean firstRun = true;
-
-        public SessionsCheck() {}
-
+        @Override
         public String getGroup() {
         	return "eXist.Security";
         }
@@ -689,11 +646,11 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         }
 
         @Override
-        public void setName(String name) {
+        public void setName(final String name) {
         }
 
         @Override
-        public final void execute(final JobExecutionContext jec) throws JobExecutionException {
+        public final void execute(final JobExecutionContext jec) {
             final JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
 
             final Properties params = (Properties) jobDataMap.get("params");
@@ -706,27 +663,19 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
                 return;
             }
             
-            sm.sessions.modify(db -> {
-                final Iterator<Map.Entry<String, Session>> it = db.entrySet().iterator();
-                while (it.hasNext()) {
-                    final Map.Entry<String, Session> entry = it.next();
-                    if (entry == null || !entry.getValue().isValid()) {
-                        it.remove();
-                    }
-                }
-            });
+            sm.sessions.write(db -> db.entrySet().removeIf(entry -> entry == null || !entry.getValue().isValid()));
         }
     }
 
     @Override
     public void registerSession(final Session session) {
-        sessions.modify(db -> db.put(session.getId(), session));
+        sessions.write(db -> db.put(session.getId(), session));
     }
 
     @Override
-    public Subject getSubjectBySessionId(String sessionId) {
+    public Subject getSubjectBySessionId(final String sessionId) {
         return sessions.read(db -> {
-            Session session = db.get(sessionId);
+            final Session session = db.get(sessionId);
             if (session != null) {
                 return session.getSubject();
             }
@@ -743,15 +692,45 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         }
         throw new ConfigurationException("Realm id = '" + realmId + "' not found.");
     }
-    
+
+    /**
+     * Register mapping id to group.
+     *
+     * @param group thr group.
+     */
     @Override
-    public void addGroup(final int id, final Group group) {
-        groupsById.modify(principalDb -> principalDb.put(id, group));
+    public void registerGroup(final Group group) {
+        groupsById.update((principalDb, principalId) -> {
+            final int id = group.getId();
+
+            principalDb.put(id, group);
+
+            if (id < MAX_GROUP_ID) {
+                return Math.max(principalId, id);
+            } else {
+                return principalId;
+            }
+        });
     }
 
+    /**
+     * Register mapping id to account.
+     *
+     * @param account the account.
+     */
     @Override
-    public void addUser(final int id, final Account account) {
-        usersById.modify(principalDb -> principalDb.put(id, account));
+    public void registerAccount(final Account account) {
+        usersById.update((principalDb, principalId) -> {
+            final int id = account.getId();
+
+            principalDb.put(id, account);
+
+            if (id < MAX_USER_ID) {
+                return Math.max(principalId, id);
+            } else {
+                return principalId;
+            }
+        });
     }
 
     @Override
@@ -827,10 +806,8 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         return userNames;
     }
     
-    private Map<XmldbURI, Integer> saving = new HashMap<>();
-    
     @Override
-    public void processPramatterBeforeSave(final DBBroker broker, final DocumentImpl document) throws ConfigurationException {
+    public void processParameterBeforeSave(final DBBroker broker, final DocumentImpl document) {
         XmldbURI uri = document.getCollection().getURI();
         
         final boolean isRemoved = uri.endsWith(SecurityManager.REMOVED_COLLECTION_URI);
@@ -852,11 +829,9 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     }
 
     @Override
-    public void processPramatter(DBBroker broker, DocumentImpl document) throws ConfigurationException {
+    public void processParameter(final DBBroker broker, final DocumentImpl document) throws ConfigurationException {
 
         XmldbURI uri = document.getCollection().getURI();
-        
-        //System.out.println(document);
 
         final boolean isRemoved = uri.endsWith(SecurityManager.REMOVED_COLLECTION_URI);
         if(isRemoved) {
@@ -885,7 +860,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
                 if (isRemoved && id > 2 && !hasUser(id)) {
                     final AccountImpl account = new AccountImpl( realm, conf );
                     account.removed = true;
-                    addUser(account.getId(), account);
+                    registerAccount(account);
                 } else if(name != null) {
                 	if (realm.hasAccount(name)) {
                 		final Integer oldId = saving.get(document.getURI());
@@ -898,7 +873,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
                     		final Account current = realm.getAccount(name);
 	            	        accountLocks.getWriteLock(current).lock();
 	            	        try {
-	            	            usersById.modify(principalDb -> {
+	            	            usersById.write(principalDb -> {
                                     principalDb.remove(oldId);
                                     principalDb.put(newId, current);
                                 });
@@ -908,26 +883,26 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             			}
                 	} else {
                 		final Account account = new AccountImpl( realm, conf );
-                		addUser(account.getId(), account);
+                        registerAccount(account);
                 		realm.registerAccount(account);
                 	}
                 } else {
                     //this can't be! log any way
-                    LOG.error("Account '"+name+"' pressent at '"+realmId+"' realm, but get event that new one created.");
+                    LOG.error("Account '" + name + "' already exists in realm: '" + realmId + "', but received notification that a new one was created.");
                 }
             
             } else if(isGroup) {
                 if (isRemoved && id > 2 && !hasGroup(id)) {
                     final GroupImpl group = new GroupImpl( realm, conf );
                     group.removed = true;
-                    addGroup(group.getId(), group);
+                    registerGroup(group);
                 } else if (name != null && !realm.hasGroup(name)) {
                     final GroupImpl group = new GroupImpl( realm, conf );
-                    addGroup(group.getId(), group);
+                    registerGroup(group);
                     realm.registerGroup(group);
                 } else {
                     //this can't be! log any way
-                    LOG.error("Group '"+name+"' pressent at '"+realmId+"' realm, but get event that new one created.");
+                    LOG.error("Group '" + name + "' already exists in realm: '" + realmId + "', but received notification that a new one was created.");
                 }
                             
             }
@@ -937,78 +912,65 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
 
     @Override
     public String getAuthenticationEntryPoint() {
-            return authenticationEntryPoint;
+        return authenticationEntryPoint;
     }
 
+    @ThreadSafe
     private static class PrincipalLocks<T extends Principal> {
-        private final Map<Integer, ReentrantReadWriteLock> locks = new HashMap<>();
+        private final WeakLazyStripes<Integer, ReadWriteLock> lockStripes = new WeakLazyStripes<>(id -> new ReentrantReadWriteLock());
 
-        private synchronized ReentrantReadWriteLock getLock(final T principal) {
-            ReentrantReadWriteLock lock = locks.get(principal.getId());
-            if(lock == null) {
-                lock = new ReentrantReadWriteLock();
-                locks.put(principal.getId(), lock);
-            }
-            return lock;
+        private ReadWriteLock getLock(final T principal) {
+            return lockStripes.get(principal.getId());
         }
 
-        public ReadLock getReadLock(T principal) {
+        public Lock getReadLock(final T principal) {
             return getLock(principal).readLock();
         }
 
-        public WriteLock getWriteLock(T principal) {
+        public Lock getWriteLock(final T principal) {
             return getLock(principal).writeLock();
         }
     }
-   
-    protected static class SessionDb {
-        private final Map<String, Session> db = new HashMap<>();
-        private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-        private final ReadLock readLock = lock.readLock();
-        private final WriteLock writeLock = lock.writeLock();
 
-        public <R> R read(final Function<Map<String, Session>, R> readFn) {
-            readLock.lock();
-            try {
-                return readFn.apply(db);
-            } finally {
-                readLock.unlock();
-            }
-        }
-
-        public final void modify(final Consumer<Map<String, Session>> modifyFn) {
-            writeLock.lock();
-            try {
-                modifyFn.accept(db);
-            } finally {
-                writeLock.unlock();
-            }
+    @ThreadSafe
+    private static class SessionDb extends ConcurrentValueWrapper<Map<String, Session>> {
+        public SessionDb() {
+            super(new HashMap<>());
         }
     }
-   
-    protected static class PrincipalDbById<V extends Principal> {
-    
-        private final Int2ObjectHashMap<V> db = new Int2ObjectHashMap<>(65);
-        private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-        private final ReadLock readLock = lock.readLock();
-        private final WriteLock writeLock = lock.writeLock();
 
-        public <R> R read(final Function<Int2ObjectHashMap<V>, R> readFn) {
-            readLock.lock();
-            try {
-                return readFn.apply(db);
-            } finally {
-                readLock.unlock();
-            }
+    @ThreadSafe
+    private static class PrincipalDbById<V extends Principal> extends ConcurrentValueWrapper<Int2ObjectHashMap<V>> {
+        private int principalId;
+
+        public PrincipalDbById(final int initialLastId) {
+            super(new Int2ObjectHashMap<>(65));
+            this.principalId = initialLastId;
         }
 
-        public final void modify(final Consumer<Int2ObjectHashMap<V>> writeOp) {
-            writeLock.lock();
-            try {
-                writeOp.accept(db);
-            } finally {
-                writeLock.unlock();
-            }
+        public int getNextPrincipalId() {
+            return writeAndReturn(principalDb -> {
+                if(principalId + 1 >= MAX_GROUP_ID) {
+                    throw new RuntimeException("System has no more ids available for principal type");
+                }
+                return ++principalId;
+            });
+        }
+
+        private int getCurrentPrincipalId() {
+            return read(principalDb -> principalId);
+        }
+
+        /**
+         * Allows updates to the principal db,
+         * and principal id.
+         *
+         * @param updateFn A function which updates the principal db and returns a new principal id.
+         */
+        public void update(final BiFunction<Int2ObjectHashMap<V>, Integer, Integer> updateFn) {
+            write(principalDb -> {
+                this.principalId = updateFn.apply(principalDb, principalId);
+            });
         }
     }
 
@@ -1018,16 +980,12 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     }
 
     @Override
-    public final synchronized void preAllocateAccountId(final PrincipalIdReceiver receiver) throws PermissionDeniedException, EXistException {
-        final int id = getNextAccountId();
-        save();
-        receiver.allocate(id);
+    public final void preAllocateAccountId(final PrincipalIdReceiver receiver) {
+        receiver.allocate(usersById.getNextPrincipalId());
     }
 
     @Override
-    public final synchronized void preAllocateGroupId(final PrincipalIdReceiver receiver) throws PermissionDeniedException, EXistException {
-        final int id = getNextGroupId();
-        save();
-        receiver.allocate(id);
+    public final void preAllocateGroupId(final PrincipalIdReceiver receiver) {
+        receiver.allocate(groupsById.getNextPrincipalId());
     }
 }

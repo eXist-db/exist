@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -56,6 +56,10 @@ public interface SecurityManager extends Configurable {
    Database getDatabase();
    Database database();
 
+   void registerAccount(Account account);
+
+   void registerGroup(Group group);
+
    Account getAccount(int id);
 
    boolean hasAccount(String name);
@@ -108,10 +112,6 @@ public interface SecurityManager extends Configurable {
    @Deprecated
    Subject getSubjectBySessionId(String sessionid);
 
-   void addGroup(int id, Group group);
-
-   void addUser(int id, Account account);
-
    boolean hasGroup(int id);
 
    boolean hasUser(int id);
@@ -152,8 +152,8 @@ public interface SecurityManager extends Configurable {
     * @param document
     * @throws ConfigurationException 
     */
-   void processPramatter(DBBroker broker, DocumentImpl document) throws ConfigurationException;
-   void processPramatterBeforeSave(DBBroker broker, DocumentImpl document) throws ConfigurationException;
+   void processParameter(DBBroker broker, DocumentImpl document) throws ConfigurationException;
+   void processParameterBeforeSave(DBBroker broker, DocumentImpl document) throws ConfigurationException;
    
    /**
     * Particular web page for authentication.

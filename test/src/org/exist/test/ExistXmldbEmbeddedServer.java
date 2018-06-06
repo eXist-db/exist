@@ -98,24 +98,28 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
     }
 
     public void restart() throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
-        stopDb();
+        restart(false);
+    }
+
+    public void restart(final boolean clearTemporaryStorage) throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
+        stopDb(clearTemporaryStorage);
         startDb();
     }
 
     @Override
     protected void after() {
-        stopDb();
+        stopDb(true);
         super.after();
     }
 
-    private void stopDb() {
+    private void stopDb(final boolean clearTemporaryStorage) {
         try {
             stopXmlDb();
         } catch (final XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());
         }
-        existEmbeddedServer.stopDb();
+        existEmbeddedServer.stopDb(clearTemporaryStorage);
     }
 
     private void stopXmlDb() throws XMLDBException {

@@ -1,23 +1,21 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2010-2011 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
- *  
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.security;
 
@@ -28,11 +26,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -44,15 +39,13 @@ import org.exist.config.Configurator;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.internal.AccountImpl;
 import org.exist.security.internal.GroupImpl;
-import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.realm.Realm;
 import org.exist.security.utils.Utils;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.ConcurrentValueWrapper;
 import org.exist.util.LockException;
-import com.evolvedbinary.j8fu.function.Consumer2E;
-import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -61,12 +54,12 @@ import org.exist.xmldb.XmldbURI;
  */
 public abstract class AbstractRealm implements Realm, Configurable {
 
+    private static final Logger LOG = LogManager.getLogger(AbstractRealm.class);
+
     protected final PrincipalDbByName<Account> usersByName = new PrincipalDbByName<>();
     protected final PrincipalDbByName<Group> groupsByName = new PrincipalDbByName<>();
-    
 
-    private SecurityManager sm;
-
+    private final SecurityManager sm;
     protected Configuration configuration;
 
     protected Collection collectionRealm = null;
@@ -75,7 +68,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     protected Collection collectionRemovedAccounts = null;
     protected Collection collectionRemovedGroups = null;
 	
-    public AbstractRealm(SecurityManager sm, Configuration config) {
+    public AbstractRealm(final SecurityManager sm, final Configuration config) {
         this.sm = sm;
         this.configuration = Configurator.configure(this, config);
     }
@@ -90,7 +83,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
         return sm;
     }
     
-    protected void initialiseRealmStorage(final DBBroker broker) throws EXistException {
+    private void initialiseRealmStorage(final DBBroker broker) throws EXistException {
         
         final XmldbURI realmCollectionURL = SecurityManager.SECURITY_COLLECTION_URI.append(getId());
         
@@ -120,18 +113,18 @@ public abstract class AbstractRealm implements Realm, Configurable {
                 final Configuration conf = Configurator.parse(broker.getBrokerPool(), i.next());
                 final String name = conf.getProperty("name");
                 
-                groupsByName.<ConfigurationException>modifyE(principalDb -> {
+                groupsByName.writeE(principalDb -> {
                     if(name != null && !principalDb.containsKey(name)) {
 
                         //Group group = instantiateGroup(this, conf);
                         final GroupImpl group = new GroupImpl(r, conf);
 
-                        getSecurityManager().addGroup(group.getId(), group);
+                        getSecurityManager().registerGroup(group);
                         principalDb.put(group.getName(), group);
 
                         //set collection
                         if(group.getId() > 0) {
-                            ((AbstractPrincipal)group).setCollection(broker, collectionGroups);
+                            group.setCollection(broker, collectionGroups);
                         }
                     }
                 });
@@ -152,7 +145,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
                     final GroupImpl group = new GroupImpl(this, conf);
                     group.removed = true;
                     
-                    getSecurityManager().addGroup(group.getId(), group);
+                    getSecurityManager().registerGroup(group);
                 }
             }
         }
@@ -169,18 +162,18 @@ public abstract class AbstractRealm implements Realm, Configurable {
                 final Configuration conf = Configurator.parse(broker.getBrokerPool(), doc);
                 final String name = conf.getProperty("name");
                 
-                usersByName.<ConfigurationException>modifyE(principalDb -> {
+                usersByName.writeE(principalDb -> {
                     if(name != null && !principalDb.containsKey(name)) {
                         //A account = instantiateAccount(this, conf);
                         final Account account;
                         try {
                             account = new AccountImpl(r, conf);
                         } catch (Throwable e) {
-                            SecurityManagerImpl.LOG.error("Account object can't build up from '"+doc.getFileURI()+"'", e);
+                            LOG.error("Account object can't be built from '" + doc.getFileURI() + "'", e);
                             return;
                         }
 
-                        getSecurityManager().addUser(account.getId(), account);
+                        getSecurityManager().registerAccount(account);
                         principalDb.put(account.getName(), account);
 
                         //set collection
@@ -203,10 +196,10 @@ public abstract class AbstractRealm implements Realm, Configurable {
                 if (id != null && !getSecurityManager().hasUser(id)) {
                     
                     //A account = instantiateAccount(this, conf, true);
-	            final AccountImpl account = new AccountImpl( this, conf );
-	            account.removed = true;
+                    final AccountImpl account = new AccountImpl( this, conf );
+                    account.removed = true;
 		    
-                    getSecurityManager().addUser(account.getId(), account);
+                    getSecurityManager().registerAccount(account);
                 }
             }
         }
@@ -231,20 +224,20 @@ public abstract class AbstractRealm implements Realm, Configurable {
     
 
 	@Override
-	public void sync(DBBroker broker) throws EXistException {
+	public void sync(final DBBroker broker) {
 	}
 
 	@Override
-	public void stop(DBBroker broker) throws EXistException {
+	public void stop(final DBBroker broker) {
 	}
 
-	public void save() throws PermissionDeniedException, EXistException, IOException {
+	public void save() throws PermissionDeniedException, EXistException {
         configuration.save();
     }
 
     //Accounts management methods
     public final Account registerAccount(final Account account) {
-        usersByName.modify(principalDb -> {
+        usersByName.write(principalDb -> {
             if(principalDb.containsKey(account.getName())) {
                 throw new IllegalArgumentException("Account " + account.getName() + " exist.");
             }
@@ -256,7 +249,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
     
     public final Group registerGroup(final Group group) {
-        groupsByName.modify(principalDb -> {
+        groupsByName.write(principalDb -> {
             if(principalDb.containsKey(group.getName())) {
                 throw new IllegalArgumentException("Group " + group.getName() + " already exists.");
             }
@@ -278,13 +271,13 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
-    public final boolean hasAccount(Account account) {
+    public final boolean hasAccount(final Account account) {
         return hasAccount(account.getName());
     }
 
     @Override
     public final java.util.Collection<Account> getAccounts() {
-        return usersByName.read(principalDb -> principalDb.values());
+        return usersByName.read(Map::values);
     }
 
     //Groups management methods
@@ -294,7 +287,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
-    public final boolean hasGroup(Group role) {
+    public final boolean hasGroup(final Group role) {
         return hasGroup(role.getName());
     }
 
@@ -310,7 +303,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
     @Override
     public final java.util.Collection<Group> getGroups() {
-        return groupsByName.read(principalDb -> principalDb.values());
+        return groupsByName.read(Map::values);
     }
 
     //collections related methods
@@ -333,7 +326,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
-    public Account addAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
+    public Account addAccount(final Account account) throws PermissionDeniedException, EXistException {
         if(account.getRealmId() == null) {
             throw new ConfigurationException("Account's realmId is null.");
         }
@@ -360,17 +353,17 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
         //check: add account to group
         String[] groups = account.getGroups();
-        for (int i = 0; i < groups.length; i++) {
-            if (!(updatingAccount.hasGroup(groups[i]))) {
-                updatingAccount.addGroup(groups[i]);
+        for (final String group : groups) {
+            if (!(updatingAccount.hasGroup(group))) {
+                updatingAccount.addGroup(group);
             }
         }
         //check: remove account from group
         groups = updatingAccount.getGroups();
 
-        for (int i = 0; i < groups.length; i++) {
-            if(!(account.hasGroup(groups[i]))) {
-                updatingAccount.remGroup(groups[i]);
+        for (final String group : groups) {
+            if (!(account.hasGroup(group))) {
+                updatingAccount.remGroup(group);
             }
         }
 
@@ -391,7 +384,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
         }
         
 
-        ((AbstractPrincipal)updatingAccount).save();
+        updatingAccount.save();
 
         return true;
     }
@@ -454,84 +447,47 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
     @Override
     public List<String> findUsernamesWhereNameStarts(final String startsWith) {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     @Override
     public List<String> findUsernamesWhereUsernameStarts(final String startsWith) {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     @Override
     public List<String> findAllGroupNames() {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     @Override
     public List<String> findAllUserNames() {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
     
     @Override
     public List<String> findAllGroupMembers(final String groupName) {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     @Override
     public List<String> findUsernamesWhereNamePartStarts(final String startsWith) {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     @Override
     public java.util.Collection<? extends String> findGroupnamesWhereGroupnameStarts(final String startsWith) {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     @Override
     public java.util.Collection<? extends String> findGroupnamesWhereGroupnameContains(final String fragment) {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
     
-    protected static class PrincipalDbByName<V extends Principal> {
-        private final Map<String, V> db = new HashMap<>(65);
-        private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-        private final ReadLock readLock = lock.readLock();
-        private final WriteLock writeLock = lock.writeLock();
-
-        public <R> R read(final Function<Map<String, V>, R> readOp) {
-            readLock.lock();
-            try {
-                return readOp.apply(db);
-            } finally {
-                readLock.unlock();
-            }
-        }
-
-        public final void modify(final Consumer<Map<String, V>> writeOp) {
-            writeLock.lock();
-            try {
-                writeOp.accept(db);
-            } finally {
-                writeLock.unlock();
-            }
-        }
-
-        public final <E extends Throwable> void modifyE(final ConsumerE<Map<String, V>, E> writeOp) throws E {
-            writeLock.lock();
-            try {
-                writeOp.accept(db);
-            } finally {
-                writeLock.unlock();
-            }
-        }
-
-        public final <E1 extends Exception, E2 extends Exception> void modify2E(final Consumer2E<Map<String, V>, E1, E2> writeOp) throws E1, E2 {
-            writeLock.lock();
-            try {
-                writeOp.accept(db);
-            } finally {
-                writeLock.unlock();
-            }
+    protected static class PrincipalDbByName<V extends Principal> extends ConcurrentValueWrapper<Map<String, V>> {
+        public PrincipalDbByName() {
+            super(new HashMap<>(65));
         }
     }
 }
