@@ -48,8 +48,35 @@ public class BinaryDocument extends DocumentImpl {
         super(pool);
     }
 
+    /**
+     * Creates a new persistent binary Document instance.
+     *
+     * @param pool The broker pool
+     * @param collection The Collection which holds this document
+     * @param fileURI The name of the document
+     */
     public BinaryDocument(final BrokerPool pool, final Collection collection, final XmldbURI fileURI) {
         super(pool, collection, fileURI);
+    }
+
+    /**
+     * Creates a new persistent binary Document instance to replace an existing document instance.
+     *
+     * @param prevDoc The previous binary Document object that we are overwriting
+     */
+    public BinaryDocument(final DocumentImpl prevDoc) {
+        super(prevDoc);
+    }
+
+    /**
+     * Creates a new persistent binary Document instance to replace an existing document instance.
+     *
+     * @param collection The Collection which holds this document
+     * @param prevDoc The previous Document object that we are overwriting
+     * @param prevDoc The previous binary Document object that we are overwriting
+     */
+    public BinaryDocument(final BrokerPool pool, final Collection collection, final Collection.CollectionEntry prevDoc) {
+        super(pool, collection, prevDoc);
     }
 
     @Override

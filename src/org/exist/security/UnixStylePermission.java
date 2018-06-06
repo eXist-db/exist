@@ -511,6 +511,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
         return false;
     }
 
+    @Override
     public UnixStylePermission copy() {
         return new UnixStylePermission(sm, vector);
     }

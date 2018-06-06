@@ -1460,7 +1460,7 @@ public class MutableCollection implements Collection {
                 } else {
                     //TODO : use a more elaborated method ? No triggers...
                     broker.removeXMLResource(transaction, oldDoc, false);
-                    oldDoc.copyOf(document, true);
+                    oldDoc.copyOf(broker, document, oldDoc);
                     indexer.setDocumentObject(oldDoc);
                     //old has become new at this point
                     document = oldDoc;

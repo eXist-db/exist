@@ -381,6 +381,32 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
         return prm;
     }
 
+    /**
+     * Determines if this permisisons ACL is equal to that
+     * of another permissions ACL.
+     *
+     * @param other the other ACL to check equality against.
+     *
+     * @return true if the ACLs are equal
+     */
+    public boolean equalsAcl(final SimpleACLPermission other) {
+        if (other == null || other.getACECount() != getACECount()) {
+            return false;
+        }
+
+        for (int i = 0; i < getACECount(); i++) {
+
+            if(getACEAccessType(i) != other.getACEAccessType(i)
+                    || getACETarget(i) != other.getACETarget(i)
+                    || (!getACEWho(i).equals(other.getACEWho(i)))
+                    || getACEMode(i) != other.getACEMode(i)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     @PermissionRequired(user = IS_DBA | IS_OWNER, mode = ACL_WRITE)
     public void copyAclOf(final SimpleACLPermission simpleACLPermission) {
         this.acl = Arrays.copyOf(simpleACLPermission.acl, simpleACLPermission.acl.length);

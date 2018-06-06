@@ -21,6 +21,7 @@
  */
 package org.exist.dom.persistent;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.Resource;
 import org.exist.dom.QName;
@@ -29,13 +30,8 @@ import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.memtree.DocumentFragmentImpl;
 import org.exist.numbering.NodeId;
-import org.exist.security.ACLPermission;
-import org.exist.security.Account;
-import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.PermissionFactory;
+import org.exist.security.*;
 import org.exist.security.SecurityManager;
-import org.exist.security.UnixStylePermission;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
@@ -65,6 +61,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 
+import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 import java.io.EOFException;
 import java.io.IOException;
@@ -125,23 +122,45 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      * @param pool a <code>BrokerPool</code> instance representing the db
      */
     public DocumentImpl(final BrokerPool pool) {
-        this(pool, null, null);
+        this(pool, null, (XmldbURI)null);
     }
 
     /**
-     * Creates a new <code>DocumentImpl</code> instance.
+     * Creates a new persistent Document instance.
      *
-     * @param pool       a <code>BrokerPool</code> instance representing the db
-     * @param collection a <code>Collection</code> value
-     * @param fileURI    a <code>XmldbURI</code> value
+     * @param pool The broker pool
+     * @param collection The Collection which holds this document
+     * @param fileURI The name of the document
      */
     public DocumentImpl(final BrokerPool pool, final Collection collection, final XmldbURI fileURI) {
+        this(pool, collection, fileURI, PermissionFactory.getDefaultResourcePermission(pool.getSecurityManager()));
+    }
+
+    /**
+     * Creates a new persistent Document instance to replace an existing document instance.
+     *
+     * @param prevDoc The previous Document object that we are overwriting
+     */
+    public DocumentImpl(final DocumentImpl prevDoc) {
+        this(prevDoc.pool, prevDoc.collection, prevDoc.fileURI, prevDoc.permissions.copy());
+    }
+
+    /**
+     * Creates a new persistent Document instance to replace an existing document instance.
+     *
+     * @param pool The broker pool
+     * @param collection The Collection which holds this document
+     * @param prevDoc The previous Document object that we are overwriting
+     */
+    public DocumentImpl(final BrokerPool pool, final Collection collection, final Collection.CollectionEntry prevDoc) {
+        this(pool, collection, prevDoc.getUri().lastSegment(), prevDoc.getPermissions().copy());
+    }
+
+    private DocumentImpl(final BrokerPool pool, final Collection collection, final XmldbURI fileURI, final Permission permissions) {
         this.pool = pool;
         this.collection = collection;
         this.fileURI = fileURI;
-
-        // the permissions assigned to this document
-        this.permissions = PermissionFactory.getDefaultResourcePermission(pool.getSecurityManager());
+        this.permissions = permissions;
 
         //inherit the group to the resource if current collection is setGid
         if(collection != null && collection.getPermissions().isSetGid()) {
@@ -285,40 +304,88 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      * This is called by {@link Collection} when replacing a document.
      *
      * @param other    a <code>DocumentImpl</code> value
-     * @param preserve Cause copyOf to preserve the following attributes of
-     *                 each source file in the copy: modification time,
-     *                 access time, file mode, user ID, and group ID,
-     *                 as allowed by permissions and  Access Control
-     *                 Lists (ACLs)
+     * @param prev if there was an existing document which we are replacing,
+     *     we will copy the mode, ACL, and birth time from the existing document.
      */
-    public void copyOf(final DocumentImpl other, final boolean preserve) {
+    public void copyOf(final DBBroker broker, final DocumentImpl other, @Nullable final DocumentImpl prev) throws PermissionDeniedException {
+        copyOf(broker, other, prev == null ? null : new Tuple2<>(prev.getPermissions(), prev.getMetadata().getCreated()));
+    }
+
+    /**
+     * Copy the relevant internal fields from the specified document object.
+     * This is called by {@link Collection} when replacing a document.
+     *
+     * @param other a <code>DocumentImpl</code> value
+     * @param prev if there was an existing document which we are replacing,
+     *     we will copy the mode, ACL, and birth time from the existing document.
+     */
+    public void copyOf(final DBBroker broker, final DocumentImpl other, @Nullable final Collection.CollectionEntry prev) throws PermissionDeniedException {
+        copyOf(broker, other, prev == null ? null : new Tuple2<>(prev.getPermissions(), prev.getCreated()));
+    }
+
+    /**
+     * Copy the relevant internal fields from the specified document object.
+     * This is called by {@link Collection} when replacing a document.
+     *
+     * @param other    a <code>DocumentImpl</code> value
+     * @param prev A tuple, containing the permissions and birth time of any
+     *     previous document that we are replacing; We will copy the mode, ACL,
+     *     and birth time from the existing document.
+     */
+    private void copyOf(final DBBroker broker, final DocumentImpl other, @Nullable final Tuple2<Permission, Long> prev) throws PermissionDeniedException {
         childAddress = null;
         children = 0;
 
-        //XXX: why reusing? better to create new instance? -shabanovd
         metadata = getMetadata();
-        if(metadata == null) {
+        if (metadata == null) {
             metadata = new DocumentMetadata();
         }
 
         //copy metadata
         metadata.copyOf(other.getMetadata());
 
-        if(preserve) {
-            //copy permission
-            permissions = ((UnixStylePermission) other.permissions).copy();
-            //created and last modified are done by metadata.copyOf
-            //metadata.setCreated(other.getMetadata().getCreated());
-            //metadata.setLastModified(other.getMetadata().getLastModified());
+        final long timestamp = System.currentTimeMillis();
+        if(prev != null) {
+            // replaced file should have same owner user:group as prev file
+            if (permissions.getOwner().getId() != prev._1.getOwner().getId()) {
+                permissions.setOwner(prev.get_1().getOwner());
+            }
+            if (permissions.getGroup().getId() != prev._1.getGroup().getId()) {
+                permissions.setGroup(prev.get_1().getGroup());
+            }
+
+            //copy mode and acl from prev file
+            copyModeAcl(prev._1, permissions);
+
+            // set birth time to same as prev file
+            metadata.setCreated(prev._2);
+
         } else {
-            //update timestamp
-            final long timestamp = System.currentTimeMillis();
+            // copy mode and acl from source file
+            copyModeAcl(other.getPermissions(), permissions);
+
+            // set birth time to the current timestamp
             metadata.setCreated(timestamp);
-            metadata.setLastModified(timestamp);
         }
+
+        // always set mtime
+        metadata.setLastModified(timestamp);
 
         // reset pageCount: will be updated during storage
         metadata.setPageCount(0);
+    }
+
+    private void copyModeAcl(final Permission srcPermissions, final Permission destPermissions) throws PermissionDeniedException {
+        if (destPermissions.getMode() != srcPermissions.getMode()) {
+            destPermissions.setMode(srcPermissions.getMode());
+        }
+        if (srcPermissions instanceof SimpleACLPermission && destPermissions instanceof SimpleACLPermission) {
+            final SimpleACLPermission srcAclPermissions = (SimpleACLPermission)srcPermissions;
+            final SimpleACLPermission destAclPermissions = (SimpleACLPermission)destPermissions;
+            if (!destAclPermissions.equalsAcl(srcAclPermissions)) {
+                destAclPermissions.copyAclOf(srcAclPermissions);
+            }
+        }
     }
 
     /**

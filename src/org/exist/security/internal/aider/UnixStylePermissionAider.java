@@ -22,14 +22,10 @@
 package org.exist.security.internal.aider;
 
 import java.io.IOException;
-import org.exist.security.AbstractUnixStylePermission;
 
-import org.exist.security.Group;
+import org.exist.security.*;
+
 import org.exist.security.SecurityManager;
-import org.exist.security.Account;
-import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.Subject;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.SyntaxException;
@@ -381,5 +377,10 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
     @Override
     public boolean isCurrentSubjectInGroup(final int groupId) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Permission copy() {
+        throw new UnsupportedOperationException();
     }
 }

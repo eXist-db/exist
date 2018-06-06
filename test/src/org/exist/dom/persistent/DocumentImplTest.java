@@ -2,16 +2,15 @@ package org.exist.dom.persistent;
 
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.Database;
-import org.exist.security.Group;
+import org.exist.security.*;
+import org.exist.security.SecurityManager;
 import org.exist.security.internal.RealmImpl;
-import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import org.exist.security.SecurityManager;
 import org.easymock.EasyMock;
-import org.exist.security.Permission;
+
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.easymock.EasyMock.expect;
@@ -28,7 +27,7 @@ import org.junit.runner.RunWith;
 public class DocumentImplTest {
 
     @Test
-    public void copyOf_calls_getMetadata() {
+    public void copyOf_calls_getMetadata() throws PermissionDeniedException {
 
         BrokerPool mockBrokerPool = EasyMock.createMock(BrokerPool.class);
         Database mockDatabase = EasyMock.createMock(Database.class);
@@ -58,7 +57,7 @@ public class DocumentImplTest {
         other.setMetadata(otherMetadata);
 
         //actions
-        doc.copyOf(other, false);
+        doc.copyOf(mockBroker, other, (DocumentImpl)null);
 
         verify(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
@@ -67,7 +66,7 @@ public class DocumentImplTest {
     }
 
     @Test
-    public void copyOf_calls_metadata_copyOf() {
+    public void copyOf_calls_metadata_copyOf() throws PermissionDeniedException {
         BrokerPool mockBrokerPool = EasyMock.createMock(BrokerPool.class);
         Database mockDatabase = EasyMock.createMock(Database.class);
         DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
@@ -98,7 +97,7 @@ public class DocumentImplTest {
         other.setMetadata(otherMetadata);
 
         //actions
-        doc.copyOf(other, false);
+        doc.copyOf(mockBroker, other, (DocumentImpl)null);
 
         verify(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
@@ -107,7 +106,7 @@ public class DocumentImplTest {
     }
 
     @Test
-    public void copyOf_updates_metadata_created_and_lastModified() {
+    public void copyOf_updates_metadata_created_and_lastModified() throws PermissionDeniedException {
         BrokerPool mockBrokerPool = EasyMock.createMock(BrokerPool.class);
         Database mockDatabase = EasyMock.createMock(Database.class);
         DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
@@ -140,7 +139,7 @@ public class DocumentImplTest {
         other.setMetadata(otherMetadata);
 
         //actions
-        doc.copyOf(other, false);
+        doc.copyOf(mockBroker, other, (DocumentImpl)null);
 
         verify(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
@@ -297,5 +296,5 @@ public class DocumentImplTest {
         public void describeTo(Description description) {
             description.appendText("Less than");
         }
-    };
+    }
 }
