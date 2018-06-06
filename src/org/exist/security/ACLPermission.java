@@ -27,7 +27,7 @@ package org.exist.security;
  */
 public interface ACLPermission {
 
-    public static enum ACE_ACCESS_TYPE {
+    enum ACE_ACCESS_TYPE {
         DENIED(01),
         ALLOWED(02);
         private final int val;
@@ -51,7 +51,7 @@ public interface ACLPermission {
         }
     }
 
-    public static enum ACE_TARGET {
+    enum ACE_TARGET {
         USER(01),
         GROUP(02);
         private final int val;
@@ -75,28 +75,47 @@ public interface ACLPermission {
         }
     }
 
-    public short getVersion();
+    short getVersion();
 
-    public void addACE(ACE_ACCESS_TYPE access_type, ACE_TARGET target, String name, int mode) throws PermissionDeniedException;
+    void addACE(ACE_ACCESS_TYPE access_type, ACE_TARGET target, String name, String modeStr) throws PermissionDeniedException;
 
-    public int getACECount();
+    void addACE(ACE_ACCESS_TYPE access_type, ACE_TARGET target, String name, int mode) throws PermissionDeniedException;
 
-    public ACE_ACCESS_TYPE getACEAccessType(int index);
+    void insertACE(int index, ACE_ACCESS_TYPE access_type, ACE_TARGET target, String name, String modeStr) throws PermissionDeniedException;
 
-    public ACE_TARGET getACETarget(int index);
+    void modifyACE(int index, ACE_ACCESS_TYPE access_type, String modeStr) throws PermissionDeniedException;
+
+    void modifyACE(int index, ACE_ACCESS_TYPE access_type, int mode) throws PermissionDeniedException;
+
+    void removeACE(int index) throws PermissionDeniedException;
+
+    int getACECount();
+
+    ACE_ACCESS_TYPE getACEAccessType(int index);
+
+    ACE_TARGET getACETarget(int index);
     
     /**
      * Convenience method for getting the name of the user or group
      * of which this ace is applied to
      */
-    public String getACEWho(int index);
+    String getACEWho(int index);
    
-    public int getACEMode(int index);
+    int getACEMode(int index);
 
     /**
      * Clears all ACE's
      */
-    public void clear() throws PermissionDeniedException;
+    void clear() throws PermissionDeniedException;
     
-    public boolean isCurrentSubjectCanWriteACL();
+    boolean isCurrentSubjectCanWriteACL();
+
+    /**
+     * Determines if this ACL is equal to another ACL.
+     *
+     * @param other Another ACL to compare against.
+     *
+     * @return true if this ACL is equal to the other ACL.
+     */
+    boolean aclEquals(final ACLPermission other);
 }

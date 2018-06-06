@@ -91,6 +91,9 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     //TODO : move elsewhere
     public final static String PROPERTY_XUPDATE_CONSISTENCY_CHECKS = "xupdate.consistency-checks";
 
+    public static final String POSIX_CHOWN_RESTRICTED_ATTRIBUTE = "posix-chown-restricted";
+    public static final String POSIX_CHOWN_RESTRICTED_PROPERTY = "db-connection.posix-chown-restricted";
+
     protected final static Logger LOG = LogManager.getLogger(DBBroker.class);
 
     protected boolean caseSensitive = true;

@@ -32,7 +32,6 @@ import org.exist.security.PermissionFactory;
 import org.exist.security.SimpleACLPermission;
 import org.exist.security.Subject;
 import org.exist.util.SyntaxException;
-import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -49,6 +48,7 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 import javax.xml.XMLConstants;
+import java.util.Optional;
 
 /**
  *
@@ -303,65 +303,63 @@ public class PermissionsFunction extends BasicFunction {
     }
 
     private Sequence functionAddACE(final XmldbURI pathUri, final ACE_TARGET target, final String name, final ACE_ACCESS_TYPE access_type, final String mode) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri,
-                forAcl(aclPermission -> aclPermission.addACE(access_type, target, name, mode))
+        PermissionFactory.chacl(context.getBroker(), pathUri,
+                aclPermission -> aclPermission.addACE(access_type, target, name, mode)
         );
         return Sequence.EMPTY_SEQUENCE;
     }
 
     private Sequence functionInsertACE(final XmldbURI pathUri, final int index, final ACE_TARGET target, final String name, final ACE_ACCESS_TYPE access_type, final String mode) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri,
-                forAcl(aclPermission -> aclPermission.insertACE(index, access_type, target, name, mode))
+        PermissionFactory.chacl(context.getBroker(), pathUri,
+                aclPermission -> aclPermission.insertACE(index, access_type, target, name, mode)
         );
         return Sequence.EMPTY_SEQUENCE;
     }
 
     private Sequence functionModifyACE(final XmldbURI pathUri, final int index, final ACE_ACCESS_TYPE access_type, final String mode) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri,
-                forAcl(aclPermission -> aclPermission.modifyACE(index, access_type, mode))
+        PermissionFactory.chacl(context.getBroker(), pathUri,
+                aclPermission -> aclPermission.modifyACE(index, access_type, mode)
         );
         return Sequence.EMPTY_SEQUENCE;
     }
 
     private Sequence functionRemoveACE(final XmldbURI pathUri, final int index) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri,
-                forAcl(aclPermission -> aclPermission.removeACE(index))
+        PermissionFactory.chacl(context.getBroker(), pathUri,
+                aclPermission -> aclPermission.removeACE(index)
         );
         return Sequence.EMPTY_SEQUENCE;
     }
 
     private Sequence functionClearACL(final XmldbURI pathUri) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri,
-                forAcl(aclPermission -> aclPermission.clear())
+        PermissionFactory.chacl(context.getBroker(), pathUri,
+                aclPermission -> aclPermission.clear()
         );
         return Sequence.EMPTY_SEQUENCE;
     }
 
     private Sequence functionChMod(final XmldbURI pathUri, final String modeStr) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri, permission -> {
-            try {
-                permission.setMode(modeStr);
-            } catch(final SyntaxException se) {
-                throw new PermissionDeniedException("Unrecognised mode syntax: " + se.getMessage(), se);
-            }
-        });
+        PermissionFactory.chmod_str(context.getBroker(), pathUri, Optional.ofNullable(modeStr), Optional.empty());
         return Sequence.EMPTY_SEQUENCE;
     }
 
     private Sequence functionChOwn(final XmldbURI pathUri, final String owner) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri, permission -> {
-            if(owner.indexOf(OWNER_GROUP_SEPARATOR) > -1) {
-                permission.setOwner(owner.substring(0, owner.indexOf((OWNER_GROUP_SEPARATOR))));
-                permission.setGroup(owner.substring(owner.indexOf(OWNER_GROUP_SEPARATOR) + 1));
-            } else {
-                permission.setOwner(owner);
-            }
-        });
+        final Optional<String> newOwner;
+        final Optional<String> newGroup;
+        if (owner.indexOf(OWNER_GROUP_SEPARATOR) > -1) {
+            newOwner = Optional.of(owner.substring(0, owner.indexOf((OWNER_GROUP_SEPARATOR)))).filter(s -> !s.isEmpty());
+            newGroup = Optional.of(owner.substring(owner.indexOf(OWNER_GROUP_SEPARATOR) + 1)).filter(s -> !s.isEmpty());
+        } else {
+            newOwner = Optional.of(owner).filter(s -> !s.isEmpty());
+            newGroup = Optional.empty();
+        }
+
+        PermissionFactory.chown(context.getBroker(), pathUri, newOwner, newGroup);
         return Sequence.EMPTY_SEQUENCE;
     }
 
     private Sequence functionChGrp(final XmldbURI pathUri, final String groupname) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri, permission -> permission.setGroup(groupname));
+        final Optional<String> newGroup = Optional.ofNullable(groupname).filter(s -> !s.isEmpty());
+        PermissionFactory.chown(context.getBroker(), pathUri, Optional.empty(), newGroup);
         return Sequence.EMPTY_SEQUENCE;
     }
     
@@ -457,17 +455,5 @@ public class PermissionsFunction extends BasicFunction {
         builder.endDocument();
 
         return builder.getDocument();
-    }
-
-    private ConsumerE<Permission, PermissionDeniedException> forAcl(final ConsumerE<SimpleACLPermission, PermissionDeniedException> aclPermissionModifier) {
-        return permission -> {
-            if(permission instanceof SimpleACLPermission) {
-                //add the ace
-                final SimpleACLPermission aclPermission = ((SimpleACLPermission)permission);
-                aclPermissionModifier.accept(aclPermission);
-            } else {
-                throw new PermissionDeniedException("ACL like permissions have not been enabled");
-            }
-        };
     }
 }

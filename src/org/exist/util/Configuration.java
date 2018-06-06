@@ -987,6 +987,20 @@ public class Configuration implements ErrorHandler
             }
         }
 
+        final String posixChownRestrictedStr = getConfigAttributeValue(con,  DBBroker.POSIX_CHOWN_RESTRICTED_ATTRIBUTE);
+        final boolean posixChownRestricted;
+        if(posixChownRestrictedStr == null) {
+            posixChownRestricted = true;  // default
+        } else {
+            if(Boolean.valueOf(posixChownRestrictedStr)) {
+                posixChownRestricted = true;
+            } else {
+                // configuration explicitly specifies that posix chown should NOT be restricted
+                posixChownRestricted = false;
+            }
+        }
+        config.put(DBBroker.POSIX_CHOWN_RESTRICTED_PROPERTY, posixChownRestricted);
+
         final NodeList securityConf             = con.getElementsByTagName( BrokerPool.CONFIGURATION_SECURITY_ELEMENT_NAME );
         String   securityManagerClassName = BrokerPool.DEFAULT_SECURITY_CLASS;
 

@@ -36,7 +36,7 @@ import org.junit.runner.RunWith;
  * @author Adam Retter <adam.retter@googlemail.com>
  */
 @RunWith(ParallelRunner.class)
-public class PermissionFunctionsTest {
+public class PermissionsFunctionModeConversionTest {
 
     /**
      * Test of eval method, of class PermissionsFunctions.

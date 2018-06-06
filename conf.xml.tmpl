@@ -145,6 +145,27 @@
             switch to read-only mode in order to prevent potential data loss. 
             Set the limit large enough to allow all pending operations to 
             complete. The default is 1 gigabyte.
+
+        - posix-chown-restricted:
+           As defined by POSIX.1 for _POSIX_CHOWN_RESTRICTED.
+
+           When posix-chown-restricted="true" (the default) then:
+               1. Only a superuser process can change the user ID of the file.
+               2. A non-superuser process can change the group ID of the file
+                  if the process owns the file (the effective user ID equals
+                  the user ID of the file), and group equals either the
+                  effective group ID of the process or one of the
+                  process’s supplementary group IDs.
+           This means that when posix-chown-restricted="true", you can’t change
+           the user ID of your files. You can change the group ID of files that
+           you own, but only to groups that you belong to.
+
+           When posix-chown-restricted="false" you can change the user ID of
+           any file that you own, effectively "giving away the file" to
+           another user. Such a setting has negative security implications,
+           further details can be seen in the "Rationale" section for the
+           chown function in the POSIX.1-2017 (Issue 7, 2018 edition) standard.
+           See: http://pubs.opengroup.org/onlinepubs/9699919799/functions/chown.html#tag_16_59_07
     
         =====================================================================
         
@@ -157,7 +178,7 @@
     -->
     <db-connection cacheSize="@cacheSize@M" checkMaxCacheSize="true" collectionCache="@collectionCacheSize@M" database="@database@"
         files="@dataDir@" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
-        doc-ids="default" minDiskSpace="128M">
+        doc-ids="default" minDiskSpace="128M" posix-chown-restricted="true">
 
         <!--
             Startup Triggers are executed before the database becomes generally available

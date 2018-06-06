@@ -45,7 +45,7 @@ public class Utils {
             throw new IOException("Collection " + uri + " cannot be created.");
         }
 
-        collection.setPermissions(Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
+        collection.setPermissions(broker, Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
         broker.saveCollection(txn, collection);
 
         return collection;

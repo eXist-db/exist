@@ -1,9 +1,12 @@
 package org.exist.security;
 
 import java.util.Arrays;
+
+import org.exist.TestUtils;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.test.ExistWebServer;
+import org.exist.test.TestConstants;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.EXistXPathQueryService;
@@ -294,16 +297,16 @@ public class XMLDBSecurityTest {
      * to a group of which they are a member
      *
      * As the user 'test2' (who is in the group users)
-     * attempt to change ownership gid of /db/securityTest1/test.xml (which has gid 'users')
-     * to the group 'users' (of which they are a member)
+     * attempt to change ownership gid of /db/securityTest1 (which has uid 'test1' and gid 'users')
+     * to the group 'test2-only' (of which they are a member)
      */
     @Test(expected=XMLDBException.class)
     public void groupMemberChownGidCollection() throws XMLDBException {
         final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
         final UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
 
-        // attempt to take gid ownership of /db/securityTest1/test.xml
-        ums.chgrp("users");
+        // attempt to have user 'test2' take gid ownership of /db/securityTest1 (which is owner by test1:users)
+        ums.chgrp("test2-only");
     }
 
     /**
@@ -440,8 +443,8 @@ public class XMLDBSecurityTest {
      * to a group of which they are a member
      *
      * As the user 'test2' (who is in the group users)
-     * attempt to change ownership gid of /db/securityTest1/test.xml (which has gid 'isers')
-     * to the group 'users' (of which they are a member)
+     * attempt to change ownership gid of /db/securityTest1/test.xml (which has uid 'test1' and gid 'users')
+     * to the group 'test2-only' (of which they are a member)
      */
     @Test(expected=XMLDBException.class)
     public void groupMemberChownGidResource() throws XMLDBException {
@@ -449,11 +452,8 @@ public class XMLDBSecurityTest {
         final Resource resource = test.getResource("test.xml");
         final UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
 
-        // attempt to take gid ownership of /db/securityTest1/test.xml
-        ums.chgrp(resource, "users");
-
-        final Permission perms = ums.getPermissions(resource);
-        assertEquals("users", perms.getGroup().getName());
+        // attempt to have user 'test2' take gid ownership of /db/securityTest1/test.xml (which is owned by test1:users)
+        ums.chgrp(resource, "test2-only");
     }
 
     /**
@@ -1833,16 +1833,17 @@ public class XMLDBSecurityTest {
      * 3) Adds the User 'test1' with password 'test1' and set's their primary group to 'users'
      * 4) Creates the group 'extusers' and adds 'test1' to it
      * 5) Adds the User 'test2' with password 'test2' and set's their primary group to 'users'
-     * 6) Adds the User 'test3' with password 'test3' and set's their primary group to 'guest'
-     * 7) Creates the Collection '/db/securityTest1' owned by 'test1':'users' with permissions rwxrwx--- (0770)
-     * 8) Creates the XML resource '/db/securityTest1/test.xml' owned by 'test1':'users' with permissions rwxrwx--- (0770)
-     * 9) Creates the Binary resource '/db/securityTest1/test.bin' owned by 'test1':'users' with permissions rwxrwx--- (0770)
-     * 10) Creates the Collection '/db/securityTest2' owned by 'test1':'users' with permissions rwxrwxr-x (0775)
-     * 11) Creates the Collection '/db/securityTest3' owned by 'test3':'guest' with permissions rwxrwxrwx (0777)
+     * 6) Creates the group 'test2-only` and adds 'test2' to it
+     * 7) Adds the User 'test3' with password 'test3' and set's their primary group to 'guest'
+     * 8) Creates the Collection '/db/securityTest1' owned by 'test1':'users' with permissions rwxrwx--- (0770)
+     * 9) Creates the XML resource '/db/securityTest1/test.xml' owned by 'test1':'users' with permissions rwxrwx--- (0770)
+     * 10) Creates the Binary resource '/db/securityTest1/test.bin' owned by 'test1':'users' with permissions rwxrwx--- (0770)
+     * 11) Creates the Collection '/db/securityTest2' owned by 'test1':'users' with permissions rwxrwxr-x (0775)
+     * 12) Creates the Collection '/db/securityTest3' owned by 'test3':'guest' with permissions rwxrwxrwx (0777)
      */
     @Before
     public void setup() throws XMLDBException {
-        final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
+        final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
 
         ums.chmod("rwxr-xr-x"); //ensure /db is always 755
@@ -1867,6 +1868,10 @@ public class XMLDBSecurityTest {
         user = new UserAider("test2", group);
         user.setPassword("test2");
         ums.addAccount(user);
+
+        final Group test2OnlyGroup = new GroupAider("exist", "test2-only");
+        ums.addGroup(test2OnlyGroup);
+        ums.addAccountToGroup("test2", "test2-only");
 
         user = new UserAider("test3", ums.getGroup("guest"));
         user.setPassword("test3");
@@ -1914,7 +1919,7 @@ public class XMLDBSecurityTest {
         // full permissions for all
         ums.chmod(0777);
 
-        // create a collection /db/securityTest1 as user "sub1"
+        // create a sub-collection /db/securityTest1/sub1 as user "test1"
         cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
         Collection sub1 = cms.createCollection("sub1");
         ums = (UserManagementService) sub1.getService("UserManagementService", "1.0");
@@ -1952,8 +1957,8 @@ public class XMLDBSecurityTest {
         //remove accounts 'test1', 'test2' and 'test3'
         removeAccounts(ums, new String[]{"test1", "test2", "test3"});
 
-        //remove group 'users'
-        removeGroups(ums, new String[]{"users", "extusers"});
+        //remove group 'users', 'extusers', 'test2-only'
+        removeGroups(ums, new String[]{"users", "extusers", "test2-only"});
     }
 
     private void removeAccounts(final UserManagementService ums, final String[] accountNames) throws XMLDBException {

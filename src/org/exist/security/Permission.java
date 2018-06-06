@@ -38,7 +38,8 @@ public interface Permission {
     
     int DEFAULT_SYSTEM_ETC_COLLECTION_PERM = 0755;
     int DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM = 0770;
-    
+
+    int DEFAULT_TEMPORARY_COLLECTION_PERM = 0771;
     int DEFAULT_TEMPORARY_DOCUMENT_PERM = 0771;
 
     int SET_UID = 04;
@@ -185,7 +186,7 @@ public interface Permission {
      * The eXist symbolic format should be avoided
      * in new applications as it is deprecated
      * 
-     * @param  str                  The new mode
+     * @param modeStr The new mode
      * @exception  SyntaxException  Description of the Exception
      */
     void setMode(String modeStr) throws SyntaxException, PermissionDeniedException;
@@ -239,6 +240,8 @@ public interface Permission {
     boolean isCurrentSubjectInGroup();
 
     boolean isCurrentSubjectInGroup(int groupId);
+
+    boolean isPosixChownRestricted();
 
     Permission copy();
 }

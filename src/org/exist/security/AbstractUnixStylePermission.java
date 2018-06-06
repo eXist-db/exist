@@ -243,9 +243,9 @@ public abstract class AbstractUnixStylePermission implements Permission {
         setMode(simpleSymbolicModeToInt(simpleSymbolicMode));
     }
 
-    private final static Pattern unixSymbolicModePattern = Pattern.compile("((?:[augo]*(?:[+\\-=](?:[" + READ_CHAR + SETUID_CHAR + STICKY_CHAR + WRITE_CHAR + EXECUTE_CHAR + "])+)+),?)+");
-    private final static Pattern existSymbolicModePattern = Pattern.compile("(?:(?:" + USER_STRING + "|" + GROUP_STRING + "|" + OTHER_STRING + ")=(?:[+-](?:" + READ_STRING + "|" + WRITE_STRING + "|" + EXECUTE_STRING + "),?)+)+");
-    private final static Pattern simpleSymbolicModePattern = Pattern.compile("(?:(?:" + READ_CHAR + "|" + UNSET_CHAR + ")(?:" + WRITE_CHAR + "|" + UNSET_CHAR + ")(?:[" + EXECUTE_CHAR + SETUID_CHAR + SETUID_CHAR_NO_EXEC + "]|" + UNSET_CHAR + ")){2}(?:" + READ_CHAR + "|" + UNSET_CHAR + ")(?:" + WRITE_CHAR + "|" + UNSET_CHAR + ")(?:[" + EXECUTE_CHAR + STICKY_CHAR + "]|" + UNSET_CHAR + ")");
+    public static final Pattern UNIX_SYMBOLIC_MODE_PATTERN = Pattern.compile("((?:[augo]*(?:[+\\-=](?:[" + READ_CHAR + SETUID_CHAR + STICKY_CHAR + WRITE_CHAR + EXECUTE_CHAR + "])+)+),?)+");
+    public static final Pattern EXIST_SYMBOLIC_MODE_PATTERN = Pattern.compile("(?:(?:" + USER_STRING + "|" + GROUP_STRING + "|" + OTHER_STRING + ")=(?:[+-](?:" + READ_STRING + "|" + WRITE_STRING + "|" + EXECUTE_STRING + "),?)+)+");
+    public static final Pattern SIMPLE_SYMBOLIC_MODE_PATTERN = Pattern.compile("(?:(?:" + READ_CHAR + "|" + UNSET_CHAR + ")(?:" + WRITE_CHAR + "|" + UNSET_CHAR + ")(?:[" + EXECUTE_CHAR + SETUID_CHAR + SETUID_CHAR_NO_EXEC + "]|" + UNSET_CHAR + ")){2}(?:" + READ_CHAR + "|" + UNSET_CHAR + ")(?:" + WRITE_CHAR + "|" + UNSET_CHAR + ")(?:[" + EXECUTE_CHAR + STICKY_CHAR + "]|" + UNSET_CHAR + ")");
 
     /**
      * Note: we don't need @PermissionRequired(user = IS_DBA | IS_OWNER) here
@@ -263,16 +263,16 @@ public abstract class AbstractUnixStylePermission implements Permission {
     @Override
     public final void setMode(final String modeStr) 
             throws SyntaxException, PermissionDeniedException {
-        final Matcher simpleSymbolicModeMatcher = simpleSymbolicModePattern.matcher(modeStr);
+        final Matcher simpleSymbolicModeMatcher = SIMPLE_SYMBOLIC_MODE_PATTERN.matcher(modeStr);
 
         if(simpleSymbolicModeMatcher.matches()) {
             setSimpleSymbolicMode(modeStr);
         } else {
-            final Matcher unixSymbolicModeMatcher = unixSymbolicModePattern.matcher(modeStr);
+            final Matcher unixSymbolicModeMatcher = UNIX_SYMBOLIC_MODE_PATTERN.matcher(modeStr);
             if(unixSymbolicModeMatcher.matches()){
                 setUnixSymbolicMode(modeStr);
             } else {
-                final Matcher existSymbolicModeMatcher = existSymbolicModePattern.matcher(modeStr);
+                final Matcher existSymbolicModeMatcher = EXIST_SYMBOLIC_MODE_PATTERN.matcher(modeStr);
                 if(existSymbolicModeMatcher.matches()) {
                     setExistSymbolicMode(modeStr);
                 } else {

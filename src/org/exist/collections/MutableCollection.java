@@ -1717,30 +1717,10 @@ public class MutableCollection implements Collection {
     }
 
     @Override
-    public void setPermissions(final int mode) throws LockException, PermissionDeniedException {
+    public void setPermissions(final DBBroker broker, final int mode) throws LockException, PermissionDeniedException {
         try {
             getLock().acquire(LockMode.WRITE_LOCK);
-            permissions.setMode(mode);
-        } finally {
-            getLock().release(LockMode.WRITE_LOCK);
-        }
-    }
-
-    @Override
-    public void setPermissions(final String mode) throws SyntaxException, LockException, PermissionDeniedException {
-        try {
-            getLock().acquire(LockMode.WRITE_LOCK);
-            permissions.setMode(mode);
-        } finally {
-            getLock().release(LockMode.WRITE_LOCK);
-        }
-    }
-
-    @Override
-    public void setPermissions(final Permission permissions) throws LockException {
-        try {
-            getLock().acquire(LockMode.WRITE_LOCK);
-            this.permissions = permissions;
+            PermissionFactory.chmod(broker, this, Optional.of(mode), Optional.empty());
         } finally {
             getLock().release(LockMode.WRITE_LOCK);
         }

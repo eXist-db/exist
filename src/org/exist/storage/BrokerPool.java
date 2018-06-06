@@ -692,7 +692,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 if(collection == null) {
                     throw new IOException("Could not create system collection: " + sysCollectionUri);
                 }
-                collection.setPermissions(permissions);
+                collection.setPermissions(sysBroker, permissions);
                 sysBroker.saveCollection(txn, collection);
 
                 transact.commit(txn);

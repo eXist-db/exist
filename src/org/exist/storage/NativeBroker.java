@@ -48,6 +48,7 @@ import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.StructuralIndex;
 import org.exist.numbering.NodeId;
 import org.exist.security.*;
+import org.exist.security.internal.aider.ACEAider;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.stax.IEmbeddedXMLStreamReader;
 import org.exist.storage.btree.*;
@@ -94,6 +95,8 @@ import java.util.regex.Pattern;
 import org.exist.dom.persistent.StoredNode;
 import org.exist.storage.dom.INodeIterator;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
+
+import static org.exist.security.Permission.DEFAULT_TEMPORARY_COLLECTION_PERM;
 
 /**
  * Main class for the native XML storage backend.
@@ -636,7 +639,7 @@ public class NativeBroker extends DBBroker {
             pushSubject(pool.getSecurityManager().getSystemSubject());
             final Tuple2<Boolean, Collection> temp = getOrCreateCollectionExplicit(transaction, XmldbURI.TEMP_COLLECTION_URI);
             if (temp._1) {
-                temp._2.setPermissions(0771);
+                temp._2.setPermissions(this, DEFAULT_TEMPORARY_COLLECTION_PERM);
                 saveCollection(transaction, temp._2);
             }
             return temp;
@@ -1222,10 +1225,14 @@ public class NativeBroker extends DBBroker {
      * Copies just the mode and ACL from the src to the dest
      */
     private void copyModeAndAcl(final Permission srcPermission, final Permission destPermission) throws PermissionDeniedException {
-        destPermission.setMode(srcPermission.getMode());
+        final List<ACEAider> aces = new ArrayList<>();
         if(srcPermission instanceof SimpleACLPermission && destPermission instanceof SimpleACLPermission) {
-            ((SimpleACLPermission)destPermission).copyAclOf((SimpleACLPermission)srcPermission);
+            final SimpleACLPermission srcAclPermission = (SimpleACLPermission) srcPermission;
+            for (int i = 0; i < srcAclPermission.getACECount(); i++) {
+                aces.add(new ACEAider(srcAclPermission.getACEAccessType(i), srcAclPermission.getACETarget(i), srcAclPermission.getACEWho(i), srcAclPermission.getACEMode(i)));
+            }
         }
+        PermissionFactory.chmod(this, destPermission, Optional.of(srcPermission.getMode()), Optional.of(aces));
     }
 
     private boolean isSubCollection(final Collection col, final Collection sub) {
@@ -1928,7 +1935,7 @@ public class NativeBroker extends DBBroker {
 
                 //create a temporary document
                 final DocumentImpl targetDoc = new DocumentImpl(pool, temp, docName);
-                targetDoc.getPermissions().setMode(Permission.DEFAULT_TEMPORARY_DOCUMENT_PERM);
+                PermissionFactory.chmod(this, targetDoc, Optional.of(Permission.DEFAULT_TEMPORARY_DOCUMENT_PERM), Optional.empty());
 
                 final long now = System.currentTimeMillis();
                 final DocumentMetadata metadata = new DocumentMetadata();
@@ -2537,14 +2544,6 @@ public class NativeBroker extends DBBroker {
             LOG.debug("Copy took " + (System.currentTimeMillis() - start) + "ms.");
     }
 
-    /**
-     * Move (and/or rename) a Resource to another collection
-     *
-     * @param doc         source document
-     * @param destination the destination collection
-     * @param newName     the new name for the resource
-     * @throws TriggerException
-     */
     @Override
     public void moveResource(final Txn transaction, final DocumentImpl doc, final Collection destination, XmldbURI newName) throws PermissionDeniedException, LockException, IOException, TriggerException {
 

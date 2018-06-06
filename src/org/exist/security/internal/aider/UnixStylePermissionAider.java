@@ -380,6 +380,11 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
     }
 
     @Override
+    public boolean isPosixChownRestricted() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
     public Permission copy() {
         throw new UnsupportedOperationException();
     }

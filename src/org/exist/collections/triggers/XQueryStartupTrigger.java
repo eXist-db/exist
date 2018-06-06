@@ -19,11 +19,8 @@
  */
 package org.exist.collections.triggers;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,6 +28,7 @@ import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
@@ -183,7 +181,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
      * Verify that the owner of the document is DBA, the document is owned by the DBA group and that the permissions are
      * set 0770, and the mimetype is set application/xquery.
      *
-     * @param collection The document
+     * @param document The document
      * @return TRUE if the conditions are met, else FALSE
      */
     private boolean isPermissionsOK(DocumentImpl document) {
@@ -311,13 +309,12 @@ public class XQueryStartupTrigger implements StartupTrigger {
             XmldbURI newCollection = XmldbURI.create(AUTOSTART_COLLECTION, true);
 
             // Create collection
-            Collection created = broker.getOrCreateCollection(txn, newCollection);
+            final Collection created = broker.getOrCreateCollection(txn, newCollection);
 
-            // Set ownership
-            Permission perms = created.getPermissions();
-            perms.setOwner(broker.getBrokerPool().getSecurityManager().getSystemSubject());
-            perms.setGroup(broker.getBrokerPool().getSecurityManager().getDBAGroup());
-            perms.setMode(Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
+            // Set ownership and mode
+            PermissionFactory.chown(broker, created, Optional.of(SecurityManager.SYSTEM), Optional.of(SecurityManager.DBA_GROUP));
+            PermissionFactory.chmod(broker, created, Optional.of(Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM), Optional.empty());
+
             broker.saveCollection(txn, created);
             broker.flush();
 
