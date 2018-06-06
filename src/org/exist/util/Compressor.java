@@ -1,30 +1,29 @@
 /*
- * eXist Open Source Native XML Database Copyright (C) 2001-2005, Wolfgang M.
- * Meier (meier@ifs.tu-darmstadt.de)
- * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- * 
- * $Id$
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2018 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.util;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
@@ -32,62 +31,83 @@ import org.exist.util.io.FastByteArrayOutputStream;
 public class Compressor {
 
     /**
-     * The method <code>compress</code>
+     * Compress the byte array using GZip compression.
      *
-     * @param whatToCompress a <code>byte[]</code> value
-     * @return a <code>byte[]</code> value
+     * GZip compression has some overhead for headers etc,
+     * so it does not make sense to use this with perfectly
+     * compressible buffers smaller than 23 bytes.
+     * In reality buffers are unlikely to be perfectly compressible,
+     * so you likely want to only use it with large buffers.
+     *
+     * @param buf the data to compress.
+     *
+     * @return the compressed data.
+     *
      * @exception IOException if an error occurs
      */
-    public static byte[] compress(byte[] whatToCompress) throws IOException {
-        return compress(whatToCompress, whatToCompress.length);
+    public static byte[] compress(final byte[] buf) throws IOException {
+        return compress(buf, buf.length);
     }
     
     /**
-     * The method <code>compress</code>
+     * Compress the byte array using GZip compression.
      *
-     * @param whatToCompress a <code>byte[]</code> value
-     * @param length an <code>int</code> value
-     * @return a <code>byte[]</code> value
+     * GZip compression has some overhead for headers etc,
+     * so it does not make sense to use this with perfectly
+     * compressible buffers smaller than 23 bytes.
+     * In reality buffers are unlikely to be perfectly compressible,
+     * so you likely want to only use it with large buffers.
+     *
+     * @param buf the data to compress.
+     * @param len the number of bytes from buf to compress.
+     *
+     * @return the compressed data.
+     *
      * @exception IOException if an error occurs
      */
-    public static byte[] compress(byte[] whatToCompress, int length) throws IOException {
-        try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream(length);
-                final ZipOutputStream gzos = new ZipOutputStream(baos)) {
-            gzos.setMethod(ZipOutputStream.DEFLATED);
-            gzos.putNextEntry(new ZipEntry(length + ""));
-            gzos.write(whatToCompress, 0, length);
-            gzos.closeEntry();
+    public static byte[] compress(final byte[] buf, final int len) throws IOException {
+        try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream(len);
+                final GZIPOutputStream gzos = new GZIPOutputStream(baos)) {
+            gzos.write(buf, 0, len);
             gzos.finish();
             return baos.toByteArray();
         }
     }
-    
+
     /**
-     * The method <code>uncompress</code>
+     * Uncompress the byte array using GZip compression.
      *
-     * @param whatToUncompress a <code>byte[]</code> value
-     * @return a <code>byte[]</code> value
+     * @param buf the data to uncompress.
+     *
+     * @return the uncompressed data.
+     *
      * @exception IOException if an error occurs
      */
-    public static byte[] uncompress(byte[] whatToUncompress)
-	throws IOException {
+    public static byte[] uncompress(final byte[] buf) throws IOException {
         try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
-            uncompress(whatToUncompress, baos);
+            uncompress(buf, baos);
             return baos.toByteArray();
         }
     }
-    
-    public static void uncompress(byte[] whatToUncompress, OutputStream os)
-    throws IOException {
-        try (final FastByteArrayInputStream bais = new FastByteArrayInputStream(whatToUncompress);
-             final ZipInputStream gzis = new ZipInputStream(bais)) {
-            gzis.getNextEntry();    // move to the first entry in the zip stream!
-            final byte[] buf = new byte[512];
-            int bread;
-            while ((bread = gzis.read(buf)) != -1)
-                os.write(buf, 0, bread);
-            gzis.closeEntry();
+
+
+    /**
+     * Uncompress the byte array using GZip compression.
+     *
+     * @param buf the data to uncompress.
+     * @param os the destination for the uncompressed data;
+     *
+     *
+     * @exception IOException if an error occurs
+     */
+    public static void uncompress(final byte[] buf, final OutputStream os) throws IOException {
+        try (final FastByteArrayInputStream bais = new FastByteArrayInputStream(buf);
+             final InputStream gzis = new GZIPInputStream(bais)) {
+            final byte[] tmp = new byte[4096];
+            int read;
+            while ((read = gzis.read(tmp)) != -1) {
+                os.write(tmp, 0, read);
+            }
         }
     }
 }
-
