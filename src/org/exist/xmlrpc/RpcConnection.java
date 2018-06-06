@@ -19,7 +19,6 @@
  */
 package org.exist.xmlrpc;
 
-import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -67,6 +66,7 @@ import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.*;
+import org.exist.storage.DBBroker.PreserveType;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -95,9 +95,11 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import com.evolvedbinary.j8fu.function.ConsumerE;
 import com.evolvedbinary.j8fu.function.Function2E;
 import com.evolvedbinary.j8fu.function.Function3E;
 import com.evolvedbinary.j8fu.function.SupplierE;
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -164,12 +166,9 @@ public class RpcConnection implements RpcAPI {
                 return true;
             }
 
-            current = broker.getOrCreateCollection(transaction, collUri);
+            current = broker.getOrCreateCollection(transaction, collUri, Optional.ofNullable(created).map(c -> new Tuple2<>(null, c.getTime())));
 
             //TODO : register a lock (wich one ?) within the transaction ?
-            if (created != null) {
-                current.setCreationTime(created.getTime());
-            }
             if(LOG.isDebugEnabled()) {
                 LOG.debug("creating collection " + collUri);
             }
@@ -3128,15 +3127,24 @@ public class RpcConnection implements RpcAPI {
         return buffer;
     }
 
+    @Deprecated
     public boolean moveOrCopyResource(final String documentPath, final String destinationPath,
-                                      final String newName, final boolean move)
+            final String newName, final boolean move)
             throws EXistException, PermissionDeniedException, URISyntaxException {
         return moveOrCopyResource(XmldbURI.xmldbUriFor(documentPath),
-                XmldbURI.xmldbUriFor(destinationPath), XmldbURI.xmldbUriFor(newName), move);
+                XmldbURI.xmldbUriFor(destinationPath), XmldbURI.xmldbUriFor(newName), move, PreserveType.DEFAULT);
+    }
+
+    @Deprecated
+    public boolean moveOrCopyResource(final String documentPath, final String destinationPath,
+            final String newName, final boolean move, final PreserveType preserve)
+            throws EXistException, PermissionDeniedException, URISyntaxException {
+        return moveOrCopyResource(XmldbURI.xmldbUriFor(documentPath),
+                XmldbURI.xmldbUriFor(destinationPath), XmldbURI.xmldbUriFor(newName), move, preserve);
     }
 
     private boolean moveOrCopyResource(final XmldbURI docUri, final XmldbURI destUri,
-                                       final XmldbURI newName, final boolean move)
+                                       final XmldbURI newName, final boolean move, final PreserveType preserve)
             throws EXistException, PermissionDeniedException {
 
         // use WRITE_LOCK if moving or if src and dest collection are the same
@@ -3150,7 +3158,7 @@ public class RpcConnection implements RpcAPI {
                                     if (move) {
                                         broker3.moveResource(transaction3, document, destination, newName);
                                     } else {
-                                        broker3.copyResource(transaction3, document, destination, newName);
+                                        broker3.copyResource(transaction3, document, destination, newName, preserve);
                                     }
                                     return true;
                                 })
@@ -3160,15 +3168,24 @@ public class RpcConnection implements RpcAPI {
         );
     }
 
+    @Deprecated
     public boolean moveOrCopyCollection(final String collectionName, final String destinationPath,
-                                        final String newName, final boolean move)
+            final String newName, final boolean move)
             throws EXistException, PermissionDeniedException, URISyntaxException {
         return moveOrCopyCollection(XmldbURI.xmldbUriFor(collectionName),
-                XmldbURI.xmldbUriFor(destinationPath), XmldbURI.xmldbUriFor(newName), move);
+                XmldbURI.xmldbUriFor(destinationPath), XmldbURI.xmldbUriFor(newName), move, PreserveType.DEFAULT);
+    }
+
+    @Deprecated
+    public boolean moveOrCopyCollection(final String collectionName, final String destinationPath,
+            final String newName, final boolean move, final PreserveType preserve)
+            throws EXistException, PermissionDeniedException, URISyntaxException {
+        return moveOrCopyCollection(XmldbURI.xmldbUriFor(collectionName),
+                XmldbURI.xmldbUriFor(destinationPath), XmldbURI.xmldbUriFor(newName), move, preserve);
     }
 
     private boolean moveOrCopyCollection(final XmldbURI collUri, final XmldbURI destUri,
-                                         final XmldbURI newName, final boolean move)
+            final XmldbURI newName, final boolean move, final PreserveType preserve)
             throws EXistException, PermissionDeniedException {
 
         // use WRITE_LOCK if moving or if src and dest collection are the same
@@ -3181,7 +3198,7 @@ public class RpcConnection implements RpcAPI {
                             if (move) {
                                 broker2.moveCollection(transaction2, source, destination, newName);
                             } else {
-                                broker2.copyCollection(transaction2, source, destination, newName);
+                                broker2.copyCollection(transaction2, source, destination, newName, preserve);
                             }
                             return true;
                         })
@@ -3339,22 +3356,32 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean copyResource(final String docPath, final String destinationPath, final String newName) throws EXistException, PermissionDeniedException, URISyntaxException {
-        return moveOrCopyResource(docPath, destinationPath, newName, false);
+        return moveOrCopyResource(docPath, destinationPath, newName, false, PreserveType.DEFAULT);
+    }
+
+    @Override
+    public boolean copyResource(final String docPath, final String destinationPath, final String newName, final String preserveType) throws EXistException, PermissionDeniedException, URISyntaxException {
+        return moveOrCopyResource(docPath, destinationPath, newName, false, PreserveType.valueOf(preserveType));
     }
 
     @Override
     public boolean copyCollection(final String collectionPath, final String destinationPath, final String newName) throws EXistException, PermissionDeniedException, URISyntaxException {
-        return moveOrCopyCollection(collectionPath, destinationPath, newName, false);
+        return moveOrCopyCollection(collectionPath, destinationPath, newName, false, PreserveType.DEFAULT);
+    }
+
+    @Override
+    public boolean copyCollection(final String collectionPath, final String destinationPath, final String newName, final String preserveType) throws EXistException, PermissionDeniedException, URISyntaxException {
+        return moveOrCopyCollection(collectionPath, destinationPath, newName, false, PreserveType.valueOf(preserveType));
     }
 
     @Override
     public boolean moveResource(final String docPath, final String destinationPath, final String newName) throws EXistException, PermissionDeniedException, URISyntaxException {
-        return moveOrCopyResource(docPath, destinationPath, newName, true);
+        return moveOrCopyResource(docPath, destinationPath, newName, true, PreserveType.DEFAULT);
     }
 
     @Override
     public boolean moveCollection(final String collectionPath, final String destinationPath, final String newName) throws EXistException, PermissionDeniedException, URISyntaxException {
-        return moveOrCopyCollection(collectionPath, destinationPath, newName, true);
+        return moveOrCopyCollection(collectionPath, destinationPath, newName, true, PreserveType.DEFAULT);
     }
 
     @Override

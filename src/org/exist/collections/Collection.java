@@ -311,9 +311,8 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      *
      * @param broker The database broker
      * @param child  The child Collection to add to this Collection
-     * @param isNew  Whether the Child Collection is a newly created Collection
      */
-    void addCollection(DBBroker broker, Collection child, boolean isNew)
+    void addCollection(DBBroker broker, Collection child)
             throws PermissionDeniedException, LockException;
 
     /**
@@ -827,6 +826,32 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
     BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, BinaryDocument blob, InputStream is,
             String mimeType, long size, Date created, Date modified) throws EXistException, PermissionDeniedException,
             LockException, TriggerException, IOException;
+
+    /**
+     * Store a binary document into the Collection (streaming)
+     *
+     * Locks the collection while the resource is being saved. Triggers will be called after the collection
+     * has been unlocked while keeping a lock on the resource to prevent modification.
+     *
+     * Callers should not lock the collection before calling this method as this may lead to deadlocks.
+     *
+     * @param transaction The database transaction
+     * @param broker      The database broker
+     * @param blob        the binary resource to store the data into
+     * @param is          The content for the document
+     * @param mimeType    The Internet Media Type of the document
+     * @param size        The size in bytes of the document
+     * @param created     The created timestamp of the document
+     * @param modified    The modified timestamp of the document
+     * @param preserve    In the case of a copy, cause the copy process to preserve the following attributes of each
+     *                    source in the copy: modification time, file mode, user ID, and group ID, as allowed by
+     *                    permissions. Access Control Lists (ACLs) will also be preserved.
+     *
+     * @return The stored Binary Document object
+     */
+    BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, BinaryDocument blob, InputStream is,
+            String mimeType, long size, Date created, Date modified, DBBroker.PreserveType preserve)
+            throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException;
 
     /**
      * Gets an Observable object for this Collection

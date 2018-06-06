@@ -302,6 +302,8 @@ public class PermissionsFunction extends BasicFunction {
         }
     }
 
+    // TODO(AR) need to do something in PermissionFactory for modifying ACL's
+
     private Sequence functionAddACE(final XmldbURI pathUri, final ACE_TARGET target, final String name, final ACE_ACCESS_TYPE access_type, final String mode) throws PermissionDeniedException {
         PermissionFactory.chacl(context.getBroker(), pathUri,
                 aclPermission -> aclPermission.addACE(access_type, target, name, mode)

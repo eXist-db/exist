@@ -48,6 +48,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.TestUtils.ADMIN_DB_USER;
 import static org.exist.TestUtils.ADMIN_DB_PWD;
 import static org.exist.security.SecurityManager.DBA_GROUP;
+import static org.exist.storage.DBBroker.PreserveType.*;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -98,7 +99,7 @@ public class CopyResourceTest {
     @Test
     public void copyXmlToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
-        copyDoc(user1, USER1_DOC1, USER1_NEW_DOC);
+        copyDoc(user1, NO_PRESERVE, USER1_DOC1, USER1_NEW_DOC);
         checkAttributes(USER1_NEW_DOC, USER1_NAME, USER1_NAME, USER1_DOC1_MODE, not(getCreated(USER1_DOC1)), not(getLastModified(USER1_DOC1)));
     }
 
@@ -108,7 +109,7 @@ public class CopyResourceTest {
     @Test
     public void copyBinaryToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
-        copyDoc(user1, USER1_BIN_DOC1, USER1_NEW_BIN_DOC);
+        copyDoc(user1, NO_PRESERVE, USER1_BIN_DOC1, USER1_NEW_BIN_DOC);
         checkAttributes(USER1_NEW_BIN_DOC, USER1_NAME, USER1_NAME, USER1_BIN_DOC1_MODE, not(getCreated(USER1_BIN_DOC1)), not(getLastModified(USER1_BIN_DOC1)));
     }
 
@@ -119,7 +120,7 @@ public class CopyResourceTest {
     public void copyXmlToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalDoc2LastModified = getLastModified(USER1_DOC2);
-        copyDoc(user1, USER1_DOC1, USER1_DOC2);
+        copyDoc(user1, NO_PRESERVE, USER1_DOC1, USER1_DOC2);
         checkAttributes(USER1_DOC2, USER1_NAME, USER1_NAME, USER1_DOC2_MODE, equalTo(getCreated(USER1_DOC2)), allOf(not(getLastModified(USER1_DOC1)), not(originalDoc2LastModified)));
     }
 
@@ -130,7 +131,7 @@ public class CopyResourceTest {
     public void copyBinaryToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalBinDoc2LastModified = getLastModified(USER1_BIN_DOC2);
-        copyDoc(user1, USER1_BIN_DOC1, USER1_BIN_DOC2);
+        copyDoc(user1, NO_PRESERVE, USER1_BIN_DOC1, USER1_BIN_DOC2);
         checkAttributes(USER1_BIN_DOC2, USER1_NAME, USER1_NAME, USER1_BIN_DOC2_MODE, equalTo(getCreated(USER1_BIN_DOC2)), allOf(not(getLastModified(USER1_BIN_DOC1)), not(originalBinDoc2LastModified)));
     }
 
@@ -140,7 +141,7 @@ public class CopyResourceTest {
     @Test
     public void copyXmlToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
-        copyDoc(adminUser, USER1_DOC1, USER1_NEW_DOC);
+        copyDoc(adminUser, NO_PRESERVE, USER1_DOC1, USER1_NEW_DOC);
         checkAttributes(USER1_NEW_DOC, ADMIN_DB_USER, DBA_GROUP, USER1_DOC1_MODE, not(getCreated(USER1_DOC1)), not(getLastModified(USER1_DOC1)));
     }
 
@@ -150,7 +151,7 @@ public class CopyResourceTest {
     @Test
     public void copyBinaryToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
-        copyDoc(adminUser, USER1_BIN_DOC1, USER1_NEW_BIN_DOC);
+        copyDoc(adminUser, NO_PRESERVE, USER1_BIN_DOC1, USER1_NEW_BIN_DOC);
         checkAttributes(USER1_NEW_BIN_DOC, ADMIN_DB_USER, DBA_GROUP, USER1_BIN_DOC1_MODE, not(getCreated(USER1_BIN_DOC1)), not(getLastModified(USER1_BIN_DOC1)));
     }
 
@@ -161,7 +162,7 @@ public class CopyResourceTest {
     public void copyXmlToExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long originalDoc2LastModified = getLastModified(USER1_DOC2);
-        copyDoc(adminUser, USER1_DOC1, USER1_DOC2);
+        copyDoc(adminUser, NO_PRESERVE, USER1_DOC1, USER1_DOC2);
         checkAttributes(USER1_DOC2, USER1_NAME, USER1_NAME, USER1_DOC2_MODE, equalTo(getCreated(USER1_DOC2)), allOf(not(getLastModified(USER1_DOC1)), not(originalDoc2LastModified)));
     }
 
@@ -172,7 +173,7 @@ public class CopyResourceTest {
     public void copyBinaryToExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long originalBinDoc2LastModified = getLastModified(USER1_BIN_DOC2);
-        copyDoc(adminUser, USER1_BIN_DOC1, USER1_BIN_DOC2);
+        copyDoc(adminUser, NO_PRESERVE, USER1_BIN_DOC1, USER1_BIN_DOC2);
         checkAttributes(USER1_BIN_DOC2, USER1_NAME, USER1_NAME, USER1_BIN_DOC2_MODE, equalTo(getCreated(USER1_BIN_DOC2)), allOf(not(getLastModified(USER1_BIN_DOC1)), not(originalBinDoc2LastModified)));
     }
 
@@ -182,7 +183,7 @@ public class CopyResourceTest {
     @Test
     public void copyXmlToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
-        copyDoc(user2, USER1_DOC1, USER2_NEW_DOC);
+        copyDoc(user2, NO_PRESERVE, USER1_DOC1, USER2_NEW_DOC);
         checkAttributes(USER2_NEW_DOC, USER2_NAME, USER2_NAME, USER1_DOC1_MODE, not(getCreated(USER1_DOC1)), not(getLastModified(USER1_DOC1)));
     }
 
@@ -192,7 +193,7 @@ public class CopyResourceTest {
     @Test
     public void copyBinaryToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
-        copyDoc(user2, USER1_BIN_DOC1, USER2_NEW_BIN_DOC);
+        copyDoc(user2, NO_PRESERVE, USER1_BIN_DOC1, USER2_NEW_BIN_DOC);
         checkAttributes(USER2_NEW_BIN_DOC, USER2_NAME, USER2_NAME, USER1_BIN_DOC1_MODE, not(getCreated(USER1_BIN_DOC1)), not(getLastModified(USER1_BIN_DOC1)));
     }
 
@@ -203,7 +204,7 @@ public class CopyResourceTest {
     public void copyXmlToExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalDoc2LastModified = getLastModified(USER2_DOC2);
-        copyDoc(user2, USER1_DOC1, USER2_DOC2);
+        copyDoc(user2, NO_PRESERVE, USER1_DOC1, USER2_DOC2);
         checkAttributes(USER2_DOC2, USER2_NAME, USER2_NAME, USER2_DOC2_MODE, equalTo(getCreated(USER2_DOC2)), allOf(not(getLastModified(USER1_DOC1)), not(originalDoc2LastModified)));
     }
 
@@ -214,11 +215,155 @@ public class CopyResourceTest {
     public void copyBinaryToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalBinDoc2LastModified = getLastModified(USER2_BIN_DOC2);
-        copyDoc(user2, USER1_BIN_DOC1, USER2_BIN_DOC2);
+        copyDoc(user2, NO_PRESERVE, USER1_BIN_DOC1, USER2_BIN_DOC2);
         checkAttributes(USER2_BIN_DOC2, USER2_NAME, USER2_NAME, USER2_BIN_DOC2_MODE, equalTo(getCreated(USER2_BIN_DOC2)), allOf(not(getLastModified(USER1_BIN_DOC1)), not(originalBinDoc2LastModified)));
     }
 
-    private void copyDoc(final Subject execAsUser, final XmldbURI srcDocName, final XmldbURI destDocName) throws EXistException, PermissionDeniedException, LockException, IOException {
+    /**
+     * Whilst preserving attributes,
+     * as the owner copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_DOC}.
+     */
+    @Test
+    public void copyPreserveXmlToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+        final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
+        final long doc1LastModified = getLastModified(USER1_DOC1);
+        copyDoc(user1, PRESERVE, USER1_DOC1, USER1_NEW_DOC);
+        checkAttributes(USER1_NEW_DOC, USER1_NAME, USER1_NAME, USER1_DOC1_MODE, equalTo(doc1LastModified), equalTo(doc1LastModified));
+    }
+
+    /**
+     * Whilst preserving attributes,
+     * as the owner copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_BIN_DOC}.
+     */
+    @Test
+    public void copyPreserveBinaryToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+        final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
+        final long binDoc1LastModified = getLastModified(USER1_BIN_DOC1);
+        copyDoc(user1, PRESERVE, USER1_BIN_DOC1, USER1_NEW_BIN_DOC);
+        checkAttributes(USER1_NEW_BIN_DOC, USER1_NAME, USER1_NAME, USER1_BIN_DOC1_MODE, equalTo(binDoc1LastModified), equalTo(binDoc1LastModified));
+    }
+
+    /**
+     * Whilst preserving attributes,
+     * as the owner copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_DOC2}.
+     */
+    @Test
+    public void copyPreserveXmlToExistentAsSelf() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException {
+        final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
+        final long originalDoc2Created = getCreated(USER1_DOC2);
+        copyDoc(user1, PRESERVE, USER1_DOC1, USER1_DOC2);
+        checkAttributes(USER1_DOC2, USER1_NAME, USER1_NAME, USER1_DOC1_MODE, equalTo(originalDoc2Created), equalTo(getLastModified(USER1_DOC1)));
+    }
+
+    /**
+     * Whilst preserving attributes,
+     * as the owner copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_BIN_DOC2}.
+     */
+    @Test
+    public void copyPreserveBinaryToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+        final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
+        final long originalBinDoc2Created = getCreated(USER1_BIN_DOC2);
+        copyDoc(user1, PRESERVE, USER1_BIN_DOC1, USER1_BIN_DOC2);
+        checkAttributes(USER1_BIN_DOC2, USER1_NAME, USER1_NAME, USER1_BIN_DOC1_MODE, equalTo(originalBinDoc2Created), equalTo(getLastModified(USER1_BIN_DOC1)));
+    }
+
+    /**
+     * Whilst preserving attributes,
+     * as a DBA copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_DOC}.
+     */
+    @Test
+    public void copyPreserveXmlToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+        final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
+        final long doc1LastModified = getLastModified(USER1_DOC1);
+        copyDoc(adminUser, PRESERVE, USER1_DOC1, USER1_NEW_DOC);
+        checkAttributes(USER1_NEW_DOC, USER1_NAME, USER1_NAME, USER1_DOC1_MODE, equalTo(doc1LastModified), equalTo(doc1LastModified));
+    }
+
+    /**
+     * Whilst preserving attributes,
+     * as a DBA copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_BIN_DOC}.
+     */
+    @Test
+    public void copyPreserveBinaryToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+        final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
+        final long binDoc1LastModified = getLastModified(USER1_BIN_DOC1);
+        copyDoc(adminUser, PRESERVE, USER1_BIN_DOC1, USER1_NEW_BIN_DOC);
+        checkAttributes(USER1_NEW_BIN_DOC, USER1_NAME, USER1_NAME, USER1_BIN_DOC1_MODE, equalTo(binDoc1LastModified), equalTo(binDoc1LastModified));
+    }
+
+    /**
+     * Whilst preserving attributes,
+     * as a DBA copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_DOC2}.
+     */
+    @Test
+    public void copyPreserveXmlToExistentAsDBA() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException {
+        final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
+        final long originalDoc2Created = getCreated(USER1_DOC2);
+        copyDoc(adminUser, PRESERVE, USER1_DOC1, USER1_DOC2);
+        checkAttributes(USER1_DOC2, USER1_NAME, USER1_NAME, USER1_DOC1_MODE, equalTo(originalDoc2Created), equalTo(getLastModified(USER1_DOC1)));
+    }
+
+    /**
+     * Whilst preserving attributes,
+     * as a DBA copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_BIN_DOC2}.
+     */
+    @Test
+    public void copyPreserveBinaryToExistentAsDBA() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException {
+        final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
+        final long originalBinDoc2Created = getCreated(USER1_BIN_DOC2);
+        copyDoc(adminUser, PRESERVE, USER1_BIN_DOC1, USER1_BIN_DOC2);
+        checkAttributes(USER1_BIN_DOC2, USER1_NAME, USER1_NAME, USER1_BIN_DOC1_MODE, equalTo(originalBinDoc2Created), equalTo(getLastModified(USER1_BIN_DOC1)));
+    }
+
+    /**
+     * Whilst preserving attributes,
+     * as some other (non-owner) user copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER2_NEW_DOC}.
+     */
+    @Test
+    public void copyPreserveXmlToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+        final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
+        final long doc1LastModified = getLastModified(USER1_DOC1);
+        copyDoc(user2, PRESERVE, USER1_DOC1, USER2_NEW_DOC);
+        checkAttributes(USER2_NEW_DOC, USER2_NAME, USER2_NAME, USER1_DOC1_MODE, equalTo(doc1LastModified), equalTo(doc1LastModified));
+    }
+
+    /**
+     * Whilst preserving attributes,
+     * some other (non-owner) user copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_BIN_DOC}.
+     */
+    @Test
+    public void copyPreserveBinaryToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+        final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
+        final long binDoc1LastModified = getLastModified(USER1_BIN_DOC1);
+        copyDoc(user2, PRESERVE, USER1_BIN_DOC1, USER2_NEW_BIN_DOC);
+        checkAttributes(USER2_NEW_BIN_DOC, USER2_NAME, USER2_NAME, USER1_BIN_DOC1_MODE, equalTo(binDoc1LastModified), equalTo(binDoc1LastModified));
+    }
+
+    /**
+     * Whilst preserving attributes,
+     * as some other (non-owner) user copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER2_DOC2}.
+     */
+    @Test
+    public void copyPreserveXmlToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException {
+        final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
+        final long originalDoc2Created = getCreated(USER2_DOC2);
+        copyDoc(user2, PRESERVE, USER1_DOC1, USER2_DOC2);
+        checkAttributes(USER2_DOC2, USER2_NAME, USER2_NAME, USER1_DOC1_MODE, equalTo(originalDoc2Created), equalTo(getLastModified(USER1_DOC1)));
+    }
+
+    /**
+     * Whilst preserving attributes,
+     * as some other (non-owner) user copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER2_BIN_DOC2}.
+     */
+    @Test
+    public void copyPreserveBinaryToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException {
+        final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
+        final long originalBinDoc2Created = getCreated(USER2_BIN_DOC2);
+        copyDoc(user2, PRESERVE, USER1_BIN_DOC1, USER2_BIN_DOC2);
+        checkAttributes(USER2_BIN_DOC2, USER2_NAME, USER2_NAME, USER1_BIN_DOC1_MODE, equalTo(originalBinDoc2Created), equalTo(getLastModified(USER1_BIN_DOC1)));
+    }
+
+    private void copyDoc(final Subject execAsUser, final DBBroker.PreserveType preserve, final XmldbURI srcDocName, final XmldbURI destDocName) throws EXistException, PermissionDeniedException, LockException, IOException {
         final XmldbURI src = TEST_COLLECTION_URI.append(srcDocName);
         final XmldbURI dest = TEST_COLLECTION_URI.append(destDocName);
 
@@ -234,7 +379,7 @@ public class CopyResourceTest {
                 try {
                     destCol = broker.openCollection(dest.removeLastSegment(), LockMode.WRITE_LOCK);
 
-                    broker.copyResource(transaction, srcDoc, destCol, dest.lastSegment());
+                    broker.copyResource(transaction, srcDoc, destCol, dest.lastSegment(), preserve);
 
                 } finally {
                     if (destCol != null) {
@@ -470,7 +615,6 @@ public class CopyResourceTest {
         userGroup.addManager(sm.getAccount(username));
         sm.updateGroup(userGroup);
     }
-
 
     private static void chmod(final DBBroker broker, final XmldbURI pathUri, final int mode) throws PermissionDeniedException {
         PermissionFactory.chmod(broker, pathUri, Optional.of(mode), Optional.empty());

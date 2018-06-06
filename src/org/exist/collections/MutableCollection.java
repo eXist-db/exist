@@ -71,6 +71,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import javax.annotation.Nullable;
+
 /**
  * An implementation of {@link Collection} that allows
  * mutations to be made to the Collection object
@@ -110,11 +112,22 @@ public class MutableCollection implements Collection {
      * @param path The path of the Collection
      */
     public MutableCollection(final DBBroker broker, final XmldbURI path) {
-        //The permissions assigned to this collection
-        permissions = PermissionFactory.getDefaultCollectionPermission(broker.getBrokerPool().getSecurityManager());
+        this(broker, path, null, -1);
+    }
 
+    /**
+     * Constructs a Collection Object (not yet persisted)
+     *
+     * @param broker The database broker
+     * @param path The path of the Collection
+     * @param permissions The permissions of the collection, or null for the default
+     * @param created The created time of the collection, or -1 for now
+     */
+    public MutableCollection(final DBBroker broker, final XmldbURI path, @Nullable final Permission permissions, final long created) {
         setPath(path);
-        lock = new ReentrantReadWriteLock(path);
+        this.permissions = permissions != null ? permissions : PermissionFactory.getDefaultCollectionPermission(broker.getBrokerPool().getSecurityManager());
+        this.created = created > 0 ? created : System.currentTimeMillis();
+        this.lock = new ReentrantReadWriteLock(path);
         this.collectionMetadata = new CollectionMetadata(this);
     }
 
@@ -155,7 +168,7 @@ public class MutableCollection implements Collection {
     }
 
     @Override
-    public void addCollection(final DBBroker broker, final Collection child, final boolean isNew)
+    public void addCollection(final DBBroker broker, final Collection child)
             throws PermissionDeniedException, LockException {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.WRITE)) {
             throw new PermissionDeniedException("Permission to write to Collection denied for " + this.getURI());
@@ -170,10 +183,6 @@ public class MutableCollection implements Collection {
             }
         } finally {
             getLock().release(LockMode.WRITE_LOCK);
-        }
-
-        if(isNew) {
-            child.setCreationTime(System.currentTimeMillis());
         }
     }
 
@@ -1645,6 +1654,11 @@ public class MutableCollection implements Collection {
 
     @Override
     public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final BinaryDocument blob, final InputStream is, final String mimeType, final long size, final Date created, final Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
+        return addBinaryResource(transaction, broker, blob, is, mimeType, size, created, modified, DBBroker.PreserveType.DEFAULT);
+    }
+
+    @Override
+    public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final BinaryDocument blob, final InputStream is, final String mimeType, final long size, final Date created, final Date modified, final DBBroker.PreserveType preserve) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
         final Database db = broker.getBrokerPool();
         if (db.isReadOnly()) {
             throw new IOException("Database is read-only");
@@ -1659,7 +1673,10 @@ public class MutableCollection implements Collection {
             db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_BINARY, docUri);
             checkPermissionsForAddDocument(broker, oldDoc);
             checkCollectionConflict(docUri);
-            manageDocumentInformation(oldDoc, blob);
+            //manageDocumentInformation(oldDoc, blob);
+            if (!broker.preserveOnCopy(preserve)) {
+                blob.copyOf(broker, blob, oldDoc);
+            }
             final DocumentMetadata metadata = blob.getMetadata();
             metadata.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
             if (created != null) {
@@ -1678,7 +1695,9 @@ public class MutableCollection implements Collection {
 
             if (oldDoc != null) {
                 LOG.debug("removing old document " + oldDoc.getFileURI());
-                updateModificationTime(blob);
+                if (!broker.preserveOnCopy(preserve)) {
+                    updateModificationTime(blob);
+                }
                 broker.removeResource(transaction, oldDoc);
             }
 

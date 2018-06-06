@@ -24,8 +24,14 @@ package org.exist.xquery.functions.xmldb;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
+import org.exist.xquery.FunctionDSL;
 import org.exist.xquery.FunctionDef;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 
 /**
  * Module function definitions for xmldb module.
@@ -59,8 +65,10 @@ public class XMLDBModule extends AbstractInternalModule {
             new FunctionDef(XMLDBLoadFromPattern.signatures[2], XMLDBLoadFromPattern.class),
             new FunctionDef(XMLDBLoadFromPattern.signatures[3], XMLDBLoadFromPattern.class),
             new FunctionDef(XMLDBXUpdate.signature, XMLDBXUpdate.class),
-            new FunctionDef(XMLDBCopy.signatures[0], XMLDBCopy.class),
-            new FunctionDef(XMLDBCopy.signatures[1], XMLDBCopy.class),
+            new FunctionDef(XMLDBCopy.FS_COPY_COLLECTION[0], XMLDBCopy.class),
+            new FunctionDef(XMLDBCopy.FS_COPY_COLLECTION[1], XMLDBCopy.class),
+            new FunctionDef(XMLDBCopy.FS_COPY_RESOURCE[0], XMLDBCopy.class),
+            new FunctionDef(XMLDBCopy.FS_COPY_RESOURCE[1], XMLDBCopy.class),
             new FunctionDef(XMLDBMove.signatures[0], XMLDBMove.class),
             new FunctionDef(XMLDBMove.signatures[1], XMLDBMove.class),
             new FunctionDef(XMLDBRename.signatures[0], XMLDBRename.class),
@@ -171,4 +179,11 @@ public class XMLDBModule extends AbstractInternalModule {
         return RELEASED_IN_VERSION;
     }
 
+    static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
+        return FunctionDSL.functionSignature(new QName(name, NAMESPACE_URI), description, returnType, paramTypes);
+    }
+
+    static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
+        return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI), description, returnType, variableParamTypes);
+    }
 }

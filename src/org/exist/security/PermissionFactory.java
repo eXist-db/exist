@@ -481,6 +481,23 @@ public class PermissionFactory {
     }
 
     /**
+     * Changes the ACL of a permissioned object in the database
+     * inline with the rules for chmod of POSIX.1-2017 (Issue 7, 2018 edition).
+     *
+     * @param permission the permissions of the object in the database.
+     * @param permissionModifier a function which will modify the ACL.
+     *
+     * @throws PermissionDeniedException if the calling process has insufficient permissions.
+     */
+    public static void chacl(final Permission permission, final ConsumerE<ACLPermission, PermissionDeniedException> permissionModifier) throws PermissionDeniedException {
+        if(permission instanceof SimpleACLPermission) {
+            chacl((SimpleACLPermission)permission, permissionModifier);
+        } else {
+            throw new PermissionDeniedException("ACL like permissions have not been enabled");
+        }
+    }
+
+    /**
      * Changes the ACL of permissions in the database
      * inline with the rules for chmod of POSIX.1-2017 (Issue 7, 2018 edition).
      *

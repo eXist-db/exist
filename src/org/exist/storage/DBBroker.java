@@ -19,6 +19,7 @@
  */
 package org.exist.storage;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
@@ -38,6 +39,7 @@ import org.exist.indexing.IndexController;
 import org.exist.indexing.StreamListener;
 import org.exist.indexing.StructuralIndex;
 import org.exist.numbering.NodeId;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.stax.IEmbeddedXMLStreamReader;
@@ -93,6 +95,8 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     public static final String POSIX_CHOWN_RESTRICTED_ATTRIBUTE = "posix-chown-restricted";
     public static final String POSIX_CHOWN_RESTRICTED_PROPERTY = "db-connection.posix-chown-restricted";
+    public static final String PRESERVE_ON_COPY_ATTRIBUTE = "preserve-on-copy";
+    public static final String PRESERVE_ON_COPY_PROPERTY = "db-connection.preserve-on-copy";
 
     protected final static Logger LOG = LogManager.getLogger(DBBroker.class);
 
@@ -120,6 +124,8 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     private final TimestampedReference<IndexController> indexController = new TimestampedReference<>();
 
+    private final PreserveType preserveOnCopy;
+
     public DBBroker(final BrokerPool pool, final Configuration config) {
         this.config = config;
         final Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
@@ -127,6 +133,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
             caseSensitive = temp.booleanValue();
         }
         this.pool = pool;
+        this.preserveOnCopy = config.getProperty(PRESERVE_ON_COPY_PROPERTY, PreserveType.NO_PRESERVE);
     }
 
     /**
@@ -363,6 +370,22 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      */
     public abstract Collection getOrCreateCollection(Txn transaction, XmldbURI uri)
         throws PermissionDeniedException, IOException, TriggerException;
+
+    /**
+     * Returns the database collection identified by the specified path. If the
+     * collection does not yet exist, it is created - including all ancestors.
+     * The path should be absolute, e.g. /db/shakespeare.
+     *
+     * @param transaction The transaction, which registers the acquired write locks. The locks should be released on commit/abort.
+     * @param uri The collection's URI
+     * @param creationAttributes the attributes to use if the collection needs to be created.
+     * @return The collection or <code>null</code> if no collection matches the path
+     * @throws PermissionDeniedException
+     * @throws IOException
+     * @throws TriggerException
+     */
+    public abstract Collection getOrCreateCollection(Txn transaction, XmldbURI uri, Optional<Tuple2<Permission, Long>> creationAttributes)
+            throws PermissionDeniedException, IOException, TriggerException;
 
     /**
      * Returns the configuration object used to initialize the current database
@@ -692,28 +715,70 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 	 * @throws LockException
 	 * @throws IOException
 	 * @throws TriggerException 
-	 * @throws EXistException 
+	 * @throws EXistException
+     *
+     * @deprecated Use {@link #copyCollection(Txn, Collection, Collection, XmldbURI, PreserveType)}
 	 */
+	@Deprecated
 	public abstract void copyCollection(Txn transaction, Collection collection,
 			Collection destination, XmldbURI newName)
 			throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException;
 
+    /**
+     * Copy a collection to the destination collection and rename it.
+     *
+     * @param transaction The transaction, which registers the acquired write locks. The locks should be released on commit/abort.
+     * @param collection The origin collection
+     * @param destination The destination parent collection
+     * @param newName The new name of the collection
+     * @param preserve Cause the copy process to preserve the following attributes of each source in the copy:
+     *     modification time, file mode, user ID, and group ID, as allowed by permissions. Access Control Lists (ACLs)
+     *     will also be preserved.
+     *
+     * @throws PermissionDeniedException
+     * @throws LockException
+     * @throws IOException
+     * @throws TriggerException
+     * @throws EXistException
+     */
+    public abstract void copyCollection(Txn transaction, Collection collection,
+            Collection destination, XmldbURI newName, final PreserveType preserve)
+            throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException;
+
 	/**
 	 * Copy a resource to the destination collection and rename it.
 	 * 
-	 * @param doc
-	 *            the resource to copy
-	 * @param destination
-	 *            the destination collection
-	 * @param newName
-	 *            the new name the resource should have in the destination
-	 *            collection
+	 * @param doc the resource to copy
+	 * @param destination the destination collection
+	 * @param newName the new name the resource should have in the destination collection
+     *
 	 * @throws PermissionDeniedException
 	 * @throws LockException
-	 * @throws EXistException 
+	 * @throws EXistException
+     *
+     * @deprecated Use {@link #copyResource(Txn, DocumentImpl, Collection, XmldbURI, PreserveType)}
 	 */
+	@Deprecated
 	public abstract void copyResource(Txn transaction, DocumentImpl doc,
 			Collection destination, XmldbURI newName)
+            throws PermissionDeniedException, LockException, EXistException, IOException;
+
+    /**
+     * Copy a resource to the destination collection and rename it.
+     *
+     * @param doc the resource to copy
+     * @param destination the destination collection
+     * @param newName the new name the resource should have in the destination collection
+     * @param preserve Cause the copy process to preserve the following attributes of each source in the copy:
+     *     modification time, file mode, user ID, and group ID, as allowed by permissions. Access Control Lists (ACLs)
+     *     will also be preserved.
+     *
+     * @throws PermissionDeniedException
+     * @throws LockException
+     * @throws EXistException
+     */
+    public abstract void copyResource(Txn transaction, DocumentImpl doc,
+            Collection destination, XmldbURI newName, final PreserveType preserve)
             throws PermissionDeniedException, LockException, EXistException, IOException;
 
 	/**
@@ -858,6 +923,26 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     public abstract void readCollectionEntry(SubCollectionEntry entry);
 
+    /**
+     * Determines if Collection or Document attributes be preserved on copy,
+     * by comparing the argument with the global system settings.
+     *
+     * Returns true if either:
+     *     1.) The {@code preserve} argument is {@link PreserveType#PRESERVE}.
+     *     2.) The {@code preserve} argument is {@link PreserveType#DEFAULT},
+     *         and the global system setting is {@link PreserveType#PRESERVE}.
+     *
+     * @param preserve The call-specific preserve flag.
+     *
+     * @return true if attributes should be preserved.
+     */
+    public boolean preserveOnCopy(final PreserveType preserve) {
+        Objects.requireNonNull(preserve);
+
+        return PreserveType.PRESERVE == preserve ||
+                (PreserveType.DEFAULT == preserve && PreserveType.PRESERVE == this.preserveOnCopy);
+    }
+
     @Override
     public void close() {
         pool.release(this);
@@ -907,6 +992,31 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
         final static TraceableSubjectChange pop(final Subject subject, final String id) {
             return new TraceableSubjectChange(Change.POP, subject, id);
         }
+    }
+
+    /**
+     * Indicates the behaviour for not preserving or
+     * preserving Collection of Document attributes
+     * when making a copy.
+     */
+    public enum PreserveType {
+        /**
+         * Implies whatever the default is,
+         * as configured in conf.xml: /exist/db-connection/@preserve-on-copy
+         */
+        DEFAULT,
+
+        /**
+         * Collection or Document attributes are not preserved
+         * when making a copy.
+         */
+        NO_PRESERVE,
+
+        /**
+         * Collection or Document attributes are preserved
+         * when making a copy.
+         */
+        PRESERVE
     }
 }
 

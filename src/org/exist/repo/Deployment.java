@@ -32,6 +32,8 @@ import org.exist.dom.memtree.*;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.PermissionFactory;
+import org.exist.security.UnixStylePermission;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.source.FileSource;
@@ -869,18 +871,16 @@ public class Deployment {
      */
     private void setPermissions(final Optional<RequestedPerms> requestedPerms, final boolean isCollection, final MimeType mime, final Permission permission) throws PermissionDeniedException {
         int mode = permission.getMode();
-        if(requestedPerms.isPresent()) {
+        if (requestedPerms.isPresent()) {
             final RequestedPerms perms = requestedPerms.get();
-            permission.setOwner(perms.user);
 
-            if(perms.group.isPresent()) {
-                permission.setGroup(perms.group.get());
-            }
+            PermissionFactory.chown(broker, permission, Optional.of(perms.user), perms.group);
 
             mode = perms.permissions.map(permStr -> {
                 try {
-                    permission.setMode(permStr);
-                    return permission.getMode();
+                    final UnixStylePermission other = new UnixStylePermission(broker.getBrokerPool().getSecurityManager());
+                    other.setMode(permStr);
+                    return other.getMode();
                 } catch (final PermissionDeniedException | SyntaxException e) {
                     LOG.warn("Unable to set permissions string: " + permStr + ". Falling back to default.");
                     return permission.getMode();
@@ -891,7 +891,8 @@ public class Deployment {
         if (isCollection || (mime != null && mime.getName().equals(MimeType.XQUERY_TYPE.getName()))) {
             mode = mode | 0111;     //TODO(AR) Whoever did this - this is a really bad idea. You are circumventing the security of the system
         }
-        permission.setMode(mode);
+
+        PermissionFactory.chmod(broker, permission, Optional.of(mode), Optional.empty());
     }
 
     private Optional<ElementImpl> findElement(final NodeImpl root, final QName qname) throws XPathException {

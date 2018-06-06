@@ -65,9 +65,33 @@ public interface EXistCollectionManagementService extends CollectionManagementSe
 
     void moveResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName) throws XMLDBException;
 
+    /**
+     * @deprecated Use {@link #copyResource(XmldbURI, XmldbURI, XmldbURI, String)}
+     */
+    @Deprecated
     void copyResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName) throws XMLDBException;
 
+    /**
+     * @param resourcePath The source document
+     * @param destinationPath The destination collection
+     * @param newName The new name of the copied source in the destination collection
+     * @param preserveType one of either "DEFAULT", "NO_PRESERVE", "PRESERVE"
+     */
+    void copyResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName, String preserveType) throws XMLDBException;
+
+    /**
+     * @deprecated Use {@link #copy(XmldbURI, XmldbURI, XmldbURI, String)}
+     */
+    @Deprecated
     void copy(XmldbURI collection, XmldbURI destination, XmldbURI newName) throws XMLDBException;
+
+    /**
+     * @param collection The source collection
+     * @param destination The destination collection
+     * @param newName The new name of the copied source in the destination collection
+     * @param preserveType one of either "DEFAULT", "NO_PRESERVE", "PRESERVE"
+     */
+    void copy(XmldbURI collection, XmldbURI destination, XmldbURI newName, String preserveType) throws XMLDBException;
 
     Collection createCollection(XmldbURI collName, Date created) throws XMLDBException;
 

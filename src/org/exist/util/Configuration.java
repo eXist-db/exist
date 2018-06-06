@@ -1001,6 +1001,20 @@ public class Configuration implements ErrorHandler
         }
         config.put(DBBroker.POSIX_CHOWN_RESTRICTED_PROPERTY, posixChownRestricted);
 
+        final String preserveOnCopyStr = getConfigAttributeValue(con,  DBBroker.PRESERVE_ON_COPY_ATTRIBUTE);
+        final DBBroker.PreserveType preserveOnCopy;
+        if(preserveOnCopyStr == null) {
+            preserveOnCopy = DBBroker.PreserveType.NO_PRESERVE;  // default
+        } else {
+            if(Boolean.valueOf(preserveOnCopyStr)) {
+                // configuration explicitly specifies that attributes should be preserved on copy
+                preserveOnCopy = DBBroker.PreserveType.PRESERVE;
+            } else {
+                preserveOnCopy = DBBroker.PreserveType.NO_PRESERVE;
+            }
+        }
+        config.put(DBBroker.PRESERVE_ON_COPY_PROPERTY, preserveOnCopy);
+
         final NodeList securityConf             = con.getElementsByTagName( BrokerPool.CONFIGURATION_SECURITY_ELEMENT_NAME );
         String   securityManagerClassName = BrokerPool.DEFAULT_SECURITY_CLASS;
 
