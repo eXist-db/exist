@@ -44,6 +44,11 @@ public interface EXistResource extends Resource, AutoCloseable {
 
     Permission getPermissions() throws XMLDBException;
 
+    /**
+     * The content length if known.
+     *
+     * @return The content length, or -1 if not known.
+     */
     long getContentLength() throws XMLDBException;
 
     void setLexicalHandler(LexicalHandler handler);

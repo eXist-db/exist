@@ -49,7 +49,9 @@ public interface ExtendedResource {
     InputStream getStreamContent() throws XMLDBException;
 
     /**
-     * It returns the length of the content, whichever it is its origin
+     * It returns the length of the content, if known.
+     *
+     * @return The content length, or -1 if not known.
      */
     long getStreamLength() throws XMLDBException;
 

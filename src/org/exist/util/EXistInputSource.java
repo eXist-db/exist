@@ -15,7 +15,7 @@ public abstract class EXistInputSource extends InputSource implements Closeable 
 	}
 
 	/**
-	 * @Deprecated Should be avoided, trying to get the length of a stream will ultimately involve buffering
+	 * @Deprecated Should be avoided, trying to get the length of a stream may involve buffering
 	 */
 	@Deprecated
 	public abstract long getByteStreamLength();
