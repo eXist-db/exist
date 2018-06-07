@@ -44,6 +44,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * A remote implementation of the Collection interface. This implementation
  * communicates with the server through the XMLRPC protocol.
@@ -590,7 +592,8 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
                         descString = ((EXistInputSource) content).getSymbolicPath();
                     }
                 } else if (content instanceof String) {
-                    is = new FastByteArrayInputStream(((String) content).getBytes());
+                    // TODO(AR) we really should not allow String to be used here, as we loose the encoding info and default to UTF-8!
+                    is = new FastByteArrayInputStream(((String) content).getBytes(UTF_8));
                 } else {
                     LOG.error("Unable to get content from {}", content);
                 }
