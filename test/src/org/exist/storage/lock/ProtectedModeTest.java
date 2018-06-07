@@ -50,7 +50,9 @@ public class ProtectedModeTest {
     private final static String COLLECTION_CONFIG =
 		"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
 		"	<index>" +
-		"		<create path=\"//section/@id\" type=\"xs:string\"/>" +
+        "       <lucene>" +
+		"		    <text qname=\"LINE\"/>" +
+        "       </lucene>" +
 		"	</index>" +
 		"</collection>";
     

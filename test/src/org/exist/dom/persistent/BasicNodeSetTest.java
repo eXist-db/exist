@@ -27,7 +27,6 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
-import org.exist.storage.txn.TransactionException;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
@@ -232,48 +231,34 @@ public class BasicNodeSetTest {
     @Test
     public void getElementsByTagNameWildcard() throws LockException, PermissionDeniedException, EXistException {
         DocumentImpl doc = null;
-        try(final DBBroker broker = existEmbeddedServer.getBrokerPool().get(Optional.of(existEmbeddedServer.getBrokerPool().getSecurityManager().getSystemSubject()))) {
-            doc = root.getDocumentWithLock(broker, XmldbURI.create("hamlet.xml"), Lock.LockMode.READ_LOCK);
-            final NodeList elements = doc.getElementsByTagName(QName.WILDCARD);
+        try(final DBBroker broker = existEmbeddedServer.getBrokerPool().get(Optional.of(existEmbeddedServer.getBrokerPool().getSecurityManager().getSystemSubject()));
+                final LockedDocument lockedDoc = root.getDocumentWithLock(broker, XmldbURI.create("hamlet.xml"), Lock.LockMode.READ_LOCK)) {
+            final NodeList elements = lockedDoc.getDocument().getElementsByTagName(QName.WILDCARD);
 
             assertEquals(6636, elements.getLength());
-
-        } finally {
-            if(doc != null) {
-                doc.getUpdateLock().release(Lock.LockMode.READ_LOCK);
-            }
         }
     }
 
     @Test
     public void getElementsByTagNameNSWildcard() throws LockException, PermissionDeniedException, EXistException {
         DocumentImpl doc = null;
-        try(final DBBroker broker = existEmbeddedServer.getBrokerPool().get(Optional.of(existEmbeddedServer.getBrokerPool().getSecurityManager().getSystemSubject()))) {
-            doc = root.getDocumentWithLock(broker, XmldbURI.create("hamlet.xml"), Lock.LockMode.READ_LOCK);
-            final NodeList elements = doc.getElementsByTagNameNS(QName.WILDCARD, QName.WILDCARD);
+        try(final DBBroker broker = existEmbeddedServer.getBrokerPool().get(Optional.of(existEmbeddedServer.getBrokerPool().getSecurityManager().getSystemSubject()));
+            final LockedDocument lockedDoc = root.getDocumentWithLock(broker, XmldbURI.create("hamlet.xml"), Lock.LockMode.READ_LOCK)) {
+            final NodeList elements = lockedDoc.getDocument().getElementsByTagNameNS(QName.WILDCARD, QName.WILDCARD);
 
             assertEquals(6636, elements.getLength());
 
-        } finally {
-            if(doc != null) {
-                doc.getUpdateLock().release(Lock.LockMode.READ_LOCK);
-            }
         }
     }
 
     @Test
     public void getElementsByTagNameWildcardNS() throws LockException, PermissionDeniedException, EXistException {
         DocumentImpl doc = null;
-        try(final DBBroker broker = existEmbeddedServer.getBrokerPool().get(Optional.of(existEmbeddedServer.getBrokerPool().getSecurityManager().getSystemSubject()))) {
-            doc = root.getDocumentWithLock(broker, XmldbURI.create("hamlet.xml"), Lock.LockMode.READ_LOCK);
-            final NodeList elements = doc.getElementsByTagNameNS(QName.WILDCARD, "SPEECH");
+        try(final DBBroker broker = existEmbeddedServer.getBrokerPool().get(Optional.of(existEmbeddedServer.getBrokerPool().getSecurityManager().getSystemSubject()));
+            final LockedDocument lockedDoc = root.getDocumentWithLock(broker, XmldbURI.create("hamlet.xml"), Lock.LockMode.READ_LOCK)) {
+            final NodeList elements = lockedDoc.getDocument().getElementsByTagNameNS(QName.WILDCARD, "SPEECH");
 
             assertEquals(1138, elements.getLength());
-
-        } finally {
-            if(doc != null) {
-                doc.getUpdateLock().release(Lock.LockMode.READ_LOCK);
-            }
         }
     }
 
@@ -368,7 +353,7 @@ public class BasicNodeSetTest {
     }
 
     @Test
-    public void testOptimizations() throws XPathException, SAXException, PermissionDeniedException, EXistException {
+    public void testOptimizations() throws XPathException, SAXException, PermissionDeniedException, EXistException, LockException {
         try(final DBBroker broker = existEmbeddedServer.getBrokerPool().get(Optional.of(existEmbeddedServer.getBrokerPool().getSecurityManager().getSystemSubject()))) {
             Serializer serializer = broker.getSerializer();
             serializer.reset();

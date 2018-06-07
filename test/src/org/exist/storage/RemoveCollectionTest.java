@@ -29,6 +29,7 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
@@ -214,15 +215,15 @@ public class RemoveCollectionTest {
     }
 
     public void recover(final BrokerPool pool, final boolean checkResource) throws EXistException, PermissionDeniedException, DatabaseConfigurationException, IOException {
-        DocumentImpl doc = null;
+        LockedDocument lockedDoc = null;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             if (checkResource) {
-                doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append("hamlet.xml"), LockMode.READ_LOCK);
-                assertNull("Resource should have been removed", doc);
+                lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append("hamlet.xml"), LockMode.READ_LOCK);
+                assertNull("Resource should have been removed", lockedDoc);
             }
 	    } finally {
-            if (doc != null) {
-                doc.getUpdateLock().release(LockMode.READ_LOCK);
+            if (lockedDoc != null) {
+                lockedDoc.close();
             }
         }
     }

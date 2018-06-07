@@ -22,6 +22,7 @@ package org.exist.storage.structural;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,8 +35,8 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.index.BTreeStore;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.LockManager;
+import org.exist.storage.lock.ManagedLock;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
@@ -53,6 +54,7 @@ public class NativeStructuralIndex extends AbstractIndex implements RawBackupSup
     /** The datastore for this node index */
     protected BTreeStore btree;
 
+    protected LockManager lockManager;
     protected SymbolTable symbols;
 
     public NativeStructuralIndex() {
@@ -62,6 +64,7 @@ public class NativeStructuralIndex extends AbstractIndex implements RawBackupSup
     @Override
     public void configure(BrokerPool pool, Path dataDir, Element config) throws DatabaseConfigurationException {
         super.configure(pool, dataDir, config);
+        lockManager = pool.getLockManager();
         symbols = pool.getSymbols();
     }
 
@@ -86,11 +89,10 @@ public class NativeStructuralIndex extends AbstractIndex implements RawBackupSup
 
     @Override
     public void sync() throws DBException {
-        if (btree == null)
-            {return;}
-        final Lock lock = btree.getLock();
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
+        if (btree == null) {
+            return;
+        }
+        try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeWriteLock(btree.getLockName())) {
             btree.flush();
         } catch (final LockException e) {
             LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(btree.getFile()) + "'", e);
@@ -98,8 +100,6 @@ public class NativeStructuralIndex extends AbstractIndex implements RawBackupSup
         } catch (final DBException e) {
             LOG.error(e.getMessage(), e);
             //TODO : throw an exception ? -pb
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
         }
     }
 

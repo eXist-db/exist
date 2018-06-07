@@ -26,6 +26,8 @@ import java.util.Locale;
 
 import org.exist.SystemProperties;
 
+import javax.management.ObjectName;
+
 /**
  * Class SystemInfo
  * 
@@ -34,8 +36,7 @@ import org.exist.SystemProperties;
  */
 public class SystemInfo implements SystemInfoMXBean {
 
-    public SystemInfo() {
-    }
+    public static final String OBJECT_NAME = "org.exist.management:type=SystemInfo";
 
     @Override
     public String getExistVersion() {

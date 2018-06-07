@@ -23,7 +23,9 @@
 package org.exist.dom.persistent;
 
 import org.exist.collections.Collection;
+import org.exist.collections.ManagedLocks;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 
@@ -55,13 +57,10 @@ public interface DocumentSet {
      * Locks all of the documents currently in the document set.
      *
      * @param exclusive true if a WRITE_LOCK is required, false if a READ_LOCK is required
+     * @return The locks
+     * @throws LockException if locking any document fails, when thrown no locks will be held on any documents in the set
      */
-    void lock(final DBBroker broker, final boolean exclusive) throws LockException;
-
-    /**
-     * Unlocks all of the documents which were locked by the previous call(s) to {@link #lock(DBBroker, boolean)}.
-     */
-    void unlock();
+    ManagedLocks<ManagedDocumentLock> lock(DBBroker broker, boolean exclusive) throws LockException;
 
     boolean equalDocs(DocumentSet other);
 }

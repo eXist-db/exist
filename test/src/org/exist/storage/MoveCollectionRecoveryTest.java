@@ -31,7 +31,7 @@ import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
@@ -159,11 +159,11 @@ public class MoveCollectionRecoveryTest {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
 
-            final DocumentImpl doc = broker.getXMLResource(TestConstants.DESTINATION_COLLECTION_URI.append("test3").append(TestConstants.TEST_XML_URI), LockMode.READ_LOCK);
-            assertNotNull("Document should not be null", doc);
-            String data = serializer.serialize(doc);
-            assertNotNull(data);
-            doc.getUpdateLock().release(LockMode.READ_LOCK);
+            try(final LockedDocument lockedDoc =  broker.getXMLResource(TestConstants.DESTINATION_COLLECTION_URI.append("test3").append(TestConstants.TEST_XML_URI), LockMode.READ_LOCK)) {
+                assertNotNull("Document should not be null", lockedDoc);
+                String data = serializer.serialize(lockedDoc.getDocument());
+                assertNotNull(data);
+            }
         }
     }
 
@@ -211,8 +211,9 @@ public class MoveCollectionRecoveryTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
-            final DocumentImpl doc = broker.getXMLResource(TestConstants.DESTINATION_COLLECTION_URI2.append("test3").append(TestConstants.TEST_XML_URI), LockMode.READ_LOCK);
-            assertNull("Document should be null", doc);
+            try(final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.DESTINATION_COLLECTION_URI2.append("test3").append(TestConstants.TEST_XML_URI), LockMode.READ_LOCK)) {
+                assertNull("Document should be null", lockedDoc);
+            }
         }
     }
 

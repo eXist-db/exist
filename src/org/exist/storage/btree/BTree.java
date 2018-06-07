@@ -76,12 +76,11 @@ import org.apache.logging.log4j.Logger;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
-import org.exist.storage.CacheManager;
+
 import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.cache.*;
 import org.exist.storage.journal.*;
-import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
 import org.exist.util.FileUtils;
@@ -229,19 +228,14 @@ public class BTree extends Paged implements Lockable {
         cacheManager.deregisterCache(cache);
     }
 
-    /**
-     * Get the active Lock object for this file.
-     *
-     * @see org.exist.util.Lockable#getLock()
-     */
     @Override
-    public Lock getLock() {
+    public String getLockName() {
         return null;
     }
 
     protected void initCache() {
         this.cache = new BTreeCache<>(FileUtils.fileName(getFile()), cacheManager.getDefaultInitialSize(), 1.5,
-            0, CacheManager.BTREE_CACHE);
+            0, Cache.CacheType.BTREE);
         cacheManager.registerCache(cache);
     }
 

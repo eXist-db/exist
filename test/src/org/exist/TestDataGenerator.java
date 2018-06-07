@@ -7,6 +7,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.FileUtils;
+import org.exist.util.LockException;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
@@ -88,7 +89,7 @@ public class TestDataGenerator {
                     }
                 }
             }
-        } catch (final XPathException | PermissionDeniedException | IOException e) {
+        } catch (final XPathException | PermissionDeniedException | LockException | IOException e) {
             e.printStackTrace();
             throw new SAXException(e.getMessage(), e);
         }

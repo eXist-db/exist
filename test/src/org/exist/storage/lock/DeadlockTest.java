@@ -42,6 +42,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
@@ -49,10 +50,7 @@ import org.exist.util.LockException;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistXPathQueryService;
 import org.exist.xmldb.XmldbURI;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.After;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
@@ -137,8 +135,6 @@ public class DeadlockTest {
 			+ "       }"
 			+ "   </chapter>" + "</book>";
 
-	private static BrokerPool pool;
-
 	private final Random random = new Random();
 
 	@Parameter
@@ -146,16 +142,17 @@ public class DeadlockTest {
         
 	@Parameter(value = 1)
 	public int mode;
-	
+
+	@ClassRule
+	public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+
 	@BeforeClass
 	public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-        final Configuration config = new Configuration();
-        BrokerPool.configure(1, 40, config);
-        pool = BrokerPool.getInstance();
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
 		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-                final Txn transaction = transact.beginTransaction();) {
+                final Txn transaction = transact.beginTransaction()) {
 
 			final Collection root = broker.getOrCreateCollection(transaction,
 					XmldbURI.ROOT_COLLECTION_URI);
@@ -191,16 +188,6 @@ public class DeadlockTest {
 		CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
 		service.removeCollection(".");
     }
-
-	@AfterClass
-	public static void stopDB() throws XMLDBException {
-		org.xmldb.api.base.Collection root = DatabaseManager.getCollection(
-				"xmldb:exist:///db", "admin", null);
-
-		DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-		dim.shutdown();
-		pool = null;
-	}
 
     @Test
 	public void runTasks() {
@@ -245,6 +232,7 @@ public class DeadlockTest {
 
 		@Override
 		public void run() {
+			final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 			final TransactionManager transact = pool.getTransactionManager();
 			try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 

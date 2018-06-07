@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -227,11 +228,10 @@ public class SourceFactory {
         
         /* xmldb: */
         else if (location.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
-            DocumentImpl resource = null;
-            try {
-                final XmldbURI pathUri = XmldbURI.create(location);
-                resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
-                if (resource != null) {
+            final XmldbURI pathUri = XmldbURI.create(location);
+            try(final LockedDocument lockedResource = broker.getXMLResource(pathUri, LockMode.READ_LOCK)) {
+                if (lockedResource != null) {
+                    final DocumentImpl resource = lockedResource.getDocument();
                     if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
                         source = new DBSource(broker, (BinaryDocument) resource, true);
                     } else {
@@ -239,16 +239,10 @@ public class SourceFactory {
                             // XML document: serialize to string source so it can be read as a stream
                             // by fn:unparsed-text and friends
                             source = new StringSource(broker.getSerializer().serialize(resource));
-                        } catch (SAXException e) {
+                        } catch (final SAXException e) {
                             throw new IOException(e.getMessage());
                         }
                     }
-                }
-            } finally {
-                //TODO: this is nasty!!! as we are unlocking the resource whilst there
-                //is still a source
-                if (resource != null) {
-                    resource.getUpdateLock().release(LockMode.READ_LOCK);
                 }
             }
         }

@@ -1,5 +1,6 @@
 package org.exist.fluent;
 
+import org.exist.collections.ManagedLocks;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.DefaultDocumentSet;
@@ -13,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.*;
 import org.exist.storage.*;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.util.LockException;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.fn.*;
@@ -322,11 +324,9 @@ public class QueryService implements Cloneable {
 					compiledQuery = xquery.compile(broker, context, source);
 					t3 = System.currentTimeMillis();
 				}
-				docsToLock.lock(broker, false);
-				try {
+				try(final ManagedLocks<ManagedDocumentLock> docLocks = docsToLock.lock(broker, false)) {
 					return new ItemList(xquery.execute(broker, wrap(compiledQuery, wrapperFactory, context), base), namespaceBindings.extend(), db);
 				} finally {
-					docsToLock.unlock();
 					t4 = System.currentTimeMillis();
 				}
 			} finally {

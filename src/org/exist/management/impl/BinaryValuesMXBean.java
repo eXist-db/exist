@@ -22,6 +22,6 @@ package org.exist.management.impl;
 
 import java.util.List;
 
-public interface BinaryValuesMXBean {
+public interface BinaryValuesMXBean extends PerInstanceMBean {
     List<BinaryInputStreamCacheInfo> getCacheInstances();
 }

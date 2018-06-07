@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistWebServer;
 import org.exist.util.LockException;
@@ -19,6 +20,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
 import static org.junit.Assert.*;
 
@@ -36,32 +38,27 @@ public class GetXMLResourceNoLockTest {
     private static XmldbURI DOCUMENT_NAME_URI = XmldbURI.create("empty.txt");
 	
 	@Test
-	public void testCollectionMaintainsLockWhenResourceIsSelectedNoLock() throws EXistException, InterruptedException, PermissionDeniedException, LockException, IOException, TriggerException {
+	public void testCollectionMaintainsLockWhenResourceIsSelectedNoLock() throws EXistException, InterruptedException, LockException, TriggerException, PermissionDeniedException, IOException {
 
 		storeTestResource();
 
         final BrokerPool pool = BrokerPool.getInstance();
 
-		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-			final Collection testCollection = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.READ_LOCK);
-			try {
+		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+				final Collection testCollection = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.READ_LOCK)) {
 
-		    	final XmldbURI docPath = TestConstants.TEST_COLLECTION_URI.append(DOCUMENT_NAME_URI);
+            final XmldbURI docPath = TestConstants.TEST_COLLECTION_URI.append(DOCUMENT_NAME_URI);
 
-	    		final BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(docPath, LockMode.NO_LOCK);
-
-    			// if document is not present, null is returned
-			    if(binDoc == null) {
-				    fail("Binary document '" + docPath + " does not exist.");
+            try(final LockedDocument lockedDoc = broker.getXMLResource(docPath, LockMode.NO_LOCK)) {
+                // if document is not present, null is returned
+                if (lockedDoc == null) {
+                    fail("Binary document '" + docPath + " does not exist.");
                 }
+            }
 
-			    assertEquals("Collection does not have lock!", true, testCollection.getLock().hasLock());
-				
-			} finally {
-	    		if(testCollection != null) {
-					testCollection.getLock().release(LockMode.READ_LOCK);
-				}
-			}
+            final LockManager lockManager = broker.getBrokerPool().getLockManager();
+            final MultiLock colLock = lockManager.getCollectionLock(testCollection.getURI().toString());
+            assertEquals("Collection does not have lock!", true, colLock.getReadHoldCount() > 0);
 		}
 	}
 

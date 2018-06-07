@@ -32,6 +32,7 @@ import org.exist.dom.persistent.DefaultDocumentSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.numbering.NodeId;
+import org.exist.util.LockException;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
@@ -82,9 +83,9 @@ public class FunDoctype extends Function {
                 final String next = j.nextItem().getStringValue();
                 try {
                     context.getBroker().getXMLResourcesByDoctype(next, docs);
-                } catch(final PermissionDeniedException pde) {
-                    LOG.error(pde.getMessage(), pde);
-                    throw new XPathException(pde);
+                } catch(final PermissionDeniedException | LockException e) {
+                    LOG.error(e.getMessage(), e);
+                    throw new XPathException(this, e);
                 }
             }
         }

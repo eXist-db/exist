@@ -25,6 +25,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
@@ -66,17 +67,11 @@ public abstract class AbstractUpdateTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
-            
 
-            DocumentImpl doc = null;
-            try {
-                doc = broker.getXMLResource(TEST_COLLECTION_URI.append("test2/test.xml"), LockMode.READ_LOCK);
-                assertNotNull("Document '" + TEST_COLLECTION_URI.append("test2/test.xml") + "' should not be null", doc);
-                final String data = serializer.serialize(doc);
-            } finally {
-                if(doc != null) {
-                    doc.getUpdateLock().release(LockMode.READ_LOCK);
-                }
+            try(final LockedDocument lockedDoc = broker.getXMLResource(TEST_COLLECTION_URI.append("test2/test.xml"), LockMode.READ_LOCK)) {
+
+                assertNotNull("Document '" + TEST_COLLECTION_URI.append("test2/test.xml") + "' should not be null", lockedDoc);
+                final String data = serializer.serialize(lockedDoc.getDocument());
             }
             
             final XQuery xquery = pool.getXQueryService();

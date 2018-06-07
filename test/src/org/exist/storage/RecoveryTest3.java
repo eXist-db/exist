@@ -119,41 +119,37 @@ public class RecoveryTest3 {
 
             BrokerPool.FORCE_CORRUPTION = true;
 
-            try (final Txn transaction = transact.beginTransaction()) {
-                Collection root = null;
-                try {
-                    root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
-                    assertNotNull(root);
-                    transaction.acquireLock(root.getLock(), LockMode.WRITE_LOCK);
-                    broker.removeCollection(transaction, root);
-                } finally {
-                    if(root != null) {
-                        root.release(LockMode.WRITE_LOCK);
-                    }
-                }
+            try (final Txn transaction = transact.beginTransaction();
+                    final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
+                assertNotNull(root);
+                transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(root.getURI()));
+                broker.removeCollection(transaction, root);
+
                 transact.commit(transaction);
             }
 
-            try (final Txn transaction = transact.beginTransaction()) {
-                final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+            try (final Txn transaction = transact.beginTransaction();
+                    final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI)) {
                 assertNotNull(root);
                 broker.saveCollection(transaction, root);
 
-                Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
-                assertNotNull(test2);
-                broker.saveCollection(transaction, test2);
+                //TODO(AR) needs write lock
+                try(final Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2)) {
+                    assertNotNull(test2);
+                    broker.saveCollection(transaction, test2);
 
-                final List<Path> files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
+                    final List<Path> files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
 
-                // store some documents.
-                for (int i = 0; i < files.size() && i < RESOURCE_COUNT; i++) {
-                    final Path f = files.get(i);
-                    try {
-                        final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
-                        assertNotNull(info);
-                        test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
-                    } catch (SAXException e) {
-                        fail("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
+                    // store some documents.
+                    for (int i = 0; i < files.size() && i < RESOURCE_COUNT; i++) {
+                        final Path f = files.get(i);
+                        try {
+                            final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
+                            assertNotNull(info);
+                            test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+                        } catch (SAXException e) {
+                            fail("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
+                        }
                     }
                 }
 

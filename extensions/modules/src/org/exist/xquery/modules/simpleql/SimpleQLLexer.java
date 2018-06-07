@@ -42,12 +42,12 @@ public SimpleQLLexer(LexerSharedInputState state) {
 	caseSensitiveLiterals = true;
 	setCaseSensitive(true);
 	literals = new Hashtable();
-	literals.put(new ANTLRHashString("NOT", this), Integer.valueOf(11));
-	literals.put(new ANTLRHashString("OR", this), Integer.valueOf(9));
-	literals.put(new ANTLRHashString("NICHT", this), Integer.valueOf(12));
-	literals.put(new ANTLRHashString("UND", this), Integer.valueOf(8));
-	literals.put(new ANTLRHashString("ODER", this), Integer.valueOf(10));
-	literals.put(new ANTLRHashString("AND", this), Integer.valueOf(7));
+	literals.put(new ANTLRHashString("NOT", this), new Integer(11));
+	literals.put(new ANTLRHashString("OR", this), new Integer(9));
+	literals.put(new ANTLRHashString("NICHT", this), new Integer(12));
+	literals.put(new ANTLRHashString("UND", this), new Integer(8));
+	literals.put(new ANTLRHashString("ODER", this), new Integer(10));
+	literals.put(new ANTLRHashString("AND", this), new Integer(7));
 }
 
 public Token nextToken() throws TokenStreamException {

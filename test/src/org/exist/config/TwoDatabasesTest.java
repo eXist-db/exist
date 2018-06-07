@@ -125,28 +125,16 @@ public class TwoDatabasesTest {
         final BrokerPool pool1 = existEmbeddedServer1.getBrokerPool();
         try (final DBBroker broker1 = pool1.get(Optional.of(user1));
              final Txn transaction1 = pool1.getTransactionManager().beginTransaction()) {
-            Collection top1 = null;
-            try {
-                top1 = storeBin(broker1, transaction1, "1");
+            try(Collection top1 = storeBin(broker1, transaction1, "1")) {
                 pool1.getTransactionManager().commit(transaction1);
-            } finally {
-                if(top1 != null) {
-                    top1.release(LockMode.READ_LOCK);
-                }
             }
         }
 
         final BrokerPool pool2 = existEmbeddedServer2.getBrokerPool();
         try (final DBBroker broker2 = pool2.get(Optional.of(user1));
              final Txn transaction2 = pool2.getTransactionManager().beginTransaction()) {
-            Collection top2 = null;
-            try {
-                top2 = storeBin(broker2, transaction2, "2");
+            try(Collection top2 = storeBin(broker2, transaction2, "2");) {
                 pool2.getTransactionManager().commit(transaction2);
-            } finally {
-                if(top2 != null) {
-                    top2.release(LockMode.READ_LOCK);
-                }
             }
         }
     }
@@ -167,31 +155,26 @@ public class TwoDatabasesTest {
 
     private Collection storeBin(final DBBroker broker, final Txn txn, String suffix) throws PermissionDeniedException, LockException, TriggerException, EXistException, IOException {
         String data = bin + suffix;
-        Collection top = broker.getCollection(XmldbURI.create("xmldb:exist:///"));
+        Collection top = broker.openCollection(XmldbURI.create("xmldb:exist:///"), LockMode.WRITE_LOCK);
         top.addBinaryResource(txn, broker, XmldbURI.create("xmldb:exist:///bin"), data.getBytes(), "text/plain");
         return top;
     }
 
     private boolean getBin(final DBBroker broker, final String suffix) throws PermissionDeniedException, IOException, LockException {
         BinaryDocument binDoc = null;
-        try {
-            Collection top = broker.getCollection(XmldbURI.create("xmldb:exist:///"));
+        try(final Collection top = broker.openCollection(XmldbURI.create("xmldb:exist:///"), LockMode.READ_LOCK)) {
             int count = top.getDocumentCount(broker);
             MutableDocumentSet docs = new DefaultDocumentSet();
             top.getDocuments(broker, docs);
             XmldbURI[] uris = docs.getNames();
             //binDoc = (BinaryDocument)broker.getXMLResource(XmldbURI.create("xmldb:exist:///bin"),LockMode.READ_LOCK);
+
             binDoc = (BinaryDocument) top.getDocument(broker, XmldbURI.create("xmldb:exist:///bin"));
-            top.release(LockMode.READ_LOCK);
             assertTrue(binDoc != null);
             try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream((int)binDoc.getContentLength())) {
                 broker.readBinaryResource(binDoc, os);
                 String comp = os.size() > 0 ? new String(os.toByteArray()) : "";
                 return comp.equals(bin + suffix);
-            }
-        } finally {
-            if (binDoc != null) {
-                binDoc.getUpdateLock().release(LockMode.READ_LOCK);
             }
         }
     }

@@ -24,6 +24,7 @@ package org.exist.collections;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -77,7 +78,7 @@ public class CollectionRemovalTest {
 
     @Test
     public void failingRemoveCollection()
-            throws XMLDBException, PermissionDeniedException, SAXException, EXistException, IOException, AuthenticationException {
+            throws XMLDBException, PermissionDeniedException, SAXException, EXistException, IOException, AuthenticationException, LockException {
         doQuery(3);
         retrieveDoc(TestConstants.TEST_COLLECTION_URI3);
 
@@ -102,7 +103,7 @@ public class CollectionRemovalTest {
 
     @Test
     public void removeCollection()
-            throws XMLDBException, PermissionDeniedException, SAXException, EXistException, IOException, AuthenticationException {
+            throws XMLDBException, PermissionDeniedException, SAXException, EXistException, IOException, AuthenticationException, LockException {
         doQuery(3);
         retrieveDoc(TestConstants.TEST_COLLECTION_URI3);
 
@@ -116,40 +117,31 @@ public class CollectionRemovalTest {
 
     private void removeCollection(final String user, final String password, final XmldbURI uri)
             throws AuthenticationException, EXistException, PermissionDeniedException, IOException, TriggerException {
-        Collection test = null;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(user, password)));
-            final Txn transaction = transact.beginTransaction()) {
-
-            test = broker.openCollection(uri, LockMode.WRITE_LOCK);
+            final Txn transaction = transact.beginTransaction();
+            final Collection test = broker.openCollection(uri, LockMode.WRITE_LOCK)) {
             broker.removeCollection(transaction, test);
             transact.commit(transaction);
-		} finally {
-            if (test != null) {
-                test.release(LockMode.WRITE_LOCK);
-            }
 		}
     }
 
-    private void retrieveDoc(final XmldbURI uri) throws EXistException, PermissionDeniedException, SAXException {
+    private void retrieveDoc(final XmldbURI uri) throws EXistException, PermissionDeniedException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            Collection test = null;
-            try {
-                test = broker.openCollection(uri, LockMode.WRITE_LOCK);
-                assertNotNull(test);
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Collection test = broker.openCollection(uri, LockMode.WRITE_LOCK)) {
+            assertNotNull(test);
 
-                DocumentImpl doc = test.getDocument(broker, XmldbURI.createInternal("document.xml"));
-                assertNotNull(doc);
+            try(final LockedDocument lockedDoc = test.getDocumentWithLock(broker, XmldbURI.createInternal("document.xml"), LockMode.READ_LOCK)) {
+                assertNotNull(lockedDoc);
 
                 Serializer serializer = broker.getSerializer();
                 serializer.reset();
-                String xml = serializer.serialize(doc);
-            } finally {
-                if (test != null) {
-                    test.release(LockMode.WRITE_LOCK);
-                }
+                String xml = serializer.serialize(lockedDoc.getDocument());
+
+                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                test.close();
             }
         }
     }

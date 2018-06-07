@@ -23,18 +23,7 @@ package org.exist.management.impl;
 
 import java.util.*;
 
-import javax.management.AttributeChangeNotification;
-import javax.management.MBeanNotificationInfo;
-import javax.management.Notification;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.openmbean.CompositeDataSupport;
-import javax.management.openmbean.CompositeType;
-import javax.management.openmbean.OpenDataException;
-import javax.management.openmbean.OpenType;
-import javax.management.openmbean.SimpleType;
-import javax.management.openmbean.TabularData;
-import javax.management.openmbean.TabularDataSupport;
-import javax.management.openmbean.TabularType;
+import javax.management.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -59,11 +48,11 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     public final static String STATUS_FAIL = "FAIL";
 
     public final static StringSource TEST_XQUERY = new StringSource("<r>{current-dateTime()}</r>");
-    
+
     public final static int PING_WAITING = -1;
     public final static int PING_ERROR = -2;
 
-    private static List<ErrorReport> NO_ERRORS = new LinkedList<ErrorReport>();
+    private static List<ErrorReport> NO_ERRORS = new LinkedList<>();
 
     private int seqNum = 0;
 
@@ -76,7 +65,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     private String lastActionInfo = "nothing done";
 
     private long lastPingRespTime = 0;
-    
+
     private String output = "";
 
     private TaskStatus taskstatus = new TaskStatus(TaskStatus.Status.NEVER_RUN);
@@ -84,18 +73,36 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     private List<ErrorReport> errors = NO_ERRORS;
 
     private BrokerPool pool;
-    
+
     public SanityReport(BrokerPool pool) {
         this.pool = pool;
     }
 
+    public static String getAllInstancesQuery() {
+        return "org.exist.management." + '*' + ":type=SanityReport";
+    }
+
+    public static ObjectName getName(final String instanceId) throws MalformedObjectNameException {
+        return new ObjectName("org.exist.management." + instanceId + ".tasks:type=SanityReport");
+    }
+
+    @Override
+    public ObjectName getName() throws MalformedObjectNameException {
+        return getName(pool.getId());
+    }
+
+    @Override
+    public String getInstanceId() {
+        return pool.getId();
+    }
+
     @Override
     public MBeanNotificationInfo[] getNotificationInfo() {
-        final String[] types = new String[] { AttributeChangeNotification.ATTRIBUTE_CHANGE };
+        final String[] types = new String[]{AttributeChangeNotification.ATTRIBUTE_CHANGE};
         final String name = AttributeChangeNotification.class.getName();
         final String description = "The status attribute of this MBean has changed";
         final MBeanNotificationInfo info = new MBeanNotificationInfo(types, name, description);
-        return new MBeanNotificationInfo[] { info };
+        return new MBeanNotificationInfo[]{info};
     }
 
     @Override
@@ -125,9 +132,9 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
 
     @Override
     public long getPingTime() {
-    	return lastPingRespTime;
+        return lastPingRespTime;
     }
-    
+
     @Override
     public List<Error> getErrors() {
         final List<Error> errorList = new ArrayList<>();
@@ -151,9 +158,9 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
 
             final List<ErrorReport> errors = new ArrayList<>();
             errors.add(
-            		new ErrorReport(
-            				ErrorReport.CONFIGURATION_FAILD, 
-            				existException.getMessage(), existException));
+                    new ErrorReport(
+                            ErrorReport.CONFIGURATION_FAILD,
+                            existException.getMessage(), existException));
 
             taskstatus.setReason(errors);
             changeStatus(taskstatus);
@@ -165,48 +172,48 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
 
     @Override
     public long ping(boolean checkQueryEngine) {
-    	final long start = System.currentTimeMillis();
-    	lastPingRespTime = -1;
-    	lastActionInfo = "Ping";
-    	
-    	taskstatus.setStatus(TaskStatus.Status.PING_WAIT);
+        final long start = System.currentTimeMillis();
+        lastPingRespTime = -1;
+        lastActionInfo = "Ping";
+
+        taskstatus.setStatus(TaskStatus.Status.PING_WAIT);
 
         // try to acquire a broker. If the db is deadlocked or not responsive,
         // this will block forever.
-    	try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getGuestSubject()))) {
-    		
-    		if (checkQueryEngine) {
-    			final XQuery xquery = pool.getXQueryService();
-    			final XQueryPool xqPool = pool.getXQueryPool();
-    			CompiledXQuery compiled = xqPool.borrowCompiledXQuery(broker, TEST_XQUERY);
-    			if (compiled == null) {
-    				final XQueryContext context = new XQueryContext(pool);
-    				compiled = xquery.compile(broker, context, TEST_XQUERY);
-    			}
-				try {
-					xquery.execute(broker, compiled, null);
-				} finally {
-    			    compiled.getContext().runCleanupTasks();
-					xqPool.returnCompiledXQuery(TEST_XQUERY, compiled);
-				}
-    		}
-    	} catch (final Exception e) {
-			lastPingRespTime = -2;
-			taskstatus.setStatus(TaskStatus.Status.PING_ERROR);
-			taskstatus.setStatusChangeTime();
-			taskstatus.setReason(e.getMessage());
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getGuestSubject()))) {
+
+            if (checkQueryEngine) {
+                final XQuery xquery = pool.getXQueryService();
+                final XQueryPool xqPool = pool.getXQueryPool();
+                CompiledXQuery compiled = xqPool.borrowCompiledXQuery(broker, TEST_XQUERY);
+                if (compiled == null) {
+                    final XQueryContext context = new XQueryContext(pool);
+                    compiled = xquery.compile(broker, context, TEST_XQUERY);
+                }
+                try {
+                    xquery.execute(broker, compiled, null);
+                } finally {
+                    compiled.getContext().runCleanupTasks();
+                    xqPool.returnCompiledXQuery(TEST_XQUERY, compiled);
+                }
+            }
+        } catch (final Exception e) {
+            lastPingRespTime = -2;
+            taskstatus.setStatus(TaskStatus.Status.PING_ERROR);
+            taskstatus.setStatusChangeTime();
+            taskstatus.setReason(e.getMessage());
             changeStatus(taskstatus);
 
-		} finally {
-    		lastPingRespTime = System.currentTimeMillis() - start;
-    		taskstatus.setStatus(TaskStatus.Status.PING_OK);
-			taskstatus.setStatusChangeTime();
-			taskstatus.setReason("ping response time: " + lastPingRespTime);
-			changeStatus(taskstatus);
-    	}
-		return lastPingRespTime;
+        } finally {
+            lastPingRespTime = System.currentTimeMillis() - start;
+            taskstatus.setStatus(TaskStatus.Status.PING_OK);
+            taskstatus.setStatusChangeTime();
+            taskstatus.setReason("ping response time: " + lastPingRespTime);
+            changeStatus(taskstatus);
+        }
+        return lastPingRespTime;
     }
-    
+
     private Properties parseParameter(String output, String backup, String incremental) {
         final Properties properties = new Properties();
         final boolean doBackup = backup.equalsIgnoreCase("YES");
@@ -282,7 +289,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
             taskstatus.setPercentage(percentage);
             final Notification event = new AttributeChangeNotification(this, seqNum++, taskstatus.getStatusChangeTime().getTime(),
                     "Work percentage change", "status", "int", String.valueOf(oldPercentage), String.valueOf(taskstatus
-                            .getPercentage()));
+                    .getPercentage()));
             event.setUserData(taskstatus.getCompositeData());
             sendNotification(event);
         } catch (final Exception e) {

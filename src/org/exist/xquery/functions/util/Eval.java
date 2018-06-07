@@ -47,6 +47,7 @@ import org.exist.dom.QName;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.ReferenceNode;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.UUIDGenerator;
@@ -476,21 +477,19 @@ public class Eval extends BasicFunction {
                     locationUri = moduleLoadPathUri.resolveCollectionPath(locationUri);
                 }
 
-                DocumentImpl sourceDoc = null;
-                try {
-                    sourceDoc = context.getBroker().getXMLResource(locationUri.toCollectionPathURI(), LockMode.READ_LOCK);
-                    if (sourceDoc == null)
-                        {throw new XPathException(this, "source for module " + location + " not found in database");}
+                try(final LockedDocument lockedSourceDoc = context.getBroker().getXMLResource(locationUri.toCollectionPathURI(), LockMode.READ_LOCK)) {
+                    final DocumentImpl sourceDoc = lockedSourceDoc == null ? null : lockedSourceDoc.getDocument();
+                    if (sourceDoc == null) {
+                        throw new XPathException(this, "source for module " + location + " not found in database");
+                    }
                     if (sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
-                            !"application/xquery".equals(sourceDoc.getMetadata().getMimeType()))
-                        {throw new XPathException(this, "source for module " + location + " is not an XQuery or " +
-                        "declares a wrong mime-type");}
+                            !"application/xquery".equals(sourceDoc.getMetadata().getMimeType())) {
+                        throw new XPathException(this, "source for module " + location + " is not an XQuery or " +
+                        "declares a wrong mime-type");
+                    }
                     querySource = new DBSource(context.getBroker(), (BinaryDocument) sourceDoc, true);
                 } catch (final PermissionDeniedException e) {
                     throw new XPathException(this, "permission denied to read module source from " + location);
-                } finally {
-                    if(sourceDoc != null)
-                        {sourceDoc.getUpdateLock().release(LockMode.READ_LOCK);}
                 }
             } catch(final URISyntaxException e) {
                 throw new XPathException(this, e);

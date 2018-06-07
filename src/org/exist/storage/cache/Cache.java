@@ -31,13 +31,18 @@ import org.exist.storage.CacheManager;
  */
 public interface Cache<T extends Cacheable> {
 
+    enum CacheType {
+        BTREE,
+        DATA
+    }
+
     /**
      * Returns the type of this cache. Should be one of the
-     * constants defined in {@link org.exist.storage.CacheManager}.
+     * constants defined in {@link CacheType}.
      *
      * @return the type of this cache
      */
-    String getType();
+    CacheType getType();
 
     /**
      * Add the item to the cache. If it is already in the cache,

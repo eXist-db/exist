@@ -138,9 +138,7 @@ public class Sync extends BasicFunction {
 		}
 		
 		List<XmldbURI> subcollections = null;
-		Collection collection = null;
-		try {
-			collection = context.getBroker().openCollection(collectionPath, LockMode.READ_LOCK);
+		try(final Collection collection = context.getBroker().openCollection(collectionPath, LockMode.READ_LOCK)) {
 			if (collection == null) {
 				reportError(output, "Collection not found: " + collectionPath);
 				return;
@@ -160,9 +158,6 @@ public class Sync extends BasicFunction {
 			for (final Iterator<XmldbURI> i = collection.collectionIterator(context.getBroker()); i.hasNext(); ) {
 				subcollections.add(i.next());
 			}
-		} finally {
-			if (collection != null)
-				collection.getLock().release(LockMode.READ_LOCK);
 		}
 		
 		for (final XmldbURI childURI : subcollections) {

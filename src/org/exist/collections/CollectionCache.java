@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2016 The eXist Project
+ * Copyright (C) 2001-2017 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -19,170 +19,347 @@
  */
 package org.exist.collections;
 
-import java.util.Iterator;
+import java.beans.ConstructorProperties;
+import java.util.Optional;
+import java.util.function.Function;
 
-import net.jcip.annotations.NotThreadSafe;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Weigher;
+import com.github.benmanes.caffeine.cache.stats.CacheStats;
+import com.github.benmanes.caffeine.cache.stats.ConcurrentStatsCounter;
+import com.github.benmanes.caffeine.cache.stats.StatsCounter;
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.BrokerPoolService;
-import org.exist.storage.CacheManager;
-import org.exist.storage.cache.LRUCache;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.Lock.LockMode;
-import org.exist.util.hashtable.Object2LongHashMap;
-import org.exist.util.hashtable.SequencedLongHashMap;
+import org.exist.storage.*;
+import org.exist.util.Configuration;
 import org.exist.xmldb.XmldbURI;
 
+import javax.annotation.Nullable;
+
 /**
- * Global cache for {@link org.exist.collections.Collection} objects. The
- * cache is owned by {@link org.exist.storage.index.CollectionStore}. It is not
- * synchronized. Thus a lock should be obtained on the collection store before
- * accessing the cache.
- * 
- * @author wolf
+ * Global cache for {@link org.exist.collections.Collection} objects.
+ *
+ * The CollectionCache safely permits concurrent access
+ * however appropriate Collection locks should be held
+ * on the actual collections when manipulating the
+ * CollectionCache
+ *
+ * @author Adam Retter <adam@evolvedbinary.com>
  */
-@NotThreadSafe
-public class CollectionCache extends LRUCache<Collection> implements BrokerPoolService {
+@ThreadSafe
+public class CollectionCache implements BrokerPoolService {
     private final static Logger LOG = LogManager.getLogger(CollectionCache.class);
 
-    private final BrokerPool pool;
-    private Object2LongHashMap<String> names;
+    public static final int DEFAULT_CACHE_SIZE_BYTES = 64 * 1024 * 1024;   // 64 MB
+    public static final String CACHE_SIZE_ATTRIBUTE = "collectionCache";
+    public static final String PROPERTY_CACHE_SIZE_BYTES = "db-connection.collection-cache-mem";
 
-    public CollectionCache(final BrokerPool pool, final int blockBuffers, final double growthThreshold) {
-        super("collection cache", blockBuffers, 2.0, growthThreshold, CacheManager.DATA_CACHE);
-        this.pool = pool;
-        this.names = new Object2LongHashMap<>(blockBuffers);
-    }
-
-    @Override
-    public void add(final Collection collection) {
-        add(collection, 1);
-    }
+    private int maxCacheSize = -1;
+    private Cache<String, Collection> cache;
+    private StatsCounter statsCounter = new ConcurrentStatsCounter();
 
     @Override
-    public void add(final Collection collection, final int initialRefCount) {
-        // don't cache the collection during initialization: SecurityManager is not yet online
-        if(!pool.isOperational()) {
-            return;
+    public void configure(final Configuration configuration) throws BrokerPoolServiceException {
+        this.maxCacheSize = Optional.of(configuration.getInteger(PROPERTY_CACHE_SIZE_BYTES))
+                .filter(size -> size > 0)
+                .orElse(DEFAULT_CACHE_SIZE_BYTES);
+
+        if(LOG.isDebugEnabled()){
+            LOG.debug("CollectionsCache will use {} bytes max.", this.maxCacheSize);
         }
-
-        super.add(collection, initialRefCount);
-        final String name = collection.getURI().getRawCollectionPath();
-        names.put(name, collection.getKey());
     }
 
     @Override
-    public Collection get(final Collection collection) {
-        return get(collection.getKey());
-    }
-
-    public Collection get(final XmldbURI name) {
-        final long key = names.get(name.getRawCollectionPath());
-        if (key < 0) {
-            return null;
-        }
-        return get(key);
-    }
-
-    // TODO(AR) we have a mix of concerns here, we should not involve collection locking in the operation of the cache  or invalidating the collectionConfiguration
-    /**
-     * Overwritten to lock collections before they are removed.
-     */
-    @Override
-    protected void removeOne(final Collection item) {
-        boolean removed = false;
-        SequencedLongHashMap.Entry<Collection> next = map.getFirstEntry();
-        int tries = 0;
-        do {
-            final Collection cached = next.getValue();
-            if(cached.getKey() != item.getKey()) {
-                final Lock lock = cached.getLock();
-                if (lock.attempt(LockMode.READ_LOCK)) {
-                    try {
-                        if (cached.allowUnload()) {
-                            if(pool.getConfigurationManager() != null) { // might be null during db initialization
-                                pool.getConfigurationManager().invalidate(cached.getURI(), null);
-                            }
-                            names.remove(cached.getURI().getRawCollectionPath());
-                            cached.sync(true);
-                            map.remove(cached.getKey());
-                            removed = true;
-                        }
-                    } finally {
-                        lock.release(LockMode.READ_LOCK);
-                    }
-                }
-            }
-            if (!removed) {
-                next = next.getNext();
-                if (next == null && tries < 2) {
-                    next = map.getFirstEntry();
-                    tries++;
-                } else {
-                    LOG.info("Unable to remove entry");
-                    removed = true;
-                }
-            }
-        } while(!removed);
-        cacheManager.requestMem(this);
-    }
-
-    @Override
-    public void remove(final Collection item) {
-        super.remove(item);
-        names.remove(item.getURI().getRawCollectionPath());
-
-        // might be null during db initialization
-        if(pool.getConfigurationManager() != null) {
-            pool.getConfigurationManager().invalidate(item.getURI(), null);
-        }
+    public void prepare(final BrokerPool brokerPool) throws BrokerPoolServiceException {
+        final Weigher<String, Collection> collectionWeigher = (uri, collection) -> collection.getMemorySizeNoLock();
+        this.statsCounter = new ConcurrentStatsCounter();
+        this.cache = Caffeine.<XmldbURI, Collection>newBuilder()
+                .maximumWeight(maxCacheSize)
+                .weigher(collectionWeigher)
+                .recordStats(() -> statsCounter)
+                .build();
     }
 
     /**
-     * Compute and return the in-memory size of all collections
-     * currently contained in this cache.
+     * Returns the maximum size of the cache in bytes
      *
-     * @see org.exist.storage.CollectionCacheManager
-     * @return in-memory size in bytes.
+     * @return maximum size of the cache in bytes
      */
-    public int getRealSize() {
-        int size = 0;
-        for (final Iterator<Long> i = names.valueIterator(); i.hasNext(); ) {
-            final Collection collection = get(i.next());
-            if (collection != null) {
-                size += collection.getMemorySize();
-            }
-        }
-        return size;
+    public int getMaxCacheSize() {
+        return maxCacheSize;
     }
 
-    @Override
-    public void resize(final int newSize) {
-        if (newSize < max) {
-            shrink(newSize);
-        } else {
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Growing collection cache to " + newSize);
-            }
-            final SequencedLongHashMap<Collection> newMap = new SequencedLongHashMap<>(newSize * 2);
-            final Object2LongHashMap<String> newNames = new Object2LongHashMap<>(newSize);
-            for(SequencedLongHashMap.Entry<Collection> next = map.getFirstEntry(); next != null; next = next.getNext()) {
-                final Collection cacheable = next.getValue();
-                newMap.put(cacheable.getKey(), cacheable);
-                newNames.put(cacheable.getURI().getRawCollectionPath(), cacheable.getKey());
-            }
-            max = newSize;
-            map = newMap;
-            names = newNames;
-            accounting.reset();
-            accounting.setTotalSize(max);
-        }
+    /**
+     * Get a Snapshot of the Cache Statistics
+     *
+     * @return The cache statistics
+     */
+    public Statistics getStatistics() {
+        final CacheStats cacheStats = statsCounter.snapshot();
+        return new Statistics(
+                cacheStats.hitCount(),
+                cacheStats.missCount(),
+                cacheStats.loadSuccessCount(),
+                cacheStats.loadFailureCount(),
+                cacheStats.totalLoadTime(),
+                cacheStats.evictionCount(),
+                cacheStats.evictionWeight()
+        );
     }
 
-    @Override
-    protected void shrink(final int newSize) {
-        super.shrink(newSize);
-        names = new Object2LongHashMap<>(newSize);
+    /**
+     * Returns the Collection from the cache or creates the entry if it is not present
+     *
+     * @param collectionUri The URI of the Collection
+     * @param creator A function that creates (or supplies) the Collection for the URI
+     *
+     * @return The collection indicated by the URI
+     */
+    public Collection getOrCreate(final XmldbURI collectionUri, final Function<XmldbURI, Collection> creator) {
+        //NOTE: We must not store LockedCollections in the CollectionCache! So we call LockedCollection#unwrapLocked
+        return cache.get(key(collectionUri), uri -> LockedCollection.unwrapLocked(creator.apply(XmldbURI.create(uri))));
+    }
+
+    /**
+     * Returns the Collection from the cache or null if the Collection
+     * is not in the cache
+     *
+     * @param collectionUri The URI of the Collection
+     * @return The collection indicated by the URI or null otherwise
+     */
+    @Nullable public Collection getIfPresent(final XmldbURI collectionUri) {
+        return cache.getIfPresent(key(collectionUri));
+    }
+
+    /**
+     * Put's the Collection into the cache
+     *
+     * If an existing Collection object for the same URI exists
+     * in the Cache it will be overwritten
+     *
+     * @param collection
+     */
+    public void put(final Collection collection) {
+        //NOTE: We must not store LockedCollections in the CollectionCache! So we call LockedCollection#unwrapLocked
+        cache.put(key(collection.getURI()), LockedCollection.unwrapLocked(collection));
+    }
+
+    /**
+     * Removes an entry from the cache
+     *
+     * @param collectionUri The URI of the Collection to remove from the Cache
+     */
+    public void invalidate(final XmldbURI collectionUri) {
+        cache.invalidate(collectionUri);
+    }
+
+    /**
+     * Removes all entries from the Cache
+     */
+    public void invalidateAll() {
+        cache.invalidateAll();
+    }
+
+    /**
+     * Calculates the key for the Cache
+     *
+     * @param collectionUri The URI of the Collection
+     * @return the key for the Collection in the Cache
+     */
+    private String key(final XmldbURI collectionUri) {
+        return collectionUri.getRawCollectionPath();
+    }
+
+    /**
+     * Basically an eXist abstraction
+     * for {@link CacheStats}
+     *  Apache License Version 2.0
+     */
+    public static class Statistics {
+        private final long hitCount;
+        private final long missCount;
+        private final long loadSuccessCount;
+        private final long loadFailureCount;
+        private final long totalLoadTime;
+        private final long evictionCount;
+        private final long evictionWeight;
+
+        /**
+         * @param hitCount the number of cache hits
+         * @param missCount the number of cache misses
+         * @param loadSuccessCount the number of successful cache loads
+         * @param loadFailureCount the number of failed cache loads
+         * @param totalLoadTime the total load time (success and failure)
+         * @param evictionCount the number of entries evicted from the cache
+         * @param evictionWeight the sum of weights of entries evicted from the cache
+         */
+        @ConstructorProperties({"hitCount", "missCount", "loadSuccessCount", "loadFailureCount", "totalLoadTime", "evictionCount", "evictionWeight"})
+        public Statistics(final long hitCount, final long missCount, final long loadSuccessCount, final long loadFailureCount, final long totalLoadTime, final long evictionCount, final long evictionWeight) {
+            this.hitCount = hitCount;
+            this.missCount = missCount;
+            this.loadSuccessCount = loadSuccessCount;
+            this.loadFailureCount = loadFailureCount;
+            this.totalLoadTime = totalLoadTime;
+            this.evictionCount = evictionCount;
+            this.evictionWeight = evictionWeight;
+        }
+
+        /**
+         * Returns the number of times {@link Cache} lookup methods have returned a cached value.
+         *
+         * @return the number of times {@link Cache} lookup methods have returned a cached value
+         */
+        public long getHitCount() {
+            return hitCount;
+        }
+
+        /**
+         * Returns the number of times {@link Cache} lookup methods have returned either a cached or
+         * uncached value. This is defined as {@code hitCount + missCount}.
+         *
+         * @return the {@code hitCount + missCount}
+         */
+        public long getRequestCount() {
+            return hitCount + missCount;
+        }
+
+        /**
+         * Returns the ratio of cache requests which were hits. This is defined as
+         * {@code hitCount / requestCount}, or {@code 1.0} when {@code requestCount == 0}. Note that
+         * {@code hitRate + missRate =~ 1.0}.
+         *
+         * @return the ratio of cache requests which were hits
+         */
+        public double getHitRate() {
+            final long requestCount = getRequestCount();
+            return requestCount == 0 ? 1.0 : (double) hitCount / requestCount;
+        }
+
+        /**
+         * Returns the number of times {@link Cache} lookup methods have returned an uncached (newly
+         * loaded) value, or null. Multiple concurrent calls to {@link Cache} lookup methods on an absent
+         * value can result in multiple misses, all returning the results of a single cache load
+         * operation.
+         *
+         * @return the number of times {@link Cache} lookup methods have returned an uncached (newly
+         *         loaded) value, or null
+         */
+        public long getMissCount() {
+            return missCount;
+        }
+
+        /**
+         * Returns the ratio of cache requests which were misses. This is defined as
+         * {@code missCount / requestCount}, or {@code 0.0} when {@code requestCount == 0}.
+         * Note that {@code hitRate + missRate =~ 1.0}. Cache misses include all requests which
+         * weren't cache hits, including requests which resulted in either successful or failed loading
+         * attempts, and requests which waited for other threads to finish loading. It is thus the case
+         * that {@code missCount &gt;= loadSuccessCount + loadFailureCount}. Multiple
+         * concurrent misses for the same key will result in a single load operation.
+         *
+         * @return the ratio of cache requests which were misses
+         */
+        public double getMissRate() {
+            final long requestCount = getRequestCount();
+            return requestCount == 0 ? 0.0 : (double) missCount / requestCount;
+        }
+
+        /**
+         * Returns the total number of times that {@link Cache} lookup methods attempted to load new
+         * values. This includes both successful load operations, as well as those that threw exceptions.
+         * This is defined as {@code loadSuccessCount + loadFailureCount}.
+         *
+         * @return the {@code loadSuccessCount + loadFailureCount}
+         */
+        public long getLoadCount() {
+            return loadSuccessCount + loadFailureCount;
+        }
+
+        /**
+         * Returns the number of times {@link Cache} lookup methods have successfully loaded a new value.
+         * This is always incremented in conjunction with {@link #missCount}, though {@code missCount}
+         * is also incremented when an exception is encountered during cache loading (see
+         * {@link #loadFailureCount}). Multiple concurrent misses for the same key will result in a
+         * single load operation.
+         *
+         * @return the number of times {@link Cache} lookup methods have successfully loaded a new value
+         */
+        public long getLoadSuccessCount() {
+            return loadSuccessCount;
+        }
+
+        /**
+         * Returns the number of times {@link Cache} lookup methods failed to load a new value, either
+         * because no value was found or an exception was thrown while loading. This is always incremented
+         * in conjunction with {@code missCount}, though {@code missCount} is also incremented when cache
+         * loading completes successfully (see {@link #loadSuccessCount}). Multiple concurrent misses for
+         * the same key will result in a single load operation.
+         *
+         * @return the number of times {@link Cache} lookup methods failed to load a new value
+         */
+        public long getLoadFailureCount() {
+            return loadFailureCount;
+        }
+
+        /**
+         * Returns the ratio of cache loading attempts which threw exceptions. This is defined as
+         * {@code loadFailureCount / (loadSuccessCount + loadFailureCount)}, or {@code 0.0} when
+         * {@code loadSuccessCount + loadFailureCount == 0}.
+         *
+         * @return the ratio of cache loading attempts which threw exceptions
+         */
+        public double getLoadFailureRate() {
+            final long totalLoadCount = loadSuccessCount + loadFailureCount;
+            return totalLoadCount == 0
+                    ? 0.0
+                    : (double) loadFailureCount / totalLoadCount;
+        }
+
+        /**
+         * Returns the total number of nanoseconds the cache has spent loading new values. This can be
+         * used to calculate the miss penalty. This value is increased every time {@code loadSuccessCount}
+         * or {@code loadFailureCount} is incremented.
+         *
+         * @return the total number of nanoseconds the cache has spent loading new values
+         */
+        public long getTotalLoadTime() {
+            return totalLoadTime;
+        }
+
+        /**
+         * Returns the average time spent loading new values. This is defined as
+         * {@code totalLoadTime / (loadSuccessCount + loadFailureCount)}.
+         *
+         * @return the average time spent loading new values
+         */
+        public double getAverageLoadPenalty() {
+            final long totalLoadCount = loadSuccessCount + loadFailureCount;
+            return totalLoadCount == 0
+                    ? 0.0
+                    : (double) totalLoadTime / totalLoadCount;
+        }
+
+        /**
+         * Returns the number of times an entry has been evicted. This count does not include manual
+         * {@linkplain Cache#invalidate invalidations}.
+         *
+         * @return the number of times an entry has been evicted
+         */
+
+        public long getEvictionCount() {
+            return evictionCount;
+        }
+
+        /**
+         * Returns the sum of weights of evicted entries. This total does not include manual
+         * {@linkplain Cache#invalidate invalidations}.
+         *
+         * @return the sum of weights of evicted entities
+         */
+        public long getEvictionWeight() {
+            return evictionWeight;
+        }
     }
 }

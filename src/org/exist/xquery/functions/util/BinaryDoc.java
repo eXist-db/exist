@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
@@ -94,19 +95,16 @@ public class BinaryDoc extends BasicFunction {
         }
 
         final String path = args[0].getStringValue();
-        DocumentImpl doc = null;
-        try {
-            doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK);
-            if(doc == null)
-            {
+        try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK);) {
+            if(lockedDoc == null) {
                 return defaultReturn;
             }
-            else if(doc.getResourceType() != DocumentImpl.BINARY_FILE)
-            {
+
+            final DocumentImpl doc = lockedDoc.getDocument();
+
+            if(doc.getResourceType() != DocumentImpl.BINARY_FILE) {
                 return defaultReturn;
-            }
-            else if(isCalledAs("binary-doc"))
-            {
+            } else if(isCalledAs("binary-doc")) {
                 final BinaryDocument bin = (BinaryDocument) doc;
                 final InputStream is = context.getBroker().getBinaryResource(bin);
 
@@ -119,9 +117,7 @@ public class BinaryDoc extends BasicFunction {
                 final Base64BinaryDocument b64doc = Base64BinaryDocument.getInstance(context, is);
                 b64doc.setUrl(path);
                 return b64doc;
-            }
-            else
-            {
+            } else {
                 return BooleanValue.TRUE;
             }
         } catch (final URISyntaxException e) {
@@ -133,9 +129,6 @@ public class BinaryDoc extends BasicFunction {
         } catch (final IOException e) {
         	logger.error(path + ": I/O error while reading resource", e);
             throw new XPathException(this, path + ": I/O error while reading resource",e);
-        } finally {
-            if (doc != null)
-                {doc.getUpdateLock().release(LockMode.READ_LOCK);}
         }
     }
 }

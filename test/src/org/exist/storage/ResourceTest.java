@@ -30,6 +30,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
@@ -114,31 +115,29 @@ public class ResourceTest {
 
 
             final XmldbURI docPath = TestConstants.TEST_COLLECTION_URI.append(DOCUMENT_NAME_URI);
-            
-            BinaryDocument binDoc = null;
-            try {
-                binDoc = (BinaryDocument) broker.getXMLResource(docPath, LockMode.READ_LOCK);
 
+            try(final LockedDocument lockedDoc = broker.getXMLResource(docPath, LockMode.READ_LOCK)) {
                 // if document is not present, null is returned
-                if(binDoc == null) {
+                if(lockedDoc == null) {
                     fail("Binary document '" + docPath + " does not exist.");
                 } else {
+                    final BinaryDocument binDoc = (BinaryDocument)lockedDoc.getDocument();
                     try(final InputStream is = broker.getBinaryResource(binDoc)) {
                         data = new byte[(int) broker.getBinaryResourceSize(binDoc)];
                         is.read(data);
                     }
                 }
-            } finally {
-                if(binDoc != null) {
-                    binDoc.getUpdateLock().release(LockMode.READ_LOCK);
+            }
+
+            try(final Collection collection = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
+                try (final LockedDocument lockedDoc = broker.getXMLResource(docPath, LockMode.WRITE_LOCK)) {
+                    collection.removeBinaryResource(transaction, broker, lockedDoc.getDocument());
+                    broker.saveCollection(transaction, collection);
+
+                    // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                    collection.close();
                 }
             }
-            
-            final Collection collection = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
-            collection.removeBinaryResource(transaction, broker, binDoc);
-            
-            broker.saveCollection(transaction, collection);
-            
             transact.commit(transaction);
         }
         
@@ -165,29 +164,25 @@ public class ResourceTest {
                 final Txn transaction = transact.beginTransaction()) {
 
             final XmldbURI docPath = TestConstants.TEST_COLLECTION_URI.append(DOCUMENT_NAME_URI);
-            
-            BinaryDocument binDoc = null;
-            try {
-                binDoc = (BinaryDocument) broker.getXMLResource(docPath, LockMode.READ_LOCK);
+
+            try(final LockedDocument lockedDoc = broker.getXMLResource(docPath, LockMode.READ_LOCK)) {
 
                 // if document is not present, null is returned
-                if(binDoc == null) {
+                if(lockedDoc == null) {
                     fail("Binary document '" + docPath + " does not exist.");
                 } else {
+                    final BinaryDocument binDoc = (BinaryDocument)lockedDoc.getDocument();
                     try(final InputStream is = broker.getBinaryResource(binDoc)) {
                         data = new byte[(int) broker.getBinaryResourceSize(binDoc)];
                         is.read(data);
                     }
                 }
-            } finally {
-                if(binDoc != null) {
-                    binDoc.getUpdateLock().release(LockMode.READ_LOCK);
-                }
             }
             
-            final Collection collection = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
-            broker.removeCollection(transaction, collection);
-            
+            try(final Collection collection = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
+                broker.removeCollection(transaction, collection);
+            }
+
             transact.commit(transaction);
         }
         

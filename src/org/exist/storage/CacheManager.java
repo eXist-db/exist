@@ -23,9 +23,6 @@ import org.exist.storage.cache.Cache;
 
 public interface CacheManager {
 
-    String BTREE_CACHE = "BTREE";
-    String DATA_CACHE = "DATA";
-    
     /**
      * Register a cache, i.e. put it under control of
      * the cache manager.

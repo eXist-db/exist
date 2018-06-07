@@ -31,9 +31,10 @@ import com.evolvedbinary.j8fu.Either;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.internal.aider.ACEAider;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionException;
@@ -123,51 +124,43 @@ public class PermissionFactory {
     }
 
     private static void updatePermissions(final DBBroker broker, final XmldbURI pathUri, final ConsumerE<Permission, PermissionDeniedException> permissionModifier) throws PermissionDeniedException {
-        final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        final BrokerPool brokerPool = broker.getBrokerPool();
+        final TransactionManager transact = brokerPool.getTransactionManager();
         try(final Txn transaction = transact.beginTransaction()) {
-            Collection collection = null;
-            try {
-                collection = broker.openCollection(pathUri, LockMode.WRITE_LOCK);
+            try(final Collection collection = broker.openCollection(pathUri, LockMode.WRITE_LOCK)) {
                 if (collection == null) {
-                    DocumentImpl doc = null;
-                    try {
-                        doc = broker.getXMLResource(pathUri, LockMode.WRITE_LOCK);
-                        if (doc == null) {
+                    try(final LockedDocument lockedDoc = broker.getXMLResource(pathUri, LockMode.WRITE_LOCK)) {
+
+                        if (lockedDoc == null) {
                             transact.abort(transaction);
                             throw new XPathException("Resource or collection '" + pathUri.toString() + "' does not exist.");
                         }
 
+                        final DocumentImpl doc = lockedDoc.getDocument();
+
                         // keep a write lock in the transaction
-                        transaction.acquireLock(doc.getUpdateLock(), LockMode.WRITE_LOCK);
+                        transaction.acquireDocumentLock(() -> brokerPool.getLockManager().acquireDocumentWriteLock(doc.getURI()));
+
 
                         final Permission permissions = doc.getPermissions();
                         permissionModifier.accept(permissions);
 
                         broker.storeXMLResource(transaction, doc);
-                    } finally {
-                        if(doc != null) {
-                            doc.getUpdateLock().release(LockMode.WRITE_LOCK);
-                        }
                     }
-                    transact.commit(transaction);
-                    broker.flush();
                 } else {
                     // keep a write lock in the transaction
-                    transaction.acquireLock(collection.getLock(), LockMode.WRITE_LOCK);
+                    transaction.acquireCollectionLock(() -> brokerPool.getLockManager().acquireCollectionWriteLock(collection.getURI()));
 
                     final Permission permissions = collection.getPermissionsNoLock();
                     permissionModifier.accept(permissions);
 
                     broker.saveCollection(transaction, collection);
-                    transact.commit(transaction);
-                    broker.flush();
                 }
-            } finally {
-                if(collection != null) {
-                    collection.release(LockMode.WRITE_LOCK);
-                }
+
+                transact.commit(transaction);
+                broker.flush();
             }
-        } catch(final XPathException | PermissionDeniedException | IOException | TriggerException | TransactionException | LockException e) {
+        } catch(final XPathException | PermissionDeniedException | IOException | TransactionException | LockException e) {
             throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getCurrentSubject().getName() + "' on '" + pathUri.toString() + "': " + e.getMessage(), e);
         }
     }

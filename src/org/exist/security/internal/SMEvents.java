@@ -33,6 +33,7 @@ import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
@@ -153,20 +154,15 @@ public class SMEvents implements Configurable {
 	
 	private Source getQuerySource(DBBroker broker, String scriptURI, String script) {
 		if(scriptURI != null) {
-        	DocumentImpl resource = null;
-        	try {
-				final XmldbURI pathUri = XmldbURI.create(scriptURI);
-				
-				resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
-				if (resource != null)
-					{return new DBSource(broker, (BinaryDocument)resource, true);}
-				
+
+			final XmldbURI pathUri = XmldbURI.create(scriptURI);
+        	try(final LockedDocument lockedResource = broker.getXMLResource(pathUri, LockMode.READ_LOCK)) {
+				if (lockedResource != null) {
+					return new DBSource(broker, (BinaryDocument)lockedResource.getDocument(), true);
+				}
         	} catch (final PermissionDeniedException e) {
         		//XXX: log
 				e.printStackTrace();
-			} finally {
-				if(resource != null)
-					{resource.getUpdateLock().release(LockMode.READ_LOCK);}
 			}
 
 //			try {

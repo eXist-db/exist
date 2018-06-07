@@ -43,8 +43,8 @@ import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.LockManager;
+import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.txn.Txn;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
@@ -62,6 +62,7 @@ import org.w3c.dom.Node;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Maintains an index on typed node values (optionally by QName).
@@ -173,6 +174,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
     private final PendingChanges<AtomicValue> pendingGeneric = new PendingChanges<>(IndexType.GENERIC);
     private final PendingChanges<QNameKey> pendingQName = new PendingChanges<>(IndexType.QNAME);
 
+    private final LockManager lockManager;
+
     /**
      * The current document.
      */
@@ -187,6 +190,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
     public NativeValueIndex(final DBBroker broker, final byte id, final Path dataDir, final Configuration config) throws DBException {
         this.broker = broker;
+        this.lockManager = broker.getBrokerPool().getLockManager();
         this.config = config;
         final double cacheGrowth = NativeValueIndex.DEFAULT_VALUE_CACHE_GROWTH;
         final double cacheValueThresHold = NativeValueIndex.DEFAULT_VALUE_VALUE_THRESHOLD;
@@ -356,10 +360,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
     @Override
     public void sync() {
-        final Lock lock = dbValues.getLock();
-
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
+        try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeWriteLock(dbValues.getLockName())) {
             dbValues.flush();
         } catch (final LockException e) {
             LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
@@ -367,8 +368,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
         } catch (final DBException e) {
             LOG.error(e.getMessage(), e);
             //TODO : throw an exception ? -pb
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
         }
     }
 
@@ -416,10 +415,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
             //Write (variable) length of node IDs
             os.writeFixedInt(nodeIDsLength, os.position() - nodeIDsLength - LENGTH_NODE_IDS);
-            final Lock lock = dbValues.getLock();
-            try {
-                lock.acquire(LockMode.WRITE_LOCK);
-
+            try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeWriteLock(dbValues.getLockName())) {
                 final Value v = dbKeyFn.apply(key);
 
                 if (dbValues.append(v, os.data()) == BFile.UNKNOWN_ADDRESS) {
@@ -437,7 +433,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 //Return without clearing the pending entries
                 return;
             } finally {
-                lock.release(LockMode.WRITE_LOCK);
                 os.clear();
             }
         }
@@ -463,9 +458,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             final List<NodeId> newGIDList = new ArrayList<>();
             os.clear();
 
-            final Lock lock = dbValues.getLock();
-            try {
-                lock.acquire(LockMode.WRITE_LOCK);
+            try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeWriteLock(dbValues.getLockName())) {
 
                 //Compute a key for the value
                 final Value searchKey = dbKeyFn.apply(key);
@@ -557,7 +550,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
                 //TODO : return ?
             } finally {
-                lock.release(LockMode.WRITE_LOCK);
                 os.clear();
             }
         }
@@ -570,10 +562,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
     @Override
     public void dropIndex(final Collection collection) {
-        final Lock lock = dbValues.getLock();
-
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
+        try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeWriteLock(dbValues.getLockName())) {
 
             flush();
 
@@ -588,18 +577,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
             LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
         } catch (final BTreeException | IOException e) {
             LOG.error(e.getMessage(), e);
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
         }
     }
 
     @Override
     public void dropIndex(final DocumentImpl document) {
         final int collectionId = document.getCollection().getId();
-        final Lock lock = dbValues.getLock();
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
-
+        try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeWriteLock(dbValues.getLockName())) {
             dropIndex(document.getDocId(), pendingGeneric, key -> new SimpleValue(collectionId, (Indexable) key));
             dropIndex(document.getDocId(), pendingQName, key -> new QNameValue(collectionId, key.qname, key.value, broker.getBrokerPool().getSymbols()));
         } catch (final LockException e) {
@@ -610,7 +594,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
             LOG.warn("Exception while removing range index: " + e.getMessage(), e);
         } finally {
             os.clear();
-            lock.release(LockMode.WRITE_LOCK);
         }
     }
 
@@ -716,7 +699,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
      */
     private NodeSet findAll(final XQueryWatchDog watchDog, final Comparison comparison, final DocumentSet docs, final NodeSet contextSet, final int axis, final List<QName> qnames, final Indexable value, final NodeSet result) throws TerminatedException {
         final SearchCallback cb = new SearchCallback(docs, contextSet, result, axis == NodeSet.ANCESTOR);
-        final Lock lock = dbValues.getLock();
 
         final int idxOp = toIndexQueryOp(comparison);
 
@@ -726,8 +708,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             watchDog.proceed(null);
 
             if (qnames == null) {
-                try {
-                    lock.acquire(LockMode.READ_LOCK);
+                try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeReadLock(dbValues.getLockName())) {
                     final Value searchKey = new SimpleValue(collectionId, value);
                     final IndexQuery query = new IndexQuery(idxOp, searchKey);
 
@@ -741,13 +722,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     LOG.error(e.getMessage(), e);
                 } catch (final LockException e) {
                     LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
-                } finally {
-                    lock.release(LockMode.READ_LOCK);
                 }
             } else {
                 for (final QName qname : qnames) {
-                    try {
-                        lock.acquire(LockMode.READ_LOCK);
+                    try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeReadLock(dbValues.getLockName())) {
 
                         //Compute a key for the value in the collection
                         final Value searchKey = new QNameValue(collectionId, qname, value, broker.getBrokerPool().getSymbols());
@@ -763,8 +741,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         LOG.error(e.getMessage(), e);
                     } catch (final LockException e) {
                         LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
-                    } finally {
-                        lock.release(LockMode.READ_LOCK);
                     }
                 }
             }
@@ -882,15 +858,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
         }
 
         final MatcherCallback cb = new MatcherCallback(docs, contextSet, result, matcher, axis == NodeSet.ANCESTOR);
-        final Lock lock = dbValues.getLock();
 
         for (final Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext(); ) {
             final int collectionId = iter.next().getId();
 
             watchDog.proceed(null);
             if (qnames == null) {
-                try {
-                    lock.acquire(LockMode.READ_LOCK);
+                try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeReadLock(dbValues.getLockName())) {
 
                     final Value searchKey;
                     if (startTerm != null) {
@@ -906,13 +880,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     LOG.error(e.getMessage(), e);
                 } catch (final LockException e) {
                     LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
-                } finally {
-                    lock.release(LockMode.READ_LOCK);
                 }
             } else {
                 for (final QName qname : qnames) {
-                    try {
-                        lock.acquire(LockMode.READ_LOCK);
+                    try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeReadLock(dbValues.getLockName())) {
 
                         final Value searchKey;
                         if (startTerm != null) {
@@ -927,8 +898,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         LOG.error(e.getMessage(), e);
                     } catch (final LockException e) {
                         LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
-                    } finally {
-                        lock.release(LockMode.READ_LOCK);
                     }
                 }
             }
@@ -940,12 +909,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
         final int type = start.getType();
         final boolean stringType = Type.subTypeOf(type, Type.STRING);
         final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, type, false);
-        final Lock lock = dbValues.getLock();
 
         for (final Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
 
-            try {
-                lock.acquire(LockMode.READ_LOCK);
+            try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeReadLock(dbValues.getLockName())) {
                 final Collection c = i.next();
                 final int collectionId = c.getId();
 
@@ -963,8 +930,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 LOG.error(e.getMessage(), e);
             } catch (final LockException e) {
                 LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
-            } finally {
-                lock.release(LockMode.READ_LOCK);
             }
         }
         final Map<AtomicValue, ValueOccurrences> map = cb.map;
@@ -993,13 +958,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
         final int type = start.getType();
         final boolean stringType = Type.subTypeOf(type, Type.STRING);
         final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, type, true);
-        final Lock lock = dbValues.getLock();
 
         for (final QName qname : qnames) {
 
             for (final Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
-                try {
-                    lock.acquire(LockMode.READ_LOCK);
+                try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeReadLock(dbValues.getLockName())) {
                     final int collectionId = i.next().getId();
 
                     //Compute a key for the start value in the collection
@@ -1016,8 +979,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     LOG.error(e.getMessage(), e);
                 } catch (final LockException e) {
                     LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
-                } finally {
-                    lock.release(LockMode.READ_LOCK);
                 }
             }
         }
@@ -1103,29 +1064,21 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
     @Override
     public void closeAndRemove() {
-        final Lock lock = dbValues.getLock();
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
+        try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeWriteLock(dbValues.getLockName())) {
             config.setProperty(getConfigKeyForFile(), null);
             dbValues.closeAndRemove();
         } catch (final LockException e) {
             LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
         }
     }
 
     @Override
     public void close() throws DBException {
-        final Lock lock = dbValues.getLock();
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
+        try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeWriteLock(dbValues.getLockName())) {
             config.setProperty(getConfigKeyForFile(), null);
             dbValues.close();
         } catch (final LockException e) {
             LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
         }
     }
 

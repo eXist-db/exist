@@ -25,8 +25,9 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import javax.management.openmbean.*;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 
@@ -34,8 +35,21 @@ public class Database implements DatabaseMXBean {
 
     private final BrokerPool pool;
 
-    public Database(BrokerPool pool) {
+    public Database(final BrokerPool pool) {
         this.pool = pool;
+    }
+
+    public static String getAllInstancesQuery() {
+        return getName("*");
+    }
+
+    private static String getName(final String instanceId) {
+        return "org.exist.management." + instanceId + ":type=Database";
+    }
+
+    @Override
+    public ObjectName getName() throws MalformedObjectNameException {
+        return new ObjectName(getName(pool.getId()));
     }
 
     @Override
@@ -60,9 +74,9 @@ public class Database implements DatabaseMXBean {
 
     @Override
     public int getTotalBrokers() {
-    	return pool.total();
+        return pool.total();
     }
-    
+
     @Override
     public List<ActiveBroker> getActiveBrokersMap() {
         final List<ActiveBroker> brokersList = new ArrayList<>();
@@ -89,7 +103,7 @@ public class Database implements DatabaseMXBean {
 
     @Override
     public long getCollectionCacheMem() {
-        return pool.getCollectionCacheMgr().getMaxTotal();
+        return pool.getCollectionsCache().getMaxCacheSize();
     }
 
     @Override
@@ -101,14 +115,14 @@ public class Database implements DatabaseMXBean {
     public String getExistHome() {
         return pool.getConfiguration().getExistHome().map(p -> p.toAbsolutePath().toString()).orElse(null);
     }
-    
-    public String printStackTrace(Thread thread) {
+
+    public String printStackTrace(final Thread thread) {
         final StackTraceElement[] stackElements = thread.getStackTrace();
-    	final StringWriter writer = new StringWriter();
+        final StringWriter writer = new StringWriter();
         final int showItems = stackElements.length > 20 ? 20 : stackElements.length;
-		for (int i = 0; i < showItems; i++) {
+        for (int i = 0; i < showItems; i++) {
             writer.append(stackElements[i].toString()).append('\n');
-		}
-		return writer.toString();
+        }
+        return writer.toString();
     }
 }

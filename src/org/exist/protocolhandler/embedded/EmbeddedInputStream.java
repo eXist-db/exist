@@ -37,6 +37,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -104,23 +105,23 @@ public class EmbeddedInputStream extends InputStream {
 
             try (final DBBroker broker = pool.getBroker()) {
 
-                DocumentImpl resource = null;
-                Collection collection = null;
-                try {
-                    resource = broker.getXMLResource(path, Lock.LockMode.READ_LOCK);
-                    if (resource == null) {
-                        // Test for collection
-                        collection = broker.openCollection(path, Lock.LockMode.READ_LOCK);
-                        if (collection == null) {
-                            // No collection, no document
-                            return Left(new IOException("Resource " + url.getPath() + " not found."));
+                try(final LockedDocument lockedResource = broker.getXMLResource(path, Lock.LockMode.READ_LOCK)) {
 
-                        } else {
-                            // Collection
-                            return Left(new IOException("Resource " + url.getPath() + " is a collection."));
+                    if (lockedResource == null) {
+                        // Test for collection
+                        try(final Collection collection = broker.openCollection(path, Lock.LockMode.READ_LOCK)) {
+                            if (collection == null) {
+                                // No collection, no document
+                                return Left(new IOException("Resource " + url.getPath() + " not found."));
+
+                            } else {
+                                // Collection
+                                return Left(new IOException("Resource " + url.getPath() + " is a collection."));
+                            }
                         }
 
                     } else {
+                        final DocumentImpl resource = lockedResource.getDocument();
                         if (resource.getResourceType() == DocumentImpl.XML_FILE) {
                             final Serializer serializer = broker.getSerializer();
                             serializer.reset();
@@ -146,14 +147,6 @@ public class EmbeddedInputStream extends InputStream {
                         }
                     }
                 } finally {
-                    if (collection != null) {
-                        collection.release(Lock.LockMode.READ_LOCK);
-                    }
-
-                    if (resource != null) {
-                        resource.getUpdateLock().release(Lock.LockMode.READ_LOCK);
-                    }
-
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("End document download");
                     }

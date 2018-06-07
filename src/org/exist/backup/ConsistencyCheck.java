@@ -45,7 +45,6 @@ import org.exist.storage.dom.DOMFile;
 import org.exist.storage.dom.DOMTransaction;
 import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
-import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 
@@ -283,7 +282,7 @@ public class ConsistencyCheck
      */
     public ErrorReport checkDocument(final DocumentImpl doc) {
         final DOMFile domDb = ( (NativeBroker)broker ).getDOMFile();
-        return (ErrorReport)new DOMTransaction( this, domDb, LockMode.WRITE_LOCK, doc ) {
+        return (ErrorReport)new DOMTransaction( this, domDb, () -> broker.getBrokerPool().getLockManager().acquireBtreeWriteLock(domDb.getLockName()), doc ) {
             public Object start() {
                 EmbeddedXMLStreamReader reader = null;
                 try {
@@ -319,7 +318,7 @@ public class ConsistencyCheck
     public ErrorReport checkXMLTree( final DocumentImpl doc )
     {
         final DOMFile domDb = ( (NativeBroker)broker ).getDOMFile();
-        return( (ErrorReport)new DOMTransaction( this, domDb, LockMode.WRITE_LOCK, doc ) {
+        return( (ErrorReport)new DOMTransaction( this, domDb, () -> broker.getBrokerPool().getLockManager().acquireBtreeWriteLock(domDb.getLockName()), doc ) {
                     public Object start() {
                         EmbeddedXMLStreamReader reader = null;
                         try {

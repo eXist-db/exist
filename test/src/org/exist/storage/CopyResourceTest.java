@@ -24,6 +24,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.GroupAider;
@@ -97,7 +98,7 @@ public class CopyResourceTest {
      * As the owner copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_DOC}.
      */
     @Test
-    public void copyXmlToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+    public void copyXmlToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         copyDoc(user1, NO_PRESERVE, USER1_DOC1, USER1_NEW_DOC);
         checkAttributes(USER1_NEW_DOC, USER1_NAME, USER1_NAME, USER1_DOC1_MODE, not(getCreated(USER1_DOC1)), not(getLastModified(USER1_DOC1)));
@@ -107,7 +108,7 @@ public class CopyResourceTest {
      * As the owner copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_BIN_DOC}.
      */
     @Test
-    public void copyBinaryToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+    public void copyBinaryToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         copyDoc(user1, NO_PRESERVE, USER1_BIN_DOC1, USER1_NEW_BIN_DOC);
         checkAttributes(USER1_NEW_BIN_DOC, USER1_NAME, USER1_NAME, USER1_BIN_DOC1_MODE, not(getCreated(USER1_BIN_DOC1)), not(getLastModified(USER1_BIN_DOC1)));
@@ -117,7 +118,7 @@ public class CopyResourceTest {
      * As the owner copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_DOC2}.
      */
     @Test
-    public void copyXmlToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+    public void copyXmlToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalDoc2LastModified = getLastModified(USER1_DOC2);
         copyDoc(user1, NO_PRESERVE, USER1_DOC1, USER1_DOC2);
@@ -128,7 +129,7 @@ public class CopyResourceTest {
      * As the owner copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_BIN_DOC2}.
      */
     @Test
-    public void copyBinaryToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+    public void copyBinaryToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalBinDoc2LastModified = getLastModified(USER1_BIN_DOC2);
         copyDoc(user1, NO_PRESERVE, USER1_BIN_DOC1, USER1_BIN_DOC2);
@@ -139,7 +140,7 @@ public class CopyResourceTest {
      * As a DBA copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_DOC}.
      */
     @Test
-    public void copyXmlToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+    public void copyXmlToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         copyDoc(adminUser, NO_PRESERVE, USER1_DOC1, USER1_NEW_DOC);
         checkAttributes(USER1_NEW_DOC, ADMIN_DB_USER, DBA_GROUP, USER1_DOC1_MODE, not(getCreated(USER1_DOC1)), not(getLastModified(USER1_DOC1)));
@@ -149,7 +150,7 @@ public class CopyResourceTest {
      * As a DBA copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_BIN_DOC}.
      */
     @Test
-    public void copyBinaryToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+    public void copyBinaryToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         copyDoc(adminUser, NO_PRESERVE, USER1_BIN_DOC1, USER1_NEW_BIN_DOC);
         checkAttributes(USER1_NEW_BIN_DOC, ADMIN_DB_USER, DBA_GROUP, USER1_BIN_DOC1_MODE, not(getCreated(USER1_BIN_DOC1)), not(getLastModified(USER1_BIN_DOC1)));
@@ -159,7 +160,7 @@ public class CopyResourceTest {
      * As a DBA copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_DOC2}.
      */
     @Test
-    public void copyXmlToExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+    public void copyXmlToExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long originalDoc2LastModified = getLastModified(USER1_DOC2);
         copyDoc(adminUser, NO_PRESERVE, USER1_DOC1, USER1_DOC2);
@@ -170,7 +171,7 @@ public class CopyResourceTest {
      * As a DBA copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_BIN_DOC}.
      */
     @Test
-    public void copyBinaryToExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+    public void copyBinaryToExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long originalBinDoc2LastModified = getLastModified(USER1_BIN_DOC2);
         copyDoc(adminUser, NO_PRESERVE, USER1_BIN_DOC1, USER1_BIN_DOC2);
@@ -181,7 +182,7 @@ public class CopyResourceTest {
      * As some other (non-owner) user copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER2_NEW_DOC}.
      */
     @Test
-    public void copyXmlToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+    public void copyXmlToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         copyDoc(user2, NO_PRESERVE, USER1_DOC1, USER2_NEW_DOC);
         checkAttributes(USER2_NEW_DOC, USER2_NAME, USER2_NAME, USER1_DOC1_MODE, not(getCreated(USER1_DOC1)), not(getLastModified(USER1_DOC1)));
@@ -191,7 +192,7 @@ public class CopyResourceTest {
      * As some other (non-owner) user copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER2_NEW_BIN_DOC}.
      */
     @Test
-    public void copyBinaryToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+    public void copyBinaryToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         copyDoc(user2, NO_PRESERVE, USER1_BIN_DOC1, USER2_NEW_BIN_DOC);
         checkAttributes(USER2_NEW_BIN_DOC, USER2_NAME, USER2_NAME, USER1_BIN_DOC1_MODE, not(getCreated(USER1_BIN_DOC1)), not(getLastModified(USER1_BIN_DOC1)));
@@ -201,7 +202,7 @@ public class CopyResourceTest {
      * As some other (non-owner) user copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER2_DOC2}.
      */
     @Test
-    public void copyXmlToExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+    public void copyXmlToExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalDoc2LastModified = getLastModified(USER2_DOC2);
         copyDoc(user2, NO_PRESERVE, USER1_DOC1, USER2_DOC2);
@@ -212,7 +213,7 @@ public class CopyResourceTest {
      * As some other (non-owner) user copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER2_BIN_DOC2}.
      */
     @Test
-    public void copyBinaryToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException {
+    public void copyBinaryToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalBinDoc2LastModified = getLastModified(USER2_BIN_DOC2);
         copyDoc(user2, NO_PRESERVE, USER1_BIN_DOC1, USER2_BIN_DOC2);
@@ -224,7 +225,7 @@ public class CopyResourceTest {
      * as the owner copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_DOC}.
      */
     @Test
-    public void copyPreserveXmlToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+    public void copyPreserveXmlToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long doc1LastModified = getLastModified(USER1_DOC1);
         copyDoc(user1, PRESERVE, USER1_DOC1, USER1_NEW_DOC);
@@ -236,7 +237,7 @@ public class CopyResourceTest {
      * as the owner copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_BIN_DOC}.
      */
     @Test
-    public void copyPreserveBinaryToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+    public void copyPreserveBinaryToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long binDoc1LastModified = getLastModified(USER1_BIN_DOC1);
         copyDoc(user1, PRESERVE, USER1_BIN_DOC1, USER1_NEW_BIN_DOC);
@@ -248,7 +249,7 @@ public class CopyResourceTest {
      * as the owner copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_DOC2}.
      */
     @Test
-    public void copyPreserveXmlToExistentAsSelf() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException {
+    public void copyPreserveXmlToExistentAsSelf() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalDoc2Created = getCreated(USER1_DOC2);
         copyDoc(user1, PRESERVE, USER1_DOC1, USER1_DOC2);
@@ -260,7 +261,7 @@ public class CopyResourceTest {
      * as the owner copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_BIN_DOC2}.
      */
     @Test
-    public void copyPreserveBinaryToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+    public void copyPreserveBinaryToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalBinDoc2Created = getCreated(USER1_BIN_DOC2);
         copyDoc(user1, PRESERVE, USER1_BIN_DOC1, USER1_BIN_DOC2);
@@ -272,7 +273,7 @@ public class CopyResourceTest {
      * as a DBA copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_DOC}.
      */
     @Test
-    public void copyPreserveXmlToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+    public void copyPreserveXmlToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long doc1LastModified = getLastModified(USER1_DOC1);
         copyDoc(adminUser, PRESERVE, USER1_DOC1, USER1_NEW_DOC);
@@ -284,7 +285,7 @@ public class CopyResourceTest {
      * as a DBA copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_BIN_DOC}.
      */
     @Test
-    public void copyPreserveBinaryToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+    public void copyPreserveBinaryToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long binDoc1LastModified = getLastModified(USER1_BIN_DOC1);
         copyDoc(adminUser, PRESERVE, USER1_BIN_DOC1, USER1_NEW_BIN_DOC);
@@ -296,7 +297,7 @@ public class CopyResourceTest {
      * as a DBA copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_DOC2}.
      */
     @Test
-    public void copyPreserveXmlToExistentAsDBA() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException {
+    public void copyPreserveXmlToExistentAsDBA() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long originalDoc2Created = getCreated(USER1_DOC2);
         copyDoc(adminUser, PRESERVE, USER1_DOC1, USER1_DOC2);
@@ -308,7 +309,7 @@ public class CopyResourceTest {
      * as a DBA copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_BIN_DOC2}.
      */
     @Test
-    public void copyPreserveBinaryToExistentAsDBA() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException {
+    public void copyPreserveBinaryToExistentAsDBA() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long originalBinDoc2Created = getCreated(USER1_BIN_DOC2);
         copyDoc(adminUser, PRESERVE, USER1_BIN_DOC1, USER1_BIN_DOC2);
@@ -320,7 +321,7 @@ public class CopyResourceTest {
      * as some other (non-owner) user copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER2_NEW_DOC}.
      */
     @Test
-    public void copyPreserveXmlToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+    public void copyPreserveXmlToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long doc1LastModified = getLastModified(USER1_DOC1);
         copyDoc(user2, PRESERVE, USER1_DOC1, USER2_NEW_DOC);
@@ -332,7 +333,7 @@ public class CopyResourceTest {
      * some other (non-owner) user copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_BIN_DOC}.
      */
     @Test
-    public void copyPreserveBinaryToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException {
+    public void copyPreserveBinaryToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long binDoc1LastModified = getLastModified(USER1_BIN_DOC1);
         copyDoc(user2, PRESERVE, USER1_BIN_DOC1, USER2_NEW_BIN_DOC);
@@ -344,7 +345,7 @@ public class CopyResourceTest {
      * as some other (non-owner) user copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER2_DOC2}.
      */
     @Test
-    public void copyPreserveXmlToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException {
+    public void copyPreserveXmlToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalDoc2Created = getCreated(USER2_DOC2);
         copyDoc(user2, PRESERVE, USER1_DOC1, USER2_DOC2);
@@ -356,123 +357,75 @@ public class CopyResourceTest {
      * as some other (non-owner) user copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER2_BIN_DOC2}.
      */
     @Test
-    public void copyPreserveBinaryToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException {
+    public void copyPreserveBinaryToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalBinDoc2Created = getCreated(USER2_BIN_DOC2);
         copyDoc(user2, PRESERVE, USER1_BIN_DOC1, USER2_BIN_DOC2);
         checkAttributes(USER2_BIN_DOC2, USER2_NAME, USER2_NAME, USER1_BIN_DOC1_MODE, equalTo(originalBinDoc2Created), equalTo(getLastModified(USER1_BIN_DOC1)));
     }
 
-    private void copyDoc(final Subject execAsUser, final DBBroker.PreserveType preserve, final XmldbURI srcDocName, final XmldbURI destDocName) throws EXistException, PermissionDeniedException, LockException, IOException {
+    private void copyDoc(final Subject execAsUser, final DBBroker.PreserveType preserve, final XmldbURI srcDocName, final XmldbURI destDocName) throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
         final XmldbURI src = TEST_COLLECTION_URI.append(srcDocName);
         final XmldbURI dest = TEST_COLLECTION_URI.append(destDocName);
 
         final BrokerPool pool = existWebServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(execAsUser));
-                final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+                final Txn transaction = pool.getTransactionManager().beginTransaction();
+                final LockedDocument lockedSrcDoc = broker.getXMLResource(src, LockMode.READ_LOCK);
+                final Collection destCol = broker.openCollection(dest.removeLastSegment(), LockMode.WRITE_LOCK)) {
 
-            DocumentImpl srcDoc = null;
-            try {
-                srcDoc = broker.getXMLResource(src, LockMode.READ_LOCK);
-
-                Collection destCol = null;
-                try {
-                    destCol = broker.openCollection(dest.removeLastSegment(), LockMode.WRITE_LOCK);
-
-                    broker.copyResource(transaction, srcDoc, destCol, dest.lastSegment(), preserve);
-
-                } finally {
-                    if (destCol != null) {
-                        destCol.getLock().release(LockMode.WRITE_LOCK);
-                    }
-                }
-            } finally {
-                if (srcDoc != null) {
-                    srcDoc.getUpdateLock().release(LockMode.READ_LOCK);
-                }
-            }
+            broker.copyResource(transaction, lockedSrcDoc.getDocument(), destCol, dest.lastSegment(), preserve);
 
             transaction.commit();
         }
 
 
         // check the copy of the document is the same as the original
-        try (final DBBroker broker = pool.get(Optional.of(execAsUser))) {
+        try (final DBBroker broker = pool.get(Optional.of(execAsUser));
+                final LockedDocument lockedOriginal = broker.getXMLResource(src, LockMode.READ_LOCK);
+                final LockedDocument lockedCopy = broker.getXMLResource(dest, LockMode.READ_LOCK)) {
 
-            DocumentImpl original = null;
-            DocumentImpl copy = null;
-            try {
-                original = broker.getXMLResource(src, LockMode.READ_LOCK);
-                copy = broker.getXMLResource(dest, LockMode.READ_LOCK);
 
-                final Diff diff = DiffBuilder
-                        .compare(Input.fromDocument(original))
-                        .withTest(Input.fromDocument(copy))
-                        .build();
+            final Diff diff = DiffBuilder
+                    .compare(Input.fromDocument(lockedOriginal.getDocument()))
+                    .withTest(Input.fromDocument(lockedCopy.getDocument()))
+                    .build();
 
-                assertFalse(diff.toString(), diff.hasDifferences());
-
-            } finally {
-                if (copy != null) {
-                    copy.getUpdateLock().release(LockMode.READ_LOCK);
-                }
-                if (original != null) {
-                    original.getUpdateLock().release(LockMode.READ_LOCK);
-                }
-            }
-
+            assertFalse(diff.toString(), diff.hasDifferences());
         }
     }
 
     private long getCreated(final XmldbURI docName) throws EXistException, PermissionDeniedException {
         final BrokerPool pool = existWebServer.getBrokerPool();
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            DocumentImpl doc = null;
-            try {
-                doc = broker.getXMLResource(TEST_COLLECTION_URI.append(docName), LockMode.READ_LOCK);
-                return doc.getMetadata().getCreated();
-            } finally {
-                if (doc != null) {
-                    doc.getUpdateLock().release(LockMode.READ_LOCK);
-                }
-            }
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final LockedDocument lockedDoc = broker.getXMLResource(TEST_COLLECTION_URI.append(docName), LockMode.READ_LOCK)) {
+
+            return lockedDoc.getDocument().getMetadata().getCreated();
         }
     }
 
     private long getLastModified(final XmldbURI docName) throws EXistException, PermissionDeniedException {
         final BrokerPool pool = existWebServer.getBrokerPool();
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            DocumentImpl doc = null;
-            try {
-                doc = broker.getXMLResource(TEST_COLLECTION_URI.append(docName), LockMode.READ_LOCK);
-                return doc.getMetadata().getLastModified();
-            } finally {
-                if (doc != null) {
-                    doc.getUpdateLock().release(LockMode.READ_LOCK);
-                }
-            }
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final LockedDocument lockedDoc = broker.getXMLResource(TEST_COLLECTION_URI.append(docName), LockMode.READ_LOCK)) {
+
+            return lockedDoc.getDocument().getMetadata().getLastModified();
         }
     }
 
     private void checkAttributes(final XmldbURI docName, final String expectedOwner, final String expectedGroup, final int expectedMode, final Matcher<Long> expectedCreated, final Matcher<Long> expectedLastModified) throws EXistException, PermissionDeniedException {
         final BrokerPool pool = existWebServer.getBrokerPool();
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            DocumentImpl doc = null;
-            try {
-                doc = broker.getXMLResource(TEST_COLLECTION_URI.append(docName), LockMode.READ_LOCK);
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final LockedDocument lockedDoc = broker.getXMLResource(TEST_COLLECTION_URI.append(docName), LockMode.READ_LOCK)) {
 
-                final Permission permission = doc.getPermissions();
-                assertEquals("Owner value was not expected", expectedOwner, permission.getOwner().getName());
-                assertEquals("Group value was not expected", expectedGroup, permission.getGroup().getName());
-                assertEquals("Mode value was not expected", expectedMode, permission.getMode());
+            final DocumentImpl doc = lockedDoc.getDocument();
+            final Permission permission = doc.getPermissions();
+            assertEquals("Owner value was not expected", expectedOwner, permission.getOwner().getName());
+            assertEquals("Group value was not expected", expectedGroup, permission.getGroup().getName());
+            assertEquals("Mode value was not expected", expectedMode, permission.getMode());
 
-                assertThat("Created value is not correct", doc.getMetadata().getCreated(), expectedCreated);
-                assertThat("LastModified value is not correct", doc.getMetadata().getLastModified(), expectedLastModified);
-            } finally {
-                if (doc != null) {
-                    doc.getUpdateLock().release(LockMode.READ_LOCK);
-                }
-            }
+            assertThat("Created value is not correct", doc.getMetadata().getCreated(), expectedCreated);
+            assertThat("LastModified value is not correct", doc.getMetadata().getLastModified(), expectedLastModified);
         }
     }
 
@@ -500,66 +453,50 @@ public class CopyResourceTest {
         // create user1 resources
         final Subject user1 = pool.getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         try (final DBBroker broker = pool.get(Optional.of(user1));
-             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-            Collection collection = null;
-            try {
-                collection = broker.openCollection(TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
+                final Txn transaction = pool.getTransactionManager().beginTransaction();
+                final Collection collection = broker.openCollection(TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
 
-                final String u1d1xml = "<empty1/>";
-                final IndexInfo u1d1ii = collection.validateXMLResource(transaction, broker, USER1_DOC1, u1d1xml);
-                collection.store(transaction, broker, u1d1ii, u1d1xml);
-                chmod(broker, TEST_COLLECTION_URI.append(USER1_DOC1), USER1_DOC1_MODE);
+            final String u1d1xml = "<empty1/>";
+            final IndexInfo u1d1ii = collection.validateXMLResource(transaction, broker, USER1_DOC1, u1d1xml);
+            collection.store(transaction, broker, u1d1ii, u1d1xml);
+            chmod(broker, TEST_COLLECTION_URI.append(USER1_DOC1), USER1_DOC1_MODE);
 
-                final String u1d2xml = "<empty2/>";
-                final IndexInfo u1d2ii = collection.validateXMLResource(transaction, broker, USER1_DOC2, u1d2xml);
-                collection.store(transaction, broker, u1d2ii, u1d2xml);
-                chmod(broker, TEST_COLLECTION_URI.append(USER1_DOC2), USER1_DOC2_MODE);
+            final String u1d2xml = "<empty2/>";
+            final IndexInfo u1d2ii = collection.validateXMLResource(transaction, broker, USER1_DOC2, u1d2xml);
+            collection.store(transaction, broker, u1d2ii, u1d2xml);
+            chmod(broker, TEST_COLLECTION_URI.append(USER1_DOC2), USER1_DOC2_MODE);
 
-                final String u1d1bin = "bin1";
-                collection.addBinaryResource(transaction, broker, USER1_BIN_DOC1, u1d1bin.getBytes(UTF_8), "text/plain");
-                chmod(broker, TEST_COLLECTION_URI.append(USER1_BIN_DOC1), USER1_BIN_DOC1_MODE);
+            final String u1d1bin = "bin1";
+            collection.addBinaryResource(transaction, broker, USER1_BIN_DOC1, u1d1bin.getBytes(UTF_8), "text/plain");
+            chmod(broker, TEST_COLLECTION_URI.append(USER1_BIN_DOC1), USER1_BIN_DOC1_MODE);
 
-                final String u1d2bin = "bin2";
-                collection.addBinaryResource(transaction, broker, USER1_BIN_DOC2, u1d2bin.getBytes(UTF_8), "text/plain");
-                chmod(broker, TEST_COLLECTION_URI.append(USER1_BIN_DOC2), USER1_BIN_DOC2_MODE);
+            final String u1d2bin = "bin2";
+            collection.addBinaryResource(transaction, broker, USER1_BIN_DOC2, u1d2bin.getBytes(UTF_8), "text/plain");
+            chmod(broker, TEST_COLLECTION_URI.append(USER1_BIN_DOC2), USER1_BIN_DOC2_MODE);
 
-                broker.saveCollection(transaction, collection);
+            broker.saveCollection(transaction, collection);
 
-                transaction.commit();
-
-            } finally {
-                if (collection != null) {
-                    collection.getLock().release(LockMode.WRITE_LOCK);
-                }
-            }
+            transaction.commit();
         }
 
         // create user2 resources
         final Subject user2 = pool.getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         try (final DBBroker broker = pool.get(Optional.of(user2));
-             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-            Collection collection = null;
-            try {
-                collection = broker.openCollection(TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
+                final Txn transaction = pool.getTransactionManager().beginTransaction();
+                final Collection collection = broker.openCollection(TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
 
-                final String u2d2xml = "<empty2/>";
-                final IndexInfo u2d2ii = collection.validateXMLResource(transaction, broker, USER2_DOC2, u2d2xml);
-                collection.store(transaction, broker, u2d2ii, u2d2xml);
-                chmod(broker, TEST_COLLECTION_URI.append(USER2_DOC2), USER2_DOC2_MODE);
+            final String u2d2xml = "<empty2/>";
+            final IndexInfo u2d2ii = collection.validateXMLResource(transaction, broker, USER2_DOC2, u2d2xml);
+            collection.store(transaction, broker, u2d2ii, u2d2xml);
+            chmod(broker, TEST_COLLECTION_URI.append(USER2_DOC2), USER2_DOC2_MODE);
 
-                final String u2d2bin = "bin2";
-                collection.addBinaryResource(transaction, broker, USER2_BIN_DOC2, u2d2bin.getBytes(UTF_8), "text/plain");
-                chmod(broker, TEST_COLLECTION_URI.append(USER2_BIN_DOC2), USER2_BIN_DOC2_MODE);
+            final String u2d2bin = "bin2";
+            collection.addBinaryResource(transaction, broker, USER2_BIN_DOC2, u2d2bin.getBytes(UTF_8), "text/plain");
+            chmod(broker, TEST_COLLECTION_URI.append(USER2_BIN_DOC2), USER2_BIN_DOC2_MODE);
 
-                broker.saveCollection(transaction, collection);
+            broker.saveCollection(transaction, collection);
 
-                transaction.commit();
-
-            } finally {
-                if (collection != null) {
-                    collection.getLock().release(LockMode.WRITE_LOCK);
-                }
-            }
+            transaction.commit();
         }
     }
 
@@ -626,9 +563,7 @@ public class CopyResourceTest {
     }
 
     private static void removeDocument(final DBBroker broker, final Txn transaction, final XmldbURI documentUri) throws PermissionDeniedException, LockException, IOException, TriggerException {
-        Collection collection = null;
-        try {
-            collection = broker.openCollection(documentUri.removeLastSegment(), LockMode.WRITE_LOCK);
+        try (final Collection collection = broker.openCollection(documentUri.removeLastSegment(), LockMode.WRITE_LOCK)) {
 
             final DocumentImpl doc = collection.getDocument(broker, documentUri.lastSegment());
             if (doc != null) {
@@ -636,23 +571,14 @@ public class CopyResourceTest {
             }
 
             broker.saveCollection(transaction, collection);
-        } finally {
-            if (collection != null) {
-                collection.getLock().release(LockMode.WRITE_LOCK);
-            }
         }
     }
 
     private static void removeCollection(final DBBroker broker, final Txn transaction, final XmldbURI collectionUri) throws PermissionDeniedException, IOException, TriggerException {
-        Collection collection = null;
-        try {
-            collection = broker.openCollection(collectionUri, LockMode.WRITE_LOCK);
+        try (final Collection collection = broker.openCollection(collectionUri, LockMode.WRITE_LOCK)) {
+
             if (collection != null) {
                 broker.removeCollection(transaction, collection);
-            }
-        } finally {
-            if (collection != null) {
-                collection.getLock().release(LockMode.WRITE_LOCK);
             }
         }
     }

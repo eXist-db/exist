@@ -22,11 +22,13 @@ package org.exist.xmldb;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.sync.Sync;
+import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
@@ -66,10 +68,14 @@ public class LocalIndexQueryService extends AbstractLocalService implements Inde
     @Override
     public void reindexCollection(final XmldbURI col) throws XMLDBException {
         final XmldbURI collectionPath = resolve(col);
-        withDb((broker, transaction) -> {
-            broker.reindexCollection(collectionPath);
-            broker.sync(Sync.MAJOR);
-            return null;
+        read(collectionPath).apply((collection, broker, transaction) -> {
+            try {
+                broker.reindexCollection(collectionPath);
+                broker.sync(Sync.MAJOR);
+                return null;
+            } catch(final LockException e) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e);
+            }
         });
     }
 
@@ -81,16 +87,12 @@ public class LocalIndexQueryService extends AbstractLocalService implements Inde
     private void reindexDocument(final XmldbURI col, final String docName) throws XMLDBException {
         final XmldbURI collectionPath = resolve(col);
         withDb((broker, transaction) -> {
-            DocumentImpl doc = null;
-            try {
-                doc = broker.getXMLResource(collectionPath.append(docName), LockMode.READ_LOCK);
-                broker.reindexXMLResource(transaction, doc, DBBroker.IndexMode.STORE);
-                broker.sync(Sync.MAJOR);
-                return null;
-            } finally {
-                if(doc != null) {
-                    doc.getUpdateLock().release(LockMode.READ_LOCK);
+            try(final LockedDocument lockedDoc = broker.getXMLResource(collectionPath.append(docName), LockMode.READ_LOCK)) {
+                if(lockedDoc != null) {
+                    broker.reindexXMLResource(transaction, lockedDoc.getDocument(), DBBroker.IndexMode.STORE);
+                    broker.sync(Sync.MAJOR);
                 }
+                return null;
             }
         });
     }

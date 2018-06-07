@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
@@ -163,8 +164,6 @@ public class ExistResourceFactory implements ResourceFactory {
      */
     private ResourceType getResourceType(BrokerPool brokerPool, XmldbURI xmldbUri) {
 
-        Collection collection = null;
-        DocumentImpl document = null;
         ResourceType type = ResourceType.NOT_EXISTING;
 
         // MacOsX finder specific files
@@ -183,50 +182,31 @@ public class ExistResourceFactory implements ResourceFactory {
         // Try to read as system user. Note that the actual user is not know
         // yet. In MiltonResource the actual authentication and authorization
         // is performed.
-        try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()))) {
+        try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
+                final Collection collection = broker.openCollection(xmldbUri, LockMode.READ_LOCK)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(String.format("Path: %s", xmldbUri.toString()));
             }
 
             // First check if resource is a collection
-            collection = broker.openCollection(xmldbUri, LockMode.READ_LOCK);
             if (collection != null) {
                 type = ResourceType.COLLECTION;
-                collection.release(LockMode.READ_LOCK);
-                collection = null;
-
             } else {
                 // If it is not a collection, check if it is a document
-                document = broker.getXMLResource(xmldbUri, LockMode.READ_LOCK);
-
-                if (document != null) {
-                    // Document is found
-                    type = ResourceType.DOCUMENT;
-                    document.getUpdateLock().release(LockMode.READ_LOCK);
-                    document = null;
-
-                } else {
-                    // No document and no collection.
-                    type = ResourceType.NOT_EXISTING;
+                try (final LockedDocument lockedDoc = broker.getXMLResource(xmldbUri, LockMode.READ_LOCK)) {
+                    if (lockedDoc != null) {
+                        // Document is found
+                        type = ResourceType.DOCUMENT;
+                    } else {
+                        // No document and no collection.
+                        type = ResourceType.NOT_EXISTING;
+                    }
                 }
             }
-
-
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             LOG.error(String.format("Error determining nature of resource %s", xmldbUri.toString()), ex);
             type = ResourceType.NOT_EXISTING;
 
-        } finally {
-
-            // Clean-up, just in case
-            if (collection != null) {
-                collection.release(LockMode.READ_LOCK);
-            }
-
-            // Clean-up, just in case
-            if (document != null) {
-                document.getUpdateLock().release(LockMode.READ_LOCK);
-            }
         }
 
         if (LOG.isDebugEnabled()) {

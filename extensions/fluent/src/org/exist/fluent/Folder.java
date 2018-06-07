@@ -15,7 +15,6 @@ import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
@@ -351,7 +350,7 @@ public class Folder extends NamedResource implements Cloneable {
 					try {
 						name.setContext(handle);
 						IndexInfo info = handle.validateXMLResource(tx.tx, broker, XmldbURI.create(name.get()), node);
-						changeLock(LockMode.NO_LOCK);
+						//changeLock(LockMode.NO_LOCK);
 						handle.store(tx.tx, broker, info, node);
 						commit();
 					} catch (EXistException e) {
@@ -415,7 +414,7 @@ public class Folder extends NamedResource implements Cloneable {
 				source.applyOldName(name);
 				name.setContext(handle);
 				IndexInfo info = handle.validateXMLResource(tx.tx, broker, XmldbURI.create(name.get()), source.toInputSource());
-				changeLock(LockMode.NO_LOCK);
+				//changeLock(LockMode.NO_LOCK);
 				handle.store(tx.tx, broker, info, source.toInputSource());
 				commit();
 			} catch (EXistException e) {
@@ -558,8 +557,8 @@ public class Folder extends NamedResource implements Cloneable {
 					try {
 						docs = handle.allDocs(broker_, new DefaultDocumentSet(), false);
 						baseUri = new AnyURIValue(handle.getURI());
-                                        }catch (PermissionDeniedException pde) {
-                                            throw new DatabaseException(pde.getMessage(), pde);
+					} catch (final PermissionDeniedException | LockException e) {
+						throw new DatabaseException(e.getMessage(), e);
 					} finally {
 						release();
 					}
@@ -840,7 +839,7 @@ public class Folder extends NamedResource implements Cloneable {
 	void release() {
 		if (broker == null || handle == null) throw new IllegalStateException("broker not acquired");
 		if (tx != null) tx.abortIfIncomplete();
-		if (lockMode != LockMode.NO_LOCK) handle.getLock().release(lockMode);
+		handle.close();
 		if (ownBroker) db.releaseBroker(broker);
 		ownBroker = false;
 		broker = null;
@@ -853,14 +852,23 @@ public class Folder extends NamedResource implements Cloneable {
 		if (lockMode == newLockMode) return;
 		if (lockMode == LockMode.NO_LOCK) {
 			try {
-				handle.getLock().acquire(newLockMode);
+				switch(newLockMode) {
+					case READ_LOCK:
+						broker.getBrokerPool().getLockManager().acquireCollectionReadLock(handle.getURI());
+						break;
+					case WRITE_LOCK:
+						broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(handle.getURI());
+						break;
+					case NO_LOCK:
+						break;
+				}
 				lockMode = newLockMode;
 			} catch (LockException e) {
 				throw new DatabaseException(e);
 			}
 		} else {
 			if (newLockMode != LockMode.NO_LOCK) throw new IllegalStateException("cannot change between read and write lock modes");
-			handle.getLock().release(lockMode);
+			handle.close();
 			lockMode = newLockMode;
 		}
 	}
@@ -1110,9 +1118,9 @@ public class Folder extends NamedResource implements Cloneable {
 			acquire(LockMode.READ_LOCK);
 			try {
 				docs = handle.allDocs(broker, new DefaultDocumentSet(), recursive);
-                        } catch(PermissionDeniedException pde) {
-                            throw new DatabaseException(pde.getMessage(), pde);
-                        } finally {
+			} catch (final PermissionDeniedException | LockException e) {
+				throw new DatabaseException(e.getMessage(), e);
+			} finally {
 				release();
 			}
 			Sequence result = new ExtArrayNodeSet(docs.getDocumentCount(), 1);
@@ -1144,8 +1152,8 @@ public class Folder extends NamedResource implements Cloneable {
 				try {
 					docs = handle.allDocs(broker_, new DefaultDocumentSet(), true);
 					baseUri = new AnyURIValue(handle.getURI());
-                                } catch(PermissionDeniedException pde) {
-                                    throw new DatabaseException(pde.getMessage(), pde);
+				} catch (final PermissionDeniedException | LockException e) {
+					throw new DatabaseException(e.getMessage(), e);
 				} finally {
 					release();
 				}

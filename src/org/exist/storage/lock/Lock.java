@@ -30,7 +30,29 @@ public interface Lock extends Debuggable {
     enum LockMode {
         NO_LOCK,
         READ_LOCK,
-        WRITE_LOCK
+        WRITE_LOCK,
+
+        INTENTION_READ,
+        INTENTION_WRITE
+    }
+
+    /**
+     * The type of a {@link Lock}
+     */
+    enum LockType {
+
+        /**
+         * Should not be used outside of {@link EnsureLocked}!
+         */
+        @Deprecated UNKNOWN,
+
+        @Deprecated LEGACY_COLLECTION,
+        @Deprecated LEGACY_DOCUMENT,
+
+        COLLECTION,
+        DOCUMENT,
+
+        BTREE
     }
 
     /**

@@ -27,7 +27,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.source.DBSource;
@@ -134,7 +134,7 @@ public class UserXQueryJob extends UserJob {
         final JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
         
         //TODO why are these values not used from the class members?
-        final String xqueryresource = (String)jobDataMap.get(XQUERY_SOURCE);
+        final String xqueryResource = (String)jobDataMap.get(XQUERY_SOURCE);
         final Subject user = (Subject)jobDataMap.get(ACCOUNT);
         
         final BrokerPool pool = (BrokerPool)jobDataMap.get(DATABASE);
@@ -142,83 +142,29 @@ public class UserXQueryJob extends UserJob {
         final boolean unschedule = ((Boolean)jobDataMap.get(UNSCHEDULE));
 
         //if invalid arguments then abort
-        if((pool == null) || (xqueryresource == null) || (user == null)) {
+        if((pool == null) || (xqueryResource == null) || (user == null)) {
             abort("BrokerPool or XQueryResource or User was null!");
         }
 
-        DocumentImpl resource = null;
-        Source source = null;
-        XQueryPool xqPool  = null;
-        CompiledXQuery compiled = null;
-        XQueryContext context = null;
-
         try (final DBBroker broker = pool.get(Optional.of(user))) {
-
-            if(xqueryresource.indexOf(':') > 0) {
-                source = SourceFactory.getSource(broker, "", xqueryresource, true);
+            if(xqueryResource.indexOf(':') > 0) {
+                final Source source = SourceFactory.getSource(broker, "", xqueryResource, true);
+                if(source != null) {
+                    executeXQuery(pool,  broker, source, params);
+                    return;
+                }
             } else {
-                final XmldbURI pathUri = XmldbURI.create(xqueryresource);
-                resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
-
-                if(resource != null) {
-                    source = new DBSource(broker, (BinaryDocument)resource, true);
+                final XmldbURI pathUri = XmldbURI.create(xqueryResource);
+                try(final LockedDocument lockedResource = broker.getXMLResource(pathUri, LockMode.READ_LOCK)) {
+                    if (lockedResource != null) {
+                        final Source source = new DBSource(broker, (BinaryDocument) lockedResource.getDocument(), true);
+                        executeXQuery(pool, broker, source, params);
+                        return;
+                    }
                 }
             }
 
-            if(source != null) {
-
-                //execute the xquery
-                final XQuery xquery = pool.getXQueryService();
-                xqPool = pool.getXQueryPool();
-
-                //try and get a pre-compiled query from the pool
-                compiled = xqPool.borrowCompiledXQuery(broker, source);
-
-                if(compiled == null) {
-                    context = new XQueryContext(pool);
-                } else {
-                    context = compiled.getContext();
-                }
-
-                //TODO: don't hardcode this?
-                if(resource != null) {
-                    context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.append(resource.getCollection().getURI()).toString());
-                    context.setStaticallyKnownDocuments(new XmldbURI[] {
-                        resource.getCollection().getURI()
-                    });
-                }
-
-                if(compiled == null) {
-
-                    try {
-                        compiled = xquery.compile(broker, context, source);
-                    }
-                    catch(final IOException e) {
-                        abort("Failed to read query from " + xqueryresource);
-                    }
-                }
-
-                //declare any parameters as external variables
-                if(params != null) {
-                    String bindingPrefix = params.getProperty("bindingPrefix");
-
-                    if(bindingPrefix == null) {
-                        bindingPrefix = "local";
-                    }
-                    
-
-                    for(final Entry param : params.entrySet()) {
-                        final String key = (String)param.getKey();
-                        final String value = (String)param.getValue();
-                        context.declareVariable( bindingPrefix + ":" + key, new StringValue(value));
-                    }
-                }
-
-                xquery.execute(broker, compiled, null);
-
-            } else {
-                LOG.warn("XQuery User Job not found: " + xqueryresource + ", job not scheduled");
-            }
+            LOG.warn("XQuery User Job not found: " + xqueryResource + ", job not scheduled");
         } catch(final EXistException ee) {
             abort("Could not get DBBroker!");
         } catch(final PermissionDeniedException pde) {
@@ -227,23 +173,72 @@ public class UserXQueryJob extends UserJob {
             abort("XPathException in the Job: " + xpe.getMessage() + "!", unschedule);
         } catch(final IOException e) {
             abort("Could not load XQuery: " + e.getMessage());
-        } finally {
+        }
+    }
 
+    private void executeXQuery(final BrokerPool pool, final DBBroker broker, final Source source, final Properties params) throws PermissionDeniedException, XPathException, JobExecutionException {
+        XQueryPool xqPool  = null;
+        CompiledXQuery compiled = null;
+        XQueryContext context = null;
+
+        try {
+            //execute the xquery
+            final XQuery xquery = pool.getXQueryService();
+            xqPool = pool.getXQueryPool();
+
+            //try and get a pre-compiled query from the pool
+            compiled = xqPool.borrowCompiledXQuery(broker, source);
+
+            if (compiled == null) {
+                context = new XQueryContext(pool);
+            } else {
+                context = compiled.getContext();
+            }
+
+            if(source instanceof  DBSource) {
+                final XmldbURI collectionUri = ((DBSource)source).getDocumentPath().removeLastSegment();
+                context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.append(collectionUri.getCollectionPath()).toString());
+                context.setStaticallyKnownDocuments(new XmldbURI[] { collectionUri });
+            }
+
+            if (compiled == null) {
+
+                try {
+                    compiled = xquery.compile(broker, context, source);
+                } catch (final IOException e) {
+                    abort("Failed to read query from " + xqueryResource);
+                }
+            }
+
+            //declare any parameters as external variables
+            if (params != null) {
+                String bindingPrefix = params.getProperty("bindingPrefix");
+
+                if (bindingPrefix == null) {
+                    bindingPrefix = "local";
+                }
+
+
+                for (final Entry param : params.entrySet()) {
+                    final String key = (String) param.getKey();
+                    final String value = (String) param.getValue();
+                    context.declareVariable(bindingPrefix + ":" + key, new StringValue(value));
+                }
+            }
+
+            xquery.execute(broker, compiled, null);
+        } finally {
             if(context != null) {
                 context.runCleanupTasks();
             }
-            
+
             //return the compiled query to the pool
             if(xqPool != null && source != null && compiled != null) {
                 xqPool.returnCompiledXQuery(source, compiled);
             }
-
-            //release the lock on the xquery resource
-            if(resource != null) {
-                resource.getUpdateLock().release(LockMode.READ_LOCK);
-            }
         }
     }
+
 
     private void abort(final String message) throws JobExecutionException {
         abort(message, true);

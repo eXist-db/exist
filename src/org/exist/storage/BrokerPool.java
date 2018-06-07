@@ -54,8 +54,8 @@ import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.journal.JournalManager;
-import org.exist.storage.lock.DeadlockDetection;
 import org.exist.storage.lock.FileLockService;
+import org.exist.storage.lock.LockManager;
 import org.exist.storage.recovery.RecoveryManager;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.sync.SyncTask;
@@ -129,6 +129,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      * The name of the database instance
      */
     private final String instanceName;
+
+    private final LockManager lockManager;
 
     /**
      * State of the BrokerPool instance
@@ -299,8 +301,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
     private DefaultCacheManager cacheManager;
 
-    private CollectionCacheManager collectionCacheMgr;
-
     private long reservedMem;
 
     /**
@@ -382,11 +382,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
         this.minBrokers = conf.getProperty(PROPERTY_MIN_CONNECTIONS, minBrokers);
         this.maxBrokers = conf.getProperty(PROPERTY_MAX_CONNECTIONS, maxBrokers);
-
         LOG.info("database instance '" + instanceName + "' will have between " + nf.format(this.minBrokers) + " and " + nf.format(this.maxBrokers) + " brokers");
 
         this.majorSyncPeriod = conf.getProperty(PROPERTY_SYNC_PERIOD, DEFAULT_SYNCH_PERIOD);
-
         LOG.info("database instance '" + instanceName + "' will be synchronized every " + nf.format(/*this.*/majorSyncPeriod) + " ms");
 
         // convert from bytes to megabytes: 1024 * 1024
@@ -396,6 +394,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
         //Configuration is valid, save it
         this.conf = conf;
+
+        final int concurrencyLevel = Math.max(maxBrokers, 2 * Runtime.getRuntime().availableProcessors());
+        this.lockManager = new LockManager(concurrencyLevel);
 
         statusObserver.ifPresent(this.statusObservers::add);
 
@@ -456,8 +457,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         final int bufferSize = Optional.of(conf.getInteger(PROPERTY_COLLECTION_CACHE_SIZE))
                 .filter(size -> size != -1)
                 .orElse(DEFAULT_COLLECTION_BUFFER_SIZE);
-        this.collectionCache = servicesManager.register(new CollectionCache(this, bufferSize, 0.000001));
-        this.collectionCacheMgr = servicesManager.register(new CollectionCacheManager(this, collectionCache));
+        this.collectionCache = servicesManager.register(new CollectionCache());
         this.notificationService = servicesManager.register(new NotificationService());
 
         this.journalManager = recoveryEnabled ? Optional.of(new JournalManager()) : Optional.empty();
@@ -497,7 +497,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         final Runtime rt = Runtime.getRuntime();
         final long maxMem = rt.maxMemory();
         final long minFree = maxMem / 5;
-        reservedMem = cacheManager.getTotalMem() + collectionCacheMgr.getMaxTotal() + minFree;
+        reservedMem = cacheManager.getTotalMem() + collectionCache.getMaxCacheSize() + minFree;
         LOG.debug("Reserved memory: " + reservedMem + "; max: " + maxMem + "; min: " + minFree);
 
         //prepare the registered services, before entering system (single-user) mode
@@ -727,6 +727,15 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             final DocumentTriggerProxy triggerProxy = new DocumentTriggerProxy(ConfigurationDocumentTrigger.class); //, collection.getURI());
             collConf.documentTriggers().add(triggerProxy);
         }
+    }
+
+    /**
+     * Get the LockManager for this database instance
+     *
+     * @return The lock manager
+     */
+    public LockManager getLockManager() {
+        return lockManager;
     }
 
     /**
@@ -966,10 +975,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     @Override
     public DefaultCacheManager getCacheManager() {
         return cacheManager;
-    }
-
-    public CollectionCacheManager getCollectionCacheMgr() {
-        return collectionCacheMgr;
     }
 
     /**
@@ -1626,6 +1631,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                         }
                     }
 
+                    collectionCache.invalidateAll();
+
                     // final notification to database services to shutdown
                     servicesManager.shutdown();
 
@@ -1657,7 +1664,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 Configurator.clear(this);
                 transactionManager = null;
                 collectionCache = null;
-                collectionCacheMgr = null;
                 xQueryPool = null;
                 processMonitor = null;
                 collectionConfigurationManager = null;
@@ -1770,7 +1776,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             writer.format("Database instance: %s\n", getId());
             writer.println("-------------------------------------------------------------------");
             watchdog.ifPresent(wd -> wd.dump(writer));
-            DeadlockDetection.debug(writer);
 
             final String s = sout.toString();
             LOG.info(s);

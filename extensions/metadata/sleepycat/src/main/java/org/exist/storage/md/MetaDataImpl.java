@@ -41,6 +41,8 @@ import com.sleepycat.je.EnvironmentConfig;
 import com.sleepycat.persist.*;
 import org.w3c.dom.Document;
 
+import javax.annotation.Nullable;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *

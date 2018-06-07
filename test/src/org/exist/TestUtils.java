@@ -61,9 +61,7 @@ public class TestUtils {
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
                 // Remove all collections below the /db root, except /db/system
-                Collection root = null;
-                try {
-                    root = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI, Lock.LockMode.WRITE_LOCK);
+                try(final Collection root = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI, Lock.LockMode.WRITE_LOCK)) {
                     if(root == null) {
                         transaction.commit();
                         return;
@@ -81,36 +79,21 @@ public class TestUtils {
                             continue;
                         }
 
-                        Collection childColl = null;
-                        try {
-                            childColl = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI.append(childName), Lock.LockMode.WRITE_LOCK);
+                        try(final Collection childColl = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI.append(childName), Lock.LockMode.WRITE_LOCK);) {
                             assertNotNull(childColl);
                             broker.removeCollection(transaction, childColl);
-                        } finally {
-                            childColl.getLock().release(Lock.LockMode.WRITE_LOCK);
                         }
                     }
                     broker.saveCollection(transaction, root);
-                } finally {
-                    if(root != null) {
-                        root.getLock().release(Lock.LockMode.WRITE_LOCK);
-                    }
                 }
 
                 // Remove /db/system/config/db and all collection configurations with it
-                Collection dbConfig = null;
-                try {
-                    dbConfig = broker.openCollection(XmldbURI.CONFIG_COLLECTION_URI.append("/db"), Lock.LockMode.WRITE_LOCK);
+                try(final Collection dbConfig = broker.openCollection(XmldbURI.CONFIG_COLLECTION_URI.append("/db"), Lock.LockMode.WRITE_LOCK)) {
                     if(dbConfig == null) {
                         transaction.commit();
                         return;
                     }
                     broker.removeCollection(transaction, dbConfig);
-
-                } finally {
-                    if(dbConfig != null) {
-                        dbConfig.getLock().release(Lock.LockMode.WRITE_LOCK);
-                    }
                 }
 
                 pool.getTransactionManager().commit(transaction);

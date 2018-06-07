@@ -27,6 +27,7 @@ import org.exist.EXistException;
 import org.exist.debuggee.dbgp.Errors;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
@@ -96,7 +97,6 @@ public class Source extends Command {
 			return;
 		}
 
-		DocumentImpl resource = null;
     	InputStream is = null;
         try {
         	
@@ -109,11 +109,11 @@ public class Source extends Command {
 	        		XmldbURI pathUri = XmldbURI.create( URLDecoder.decode( fileURI.substring(15) , "UTF-8" ) );
 	
 	        		Database db = getJoint().getContext().getDatabase();
-	        		try(final DBBroker broker = db.getBroker()) {
-		    			resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
+	        		try(final DBBroker broker = db.getBroker();
+						final LockedDocument resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK)) {
 		
-		    			if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
-		    				is = broker.getBinaryResource((BinaryDocument) resource);
+		    			if (resource.getDocument().getResourceType() == DocumentImpl.BINARY_FILE) {
+		    				is = broker.getBinaryResource((BinaryDocument) resource.getDocument());
 		    			} else {
 		    				//TODO: xml source???
 		    				return;
@@ -149,10 +149,6 @@ public class Source extends Command {
 						exception = e;
 					}
 				}
-			}
-
-			if(resource != null) {
-        		resource.getUpdateLock().release(LockMode.READ_LOCK);
 			}
 		}
     }

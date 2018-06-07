@@ -27,7 +27,8 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         CollectionURITest.class,
-        CollectionRemovalTest.class
+        CollectionRemovalTest.class,
+        CollectionOrderTest.class
 })
 public class AllCollectionTests {
 }

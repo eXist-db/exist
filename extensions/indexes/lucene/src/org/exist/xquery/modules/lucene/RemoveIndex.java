@@ -21,6 +21,7 @@ package org.exist.xquery.modules.lucene;
 
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
@@ -60,16 +61,13 @@ public class RemoveIndex extends BasicFunction {
 	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		DocumentImpl doc = null;
-        try {
-            // Get first parameter, this is the document
-            String path = args[0].itemAt(0).getStringValue();
+        // Get first parameter, this is the document
+        final String path = args[0].itemAt(0).getStringValue();
 
-            // Retrieve document from database
-            doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK);
-
+        // Retrieve document from database
+        try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK);) {
             // Verify the document actually exists
-            if (doc == null) {
+            if (lockedDoc == null) {
                 throw new XPathException("Document " + path + " does not exist.");
             }
 
@@ -78,17 +76,12 @@ public class RemoveIndex extends BasicFunction {
                     .getIndexController().getWorkerByIndexId(LuceneIndex.ID);
 
             // Note: code order is important here,
-            index.setDocument(doc, ReindexMode.REMOVE_BINARY);
+            index.setDocument(lockedDoc.getDocument(), ReindexMode.REMOVE_BINARY);
 
             index.flush();
 
         } catch (Exception ex) { // PermissionDeniedException
             throw new XPathException(ex);
-
-        } finally {
-            if (doc != null) {
-                doc.getUpdateLock().release(LockMode.READ_LOCK);
-            }
         }
 
         // Return nothing [status would be nice]

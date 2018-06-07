@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -130,14 +131,14 @@ public class XMLDBSetMimeType extends BasicFunction {
         final DBBroker broker = context.getBroker();
         final BrokerPool brokerPool = broker.getBrokerPool();
 
-        DocumentImpl doc = null;
+        // relative collection Path: add the current base URI
+        pathUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(pathUri);
 
-        try(final Txn txn = brokerPool.getTransactionManager().beginTransaction()) {
-            // relative collection Path: add the current base URI
-            pathUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(pathUri);
+        try(final Txn txn = brokerPool.getTransactionManager().beginTransaction();
+                final LockedDocument lockedDocument = broker.getXMLResource(pathUri, LockMode.WRITE_LOCK)) {
 
             // try to open the document and acquire a lock
-            doc = (DocumentImpl) broker.getXMLResource(pathUri, LockMode.WRITE_LOCK);
+            final DocumentImpl doc = lockedDocument == null ? null : lockedDocument.getDocument();
             if (doc == null) {
                 // no document selected, abort
                 txn.abort();
@@ -156,12 +157,6 @@ public class XMLDBSetMimeType extends BasicFunction {
         } catch (final Exception e) {
             logger.error(e.getMessage());
             throw new XPathException(this, e);
-
-        } finally {
-            //release all locks
-            if (doc != null) {
-                doc.getUpdateLock().release(LockMode.WRITE_LOCK);
-            }
         }
 
         return Sequence.EMPTY_SEQUENCE;
@@ -173,7 +168,6 @@ public class XMLDBSetMimeType extends BasicFunction {
      */
     private MimeType getMimeTypeStoredResource(XmldbURI pathUri) throws XPathException {
         MimeType returnValue = null;
-        DocumentImpl doc = null;
         try {
             // relative collection Path: add the current base URI
             pathUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(pathUri);
@@ -183,9 +177,10 @@ public class XMLDBSetMimeType extends BasicFunction {
             return returnValue;
         }
 
-        try {
+        try(final LockedDocument lockedDocument = context.getBroker().getXMLResource(pathUri, LockMode.READ_LOCK)) {
             // try to open the document and acquire a lock
-            doc = (DocumentImpl) context.getBroker().getXMLResource(pathUri, LockMode.READ_LOCK);
+
+            final DocumentImpl doc = lockedDocument == null ? null : lockedDocument.getDocument();
             if (doc == null) {
                 throw new XPathException("Resource '" + pathUri + "' does not exist.");
             } else {
@@ -196,11 +191,6 @@ public class XMLDBSetMimeType extends BasicFunction {
         } catch (final PermissionDeniedException ex) {
             logger.debug(ex.getMessage());
 
-        } finally {
-
-            if (doc != null) {
-                doc.getUpdateLock().release(LockMode.READ_LOCK);
-            }
         }
 
         return returnValue;

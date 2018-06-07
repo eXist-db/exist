@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
@@ -78,25 +79,19 @@ public class XMLDBGetMimeType extends BasicFunction {
             }
 		} else {
 			//database
-			DocumentImpl doc = null;
-			
 			try {
 				XmldbURI pathUri = XmldbURI.xmldbUriFor(path);
 				// relative collection Path: add the current base URI
 				pathUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(pathUri);
 				// try to open the document and acquire a lock
-				doc = (DocumentImpl)context.getBroker().getXMLResource(pathUri, LockMode.READ_LOCK);
-				if(doc != null) {
-					return new StringValue(((DocumentImpl)doc).getMetadata().getMimeType());
+				try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(pathUri, LockMode.READ_LOCK)) {
+					if (lockedDoc != null) {
+						return new StringValue(lockedDoc.getDocument().getMetadata().getMimeType());
+					}
 				}
 			} catch(final Exception e) {
                 logger.error(e.getMessage());
 				throw new XPathException(this, e);
-			} finally {
-				//release all locks
-				if(doc != null) {
-                    doc.getUpdateLock().release(LockMode.READ_LOCK);
-                }
 			}
 		}
 		return Sequence.EMPTY_SEQUENCE;

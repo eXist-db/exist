@@ -21,16 +21,38 @@
  */
 package org.exist.management;
 
-public class Cache implements CacheMXBean {
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 
+public class Cache implements CacheMXBean {
+    private final String instanceId;
     private final org.exist.storage.cache.Cache cache;
 
-    public Cache(org.exist.storage.cache.Cache cache) {
+    public Cache(final String instanceId, final org.exist.storage.cache.Cache cache) {
+        this.instanceId = instanceId;
         this.cache = cache;
     }
 
+    public static String getAllInstancesQuery() {
+        return "org.exist.management." + '*' + ":type=CacheManager.Cache," + '*';
+    }
+
+    private static ObjectName getName(final String instanceId, final String cacheName, final String cacheType) throws MalformedObjectNameException {
+        return new ObjectName("org.exist.management." + instanceId + ":type=CacheManager.Cache,name=" + cacheName + ",cache-type=" + cacheType);
+    }
+
     @Override
-    public String getType() {
+    public ObjectName getName() throws MalformedObjectNameException {
+        return getName(instanceId, cache.getName(), cache.getType().toString());
+    }
+
+    @Override
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    @Override
+    public org.exist.storage.cache.Cache.CacheType getType() {
         return cache.getType();
     }
 
@@ -55,7 +77,7 @@ public class Cache implements CacheMXBean {
     }
 
     @Override
-    public String getName() {
+    public String getCacheName() {
         return cache.getName();
     }
 }

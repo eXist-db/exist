@@ -32,6 +32,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.ManagedLocks;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.DocumentTriggers;
 import org.exist.collections.triggers.TriggerException;
@@ -47,6 +48,7 @@ import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
@@ -83,7 +85,7 @@ public abstract class Modification {
 	protected DocumentSet docs;
 	protected Map<String, String> namespaces;
 	protected Map<String, Object> variables;
-	protected DocumentSet lockedDocuments = null;
+	protected ManagedLocks<ManagedDocumentLock> lockedDocumentsLocks = null;
 	protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
     protected Int2ObjectHashMap<DocumentTrigger> triggers;
 
@@ -215,12 +217,12 @@ public abstract class Modification {
 		globalLock.lock();
 	    try {
 	        final NodeList nl = select(docs);
-	        lockedDocuments = ((NodeSet)nl).getDocumentSet();
+	        final DocumentSet lockedDocuments = ((NodeSet)nl).getDocumentSet();
 	        
 		    // acquire a lock on all documents
 	        // we have to avoid that node positions change
 	        // during the modification
-	        lockedDocuments.lock(broker, true);
+	        lockedDocumentsLocks = lockedDocuments.lock(broker, true);
 	        
 		    final StoredNode ql[] = new StoredNode[nl.getLength()];		    
 			for (int i = 0; i < ql.length; i++) {
@@ -248,7 +250,7 @@ public abstract class Modification {
 	 */
 	protected final void unlockDocuments(final Txn transaction) throws TriggerException
 	{
-		if(lockedDocuments == null) {
+		if(lockedDocumentsLocks == null) {
 			return;
 		}
 
@@ -263,8 +265,8 @@ public abstract class Modification {
 			modifiedDocuments.clear();
 
 			//unlock documents
-			lockedDocuments.unlock();
-			lockedDocuments = null;
+	        lockedDocumentsLocks.close();
+	        lockedDocumentsLocks = null;
 		}
 	}
 	

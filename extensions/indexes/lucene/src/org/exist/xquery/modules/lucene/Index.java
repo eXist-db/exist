@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
@@ -98,7 +99,7 @@ public class Index extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-        DocumentImpl doc = null;
+
         try {
         	// Retrieve Lucene
             LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker()
@@ -109,29 +110,30 @@ public class Index extends BasicFunction {
 	            String path = args[0].itemAt(0).getStringValue();
 	
 	            // Retrieve document from database
-	            doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK);
-	
-	            // Verify the document actually exists
-	            if (doc == null) {
-	                throw new XPathException("Document " + path + " does not exist.");
-	            }
-	
-	            boolean flush = args.length == 2 || args[2].effectiveBooleanValue();
-	
-	            // Note: code order is important here,
-	            index.setDocument(doc, ReindexMode.STORE);
-	            index.setMode(ReindexMode.STORE);
-	
-	            // Get 'solr' node from second parameter
-	            NodeValue descriptor = (NodeValue) args[1].itemAt(0);
-	            
-	            // Pas document and index instructions to indexer
-	            index.indexNonXML(descriptor);
-	            
-	            if (flush) {
-	            	// Make sure things are written 
-	            	index.writeNonXML();
-	            }
+	            try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK)) {
+					// Verify the document actually exists
+					final DocumentImpl doc = lockedDoc == null ? null : lockedDoc.getDocument();
+					if (doc == null) {
+						throw new XPathException(this, "Document " + path + " does not exist.");
+					}
+
+					boolean flush = args.length == 2 || args[2].effectiveBooleanValue();
+
+					// Note: code order is important here,
+					index.setDocument(doc, ReindexMode.STORE);
+					index.setMode(ReindexMode.STORE);
+
+					// Get 'solr' node from second parameter
+					NodeValue descriptor = (NodeValue) args[1].itemAt(0);
+
+					// Pas document and index instructions to indexer
+					index.indexNonXML(descriptor);
+
+					if (flush) {
+						// Make sure things are written
+						index.writeNonXML();
+					}
+				}
         	} else {
         		// "close"
         		index.writeNonXML();
@@ -139,12 +141,7 @@ public class Index extends BasicFunction {
 
         } catch (Exception ex) { // PermissionDeniedException
             logger.error(ex.getMessage(), ex);
-            throw new XPathException(ex);
-
-        } finally {
-            if (doc != null) {
-                doc.getUpdateLock().release(LockMode.READ_LOCK);
-            }
+            throw new XPathException(this, ex);
         }
 
         // Return nothing [status would be nice]

@@ -27,6 +27,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.ManagedCollectionLock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.io.FastByteArrayInputStream;
@@ -53,16 +54,15 @@ public class EmbeddedBinariesTest extends AbstractBinariesTest<Sequence, Item, I
         try(final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
             final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
-            final Collection collection = broker.getOrCreateCollection(transaction, filePath.removeLastSegment());
-            collection.getLock().acquire(Lock.LockMode.WRITE_LOCK);
-            try(final InputStream is = new FastByteArrayInputStream(content)) {
+            try(final ManagedCollectionLock collectionLock = brokerPool.getLockManager().acquireCollectionWriteLock(filePath.removeLastSegment())) {
+                final Collection collection = broker.getOrCreateCollection(transaction, filePath.removeLastSegment());
+                try(final InputStream is = new FastByteArrayInputStream(content)) {
 
-                collection.addBinaryResource(transaction, broker, filePath.lastSegment(), is, "application/octet-stream", content.length);
+                    collection.addBinaryResource(transaction, broker, filePath.lastSegment(), is, "application/octet-stream", content.length);
 
-                broker.saveCollection(transaction, collection);
+                    broker.saveCollection(transaction, collection);
 
-            } finally {
-                collection.getLock().release(Lock.LockMode.WRITE_LOCK);
+                }
             }
 
             transaction.commit();
@@ -73,16 +73,10 @@ public class EmbeddedBinariesTest extends AbstractBinariesTest<Sequence, Item, I
     protected void removeCollection(final XmldbURI collectionUri) throws Exception {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
-            final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
-
-            final Collection collection = broker.getCollection(collectionUri);
+            final Txn transaction = brokerPool.getTransactionManager().beginTransaction();
+            final Collection collection = broker.openCollection(collectionUri, Lock.LockMode.WRITE_LOCK)) {
             if(collection != null) {
-                collection.getLock().acquire(Lock.LockMode.WRITE_LOCK);
-                try {
-                    broker.removeCollection(transaction, collection);
-                } finally {
-                    collection.release(Lock.LockMode.WRITE_LOCK);
-                }
+                broker.removeCollection(transaction, collection);
             }
 
             transaction.commit();

@@ -27,6 +27,7 @@ import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -97,14 +98,8 @@ public class HistoryTriggerTest {
     }
 
     private void removeCollection(final DBBroker broker, final Txn transaction, final XmldbURI collectionUri) throws PermissionDeniedException, IOException, TriggerException {
-        Collection collection = null;
-        try {
-            collection = broker.openCollection(collectionUri, Lock.LockMode.WRITE_LOCK);
+        try(final Collection collection = broker.openCollection(collectionUri, Lock.LockMode.WRITE_LOCK)) {
             broker.removeCollection(transaction, collection);
-        } finally {
-            if(collection != null) {
-                collection.release(Lock.LockMode.WRITE_LOCK);
-            }
         }
     }
 
@@ -135,28 +130,18 @@ public class HistoryTriggerTest {
             storeInTestCollection(transaction, broker, testDoc2Name, testDoc2Content);
 
             // overwrite the first document by copying the second over it (and make sure we don't get a StackOverflow exception)
-            Collection testCollection = null;
-            try {
-                testCollection = broker.openCollection(TEST_COLLECTION_URI, Lock.LockMode.WRITE_LOCK);
+            try(final Collection testCollection = broker.openCollection(TEST_COLLECTION_URI, Lock.LockMode.WRITE_LOCK);) {
                 assertNotNull(testCollection);
 
-                DocumentImpl doc2 = null;
-                try {
-                    doc2 = testCollection.getDocumentWithLock(broker, testDoc2Name, Lock.LockMode.READ_LOCK);
-                    assertNotNull(doc2);
+                try(final LockedDocument lockedDoc2 = testCollection.getDocumentWithLock(broker, testDoc2Name, Lock.LockMode.READ_LOCK)) {
+
+                    assertNotNull(lockedDoc2);
 
                     // copy doc2 over doc1
-                    broker.copyResource(transaction, doc2, testCollection, testDoc1Name);
+                    broker.copyResource(transaction, lockedDoc2.getDocument(), testCollection, testDoc1Name);
 
-                } finally {
-                    if(doc2 != null) {
-                        doc2.getUpdateLock().release(Lock.LockMode.READ_LOCK);
-                    }
-                }
-
-            } finally {
-                if(testCollection != null) {
-                    testCollection.release(Lock.LockMode.WRITE_LOCK);
+                    // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                    testCollection.close();
                 }
             }
 
@@ -193,18 +178,13 @@ public class HistoryTriggerTest {
     }
 
     private void storeInTestCollection(final Txn transaction, final DBBroker broker, final XmldbURI docName, final String docContent) throws PermissionDeniedException, LockException, SAXException, EXistException, IOException {
-        Collection testCollection = null;
-        try {
-            testCollection = broker.openCollection(TEST_COLLECTION_URI, Lock.LockMode.WRITE_LOCK);
+        try(final Collection testCollection = broker.openCollection(TEST_COLLECTION_URI, Lock.LockMode.WRITE_LOCK)) {
+
             assertNotNull(testCollection);
 
             final IndexInfo indexInfo = testCollection.validateXMLResource(transaction, broker, docName, docContent);
             testCollection.store(transaction, broker, indexInfo, docContent);
 
-        } finally {
-            if(testCollection != null) {
-                testCollection.release(Lock.LockMode.WRITE_LOCK);
-            }
         }
     }
 
@@ -212,9 +192,7 @@ public class HistoryTriggerTest {
         try(final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
-            Collection historyCollection = null;
-            try {
-                historyCollection = broker.openCollection(HistoryTrigger.DEFAULT_ROOT_PATH.append(TEST_COLLECTION_URI).append(originalDocName), Lock.LockMode.READ_LOCK);
+            try(final Collection historyCollection = broker.openCollection(HistoryTrigger.DEFAULT_ROOT_PATH.append(TEST_COLLECTION_URI).append(originalDocName), Lock.LockMode.READ_LOCK);) {
                 assertNotNull(historyCollection);
 
                 final DocumentSet documentSet = historyCollection.getDocuments(broker, new DefaultDocumentSet());
@@ -232,10 +210,6 @@ public class HistoryTriggerTest {
 
                 assertFalse(it.hasNext());
 
-            } finally {
-                if(historyCollection != null) {
-                    historyCollection.release(Lock.LockMode.READ_LOCK);
-                }
             }
 
             transaction.commit();

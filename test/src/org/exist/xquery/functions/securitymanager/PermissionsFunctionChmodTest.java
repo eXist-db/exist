@@ -28,6 +28,7 @@ import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.GroupAider;
@@ -50,9 +51,9 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.jgroups.util.Util.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class PermissionsFunctionChmodTest {
 
@@ -257,37 +258,29 @@ public class PermissionsFunctionChmodTest {
         // create user1 resources
         final Subject user1 = pool.getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         try (final DBBroker broker = pool.get(Optional.of(user1));
-             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-            Collection collection = null;
-            try {
-                collection = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.LockMode.WRITE_LOCK);
+                final Txn transaction = pool.getTransactionManager().beginTransaction();
+                final Collection collection = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.LockMode.WRITE_LOCK)) {
 
-                final Collection u1c1 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI.append(USER1_COL1));
-                broker.saveCollection(transaction, u1c1);
+            final Collection u1c1 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI.append(USER1_COL1));
+            broker.saveCollection(transaction, u1c1);
 
-                final Collection u1c2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI.append(USER1_COL2));
-                PermissionFactory.chmod_str(broker, u1c2, Optional.of("u+s,g+s"), Optional.empty());
-                broker.saveCollection(transaction, u1c2);
+            final Collection u1c2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI.append(USER1_COL2));
+            PermissionFactory.chmod_str(broker, u1c2, Optional.of("u+s,g+s"), Optional.empty());
+            broker.saveCollection(transaction, u1c2);
 
-                final String xml1 = "<empty1/>";
-                final IndexInfo indexInfo1 = collection.validateXMLResource(transaction, broker, USER1_DOC1, xml1);
-                collection.store(transaction, broker, indexInfo1, xml1);
+            final String xml1 = "<empty1/>";
+            final IndexInfo indexInfo1 = collection.validateXMLResource(transaction, broker, USER1_DOC1, xml1);
+            collection.store(transaction, broker, indexInfo1, xml1);
 
-                final String xquery1 =
-                        "import module namespace sm = 'http://exist-db.org/xquery/securitymanager';\n" +
-                                "sm:id()";
-                final BinaryDocument uqxq1 = collection.addBinaryResource(transaction, broker, USER1_XQUERY1, xquery1.getBytes(UTF_8), "application/xquery");
-                PermissionFactory.chmod_str(broker, uqxq1, Optional.of("u+s,g+s"), Optional.empty());
+            final String xquery1 =
+                    "import module namespace sm = 'http://exist-db.org/xquery/securitymanager';\n" +
+                            "sm:id()";
+            final BinaryDocument uqxq1 = collection.addBinaryResource(transaction, broker, USER1_XQUERY1, xquery1.getBytes(UTF_8), "application/xquery");
+            PermissionFactory.chmod_str(broker, uqxq1, Optional.of("u+s,g+s"), Optional.empty());
 
-                broker.saveCollection(transaction, collection);
+            broker.saveCollection(transaction, collection);
 
-                transaction.commit();
-
-            } finally {
-                if (collection != null) {
-                    collection.getLock().release(Lock.LockMode.WRITE_LOCK);
-                }
-            }
+            transaction.commit();
         }
     }
 
@@ -323,19 +316,14 @@ public class PermissionsFunctionChmodTest {
 
     private static void assertDocumentSetGid(final Subject execAsUser, final XmldbURI uri, final boolean isSet) throws EXistException, PermissionDeniedException {
         final BrokerPool pool = existWebServer.getBrokerPool();
-        try (final DBBroker broker = pool.get(Optional.of(execAsUser))) {
-            DocumentImpl doc = null;
-            try {
-                doc = broker.getXMLResource(uri, Lock.LockMode.READ_LOCK);
-                if (isSet) {
-                    assertTrue(doc.getPermissions().isSetGid());
-                } else {
-                    assertFalse(doc.getPermissions().isSetGid());
-                }
-            } finally {
-                if (doc != null) {
-                    doc.getUpdateLock().release(Lock.LockMode.READ_LOCK);
-                }
+        try (final DBBroker broker = pool.get(Optional.of(execAsUser));
+                final LockedDocument lockedDoc = broker.getXMLResource(uri, Lock.LockMode.READ_LOCK)) {
+
+            final DocumentImpl doc = lockedDoc.getDocument();
+            if (isSet) {
+                assertTrue(doc.getPermissions().isSetGid());
+            } else {
+                assertFalse(doc.getPermissions().isSetGid());
             }
         }
     }
@@ -343,17 +331,11 @@ public class PermissionsFunctionChmodTest {
     private static void assertCollectionSetGid(final Subject execAsUser, final XmldbURI uri, final boolean isSet) throws EXistException, PermissionDeniedException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(execAsUser))) {
-            Collection col = null;
-            try {
-                col = broker.openCollection(uri, Lock.LockMode.READ_LOCK);
+            try (final Collection col = broker.openCollection(uri, Lock.LockMode.READ_LOCK)) {
                 if (isSet) {
                     assertTrue(col.getPermissions().isSetGid());
                 } else {
                     assertFalse(col.getPermissions().isSetGid());
-                }
-            } finally {
-                if (col != null) {
-                    col.getLock().release(Lock.LockMode.READ_LOCK);
                 }
             }
         }
@@ -372,27 +354,15 @@ public class PermissionsFunctionChmodTest {
     }
 
     private static void removeDocument(final DBBroker broker, final Txn transaction, final XmldbURI documentUri) throws PermissionDeniedException, LockException, IOException, TriggerException {
-        Collection collection = null;
-        try {
-            collection = broker.openCollection(documentUri.removeLastSegment(), Lock.LockMode.WRITE_LOCK);
+        try (final Collection collection = broker.openCollection(documentUri.removeLastSegment(), Lock.LockMode.WRITE_LOCK)) {
             collection.removeXMLResource(transaction, broker, documentUri.lastSegment());
             broker.saveCollection(transaction, collection);
-        } finally {
-            if (collection != null) {
-                collection.getLock().release(Lock.LockMode.WRITE_LOCK);
-            }
         }
     }
 
     private static void removeCollection(final DBBroker broker, final Txn transaction, final XmldbURI collectionUri) throws PermissionDeniedException, IOException, TriggerException {
-        Collection collection = null;
-        try {
-            collection = broker.openCollection(collectionUri, Lock.LockMode.WRITE_LOCK);
+        try (final Collection collection = broker.openCollection(collectionUri, Lock.LockMode.WRITE_LOCK)) {
             broker.removeCollection(transaction, collection);
-        } finally {
-            if (collection != null) {
-                collection.getLock().release(Lock.LockMode.WRITE_LOCK);
-            }
         }
     }
 

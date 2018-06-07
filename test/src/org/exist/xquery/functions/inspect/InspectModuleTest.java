@@ -279,16 +279,9 @@ public class InspectModuleTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
-            Collection testCollection = null;
-            try {
-                testCollection = broker.openCollection(TEST_COLLECTION, Lock.LockMode.WRITE_LOCK);
-
+            try(final Collection testCollection = broker.openCollection(TEST_COLLECTION, Lock.LockMode.WRITE_LOCK)) {
                 if (testCollection != null) {
                     broker.removeCollection(transaction, testCollection);
-                }
-            } finally {
-                if(testCollection != null) {
-                    testCollection.getLock().release(Lock.LockMode.WRITE_LOCK);
                 }
             }
 

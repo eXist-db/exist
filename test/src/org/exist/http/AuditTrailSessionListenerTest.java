@@ -24,10 +24,11 @@ import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.LockManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
@@ -77,12 +78,14 @@ public class AuditTrailSessionListenerTest {
 
         verify(httpSessionEvent, httpSession);
 
-        try(final DBBroker broker = existEmbeddedServer.getBrokerPool().getBroker()) {
-            DocumentImpl resource = broker.getXMLResource(XmldbURI.create(CREATE_SCRIPT_PATH), Lock.LockMode.NO_LOCK);
+        final XmldbURI docUri = XmldbURI.create(CREATE_SCRIPT_PATH);
+        try(final DBBroker broker = existEmbeddedServer.getBrokerPool().getBroker();
+                final LockedDocument lockedResource = broker.getXMLResource(docUri, Lock.LockMode.NO_LOCK)) {
 
             // ensure that AuditTrailSessionListener released the lock
-            assertFalse(resource.getUpdateLock().isLockedForRead(Thread.currentThread()));
-            assertFalse(resource.getUpdateLock().isLockedForWrite());
+            final LockManager lockManager = broker.getBrokerPool().getLockManager();
+            assertFalse(lockManager.isDocumentLockedForRead(docUri));
+            assertFalse(lockManager.isDocumentLockedForWrite(docUri));
         }
     }
 
@@ -104,12 +107,14 @@ public class AuditTrailSessionListenerTest {
 
         verify(httpSessionEvent, httpSession);
 
-        try(final DBBroker broker = existEmbeddedServer.getBrokerPool().getBroker()) {
-            DocumentImpl resource = broker.getXMLResource(XmldbURI.create(DESTROYED_SCRIPT_PATH), Lock.LockMode.NO_LOCK);
+        final XmldbURI docUri = XmldbURI.create(DESTROYED_SCRIPT_PATH);
+        try(final DBBroker broker = existEmbeddedServer.getBrokerPool().getBroker();
+                final LockedDocument lockedResource = broker.getXMLResource(docUri, Lock.LockMode.NO_LOCK)) {
 
             // ensure that AuditTrailSessionListener released the lock
-            assertFalse(resource.getUpdateLock().isLockedForRead(Thread.currentThread()));
-            assertFalse(resource.getUpdateLock().isLockedForWrite());
+            final LockManager lockManager = broker.getBrokerPool().getLockManager();
+            assertFalse(lockManager.isDocumentLockedForRead(docUri));
+            assertFalse(lockManager.isDocumentLockedForWrite(docUri));
         }
     }
 

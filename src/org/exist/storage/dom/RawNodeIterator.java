@@ -31,14 +31,15 @@ import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.Paged;
 import org.exist.storage.btree.Value;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.LockManager;
+import org.exist.storage.lock.ManagedLock;
 import org.exist.util.ByteConversion;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.util.sanity.SanityCheck;
 
 import java.io.IOException;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * An iterator that walks through the raw node data items in a document. The class
@@ -51,6 +52,7 @@ public class RawNodeIterator implements IRawNodeIterator {
     private final static Logger LOG = LogManager.getLogger(RawNodeIterator.class);
 
     private DBBroker broker;
+    private final LockManager lockManager;
     private final DOMFile db;
 
     private int offset;
@@ -69,15 +71,14 @@ public class RawNodeIterator implements IRawNodeIterator {
      */
     public RawNodeIterator(final DBBroker broker, final DOMFile db, final NodeHandle node) throws IOException {
         this.broker = broker;
+        this.lockManager = broker.getBrokerPool().getLockManager();
         this.db = db;
         seek(node);
     }
 
     @Override
     public final void seek(final NodeHandle node) throws IOException {
-        final Lock lock = db.getLock();
-        try {
-            lock.acquire(LockMode.READ_LOCK);
+        try(final ManagedLock<ReentrantLock> domFileLock = lockManager.acquireBtreeReadLock(db.getLockName())) {
             RecordPos rec = null;
             if (StorageAddress.hasAddress(node.getInternalAddress()))
                 {rec = db.findRecord(node.getInternalAddress());}
@@ -97,23 +98,14 @@ public class RawNodeIterator implements IRawNodeIterator {
             page = rec.getPage();
         } catch (final LockException e) {
             throw new IOException("Exception while scanning document: " + e.getMessage());
-        } finally {
-            lock.release(LockMode.READ_LOCK);
         }
     }
 
     @Override
     public Value next() {
         Value nextValue = null;
-        final Lock lock = db.getLock();
-        try {
-            try {
-                lock.acquire(LockMode.READ_LOCK);
-            } catch (final LockException e) {
-                LOG.error("Failed to acquire read lock on " + FileUtils.fileName(db.getFile()));
-                //TODO : throw exception here ? -pb
-                return null;
-            }
+        try(final ManagedLock<ReentrantLock> domFileLock = lockManager.acquireBtreeReadLock(db.getLockName())) {
+
             db.setOwnerObject(broker);
             long backLink = 0;
             do {
@@ -199,8 +191,10 @@ public class RawNodeIterator implements IRawNodeIterator {
                 }
             } while (nextValue == null);
             return nextValue;
-        } finally {
-            lock.release(LockMode.READ_LOCK);
+        } catch (final LockException e) {
+            LOG.error("Failed to acquire read lock on " + FileUtils.fileName(db.getFile()));
+            //TODO : throw exception here ? -pb
+            return null;
         }
     }
 

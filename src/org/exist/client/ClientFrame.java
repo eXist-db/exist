@@ -76,6 +76,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
@@ -1424,14 +1425,14 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         }
     }
 
+    private static final AtomicInteger processThreadInitNumber = new AtomicInteger();
     class ProcessThread extends Thread {
-
         private String action = null;
         private boolean terminate = false;
         private boolean status = false;
 
         public ProcessThread() {
-            super("exist-client-processThread");
+            super("exist-ClientFrame.ProcessThread-" + processThreadInitNumber.getAndIncrement());
         }
 
         synchronized public void setAction(final String action) {

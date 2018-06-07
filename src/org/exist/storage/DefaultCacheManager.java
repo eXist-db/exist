@@ -68,7 +68,7 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
     public static final int           DEFAULT_CACHE_SIZE              			= 64;
     public static final String  CACHE_SIZE_ATTRIBUTE           			= "cacheSize";
     public static final String  PROPERTY_CACHE_SIZE             			= "db-connection.cache-size";
-    
+
     public static final String         DEFAULT_CACHE_CHECK_MAX_SIZE_STRING		= "true";
     public static final String  CACHE_CHECK_MAX_SIZE_ATTRIBUTE 			= "checkMaxCacheSize";
     public static final String  PROPERTY_CACHE_CHECK_MAX_SIZE				= "db-connection.check-max-cache-size";
@@ -126,36 +126,36 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
         shrinkThreshold = configuration.getInteger( SHRINK_THRESHOLD_PROPERTY );
 
         totalMem        = cacheSize * 1024L * 1024L;
-        
+
         final Boolean checkMaxCache = (Boolean)configuration.getProperty( PROPERTY_CACHE_CHECK_MAX_SIZE );
-        
+
         if( checkMaxCache == null || checkMaxCache.booleanValue() ) {
-			final long max        = Runtime.getRuntime().maxMemory();
-			long maxCache   = ( max >= ( 768 * 1024 * 1024 ) ) ? ( max / 2 ) : ( max / 3 );
-	
-			if( totalMem > maxCache ) {
-				totalMem = maxCache;
-				
-				LOG.warn( "The cacheSize=\"" + cacheSize + 
-						  "\" setting in conf.xml is too large. Java has only " + ( max / 1024 ) + "k available. Cache manager will not use more than " + ( totalMem / 1024L ) + "k " + 
-						  "to avoid memory issues which may lead to database corruptions." 
-				);
-			}
-		} else {
-			LOG.warn( "Checking of Max Cache Size disabled by user, this could cause memory issues which may lead to database corruptions if you don't have enough memory allocated to your JVM!" );
-		}
-        
+            final long max        = Runtime.getRuntime().maxMemory();
+            long maxCache   = ( max >= ( 768 * 1024 * 1024 ) ) ? ( max / 2 ) : ( max / 3 );
+
+            if( totalMem > maxCache ) {
+                totalMem = maxCache;
+
+                LOG.warn( "The cacheSize=\"" + cacheSize +
+                        "\" setting in conf.xml is too large. Java has only " + ( max / 1024 ) + "k available. Cache manager will not use more than " + ( totalMem / 1024L ) + "k " +
+                        "to avoid memory issues which may lead to database corruptions."
+                );
+            }
+        } else {
+            LOG.warn( "Checking of Max Cache Size disabled by user, this could cause memory issues which may lead to database corruptions if you don't have enough memory allocated to your JVM!" );
+        }
+
         int buffers = (int)( totalMem / pageSize );
 
         this.totalPageCount = buffers;
         this.maxCacheSize   = (int)( totalPageCount * MAX_MEM_USE );
         final NumberFormat nf     = NumberFormat.getNumberInstance();
-        
-        LOG.info( "Cache settings: " + nf.format( totalMem / 1024L ) + "k; totalPages: " + nf.format( totalPageCount ) + 
-        	      "; maxCacheSize: " + nf.format( maxCacheSize ) + 
-        	      "; cacheShrinkThreshold: " + nf.format( shrinkThreshold ) 
+
+        LOG.info( "Cache settings: " + nf.format( totalMem / 1024L ) + "k; totalPages: " + nf.format( totalPageCount ) +
+                "; maxCacheSize: " + nf.format( maxCacheSize ) +
+                "; cacheShrinkThreshold: " + nf.format( shrinkThreshold )
         );
-        
+
         registerMBean();
     }
 
@@ -350,28 +350,21 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
     }
 
 
-    private void registerMBean()
-    {
+    private void registerMBean() {
         final Agent agent = AgentFactory.getInstance();
-
         try {
-            agent.addMBean( instanceName, "org.exist.management." + instanceName + ":type=CacheManager", new org.exist.management.CacheManager( this ) );
-        }
-        catch( final DatabaseConfigurationException e ) {
-            LOG.warn( "Exception while registering cache mbean.", e );
+            agent.addMBean(new org.exist.management.CacheManager(instanceName,this));
+        } catch (final DatabaseConfigurationException e) {
+            LOG.warn("Exception while registering JMX CacheManager MBean.", e);
         }
     }
 
-
-    private void registerMBean( Cache cache )
-    {
+    private void registerMBean(final Cache cache) {
         final Agent agent = AgentFactory.getInstance();
-
         try {
-            agent.addMBean( instanceName, "org.exist.management." + instanceName + ":type=CacheManager.Cache,name=" + cache.getName() + ",cache-type=" + cache.getType(), new org.exist.management.Cache( cache ) );
-        }
-        catch( final DatabaseConfigurationException e ) {
-            LOG.warn( "Exception while registering cache mbean.", e );
+            agent.addMBean(new org.exist.management.Cache(instanceName, cache));
+        } catch (final DatabaseConfigurationException e) {
+            LOG.warn("Exception while registering JMX Cache MBean.", e);
         }
     }
 }

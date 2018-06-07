@@ -2,10 +2,6 @@ package org.exist.storage;
 
 import org.easymock.Capture;
 import org.easymock.EasyMock;
-import static org.easymock.EasyMock.capture;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Permission;
@@ -21,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertEquals;
 
 
@@ -62,18 +59,18 @@ public class NativeBrokerTest {
         expect(srcPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
 
         //grant EXECUTE and WRITE permission on the dest
-        expect(broker.getCollection(dest)).andReturn(destCollection);
-        final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
+        expect(destCollection.getURI()).andReturn(dest);
+        final Capture<XmldbURI> newDestURICapture = newCapture();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
         expect(destPermissions.validate(subject, Permission.EXECUTE | Permission.WRITE)).andReturn(true);
 
         //no sub-documents
-        expect(srcCollection.iterator(broker)).andReturn(Collections.emptyIterator());
+        expect(srcCollection.iteratorNoLock(broker)).andReturn(Collections.emptyIterator());
 
         //no sub-collections
-        expect(srcCollection.collectionIterator(broker)).andReturn(Collections.emptyIterator());
+        expect(srcCollection.collectionIteratorNoLock(broker)).andReturn(Collections.emptyIterator());
 
 
         //test below
@@ -81,7 +78,7 @@ public class NativeBrokerTest {
         replay(destCollection, destPermissions, srcCollection, srcPermissions, subject, broker);
 
         //run the test
-        broker.checkPermissionsForCopy(srcCollection, dest, newName);
+        broker.checkPermissionsForCopy(srcCollection, destCollection, newName);
 
         verify(destCollection, destPermissions, srcCollection, srcPermissions, subject, broker);
 
@@ -125,8 +122,8 @@ public class NativeBrokerTest {
         expect(srcPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
 
         //grant EXECUTE and WRITE permission on the dest
-        expect(broker.getCollection(dest)).andReturn(destCollection);
-        final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
+        expect(destCollection.getURI()).andReturn(dest);
+        final Capture<XmldbURI> newDestURICapture = newCapture();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
@@ -142,7 +139,7 @@ public class NativeBrokerTest {
         replay(subject, destCollection, destPermissions, srcCollection, srcPermissions, broker);
 
         //run the test
-        broker.checkPermissionsForCopy(srcCollection, dest, newName);
+        broker.checkPermissionsForCopy(srcCollection, destCollection, newName);
 
         //not actually called, but here for showing intention
         verify(subject, destCollection, destPermissions, srcCollection, srcPermissions, broker);
@@ -189,27 +186,27 @@ public class NativeBrokerTest {
         expect(srcPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
 
         //grant EXECUTE and WRITE permission on the dest
-        expect(broker.getCollection(dest)).andReturn(destCollection);
-        final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
+        expect(destCollection.getURI()).andReturn(dest);
+        final Capture<XmldbURI> newDestURICapture = newCapture();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
         expect(destPermissions.validate(subject, Permission.EXECUTE | Permission.WRITE)).andReturn(true);
 
         //one sub-document with READ permission
-        expect(srcCollection.iterator(broker)).andReturn(new ArrayIterator<>(srcSubDocument));
+        expect(srcCollection.iteratorNoLock(broker)).andReturn(new ArrayIterator<>(srcSubDocument));
         expect(srcSubDocument.getPermissions()).andReturn(srcSubDocumentPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
         expect(srcSubDocumentPermissions.validate(subject, Permission.READ)).andReturn(true);
 
         //no sub-collections
-        expect(srcCollection.collectionIterator(broker)).andReturn(Collections.emptyIterator());
+        expect(srcCollection.collectionIteratorNoLock(broker)).andReturn(Collections.emptyIterator());
 
         //test below
         replay(srcSubDocumentPermissions, srcSubDocument, destCollection, destPermissions, srcCollection, srcPermissions, subject, broker);
 
         //run the test
-        broker.checkPermissionsForCopy(srcCollection, dest, newName);
+        broker.checkPermissionsForCopy(srcCollection, destCollection, newName);
 
         verify(srcSubDocumentPermissions, srcSubDocument, destCollection, destPermissions, srcCollection, srcPermissions, subject, broker);
 
@@ -261,8 +258,8 @@ public class NativeBrokerTest {
         expect(srcPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
 
         //grant EXECUTE and WRITE permission on the dest
-        expect(broker.getCollection(dest)).andReturn(destCollection);
-        final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
+        expect(destCollection.getURI()).andReturn(dest);
+        final Capture<XmldbURI> newDestURICapture = newCapture();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
@@ -297,7 +294,7 @@ public class NativeBrokerTest {
         replay(srcSubCollectionPermissions, srcSubCollection, srcSubDocumentPermissions, srcSubDocument, destCollection, destPermissions, srcCollection, srcPermissions, subject, broker);
 
         //run the test
-        broker.checkPermissionsForCopy(srcCollection, dest, newName);
+        broker.checkPermissionsForCopy(srcCollection, destCollection, newName);
 
         verify(srcSubCollectionPermissions, srcSubCollection, srcSubDocumentPermissions, srcSubDocument, destCollection, destPermissions, srcCollection, srcPermissions, subject, broker);
 
@@ -341,8 +338,8 @@ public class NativeBrokerTest {
         expect(srcPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
 
         //grant EXECUTE and WRITE permission on the dest
-        expect(broker.getCollection(dest)).andReturn(destCollection);
-        final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
+        expect(destCollection.getURI()).andReturn(dest);
+        final Capture<XmldbURI> newDestURICapture = newCapture();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
@@ -352,16 +349,16 @@ public class NativeBrokerTest {
         expect(newDestPermissions.validate(subject, Permission.EXECUTE | Permission.WRITE)).andReturn(true);
 
         //no sub-documents
-        expect(srcCollection.iterator(broker)).andReturn(Collections.emptyIterator());
+        expect(srcCollection.iteratorNoLock(broker)).andReturn(Collections.emptyIterator());
 
         //no sub-collections
-        expect(srcCollection.collectionIterator(broker)).andReturn(Collections.emptyIterator());
+        expect(srcCollection.collectionIteratorNoLock(broker)).andReturn(Collections.emptyIterator());
 
         //test below
         replay(newDestPermissions, newDestCollection, destCollection, destPermissions, srcCollection, srcPermissions, subject, broker);
 
         //run the test
-        broker.checkPermissionsForCopy(srcCollection, dest, newName);
+        broker.checkPermissionsForCopy(srcCollection, destCollection, newName);
 
         verify(newDestPermissions, newDestCollection, destCollection, destPermissions, srcCollection, srcPermissions, subject, broker);
 
@@ -405,8 +402,8 @@ public class NativeBrokerTest {
         expect(srcPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
 
         //grant EXECUTE and WRITE permission on the dest
-        expect(broker.getCollection(dest)).andReturn(destCollection);
-        final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
+        expect(destCollection.getURI()).andReturn(dest);
+        final Capture<XmldbURI> newDestURICapture = newCapture();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
@@ -428,7 +425,7 @@ public class NativeBrokerTest {
         replay(newDestPermissions, newDestCollection, destCollection, destPermissions, srcCollection, srcPermissions, subject, broker);
 
         //run the test
-        broker.checkPermissionsForCopy(srcCollection, dest, newName);
+        broker.checkPermissionsForCopy(srcCollection, destCollection, newName);
 
         verify(newDestPermissions, newDestCollection, destCollection, destPermissions, srcCollection, srcPermissions, subject, broker);
 
@@ -473,8 +470,8 @@ public class NativeBrokerTest {
         expect(srcPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
 
         //grant EXECUTE and WRITE permission on the dest
-        expect(broker.getCollection(dest)).andReturn(destCollection);
-        final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
+        expect(destCollection.getURI()).andReturn(dest);
+        final Capture<XmldbURI> newDestURICapture = newCapture();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
@@ -499,7 +496,7 @@ public class NativeBrokerTest {
         replay(newDestPermissions, newDestCollection, destCollection, destPermissions, srcCollection, srcPermissions, subject, broker);
 
         //run the test
-        broker.checkPermissionsForCopy(srcCollection, dest, newName);
+        broker.checkPermissionsForCopy(srcCollection, destCollection, newName);
 
         verify(newDestPermissions, newDestCollection, destCollection, destPermissions, srcCollection, srcPermissions, subject, broker);
 
@@ -549,8 +546,8 @@ public class NativeBrokerTest {
         expect(srcPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
 
         //grant EXECUTE and WRITE permission on the dest
-        expect(broker.getCollection(dest)).andReturn(destCollection);
-        final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
+        expect(destCollection.getURI()).andReturn(dest);
+        final Capture<XmldbURI> newDestURICapture = newCapture();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
@@ -560,20 +557,20 @@ public class NativeBrokerTest {
         expect(newDestPermissions.validate(subject, Permission.EXECUTE | Permission.WRITE)).andReturn(true);
 
         //one sub-document with READ permission
-        expect(srcCollection.iterator(broker)).andReturn(new ArrayIterator<>(srcSubDocument));
+        expect(srcCollection.iteratorNoLock(broker)).andReturn(new ArrayIterator<>(srcSubDocument));
         expect(srcSubDocument.getPermissions()).andReturn(srcSubDocumentPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
         expect(srcSubDocumentPermissions.validate(subject, Permission.READ)).andReturn(true);
         expect(newDestCollection.isEmpty(broker)).andReturn(true); //no documents in the dest collection
 
         //no sub-collections
-        expect(srcCollection.collectionIterator(broker)).andReturn(Collections.emptyIterator());
+        expect(srcCollection.collectionIteratorNoLock(broker)).andReturn(Collections.emptyIterator());
 
         //test below
         replay(newDestPermissions, newDestCollection, srcSubDocumentPermissions, srcSubDocument, destCollection, destPermissions, srcCollection, srcPermissions, subject, broker);
 
         //run the test
-        broker.checkPermissionsForCopy(srcCollection, dest, newName);
+        broker.checkPermissionsForCopy(srcCollection, destCollection, newName);
 
         verify(newDestPermissions, newDestCollection, srcSubDocumentPermissions, srcSubDocument, destCollection, destPermissions, srcCollection, srcPermissions, subject, broker);
 
@@ -622,8 +619,8 @@ public class NativeBrokerTest {
         expect(srcPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
 
         //grant EXECUTE and WRITE permission on the dest
-        expect(broker.getCollection(dest)).andReturn(destCollection);
-        final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
+        expect(destCollection.getURI()).andReturn(dest);
+        final Capture<XmldbURI> newDestURICapture = newCapture();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
@@ -633,7 +630,7 @@ public class NativeBrokerTest {
         expect(newDestPermissions.validate(subject, Permission.EXECUTE | Permission.WRITE)).andReturn(true);
 
         //one sub-document with READ permission
-        expect(srcCollection.iterator(broker)).andReturn(new ArrayIterator<>(srcSubDocument));
+        expect(srcCollection.iteratorNoLock(broker)).andReturn(new ArrayIterator<>(srcSubDocument));
         expect(srcSubDocument.getPermissions()).andReturn(srcSubDocumentPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
         expect(srcSubDocumentPermissions.validate(subject, Permission.READ)).andReturn(false);
@@ -645,13 +642,13 @@ public class NativeBrokerTest {
         expect(subject.getName()).andReturn("Fake user");
 
         //no sub-collections
-        expect(srcCollection.collectionIterator(broker)).andReturn(Collections.emptyIterator());
+        expect(srcCollection.collectionIteratorNoLock(broker)).andReturn(Collections.emptyIterator());
 
         //test below
         replay(newDestPermissions, newDestCollection, srcSubDocumentPermissions, srcSubDocument, destCollection, destPermissions, srcCollection, srcPermissions, subject, broker);
 
         //run the test
-        broker.checkPermissionsForCopy(srcCollection, dest, newName);
+        broker.checkPermissionsForCopy(srcCollection, destCollection, newName);
 
         verify(newDestPermissions, newDestCollection, srcSubDocumentPermissions, srcSubDocument, destCollection, destPermissions, srcCollection, srcPermissions, subject, broker);
 

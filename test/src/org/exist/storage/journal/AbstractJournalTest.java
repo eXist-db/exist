@@ -25,6 +25,7 @@ import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -944,14 +945,15 @@ public abstract class AbstractJournalTest {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XmldbURI uri = TestConstants.TEST_COLLECTION_URI.append(dbFilename);
-            final DocumentImpl doc = broker.getXMLResource(uri, Lock.LockMode.READ_LOCK);
+            try (final LockedDocument lockedDoc = broker.getXMLResource(uri, Lock.LockMode.READ_LOCK)) {
 
-            if(!shouldExist) {
-                assertNull("Document should not exist in the database: " + uri, doc);
-            } else {
-                assertNotNull("Document does not exist in the database: " + uri, doc);
+                if (!shouldExist) {
+                    assertNull("Document should not exist in the database: " + uri, lockedDoc);
+                } else {
+                    assertNotNull("Document does not exist in the database: " + uri, lockedDoc);
 
-                readAndVerify(broker, doc, file, dbFilename);
+                    readAndVerify(broker, lockedDoc.getDocument(), file, dbFilename);
+                }
             }
         }
     }

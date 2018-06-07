@@ -24,12 +24,12 @@ package org.exist.xquery.modules.compression;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DefaultDocumentSet;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.*;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.LockManager;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Base64Decoder;
 import org.exist.util.FileUtils;
@@ -165,46 +165,43 @@ public abstract class AbstractCompressFunction extends BasicFunction
 
                 } else {
 
-                    // try for a doc
-                    DocumentImpl doc = null;
-                    try
-                    {
-                        XmldbURI xmldburi = XmldbURI.create(uri);
-                        doc = context.getBroker().getXMLResource(xmldburi, LockMode.READ_LOCK);
+                    final XmldbURI xmldburi = XmldbURI.create(uri);
 
-                        if(doc == null)
-                        {
-                            // no doc, try for a collection
-                            Collection col = context.getBroker().getCollection(xmldburi);
+                    // try for a collection
+                    try(final Collection collection = context.getBroker().openCollection(xmldburi, LockMode.READ_LOCK)) {
+                        if(collection != null) {
+                            compressCollection(os, collection, useHierarchy, stripOffset);
+                            return;
+                        }
+                    } catch(final PermissionDeniedException | LockException | SAXException | IOException pde) {
+                        throw new XPathException(this, pde.getMessage());
+                    }
 
-                            if(col != null)
-                            {
-                                // got a collection
-                                compressCollection(os, col, useHierarchy, stripOffset);
-                            }
-                            else
-                            {
-                                // no doc or collection
+
+                    // otherwise, try for a doc
+                    try(final Collection collection = context.getBroker().openCollection(xmldburi.removeLastSegment(), LockMode.READ_LOCK)) {
+                        if(collection == null) {
+                            throw new XPathException(this, "Invalid URI: " + uri.toString());
+                        }
+
+                        try(final LockedDocument doc = collection.getDocumentWithLock(context.getBroker(), xmldburi.lastSegment(), LockMode.READ_LOCK)) {
+
+                            // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                            collection.close();
+
+                            if(doc == null) {
                                 throw new XPathException(this, "Invalid URI: " + uri.toString());
                             }
+
+                            compressResource(os, doc.getDocument(), useHierarchy, stripOffset, method, resourceName);
+                            return;
                         }
-                        else
-                        {
-                            // got a doc
-                            compressResource(os, doc, useHierarchy, stripOffset, method, resourceName);
-                        }
-                    }
-                    catch(PermissionDeniedException | LockException | SAXException | IOException pde)
-                    {
+                    } catch(final PermissionDeniedException | LockException | SAXException | IOException pde) {
                         throw new XPathException(this, pde.getMessage());
-                    } finally
-                    {
-                        if(doc != null)
-                            doc.getUpdateLock().release(LockMode.READ_LOCK);
                     }
                 }
 
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new XPathException(this, e.getMessage());
             }
 
@@ -469,22 +466,21 @@ public abstract class AbstractCompressFunction extends BasicFunction
 	 */
 	private void compressCollection(OutputStream os, Collection col, boolean useHierarchy, String stripOffset) throws IOException, SAXException, LockException, PermissionDeniedException {
 		// iterate over child documents
-		MutableDocumentSet childDocs = new DefaultDocumentSet();
-		col.getDocuments(context.getBroker(), childDocs);
-		for (Iterator<DocumentImpl> itChildDocs = childDocs.getDocumentIterator(); itChildDocs.hasNext();) {
+        final DBBroker broker = context.getBroker();
+        final LockManager lockManager = broker.getBrokerPool().getLockManager();
+        final MutableDocumentSet childDocs = new DefaultDocumentSet();
+		col.getDocuments(broker, childDocs);
+		for (final Iterator<DocumentImpl> itChildDocs = childDocs.getDocumentIterator(); itChildDocs.hasNext();) {
 			DocumentImpl childDoc = itChildDocs.next();
-			childDoc.getUpdateLock().acquire(LockMode.READ_LOCK);
-			try {
+			try(final ManagedDocumentLock updateLock = lockManager.acquireDocumentReadLock(childDoc.getURI())) {
 				compressResource(os, childDoc, useHierarchy, stripOffset, "", null);
-			} finally {
-				childDoc.getUpdateLock().release(LockMode.READ_LOCK);
 			}
 		}
 		// iterate over child collections
-		for (Iterator<XmldbURI> itChildCols = col.collectionIterator(context.getBroker()); itChildCols.hasNext();) {
+		for (final Iterator<XmldbURI> itChildCols = col.collectionIterator(broker); itChildCols.hasNext();) {
 			// get the child collection
 			XmldbURI childColURI = itChildCols.next();
-			Collection childCol = context.getBroker().getCollection(col.getURI().append(childColURI));
+			Collection childCol = broker.getCollection(col.getURI().append(childColURI));
 			// recurse
 			compressCollection(os, childCol, useHierarchy, stripOffset);
 		}

@@ -1,7 +1,5 @@
 package org.exist.util;
 
-import org.exist.storage.lock.Lock;
-
 /**
  * @author wolf
  *
@@ -12,6 +10,6 @@ import org.exist.storage.lock.Lock;
  */
 public interface Lockable {
 
-    public Lock getLock();
+    String getLockName();
     
 }

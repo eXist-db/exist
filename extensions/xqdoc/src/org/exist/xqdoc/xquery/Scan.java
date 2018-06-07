@@ -8,6 +8,7 @@ import org.exist.collections.Collection;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.*;
 import org.exist.storage.lock.Lock.LockMode;
@@ -90,36 +91,38 @@ public class Scan extends BasicFunction {
         } else {
             String uri = args[0].getStringValue();
             if (uri.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
-                Collection collection = null;
-                DocumentImpl doc = null;
                 try {
                     XmldbURI resourceURI = XmldbURI.xmldbUriFor(uri);
-                    collection = context.getBroker().openCollection(resourceURI.removeLastSegment(), LockMode.READ_LOCK);
-                    if (collection == null) {
-                        LOG.warn("collection not found: " + resourceURI.getCollectionPath());
-                        return Sequence.EMPTY_SEQUENCE;
+                    try (final Collection collection = context.getBroker().openCollection(resourceURI.removeLastSegment(), LockMode.READ_LOCK)) {
+                        if (collection == null) {
+                            LOG.warn("collection not found: " + resourceURI.getCollectionPath());
+                            return Sequence.EMPTY_SEQUENCE;
+                        }
+
+                        try(final LockedDocument lockedDoc = collection.getDocumentWithLock(context.getBroker(), resourceURI.lastSegment(), LockMode.READ_LOCK)) {
+
+                            // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                            collection.close();
+
+                            final DocumentImpl doc = lockedDoc == null ?  null : lockedDoc.getDocument();
+                            if (doc == null) {
+                                return Sequence.EMPTY_SEQUENCE;
+                            }
+                            if (doc.getResourceType() != DocumentImpl.BINARY_FILE ||
+                                    !doc.getMetadata().getMimeType().equals("application/xquery")) {
+                                throw new XPathException(this, "XQuery resource: " + uri + " is not an XQuery or " +
+                                        "declares a wrong mime-type");
+                            }
+                            source = new DBSource(context.getBroker(), (BinaryDocument) doc, false);
+                            name = doc.getFileURI().toString();
+                        }
+                    } catch (LockException e) {
+                        throw new XPathException(this, "internal lock error: " + e.getMessage());
+                    } catch (PermissionDeniedException pde) {
+                        throw new XPathException(this, pde.getMessage(), pde);
                     }
-                    doc = collection.getDocumentWithLock(context.getBroker(), resourceURI.lastSegment(), LockMode.READ_LOCK);
-                    if (doc == null)
-                        return Sequence.EMPTY_SEQUENCE;
-                    if (doc.getResourceType() != DocumentImpl.BINARY_FILE ||
-                            !doc.getMetadata().getMimeType().equals("application/xquery")) {
-                        throw new XPathException(this, "XQuery resource: " + uri + " is not an XQuery or " +
-                                "declares a wrong mime-type");
-                    }
-                    source = new DBSource(context.getBroker(), (BinaryDocument) doc, false);
-                    name = doc.getFileURI().toString();
                 } catch (URISyntaxException e) {
                     throw new XPathException(this, "invalid module uri: " + uri + ": " + e.getMessage(), e);
-                } catch (LockException e) {
-                    throw new XPathException(this, "internal lock error: " + e.getMessage());
-                } catch(PermissionDeniedException pde) {
-                    throw new XPathException(this, pde.getMessage(), pde);
-                } finally {
-                    if (doc != null)
-                        doc.getUpdateLock().release(LockMode.READ_LOCK);
-                    if(collection != null)
-                        collection.release(LockMode.READ_LOCK);
                 }
             } else {
                 // first check if the URI points to a registered module

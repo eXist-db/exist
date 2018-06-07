@@ -6,6 +6,7 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
@@ -104,26 +105,30 @@ public class LargeValuesTest {
     /**
      * Just recover.
      */
-    private void restart() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException {
+    private void restart() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, LockException {
 
         BrokerPool.FORCE_CORRUPTION = false;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.READ_LOCK);
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.READ_LOCK)) {
             assertNotNull(root);
 
-            final DocumentImpl doc = root.getDocument(broker, XmldbURI.create("test.xml"));
-            assertNotNull(doc);
+            try(final LockedDocument lockedDoc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"), LockMode.READ_LOCK)) {
+                assertNotNull(lockedDoc);
 
-            final Serializer serializer = broker.getSerializer();
-            serializer.reset();
+                final Serializer serializer = broker.getSerializer();
+                serializer.reset();
 
-            final Path tempFile = Files.createTempFile("eXist", ".xml");
-            try(final Writer writer = Files.newBufferedWriter(tempFile, UTF_8)) {
-                serializer.serialize(doc, writer);
-            }
-            FileUtils.deleteQuietly(tempFile);
+                final Path tempFile = Files.createTempFile("eXist", ".xml");
+                try (final Writer writer = Files.newBufferedWriter(tempFile, UTF_8)) {
+                    serializer.serialize(lockedDoc.getDocument(), writer);
+                }
+
+                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                root.close();
+
+                FileUtils.deleteQuietly(tempFile);
 
 //            XQuery xquery = broker.getXQueryService();
 //            DocumentSet docs = broker.getAllXMLResources(new DefaultDocumentSet());
@@ -136,25 +141,20 @@ public class LargeValuesTest {
 //                if (s.length() == 0)
 //                    break;
 //            }
+            }
         }
     }
 
     private void remove() throws EXistException, PermissionDeniedException, DatabaseConfigurationException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
-        Collection root = null;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-                final Txn transaction = transact.beginTransaction()) {
-
-            root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
+                final Txn transaction = transact.beginTransaction();
+                final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
             assertNotNull(root);
             broker.removeCollection(transaction, root);
 
             transact.commit(transaction);
-        } finally {
-            if(root != null) {
-                root.release(LockMode.WRITE_LOCK);
-            }
         }
     }
 

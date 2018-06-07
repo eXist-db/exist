@@ -31,6 +31,8 @@ import org.exist.storage.MetaStorage;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Document;
 
+import javax.annotation.Nullable;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -45,8 +47,8 @@ public abstract class MetaData implements MetaStorage {
 	
 	protected final static Logger LOG = LogManager.getLogger(MetaData.class);
 
-	public abstract DocumentImpl getDocument(String uuid) throws EXistException, PermissionDeniedException;
-	public abstract Collection getCollection(String uuid) throws EXistException, PermissionDeniedException;
+	@Nullable public abstract DocumentImpl getDocument(String uuid) throws EXistException, PermissionDeniedException;
+	@Nullable public abstract Collection getCollection(String uuid) throws EXistException, PermissionDeniedException;
 
 	public abstract List<DocumentImpl> matchDocuments(String key, String value) throws EXistException, PermissionDeniedException;
     public abstract List<DocumentImpl> matchDocumentsByKey(String key) throws EXistException, PermissionDeniedException;

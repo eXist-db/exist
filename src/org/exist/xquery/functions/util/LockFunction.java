@@ -24,7 +24,9 @@ package org.exist.xquery.functions.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.collections.ManagedLocks;
 import org.exist.dom.persistent.DocumentSet;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.util.LockException;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
@@ -53,13 +55,10 @@ public abstract class LockFunction extends Function {
     	
         final Sequence docsArg = getArgument(0).eval(contextSequence, contextItem);
         final DocumentSet docs = docsArg.getDocumentSet();
-        try {
-            docs.lock(context.getBroker(), exclusive);
+        try(final ManagedLocks<ManagedDocumentLock> managedLocks = docs.lock(context.getBroker(), exclusive)) {
             return getArgument(1).eval(contextSequence, contextItem);
         } catch (final LockException e) {
             throw new XPathException(this, "Could not lock document set", e);
-        } finally {
-            docs.unlock();
         }
     }
     

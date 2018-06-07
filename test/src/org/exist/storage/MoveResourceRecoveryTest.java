@@ -30,6 +30,7 @@ import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
@@ -129,26 +130,19 @@ public class MoveResourceRecoveryTest {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
 
-            final DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/new_test.xml"), LockMode.READ_LOCK);
-            assertNotNull("Document should not be null", doc);
-            final String data = serializer.serialize(doc);
-            assertNotNull(data);
-            doc.getUpdateLock().release(LockMode.READ_LOCK);
+            try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/new_test.xml"), LockMode.READ_LOCK)) {
+                assertNotNull("Document should not be null", lockedDoc);
+                final String data = serializer.serialize(lockedDoc.getDocument());
+                assertNotNull(data);
+            }
 
             final TransactionManager transact = pool.getTransactionManager();
-            try(final Txn transaction = transact.beginTransaction()) {
+            try(final Txn transaction = transact.beginTransaction();
+                    final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
+                assertNotNull(root);
+                transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(root.getURI()));
+                broker.removeCollection(transaction, root);
 
-                Collection root = null;
-                try {
-                    root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
-                    assertNotNull(root);
-                    transaction.acquireLock(root.getLock(), LockMode.WRITE_LOCK);
-                    broker.removeCollection(transaction, root);
-                } finally {
-                    if(root != null) {
-                        root.release(LockMode.WRITE_LOCK);
-                    }
-                }
                 transact.commit(transaction);
             }
         }
@@ -197,27 +191,18 @@ public class MoveResourceRecoveryTest {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
 
-            final DocumentImpl doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append("new_test2.xml"), LockMode.READ_LOCK);
-            assertNotNull("Document should not be null", doc);
-            final String data = serializer.serialize(doc);
-            assertNotNull(data);
-
-            doc.getUpdateLock().release(LockMode.READ_LOCK);
+            try(final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append("new_test2.xml"), LockMode.READ_LOCK)) {
+                assertNotNull("Document should not be null", lockedDoc);
+                final String data = serializer.serialize(lockedDoc.getDocument());
+                assertNotNull(data);
+            }
 
             final TransactionManager transact = pool.getTransactionManager();
-            try(final Txn transaction = transact.beginTransaction()) {
-
-                Collection root = null;
-                try {
-                    root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
-                    assertNotNull(root);
-                    transaction.acquireLock(root.getLock(), LockMode.WRITE_LOCK);
-                    broker.removeCollection(transaction, root);
-                } finally {
-                    if(root != null) {
-                        root.release(LockMode.WRITE_LOCK);
-                    }
-                }
+            try(final Txn transaction = transact.beginTransaction();
+                    final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
+                assertNotNull(root);
+                transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(root.getURI()));
+                broker.removeCollection(transaction, root);
 
                 transact.commit(transaction);
             }

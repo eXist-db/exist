@@ -35,6 +35,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
@@ -80,8 +81,7 @@ public class STXTemplatesCache {
      * @return The compiled stylesheet
      */
     public Templates getOrUpdateTemplate(final DBBroker broker, final DocumentImpl stylesheet) throws TransformerConfigurationException, SAXException, LockException {
-        try {
-            stylesheet.getUpdateLock().acquire(Lock.LockMode.READ_LOCK);
+        try(final ManagedDocumentLock documentLock = broker.getBrokerPool().getLockManager().acquireDocumentReadLock(stylesheet.getURI())) {
 
             final XmldbURI stylesheetUri = stylesheet.getURI();
             final long lastModified = stylesheet.getMetadata().getLastModified();
@@ -104,8 +104,6 @@ public class STXTemplatesCache {
             }
 
             return cachedTemplate.templates;
-        } finally {
-            stylesheet.getUpdateLock().release(Lock.LockMode.READ_LOCK);
         }
     }
 

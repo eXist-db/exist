@@ -34,7 +34,7 @@ import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.dom.DOMFile;
@@ -172,36 +172,26 @@ public class RecoveryTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
-            
-            DocumentImpl doc = null;
-            try {
-                doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/hamlet.xml"), LockMode.READ_LOCK);
-                assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/hamlet.xml' should not be null", doc);
-                final String data = serializer.serialize(doc);
+
+            try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/hamlet.xml"), LockMode.READ_LOCK)) {
+
+                assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/hamlet.xml' should not be null", lockedDoc);
+                final String data = serializer.serialize(lockedDoc.getDocument());
                 assertNotNull(data);
-            } finally {
-                if(doc != null) {
-                    doc.getUpdateLock().release(LockMode.READ_LOCK);
-                    doc = null;
-                }
             }
 
-            try {
-                doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/test_string.xml"), LockMode.READ_LOCK);
-                assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test_string.xml' should not be null", doc);
-                final String data = serializer.serialize(doc);
+            try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/test_string.xml"), LockMode.READ_LOCK)) {
+                assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test_string.xml' should not be null", lockedDoc);
+                final String data = serializer.serialize(lockedDoc.getDocument());
                 assertNotNull(data);
-            } finally {
-                if(doc != null) {
-                    doc.getUpdateLock().release(LockMode.READ_LOCK);
-                }
             }
             
             final List<Path> files = FileUtils.list(dir);
             assertNotNull(files);
             
-            doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(FileUtils.fileName(files.get(files.size() - 1))), LockMode.READ_LOCK);
-            assertNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/'" + FileUtils.fileName(files.get(files.size() - 1)) + " should not exist anymore", doc);
+            try(final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(FileUtils.fileName(files.get(files.size() - 1))), LockMode.READ_LOCK)) {
+                assertNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/'" + FileUtils.fileName(files.get(files.size() - 1)) + " should not exist anymore", lockedDoc);
+            }
             
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -212,13 +202,16 @@ public class RecoveryTest {
                 final String value = serializer.serialize((NodeValue) next);
             }
             
-            final BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(TestConstants.TEST_BINARY_URI), LockMode.READ_LOCK);
-            assertNotNull("Binary document is null", binDoc);
-            try(final InputStream is = broker.getBinaryResource(binDoc)) {
-                final byte[] bdata = new byte[(int) broker.getBinaryResourceSize(binDoc)];
-                is.read(bdata);
-                final String data = new String(bdata);
-                assertNotNull(data);
+            try(final LockedDocument lockedBinDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(TestConstants.TEST_BINARY_URI), LockMode.READ_LOCK)) {
+                assertNotNull("Binary document is null", lockedBinDoc);
+
+                final BinaryDocument binDoc = (BinaryDocument)lockedBinDoc.getDocument();
+                try (final InputStream is = broker.getBinaryResource(binDoc)) {
+                    final byte[] bdata = new byte[(int) broker.getBinaryResourceSize(binDoc)];
+                    is.read(bdata);
+                    final String data = new String(bdata);
+                    assertNotNull(data);
+                }
             }
             
             final DOMFile domDb = ((NativeBroker)broker).getDOMFile();
@@ -229,18 +222,12 @@ public class RecoveryTest {
             
             final TransactionManager transact = pool.getTransactionManager();
             try(final Txn transaction = transact.beginTransaction()) {
-                Collection root = null;
-                try {
-                    root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
-                    assertNotNull(root);
-                    transaction.acquireLock(root.getLock(), LockMode.WRITE_LOCK);
-                    broker.removeCollection(transaction, root);
-                } finally {
-                    if(root != null) {
-                        root.release(LockMode.WRITE_LOCK);
-                    }
-                }
 
+                try(final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
+                    assertNotNull(root);
+                    transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(root.getURI()));
+                    broker.removeCollection(transaction, root);
+                }
                 transact.commit(transaction);
             }
 	    }

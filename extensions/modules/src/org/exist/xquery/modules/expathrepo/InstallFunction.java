@@ -26,9 +26,9 @@ import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.repo.ExistPkgInfo;
 import org.exist.repo.ExistRepository;
 import org.exist.security.PermissionDeniedException;
@@ -99,18 +99,14 @@ public class InstallFunction extends BasicFunction {
 			pkg = parent_repo.installPackage(uri, force, interact);
 			repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
 		    } else {
-			// .xar is stored as a binary resource
-			BinaryDocument doc = null;
-			try {
-			    doc = _getDocument(pkgOrPath);
-			    Path file = ((NativeBroker)context.getBroker()).getCollectionBinaryFileFsPath(doc.getURI());
-			    LOG.debug("Installing file: " + file.toAbsolutePath().toString());
-			    pkg = parent_repo.installPackage(file, force, interact);
-			    repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
-			} finally {
-			    if (doc != null)
-				doc.getUpdateLock().release(LockMode.READ_LOCK);
-			}
+				// .xar is stored as a binary resource
+				try(final LockedDocument lockedDoc = getBinaryDoc(pkgOrPath);) {
+					final DocumentImpl doc = lockedDoc.getDocument();
+					Path file = ((NativeBroker)context.getBroker()).getCollectionBinaryFileFsPath(doc.getURI());
+					LOG.debug("Installing file: " + file.toAbsolutePath().toString());
+					pkg = parent_repo.installPackage(file, force, interact);
+					repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
+				}
 		    }
 		    ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
 		    if (info != null && !info.getJars().isEmpty())
@@ -149,23 +145,23 @@ public class InstallFunction extends BasicFunction {
         }
     }
 
-  private BinaryDocument _getDocument(String path) throws XPathException {
+  private LockedDocument getBinaryDoc(final String path) throws XPathException {
     try {
-      XmldbURI uri = XmldbURI.createInternal(path);
-      DocumentImpl doc = context.getBroker().getXMLResource(uri, LockMode.READ_LOCK);
-      if (doc == null) {
+      final XmldbURI uri = XmldbURI.createInternal(path);
+      final LockedDocument lockedDoc = context.getBroker().getXMLResource(uri, LockMode.READ_LOCK);
+      if (lockedDoc == null) {
         throw new XPathException(this, EXPathErrorCode.EXPDY001,
             path + " is not .xar resource",
             new StringValue(path)
         );
-      } else if (doc.getResourceType() != DocumentImpl.BINARY_FILE) {
-        doc.getUpdateLock().release(LockMode.READ_LOCK);
+      } else if (lockedDoc.getDocument().getResourceType() != DocumentImpl.BINARY_FILE) {
+        lockedDoc.close();
         throw new XPathException(this, EXPathErrorCode.EXPDY001,
             path + " is not a valid .xar, it's not a binary resource",
             new StringValue(path)
         );
       }
-      return (BinaryDocument) doc;
+      return lockedDoc;
     } catch (PermissionDeniedException e) {
       throw new XPathException(this, EXPathErrorCode.EXPDY003, e.getMessage(), new StringValue(path), e);
     }

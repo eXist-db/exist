@@ -27,6 +27,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.ManagedCollectionLock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
@@ -166,19 +167,15 @@ public class TransformTest {
     public static void storeResources() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-            final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-            final Collection testCollection = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
-            try {
-                testCollection.getLock().acquire(Lock.LockMode.WRITE_LOCK);
+            final Txn transaction = pool.getTransactionManager().beginTransaction();
+            final ManagedCollectionLock collectionLock = pool.getLockManager().acquireCollectionWriteLock(TEST_COLLECTION)) {
+                final Collection testCollection = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
 
-                storeXml(broker, transaction, testCollection, LIST_OPS_XSLT_NAME, LIST_OPS_XSLT);
-                storeXml(broker, transaction, testCollection, INPUT_XML_NAME, INPUT_XML);
-                storeXml(broker, transaction, testCollection, DICTIONARY_XML_NAME, DICTIONARY_XML);
+            storeXml(broker, transaction, testCollection, LIST_OPS_XSLT_NAME, LIST_OPS_XSLT);
+            storeXml(broker, transaction, testCollection, INPUT_XML_NAME, INPUT_XML);
+            storeXml(broker, transaction, testCollection, DICTIONARY_XML_NAME, DICTIONARY_XML);
 
-                broker.saveCollection(transaction, testCollection);
-            } finally {
-                testCollection.getLock().acquire(Lock.LockMode.WRITE_LOCK);
-            }
+            broker.saveCollection(transaction, testCollection);
 
             transaction.commit();
         }
@@ -189,16 +186,9 @@ public class TransformTest {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-            Collection testCollection = null;
-            try {
-                testCollection = broker.openCollection(TEST_COLLECTION, Lock.LockMode.WRITE_LOCK);
-
+            try(final Collection testCollection = broker.openCollection(TEST_COLLECTION, Lock.LockMode.WRITE_LOCK)) {
                 if (testCollection != null) {
                     broker.removeCollection(transaction, testCollection);
-                }
-            } finally {
-                if(testCollection != null) {
-                    testCollection.getLock().release(Lock.LockMode.WRITE_LOCK);
                 }
             }
 

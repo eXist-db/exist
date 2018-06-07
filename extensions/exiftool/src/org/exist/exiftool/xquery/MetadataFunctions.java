@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
@@ -90,11 +91,10 @@ public class MetadataFunctions extends BasicFunction {
 
     }
 
-    private Sequence extractMetadataFromLocalResource(XmldbURI docUri) throws XPathException {
-        DocumentImpl doc = null;
-        try {
-            doc = context.getBroker().getXMLResource(docUri, LockMode.READ_LOCK);
-            if (doc instanceof BinaryDocument) {
+    private Sequence extractMetadataFromLocalResource(final XmldbURI docUri) throws XPathException {
+        try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(docUri, LockMode.READ_LOCK)) {
+
+            if (lockedDoc != null && lockedDoc.getDocument() instanceof BinaryDocument) {
                 //resolve real filesystem path of binary file
                 final Path binaryFile = ((NativeBroker) context.getBroker()).getCollectionBinaryFileFsPath(docUri);
                 if (!Files.exists(binaryFile)) {
@@ -106,10 +106,6 @@ public class MetadataFunctions extends BasicFunction {
             }
         } catch (PermissionDeniedException pde) {
             throw new XPathException("Could not access binary document: " + pde.getMessage(), pde);
-        } finally {
-            if (doc != null) {
-                doc.getUpdateLock().release(LockMode.READ_LOCK);
-            }
         }
     }
 

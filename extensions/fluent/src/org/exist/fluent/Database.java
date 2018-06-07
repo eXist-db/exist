@@ -15,8 +15,9 @@ import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.TextImpl;
 import org.exist.security.*;
 import org.exist.storage.*;
-import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.LockManager;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.util.*;
@@ -70,6 +71,7 @@ public class Database {
 			BrokerPool.configure(dbName, 1, 5, config);
 			pool = BrokerPool.getInstance(dbName);
 			txManager = pool.getTransactionManager();
+			lockManager = pool.getLockManager();
 			configureRootCollection(configFile);
 			defragmenter.start();
 			QueryService.statistics().reset();
@@ -114,7 +116,7 @@ public class Database {
 			} finally {
 				db.releaseBroker(broker);
 			}
-		} catch (final PermissionDeniedException | IOException | CollectionConfigurationException e) {
+		} catch (final PermissionDeniedException | IOException | LockException | CollectionConfigurationException e) {
 			throw new DatabaseException(e);
 		} finally {
 			tx.abortIfIncomplete();
@@ -246,6 +248,7 @@ public class Database {
 	        try {
     	        pool = BrokerPool.getInstance(dbName);
                 txManager = pool.getTransactionManager();
+                lockManager = pool.getLockManager();
                 //configureRootCollection(configFile);
                 //defragmenter.start();
                 //QueryService.statistics().reset();
@@ -283,6 +286,7 @@ public class Database {
 	public static final String ROOT_PREFIX = XmldbURI.ROOT_COLLECTION;
 	private static volatile BrokerPool pool;
 	private static TransactionManager txManager;
+	private static LockManager lockManager;
 	private static final ThreadLocal<Transaction> localTransaction = new ThreadLocal<Transaction>();
 	private static final WeakHashMap<NativeBroker,Boolean> instrumentedBrokers = new WeakHashMap<NativeBroker,Boolean>();
 	
@@ -383,9 +387,10 @@ public class Database {
                     if (broker.getCollection(XmldbURI.create(path)) != null) return true;
                     String folderPath = path.substring(0, i);
                     String name = path.substring(i+1);			
-                    Collection collection = broker.openCollection(XmldbURI.create(folderPath), LockMode.NO_LOCK);
-                    if (collection == null) return false;
-                    return collection.getDocument(broker, XmldbURI.create(name)) != null;
+                    try(final Collection collection = broker.openCollection(XmldbURI.create(folderPath), LockMode.NO_LOCK)) {
+						if (collection == null) return false;
+						return collection.getDocument(broker, XmldbURI.create(name)) != null;
+					}
                 } catch(PermissionDeniedException pde) {
                     throw new DatabaseException(pde.getMessage(), pde);
                 } finally {
@@ -485,12 +490,12 @@ public class Database {
 	 */
 	static Transaction requireTransaction() {
 		Transaction t = localTransaction.get();
-		return t == null ? new Transaction(txManager, null) : new Transaction(t, null);
+		return t == null ? new Transaction(txManager, lockManager, null) : new Transaction(t, null);
 	}
 	
 	Transaction requireTransactionWithBroker() {
 		Transaction t = localTransaction.get();
-		return t == null ? new Transaction(txManager, this) : new Transaction(t, this);
+		return t == null ? new Transaction(txManager, lockManager,this) : new Transaction(t, this);
 	}
 	
 	void checkSame(Resource o) {
@@ -604,7 +609,7 @@ public class Database {
 							it.remove();
 						} else {
 							// Must hold write lock on doc before checking stale map to avoid race condition
-							if (doc.getUpdateLock().attempt(LockMode.WRITE_LOCK)) try {
+							try(final ManagedDocumentLock updateLock = pool.getLockManager().acquireDocumentWriteLock(doc.getURI())) {
 								String docPath = normalizePath(doc.getURI().getCollectionPath());
 								if (!staleMap.containsKey(docPath)) {
 									LOG.debug("defragmenting " + docPath);
@@ -618,8 +623,8 @@ public class Database {
 										tx.abortIfIncomplete();
 									}
 								}
-							} finally {
-								doc.getUpdateLock().release(LockMode.WRITE_LOCK);
+							} catch(final LockException e) {
+								// not a problem, we only attempted the lock!
 							}
 						}
 					}

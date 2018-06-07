@@ -1,6 +1,7 @@
 package org.exist.repo;
 
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
@@ -37,20 +38,18 @@ public class RepoBackup {
 
     public static void restore(final DBBroker broker) throws IOException, PermissionDeniedException {
         final XmldbURI docPath = XmldbURI.createInternal(XmldbURI.ROOT_COLLECTION + "/" + REPO_ARCHIVE);
-        DocumentImpl doc = null;
-        try {
-            doc = broker.getXMLResource(docPath, LockMode.READ_LOCK);
-            if (doc == null)
-                {return;}
+        try(final LockedDocument lockedDoc = broker.getXMLResource(docPath, LockMode.READ_LOCK)) {
+            if (lockedDoc == null) {
+                return;
+            }
+
+            final DocumentImpl doc = lockedDoc.getDocument();
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
                 {throw new IOException(docPath + " is not a binary resource");}
 
             final Path file = ((NativeBroker)broker).getCollectionBinaryFileFsPath(doc.getURI());
             final Path directory = ExistRepository.getRepositoryDir(broker.getConfiguration());
             unzip(file, directory);
-        } finally {
-            if (doc != null)
-                {doc.getUpdateLock().release(LockMode.READ_LOCK);}
         }
     }
 

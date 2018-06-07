@@ -29,7 +29,7 @@ import org.exist.util.hashtable.SequencedLongHashMap;
 @NotThreadSafe
 public class BTreeCache<T extends BTreeCacheable> extends LRUCache<T> {
 
-    public BTreeCache(final String name, final int size, final double growthFactor, final double growthThreshold, final String type) {
+    public BTreeCache(final String name, final int size, final double growthFactor, final double growthThreshold, final CacheType type) {
         super(name, size, growthFactor, growthThreshold, type);
     }
 

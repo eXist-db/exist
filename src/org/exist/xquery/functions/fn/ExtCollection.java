@@ -38,7 +38,8 @@ import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.LockManager;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
@@ -135,17 +136,19 @@ public class ExtCollection extends Function {
                 MutableDocumentSet ndocs = new DefaultDocumentSet();
                 for (final String next : args) {
                     final XmldbURI uri = new AnyURIValue(next).toXmldbURI();
-                    final Collection coll = context.getBroker().getCollection(uri);
-                    if (coll == null) {
-                        if (context.isRaiseErrorOnFailedRetrieval()) {
-                            throw new XPathException("FODC0002: can not access collection '" + uri + "'");
+                    try(final Collection coll = context.getBroker().openCollection(uri, Lock.LockMode.READ_LOCK)) {
+                        if (coll == null) {
+                            if (context.isRaiseErrorOnFailedRetrieval()) {
+                                throw new XPathException("FODC0002: can not access collection '" + uri + "'");
+                            }
+                        } else {
+                            if (context.inProtectedMode()) {
+                                context.getProtectedDocs().getDocsByCollection(coll, ndocs);
+                            } else {
+                                coll.allDocs(context.getBroker(), ndocs,
+                                        includeSubCollections, context.getProtectedDocs());
+                            }
                         }
-                    } else {
-                        if (context.inProtectedMode())
-                            {context.getProtectedDocs().getDocsByCollection(coll, ndocs);}
-                        else
-                            {coll.allDocs(context.getBroker(), ndocs,
-                                includeSubCollections, context.getProtectedDocs());}
                     }
                 }
                 docs = ndocs;
@@ -153,29 +156,28 @@ public class ExtCollection extends Function {
         } catch (final XPathException e) { //From AnyURIValue constructor
             e.setLocation(line, column);
             throw new XPathException("FODC0002: " + e.getMessage());
-        } catch(final PermissionDeniedException pde) {
-            throw new XPathException("FODC0002: can not access collection '" + pde.getMessage() + "'");
+        } catch(final PermissionDeniedException | LockException e) {
+            throw new XPathException("FODC0002: can not access collection '" + e.getMessage() + "'");
             
         }
         // iterate through all docs and create the node set
         final NodeSet result = new NewArrayNodeSet();
-        Lock dlock;
-        DocumentImpl doc;
+        final LockManager lockManager = context.getBroker().getBrokerPool().getLockManager();
         for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
-            doc = i.next();
-            dlock = doc.getUpdateLock();
-            boolean lockAcquired = false;
+            final DocumentImpl doc = i.next();
+
+            ManagedDocumentLock dlock = null;
             try {
-                if (!context.inProtectedMode() && !dlock.hasLock()) {
-                    dlock.acquire(LockMode.READ_LOCK);
-                    lockAcquired = true;
+                if (!context.inProtectedMode()) {
+                    dlock = lockManager.acquireDocumentReadLock(doc.getURI());
                 }
                 result.add(new NodeProxy(doc)); // , -1, Node.DOCUMENT_NODE));
             } catch (final LockException e) {
                 throw new XPathException(e.getMessage());
             } finally {
-                if (lockAcquired)
-                    {dlock.release(LockMode.READ_LOCK);}
+                if (dlock != null) {
+                    dlock.close();
+                }
             }
         }
         registerUpdateListener();

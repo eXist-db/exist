@@ -30,6 +30,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -55,61 +56,51 @@ public class InMemoryInputStream {
       throw new IOException(e);
     }
 
-    try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+    try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream();
+         final DBBroker broker = db.getBroker()) {
+      final XmldbURI path = XmldbURI.create(xmldbURL.getPath());
 
-      try (DBBroker broker = db.getBroker()) {
-        final XmldbURI path = XmldbURI.create(xmldbURL.getPath());
+      // Test for collection
+      try(final Collection collection = broker.openCollection(path, LockMode.READ_LOCK)) {
+        if(collection != null) {
+          // Collection
+          throw new IOException("Resource " + xmldbURL.getPath() + " is a collection.");
+        }
 
-        DocumentImpl resource = null;
-        Collection collection = null;
-        try {
-          resource = broker.getXMLResource(path, LockMode.READ_LOCK);
-          if (resource == null) {
-            // Test for collection
-            collection = broker.openCollection(path, LockMode.READ_LOCK);
-            if (collection == null) {
-              // No collection, no document
-              throw new IOException("Resource " + xmldbURL.getPath() + " not found.");
+        try (final LockedDocument lockedDocument = broker.getXMLResource(path, LockMode.READ_LOCK)) {
 
-            } else {
-              // Collection
-              throw new IOException("Resource " + xmldbURL.getPath() + " is a collection.");
+//          // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+//          collection.close();
+
+          if(lockedDocument == null) {
+            // No collection, no document
+            throw new IOException("Resource " + xmldbURL.getPath() + " not found.");
+          }
+
+          final DocumentImpl document = lockedDocument.getDocument();
+          if (document.getResourceType() == DocumentImpl.XML_FILE) {
+            final Serializer serializer = broker.getSerializer();
+            serializer.reset();
+
+            // Preserve doctype
+            serializer.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
+            try(final Writer w = new OutputStreamWriter(os, "UTF-8")) {
+              serializer.serialize(document, w);
             }
 
           } else {
-            if (resource.getResourceType() == DocumentImpl.XML_FILE) {
-              final Serializer serializer = broker.getSerializer();
-              serializer.reset();
-
-              // Preserve doctype
-              serializer.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
-              try (final Writer w = new OutputStreamWriter(os, "UTF-8")) {
-                serializer.serialize(resource, w);
-              }
-
-            } else {
-              broker.readBinaryResource((BinaryDocument) resource, os);
-            }
-          }
-        } finally {
-          if (collection != null) {
-            collection.release(LockMode.READ_LOCK);
+            broker.readBinaryResource((BinaryDocument) document, os);
           }
 
-          if (resource != null) {
-            resource.getUpdateLock().release(LockMode.READ_LOCK);
-          }
+          return os.toFastByteInputStream();
         }
-      } catch (final IOException ex) {
-        LOG.error(ex, ex);
-        throw ex;
-      } catch (final Exception ex) {
-        LOG.error(ex, ex);
-        throw new IOException(ex.getMessage(), ex);
       }
-
-      return os.toFastByteInputStream();
+    } catch (final IOException ex) {
+      LOG.error(ex,ex);
+      throw ex;
+    } catch (final Exception ex) {
+      LOG.error(ex,ex);
+      throw new IOException(ex.getMessage(), ex);
     }
   }
-
 }

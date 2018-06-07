@@ -25,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
-import org.exist.storage.CacheManager;
 import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.StorageAddress;
@@ -45,9 +44,8 @@ import org.exist.storage.journal.JournalException;
 import org.exist.storage.journal.LogEntryTypes;
 import org.exist.storage.journal.Loggable;
 import org.exist.storage.journal.Lsn;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.Lock.LockMode;
-import org.exist.storage.lock.ReentrantReadWriteLock;
+import org.exist.storage.lock.LockManager;
+import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.io.FastByteArrayOutputStream;
@@ -61,6 +59,7 @@ import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -135,10 +134,10 @@ public class BFile extends BTree {
         LogEntryTypes.addEntryType(LOG_OVERFLOW_REMOVE, OverflowRemoveLoggable::new);
     }
 
+    protected final LockManager lockManager;
     protected final BFileHeader fileHeader;
     protected final int minFree;
     protected final Cache<DataPage> dataCache;
-    protected final Lock lock;
     public final int fixedKeyLen = -1;
     protected final int maxValueSize;
 
@@ -146,11 +145,11 @@ public class BFile extends BTree {
     public BFile(final BrokerPool pool, final byte fileId, final boolean recoveryEnabled, final Path file, final DefaultCacheManager cacheManager,
             final double cacheGrowth, final double thresholdData) throws DBException {
         super(pool, fileId, recoveryEnabled, cacheManager, file);
+        lockManager = pool.getLockManager();
         fileHeader = (BFileHeader) getFileHeader();
-        dataCache = new LRUCache<>(FileUtils.fileName(file), 64, cacheGrowth, thresholdData, CacheManager.DATA_CACHE);
+        dataCache = new LRUCache<>(FileUtils.fileName(file), 64, cacheGrowth, thresholdData, Cache.CacheType.DATA);
         cacheManager.registerCache(dataCache);
         minFree = PAGE_MIN_FREE;
-        lock = new ReentrantReadWriteLock(FileUtils.fileName(file));
         maxValueSize = fileHeader.getWorkSize() / 2;
         
         if(exists()) {
@@ -177,8 +176,8 @@ public class BFile extends BTree {
      * @return Lock
      */
     @Override
-    public Lock getLock() {
-        return lock;
+    public String getLockName() {
+        return FileUtils.fileName(getFile());
     }
 
     protected long getDataSyncPeriod() {
@@ -2333,8 +2332,8 @@ public class BFile extends BTree {
                 throw new EOFException();
             }
 
-            try {
-                lock.acquire(LockMode.READ_LOCK);
+
+            try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeReadLock(getLockName())) {
                 nextPage = (SinglePage) getDataPage(next, false);
                 pageLen = nextPage.ph.getDataLength();
                 offset = 0;
@@ -2342,8 +2341,6 @@ public class BFile extends BTree {
             } catch (final LockException e) {
                 throw new IOException("failed to acquire a read lock on "
                         + FileUtils.fileName(getFile()));
-            } finally {
-                lock.release(LockMode.READ_LOCK);
             }
         }
 
@@ -2454,8 +2451,7 @@ public class BFile extends BTree {
         public void seek(final long position) throws IOException {
             final int newPage = StorageAddress.pageFromPointer(position);
             final short newOffset = StorageAddress.tidFromPointer(position);
-            try {
-                lock.acquire(LockMode.READ_LOCK);
+            try(final ManagedLock<ReentrantLock> bfileLock =  lockManager.acquireBtreeReadLock(getLockName())) {
                 nextPage = getSinglePage(newPage);
                 pageLen = nextPage.ph.getDataLength();
                 if (pageLen > fileHeader.getWorkSize()) {
@@ -2465,8 +2461,6 @@ public class BFile extends BTree {
                 dataCache.add(nextPage);
             } catch (final LockException e) {
                 throw new IOException("Failed to acquire a read lock on " + FileUtils.fileName(getFile()));
-            } finally {
-                lock.release(LockMode.READ_LOCK);
             }
         }
     }

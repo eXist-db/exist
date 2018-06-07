@@ -20,7 +20,9 @@
 package org.exist.dom.persistent;
 
 import org.exist.collections.Collection;
+import org.exist.collections.ManagedLocks;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 
@@ -88,12 +90,8 @@ public class EmptyDocumentSet implements DocumentSet {
     }
 
     @Override
-    public void lock(final DBBroker broker, final boolean exclusive) throws
-            LockException {
-    }
-
-    @Override
-    public void unlock() {
+    public ManagedLocks<ManagedDocumentLock> lock(final DBBroker broker, final boolean exclusive) throws LockException {
+        return new ManagedLocks<>(Collections.emptyList());
     }
 
     @Override

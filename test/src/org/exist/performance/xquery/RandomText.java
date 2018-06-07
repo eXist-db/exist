@@ -27,6 +27,7 @@ import org.exist.dom.QName;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.OrderedValuesIndex;
 import org.exist.security.PermissionDeniedException;
+import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -82,7 +83,7 @@ public class RandomText extends BasicFunction {
             }
             words = new String[list.size()];
             list.toArray(words);
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException | LockException e) {
 			throw new XPathException(this, e.getMessage(), e);
 		}
     }

@@ -4,8 +4,6 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.DBException;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.util.FileUtils;
 
 import java.nio.file.Path;
@@ -14,11 +12,8 @@ public class BTreeStore extends BTree {
 
     public final static short FILE_FORMAT_VERSION_ID = 2;
 
-    protected Lock lock = null;
-
     public BTreeStore(final BrokerPool pool, final byte fileId, final boolean recoverEnabled, final Path file, final DefaultCacheManager cacheManager) throws DBException {
         super(pool, fileId, recoverEnabled, cacheManager, file);
-        lock = new ReentrantReadWriteLock(FileUtils.fileName(file));
 
         if(exists()) {
             open(FILE_FORMAT_VERSION_ID);
@@ -32,8 +27,8 @@ public class BTreeStore extends BTree {
     }
 
     @Override
-    public Lock getLock() {
-        return lock;
+    public String getLockName() {
+        return FileUtils.fileName(getFile());
     }
 
     public short getFileVersion() {

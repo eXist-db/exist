@@ -4,7 +4,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
@@ -135,29 +135,28 @@ public class ConstructedNodesRecoveryTest {
 		//create a transaction
         try(final Txn transaction = transact.beginTransaction()) {
 
-            //get the test collection
-            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-            assertNotNull(root);
-            broker.saveCollection(transaction, root);
+			//get the test collection
+			Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+			assertNotNull(root);
+			broker.saveCollection(transaction, root);
 
-            //get the test document
-            DocumentImpl doc = root.getDocumentWithLock(broker, XmldbURI.create(documentName), LockMode.READ_LOCK);
-
-            Serializer serializer = broker.getSerializer();
-            serializer.reset();
-            SAXSerializer sax = null;
-            StringWriter writer = new StringWriter();
-            sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-            Properties outputProperties = new Properties();
-            outputProperties.setProperty(OutputKeys.INDENT, "no");
-            outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
-            sax.setOutput(writer, outputProperties);
-            serializer.setProperties(outputProperties);
-            serializer.setSAXHandlers(sax, sax);
-            serializer.toSAX(doc);
-            SerializerPool.getInstance().returnObject(sax);
-
-            assertEquals(testDocument, writer.toString());
+			//get the test document
+			try (final LockedDocument lockedDoc = root.getDocumentWithLock(broker, XmldbURI.create(documentName), LockMode.READ_LOCK)) {
+				Serializer serializer = broker.getSerializer();
+				serializer.reset();
+				SAXSerializer sax = null;
+				StringWriter writer = new StringWriter();
+				sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+				Properties outputProperties = new Properties();
+				outputProperties.setProperty(OutputKeys.INDENT, "no");
+				outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+				sax.setOutput(writer, outputProperties);
+				serializer.setProperties(outputProperties);
+				serializer.setSAXHandlers(sax, sax);
+				serializer.toSAX(lockedDoc.getDocument());
+				SerializerPool.getInstance().returnObject(sax);
+				assertEquals(testDocument, writer.toString());
+			}
 
             transact.commit(transaction);
         }

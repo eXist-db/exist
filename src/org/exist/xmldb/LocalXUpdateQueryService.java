@@ -24,9 +24,11 @@ import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
@@ -37,6 +39,7 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XUpdateQueryService;
 
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.Reader;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 
@@ -77,11 +80,17 @@ public class LocalXUpdateQueryService extends AbstractLocalService implements XU
                 } else {
                     try {
                         final XmldbURI resourceURI = XmldbURI.xmldbUriFor(id);
-                        final DocumentImpl doc = collection.getDocument(broker1, resourceURI);
-                        if (doc == null) {
-                            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource not found: " + id);
+                        try(final LockedDocument lockedDocument = collection.getDocumentWithLock(broker1, resourceURI, Lock.LockMode.READ_LOCK)) {
+
+                            // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                            collection.close();
+
+                            final DocumentImpl doc = lockedDocument == null ? null : lockedDocument.getDocument();
+                            if (doc == null) {
+                                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource not found: " + id);
+                            }
+                            d.add(doc);
                         }
-                        d.add(doc);
                     } catch(final URISyntaxException e) {
                         throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
                     }
@@ -89,7 +98,7 @@ public class LocalXUpdateQueryService extends AbstractLocalService implements XU
                 return d;
             });
 
-            try {
+            try(final Reader reader = new StringReader(commands)) {
                 if (processor == null) {
                     processor = new XUpdateProcessor(broker, docs);
                 } else {
@@ -97,7 +106,7 @@ public class LocalXUpdateQueryService extends AbstractLocalService implements XU
                     processor.setDocumentSet(docs);
                 }
 
-                final Modification modifications[] = processor.parse(new InputSource(new StringReader(commands)));
+                final Modification modifications[] = processor.parse(new InputSource(reader));
                 long mods = 0;
                 for (int i = 0; i < modifications.length; i++) {
                     mods += modifications[i].process(transaction);

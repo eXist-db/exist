@@ -20,6 +20,7 @@
 package org.exist.xmldb;
 
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.Permission;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
@@ -176,17 +177,15 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
     private <R> FunctionE<LocalXmldbDocumentFunction<R>, R, XMLDBException> with(final LockMode lockMode, final DBBroker broker, final Txn transaction) throws XMLDBException {
         return documentOp ->
                 collection.<R>with(lockMode, broker, transaction).apply((collection, broker1, transaction1) -> {
-                    DocumentImpl doc = null;
-                    try {
-                        doc = collection.getDocumentWithLock(broker1, docId, lockMode);
-                        if(doc == null) {
+                    try(final LockedDocument lockedDoc = collection.getDocumentWithLock(broker1, docId, lockMode)) {
+
+                        // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                        collection.close();
+
+                        if(lockedDoc == null) {
                             throw new XMLDBException(ErrorCodes.INVALID_RESOURCE);
                         }
-                        return documentOp.apply(doc, broker1, transaction1);
-                    } finally {
-                        if(doc != null) {
-                            doc.getUpdateLock().release(lockMode);
-                        }
+                        return documentOp.apply(lockedDoc.getDocument(), broker1, transaction1);
                     }
                 });
     }

@@ -29,6 +29,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.*;
 import org.exist.storage.journal.JournalException;
 import org.exist.storage.journal.JournalManager;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 
 import java.io.IOException;
@@ -240,7 +241,7 @@ public class TransactionManager implements BrokerPoolService {
         broker.pushSubject(broker.getBrokerPool().getSecurityManager().getSystemSubject());
         try {
             broker.reindexCollection(XmldbURI.ROOT_COLLECTION_URI);
-        } catch (final PermissionDeniedException e) {
+        } catch (final PermissionDeniedException | LockException e) {
             LOG.error("Exception during reindex: " + e.getMessage(), e);
         } finally {
         	broker.popSubject();

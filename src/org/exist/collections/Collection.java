@@ -4,19 +4,14 @@ import org.exist.EXistException;
 import org.exist.Resource;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.*;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.storage.*;
-import org.exist.storage.cache.Cacheable;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.*;
 import org.exist.storage.lock.Lock.LockMode;
-import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.SyntaxException;
@@ -33,6 +28,10 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import static org.exist.storage.lock.Lock.LockMode.READ_LOCK;
+import static org.exist.storage.lock.Lock.LockMode.WRITE_LOCK;
 
 /**
  * Represents a Collection in the database. A collection maintains a list of
@@ -40,9 +39,9 @@ import java.util.Observable;
  *
  * Collections are shared between {@link org.exist.storage.DBBroker} instances. The caller
  * is responsible to lock/unlock the collection. Call {@link DBBroker#openCollection(XmldbURI, LockMode)}
- * to get a collection with a read or write lock and {@link #release(LockMode)} to release the lock.
+ * to get a collection with a read or write lock and {@link #close()} to release the lock.
  */
-public interface Collection extends Resource, Comparable<Collection>, Cacheable {
+public interface Collection extends Resource, Comparable<Collection>, AutoCloseable {
 
     /**
      * The length in bytes of the Collection ID
@@ -53,26 +52,6 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * The ID of an unknown Collection
      */
     int UNKNOWN_COLLECTION_ID = -1;
-
-    /**
-     * Get's the lock for this Collection
-     * <p>
-     * Note - this does not actually acquire the lock
-     * for that you must subsequently call {@link Lock#acquire(LockMode)}
-     *
-     * @return The lock for the Collection
-     */
-    Lock getLock();
-
-    /**
-     * Closes the Collection, i.e. releases the lock held by
-     * the current thread.
-     * <p>
-     * This is a shortcut for {@code getLock().release(LockMode)}
-     *
-     * @param mode The mode of the Lock to release
-     */
-    void release(LockMode mode);
 
     /**
      * Get the internal id.
@@ -86,14 +65,14 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      *
      * @param id The id of the Collection
      */
-    void setId(int id);
+    @EnsureContainerLocked(mode=WRITE_LOCK) void setId(int id);
 
     /**
      * Set the internal storage address of the Collection data
      *
      * @param address The internal storage address
      */
-    void setAddress(long address);
+    @EnsureContainerLocked(mode=WRITE_LOCK) void setAddress(long address);
 
     /**
      * Gets the internal storage address of the Collection data
@@ -160,7 +139,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      *
      * @param timestamp the creation timestamp in milliseconds
      */
-    void setCreationTime(long timestamp);
+    @EnsureContainerLocked(mode=WRITE_LOCK) void setCreationTime(long timestamp);
 
     /**
      * Get the Collection Configuration of this Collection
@@ -227,6 +206,16 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @return estimated amount of memory in bytes
      */
     int getMemorySize();
+
+    /**
+     * Returns the estimated amount of memory used by this collection
+     * and its documents. This information is required by the
+     * {@link org.exist.storage.CollectionCacheManager} to be able
+     * to resize the caches.
+     *
+     * @return estimated amount of memory in bytes
+     */
+    int getMemorySizeNoLock();
 
     /**
      * Get the parent Collection.
@@ -312,7 +301,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @param broker The database broker
      * @param child  The child Collection to add to this Collection
      */
-    void addCollection(DBBroker broker, Collection child)
+    void addCollection(DBBroker broker, @EnsureLocked(mode=WRITE_LOCK) Collection child)
             throws PermissionDeniedException, LockException;
 
     /**
@@ -323,7 +312,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @return A list of entries in this Collection
      */
     List<CollectionEntry> getEntries(DBBroker broker)
-            throws PermissionDeniedException, LockException;
+            throws PermissionDeniedException, LockException, IOException;
 
     /**
      * Get the entry for a child Collection
@@ -332,7 +321,8 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @param name   The name of the child Collection
      * @return The child Collection entry
      */
-    CollectionEntry getChildCollectionEntry(DBBroker broker, String name) throws PermissionDeniedException;
+    CollectionEntry getChildCollectionEntry(DBBroker broker, String name)
+            throws PermissionDeniedException, LockException, IOException;
 
     /**
      * Get the entry for a resource
@@ -342,7 +332,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @return The resource entry
      */
     CollectionEntry getResourceEntry(DBBroker broker, String name)
-            throws PermissionDeniedException, LockException;
+            throws PermissionDeniedException, LockException, IOException;
 
     /**
      * Update the specified child Collection
@@ -350,7 +340,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @param broker The database broker
      * @param child  The child Collection to update
      */
-    void update(DBBroker broker, Collection child) throws PermissionDeniedException, LockException;
+    void update(DBBroker broker, @EnsureLocked(mode=WRITE_LOCK) Collection child) throws PermissionDeniedException, LockException;
 
     /**
      * Add a document to the collection
@@ -369,7 +359,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @param broker The database broker
      * @param doc    The document to unlink from the Collection
      */
-    void unlinkDocument(DBBroker broker, DocumentImpl doc) throws PermissionDeniedException, LockException;
+    void unlinkDocument(DBBroker broker, @EnsureLocked(mode=WRITE_LOCK) DocumentImpl doc) throws PermissionDeniedException, LockException;
 
     /**
      * Return an iterator over all child Collections
@@ -438,7 +428,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @return The mutable document set provided in {@param docs}
      */
     MutableDocumentSet allDocs(DBBroker broker, MutableDocumentSet docs, boolean recursive)
-            throws PermissionDeniedException;
+            throws PermissionDeniedException, LockException;
 
     /**
      * Gets all of the documents from the Collection
@@ -450,7 +440,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @return The mutable document set provided in {@param docs}
      */
     MutableDocumentSet allDocs(DBBroker broker, MutableDocumentSet docs, boolean recursive,
-                               LockedDocumentMap lockMap) throws PermissionDeniedException;
+                               LockedDocumentMap lockMap) throws PermissionDeniedException, LockException;
 
     /**
      * Gets all of the documents from the Collection
@@ -509,7 +499,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @param name   The name of the document (without collection path)
      * @return the document or null if it doesn't exist
      */
-    DocumentImpl getDocument(DBBroker broker, XmldbURI name) throws PermissionDeniedException;
+    @Nullable @EnsureUnlocked DocumentImpl getDocument(DBBroker broker, XmldbURI name) throws PermissionDeniedException;
 
     /**
      * Retrieve a child resource after putting a read lock on it.
@@ -518,10 +508,11 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @param broker The database broker
      * @param name   The name of the document (without collection path)
      * @return The locked document or null if it doesn't exist
-     * @deprecated Use getDocumentWithLock(DBBroker broker, XmldbURI uri, int lockMode)
+     *
+     * @deprecated Use {@link #getDocumentWithLock(DBBroker, XmldbURI, LockMode)}
      */
     @Deprecated
-    DocumentImpl getDocumentWithLock(DBBroker broker, XmldbURI name)
+    @Nullable LockedDocument getDocumentWithLock(DBBroker broker, XmldbURI name)
             throws LockException, PermissionDeniedException;
 
     /**
@@ -533,7 +524,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @param lockMode The mode of the lock to acquire
      * @return The locked document or null if it doesn't exist
      */
-    DocumentImpl getDocumentWithLock(DBBroker broker, XmldbURI name, LockMode lockMode)
+    @Nullable LockedDocument getDocumentWithLock(DBBroker broker, XmldbURI name, LockMode lockMode)
             throws LockException, PermissionDeniedException;
 
     /**
@@ -547,24 +538,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @deprecated Use {@link #getDocument(DBBroker, XmldbURI)} instead
      */
     @Deprecated
-    DocumentImpl getDocumentNoLock(DBBroker broker, String rawPath) throws PermissionDeniedException;
-
-    /**
-     * Release any locks held on the document
-     *
-     * @param doc The document to release locks on
-     * @deprecated Use {@link #releaseDocument(DocumentImpl, LockMode)} instead
-     */
-    @Deprecated
-    void releaseDocument(DocumentImpl doc);
-
-    /**
-     * Release any locks held on the document
-     *
-     * @param doc  The document to release locks on
-     * @param mode The lock mode to release
-     */
-    void releaseDocument(DocumentImpl doc, LockMode mode);
+    @Nullable DocumentImpl getDocumentNoLock(DBBroker broker, String rawPath) throws PermissionDeniedException;
 
     /**
      * Remove the specified child Collection
@@ -865,7 +839,9 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      *
      * @param outputStream The output stream to write the collection contents to
      */
-    void serialize(final VariableByteOutputStream outputStream) throws IOException, LockException;
+    @EnsureContainerLocked(mode=READ_LOCK) void serialize(final VariableByteOutputStream outputStream) throws IOException, LockException;
+
+    @Override void close();
 
     //TODO(AR) consider a better separation between Broker and Collection, possibly introduce a CollectionManager object
     interface InternalAccess {
@@ -885,7 +861,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
             this.permissions = permissions;
         }
 
-        public abstract void readMetadata(DBBroker broker);
+        public abstract void readMetadata(DBBroker broker) throws IOException, LockException;
 
         public abstract void read(VariableByteInput is) throws IOException;
 
@@ -916,7 +892,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
         }
 
         @Override
-        public void readMetadata(final DBBroker broker) {
+        public void readMetadata(final DBBroker broker) throws IOException, LockException {
             broker.readCollectionEntry(this);
         }
 
@@ -948,7 +924,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
         }
 
         @Override
-        public void read(final VariableByteInput is) throws IOException {
+        public void read(final VariableByteInput is) {
         }
     }
 }

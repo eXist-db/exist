@@ -25,6 +25,7 @@ import org.exist.collections.triggers.DocumentTriggers;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.xmldb.XmldbURI;
@@ -38,22 +39,25 @@ import org.xml.sax.ext.LexicalHandler;
 /**
  * Internal class used to track required fields between calls to
  * {@link org.exist.collections.Collection#validateXMLResource(Txn, DBBroker, XmldbURI, InputSource)} and
- * {@link org.exist.collections.Collection#store(Txn, DBBroker, IndexInfo, InputSource, boolean)}.
+ * {@link org.exist.collections.Collection#store(Txn, DBBroker, IndexInfo, InputSource)}.
  * 
  * @author wolf
  */
 public class IndexInfo {
 
-    private Indexer indexer;
+    private final Indexer indexer;
+    private final CollectionConfiguration collectionConfig;
+    private final ManagedDocumentLock documentLock;
+
     private DOMStreamer streamer;
     private DocumentTriggers docTriggers;
     private boolean creating = false;
     private Permission oldDocPermissions = null;
-    private CollectionConfiguration collectionConfig;
 
-    IndexInfo(Indexer indexer, CollectionConfiguration collectionConfig) {
+    IndexInfo(final Indexer indexer, final CollectionConfiguration collectionConfig, final ManagedDocumentLock documentLock) {
         this.indexer = indexer;
         this.collectionConfig = collectionConfig;
+        this.documentLock = documentLock;
     }
 
     public Indexer getIndexer() {
@@ -61,7 +65,7 @@ public class IndexInfo {
     }
 
     //XXX: make protected
-    public void setTriggers(DocumentTriggers triggersVisitor) {
+    public void setTriggers(final DocumentTriggers triggersVisitor) {
         this.docTriggers = triggersVisitor;
     }
 
@@ -70,7 +74,7 @@ public class IndexInfo {
         return docTriggers;
     }
 
-    public void setCreating(boolean creating) {
+    public void setCreating(final boolean creating) {
         this.creating = creating;
     }
 
@@ -86,7 +90,7 @@ public class IndexInfo {
         return oldDocPermissions;
     }
 
-    void setReader(XMLReader reader, EntityResolver entityResolver) throws SAXException {
+    void setReader(final XMLReader reader, final EntityResolver entityResolver) throws SAXException {
         if(entityResolver != null) {
             reader.setEntityResolver(entityResolver);
         }
@@ -97,7 +101,7 @@ public class IndexInfo {
         reader.setErrorHandler(indexer);
     }
 
-    void setDOMStreamer(DOMStreamer streamer) {
+    void setDOMStreamer(final DOMStreamer streamer) {
         this.streamer = streamer;
         if (docTriggers == null) {
             streamer.setContentHandler(indexer);
@@ -118,5 +122,9 @@ public class IndexInfo {
 
     public CollectionConfiguration getCollectionConfig() {
         return collectionConfig;
+    }
+
+    public ManagedDocumentLock getDocumentLock() {
+        return documentLock;
     }
 }

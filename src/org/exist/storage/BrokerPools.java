@@ -23,12 +23,13 @@ import net.jcip.annotations.GuardedBy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.ManagedLock;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import com.evolvedbinary.j8fu.function.ConsumerE;
 
 import java.util.*;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -151,21 +152,15 @@ abstract class BrokerPools {
             final Configuration config, final Optional<Observer> statusObserver) throws EXistException {
 
         // optimize for read-concurrency as instances are configured (created) once and used many times
-        final Lock readLock = instancesLock.readLock();
-        readLock.lock();
-        try {
+        try(final ManagedLock<ReadWriteLock> readLock = ManagedLock.acquire(instancesLock, LockMode.READ_LOCK)) {
             if (instances.containsKey(instanceName)) {
                 LOG.warn("Database instance '" + instanceName + "' is already configured");
                 return;
             }
-        } finally {
-            readLock.unlock();
         }
 
         // fallback to probably having to create a new BrokerPool instance
-        final Lock writeLock = instancesLock.writeLock();
-        writeLock.lock();
-        try {
+        try(final ManagedLock<ReadWriteLock> writeLock = ManagedLock.acquire(instancesLock, LockMode.WRITE_LOCK)) {
             // check again, as another thread may have preempted us since we released the read-lock
             if (instances.containsKey(instanceName)) {
                 LOG.warn("Database instance '" + instanceName + "' is already configured");
@@ -193,8 +188,6 @@ abstract class BrokerPools {
                 }
                 throw ee;
             }
-        } finally {
-            writeLock.unlock();
         }
     }
 
@@ -214,17 +207,13 @@ abstract class BrokerPools {
      * @return <code>true</code> if it is configured
      */
     public static boolean isConfigured(final String instanceName) {
-        final Lock readLock = instancesLock.readLock();
-        readLock.lock();
-        try {
+        try(final ManagedLock<ReadWriteLock> readLock = ManagedLock.acquire(instancesLock, LockMode.READ_LOCK)) {
             final BrokerPool instance = instances.get(instanceName);
             if (instance == null) {
                 return false;
             } else {
                 return instance.isInstanceConfigured();
             }
-        } finally {
-            readLock.unlock();
         }
     }
 
@@ -249,9 +238,7 @@ abstract class BrokerPools {
      */
     public static BrokerPool getInstance(final String instanceName) throws EXistException {
         //Check if there is a database instance with the same id
-        final Lock readLock = instancesLock.readLock();
-        readLock.lock();
-        try {
+        try(final ManagedLock<ReadWriteLock> readLock = ManagedLock.acquire(instancesLock, LockMode.READ_LOCK)) {
             final BrokerPool instance = instances.get(instanceName);
             if (instance != null) {
                 //TODO : call isConfigured(id) and throw an EXistException if relevant ?
@@ -259,40 +246,26 @@ abstract class BrokerPools {
             } else {
                 throw new EXistException("Database instance '" + instanceName + "' is not available");
             }
-        } finally {
-            readLock.unlock();
         }
     }
 
     static void removeInstance(final String instanceName) {
-        final Lock writeLock = instancesLock.writeLock();
-        writeLock.lock();
-        try {
+        try(final ManagedLock<ReadWriteLock> writeLock = ManagedLock.acquire(instancesLock, LockMode.WRITE_LOCK)) {
             instances.remove(instanceName);
-        } finally {
-            writeLock.unlock();
         }
     }
 
     public static <E extends Exception> void readInstances(final ConsumerE<BrokerPool, E> reader) throws E {
-        final Lock readLock = instancesLock.readLock();
-        readLock.lock();
-        try {
+        try(final ManagedLock<ReadWriteLock> readLock = ManagedLock.acquire(instancesLock, LockMode.READ_LOCK)) {
             for (final BrokerPool instance : instances.values()) {
                 reader.accept(instance);
             }
-        } finally {
-            readLock.unlock();
         }
     }
 
     static int instancesCount() {
-        final Lock readLock = instancesLock.readLock();
-        readLock.lock();
-        try {
+        try(final ManagedLock<ReadWriteLock> readLock = ManagedLock.acquire(instancesLock, LockMode.READ_LOCK)) {
             return instances.size();
-        } finally {
-            readLock.unlock();
         }
     }
 
@@ -303,9 +276,7 @@ abstract class BrokerPools {
      * @param killed <code>true</code> when invoked by an exiting JVM
      */
     public static void stopAll(final boolean killed) {
-        final Lock writeLock = instancesLock.writeLock();
-        writeLock.lock();
-        try {
+        try(final ManagedLock<ReadWriteLock> writeLock = ManagedLock.acquire(instancesLock, LockMode.WRITE_LOCK)) {
             for (final BrokerPool instance : instances.values()) {
                 if (instance.isInstanceConfigured()) {
                     //Shut it down
@@ -316,8 +287,6 @@ abstract class BrokerPools {
             // Clear the living instances container : they are all sentenced to death...
             assert(instances.size() == 0); // should have all been removed by BrokerPool#shutdown(boolean)
             instances.clear();
-        } finally {
-            writeLock.unlock();
         }
     }
 }

@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.security.PermissionDeniedException;
@@ -66,29 +67,23 @@ public class InspectIndex extends BasicFunction {
 			throws XPathException {
 		String path = args[0].itemAt(0).getStringValue();
 
-		DocumentImpl doc = null;
-        try {
+        try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK)) {
 			// Retrieve document from database
-			 doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK);
 
 			// Verify the document actually exists
-			if (doc == null) {
+			if (lockedDoc == null) {
 			    throw new XPathException(this, "Document " + path + " does not exist.");
 			}
 			
 			final LuceneIndexWorker index = (LuceneIndexWorker)
 				context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-			return new BooleanValue(index.hasIndex(doc.getDocId()));
+			return new BooleanValue(index.hasIndex(lockedDoc.getDocument().getDocId()));
 		} catch (PermissionDeniedException e) {
 			throw new XPathException(this, LuceneModule.EXXQDYFT0001, e.getMessage());
 		} catch (URISyntaxException e) {
 			throw new XPathException(this, LuceneModule.EXXQDYFT0003, e.getMessage());
 		} catch (IOException e) {
 			throw new XPathException(this, LuceneModule.EXXQDYFT0002, e.getMessage());
-		} finally {
-        	if(doc != null) {
-        		doc.getUpdateLock().release(LockMode.READ_LOCK);
-			}
 		}
 	}
 

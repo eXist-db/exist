@@ -27,6 +27,7 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockToken;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -98,11 +99,10 @@ public class ExistDocument extends ExistResource {
         }
 
         try (final DBBroker broker = brokerPool.get(Optional.of(subject))) {
-            DocumentImpl document = null;
-            try {
-                // If it is not a collection, check if it is a document
-                document = broker.getXMLResource(xmldbUri, LockMode.READ_LOCK);
+            // If it is not a collection, check if it is a document
+            try (final LockedDocument lockedDocument = broker.getXMLResource(xmldbUri, LockMode.READ_LOCK)) {
 
+                final DocumentImpl document = lockedDocument.getDocument();
                 if (document.getResourceType() == DocumentImpl.XML_FILE) {
                     isXmlDocument = true;
                 }
@@ -124,11 +124,6 @@ public class ExistDocument extends ExistResource {
 
                 // Get (estimated) file size
                 contentLength = document.getContentLength();
-            } finally {
-                // Cleanup resources
-                if (document != null) {
-                    document.getUpdateLock().release(LockMode.READ_LOCK);
-                }
             }
         } catch (final EXistException | PermissionDeniedException e) {
             LOG.error(e);
@@ -162,11 +157,10 @@ public class ExistDocument extends ExistResource {
 
         try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
 
-            DocumentImpl document = null;
-            try {
-                // If it is not a collection, check if it is a document
-                document = broker.getXMLResource(xmldbUri, LockMode.READ_LOCK);
+            // If it is not a collection, check if it is a document
+            try(final LockedDocument lockedDocument = broker.getXMLResource(xmldbUri, LockMode.READ_LOCK)) {
 
+                final DocumentImpl document = lockedDocument.getDocument();
                 if (document.getResourceType() == DocumentImpl.XML_FILE) {
                     // Stream XML document
 
@@ -182,10 +176,6 @@ public class ExistDocument extends ExistResource {
                     // Stream NON-XML document
                     broker.readBinaryResource((BinaryDocument) document, os);
                     os.flush();
-                }
-            } finally {
-                if (document != null) {
-                    document.getUpdateLock().release(LockMode.READ_LOCK);
                 }
             }
         } catch (EXistException e) {
@@ -240,20 +230,17 @@ public class ExistDocument extends ExistResource {
             LOG.debug(String.format("Deleting %s", xmldbUri));
         }
 
-        Collection collection = null;
-        DocumentImpl resource = null;
+        // Need to split path into collection and document name
+        final XmldbURI collName = xmldbUri.removeLastSegment();
+        final XmldbURI docName = xmldbUri.lastSegment();
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
         try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
-             final Txn txn = txnManager.beginTransaction()) {
-
-            // Need to split path into collection and document name
-            XmldbURI collName = xmldbUri.removeLastSegment();
-            XmldbURI docName = xmldbUri.lastSegment();
+            final Txn txn = txnManager.beginTransaction();
+            final Collection collection = broker.openCollection(collName, LockMode.WRITE_LOCK)) {
 
             // Open collection if possible, else abort
-            collection = broker.openCollection(collName, LockMode.WRITE_LOCK);
             if (collection == null) {
                 LOG.debug("Collection does not exist");
                 txnManager.abort(txn);
@@ -261,25 +248,29 @@ public class ExistDocument extends ExistResource {
             }
 
             // Open document if possible, else abort
-            resource = collection.getDocument(broker, docName);
-            if (resource == null) {
-                LOG.debug(String.format("No resource found for path: %s", xmldbUri));
-                txnManager.abort(txn);
-                return;
-            }
+            try(final LockedDocument lockedResource = collection.getDocumentWithLock(broker, docName, LockMode.READ_LOCK)) {
+                if (lockedResource == null) {
+                    LOG.debug(String.format("No resource found for path: %s", xmldbUri));
+                    txnManager.abort(txn);
+                    return;
+                }
 
-            if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
-                collection.removeBinaryResource(txn, broker, resource.getFileURI());
+                final DocumentImpl resource = lockedResource.getDocument();
+                if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
+                    collection.removeBinaryResource(txn, broker, resource.getFileURI());
+                } else {
+                    collection.removeXMLResource(txn, broker, resource.getFileURI());
+                }
 
-            } else {
-                collection.removeXMLResource(txn, broker, resource.getFileURI());
-            }
+                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                collection.close();
 
-            // Commit change
-            txnManager.commit(txn);
+                // Commit change
+                txnManager.commit(txn);
 
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Document deleted sucessfully");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Document deleted sucessfully");
+                }
             }
 
         } catch (final LockException e) {
@@ -287,12 +278,6 @@ public class ExistDocument extends ExistResource {
         } catch (final EXistException | IOException | TriggerException | PermissionDeniedException e) {
             LOG.error(e);
         } finally {
-
-            // TODO: check if can be done earlier
-            if (collection != null) {
-                collection.release(LockMode.WRITE_LOCK);
-            }
-
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Finished delete");
             }
@@ -308,12 +293,10 @@ public class ExistDocument extends ExistResource {
             LOG.debug("Get current lock " + xmldbUri);
         }
 
-        DocumentImpl document = null;
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
+                final LockedDocument lockedDocument = broker.getXMLResource(xmldbUri, LockMode.READ_LOCK)) {
 
-        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
-
-            // If it is not a collection, check if it is a document
-            document = broker.getXMLResource(xmldbUri, LockMode.READ_LOCK);
+            final DocumentImpl document = lockedDocument.getDocument();
 
             if (document == null) {
                 LOG.debug("No resource found for path: " + xmldbUri);
@@ -353,11 +336,6 @@ public class ExistDocument extends ExistResource {
             return null;
 
         } finally {
-
-            if (document != null) {
-                document.getUpdateLock().release(LockMode.READ_LOCK);
-            }
-
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Finished probe lock");
             }
@@ -374,13 +352,11 @@ public class ExistDocument extends ExistResource {
             LOG.debug("create lock " + xmldbUri);
         }
 
-        DocumentImpl document = null;
+        // Try to get document
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
+                final LockedDocument lockedDocument = broker.getXMLResource(xmldbUri, LockMode.WRITE_LOCK);) {
 
-        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
-
-            // Try to get document (add catch?)
-            document = broker.getXMLResource(xmldbUri, LockMode.WRITE_LOCK);
-
+            final DocumentImpl document = lockedDocument.getDocument();
             if (document == null) {
 
                 if (LOG.isDebugEnabled()) {
@@ -449,12 +425,6 @@ public class ExistDocument extends ExistResource {
             LOG.error(e);
             throw new EXistException(e);
         } finally {
-
-            // TODO: check if can be done earlier
-            if (document != null) {
-                document.getUpdateLock().release(LockMode.WRITE_LOCK);
-            }
-
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Finished create lock");
             }
@@ -470,17 +440,14 @@ public class ExistDocument extends ExistResource {
             LOG.debug("unlock " + xmldbUri);
         }
 
-        DocumentImpl document = null;
-
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
+        // Try to get document
         try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
-             final Txn txn = txnManager.beginTransaction()) {
+                final Txn txn = txnManager.beginTransaction();
+                final LockedDocument lockedDocument = broker.getXMLResource(xmldbUri, LockMode.WRITE_LOCK)) {
 
-
-            // Try to get document (add catch?)
-            document = broker.getXMLResource(xmldbUri, LockMode.WRITE_LOCK);
-
+            final DocumentImpl document = lockedDocument.getDocument();
             if (document == null) {
                 final String msg = String.format("No resource found for path: %s", xmldbUri);
                 LOG.debug(msg);
@@ -518,10 +485,6 @@ public class ExistDocument extends ExistResource {
             LOG.error(e);
             throw new EXistException(e);
         } finally {
-            if (document != null) {
-                document.getUpdateLock().release(LockMode.WRITE_LOCK);
-            }
-
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Finished create lock");
             }
@@ -545,26 +508,22 @@ public class ExistDocument extends ExistResource {
             throw new EXistException(ex.getMessage());
         }
 
-        Collection srcCollection = null;
         // use WRITE_LOCK if moving or if src and dest collection are the same
         final LockMode srcCollectionLockMode = mode == Mode.MOVE
                 || destCollectionUri.equals(xmldbUri.removeLastSegment()) ? LockMode.WRITE_LOCK : LockMode.READ_LOCK;
         DocumentImpl srcDocument = null;
 
-        Collection destCollection = null;
-
+        // Need to split path into collection and document name
+        final XmldbURI srcCollectionUri = xmldbUri.removeLastSegment();
+        final XmldbURI srdDocumentUri = xmldbUri.lastSegment();
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
         try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
-             final Txn txn = txnManager.beginTransaction()) {
-
-            // Need to split path into collection and document name
-            XmldbURI srcCollectionUri = xmldbUri.removeLastSegment();
-            XmldbURI srdDocumentUri = xmldbUri.lastSegment();
+                final Txn txn = txnManager.beginTransaction();
+                final Collection srcCollection = broker.openCollection(srcCollectionUri, srcCollectionLockMode)) {
 
             // Open collection if possible, else abort
-            srcCollection = broker.openCollection(srcCollectionUri, srcCollectionLockMode);
             if (srcCollection == null) {
                 txnManager.abort(txn);
                 return; // TODO throw
@@ -579,30 +538,30 @@ public class ExistDocument extends ExistResource {
             }
 
             // Open collection if possible, else abort
-            destCollection = broker.openCollection(destCollectionUri, LockMode.WRITE_LOCK);
-            if (destCollection == null) {
-                LOG.debug(String.format("Destination collection %s does not exist.", xmldbUri));
-                txnManager.abort(txn);
-                return;
+            try (final Collection destCollection = broker.openCollection(destCollectionUri, LockMode.WRITE_LOCK)) {
+                if (destCollection == null) {
+                    LOG.debug(String.format("Destination collection %s does not exist.", xmldbUri));
+                    txnManager.abort(txn);
+                    return;
+                }
+
+
+                // Perform actial move/copy
+                if (mode == Mode.COPY) {
+                    broker.copyResource(txn, srcDocument, destCollection, newNameUri);
+
+                } else {
+                    broker.moveResource(txn, srcDocument, destCollection, newNameUri);
+                }
+
+
+                // Commit change
+                txnManager.commit(txn);
+
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("Document %sd successfully", mode));
+                }
             }
-
-
-            // Perform actial move/copy
-            if (mode == Mode.COPY) {
-                broker.copyResource(txn, srcDocument, destCollection, newNameUri);
-
-            } else {
-                broker.moveResource(txn, srcDocument, destCollection, newNameUri);
-            }
-
-
-            // Commit change
-            txnManager.commit(txn);
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("Document %sd successfully", mode));
-            }
-
         } catch (LockException e) {
             LOG.error("Resource is locked.", e);
             throw new EXistException(e.getMessage());
@@ -616,16 +575,6 @@ public class ExistDocument extends ExistResource {
             throw new EXistException(e.getMessage());
 
         } finally {
-
-            // TODO: check if can be done earlier
-            if (destCollection != null) {
-                destCollection.release(LockMode.WRITE_LOCK);
-            }
-
-            if (srcCollection != null) {
-                srcCollection.release(srcCollectionLockMode);
-            }
-
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Finished " + mode);
             }
@@ -639,8 +588,6 @@ public class ExistDocument extends ExistResource {
             LOG.debug(String.format("refresh lock %s  lock=%s", xmldbUri, token));
         }
 
-        DocumentImpl document = null;
-
         if (token == null) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("token is null");
@@ -648,11 +595,11 @@ public class ExistDocument extends ExistResource {
             throw new EXistException("token is null");
         }
 
-        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
+        // Try to get document
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
+                final LockedDocument lockedDocument = broker.getXMLResource(xmldbUri, LockMode.WRITE_LOCK)) {
 
-            // Try to get document (add catch?)
-            document = broker.getXMLResource(xmldbUri, LockMode.WRITE_LOCK);
-
+            final DocumentImpl document = lockedDocument.getDocument();
             if (document == null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(String.format("No resource found for path: %s", xmldbUri));
@@ -709,12 +656,6 @@ public class ExistDocument extends ExistResource {
             LOG.error(e);
             throw e;
         } finally {
-
-            // TODO: check if can be done earlier
-            if (document != null) {
-                document.getUpdateLock().release(LockMode.WRITE_LOCK);
-            }
-
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Finished create lock");
             }
