@@ -102,11 +102,12 @@ public class TransactionManager implements BrokerPoolService {
                     journalManager.get().journal(new TxnStart(txnId));
                 } catch(final JournalException e) {
                     LOG.error("Failed to create transaction. Error writing to log file.", e);
-                }
+	            }
             }
 
             final Txn txn = new Txn(TransactionManager.this, txnId);
             transactions.put(txn.getId(), new TxnCounter());
+            broker.setCurrentTransaction(txn);
             return txn;
         });
     }
@@ -118,6 +119,12 @@ public class TransactionManager implements BrokerPoolService {
      * @throws TransactionException
      */
     public void commit(final Txn txn) throws TransactionException {
+
+        if(txn instanceof Txn.ReusableTxn) {
+            txn.commit();
+            return;
+            //throw new IllegalStateException("Commit should be called on the transaction and not via the TransactionManager"); //TODO(AR) remove later when API is cleaned up?
+        }
 
         //we can only commit something which is in the STARTED state
         if (txn.getState() != Txn.State.STARTED) {
@@ -180,13 +187,20 @@ public class TransactionManager implements BrokerPoolService {
         if (txn.getState() == Txn.State.CLOSED) {
             return;
         }
-
         try {
             //if the transaction is started, then we should auto-abort the uncommitted transaction
             if (txn.getState() == Txn.State.STARTED) {
                 LOG.warn("Transaction was not committed or aborted, auto aborting!");
                 abort(txn);
             }
+
+            try(final DBBroker broker = pool.getBroker()) {
+                broker.setCurrentTransaction(null);
+            } catch(final EXistException ee) {
+                LOG.fatal(ee.getMessage(), ee);
+                throw new RuntimeException(ee);
+            }
+
         } finally {
             txn.setState(Txn.State.CLOSED); //transaction is now closed!
         }
@@ -239,9 +253,10 @@ public class TransactionManager implements BrokerPoolService {
     @Deprecated
     public void reindex(final DBBroker broker) throws IOException {
         broker.pushSubject(broker.getBrokerPool().getSecurityManager().getSystemSubject());
-        try {
-            broker.reindexCollection(XmldbURI.ROOT_COLLECTION_URI);
-        } catch (final PermissionDeniedException | LockException e) {
+        try(final Txn transaction = beginTransaction()) {
+            broker.reindexCollection(transaction, XmldbURI.ROOT_COLLECTION_URI);
+            commit(transaction);
+        } catch (final PermissionDeniedException | LockException | TransactionException e) {
             LOG.error("Exception during reindex: " + e.getMessage(), e);
         } finally {
         	broker.popSubject();

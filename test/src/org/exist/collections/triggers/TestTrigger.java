@@ -48,11 +48,9 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
 
     private DocumentImpl doc;
 
-    public void configure(DBBroker broker, org.exist.collections.Collection parent, Map<String, List<?>> parameters) throws TriggerException {
-        super.configure(broker, parent, parameters);
+    public void configure(DBBroker broker, Txn transaction, org.exist.collections.Collection parent, Map<String, List<?>> parameters) throws TriggerException {
+        super.configure(broker, transaction, parent, parameters);
         XmldbURI docPath = XmldbURI.create("messages.xml");
-        TransactionManager transactMgr = broker.getBrokerPool().getTransactionManager();
-        Txn transaction = transactMgr.beginTransaction();
         try {
             this.doc = parent.getDocument(broker, docPath);
             if (this.doc == null) {
@@ -66,22 +64,17 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
                 parent.store(transaction, broker, info, TEMPLATE);
                 this.doc = info.getDocument();
             }
-            transactMgr.commit(transaction);
 
         } catch (Exception e) {
-            transactMgr.abort(transaction);
             throw new TriggerException(e.getMessage(), e);
         } finally {
-            transaction.close();
             parent.setTriggersEnabled(true);
         }
     }
 
-	private void addRecord(DBBroker broker, String xupdate) throws TriggerException {
+	private void addRecord(DBBroker broker, Txn transaction, String xupdate) throws TriggerException {
         MutableDocumentSet docs = new DefaultDocumentSet();
         docs.add(doc);
-        TransactionManager transactMgr = broker.getBrokerPool().getTransactionManager();
-        Txn transaction = transactMgr.beginTransaction();
         try {
             // IMPORTANT: temporarily disable triggers on the collection.
             // We would end up in infinite recursion if we don't do that
@@ -93,15 +86,11 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
             for (int i = 0; i < modifications.length; i++) {
                 modifications[i].process(transaction);
             }
-            transactMgr.commit(transaction);
 
             broker.flush();
         } catch (Exception e) {
-            transactMgr.abort(transaction);
-            e.printStackTrace();
             throw new TriggerException(e.getMessage(), e);
         } finally {
-            transaction.close();
             // IMPORTANT: reenable trigger processing for the collection.
             getCollection().setTriggersEnabled(true);
         }
@@ -120,7 +109,7 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
         "   </xu:append>" +
         "</xu:modifications>";
 
-        addRecord(broker, xupdate);
+        addRecord(broker, transaction, xupdate);
 	}
 
 	@Override
@@ -163,7 +152,7 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
         "   </xu:append>" +
         "</xu:modifications>";
         
-        addRecord(broker, xupdate);
+        addRecord(broker, transaction, xupdate);
 	}
 
 	@Override

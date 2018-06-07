@@ -27,6 +27,7 @@ import org.exist.config.ConfigurationException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -51,7 +52,7 @@ public interface SecurityManager extends Configurable {
    String GUEST_GROUP = "guest";
    String GUEST_USER = "guest";
 
-   void attach(DBBroker broker) throws EXistException;
+   void attach(DBBroker broker, Txn transaction) throws EXistException;
    
    Database getDatabase();
    Database database();

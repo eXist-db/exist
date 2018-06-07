@@ -436,7 +436,7 @@ public class CopyResourceTest {
         try (final DBBroker broker = pool.get(Optional.of(sm.getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
             final Collection collection = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
-            chmod(broker, collection.getURI(), 511);
+            chmod(broker, transaction, collection.getURI(), 511);
             broker.saveCollection(transaction, collection);
 
             createUser(broker, sm, USER1_NAME, USER1_PWD);
@@ -459,20 +459,20 @@ public class CopyResourceTest {
             final String u1d1xml = "<empty1/>";
             final IndexInfo u1d1ii = collection.validateXMLResource(transaction, broker, USER1_DOC1, u1d1xml);
             collection.store(transaction, broker, u1d1ii, u1d1xml);
-            chmod(broker, TEST_COLLECTION_URI.append(USER1_DOC1), USER1_DOC1_MODE);
+            chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_DOC1), USER1_DOC1_MODE);
 
             final String u1d2xml = "<empty2/>";
             final IndexInfo u1d2ii = collection.validateXMLResource(transaction, broker, USER1_DOC2, u1d2xml);
             collection.store(transaction, broker, u1d2ii, u1d2xml);
-            chmod(broker, TEST_COLLECTION_URI.append(USER1_DOC2), USER1_DOC2_MODE);
+            chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_DOC2), USER1_DOC2_MODE);
 
             final String u1d1bin = "bin1";
             collection.addBinaryResource(transaction, broker, USER1_BIN_DOC1, u1d1bin.getBytes(UTF_8), "text/plain");
-            chmod(broker, TEST_COLLECTION_URI.append(USER1_BIN_DOC1), USER1_BIN_DOC1_MODE);
+            chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC1), USER1_BIN_DOC1_MODE);
 
             final String u1d2bin = "bin2";
             collection.addBinaryResource(transaction, broker, USER1_BIN_DOC2, u1d2bin.getBytes(UTF_8), "text/plain");
-            chmod(broker, TEST_COLLECTION_URI.append(USER1_BIN_DOC2), USER1_BIN_DOC2_MODE);
+            chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC2), USER1_BIN_DOC2_MODE);
 
             broker.saveCollection(transaction, collection);
 
@@ -488,11 +488,11 @@ public class CopyResourceTest {
             final String u2d2xml = "<empty2/>";
             final IndexInfo u2d2ii = collection.validateXMLResource(transaction, broker, USER2_DOC2, u2d2xml);
             collection.store(transaction, broker, u2d2ii, u2d2xml);
-            chmod(broker, TEST_COLLECTION_URI.append(USER2_DOC2), USER2_DOC2_MODE);
+            chmod(broker, transaction, TEST_COLLECTION_URI.append(USER2_DOC2), USER2_DOC2_MODE);
 
             final String u2d2bin = "bin2";
             collection.addBinaryResource(transaction, broker, USER2_BIN_DOC2, u2d2bin.getBytes(UTF_8), "text/plain");
-            chmod(broker, TEST_COLLECTION_URI.append(USER2_BIN_DOC2), USER2_BIN_DOC2_MODE);
+            chmod(broker, transaction, TEST_COLLECTION_URI.append(USER2_BIN_DOC2), USER2_BIN_DOC2_MODE);
 
             broker.saveCollection(transaction, collection);
 
@@ -553,8 +553,8 @@ public class CopyResourceTest {
         sm.updateGroup(userGroup);
     }
 
-    private static void chmod(final DBBroker broker, final XmldbURI pathUri, final int mode) throws PermissionDeniedException {
-        PermissionFactory.chmod(broker, pathUri, Optional.of(mode), Optional.empty());
+    private static void chmod(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final int mode) throws PermissionDeniedException {
+        PermissionFactory.chmod(broker, transaction, pathUri, Optional.of(mode), Optional.empty());
     }
 
     private static void removeUser(final SecurityManager sm, final String username) throws PermissionDeniedException, EXistException {

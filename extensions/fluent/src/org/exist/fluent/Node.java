@@ -199,8 +199,7 @@ public class Node extends Item {
 			final StoredNode node = (StoredNode) getDOMNode();
 			return new ElementBuilder<Node>(namespaceBindings, true, new ElementBuilder.CompletedCallback<Node>() {
 				public Node completed(org.w3c.dom.Node[] nodes) {
-					Transaction tx = db.requireTransactionWithBroker();
-					try {
+					try(final Transaction tx = db.requireTransactionWithBroker()) {
 						final DocumentImpl ownerDoc = node.getOwnerDocument();
 						tx.lockWrite(ownerDoc);
 						DocumentTrigger trigger = fireTriggerBefore(tx);
@@ -217,8 +216,6 @@ public class Node extends Item {
 						throw new DatabaseException(e);
 					} catch (TriggerException e) {
 						throw new DatabaseException("append aborted by listener", e);
-					} finally {
-						tx.abortIfIncomplete();
 					}
 				}
 			});
@@ -250,8 +247,8 @@ public class Node extends Item {
 		} else if (parent == null) {
 			throw new DatabaseException("cannot delete node with no parent");
 		} else {
-			Transaction tx = db.requireTransactionWithBroker();
-			try {
+
+			try(final Transaction tx = db.requireTransactionWithBroker()) {
 				if (parent instanceof NodeHandle) {
                     tx.lockWrite(((NodeHandle) parent).getOwnerDocument());
                 }
@@ -263,8 +260,6 @@ public class Node extends Item {
 				throw new DatabaseException(e);
 			} catch (TriggerException e) {
 				throw new DatabaseException("delete aborted by listener", e);
-			} finally {
-				tx.abortIfIncomplete();
 			}
 		}
 	}
@@ -307,8 +302,7 @@ public class Node extends Item {
 			return new ElementBuilder<Object>(namespaceBindings, false, new ElementBuilder.CompletedCallback<Object>() {
 				public Object completed(org.w3c.dom.Node[] nodes) {
 					assert nodes.length == 1;
-					Transaction tx = db.requireTransactionWithBroker();
-					try {
+					try(final Transaction tx = db.requireTransactionWithBroker()) {
 						DocumentImpl doc = (DocumentImpl) oldNode.getOwnerDocument();
 						tx.lockWrite(doc);
 						DocumentTrigger trigger = fireTriggerBefore(tx);
@@ -322,8 +316,6 @@ public class Node extends Item {
 						throw new DatabaseException(e);
 					} catch (TriggerException e) {
 						throw new DatabaseException("append aborted by listener", e);
-					} finally {
-						tx.abortIfIncomplete();
 					}
 				}
 			});
@@ -347,8 +339,7 @@ public class Node extends Item {
 			final ElementImpl elem = (ElementImpl) getDOMNode();
 			return new AttributeBuilder(elem, namespaceBindings, new AttributeBuilder.CompletedCallback() {
 				public void completed(NodeList removeList, NodeList addList) {
-					Transaction tx = db.requireTransactionWithBroker();
-					try {
+					try(final Transaction tx = db.requireTransactionWithBroker()) {
 						DocumentImpl doc = elem.getOwnerDocument();
 						tx.lockWrite(doc);
 						DocumentTrigger trigger = fireTriggerBefore(tx);
@@ -357,8 +348,6 @@ public class Node extends Item {
 						tx.commit();
 					} catch (TriggerException e) {
 						throw new DatabaseException("append aborted by listener", e);
-					} finally {
-						tx.abortIfIncomplete();
 					}
 				}
 			});
@@ -377,7 +366,7 @@ public class Node extends Item {
 		DocumentImpl docimpl = ((NodeProxy) item).getOwnerDocument();
 		Collection col = docimpl.getCollection();
 		
-		DocumentTrigger trigger = new DocumentTriggers(tx.broker, null, col, col.getConfiguration(tx.broker));
+		DocumentTrigger trigger = new DocumentTriggers(tx.broker, tx.tx, null, col, col.getConfiguration(tx.broker));
 			
 		trigger.beforeUpdateDocument(tx.broker, tx.tx, docimpl);
 

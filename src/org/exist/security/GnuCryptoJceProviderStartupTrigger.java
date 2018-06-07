@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StartupTrigger;
+import org.exist.storage.txn.Txn;
 
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,7 @@ public class GnuCryptoJceProviderStartupTrigger implements StartupTrigger {
         GnuCryptoJceProviderStartupTrigger.class);
 
     @Override
-    public void execute(final DBBroker sysBroker,
+    public void execute(final DBBroker sysBroker, final Txn transaction,
                         final Map<String, List<? extends Object>> params) {
 
       java.security.Security.addProvider(new gnu.crypto.jce.GnuCrypto());

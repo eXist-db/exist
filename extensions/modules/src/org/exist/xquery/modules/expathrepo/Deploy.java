@@ -145,14 +145,14 @@ public class Deploy extends BasicFunction {
 		
 		final String pkgName = args[0].getStringValue();
         try {
-            Deployment deployment = new Deployment(context.getBroker());
+            Deployment deployment = new Deployment();
             final Optional<String> target;
             if (isCalledAs("deploy")) {
                 String userTarget = null;
                 if (getArgumentCount() == 2) {
                     userTarget = args[1].getStringValue();
                 }
-                target = deployment.deploy(pkgName, context.getRepository(), userTarget);
+                target = deployment.deploy(context.getBroker(), context.getBroker().getCurrentTransaction(), pkgName, context.getRepository(), userTarget);
             } else if (isCalledAs("install-and-deploy")) {
                 String version = null;
                 final String repoURI;
@@ -170,7 +170,7 @@ public class Deploy extends BasicFunction {
                 }
                 target = installAndDeployFromDb(pkgName, repoURI);
             } else {
-                target = deployment.undeploy(pkgName, context.getRepository());
+                target = deployment.undeploy(context.getBroker(), context.getBroker().getCurrentTransaction(), pkgName, context.getRepository());
 	        }
 	        target.orElseThrow(() -> new XPathException("expath repository is not available."));
             return statusReport(target);
@@ -184,10 +184,10 @@ public class Deploy extends BasicFunction {
     private Optional<String> installAndDeploy(final String pkgName, final String version, final String repoURI) throws XPathException {
         try {
             final RepoPackageLoader loader = new RepoPackageLoader(repoURI);
-            final Deployment deployment = new Deployment(context.getBroker());
+            final Deployment deployment = new Deployment();
             final Path xar = loader.load(pkgName, new PackageLoader.Version(version, false));
             if (xar != null) {
-                return deployment.installAndDeploy(xar, loader);
+                return deployment.installAndDeploy(context.getBroker(), context.getBroker().getCurrentTransaction(), xar, loader);
             }
             return Optional.empty();
         } catch (final MalformedURLException e) {
@@ -215,8 +215,8 @@ public class Deploy extends BasicFunction {
             if (repoURI != null) {
                 loader = new RepoPackageLoader(repoURI);
             }
-            final Deployment deployment = new Deployment(context.getBroker());
-            return deployment.installAndDeploy(file, loader);
+            final Deployment deployment = new Deployment();
+            return deployment.installAndDeploy(context.getBroker(), context.getBroker().getCurrentTransaction(), file, loader);
         } catch (PackageException | IOException | PermissionDeniedException e) {
             LOG.error(e.getMessage(), e);
             throw new XPathException(this, EXPathErrorCode.EXPDY007, "Package installation failed: " + e.getMessage(), new StringValue(e.getMessage()));

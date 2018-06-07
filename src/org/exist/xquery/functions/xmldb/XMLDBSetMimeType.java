@@ -134,7 +134,7 @@ public class XMLDBSetMimeType extends BasicFunction {
         // relative collection Path: add the current base URI
         pathUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(pathUri);
 
-        try(final Txn txn = brokerPool.getTransactionManager().beginTransaction();
+        try(final Txn txn = broker.continueOrBeginTransaction();
                 final LockedDocument lockedDocument = broker.getXMLResource(pathUri, LockMode.WRITE_LOCK)) {
 
             // try to open the document and acquire a lock

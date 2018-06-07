@@ -44,7 +44,6 @@ import org.exist.security.utils.Utils;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.ManagedLock;
-import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ConcurrentValueWrapper;
 import org.exist.util.LockException;
@@ -85,21 +84,16 @@ public abstract class AbstractRealm implements Realm, Configurable {
         return sm;
     }
     
-    private void initialiseRealmStorage(final DBBroker broker) throws EXistException {
-        
+    private void initialiseRealmStorage(final DBBroker broker, final Txn transaction) throws EXistException {
         final XmldbURI realmCollectionURL = SecurityManager.SECURITY_COLLECTION_URI.append(getId());
-        
-        final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
-        try(final Txn txn = transact.beginTransaction()) {
-            collectionRealm = Utils.getOrCreateCollection(broker, txn, realmCollectionURL);
+        try {
+            collectionRealm = Utils.getOrCreateCollection(broker, transaction, realmCollectionURL);
 
-            collectionAccounts = Utils.getOrCreateCollection(broker, txn, realmCollectionURL.append("accounts"));
-            collectionGroups = Utils.getOrCreateCollection(broker, txn, realmCollectionURL.append("groups"));
+            collectionAccounts = Utils.getOrCreateCollection(broker, transaction, realmCollectionURL.append("accounts"));
+            collectionGroups = Utils.getOrCreateCollection(broker, transaction, realmCollectionURL.append("groups"));
 
-            collectionRemovedAccounts = Utils.getOrCreateCollection(broker, txn, realmCollectionURL.append("accounts").append("removed"));
-            collectionRemovedGroups = Utils.getOrCreateCollection(broker, txn, realmCollectionURL.append("groups").append("removed"));
-
-            transact.commit(txn);
+            collectionRemovedAccounts = Utils.getOrCreateCollection(broker, transaction, realmCollectionURL.append("accounts").append("removed"));
+            collectionRemovedGroups = Utils.getOrCreateCollection(broker, transaction, realmCollectionURL.append("groups").append("removed"));
             
         } catch(final PermissionDeniedException | IOException | TriggerException | LockException e) {
             throw new EXistException(e);
@@ -209,9 +203,9 @@ public abstract class AbstractRealm implements Realm, Configurable {
     
     
     @Override
-    public void start(final DBBroker broker) throws EXistException {
+    public void start(final DBBroker broker, final Txn transaction) throws EXistException {
 
-        initialiseRealmStorage(broker);
+        initialiseRealmStorage(broker, transaction);
         
         try {
             loadGroupsFromRealmStorage(broker);

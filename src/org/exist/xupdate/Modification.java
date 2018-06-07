@@ -303,7 +303,7 @@ public abstract class Modification {
             
 	    final Collection col = doc.getCollection();
 	        
-            final DocumentTrigger trigger = new DocumentTriggers(broker, col);
+            final DocumentTrigger trigger = new DocumentTriggers(broker, transaction, col);
             
             trigger.beforeUpdateDocument(broker, transaction, doc);
             triggers.put(doc.getDocId(), trigger);

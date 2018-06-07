@@ -46,6 +46,7 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.Lock.LockType;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
+import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
@@ -59,6 +60,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * This is the base class for all database backends. All the basic database
@@ -494,13 +496,14 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * NOTE: Read locks will be taken in a top-down, left-right manner
      *     on Collections as they are indexed
      *
+     * @param transaction
      * @param collectionUri The URI of the Collection to reindex
      *
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
      * @throws LockException If an exception occurs whilst acquiring locks
      * @throws IOException If an error occurs whilst reindexing the Collection on disk
      */
-    public abstract void reindexCollection(@EnsureLocked(mode=LockMode.WRITE_LOCK, type=LockType.COLLECTION) XmldbURI collectionUri)
+    public abstract void reindexCollection(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK, type=LockType.COLLECTION) XmldbURI collectionUri)
             throws PermissionDeniedException, IOException, LockException;
 
     public abstract void reindexXMLResource(final Txn txn,
@@ -962,6 +965,67 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
         pool.release(this);
     }
 
+    public final static String PROP_DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS = "exist.disable-single-thread-overlapping-transaction-checks";
+    private final static boolean DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS = Boolean.valueOf(System.getProperty(PROP_DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS, "false"));
+    private Txn currentTransaction = null;
+    public synchronized void setCurrentTransaction(final Txn transaction) {
+        if (DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS) {
+            currentTransaction = transaction;
+        } else {
+            if (currentTransaction == null ^ transaction == null) {
+                currentTransaction = transaction;
+            } else {
+                throw new IllegalStateException("Broker already has a transaction set");
+            }
+        }
+    }
+
+    public synchronized Txn getCurrentTransaction() {
+        return currentTransaction;
+    }
+
+    /**
+     * Gets the current transaction, or if there is no current transaction
+     * for this thread (i.e. broker), then we begin a new transaction.
+     *
+     * The callee is *always* responsible for calling .close on the transaction
+     *
+     * Note - When there is an existing transaction, calling .close on the object
+     * returned (e.g. ResusableTxn) from this function will only cause a minor state
+     * change and not close the original transaction. That is intentional, as it will
+     * eventually be closed by the creator of the original transaction (i.e. the code
+     * site that began the first transaction)
+     *
+     * @Deprecated This is a stepping-stone; Transactions should be explicitly passed
+     *   around. This will be removed in the near future.
+     */
+    @Deprecated
+    public synchronized Txn continueOrBeginTransaction() {
+        final Txn currentTransaction = getCurrentTransaction();
+        if(currentTransaction != null) {
+            return new Txn.ReusableTxn(currentTransaction);
+        } else {
+            final TransactionManager tm = getBrokerPool().getTransactionManager();
+            return tm.beginTransaction(); //TransactionManager will call this#setCurrentTransaction
+        }
+    }
+
+    //TODO the object passed to the function e.g. Txn should not implement .close
+    //if we are using a function passing approach like this, i.e. one point of
+    //responsibility and WE HERE should be responsible for closing the transaction.
+    //we could return a sub-class of Txn which is uncloseable like Txn.reuseable or similar
+    //also getCurrentTransaction should then be made private
+//    private <T> T transact(final Function<Txn, T> transactee) throws EXistException {
+//        final Txn existing = getCurrentTransaction();
+//        if(existing == null) {
+//            try(final Txn txn = pool.getTransactionManager().beginTransaction()) {
+//                return transactee.apply(txn);
+//            }
+//        } else {
+//            return transactee.apply(existing);
+//        }
+//    }
+
     /**
      * Represents a {@link Subject} change
      * made to a broker
@@ -1025,4 +1089,3 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
         PRESERVE
     }
 }
-

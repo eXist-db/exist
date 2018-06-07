@@ -2434,7 +2434,7 @@ public class RpcConnection implements RpcAPI {
     public boolean chgrp(final String resource, final String group) throws EXistException, PermissionDeniedException, URISyntaxException {
         final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
-            PermissionFactory.chown(broker, uri, Optional.empty(), Optional.ofNullable(group));
+            PermissionFactory.chown(broker, transaction, uri, Optional.empty(), Optional.ofNullable(group));
             return true;
         });
     }
@@ -2443,7 +2443,7 @@ public class RpcConnection implements RpcAPI {
     public boolean chown(final String resource, final String owner) throws EXistException, PermissionDeniedException, URISyntaxException {
         final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
-            PermissionFactory.chown(broker, uri, Optional.ofNullable(owner), Optional.empty());
+            PermissionFactory.chown(broker, transaction, uri, Optional.ofNullable(owner), Optional.empty());
             return true;
         });
     }
@@ -2452,7 +2452,7 @@ public class RpcConnection implements RpcAPI {
     public boolean chown(final String resource, final String owner, final String group) throws EXistException, PermissionDeniedException, URISyntaxException {
         final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
-            PermissionFactory.chown(broker, uri, Optional.ofNullable(owner), Optional.ofNullable(group));
+            PermissionFactory.chown(broker, transaction, uri, Optional.ofNullable(owner), Optional.ofNullable(group));
             return true;
         });
     }
@@ -2461,7 +2461,7 @@ public class RpcConnection implements RpcAPI {
     public boolean setPermissions(final String resource, final int mode) throws EXistException, PermissionDeniedException, URISyntaxException {
         final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
-            PermissionFactory.chmod(broker, uri, Optional.of(mode), Optional.empty());
+            PermissionFactory.chmod(broker, transaction, uri, Optional.of(mode), Optional.empty());
             return true;
         });
     }
@@ -2470,7 +2470,7 @@ public class RpcConnection implements RpcAPI {
     public boolean setPermissions(final String resource, final String mode) throws EXistException, PermissionDeniedException, URISyntaxException {
         final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
-            PermissionFactory.chmod_str(broker, uri, Optional.ofNullable(mode), Optional.empty());
+            PermissionFactory.chmod_str(broker, transaction, uri, Optional.ofNullable(mode), Optional.empty());
             return true;
         });
     }
@@ -2479,8 +2479,8 @@ public class RpcConnection implements RpcAPI {
     public boolean setPermissions(final String resource, final String owner, final String group, final String mode) throws EXistException, PermissionDeniedException, URISyntaxException {
         final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
-            PermissionFactory.chown(broker, uri, Optional.ofNullable(owner), Optional.ofNullable(group));
-            PermissionFactory.chmod_str(broker, uri, Optional.ofNullable(mode), Optional.empty());
+            PermissionFactory.chown(broker, transaction, uri, Optional.ofNullable(owner), Optional.ofNullable(group));
+            PermissionFactory.chmod_str(broker, transaction, uri, Optional.ofNullable(mode), Optional.empty());
             return true;
         });
     }
@@ -2489,8 +2489,8 @@ public class RpcConnection implements RpcAPI {
     public boolean setPermissions(final String resource, final String owner, final String group, final int mode) throws EXistException, PermissionDeniedException, URISyntaxException {
         final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
-            PermissionFactory.chown(broker, uri, Optional.ofNullable(owner), Optional.ofNullable(group));
-            PermissionFactory.chmod(broker, uri, Optional.of(mode), Optional.empty());
+            PermissionFactory.chown(broker, transaction, uri, Optional.ofNullable(owner), Optional.ofNullable(group));
+            PermissionFactory.chmod(broker, transaction, uri, Optional.of(mode), Optional.empty());
             return true;
         });
     }
@@ -2499,8 +2499,8 @@ public class RpcConnection implements RpcAPI {
     public boolean setPermissions(final String resource, final String owner, final String group, final int mode, final List<ACEAider> aces) throws EXistException, PermissionDeniedException, URISyntaxException {
         final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
-            PermissionFactory.chown(broker, uri, Optional.ofNullable(owner), Optional.ofNullable(group));
-            PermissionFactory.chmod(broker, uri, Optional.of(mode), Optional.ofNullable(aces));
+            PermissionFactory.chown(broker, transaction, uri, Optional.ofNullable(owner), Optional.ofNullable(group));
+            PermissionFactory.chmod(broker, transaction, uri, Optional.of(mode), Optional.ofNullable(aces));
             return true;
         });
     }
@@ -3163,13 +3163,13 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean reindexCollection(final String collectionName) throws URISyntaxException, EXistException, PermissionDeniedException {
-        reindexCollection(XmldbURI.xmldbUriFor(collectionName));
+    	reindexCollection(XmldbURI.xmldbUriFor(collectionName));
         return true;
     }
 
     private void reindexCollection(final XmldbURI collUri) throws EXistException, PermissionDeniedException {
         withDb((broker, transaction) -> {
-            broker.reindexCollection(collUri);
+            broker.reindexCollection(transaction, collUri);
             if(LOG.isDebugEnabled()) {
                 LOG.debug("collection " + collUri + " and sub-collections reindexed");
             }

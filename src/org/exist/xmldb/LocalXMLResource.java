@@ -32,7 +32,9 @@ import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
+import org.exist.storage.txn.Txn;
 import org.exist.util.MimeType;
+import com.evolvedbinary.j8fu.Either;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.SAXSerializer;
@@ -255,29 +257,40 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
         enhancer.setCallback(new MethodInterceptor() {
             @Override
             public Object intercept(final Object obj, final Method method, final Object[] args, final MethodProxy proxy) throws Throwable {
+                final Either<Throwable, Object> result = withDb((broker, transaction) -> {
+                    try {
+                        final Object domResult = method.invoke(node, args);
 
-                final Object domResult = method.invoke(node, args);
+                        if(domResult != null && Node.class.isAssignableFrom(method.getReturnType())) {
+                            return Either.Right(exportInternalNode((Node) domResult)); //recursively wrap node result
 
-                if(domResult != null && Node.class.isAssignableFrom(method.getReturnType())) {
-                    return exportInternalNode((Node) domResult); //recursively wrap node result
+                        } else if(domResult != null && method.getReturnType().equals(NodeList.class)) {
+                            final NodeList underlying = (NodeList)domResult; //recursively wrap nodes in nodelist result
+                            return Either.Right(new NodeList() {
+                                @Override
+                                public Node item(final int index) {
+                                    return Optional.ofNullable(underlying.item(index))
+                                            .map(n -> exportInternalNode(n))
+                                            .orElse(null);
+                                }
 
-                } else if(domResult != null && method.getReturnType().equals(NodeList.class)) {
-                    final NodeList underlying = (NodeList)domResult; //recursively wrap nodes in nodelist result
-                    return new NodeList() {
-                        @Override
-                        public Node item(final int index) {
-                            return Optional.ofNullable(underlying.item(index))
-                                    .map(n -> exportInternalNode(n))
-                                    .orElse(null);
+                                @Override
+                                public int getLength() {
+                                    return underlying.getLength();
+                                }
+                            });
+                        } else {
+                            return Either.Right(domResult);
                         }
 
-                        @Override
-                        public int getLength() {
-                            return underlying.getLength();
-                        }
-                    };
+                    } catch (final Throwable t) {
+                        return Either.Left(t);
+                    }
+                });
+                if(result.isLeft()) {
+                    throw result.left().get();
                 } else {
-                    return domResult;
+                    return result.right().get();
                 }
             }
         });
@@ -433,6 +446,19 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
             return proxy;
         } else {
             return read((document, broker, transaction) -> new NodeProxy(document, NodeId.DOCUMENT_NODE));
+        }
+    }
+
+    /**
+     * Similar to {@link org.exist.xmldb.LocalXMLResource#getNode()}
+     * but useful for operations within the XML:DB Local API
+     * that are already working within a transaction
+     */
+    public NodeProxy getNode(final DBBroker broker, final Txn transaction) throws XMLDBException {
+        if(proxy != null) {
+            return proxy;
+        } else {
+            return this.<NodeProxy>read(broker, transaction).apply((document, broker1, transaction1) -> new NodeProxy(document, NodeId.DOCUMENT_NODE));
         }
     }
 

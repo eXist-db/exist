@@ -5,6 +5,7 @@ import org.exist.TestUtils;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.UserAider;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.junit.After;
@@ -50,7 +51,7 @@ public class StartupTriggerTest {
         }
 
         @Override
-        public void execute(final DBBroker sysBroker, final Map<String, List<? extends Object>> params) {
+        public void execute(final DBBroker sysBroker, final Txn transaction, final Map<String, List<? extends Object>> params) {
             final SecurityManager secman = sysBroker.getBrokerPool().getSecurityManager();
             if (!secman.hasAccount(USER)) {
                 final UserAider aider = new UserAider(USER);

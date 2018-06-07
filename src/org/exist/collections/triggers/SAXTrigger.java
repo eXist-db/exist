@@ -25,6 +25,7 @@ import java.util.Map;
 import org.exist.Indexer;
 import org.exist.collections.Collection;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
@@ -60,7 +61,7 @@ public abstract class SAXTrigger implements DocumentTrigger, ContentHandler, Lex
      * collection.
      */
     @Override
-    public void configure(DBBroker broker, Collection collection, Map<String, List<?>> parameters) throws TriggerException {
+    public void configure(DBBroker broker, Txn Transaction, Collection collection, Map<String, List<?>> parameters) throws TriggerException {
         this.collection = collection;
     }
 

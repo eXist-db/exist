@@ -29,10 +29,12 @@ import org.exist.storage.txn.Txn;
 import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.xmldb.function.LocalXmldbCollectionFunction;
 import org.exist.xmldb.function.LocalXmldbFunction;
+import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Base class for Local XMLDB classes
@@ -40,6 +42,9 @@ import java.util.Optional;
  * @author Adam Retter <adam.retter@googlemail.com>
  */
 public abstract class AbstractLocal {
+
+    public final static String PROP_JOIN_TRANSACTION_IF_PRESENT = "exist.api.xmldb.local.join-transaction-if-present";
+
     protected final BrokerPool brokerPool;
     protected final Subject user;
     protected LocalCollection collection;
@@ -56,6 +61,17 @@ public abstract class AbstractLocal {
         } else {
             return name;
         }
+    }
+
+
+    protected XmldbURI getCollectionUri(final DBBroker broker, final Txn transaction, final Collection collection) throws XMLDBException {
+        final String name;
+        if(collection instanceof LocalCollection) {
+            name = ((LocalCollection)collection).getName(broker, transaction);
+        } else {
+            name = collection.getName();
+        }
+        return XmldbURI.create(name);
     }
 
     /**
@@ -176,6 +192,30 @@ public abstract class AbstractLocal {
     }
 
     /**
+     * Either begins a new transaction (default) or
+     * attempts to join an existing transaction.
+     *
+     * If there is no existing transaction, a new transaction
+     * will begin.
+     *
+     * Controlled by the System Property {@link AbstractLocal#PROP_JOIN_TRANSACTION_IF_PRESENT }
+     *
+     * @return A transaction
+     *
+     * @deprecated This function will be removed when {@link DBBroker#continueOrBeginTransaction()} is removed
+     */
+    @Deprecated
+    private static Function<DBBroker, Txn> transaction() {
+        final boolean joinTransactionIfPresent = System.getProperty(PROP_JOIN_TRANSACTION_IF_PRESENT, "false")
+                .toLowerCase().equals("true");
+        if(joinTransactionIfPresent) {
+            return (broker) -> broker.continueOrBeginTransaction();
+        } else {
+            return (broker) -> broker.getBrokerPool().getTransactionManager().beginTransaction();
+        }
+    }
+
+    /**
      * Higher-order-function for performing an XMLDB operation on
      * the database
      *
@@ -183,9 +223,9 @@ public abstract class AbstractLocal {
      * @param <R>         The return type of the operation
      * @throws org.xmldb.api.base.XMLDBException
      */
-    <R> R withDb(final LocalXmldbFunction<R> dbOperation) throws XMLDBException {
+    protected <R> R withDb(final LocalXmldbFunction<R> dbOperation) throws XMLDBException {
         try (final DBBroker broker = brokerPool.get(Optional.ofNullable(user));
-             final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
+             final Txn transaction = transaction().apply(broker)) {
             try {
                 final R result = dbOperation.apply(broker, transaction);
                 transaction.commit();

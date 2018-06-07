@@ -37,16 +37,18 @@ import org.exist.LifeCycle;
 import org.exist.backup.BackupHandler;
 import org.exist.backup.RestoreHandler;
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.config.*;
 import org.exist.config.Configuration;
 import org.exist.config.annotation.*;
 import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BrokerPoolService;
 import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.DBBroker;
-import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.LockException;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Document;
@@ -96,24 +98,22 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
 	}
 
 	@Override
-	public void startSystem(final DBBroker systemBroker) throws BrokerPoolServiceException {
+	public void startSystem(final DBBroker systemBroker, final Txn transaction) throws BrokerPoolServiceException {
 		try {
-			start(systemBroker);
+			start(systemBroker, transaction);
 		} catch(final EXistException e) {
 			throw new BrokerPoolServiceException(e);
 		}
 	}
 
     @Override
-	public void start(DBBroker broker) throws EXistException {
-        final TransactionManager transaction = broker.getBrokerPool().getTransactionManager();
-
+	public void start(final DBBroker broker, final Txn transaction) throws EXistException {
         boolean interrupted = false;
         try {
-            try (final Txn txn = transaction.beginTransaction()) {
+            try {
                 collection = broker.getCollection(COLLETION_URI);
                 if (collection == null) {
-                    collection = broker.getOrCreateCollection(txn, COLLETION_URI);
+                    collection = broker.getOrCreateCollection(transaction, COLLETION_URI);
                     if (collection == null) {
                         return;
                     }
@@ -121,13 +121,12 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
                     //throw new ConfigurationException("Collection '/db/system/plugins' can't be created.");
 
                     collection.setPermissions(broker, Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
-                    broker.saveCollection(txn, collection);
+                    broker.saveCollection(transaction, collection);
                 }
 
-                transaction.commit(txn);
-            } catch (final Exception e) {
-                e.printStackTrace();
-                LOG.debug("loading configuration failed: " + e.getMessage());
+    		} catch (final TriggerException | PermissionDeniedException | IOException | LockException e) {
+    			e.printStackTrace();
+    			LOG.debug("loading configuration failed: " + e.getMessage());
             }
 
             final Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
@@ -170,7 +169,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
 //		}
 
             for (final Plug jack : jacks.values()) {
-                jack.start(broker);
+                jack.start(broker, transaction);
             }
         } finally {
             if (interrupted) {

@@ -74,10 +74,10 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger 
     private XmldbURI rootPath = DEFAULT_ROOT_PATH;
 
     @Override
-    public void configure(final DBBroker broker, final Collection parent,
+    public void configure(final DBBroker broker, final Txn transaction, final Collection parent,
             final Map<String, List<?>> parameters) throws TriggerException {
 
-        super.configure(broker, parent, parameters);
+        super.configure(broker, transaction, parent, parameters);
 
         if(parameters.containsKey(PARAM_ROOT_NAME)) {
             try {

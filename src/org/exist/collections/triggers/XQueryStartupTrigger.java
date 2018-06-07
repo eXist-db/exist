@@ -79,7 +79,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
     private static final String REQUIRED_MIMETYPE = "application/xquery";
 
     @Override
-    public void execute(DBBroker broker, Map<String, List<? extends Object>> params) {
+    public void execute(DBBroker broker, final Txn transaction, Map<String, List<? extends Object>> params) {
 
         LOG.info("Starting Startup Trigger for stored XQueries");
 

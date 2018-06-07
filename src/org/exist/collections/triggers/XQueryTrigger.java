@@ -144,7 +144,8 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 	/**
 	 * @link org.exist.collections.Trigger#configure(org.exist.storage.DBBroker, org.exist.collections.Collection, java.util.Map)
 	 */
-	public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws TriggerException
+    @Override
+	public void configure(DBBroker broker, Txn transaction, Collection parent, Map<String, List<?>> parameters) throws TriggerException
 	{
  		this.collection = parent;
  		

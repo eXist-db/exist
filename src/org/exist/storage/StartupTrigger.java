@@ -1,5 +1,7 @@
 package org.exist.storage;
 
+import org.exist.storage.txn.Txn;
+
 import java.util.List;
 import java.util.Map;
 
@@ -27,5 +29,5 @@ public interface StartupTrigger {
      * @param sysBroker The single system broker available during database startup
      * @param params Key, Values
      */
-    public void execute(final DBBroker sysBroker, final Map<String, List<? extends Object>> params);
+    public void execute(final DBBroker sysBroker, final Txn transaction, final Map<String, List<? extends Object>> params);
 }

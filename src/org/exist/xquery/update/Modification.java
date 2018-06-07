@@ -243,7 +243,7 @@ public abstract class Modification extends AbstractExpression
         lockedDocumentsLocks = null;
     }
 
-    public static void checkFragmentation(XQueryContext context, DocumentSet docs) throws EXistException {
+    public static void checkFragmentation(XQueryContext context, DocumentSet docs) throws EXistException, LockException {
         int fragmentationLimit = -1;
         final Object property = context.getBroker().getBrokerPool().getConfiguration().getProperty(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
         if (property != null) {
@@ -260,11 +260,11 @@ public abstract class Modification extends AbstractExpression
      *
      * @param docs
      */
-    public static void checkFragmentation(XQueryContext context, DocumentSet docs, int splitCount) throws EXistException {
+    public static void checkFragmentation(XQueryContext context, DocumentSet docs, int splitCount) throws EXistException, LockException {
         final DBBroker broker = context.getBroker();
         final LockManager lockManager = broker.getBrokerPool().getLockManager();
         //if there is no batch update transaction, start a new individual transaction
-        try (final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
+        try(final Txn transaction = broker.continueOrBeginTransaction()) {
             for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
                 final DocumentImpl next = i.next();
                 if(next.getMetadata().getSplitCount() > splitCount) {
@@ -276,8 +276,6 @@ public abstract class Modification extends AbstractExpression
             }
 
             transaction.commit();
-        } catch (final Exception e) {
-            LOG.error(e, e);
         }
     }
 
@@ -294,7 +292,7 @@ public abstract class Modification extends AbstractExpression
         final Collection col = doc.getCollection();
         final DBBroker broker = context.getBroker();
 
-        final DocumentTrigger trigger = new DocumentTriggers(broker, col);
+        final DocumentTrigger trigger = new DocumentTriggers(broker, transaction, col);
 
         //prepare the trigger
         trigger.beforeUpdateDocument(context.getBroker(), transaction, doc);
@@ -322,6 +320,6 @@ public abstract class Modification extends AbstractExpression
      * @return The transaction
      */
     protected Txn getTransaction() {
-        return context.getBroker().getBrokerPool().getTransactionManager().beginTransaction();
+        return context.getBroker().continueOrBeginTransaction();
     }
 }

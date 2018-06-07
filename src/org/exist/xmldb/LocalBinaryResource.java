@@ -45,6 +45,9 @@ import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
+import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
+import com.evolvedbinary.j8fu.function.SupplierE;
 
 public class LocalBinaryResource extends AbstractEXistResource implements ExtendedResource, BinaryResource, EXistResource {
 
@@ -65,6 +68,19 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 
     @Override
     public Object getExtendedContent() throws XMLDBException {
+        return getExtendedContent(() -> read((document, broker, transaction) -> broker.getBinaryResource(((BinaryDocument) document))));
+    }
+
+    /**
+     * Similar to {@link org.exist.xmldb.ExtendedResource#getExtendedContent()}
+     * but useful for operations within the XML:DB Local API
+     * that are already working within a transaction
+     */
+    Object getExtendedContent(final DBBroker broker, final Txn transaction) throws XMLDBException {
+        return getExtendedContent(() -> read(broker, transaction).apply((document, broker1, transaction1) -> broker1.getBinaryResource(((BinaryDocument) document))));
+    }
+
+    private Object getExtendedContent(final SupplierE<Object, XMLDBException> binaryResourceRead) throws XMLDBException {
         if (file != null) {
             return file;
         }
@@ -77,13 +93,26 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
         if(binaryValue != null) {
             return binaryValue;
         }
-
-        return read((document, broker, transaction) -> broker.getBinaryResource(((BinaryDocument) document)));
+        return binaryResourceRead.get();
     }
 
     @Override
     public Object getContent() throws XMLDBException {
         final Object res = getExtendedContent();
+        return getContent(res);
+    }
+
+    /**
+     * Similar to {@link org.exist.xmldb.LocalBinaryResource#getContent()}
+     * but useful for operations within the XML:DB Local API
+     * that are already working within a transaction
+     */
+    Object getContent(final DBBroker broker, final Txn transaction) throws XMLDBException {
+        final Object res = getExtendedContent(broker, transaction);
+        return getContent(res);
+    }
+
+    private Object getContent(final Object res) throws XMLDBException {
         if(res != null) {
             if(res instanceof Path) {
                 return readFile((Path)res);
@@ -108,7 +137,6 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
                 }
             }
         }
-
         return res;
     }
 
@@ -135,6 +163,19 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 
     @Override
     public InputStream getStreamContent() throws XMLDBException {
+        return getStreamContent(() -> read((document, broker, transaction) -> broker.getBinaryResource(((BinaryDocument) document))));
+    }
+
+    /**
+     * Similar to {@link org.exist.xmldb.LocalBinaryResource#getStreamContent()}
+     * but useful for operations within the XML:DB Local API
+     * that are already working within a transaction
+     */
+    InputStream getStreamContent(final DBBroker broker, final Txn transaction) throws XMLDBException {
+        return getStreamContent(() -> this.<InputStream>read(broker, transaction).apply((document, broker1, transaction1) -> broker.getBinaryResource(((BinaryDocument) document))));
+    }
+
+    private InputStream getStreamContent(final SupplierE<InputStream, XMLDBException> streamContentRead) throws XMLDBException {
         final InputStream is;
         if(file != null) {
             try {
@@ -150,7 +191,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
         } else if(binaryValue != null) {
             is = binaryValue.getInputStream();
         } else {
-            is = read((document, broker, transaction) -> broker.getBinaryResource(((BinaryDocument) document)));
+            is = streamContentRead.get();
         }
 
         return is;

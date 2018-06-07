@@ -106,20 +106,17 @@ public class Database {
 		}
 		
 		// Now force reload and reindex so it'll pick up the new settings.
-		Transaction tx = db.requireTransactionWithBroker();
 		try {
-			pool.getConfigurationManager().addConfiguration(tx.tx, tx.broker, tx.broker.getCollection(XmldbURI.ROOT_COLLECTION_URI), configXml.toString());
-			tx.commit();
-			DBBroker broker = db.acquireBroker();
-			try {
-				broker.reindexCollection(XmldbURI.ROOT_COLLECTION_URI);
-			} finally {
-				db.releaseBroker(broker);
+			try(final Transaction tx = db.requireTransactionWithBroker()) {
+				pool.getConfigurationManager().addConfiguration(tx.tx, tx.broker, tx.broker.getCollection(XmldbURI.ROOT_COLLECTION_URI), configXml.toString());
+				tx.commit();
+			}
+			try(final Transaction tx = db.requireTransactionWithBroker()) {
+				tx.broker.reindexCollection(tx.tx, XmldbURI.ROOT_COLLECTION_URI);
+				tx.commit();
 			}
 		} catch (final PermissionDeniedException | IOException | LockException | CollectionConfigurationException e) {
 			throw new DatabaseException(e);
-		} finally {
-			tx.abortIfIncomplete();
 		}
 	}
 	
@@ -490,12 +487,18 @@ public class Database {
 	 */
 	static Transaction requireTransaction() {
 		Transaction t = localTransaction.get();
-		return t == null ? new Transaction(txManager, lockManager, null) : new Transaction(t, null);
+		return t == null ? new Transaction(txManager, lockManager, null) : new Transaction(txManager, t, lockManager, null);
 	}
 	
 	Transaction requireTransactionWithBroker() {
 		Transaction t = localTransaction.get();
-		return t == null ? new Transaction(txManager, lockManager,this) : new Transaction(t, this);
+        if (t == null) {
+            try (final DBBroker broker = acquireBroker()) {
+                return new Transaction(txManager, broker.getCurrentTransaction(), lockManager, this);
+            }
+        } else {
+        	return new Transaction(txManager, t, lockManager, this);
+        }
 	}
 	
 	void checkSame(Resource o) {
@@ -614,13 +617,10 @@ public class Database {
 								if (!staleMap.containsKey(docPath)) {
 									LOG.debug("defragmenting " + docPath);
 									count++;
-									Transaction tx = Database.requireTransaction();
-									try {
+									try(final Transaction tx = Database.requireTransaction()) {
 										broker.defragXMLResource(tx.tx, doc);
 										tx.commit();
 										it.remove();
-									} finally {
-										tx.abortIfIncomplete();
 									}
 								}
 							} catch(final LockException e) {

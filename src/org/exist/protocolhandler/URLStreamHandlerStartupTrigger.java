@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StartupTrigger;
+import org.exist.storage.txn.Txn;
 
 import java.net.URL;
 import java.util.List;
@@ -50,7 +51,7 @@ public class URLStreamHandlerStartupTrigger implements StartupTrigger {
     private final static AtomicBoolean registered = new AtomicBoolean();
 
     @Override
-    public void execute(final DBBroker sysBroker, final Map<String, List<? extends Object>> params) {
+    public void execute(final DBBroker sysBroker, final Txn transaction, final Map<String, List<? extends Object>> params) {
         String mode = null;
         if (params != null) {
             List<?> list = params.get("mode");

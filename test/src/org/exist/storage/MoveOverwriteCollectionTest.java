@@ -52,21 +52,21 @@ public class MoveOverwriteCollectionTest {
 
     private final static String XML1 =
             "<?xml version=\"1.0\"?>" +
-            "<test1>" +
-            "  <title>Hello1</title>" +
-            "</test1>";
+                    "<test1>" +
+                    "  <title>Hello1</title>" +
+                    "</test1>";
 
     private final static String XML2 =
             "<?xml version=\"1.0\"?>" +
-            "<test2>" +
-            "  <title>Hello2</title>" +
-            "</test2>";
+                    "<test2>" +
+                    "  <title>Hello2</title>" +
+                    "</test2>";
 
     private final static String XML3 =
-        "<?xml version=\"1.0\"?>" +
-            "<test3>" +
-            "  <title>Hello3</title>" +
-            "</test3>";
+            "<?xml version=\"1.0\"?>" +
+                    "<test3>" +
+                    "  <title>Hello3</title>" +
+                    "</test3>";
 
     private final static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
     private final static XmldbURI SUB_TEST_COLLECTION_URI = TEST_COLLECTION_URI.append("test2");

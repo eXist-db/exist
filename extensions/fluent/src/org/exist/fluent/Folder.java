@@ -690,13 +690,14 @@ public class Folder extends NamedResource implements Cloneable {
 			broker = db.acquireBroker();
 			Collection collection;
 			if (createIfMissing) {
-				tx = Database.requireTransaction();
-				try {
+
+				try{
+                    tx = db.requireTransactionWithBroker();
 					collection = createInternal(path);
 					tx.commit();
 				} finally {
-					tx.abortIfIncomplete();
-				}
+                    tx.close();
+                }
 			} else {
 				try {
                                     collection = broker.getCollection(XmldbURI.create(path));
@@ -794,7 +795,7 @@ public class Folder extends NamedResource implements Cloneable {
 	
 	void transact(LockMode _lockMode) {
 		if (tx != null) throw new IllegalStateException("transaction already in progress");
-		tx = Database.requireTransaction();
+		tx = db.requireTransactionWithBroker();
 		acquire(_lockMode);
 	}
 	
@@ -837,10 +838,16 @@ public class Folder extends NamedResource implements Cloneable {
 	}
 	
 	void release() {
-		if (broker == null || handle == null) throw new IllegalStateException("broker not acquired");
-		if (tx != null) tx.abortIfIncomplete();
+		if (broker == null || handle == null) {
+			throw new IllegalStateException("broker not acquired");
+		}
+		if (tx != null) {
+			tx.close();
+		}
 		handle.close();
-		if (ownBroker) db.releaseBroker(broker);
+		if (ownBroker) {
+			db.releaseBroker(broker);
+		}
 		ownBroker = false;
 		broker = null;
 		handle = null;

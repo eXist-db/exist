@@ -295,12 +295,9 @@ public class ItemList extends Resource implements Iterable<Item> {
 	 * it doesn't make sense to try to delete.
 	 */
 	public void deleteAllNodes() {
-		Transaction tx = Database.requireTransaction();
-		try {
+		try(final Transaction tx = db.requireTransactionWithBroker()) {
 			for (Item item : items) if (item instanceof Node) ((Node) item).delete();
 			tx.commit();
-		} finally {
-			tx.abortIfIncomplete();
 		}
 	}
 	

@@ -746,9 +746,11 @@ public class LuceneIndexTest {
     public void reindex() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, LockException, IOException, QName.IllegalQNameException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML1, "dropDocument.xml");
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Txn transaction = transact.beginTransaction()) {
 
-            broker.reindexCollection(TestConstants.TEST_COLLECTION_URI);
+            broker.reindexCollection(transaction, TestConstants.TEST_COLLECTION_URI);
 
             checkIndex(docs, broker, new QName[] { new QName("head") }, "title", 1);
             final Occurrences[] o = checkIndex(docs, broker, new QName[]{new QName("p")}, "with", 1);
@@ -759,6 +761,8 @@ public class LuceneIndexTest {
             final QName attrQN = new QName("rend", XMLConstants.NULL_NS_URI, ElementValue.ATTRIBUTE);
             checkIndex(docs, broker, new QName[] { attrQN }, null, 2);
             checkIndex(docs, broker, new QName[] { attrQN }, "center", 1);
+
+            transaction.commit();
         }
     }
 

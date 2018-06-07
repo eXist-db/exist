@@ -70,7 +70,7 @@ public class LocalIndexQueryService extends AbstractLocalService implements Inde
         final XmldbURI collectionPath = resolve(col);
         read(collectionPath).apply((collection, broker, transaction) -> {
             try {
-                broker.reindexCollection(collectionPath);
+                broker.reindexCollection(transaction, collectionPath);
                 broker.sync(Sync.MAJOR);
                 return null;
             } catch(final LockException e) {

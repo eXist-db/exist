@@ -15,13 +15,12 @@ import org.exist.util.LockException;
  *
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
-class Transaction {
+class Transaction implements AutoCloseable {
 	private final TransactionManager txManager;
 	private final LockManager lockManager;
 	final Txn tx;
-	final DBBroker broker;
+	DBBroker broker;
 	private final Database db;
-	private boolean complete;
 	
 	/**
 	 * Begin a new transaction.
@@ -34,7 +33,6 @@ class Transaction {
 		this.tx = txManager.beginTransaction();
 		this.db = db;
 		this.broker = db == null ? null : db.acquireBroker();
-		complete = false;
 	}
 	
 	/**
@@ -42,34 +40,50 @@ class Transaction {
 	 *
 	 * @param tx the transaction to join
 	 */
-	Transaction(Transaction tx, Database db) {
-		this.txManager = null;
-		this.lockManager = null;
-		this.tx = tx.tx;
+	Transaction(TransactionManager txManager, Transaction tx, LockManager lockManager, Database db) {
+		this.txManager = txManager;
+		this.lockManager = lockManager;
+		this.tx = tx == null ? txManager.beginTransaction() : tx.tx;
 		this.db = db;
 		this.broker = db == null ? null : db.acquireBroker();
-		complete = true;
+	}
+
+	Transaction(TransactionManager txManager, Txn tx, LockManager lockManager, Database db) {
+		this.txManager = txManager;
+		this.lockManager = lockManager;
+		this.tx = tx == null ? txManager.beginTransaction() : tx;
+		this.db = db;
+		this.broker = db == null ? null : db.acquireBroker();
 	}
 	
 	void commit() {
-		if (complete) return;
+		if (tx.getState() == Txn.State.COMMITTED) return;
 		try {
-			if (tx != null && txManager != null) try {
-				txManager.commit(tx);
-				complete = true;
-			} catch (TransactionException e) {
-				throw new DatabaseException(e);
-			}
+			if (tx != null && txManager != null) {
+                try {
+                    txManager.commit(tx);
+                } catch (TransactionException e) {
+                    throw new DatabaseException(e);
+                }
+            }
 		} finally {
-			if (broker != null) db.releaseBroker(broker);
+			if (broker != null) {
+                db.releaseBroker(broker);
+                broker = null;
+            }
 		}
 	}
-	
-	void abortIfIncomplete() {
-		if (complete) return;
-		if (tx != null && txManager != null) txManager.abort(tx);
-		if (broker != null) db.releaseBroker(broker);
-		complete = true;
+
+    @Override
+    public void close() {
+        if (tx != null && txManager != null) {
+            txManager.close(tx);
+        }
+
+        if (broker != null) {
+            db.releaseBroker(broker);
+            broker = null;
+        }
 	}
 
 	void lockWrite(final DocumentImpl doc) {

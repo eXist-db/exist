@@ -38,6 +38,7 @@ import org.exist.plugin.PluginsManager;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.MetaStorage;
+import org.exist.storage.txn.Txn;
 import org.exist.storage.md.xquery.MetadataModule;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xquery.XQueryContext;
@@ -121,7 +122,7 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	
 
 	@Override
-	public void start(DBBroker broker) throws EXistException {
+	public void start(DBBroker broker, final Txn transaction) throws EXistException {
 	}
 
 	@Override

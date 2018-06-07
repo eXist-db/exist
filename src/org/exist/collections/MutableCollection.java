@@ -961,7 +961,7 @@ public class MutableCollection implements Collection {
     }
 
     @Override
-    public void removeXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name)
+public void removeXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name)
             throws PermissionDeniedException, TriggerException, LockException, IOException {
         final BrokerPool db = broker.getBrokerPool();
 
@@ -995,7 +995,7 @@ public class MutableCollection implements Collection {
                         }
                     }
 
-                    final DocumentTriggers trigger = new DocumentTriggers(broker, null, this, useTriggers ? getConfiguration(broker) : null);
+                    final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, null, this, useTriggers ? getConfiguration(broker) : null);
 
                     trigger.beforeDeleteDocument(broker, transaction, doc);
 
@@ -1054,7 +1054,7 @@ public class MutableCollection implements Collection {
 
             try(final ManagedDocumentLock docUpdateLock = lockManager.acquireDocumentWriteLock(doc.getURI())) {
                 try {
-                    final DocumentTriggers trigger = new DocumentTriggers(broker, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
+                    final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
 
                     trigger.beforeDeleteDocument(broker, transaction, doc);
 
@@ -1387,7 +1387,7 @@ public class MutableCollection implements Collection {
                 addObserversToIndexer(broker, indexer);
                 indexer.setValidating(true);
 
-                final DocumentTriggers trigger = new DocumentTriggers(broker, indexer, this, isTriggersEnabled() ? config : null);
+                final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, indexer, this, isTriggersEnabled() ? config : null);
                 trigger.setValidating(true);
 
                 info.setTriggers(trigger);
@@ -1616,7 +1616,7 @@ public class MutableCollection implements Collection {
         if (db.isReadOnly()) {
             throw new IOException("Database is read-only");
         }
-        final DocumentTriggers trigger = new DocumentTriggers(broker, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
+        final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
         final XmldbURI docUri = blob.getFileURI();
 
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path);

@@ -123,11 +123,24 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
             this.path = name.toCollectionPathURI();
         }
 
-        read(ErrorCodes.NO_SUCH_COLLECTION).apply((collection, broker, transaction) -> {
-            /* no-op, used to make sure the current user can open the collection!
-               will throw an XMLDBException if they cannot */
-            return null;
+        /*
+        no-op, used to make sure the current user can open the collection!
+        will throw an XMLDBException if they cannot
+        we are careful to throw the exception outside of the transaction operation
+        so that it does not immediately close the current transaction and unwind the stack,
+        this is because not being able to open a collection is a valid operation e.g. xmldb:collection-available
+        */
+        final Optional<XMLDBException> openException = withDb((broker, transaction) -> {
+            try {
+                return this.<Optional<XMLDBException>>read(broker, transaction, ErrorCodes.NO_SUCH_COLLECTION).apply((collection, broker1, transaction1) -> Optional.empty());
+            } catch(final XMLDBException e) {
+                return Optional.of(e);
+            }
         });
+
+        if(openException.isPresent()) {
+            throw openException.get();
+        }
     }
 
     protected boolean checkOwner(final Collection collection, final Account account) throws XMLDBException {
@@ -252,20 +265,31 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
 
     @Override
     public String getName() throws XMLDBException {
-        return this.<String>read().apply((collection, broker, transaction) -> collection.getURI().toString());
+        return withDb((broker, transaction) -> getName(broker, transaction));
+    }
+
+    /**
+     * Similar to {@link org.exist.xmldb.LocalCollection#getName()}
+     * but useful for operations within the XML:DB Local API
+     * that are already working within a transaction
+     */
+    String getName(final DBBroker broker, final Txn transaction) throws XMLDBException {
+        return this.<String>read(broker, transaction).apply((collection, broker1, transaction1) -> collection.getURI().toString());
     }
 
     @Override
     public org.xmldb.api.base.Collection getParentCollection() throws XMLDBException {
-        if(getName().equals(XmldbURI.ROOT_COLLECTION)) {
-            return null;
-        }
-        
-        if(collection == null) {
-            final XmldbURI parentUri = this.<XmldbURI>read().apply((collection, broker, transaction) -> collection.getParentURI());
-            this.collection = new LocalCollection(user, brokerPool, null, parentUri);
-        }
-        return collection;
+        return withDb((broker, transaction) -> {
+            if (getName(broker, transaction).equals(XmldbURI.ROOT_COLLECTION)) {
+                return null;
+            }
+
+            if (collection == null) {
+                final XmldbURI parentUri = this.<XmldbURI>read(broker, transaction).apply((collection, broker1, transaction1) -> collection.getParentURI());
+                this.collection = new LocalCollection(user, brokerPool, null, parentUri);
+            }
+            return collection;
+        });
     }
 
     public String getPath() throws XMLDBException {
@@ -286,8 +310,28 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
             throw new XMLDBException(ErrorCodes.INVALID_URI, e);
         }
 
-        return this.<Resource>read().apply((collection, broker, transaction) -> {
-            try(final LockedDocument lockedDocument = collection.getDocumentWithLock(broker, idURI, LockMode.READ_LOCK)) {
+        return withDb((broker, transaction) -> getResource(broker, transaction, idURI));
+    }
+
+    /**
+     * Similar to {@link org.exist.xmldb.LocalCollection#getResource(String)}
+     * but useful for operations within the XML:DB Local API
+     * that are already working within a transaction
+     */
+    Resource getResource(final DBBroker broker, final Txn transaction, final String id) throws XMLDBException {
+        final XmldbURI idURI;
+        try {
+            idURI = XmldbURI.xmldbUriFor(id);
+        } catch(final URISyntaxException e) {
+            throw new XMLDBException(ErrorCodes.INVALID_URI, e);
+        }
+
+        return getResource(broker, transaction, idURI);
+    }
+
+    Resource getResource(final DBBroker broker, final Txn transaction, final XmldbURI idURI) throws XMLDBException {
+        return this.<Resource>read(broker, transaction).apply((collection, broker1, transaction1) -> {
+            try(final LockedDocument lockedDocument = collection.getDocumentWithLock(broker1, idURI, LockMode.READ_LOCK)) {
 
                 // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
                 collection.close();
@@ -545,11 +589,11 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
             try {
                 final long conLength = res.getStreamLength();
                 if (conLength != -1) {
-                    try (InputStream is = res.getStreamContent()) {
-                        collection.addBinaryResource(transaction, broker, resURI, is, res.getMimeType(), conLength, res.datecreated, res.datemodified);
+                    try (InputStream is = res.getStreamContent(broker, transaction)) {
+                        collection.addBinaryResource(transaction, broker, resURI, is, res.getMimeType(broker, transaction), conLength, res.datecreated, res.datemodified);
                     }
                 } else {
-                    collection.addBinaryResource(transaction, broker, resURI, (byte[]) res.getContent(), res.getMimeType(), res.datecreated, res.datemodified);
+                    collection.addBinaryResource(transaction, broker, resURI, (byte[]) res.getContent(broker, transaction), res.getMimeType(broker, transaction), res.datecreated, res.datemodified);
                 }
             } catch(final EXistException e) {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
@@ -579,7 +623,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
             try(final ManagedDocumentLock documentLock = broker.getBrokerPool().getLockManager().acquireDocumentWriteLock(resURI)) {
                 final IndexInfo info;
                 if (uri != null || res.inputSource != null) {
-                    setupParser(collection, res);
+                    setupParser(broker, transaction, collection, res);
                     info = collection.validateXMLResource(transaction, broker, resURI, (uri != null) ? new InputSource(uri) : res.inputSource);
                 } else if (res.root != null) {
                     info = collection.validateXMLResource(transaction, broker, resURI, res.root);
@@ -588,7 +632,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
                 }
                 //Notice : the document should now have a LockMode.WRITE_LOCK update lock
                 //TODO : check that no exception occurs in order to allow it to be released
-                info.getDocument().getMetadata().setMimeType(res.getMimeType());
+                info.getDocument().getMetadata().setMimeType(res.getMimeType(broker, transaction));
                 if (res.datecreated != null) {
                     info.getDocument().getMetadata().setCreated(res.datecreated.getTime());
                 }
@@ -620,10 +664,10 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
         });
     }
 
-    private void setupParser(final Collection collection, final LocalXMLResource res) throws XMLDBException {
+    private void setupParser(final DBBroker broker, final Txn transaction, final Collection collection, final LocalXMLResource res) throws XMLDBException {
         final String normalize = properties.getProperty(NORMALIZE_HTML, "no");
         if((normalize.equalsIgnoreCase("yes") || normalize.equalsIgnoreCase("true")) &&
-                ("text/html".equals(res.getMimeType()) || res.getId().endsWith(".htm") ||
+                ("text/html".equals(res.getMimeType(broker, transaction)) || res.getId().endsWith(".htm") ||
                     res.getId().endsWith(".html"))) {
 
           final Optional<Either<Throwable, XMLReader>> maybeReaderInst = HtmlToXmlParser.getHtmlToXmlParser(brokerPool.getConfiguration());
@@ -700,7 +744,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      *
      * @return A function to receive a read-only operation to perform against the collection
      */
-    private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read() throws XMLDBException {
+    protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read() throws XMLDBException {
         return readOp -> this.<R>read(path).apply((collection, broker, transaction) -> {
             collection.setReader(userReader);
             return readOp.apply(collection, broker, transaction);
@@ -735,6 +779,25 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      */
     private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final DBBroker broker, final Txn transaction) throws XMLDBException {
         return readOp -> this.<R>read(broker, transaction, path).apply((collection, broker1, transaction1) -> {
+            collection.setReader(userReader);
+            return readOp.apply(collection, broker1, transaction1);
+        });
+    }
+
+    /**
+     * Higher-order-function for performing read-only operations against this collection
+     *
+     * NOTE this read will occur using the database user set on the collection
+     *
+     * @param broker The broker to use for the operation
+     * @param transaction The transaction to use for the operation
+     * @param errorCode The error code to use in the XMLDBException if the collection does not exist, see {@link ErrorCodes}
+     * @return A function to receive a read-only operation to perform against the collection
+     *
+     * @throws XMLDBException if the collection could not be read
+     */
+    private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final DBBroker broker, final Txn transaction, final int errorCode) throws XMLDBException {
+        return readOp -> this.<R>read(broker, transaction, path, errorCode).apply((collection, broker1, transaction1) -> {
             collection.setReader(userReader);
             return readOp.apply(collection, broker1, transaction1);
         });

@@ -20,6 +20,7 @@
 package org.exist.storage;
 
 import net.jcip.annotations.NotThreadSafe;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import com.evolvedbinary.j8fu.fsm.AtomicFSM;
 import com.evolvedbinary.j8fu.fsm.FSM;
@@ -168,20 +169,21 @@ class BrokerPoolServicesManager {
      *
      * @param systemBroker The System Broker which is available for
      *   services to use to access the database
+     * @param transaction The transaction for the system services
      *
      * @throws BrokerPoolServiceException if any service causes an error during starting the system mode
      *
      * @throws IllegalStateException Thrown if there is an attempt to start a service
      * after any other service has entered the start pre-multi-user system mode.
      */
-    void startSystemServices(final DBBroker systemBroker) throws BrokerPoolServiceException {
+    void startSystemServices(final DBBroker systemBroker, final Txn transaction) throws BrokerPoolServiceException {
         states.process(ManagerEvent.ENTER_SYSTEM_MODE);
 
         for(final BrokerPoolService brokerPoolService : brokerPoolServices) {
             if(LOG.isTraceEnabled()) {
                 LOG.trace("Notifying service: " + brokerPoolService.getClass().getSimpleName() + " of start system...");
             }
-            brokerPoolService.startSystem(systemBroker);
+            brokerPoolService.startSystem(systemBroker, transaction);
         }
     }
 
@@ -196,20 +198,21 @@ class BrokerPoolServicesManager {
      *
      * @param systemBroker The System Broker which is available for
      *   services to use to access the database
+     * @param transaction The transaction for the pre-multi-user system services
      *
      * @throws BrokerPoolServiceException if any service causes an error during starting the pre-multi-user mode
      *
      * @throws IllegalStateException Thrown if there is an attempt to start pre-multi-user system a service
      * after any other service has entered multi-user.
      */
-    void startPreMultiUserSystemServices(final DBBroker systemBroker) throws BrokerPoolServiceException {
+    void startPreMultiUserSystemServices(final DBBroker systemBroker, final Txn transaction) throws BrokerPoolServiceException {
         states.process(ManagerEvent.PREPARE_ENTER_MULTI_USER_MODE);
 
         for(final BrokerPoolService brokerPoolService : brokerPoolServices) {
             if(LOG.isTraceEnabled()) {
                 LOG.trace("Notifying service: " + brokerPoolService.getClass().getSimpleName() + " of start pre-multi-user...");
             }
-            brokerPoolService.startPreMultiUserSystem(systemBroker);
+            brokerPoolService.startPreMultiUserSystem(systemBroker, transaction);
         }
     }
 

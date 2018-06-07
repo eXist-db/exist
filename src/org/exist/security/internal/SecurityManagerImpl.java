@@ -63,7 +63,6 @@ import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.ManagedLock;
-import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ConcurrentValueWrapper;
 import org.exist.util.WeakLazyStripes;
@@ -146,16 +145,16 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     }
 
     @Override
-    public void startSystem(final DBBroker systemBroker) throws BrokerPoolServiceException {
+    public void startSystem(final DBBroker systemBroker, final Txn transaction) throws BrokerPoolServiceException {
         try {
-            attach(systemBroker);
+            attach(systemBroker, transaction);
         } catch(final EXistException e) {
             throw new BrokerPoolServiceException(e);
         }
     }
 
     @Override
-    public void startPreMultiUserSystem(final DBBroker systemBroker) {
+    public void startPreMultiUserSystem(final DBBroker systemBroker, final Txn transaction) {
         final Properties params = new Properties();
         params.put(getClass().getName(), this);
         db.getScheduler().createPeriodicJob(SessionsCheck.TIMEOUT_CHECK_PERIOD, new SessionsCheck(), SessionsCheck.TIMEOUT_CHECK_PERIOD, params, SimpleTrigger.REPEAT_INDEFINITELY, false);
@@ -170,41 +169,37 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
      * @param broker the database broker
      */
     @Override
-    public void attach(final DBBroker broker) throws EXistException {
+    public void attach(final DBBroker broker, final Txn transaction) throws EXistException {
         db = broker.getDatabase(); //TODO: check that db is same?
 
-        final TransactionManager transaction = db.getTransactionManager();
-
-        Collection systemCollection;
-        try(final Txn txn = transaction.beginTransaction()) {
-            systemCollection = broker.getCollection(XmldbURI.SYSTEM);
+        Collection systemCollection = null;
+        try {
+            systemCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
             if(systemCollection == null) {
-                systemCollection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM);
+                systemCollection = broker.getOrCreateCollection(transaction, XmldbURI.SYSTEM_COLLECTION_URI);
                 if (systemCollection == null) {
                     return;
                 }
 
                 systemCollection.setPermissions(broker, Permission.DEFAULT_SYSTEM_COLLECTION_PERM);
-                broker.saveCollection(txn, systemCollection);
+                broker.saveCollection(transaction, systemCollection);
             }
-            transaction.commit(txn);
         } catch (final Exception e) {
             LOG.error("Setting /db/system permissions failed: " + e.getMessage(), e);
         }
 
-        try(final Txn txn = transaction.beginTransaction()) {
+        try {
             collection = broker.getCollection(SECURITY_COLLECTION_URI);
             if (collection == null) {
-                collection = broker.getOrCreateCollection(txn, SECURITY_COLLECTION_URI);
+                collection = broker.getOrCreateCollection(transaction, SECURITY_COLLECTION_URI);
                 if (collection == null) {
                     LOG.error("Collection '/db/system/security' can't be created. Database may be corrupt!");
                     return;
                 }
 
                 collection.setPermissions(broker, Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
-                broker.saveCollection(txn, collection);
+                broker.saveCollection(transaction, collection);
             }
-            transaction.commit(txn);
         } catch (final Exception e) {
             e.printStackTrace();
             LOG.error("Loading security configuration failed: " + e.getMessage(), e);
@@ -214,7 +209,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         configuration = Configurator.configure(this, _config_);
 
         for (final Realm realm : realms) {
-            realm.start(broker);
+            realm.start(broker, transaction);
         }
     }
     

@@ -31,6 +31,9 @@ import org.exist.storage.*;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -42,6 +45,25 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class JournalBinaryTest extends AbstractJournalTest {
+
+    @BeforeClass
+    public static void prepare() {
+        /*
+         * NOTE: we `ONLY` disable this so we can write our tests as single-threaded which is much simpler,
+         * that writing multi-threaded tests.
+         */
+        System.setProperty(DBBroker.PROP_DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS, "true");
+    }
+
+    @After
+    public void tearDown() {
+        BrokerPool.FORCE_CORRUPTION = false;
+    }
+
+    @AfterClass
+    public static void cleanup() {
+        System.clearProperty(DBBroker.PROP_DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS);
+    }
 
     @Override
     protected List<ExpectedLoggable> store_expected(final long storedTxnId, final String storedDbPath) {
