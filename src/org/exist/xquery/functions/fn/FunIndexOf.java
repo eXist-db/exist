@@ -50,7 +50,7 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FunIndexOf extends BasicFunction {
 
-	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the sequence of positive integers giving the positions within the sequence");
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_MORE, "the sequence of positive integers giving the positions within the sequence");
 
 	protected static final FunctionParameterSequenceType COLLATION_PARAM = new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI");
 
