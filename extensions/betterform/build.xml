@@ -8,6 +8,8 @@
     <property name="exist.rootdir" value="${basedir}/../.."/>
     <property name="exist.web.xml" value="${exist.rootdir}/webapp/WEB-INF/web.xml"/>
 
+    <property name="saxon.compatible.version" value="Saxon-HE-9.6.0-7"/>
+
     <property file="../local.build.properties"/>
     <property file="../build.properties"/>
 
@@ -48,38 +50,15 @@
         <ivy:retrieve pattern="main/lib/[artifact]-[revision].[ext]"/>
     </target>
 
-    <target name="install" depends="resolve,patch-web-xml,deployBFResources" description="install betterFORM components into an existing eXist-db installation"
+    <target name="install" depends="resolve,patch-web-xml,deploy-bf-resources" description="install betterFORM components into an existing eXist-db installation"
             if="include.feature.betterform.config"/>
-
-    <target name="clean" xmlns:xmldb="http://exist-db.org/ant" description="uninstall betterFORM"
-            if="include.feature.betterform.config">
-        <echo message="Uninstalling betterFORM..."/>
-
-        <delete dir="${exist.rootdir}/webapp/betterform"/>
-        <!--delete file="${exist.rootdir}/webapp/dashboard.html"/-->
-
-        <!--delete files from WEB-INF-->
-        <delete file="${exist.rootdir}/webapp/WEB-INF/betterform-config.xml" />
-        <delete file="${exist.rootdir}/webapp/WEB-INF/betterform-version.info"/>
-        <delete file="${exist.rootdir}/webapp/WEB-INF/dwr.xml" />
-        <delete file="${exist.rootdir}/webapp/WEB-INF/dwr20.dtd" />
-        <delete file="${exist.rootdir}/webapp/WEB-INF/classes/infinispan.xml"/>
-	<delete>
-	  <fileset dir="${betterform.lib}" includes="*.jar" excludes="dwr-3.0.RC2.jar"/>
-	</delete>
-
-        <!-- restore web.xml -->
-        <move file="${betterform.home}/uninstall/web.xml" tofile="${exist.rootdir}/webapp/WEB-INF/web.xml" overwrite="true" failonerror="false"/>
-        <delete dir="${betterform.home}/uninstall" includeemptydirs="true"/>
-
-    </target>
 
     <target name="patch-web-xml" xmlns:if="ant:if">
 
         <echo message="Adding betterFORM ResourceServlet config parameters to eXist to ${exist.web.xml}" if:set="include.feature.betterform.resourceServlet"/>
         <echo message="Adding full betterFORM config parameters to ${exist.web.xml}" if:set="include.feature.betterform.full"/>
 
-        <mkdir dir="${betterform.home}/uninstall"/>
+            <mkdir dir="${betterform.home}/uninstall"/>
         <xslt in="${exist.web.xml}" out="${exist.web.xml}.bf" style="${betterform.etc}/MergeWebXML.xsl" classpathref="classpath.core">
             <factory name="net.sf.saxon.TransformerFactoryImpl"/>
             <classpath>
@@ -94,26 +73,67 @@
         <move file="${exist.web.xml}.bf" tofile="${exist.web.xml}"/>
     </target>
 
-    <target name="deployBFResources">
+    <target name="deploy-bf-resources">
         <echo message="Deploy betterFORM resources to eXist-db webapp: ${exist.rootdir}/webapp/WEB-INF/..."/>
 
         <echo message="Creating uninstall folder."/>
         <mkdir dir="${betterform.home}/uninstall"/>
 
         <echo message="Copying betterFORM configuration files to WEB-INF dir."/>
-        <copy file="${betterform.webapp}/WEB-INF/betterform-config.xml" todir="${exist.rootdir}/webapp/WEB-INF"/>
         <copy file="${betterform.webapp}/WEB-INF/betterform-version.info" todir="${exist.rootdir}/webapp/WEB-INF"/>
-        <copy file="${betterform.webapp}/WEB-INF/dwr.xml" todir="${exist.rootdir}/webapp/WEB-INF"/>
-        <copy file="${betterform.webapp}/WEB-INF/dwr20.dtd" todir="${exist.rootdir}/webapp/WEB-INF"/>
-        <mkdir dir="${exist.rootdir}/webapp/WEB-INF/classes"/>
-        <copy file="${betterform.webapp}/WEB-INF/classes/infinispan.xml" todir="${exist.rootdir}/webapp/WEB-INF/classes"/>
+        <if>
+            <isset property="include.feature.betterform.full"/>
+            <then>
+                <copy file="${betterform.webapp}/WEB-INF/betterform-config.xml" todir="${exist.rootdir}/webapp/WEB-INF"/>
+                <copy file="${betterform.webapp}/WEB-INF/dwr.xml" todir="${exist.rootdir}/webapp/WEB-INF"/>
+                <copy file="${betterform.webapp}/WEB-INF/dwr20.dtd" todir="${exist.rootdir}/webapp/WEB-INF"/>
+                <mkdir dir="${exist.rootdir}/webapp/WEB-INF/classes"/>
+                <copy file="${betterform.webapp}/WEB-INF/classes/infinispan.xml" todir="${exist.rootdir}/webapp/WEB-INF/classes"/>
 
-        <!--echo>
-            Copying betterFORM error page and dashboard to webapp.
-        </echo>
-         <copy todir="${exist.rootdir}/webapp/">
-            <fileset file="${betterform.webapp}/dashboard.html"/>
-        </copy-->
+                <!-- Downgrade Saxon -->
+                <move todir="${betterform.home}/uninstall">
+                    <fileset dir="${exist.rootdir}/lib/endorsed">
+                        <include name="Saxon-*.jar"/>
+                    </fileset>
+                </move>
+                <!-- Download older Saxon version which is compatible for betterForm-->
+                <get src="http://maven-central.org/${saxon.compatible.version}.jar"
+                     dest="${exist.rootdir}/lib/endorsed/${saxon.compatible.version}.jar"
+                     verbose="true"
+                     usetimestamp="true"/>
+            </then>
+        </if>
+    </target>
+
+    <target name="clean" description="uninstall betterFORM"
+            if="include.feature.betterform.config">
+        <echo message="Uninstalling betterFORM..."/>
+
+        <delete dir="${exist.rootdir}/webapp/betterform" failonerror="false"/>
+
+        <!--delete files from WEB-INF-->
+        <delete file="${exist.rootdir}/webapp/WEB-INF/betterform-version.info" failonerror="false"/>
+        <delete file="${exist.rootdir}/webapp/WEB-INF/betterform-config.xml" failonerror="false"/>
+        <delete file="${exist.rootdir}/webapp/WEB-INF/dwr.xml" failonerror="false"/>
+        <delete file="${exist.rootdir}/webapp/WEB-INF/dwr20.dtd" failonerror="false"/>
+        <delete file="${exist.rootdir}/webapp/WEB-INF/classes/infinispan.xml" failonerror="false"/>
+        <delete failonerror="false">
+            <fileset dir="${betterform.lib}" includes="*.jar" excludes="dwr-3.0.RC2.jar"/>
+        </delete>
+
+        <!-- restore web.xml -->
+        <move file="${betterform.home}/uninstall/web.xml" tofile="${exist.rootdir}/webapp/WEB-INF/web.xml" overwrite="true" failonerror="false"/>
+
+        <!-- restore previous Saxon version -->
+        <delete file="${exist.rootdir}/lib/endorsed/${saxon.compatible.version}.jar" failonerror="false"/>
+        <move todir="${exist.rootdir}/lib/endorsed">
+            <fileset dir="${betterform.home}/uninstall">
+                <include name="Saxon-*.jar"/>
+            </fileset>
+        </move>
+
+        <delete dir="${betterform.home}/uninstall" includeemptydirs="true"/>
+
     </target>
 
 </project>
