@@ -10,6 +10,9 @@
     <xsl:param name="bf-resource-servlet" as="xs:boolean" select="false()"/>
     <xsl:param name="bf-full" as="xs:boolean" select="false()"/>
 
+    <xsl:variable name="fqn-resource-servlet" select="'de.betterform.agent.web.resources.ResourceServlet'"/>
+    <xsl:variable name="fqn-forms-servlet" select="'de.betterform.agent.web.servlet.FormsServlet'"/>
+
     <xsl:template match="webxml:display-name[empty(following-sibling::webxml:context-param[webxml:param-name eq 'betterform.configfile'])]">
         <xsl:copy>
             <xsl:apply-templates/>
@@ -39,28 +42,32 @@
             <xsl:apply-templates/>
         </xsl:copy>
         <xsl:if test="$bf-resource-servlet or $bf-full">
+            <xsl:if test="webxml:no-existing-betterform(.)">
 <xsl:text>
     
     </xsl:text><xsl:comment>
         betterFORM servlets
     </xsl:comment><xsl:text>
     </xsl:text>
-            <xsl:if test="$bf-resource-servlet">
+            </xsl:if>
+            <xsl:if test="$bf-resource-servlet and webxml:no-existing-resource-servlet(.)">
                 <xsl:call-template name="bf-resource-servlet"/>
             </xsl:if>
-            <xsl:if test="$bf-full">
+            <xsl:if test="$bf-full and webxml:no-existing-full-servlets(.)">
                 <xsl:call-template name="bf-full-servlets"/>
             </xsl:if>
+            <xsl:if test="webxml:no-existing-betterform(.)">
 <xsl:text>
     
     </xsl:text><xsl:comment>
         betterFORM servlet mappings
     </xsl:comment><xsl:text>
     </xsl:text>
-            <xsl:if test="$bf-resource-servlet">
+            </xsl:if>
+            <xsl:if test="$bf-resource-servlet and webxml:no-existing-resource-servlet(.)">
                 <xsl:call-template name="bf-resource-servlet-mapping"/>
             </xsl:if>
-            <xsl:if test="$bf-full">
+            <xsl:if test="$bf-full and webxml:no-existing-full-servlets(.)">
                 <xsl:call-template name="bf-full-servlet-mappings"/>
                 <xsl:text>
     
@@ -176,6 +183,21 @@
             <listener-class>de.betterform.agent.web.servlet.BfServletContextListener</listener-class>
         </listener>
     </xsl:template>
+    
+    <xsl:function name="webxml:no-existing-betterform" as="xs:boolean">
+        <xsl:param name="context" as="element(webxml:servlet)"/>
+        <xsl:value-of select="empty($context/parent::webxml:web-app/webxml:servlet[webxml:servlet-class = ($fqn-resource-servlet, $fqn-forms-servlet)])"/>
+    </xsl:function>
+    
+    <xsl:function name="webxml:no-existing-resource-servlet" as="xs:boolean">
+        <xsl:param name="context" as="element(webxml:servlet)"/>
+        <xsl:value-of select="empty($context/parent::webxml:web-app/webxml:servlet[webxml:servlet-class = $fqn-resource-servlet])"/>
+    </xsl:function>
+    
+    <xsl:function name="webxml:no-existing-full-servlets" as="xs:boolean">
+        <xsl:param name="context" as="element(webxml:servlet)"/>
+        <xsl:value-of select="empty($context/parent::webxml:web-app/webxml:servlet[webxml:servlet-class = $fqn-forms-servlet])"/>
+    </xsl:function>
 
     <xsl:template match="node()|@*">
         <xsl:copy>

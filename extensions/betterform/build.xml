@@ -1,14 +1,16 @@
-<!--
-  ~ Copyright (c) 2011. betterForm Project - http://www.betterform.de
-  ~ Licensed under the terms of BSD License
-  ~ Author betterFORM team ( info AT betterform.de )
-  -->
-
 <project name="betterFORM extension for eXist" default="install" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
+
     <property name="exist.rootdir" value="${basedir}/../.."/>
     <property name="exist.web.xml" value="${exist.rootdir}/webapp/WEB-INF/web.xml"/>
 
-    <property name="saxon.compatible.version" value="Saxon-HE-9.6.0-7"/>
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+        <classpath>
+            <pathelement location="${exist.rootdir}/tools/ant/lib/ant-contrib-1.0b3.jar"/>
+        </classpath>
+    </taskdef>
+
+    <property name="saxon.compatible.version" value="9.6.0-7"/>
+    <property name="saxon.compatible.version.name" value="Saxon-HE-${saxon.compatible.version}"/>
 
     <property file="../local.build.properties"/>
     <property file="../build.properties"/>
@@ -37,12 +39,10 @@
     <property name="betterform.lib" value="${betterform.home}/main/lib"/>
     <property name="betterform.webapp" value="${betterform.home}/main/webapp"/>
 
-    <path id="classpath.exist">
-        <fileset dir="${exist.rootdir}/lib/core">
-            <include name="*.jar"/>
+    <path id="classpath.saxon">
+        <fileset dir="${exist.rootdir}/lib/endorsed">
+            <include name="Saxon*.jar"/>
         </fileset>
-        <pathelement path="${exist.rootdir}/exist.jar"/>
-        <pathelement path="${exist.rootdir}/exist-optional.jar"/>
     </path>
     
     <target name="resolve" description="Use ivy to resolve betterform.jar">
@@ -58,49 +58,57 @@
         <echo message="Adding betterFORM ResourceServlet config parameters to eXist to ${exist.web.xml}" if:set="include.feature.betterform.resourceServlet"/>
         <echo message="Adding full betterFORM config parameters to ${exist.web.xml}" if:set="include.feature.betterform.full"/>
 
-            <mkdir dir="${betterform.home}/uninstall"/>
-        <xslt in="${exist.web.xml}" out="${exist.web.xml}.bf" style="${betterform.etc}/MergeWebXML.xsl" classpathref="classpath.core">
+        <xslt in="${exist.web.xml}" out="${exist.web.xml}.bf" style="${betterform.etc}/MergeWebXML.xsl" classpathref="classpath.saxon">
             <factory name="net.sf.saxon.TransformerFactoryImpl"/>
             <classpath>
-                <fileset dir="lib/endorsed">
+                <fileset dir="${exist.rootdir}/lib/endorsed">
                     <include name="Saxon*.jar"/>
                 </fileset>
             </classpath>
-            <param name="bf-resource-servlet" type="BOOLEAN" expression="true()" if="include.feature.betterform.resourceServlet"/>
-            <param name="bf-full" type="BOOLEAN" expression="true()" if="include.feature.betterform.full"/>
+            <param name="bf-resource-servlet" expression="true" if="include.feature.betterform.resourceServlet"/>
+            <param name="bf-full" expression="true" if="include.feature.betterform.full"/>
         </xslt>
-        <move file="${exist.web.xml}" tofile="${betterform.home}/uninstall/web.xml" failonerror="true"/>
-        <move file="${exist.web.xml}.bf" tofile="${exist.web.xml}"/>
+
+        <mkdir dir="${betterform.home}/uninstall"/>
+        <move file="${exist.web.xml}" tofile="${betterform.home}/uninstall/web.xml" verbose="true" failonerror="true"/>
+
+        <move file="${exist.web.xml}.bf" tofile="${exist.web.xml}" verbose="true" failonerror="true"/>
     </target>
 
     <target name="deploy-bf-resources">
-        <echo message="Deploy betterFORM resources to eXist-db webapp: ${exist.rootdir}/webapp/WEB-INF/..."/>
+        <echo message="Deploy betterFORM resources to eXist-db webapp: ${exist.rootdir}/webapp/WEB-INF/."/>
 
         <echo message="Creating uninstall folder."/>
         <mkdir dir="${betterform.home}/uninstall"/>
 
-        <echo message="Copying betterFORM configuration files to WEB-INF dir."/>
-        <copy file="${betterform.webapp}/WEB-INF/betterform-version.info" todir="${exist.rootdir}/webapp/WEB-INF"/>
+        <echo message="Copying betterFORM configuration files to WEB-INF dir..."/>
+        <copy file="${betterform.webapp}/WEB-INF/betterform-version.info" todir="${exist.rootdir}/webapp/WEB-INF" verbose="true"/>
         <if>
             <isset property="include.feature.betterform.full"/>
             <then>
-                <copy file="${betterform.webapp}/WEB-INF/betterform-config.xml" todir="${exist.rootdir}/webapp/WEB-INF"/>
-                <copy file="${betterform.webapp}/WEB-INF/dwr.xml" todir="${exist.rootdir}/webapp/WEB-INF"/>
-                <copy file="${betterform.webapp}/WEB-INF/dwr20.dtd" todir="${exist.rootdir}/webapp/WEB-INF"/>
+                <copy file="${betterform.webapp}/WEB-INF/betterform-config.xml" todir="${exist.rootdir}/webapp/WEB-INF" verbose="true"/>
+                <copy file="${betterform.webapp}/WEB-INF/dwr.xml" todir="${exist.rootdir}/webapp/WEB-INF" verbose="true"/>
+                <copy file="${betterform.webapp}/WEB-INF/dwr20.dtd" todir="${exist.rootdir}/webapp/WEB-INF" verbose="true"/>
                 <mkdir dir="${exist.rootdir}/webapp/WEB-INF/classes"/>
-                <copy file="${betterform.webapp}/WEB-INF/classes/infinispan.xml" todir="${exist.rootdir}/webapp/WEB-INF/classes"/>
+                <copy file="${betterform.webapp}/WEB-INF/classes/infinispan.xml" todir="${exist.rootdir}/webapp/WEB-INF/classes" verbose="true"/>
 
                 <!-- Downgrade Saxon -->
-                <move todir="${betterform.home}/uninstall">
+                <echo message="Downgrading Saxon to a betterForm compatible version: ${saxon.compatible.version.name}..."/>
+                <!-- Download older Saxon version which is compatible for betterForm-->
+                <get src="https://search.maven.org/remotecontent?filepath=net/sf/saxon/Saxon-HE/${saxon.compatible.version}/${saxon.compatible.version.name}.jar"
+                     dest="${betterform.home}/uninstall/${saxon.compatible.version.name}.jar"
+                     verbose="true"
+                     usetimestamp="true"/>
+                <move todir="${betterform.home}/uninstall" verbose="true">
                     <fileset dir="${exist.rootdir}/lib/endorsed">
                         <include name="Saxon-*.jar"/>
                     </fileset>
                 </move>
-                <!-- Download older Saxon version which is compatible for betterForm-->
-                <get src="http://maven-central.org/${saxon.compatible.version}.jar"
-                     dest="${exist.rootdir}/lib/endorsed/${saxon.compatible.version}.jar"
-                     verbose="true"
-                     usetimestamp="true"/>
+                <move todir="${exist.rootdir}/lib/endorsed" verbose="true">
+                    <fileset dir="${betterform.home}/uninstall">
+                        <include name="${saxon.compatible.version.name}.jar"/>
+                    </fileset>
+                </move>
             </then>
         </if>
     </target>
@@ -125,12 +133,18 @@
         <move file="${betterform.home}/uninstall/web.xml" tofile="${exist.rootdir}/webapp/WEB-INF/web.xml" overwrite="true" failonerror="false"/>
 
         <!-- restore previous Saxon version -->
-        <delete file="${exist.rootdir}/lib/endorsed/${saxon.compatible.version}.jar" failonerror="false"/>
-        <move todir="${exist.rootdir}/lib/endorsed">
-            <fileset dir="${betterform.home}/uninstall">
-                <include name="Saxon-*.jar"/>
-            </fileset>
-        </move>
+        <if>
+            <available file="${exist.rootdir}/lib/endorsed/${saxon.compatible.version}.jar"/>
+            <then>
+                <echo message="Restoring Saxon to original version (before betterForm was deployed)..."/>
+                <delete file="${exist.rootdir}/lib/endorsed/${saxon.compatible.version.name}.jar" failonerror="true"/>
+                <move todir="${exist.rootdir}/lib/endorsed" verbose="true" failonerror="true">
+                    <fileset dir="${betterform.home}/uninstall">
+                        <include name="Saxon-*.jar"/>
+                    </fileset>
+                </move>
+            </then>
+        </if>
 
         <delete dir="${betterform.home}/uninstall" includeemptydirs="true"/>
 
