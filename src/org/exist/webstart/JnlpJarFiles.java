@@ -48,29 +48,11 @@ public class JnlpJarFiles {
 
     // Names of core jar files sans ".jar" extension.
     // Use %latest% token in place of a version string.
+    // https://www.oxygenxml.com/doc/versions/20.0/ug-editor/topics/configure-exist-datasource.html#configure-exist-datasource
     private final String allJarNames[] = new String[]{
-            "antlr-%latest%",
-            "cglib-nodep-%latest%",
-            "clj-ds-%latest%",
-            "commons-codec-%latest%",
-            "commons-collections-%latest%",
-            "commons-io-%latest%",
-            "commons-logging-%latest%",
-            "commons-pool-%latest%",
-            "jargo-%latest%",
-            "gnu-crypto-%latest%",
-            "j8fu-%latest%",
-            "jackson-core-%latest%",
-            "jcip-annotations-%latest%",
-            "jline-%latest%",
-            "jta-%latest%",
             "log4j-api-%latest%",
-            "log4j-core-%latest%",
             "log4j-jul-%latest%",
             "log4j-slf4j-impl-%latest%",
-            "pkg-java-fork",
-            "quartz-%latest%",
-            "rsyntaxtextarea-%latest%",
             "slf4j-api-%latest%",
             "ws-commons-util-%latest%",
             "xmldb",

@@ -94,6 +94,7 @@ public class JnlpWriter {
             final XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(response.getOutputStream());
 
             writer.writeStartDocument();
+            writer.writeComment("This interface is deprecated. It is intended to be used by OxygenXML only.");
             writer.writeStartElement("jnlp");
             writer.writeAttribute("spec", "7.0");
             writer.writeAttribute("codebase", codeBase);
@@ -126,57 +127,13 @@ public class JnlpWriter {
                     + "XML data or querying.");
             writer.writeEndElement();
 
-            writer.writeStartElement("description");
-            writer.writeAttribute("kind", "short");
-            writer.writeCharacters("eXist XML-DB client");
-            writer.writeEndElement();
-
-            writer.writeStartElement("description");
-            writer.writeAttribute("kind", "tooltip");
-            writer.writeCharacters("eXist XML-DB client");
-            writer.writeEndElement();
-
-            writer.writeStartElement("icon");
-            writer.writeAttribute("href", "jnlp_logo.jpg");
-            writer.writeEndElement();
-
-            writer.writeStartElement("icon");
-            writer.writeAttribute("href", "jnlp_icon_128x128.gif");
-            writer.writeAttribute("width", "128");
-            writer.writeAttribute("height", "128");
-            writer.writeEndElement();
-            
-            writer.writeStartElement("icon");
-            writer.writeAttribute("href", "jnlp_icon_64x64.gif");
-            writer.writeAttribute("width", "64");
-            writer.writeAttribute("height", "64");
-            writer.writeEndElement();
-
-            writer.writeStartElement("icon");
-            writer.writeAttribute("href", "jnlp_icon_32x32.gif");
-            writer.writeAttribute("width", "32");
-            writer.writeAttribute("height", "32");
-            writer.writeEndElement();
 
             writer.writeEndElement(); // information
 
-            writer.writeStartElement("security");
-            writer.writeEmptyElement("all-permissions");
-            writer.writeEndElement();
 
             // ----------
 
             writer.writeStartElement("resources");
-
-            writer.writeStartElement("property");
-            writer.writeAttribute("name", "jnlp.packEnabled");
-            writer.writeAttribute("value", "true");
-            writer.writeEndElement();
-
-            writer.writeStartElement("property");
-            writer.writeAttribute("name", "java.util.logging.manager");
-            writer.writeAttribute("value", "org.apache.logging.log4j.jul.LogManager");
-            writer.writeEndElement();
 
             writer.writeStartElement("java");
             writer.writeAttribute("version", "1.8+");
@@ -194,20 +151,6 @@ public class JnlpWriter {
 
             writer.writeStartElement("application-desc");
             writer.writeAttribute("main-class", "org.exist.client.InteractiveClient");
-
-            writer.writeStartElement("argument");
-            writer.writeCharacters("-ouri=" + startUrl);
-            writer.writeEndElement();
-
-            writer.writeStartElement("argument");
-            writer.writeCharacters("--no-embedded-mode");
-            writer.writeEndElement();
-            
-            if(request.isSecure()){
-                writer.writeStartElement("argument");
-                writer.writeCharacters("--use-ssl");
-                writer.writeEndElement();
-            }
 
             writer.writeEndElement(); // application-desc
 
@@ -266,48 +209,4 @@ public class JnlpWriter {
         os.flush();
     }
 
-    void sendImage(JnlpHelper jh, JnlpJarFiles jf, String filename, HttpServletResponse response) throws IOException {
-        LOGGER.debug("Send image " + filename);
-
-        String type = getImageMimeType(filename);
-      
-        try(final InputStream imageInputStream = this.getClass().getResourceAsStream("resources/"+filename)) {
-            if (imageInputStream == null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, String.format("Image file '%s' not found.", filename));
-                return;
-            }
-
-            // Copy data
-            try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
-                baos.write(imageInputStream);
-
-                // Setup HTTP headers
-                response.setContentType(type);
-                response.setContentLength(baos.size());
-
-                try(final ServletOutputStream os = response.getOutputStream()) {
-                    baos.writeTo(os);
-                }
-            }
-        }
-    }
-
-    private String getImageMimeType(String filename) {
-        String type;
-        switch (FilenameUtils.getExtension(filename)) {
-            case ".gif":
-                type = "image/gif";
-                break;
-            case ".png":
-                type = "image/png";
-                break;
-            case ".jpg":
-            case ".jpeg":
-                type = "image/jpeg";
-                break;
-            default:
-                type = "application/octet-stream";
-        }
-        return type;
-    }
 }

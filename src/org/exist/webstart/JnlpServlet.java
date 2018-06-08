@@ -97,9 +97,6 @@ public class JnlpServlet extends HttpServlet {
             } else if (requestURI.endsWith(".jar") || requestURI.endsWith(".jar.pack.gz")) {
                 jw.sendJar(jf, filename, request, response);
 
-            } else if (requestURI.endsWith(".gif") || requestURI.endsWith(".jpg")) {
-                jw.sendImage(jh, jf, filename, response);
-
             } else {
                 LOGGER.error("Invalid filename extension.");
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, filename + " not found.");
