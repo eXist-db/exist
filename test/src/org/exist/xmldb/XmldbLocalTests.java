@@ -28,6 +28,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
     CreateCollectionsTest.class,
     ResourceTest.class,
+    LocalXMLResourceDOMTest.class,
     BinaryResourceUpdateTest.class,
     ResourceSetTest.class,
     TestEXistXMLSerialize.class,
