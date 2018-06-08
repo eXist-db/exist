@@ -19,7 +19,6 @@
     
     <!-- Core build scripts -->
     <import file="build/scripts/build-impl.xml"/>
-    <import file="build/scripts/jarsigner.xml"/>
     <import file="build/scripts/installer.xml"/>
     <import file="build/scripts/dist.xml"/>
     

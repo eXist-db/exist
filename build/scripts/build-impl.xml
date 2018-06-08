@@ -352,7 +352,7 @@
     <!-- Create jar files                                                   -->
     <!-- ================================================================== -->
     <target name="jar" depends="git.details,compile,compile-testkit,compile-aspectj"
-        description="Create eXist-db unsigned jar files">
+        description="Create eXist-db jar files">
         <filter token="version" value="${project.version}"/>
         <filter token="build" value="${DSTAMP}${TSTAMP}"/>
         <filter token="git.branch" value="${git.branch.full}"/>
@@ -561,8 +561,6 @@
 
         <!--  this module must be built after the ldap extension -->
         <ant antfile="build.xml" dir="extensions/security/activedirectory" inheritall="false"/>
-
-        <antcall target="sign"/>
     </target>
 
     <!-- ================================================================== -->
@@ -862,22 +860,6 @@
             </fileset>
         </replaceregexp>
     </target>
-
-    <!-- ============================================================================ -->
-    <!-- Sign jar files for java webstart.                                            -->
-    <!--                                                                              -->
-    <!-- ============================================================================ -->
-    <target name="sign" if="key.store.present">
-
-        <!-- Only sign if key store exists. otherwise skip signing -->
-
-        <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
-        <echo message="!! Signing jar files ..."/>
-        <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
-        <ant antfile="build/scripts/jarsigner.xml" dir="." target="jnlp-all"/>
-
-    </target>
-
 
     <!-- ============================================================================ -->
     <!-- Download additional files                                                    -->

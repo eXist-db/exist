@@ -158,17 +158,6 @@
             compressionlevel="9"
             installerType="standard"/>
 
-        <echo unless:set="key.store.present">
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            *** WARNING: The Core Jar files in the installer have
-                not been signed because the keystore.file could not
-                be found.
-                If you expected signed Jar files, please check the
-                location of your keystore file matches that set in
-                build.properties.
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        </echo>
-
     </target>
 
     <target name="copy_scripts">
