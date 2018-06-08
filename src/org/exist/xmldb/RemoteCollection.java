@@ -44,6 +44,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * A remote implementation of the Collection interface. This implementation
  * communicates with the server through the XMLRPC protocol.
@@ -590,7 +592,8 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
                         descString = ((EXistInputSource) content).getSymbolicPath();
                     }
                 } else if (content instanceof String) {
-                    is = new FastByteArrayInputStream(((String) content).getBytes());
+                    // TODO(AR) we really should not allow String to be used here, as we loose the encoding info and default to UTF-8!
+                    is = new FastByteArrayInputStream(((String) content).getBytes(UTF_8));
                 } else {
                     LOG.error("Unable to get content from {}", content);
                 }
@@ -599,9 +602,21 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
             final byte[] chunk;
             if (res instanceof ExtendedResource) {
                 if(res instanceof AbstractRemoteResource) {
-                    chunk = new byte[(int)Math.min(((AbstractRemoteResource)res).getContentLength(), MAX_UPLOAD_CHUNK)];
+                    final long contentLen = ((AbstractRemoteResource)res).getContentLength();
+                    if (contentLen != -1) {
+                        // content length is known
+                        chunk = new byte[(int)Math.min(contentLen, MAX_UPLOAD_CHUNK)];
+                    } else {
+                        chunk = new byte[MAX_UPLOAD_CHUNK];
+                    }
                 } else {
-                    chunk = new byte[(int)Math.min(((ExtendedResource)res).getStreamLength(), MAX_UPLOAD_CHUNK)];
+                    final long streamLen = ((ExtendedResource)res).getStreamLength();
+                    if (streamLen != -1) {
+                        // stream length is known
+                        chunk = new byte[(int)Math.min(streamLen, MAX_UPLOAD_CHUNK)];
+                    } else {
+                        chunk = new byte[MAX_UPLOAD_CHUNK];
+                    }
                 }
             } else {
                 chunk = new byte[MAX_UPLOAD_CHUNK];

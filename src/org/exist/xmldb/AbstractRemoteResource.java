@@ -34,6 +34,7 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
 import org.exist.util.Leasable;
+import org.exist.util.ZipEntryInputSource;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.io.TemporaryFileManager;
@@ -57,7 +58,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     protected Path file = null;
     private Path contentFile = null;
     protected InputSource inputSource = null;
-    private long contentLen = 0L;
+    private long contentLen = -1L;
     private Permission permissions = null;
     private boolean closed;
 
@@ -196,6 +197,9 @@ public abstract class AbstractRemoteResource extends AbstractRemote
                 wasSet = true;
             } else if (value instanceof InputSource) {
                 inputSource = (InputSource) value;
+                if (inputSource instanceof EXistInputSource) {
+                    setExtendendContentLength(((EXistInputSource)inputSource).getByteStreamLength());
+                }
                 wasSet = true;
             } else if (value instanceof byte[]) {
                 file = TemporaryFileManager.getInstance().getTemporaryFile();
