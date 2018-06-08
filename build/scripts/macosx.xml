@@ -136,11 +136,6 @@
                 <exclude name="indexes/**/lib/v*.jar"/>
             </fileset>
         </copy>
-        <copy todir="${app.exist}/extensions/betterform/main/webapp/WEB-INF">
-            <fileset dir="${basedir}/extensions/betterform/main/webapp/WEB-INF">
-                <include name="classes/**"/>
-            </fileset>
-        </copy>
         <copy todir="${app.exist}/tools">
             <fileset dir="${basedir}/tools">
                 <include name="**/*.jar"/>

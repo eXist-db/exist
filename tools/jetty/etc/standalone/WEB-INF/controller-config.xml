@@ -18,9 +18,6 @@
     
     <!-- RESTXQ -->
     <forward pattern="/restxq/" servlet="RestXqServlet"/>
-    
-    <!-- betterFORM resource-servlet -->
-    <forward pattern=".*bfResources/" servlet="ResourceServlet"/>
 
     <!-- 
         ++ Main web application is served from the
