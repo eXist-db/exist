@@ -626,7 +626,7 @@ return
 let $f := function ($a, $b) { $a * $b }
 let $ff := $f(5, ?)
 return
-    for-each($ff, (1, 2))]]></code>
+    for-each((1, 2), $ff)]]></code>
     	<expected>5 10</expected>
     </test>
     <test output="text" id="internal1">
@@ -644,7 +644,7 @@ return
 
 let $f := concat("Hello ", ?)
 return
-    for-each($f, ("world!", "Wolf!"))]]></code>
+    for-each(("world!", "Wolf!"), $f)]]></code>
     	<expected>Hello world! Hello Wolf!</expected>
     </test>
     <!-- Closures -->
