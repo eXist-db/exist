@@ -62,7 +62,7 @@ public class FunRound extends Function {
 				"[XML Schema Part 2: Datatypes Second Edition] does not " +
 				"distinguish between the values positive zero and negative zero.",
 				new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The input number") },
-				new FunctionReturnSequenceType(Type.NUMBER, Cardinality.EXACTLY_ONE, "the rounded value")
+				new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE, "the rounded value")
 			);
 			
 	public FunRound(XQueryContext context) {

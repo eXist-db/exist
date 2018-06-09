@@ -53,7 +53,7 @@ public class FnFormatNumbers extends BasicFunction {
     private static final String PICTURE_DESCRIPTION = "The formatting of a number is controlled by a picture string. The picture string is a sequence of ·characters·, in which the characters assigned to the variables decimal-separator-sign, grouping-sign, decimal-digit-family, optional-digit-sign and pattern-separator-sign are classified as active characters, and all other characters (including the percent-sign and per-mille-sign) are classified as passive characters.";
     private static final SequenceType DECIMAL_FORMAT = new FunctionParameterSequenceType("decimal-format-name", Type.STRING, Cardinality.EXACTLY_ONE, "The decimal-format name must be a QName, which is expanded as described in [2.4 Qualified Names]. It is an error if the stylesheet does not contain a declaration of the decimal-format with the specified expanded-name.");
     private static final String DECIMAL_FORMAT_DESCRIPTION = "";
-    private static final FunctionReturnSequenceType FUNCTION_RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "the formatted string");
+    private static final FunctionReturnSequenceType FUNCTION_RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the formatted string");
 
     public static final FunctionSignature signatures[] = {
             new FunctionSignature(

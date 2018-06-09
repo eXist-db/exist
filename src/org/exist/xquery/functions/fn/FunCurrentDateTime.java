@@ -52,6 +52,7 @@ public class FunCurrentDateTime extends Function {
             "during the evaluation of a query or transformation in which " +
             "fn:current-dateTime() is executed.",
             null,
+            //should be xs:dateTimeStamp, need to add support for DATE_TIME_STAMP
             new FunctionReturnSequenceType(Type.DATE_TIME,
                 Cardinality.EXACTLY_ONE, "the date-time current " +
                     "within query execution time span"));

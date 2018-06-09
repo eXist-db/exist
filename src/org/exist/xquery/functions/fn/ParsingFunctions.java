@@ -55,8 +55,8 @@ public class ParsingFunctions extends BasicFunction {
 
 	protected static final FunctionReturnSequenceType RESULT_TYPE_FOR_PARSE_XML = new FunctionReturnSequenceType(Type.DOCUMENT,
 			Cardinality.ZERO_OR_ONE, "the parsed document");
-	protected static final FunctionReturnSequenceType RESULT_TYPE_FOR_PARSE_XML_FRAGMENT = new FunctionReturnSequenceType(Type.ELEMENT,
-			Cardinality.ZERO_OR_MORE, "the parsed document fragment");	
+	protected static final FunctionReturnSequenceType RESULT_TYPE_FOR_PARSE_XML_FRAGMENT = new FunctionReturnSequenceType(Type.DOCUMENT,
+			Cardinality.ZERO_OR_ONE, "the parsed document fragment");	
 
 	protected static final FunctionParameterSequenceType TO_BE_PARSED_PARAMETER = new FunctionParameterSequenceType(
 			"arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be parsed");

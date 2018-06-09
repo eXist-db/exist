@@ -56,6 +56,7 @@ public class FunGetDurationComponent extends BasicFunction {
 	protected static final Logger logger = LogManager.getLogger(FunGetDurationComponent.class);
     public final static FunctionParameterSequenceType DAYTIME_DURA_01_PARAM = new FunctionParameterSequenceType("duration", Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE, "The duration as xs:dayTimeDuration");
     public final static FunctionParameterSequenceType YEARMONTH_DURA_01_PARAM = new FunctionParameterSequenceType("duration", Type.YEAR_MONTH_DURATION, Cardinality.ZERO_OR_ONE, "The duration as xs:yearMonthDuration");
+    public final static FunctionParameterSequenceType DURA_01_PARAM = new FunctionParameterSequenceType("duration", Type.DURATION, Cardinality.ZERO_OR_ONE, "The duration as xs:duration");
 
 	public final static FunctionSignature fnDaysFromDuration =
 		new FunctionSignature(
@@ -63,7 +64,7 @@ public class FunGetDurationComponent extends BasicFunction {
 			"Returns an xs:integer representing the days component in the canonical lexical " +
 			"representation of the value of $duration. The result may be negative.",
 			new SequenceType[] {
-                DAYTIME_DURA_01_PARAM
+                DURA_01_PARAM
             },
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the days component of $duration"));
 	
@@ -73,7 +74,7 @@ public class FunGetDurationComponent extends BasicFunction {
 			"Returns an xs:integer representing the hours component in the canonical lexical " +
 			"representation of the value of $duration. The result may be negative.",
 			new SequenceType[] {
-                DAYTIME_DURA_01_PARAM
+                DURA_01_PARAM
             },
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the hours component of $duration"));
 	
@@ -83,7 +84,7 @@ public class FunGetDurationComponent extends BasicFunction {
 			"Returns an xs:integer representing the minutes component in the canonical " +
 			"lexical representation of the value of $duration. The result may be negative.",
 			new SequenceType[] {
-                DAYTIME_DURA_01_PARAM
+                DURA_01_PARAM
             },
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the minutes component of $duration"));
 
@@ -93,7 +94,7 @@ public class FunGetDurationComponent extends BasicFunction {
 			"Returns an xs:decimal representing the seconds component in the canonical lexical " +
 			"representation of the value of $duration. The result may be negative",
 			new SequenceType[] {
-                DAYTIME_DURA_01_PARAM
+                DURA_01_PARAM
             },
 			new FunctionReturnSequenceType(Type.DECIMAL, Cardinality.ZERO_OR_ONE, "the seconds component of $duration"));
 
@@ -102,7 +103,7 @@ public class FunGetDurationComponent extends BasicFunction {
 			"Returns an xs:integer representing the months component in the canonical lexical " +
 			"representation of the value of $duration. The result may be negative.",
 			new SequenceType[] {
-                YEARMONTH_DURA_01_PARAM
+                DURA_01_PARAM
             },
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the months component of $duration"));
 
@@ -111,7 +112,7 @@ public class FunGetDurationComponent extends BasicFunction {
 			"Returns an xs:integer representing the years component in the canonical lexical " +
 			"representation of the value of $duration. The result may be negative.",
 			new SequenceType[] {
-                YEARMONTH_DURA_01_PARAM
+                DURA_01_PARAM
             },
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the years component of $duration"));
 

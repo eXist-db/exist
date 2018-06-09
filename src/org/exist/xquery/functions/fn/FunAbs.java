@@ -51,7 +51,7 @@ public class FunAbs extends Function {
                 new FunctionParameterSequenceType("number", Type.NUMBER, 
                     Cardinality.ZERO_OR_ONE, "The number")
             },
-            new FunctionReturnSequenceType(Type.NUMBER, Cardinality.EXACTLY_ONE,
+            new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE,
                 "The absolute value of the argument")
         );
 

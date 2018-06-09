@@ -42,12 +42,12 @@ public class FunFloor extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("floor", Function.BUILTIN_FUNCTION_NS),
-			"Returns the largets number not greater than the value of $number. " + 
+			"Returns the largest number not greater than the value of $number. " + 
 			"If $number is the empty sequence, returns the empty sequence.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("number", Type.NUMBER, Cardinality.ZERO_OR_MORE, "The number")
+                new FunctionParameterSequenceType("number", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The number")
             },
-			new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ONE, "the largets number without fraction part not greater than the value of $number"));
+			new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE, "the largest number without fraction part not greater than the value of $number"));
 
 	public FunFloor(XQueryContext context) {
 		super(context, signature);

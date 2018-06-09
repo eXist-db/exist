@@ -90,7 +90,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 		"The text:matches-regex() variants of the fn:matches() functions are identical except that they avoid the translation of the specified regular expression from XPath2 to Java syntax. " +
 		"That is, the regular expression is evaluated as is, and must be valid according to Java regular expression syntax, rather than the more restrictive XPath2 syntax.";
 
-	protected static final FunctionParameterSequenceType INPUT_ARG = new FunctionParameterSequenceType("input", Type.STRING, Cardinality.ZERO_OR_MORE, "The input string");
+	protected static final FunctionParameterSequenceType INPUT_ARG = new FunctionParameterSequenceType("input", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string");
 	protected static final FunctionParameterSequenceType PATTERN_ARG = new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "The pattern");
 	protected static final FunctionParameterSequenceType FLAGS_ARG = new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, "The flags");
 

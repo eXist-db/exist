@@ -97,7 +97,7 @@ public class MapFunction extends BasicFunction {
         "Constructs a new map by removing an entry from an existing map.",
         new SequenceType[] {
             new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP, Cardinality.EXACTLY_ONE, "The map"),
-            new FunctionParameterSequenceType("key", Type.STRING, Cardinality.EXACTLY_ONE, "The key to remove")
+            new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The key to remove")
         },
         new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE)
     );

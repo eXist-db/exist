@@ -49,7 +49,7 @@ public class FunLast extends Function {
 			"Returns the context size from the dynamic context. " + 
 			"If the context item is undefined, an error is raised.",
 			null,
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the context size from the dynamic context"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "the context size from the dynamic context"));
 
 	public FunLast(XQueryContext context) {
 		super(context, signature);

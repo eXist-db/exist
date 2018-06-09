@@ -65,7 +65,7 @@ public class FunUnparsedText extends BasicFunction {
     static final FunctionSignature [] FS_UNPARSED_TEXT_AVAILABLE = functionSignatures(
         new QName("unparsed-text-available", Function.BUILTIN_FUNCTION_NS),
         "determines whether a call on the fn:unparsed-text function with identical arguments would return a string",
-        returnsOpt(Type.STRING),
+        returns(Type.BOOLEAN),
         arities(
                 arity(PARAM_HREF),
                 arity(PARAM_HREF, PARAM_ENCODING)

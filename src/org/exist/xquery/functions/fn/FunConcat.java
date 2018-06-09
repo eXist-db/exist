@@ -69,7 +69,7 @@ public class FunConcat extends Function {
                 new FunctionParameterSequenceType("atomizable-values",
                     Type.ATOMIC, Cardinality.ZERO_OR_ONE, "The atomizable values")
             },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE,
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE,
                 "The concatenated values"),
             true
         );

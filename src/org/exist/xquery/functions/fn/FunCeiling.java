@@ -49,7 +49,7 @@ public class FunCeiling extends Function {
                 new FunctionParameterSequenceType("number", Type.NUMBER,
                     Cardinality.ZERO_OR_ONE, "The number")
             },
-            new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ONE,
+            new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE,
                 "The non-fractional number not less than $number")
         );
 
