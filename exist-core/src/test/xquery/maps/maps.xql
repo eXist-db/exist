@@ -43,7 +43,7 @@ declare %test:assertEquals(20) function mt:createWithFunctionValue() {
 
 declare %test:assertEquals("Sunday") function mt:createWithEntry() {
     let $days := ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-    let $map := map:merge((map(function($day) { map:entry(substring($day, 1, 2), $day) }, $days)))
+    let $map := map:merge($days ! map:entry(substring(., 1, 2), .))
     return
         $map("Su")
 };
@@ -181,7 +181,7 @@ declare %test:assertTrue function mt:containsOnEmptyValue() {
 
 declare %test:assertEquals("Fr", "Mo", "Sa", "Su", "Th", "Tu", "We") function mt:keys() {
     let $days := ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-    let $map := map:merge((map(function($day) { map:entry(substring($day, 1, 2), $day) }, $days)))
+    let $map := map:merge($days ! map:entry(substring(., 1, 2), .))
     for $day in map:keys($map)
     order by $day ascending
     return
@@ -196,7 +196,7 @@ declare %test:assertEquals("Su") function mt:keysOnMapWithSingleKey() {
 
 declare %test:assertEquals("Fr", "Mo", "Sa", "Su", "Th") function mt:remove() {
     let $days := ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-    let $map := map:merge((map(function($day) { map:entry(substring($day, 1, 2), $day) }, $days)))
+    let $map := map:merge($days ! map:entry(substring(., 1, 2), .))
     for $day in map:keys(map:remove(map:remove($map, "We"), "Tu"))
     order by $day
     return
@@ -205,7 +205,7 @@ declare %test:assertEquals("Fr", "Mo", "Sa", "Su", "Th") function mt:remove() {
 
 declare %test:assertFalse function mt:remove() {
     let $days := ("Monday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-    let $map := map:merge((map(function($day) { map:entry(substring($day, 1, 2), $day) }, $days)))
+    let $map := map:merge($days ! map:entry(substring(., 1, 2), .))
     return
         map:contains(map:remove($map, "Tu"), "Tu")
 };
