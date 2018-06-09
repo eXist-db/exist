@@ -455,7 +455,7 @@ declare %private function test:map-arguments($testArgs as xs:string*, $funcArgs 
                 "The number of arguments specified in test:args must match the arguments of the function to test"
             )
         else
-            map-pairs(function($targ as xs:string, $farg as element(argument)) {
+            for-each-pair(function($targ as xs:string, $farg as element(argument)) {
                 let $data := test:cast($targ, $farg)
                 return
                     function() { $data }
@@ -598,7 +598,7 @@ declare %private function test:check-assertions($assertions as element(annotatio
 declare %private function test:assertEquals($values as item()*, $result as item()*) as element(report)? {
     if (exists($values)) then
         if (count($values) eq count($result)) then
-            let $tests := map-pairs(test:equals#2, $values, $result)
+            let $tests := for-each-pair(test:equals#2, $values, $result)
             let $equal := every $test in $tests satisfies $test
             return
                 if ($equal) then
