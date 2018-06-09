@@ -42,6 +42,7 @@ import org.exist.xquery.value.Type;
  * @author wolf
  *
  */
+@Deprecated
 public class FunEscapeURI extends BasicFunction {
 
     public final static FunctionSignature signature =
