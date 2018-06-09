@@ -460,11 +460,6 @@ return
         <expected></expected>
     </test>
     <test output="text">
-        <task>fn:map function (deprecated)</task>
-        <code>fn:map(function($a) { $a * $a }, 1 to 5)</code>
-        <expected>1 4 9 16 25</expected>
-    </test>
-    <test output="text">
         <task>fn:for-each function</task>
         <code>fn:for-each(1 to 5, function($a) { $a * $a })</code>
         <expected>1 4 9 16 25</expected>
@@ -533,11 +528,6 @@ return
         <task>fn:fold-right non-associative</task>
         <code>fold-right(1 to 1000000, 10, function($a, $b){ ($a - ($a - 1)) div $b })</code>
         <expected>10</expected>
-    </test>
-    <test output="text">
-        <task>fn:map-pairs function (deprecated)</task>
-        <code>fn:map-pairs(function($a, $b){10*$a + $b}, 1 to 5, 1 to 5)</code>
-        <expected>11 22 33 44 55</expected>
     </test>
     <test output="text">
         <task>fn:for-each-pair function</task>
@@ -636,7 +626,7 @@ return
 let $f := function ($a, $b) { $a * $b }
 let $ff := $f(5, ?)
 return
-    map($ff, (1, 2))]]></code>
+    for-each($ff, (1, 2))]]></code>
     	<expected>5 10</expected>
     </test>
     <test output="text" id="internal1">
@@ -654,7 +644,7 @@ return
 
 let $f := concat("Hello ", ?)
 return
-    map($f, ("world!", "Wolf!"))]]></code>
+    for-each($f, ("world!", "Wolf!"))]]></code>
     	<expected>Hello world! Hello Wolf!</expected>
     </test>
     <!-- Closures -->
