@@ -66,7 +66,7 @@ public class FunSum extends Function {
 				 new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The sequence of numbers to be summed up"),
 				 new FunctionParameterSequenceType("default", Type.ATOMIC, Cardinality.ZERO_OR_ONE, "The default value if $arg computes to the empty sequence")
 				 },
-					new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE, "the sum of all numbers in $arg")
+					new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE, "the sum of all numbers in $arg")
 		)
 	};
 				

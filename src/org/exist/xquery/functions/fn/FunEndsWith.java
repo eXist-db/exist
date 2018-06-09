@@ -54,7 +54,7 @@ public class FunEndsWith extends CollatingFunction {
                 new FunctionParameterSequenceType("suffix", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The suffix")
             },
-            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE,
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                 "true() if $suffix is suffix of $source-string, false() otherwise")
         ),
         new FunctionSignature (
@@ -72,7 +72,7 @@ public class FunEndsWith extends CollatingFunction {
                 new FunctionParameterSequenceType("collation-uri", Type.STRING,
                     Cardinality.EXACTLY_ONE, "The collation URI")
                 },
-            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE,
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                 "true() if $suffix is suffix of $source-string, false() otherwise"))
     };
 

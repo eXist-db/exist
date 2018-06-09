@@ -78,8 +78,8 @@ public class FunRoundHalfToEven extends Function {
 		"value of the mantissa computed with exponent = 0.";
 	
 	protected static final FunctionParameterSequenceType ARG_PARAM = new FunctionParameterSequenceType("arg", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The input number");
-	protected static final FunctionParameterSequenceType PRECISION_PARAM = new FunctionParameterSequenceType("precision", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The precision factor");
-	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.NUMBER, Cardinality.EXACTLY_ONE, "the rounded value");
+	protected static final FunctionParameterSequenceType PRECISION_PARAM = new FunctionParameterSequenceType("precision", Type.INTEGER, Cardinality.EXACTLY_ONE, "The precision factor");
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE, "the rounded value");
 
 	public final static FunctionSignature signatures[] = {
 			new FunctionSignature(

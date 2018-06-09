@@ -70,7 +70,7 @@ public class ArrayFunction extends BasicFunction {
                         new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array"),
                         new FunctionParameterSequenceType("index", Type.INTEGER, Cardinality.EXACTLY_ONE, "The index")
                     },
-                    new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_MORE, "The value at $index")
+                    new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "The value at $index")
             ),
             new FunctionSignature(
                     new QName(Fn.APPEND.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
@@ -80,7 +80,7 @@ public class ArrayFunction extends BasicFunction {
                             new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array"),
                             new FunctionParameterSequenceType("appendage", Type.ITEM, Cardinality.ZERO_OR_MORE, "The items to append")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.ZERO_OR_MORE, "A copy of $array with the new member attached")
+                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "A copy of $array with the new member attached")
             ),
             new FunctionSignature(
                     new QName(Fn.HEAD.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
@@ -119,12 +119,12 @@ public class ArrayFunction extends BasicFunction {
             ),
             new FunctionSignature(
                     new QName(Fn.REMOVE.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
-                    "Returns an array containing all members from $array except the member whose position is $position.",
+                    "Returns an array containing all the members of the supplied array, except for the members at specified positions.",
                     new SequenceType[] {
                             new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array"),
-                            new FunctionParameterSequenceType("position", Type.INTEGER, Cardinality.EXACTLY_ONE, "Position of the member to remove")
+                            new FunctionParameterSequenceType("positions", Type.INTEGER, Cardinality.ZERO_OR_MORE, "Positions of the members to remove")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "A new array containing all members except the one at $position")
+                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "A new array containing all members from $array except the members whose position (counting from 1) is present in the sequence $positions")
             ),
             new FunctionSignature(
                     new QName(Fn.INSERT_BEFORE.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),

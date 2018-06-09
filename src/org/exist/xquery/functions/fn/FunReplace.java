@@ -86,7 +86,7 @@ public class FunReplace extends FunMatches {
 	protected static final FunctionParameterSequenceType PATTERN_ARG = new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "The pattern to match");
 	protected static final FunctionParameterSequenceType REPLACEMENT_ARG = new FunctionParameterSequenceType("replacement", Type.STRING, Cardinality.EXACTLY_ONE, "The string to replace the pattern with");
 	protected static final FunctionParameterSequenceType FLAGS_ARG = new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, "The flags");
-	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the altered string");
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the altered string");
 			
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(

@@ -242,6 +242,8 @@ public class Type {
         defineBuiltInType(HEX_BINARY, "xs:hexBinary");
         defineBuiltInType(NOTATION, "xs:NOTATION");
 
+        //TODO add handling for xs:dateTimeStamp
+        //defineBuiltInType(DATE_TIME_STAMP, "xs:dateTimeStamp");
         defineBuiltInType(DATE_TIME, "xs:dateTime");
         defineBuiltInType(DATE, "xs:date");
         defineBuiltInType(TIME, "xs:time");

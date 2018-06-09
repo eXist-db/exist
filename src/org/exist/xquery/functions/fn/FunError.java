@@ -62,7 +62,7 @@ public class FunError extends BasicFunction {
             "$qname and the default message, 'An error has been raised by the query'.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("qname", Type.QNAME,
-                    Cardinality.EXACTLY_ONE, "The qname")
+                    Cardinality.ZERO_OR_ONE, "The qname")
             },
             new SequenceType(Type.EMPTY, Cardinality.ZERO)
         ),

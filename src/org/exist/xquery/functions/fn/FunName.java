@@ -74,7 +74,7 @@ public class FunName extends Function {
                     new QName("name", Function.BUILTIN_FUNCTION_NS),
                     FUNCTION_DESCRIPTION_0_PARAM + FUNCTION_DESCRIPTION_COMMON,
                     new SequenceType[0],
-                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the name")
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the name")
             ),
             new FunctionSignature(
                     new QName("name", Function.BUILTIN_FUNCTION_NS),
@@ -82,7 +82,7 @@ public class FunName extends Function {
                     new SequenceType[] {
                             new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "The input node")
                     },
-                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the name")
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the name")
             )
     };
 

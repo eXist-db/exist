@@ -63,7 +63,7 @@ public class FunSubstringBefore extends CollatingFunction {
 				 SOURCE_ARG,
 				 SEARCH_ARG
 				},
-				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the substring before $search")),
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the substring before $search")),
 		new FunctionSignature(
 				new QName("substring-before", Function.BUILTIN_FUNCTION_NS),
 			"Returns the substring of the value of $source that precedes the first occurrence " +
@@ -78,7 +78,7 @@ public class FunSubstringBefore extends CollatingFunction {
 					 SEARCH_ARG,
 					 COLLATOR_ARG
 				},
-				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the substring before $search"))
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the substring before $search"))
 	};
 
 	public FunSubstringBefore(XQueryContext context, FunctionSignature signature) {

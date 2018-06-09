@@ -71,7 +71,7 @@ public class FunResolveQName extends BasicFunction {
     				new FunctionParameterSequenceType("qname", Type.STRING, Cardinality.ZERO_OR_ONE, "The QName name"), 
     				new FunctionParameterSequenceType("element", Type.ELEMENT, Cardinality.EXACTLY_ONE, "The element") 
     			}, 
-    			new FunctionReturnSequenceType(Type.QNAME, Cardinality.EXACTLY_ONE, "the QName of $element with lexical form $qname")
+    			new FunctionReturnSequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE, "the QName of $element with lexical form $qname")
     	);
 
     public FunResolveQName(XQueryContext context) {

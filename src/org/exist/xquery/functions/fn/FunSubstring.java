@@ -61,7 +61,7 @@ public class FunSubstring extends Function {
 					 new FunctionParameterSequenceType("source", Type.STRING, Cardinality.ZERO_OR_ONE, "The source string"),
 					 new FunctionParameterSequenceType("starting-at", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The starting position")
 				},
-				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the substring")
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the substring")
 			),
 			new FunctionSignature(
 				new QName("substring", Function.BUILTIN_FUNCTION_NS),
@@ -74,7 +74,7 @@ public class FunSubstring extends Function {
 					 new FunctionParameterSequenceType("starting-at", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The starting position"),
 					 new FunctionParameterSequenceType("length", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The number of characters in the substring")
 				},
-				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the substring")
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the substring")
 			)
 	};
 				

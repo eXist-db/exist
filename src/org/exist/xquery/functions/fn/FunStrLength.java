@@ -50,7 +50,7 @@ public class FunStrLength extends Function {
 				"Returns an xs:integer equal to the length in characters of the value of the context item.\n" +
 				"If the context item is undefined an error is raised. ",
 				new SequenceType[0],
-				new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the length in characters")
+				new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "the length in characters")
 		),
 		new FunctionSignature(
 			new QName("string-length", Function.BUILTIN_FUNCTION_NS),
@@ -60,7 +60,7 @@ public class FunStrLength extends Function {
 			new SequenceType[] {
 				 new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string")
 			},
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the length in characters")
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "the length in characters")
 		)
 	};
 			

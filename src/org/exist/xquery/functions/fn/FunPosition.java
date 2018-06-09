@@ -48,7 +48,7 @@ public class FunPosition extends Function {
 			"Returns the context position from the dynamic context. " +
 			"If the context item is undefined, raises an error.",
 			null,
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the context position"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "the context position"));
 	
     public FunPosition(XQueryContext context) {
         super(context, signature);

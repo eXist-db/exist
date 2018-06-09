@@ -67,7 +67,7 @@ public class FnFormatDates extends BasicFunction {
 
 	private static FunctionReturnSequenceType RETURN = 
 		new FunctionReturnSequenceType(
-			Type.STRING, Cardinality.EXACTLY_ONE, "The formatted date");
+			Type.STRING, Cardinality.ZERO_OR_ONE, "The formatted date");
 
 
     public final static FunctionSignature FNS_FORMAT_DATETIME_2 = new FunctionSignature(

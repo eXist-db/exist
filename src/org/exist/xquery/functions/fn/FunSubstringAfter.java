@@ -63,7 +63,7 @@ public class FunSubstringAfter extends CollatingFunction {
 				 SOURCE_ARG,
 				 SEARCH_ARG
 			},
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the substring after $search")),
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the substring after $search")),
 		new FunctionSignature(
 				new QName("substring-after", Function.BUILTIN_FUNCTION_NS),
 				"Returns the substring of the value of $source that follows the first occurrence " +
@@ -78,7 +78,7 @@ public class FunSubstringAfter extends CollatingFunction {
 					 SEARCH_ARG,
 					 COLLATION_ARG
 				},
-				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the substring after $search"))
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the substring after $search"))
 	};
 					
 	public FunSubstringAfter(XQueryContext context, FunctionSignature signature) {
