@@ -21,9 +21,6 @@ public class MapFunction extends BasicFunction {
     private static final QName QN_REMOVE = new QName("remove", MapModule.NAMESPACE_URI, MapModule.PREFIX);
     private static final QName QN_FOR_EACH = new QName("for-each", MapModule.NAMESPACE_URI, MapModule.PREFIX);
 
-    @Deprecated private static final QName QN_NEW = new QName("new", MapModule.NAMESPACE_URI, MapModule.PREFIX);
-	@Deprecated private static final QName QN_FOR_EACH_ENTRY = new QName("for-each-entry", MapModule.NAMESPACE_URI, MapModule.PREFIX);
-
     public final static FunctionSignature FNS_MERGE = new FunctionSignature(
         QN_MERGE,
         "Returns a map that combines the entries from a number of existing maps.",
@@ -113,54 +110,6 @@ public class MapFunction extends BasicFunction {
         new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
     );
 
-
-	/* Deprecated below */
-
-    @Deprecated
-    public final static FunctionSignature FNS_NEW_0 = new FunctionSignature(
-        QN_NEW,
-        "Constructs and returns an empty map whose collation is the default collation in the static context.",
-        null,
-        new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE),
-        "Use the computer map constructor `map {}` instead."
-    );
-
-    @Deprecated
-    public final static FunctionSignature FNS_NEW_N = new FunctionSignature(
-        QN_NEW,
-        "Constructs and returns an empty map whose collation is the default collation in the static context.",
-        new SequenceType[] {
-                new FunctionParameterSequenceType("maps", Type.MAP, Cardinality.ZERO_OR_MORE, "Existing maps to combine into the new map.")
-        },
-        new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE),
-        FNS_MERGE
-    );
-
-    @Deprecated
-    public final static FunctionSignature FNS_NEW_N_COLLATION = new FunctionSignature(
-        QN_NEW,
-        "Constructs and returns an empty map whose collation is given in the second argument.",
-        new SequenceType[] {
-                new FunctionParameterSequenceType("maps", Type.MAP, Cardinality.ZERO_OR_MORE, "Existing maps to combine into the new map."),
-                new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "The collation to use for the new map.")
-        },
-        new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE),
-        FNS_MERGE
-    );
-
-	@Deprecated
-    public final static FunctionSignature FNS_FOR_EACH_ENTRY = new FunctionSignature(
-        QN_FOR_EACH_ENTRY,
-        "takes any map as its $input argument and applies the supplied function to each entry in the map, in implementation-dependent order; the result is the sequence obtained by concatenating the results of these function calls. " +
-        "The function supplied as $action takes two arguments. It is called supplying the key of the map entry as the first argument, and the associated value as the second argument.",
-        new SequenceType[] {
-            new FunctionParameterSequenceType("input", Type.MAP, Cardinality.EXACTLY_ONE, "The map"),
-            new FunctionParameterSequenceType("action", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function to be called for each entry")
-        },
-        new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
-		FNS_FOR_EACH
-    );
-
     private AnalyzeContextInfo cachedContextInfo;
 
     public MapFunction(final XQueryContext context, final FunctionSignature signature) {
@@ -174,9 +123,7 @@ public class MapFunction extends BasicFunction {
     }
 
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        if (isCalledAs(QN_NEW.getLocalPart())) {
-            return newMap(args);
-        } else if (isCalledAs(QN_MERGE.getLocalPart())) {
+        if (isCalledAs(QN_MERGE.getLocalPart())) {
             return merge(args);
         } else if (isCalledAs(QN_SIZE.getLocalPart())) {
             return size(args);
@@ -192,7 +139,7 @@ public class MapFunction extends BasicFunction {
             return entry(args);
         } else if (isCalledAs(QN_REMOVE.getLocalPart())) {
             return remove(args);
-        } else if (isCalledAs(QN_FOR_EACH.getLocalPart()) || isCalledAs(QN_FOR_EACH_ENTRY.getLocalPart())) {
+        } else if (isCalledAs(QN_FOR_EACH.getLocalPart())) {
             return forEach(args);
         }
         return null;
