@@ -39,6 +39,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+@Deprecated
 public class FunEquals extends CollatingFunction {
 
     public final static FunctionSignature signatures[] = {
