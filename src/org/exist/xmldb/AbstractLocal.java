@@ -206,7 +206,7 @@ public abstract class AbstractLocal {
      */
     @Deprecated
     private static Function<DBBroker, Txn> transaction() {
-        final boolean joinTransactionIfPresent = System.getProperty(PROP_JOIN_TRANSACTION_IF_PRESENT, "false")
+        final boolean joinTransactionIfPresent = System.getProperty(PROP_JOIN_TRANSACTION_IF_PRESENT, "true")
                 .toLowerCase().equals("true");
         if(joinTransactionIfPresent) {
             return (broker) -> broker.continueOrBeginTransaction();

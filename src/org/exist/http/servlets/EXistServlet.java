@@ -32,6 +32,7 @@ import org.exist.http.RESTServer;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.XmldbURI;
@@ -137,14 +138,17 @@ public class EXistServlet extends AbstractExistHttpServlet {
             return;
         }
 
-        try(final DBBroker broker = getPool().get(Optional.of(user))) {
+        try(final DBBroker broker = getPool().get(Optional.of(user));
+                final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
             final XmldbURI dbpath = XmldbURI.createInternal(path);
             final Collection collection = broker.getCollection(dbpath);
             if (collection != null) {
                 response.sendError(400, "A PUT request is not allowed against a plain collection path.");
                 return;
             }
-            srvREST.doPut(broker, dbpath, request, response);
+            srvREST.doPut(broker, transaction, dbpath, request, response);
+
+            transaction.commit();
 
         } catch (final BadRequestException e) {
             if (response.isCommitted()) {
@@ -244,10 +248,10 @@ public class EXistServlet extends AbstractExistHttpServlet {
         }
 
         // fourth, process the request
-        try(final DBBroker broker = getPool().get(Optional.of(user))) {
-
-            srvREST.doGet(broker, request, response, path);
-            
+        try(final DBBroker broker = getPool().get(Optional.of(user));
+               final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
+            srvREST.doGet(broker, transaction, request, response, path);
+            transaction.commit();
         } catch (final BadRequestException e) {
             if (response.isCommitted()) {
                 throw new ServletException(e.getMessage());
@@ -308,8 +312,10 @@ public class EXistServlet extends AbstractExistHttpServlet {
         }
 
         // fourth, process the request
-        try(final DBBroker broker = getPool().get(Optional.of(user))) {
-            srvREST.doHead(broker, request, response, path);
+        try(final DBBroker broker = getPool().get(Optional.of(user));
+                final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
+            srvREST.doHead(broker, transaction, request, response, path);
+            transaction.commit();
         } catch (final BadRequestException e) {
             if (response.isCommitted()) {
                 throw new ServletException(e.getMessage(), e);
@@ -370,8 +376,10 @@ public class EXistServlet extends AbstractExistHttpServlet {
         }
 
         // fourth, process the request
-        try(final DBBroker broker = getPool().get(Optional.of(user))) {
-            srvREST.doDelete(broker, path, request, response);
+        try(final DBBroker broker = getPool().get(Optional.of(user));
+                final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
+            srvREST.doDelete(broker, transaction, path, request, response);
+            transaction.commit();
         } catch (final PermissionDeniedException e) {
             // If the current user is the Default User and they do not have permission
             // then send a challenge request to prompt the client for a username/password.
@@ -391,7 +399,6 @@ public class EXistServlet extends AbstractExistHttpServlet {
         } catch (final Throwable e) {
             getLog().error(e);
             throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
-
         }
     }
 
@@ -448,8 +455,10 @@ public class EXistServlet extends AbstractExistHttpServlet {
             }
 
             // fourth, process the request
-            try (final DBBroker broker = getPool().get(Optional.of(user))) {
-                srvREST.doPost(broker, request, response, path);
+            try(final DBBroker broker = getPool().get(Optional.of(user));
+                    final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
+                srvREST.doPost(broker, transaction, request, response, path);
+                transaction.commit();
             } catch (final PermissionDeniedException e) {
                 // If the current user is the Default User and they do not have permission
                 // then send a challenge request to prompt the client for a username/password.
