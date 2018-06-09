@@ -598,7 +598,7 @@ declare %private function test:check-assertions($assertions as element(annotatio
 declare %private function test:assertEquals($values as item()*, $result as item()*) as element(report)? {
     if (exists($values)) then
         if (count($values) eq count($result)) then
-            let $tests := for-each-pair(test:equals#2, $values, $result)
+            let $tests := for-each-pair($values, $result, test:equals#2)
             let $equal := every $test in $tests satisfies $test
             return
                 if ($equal) then
