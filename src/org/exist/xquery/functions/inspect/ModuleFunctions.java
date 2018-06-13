@@ -74,8 +74,10 @@ public class ModuleFunctions extends BasicFunction {
                 } else {
                     final URI locationUri = ((AnyURIValue) args[0]).toURI();
                     try {
-                        final Source source = SourceFactory.getSource(context.getBroker(), null, locationUri.toString(), false);
-                        tempContext.setSource(source);
+                        final Source source = SourceFactory.getSource(context.getBroker(), tempContext.getModuleLoadPath(), locationUri.toString(), false);
+                        if (source != null) {
+                            tempContext.setSource(source);
+                        }
                     } catch (final IllegalArgumentException e) {
                         throw new XPathException(this, e.getMessage());
                     }

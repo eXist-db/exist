@@ -2789,11 +2789,14 @@ public class XQueryContext implements BinaryValueManager, Context
 
                             //TODO: use URIs to ensure proper resolution of relative locations
                             moduleSource = SourceFactory.getSource( getBroker(), moduleLoadPath, location, true );
+                            if (moduleSource == null) {
+                                throw moduleLoadException("Source for module '" + namespaceURI + "' not found module location hint URI '" + location + "'.", location);
+                            }
 
                         } catch(final MalformedURLException e) {
                             throw moduleLoadException("Invalid module location hint URI '" + location + "'.", location, e);
                         } catch(final IOException e) {
-                            throw moduleLoadException("Source for module '" + namespaceURI + "' not found module location hint URI '" + location + "'.", location, e);
+                            throw moduleLoadException("Source for module '" + namespaceURI + "' could not be read, module location hint URI '" + location + "'.", location, e);
                         } catch(final PermissionDeniedException e) {
                             throw moduleLoadException("Permission denied to read module source from location hint URI '" + location + ".", location, e);
                         }

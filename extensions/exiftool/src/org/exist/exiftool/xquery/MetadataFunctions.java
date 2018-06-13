@@ -155,6 +155,9 @@ public class MetadataFunctions extends BasicFunction {
 
                 try(final OutputStream stdOut = p.getOutputStream()) {
                     final Source src = SourceFactory.getSource(context.getBroker(), null, uri.toString(), false);
+                    if (src == null) {
+                        throw new XPathException("Could not read source for the Exiftool: " + uri.toString());
+                    }
                     try(final InputStream isSrc = src.getInputStream()) {
 
                         //write the remote data to stdOut

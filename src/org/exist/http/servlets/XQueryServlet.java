@@ -347,6 +347,12 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         } else if (urlAttrib != null) {
             try(final DBBroker broker = getPool().get(Optional.ofNullable(user))) {
                 source = SourceFactory.getSource(broker, moduleLoadPath, urlAttrib.toString(), true);
+                if (source == null) {
+                    final String msg = "Could not read source: context=" + moduleLoadPath + ", location=" + urlAttrib.toString();
+                    getLog().error(msg);
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    sendError(output, "Error", msg);
+                }
             } catch (final Exception e) {
                 getLog().error(e.getMessage(), e);
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

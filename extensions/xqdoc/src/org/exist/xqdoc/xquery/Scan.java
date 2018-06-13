@@ -131,6 +131,9 @@ public class Scan extends BasicFunction {
                     uri = location;
                 try {
                     source = SourceFactory.getSource(context.getBroker(), context.getModuleLoadPath(), uri, false);
+                    if (source == null) {
+                        throw new XPathException(this, "failed to read module " + uri);
+                    }
                     name = extractName(uri);
                 } catch (IOException e) {
                     throw new XPathException(this, "failed to read module " + uri, e);
