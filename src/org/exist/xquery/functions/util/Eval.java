@@ -499,6 +499,9 @@ public class Eval extends BasicFunction {
             try {
                 //TODO: use URIs to ensure proper resolution of relative locations
                 querySource = SourceFactory.getSource(context.getBroker(), context.getModuleLoadPath(), location, true);
+                if (querySource == null) {
+                    throw new XPathException(this, "source for query at " + location + " not found");
+                }
             } catch (final MalformedURLException e) {
                 throw new XPathException(this, "source location for query at " + location + " should be a valid URL: " +
                         e.getMessage());

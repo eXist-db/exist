@@ -25,7 +25,6 @@ import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
-import org.exist.util.PatternFactory;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -35,7 +34,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.regex.Pattern;
 
 import static org.exist.xquery.FunctionDSL.*;
 
@@ -154,6 +152,10 @@ public class FunUnparsedText extends BasicFunction {
     }
 
     private Source getSource(final String uriParam) throws XPathException {
+        if (!context.getBroker().getCurrentSubject().hasDbaRole()) {
+            throw new XPathException(this, ErrorCodes.FOUT1170, "non-dba user not allowed to read from file system");
+        }
+
         try {
             URI uri = new URI(uriParam);
             if (uri.getScheme() == null) {
@@ -162,12 +164,13 @@ public class FunUnparsedText extends BasicFunction {
             if (uri.getFragment() != null) {
                 throw new XPathException(this, ErrorCodes.FOUT1170, "href argument may not contain fragment identifier");
             }
+
             final Source source = SourceFactory.getSource(context.getBroker(), "", uri.toASCIIString(), false);
-            if (!context.getBroker().getCurrentSubject().hasDbaRole()) {
-                throw new XPathException(this, ErrorCodes.FOUT1170, "non-dba user not allowed to read from file system");
+            if (source == null) {
+                throw new XPathException(this, ErrorCodes.FOUT1170, "Could not find source for: " + uriParam);
             }
             return source;
-        } catch (IOException | PermissionDeniedException | URISyntaxException e) {
+        } catch (final IOException | PermissionDeniedException | URISyntaxException e) {
             throw new XPathException(this, ErrorCodes.FOUT1170, e.getMessage());
         }
     }

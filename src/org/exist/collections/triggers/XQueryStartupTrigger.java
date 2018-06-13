@@ -142,7 +142,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
 
             }
 
-            LOG.debug(String.format("Found %s xquery scripts in '%s'.", paths.size(), AUTOSTART_COLLECTION));
+            LOG.debug(String.format("Found %s XQuery scripts in '%s'.", paths.size(), AUTOSTART_COLLECTION));
 
         } catch (PermissionDeniedException ex) {
             LOG.error(ex.getMessage());
@@ -248,7 +248,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
             Source source = SourceFactory.getSource(broker, null, path, false);
 
             if (source == null) {
-                LOG.info(String.format("No Xquery found at '%s'", path));
+                LOG.info(String.format("No XQuery found at '%s'", path));
 
             } else {
                 // Setup xquery service
@@ -262,7 +262,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
                 // Compile query
                 CompiledXQuery compiledQuery = service.compile(broker, context, source);
 
-                LOG.info(String.format("Starting Xquery at '%s'", path));
+                LOG.info(String.format("Starting XQuery at '%s'", path));
 
                 // Finish preparation
                 context.prepareForExecution();
@@ -271,13 +271,13 @@ public class XQueryStartupTrigger implements StartupTrigger {
                 Sequence result = service.execute(broker, compiledQuery, null);
 
                 // Log results
-                LOG.info(String.format("Result xquery: '%s'", result.getStringValue()));
+                LOG.info(String.format("Result XQuery: '%s'", result.getStringValue()));
 
             }
 
         } catch (Throwable t) {
             // Dirty, catch it all
-            LOG.error(String.format("An error occured during preparation/execution of the xquery script %s: %s", path, t.getMessage()), t);
+            LOG.error(String.format("An error occurred during preparation/execution of the XQuery script %s: %s", path, t.getMessage()), t);
 
         } finally {
             if (context != null) {
