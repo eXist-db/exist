@@ -54,6 +54,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -408,12 +409,22 @@ public class GetFragmentBetween extends Function {
      * - attributes become predicates
      */
     final StringBuilder buf = new StringBuilder(nodeToXPath(n, setRootNamespace));
-    while((n = n.getParentNode()) != null) {
+    while((n = getParent(n)) != null) {
       if(n.getNodeType() == Node.ELEMENT_NODE) {
         buf.insert(0, nodeToXPath(n, setRootNamespace));
       }
     }
     return buf.toString();
+  }
+
+  private Node getParent(final Node n) {
+    if (n == null) {
+      return null;
+    } else if (n instanceof Attr) {
+      return ((Attr) n).getOwnerElement();
+    } else {
+      return n.getParentNode();
+    }
   }
   
   /**
@@ -427,7 +438,7 @@ public class GetFragmentBetween extends Function {
     final StringBuilder xpath = new StringBuilder("/" + getFullNodeName(n));
     if (setRootNamespace) {
       // set namespace only if node is root node
-      final Node parentNode = n.getParentNode();
+      final Node parentNode = getParent(n);
       final short parentNodeType = parentNode.getNodeType();
       if (parentNodeType == Node.DOCUMENT_NODE) {
         final String nsUri = n.getNamespaceURI();

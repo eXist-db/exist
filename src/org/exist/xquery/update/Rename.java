@@ -21,12 +21,8 @@ package org.exist.xquery.update;
 
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.NodeImpl;
+import org.exist.dom.persistent.*;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.NotificationService;
@@ -129,7 +125,6 @@ public class Rename extends Modification {
             //start a transaction
             try (final Txn transaction = getTransaction()) {
                 final StoredNode[] ql = selectAndLock(transaction, inSeq);
-                NodeImpl parent;
                 final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 for (final StoredNode node : ql) {
                     final DocumentImpl doc = node.getOwnerDocument();
@@ -137,23 +132,24 @@ public class Rename extends Modification {
                         throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                     }
 
+                    final NodeImpl parent = (NodeImpl) getParent(node);
+
                     //update the document
+                    final NamedNode newNode;
                     switch (node.getNodeType()) {
                         case Node.ELEMENT_NODE:
-                            final ElementImpl newElem = new ElementImpl((ElementImpl) node);
-                            newElem.setNodeName(newQName, context.getBroker().getBrokerPool().getSymbols());
-                            parent = (NodeImpl) node.getParentNode();
-                            parent.updateChild(transaction, node, newElem);
+                            newNode = new ElementImpl((ElementImpl) node);
                             break;
+
                         case Node.ATTRIBUTE_NODE:
-                            final AttrImpl newAttr = new AttrImpl((AttrImpl) node);
-                            newAttr.setNodeName(newQName, context.getBroker().getBrokerPool().getSymbols());
-                            parent = (NodeImpl) ((AttrImpl) node).getOwnerElement();
-                            parent.updateChild(transaction, node, newAttr);
+                            newNode = new AttrImpl((AttrImpl) node);
                             break;
+
                         default:
                             throw new XPathException(this, "unsupported node-type");
                     }
+                    newNode.setNodeName(newQName, context.getBroker().getBrokerPool().getSymbols());
+                    parent.updateChild(transaction, node, newNode);
 
                     doc.getMetadata().setLastModified(System.currentTimeMillis());
                     modifiedDocuments.add(doc);

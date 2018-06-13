@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
+import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -71,7 +72,7 @@ public class NodeXPath extends Function
 		 * - attributes become predicates
 		 */
         final StringBuilder buf = new StringBuilder(nodeToXPath(n));
-		while((n = n.getParentNode()) != null)
+		while((n = getParent(n)) != null)
 		{
 			if(n.getNodeType() == Node.ELEMENT_NODE)
 			{
@@ -80,6 +81,16 @@ public class NodeXPath extends Function
 		}
 		
 		return new StringValue(buf.toString());
+	}
+
+	private Node getParent(final Node n) {
+		if (n == null) {
+			return null;
+		} else if (n instanceof Attr) {
+			return ((Attr) n).getOwnerElement();
+		} else {
+			return n.getParentNode();
+		}
 	}
 	
 	/**

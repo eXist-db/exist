@@ -118,7 +118,6 @@ public class Delete extends Modification {
             try (final Txn transaction = getTransaction()) {
                 final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 final StoredNode[] ql = selectAndLock(transaction, inSeq);
-                NodeImpl parent;
                 for (final StoredNode node : ql) {
                     final DocumentImpl doc = node.getOwnerDocument();
                     if (!doc.getPermissions().validate(context.getSubject(), Permission.WRITE)) {
@@ -127,11 +126,7 @@ public class Delete extends Modification {
                     }
 
                     //update the document
-                    if(node.getNodeType() == Node.ATTRIBUTE_NODE) {
-                        parent = (NodeImpl) ((Attr)node).getOwnerElement();
-                    } else {
-                        parent = (NodeImpl) node.getParentNode();
-                    }
+                    final NodeImpl parent = (NodeImpl) getParent(node);
 
                     if (parent == null) {
                         LOG.debug("Cannot remove the document element (no parent node)");
