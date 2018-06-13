@@ -81,8 +81,7 @@ public class Insert extends Modification {
         if (children.getLength() == 0) {return 0;}
         try {
             final StoredNode[] ql = selectAndLock(transaction);
-            final NotificationService notifier = broker.getBrokerPool().getNotificationService();       
-            NodeImpl parent;             
+            final NotificationService notifier = broker.getBrokerPool().getNotificationService();
             final int len = children.getLength();
             if (LOG.isDebugEnabled())
                 {LOG.debug("found " + len + " nodes to insert");}
@@ -92,7 +91,7 @@ public class Insert extends Modification {
                 if (!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE)) {
                         throw new PermissionDeniedException("permission to update document denied");
                 }
-                parent = (NodeImpl) node.getParentNode();
+                final NodeImpl parent = (NodeImpl) getParent(node);
                 switch (mode) {
                     case INSERT_BEFORE:
                         parent.insertBefore(transaction, children, node);

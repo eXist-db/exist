@@ -58,7 +58,11 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import javax.annotation.Nullable;
 
 /**
  * Base class for all XUpdate modifications.
@@ -326,5 +330,22 @@ public abstract class Modification {
 	public String toString() {
 		//		buf.append(XMLUtil.dump(content));
 		return "<xu:" + getName() + " select=\"" + selectStmt + "\">" + "</xu:" +	getName() +	">";
+	}
+
+	/**
+	 * Get's the parent of the node.
+	 *
+	 * @param node The node of which to retrieve the parent.
+	 *
+	 * @return the parent node, or null if not available
+	 */
+	protected @Nullable Node getParent(@Nullable final Node node) {
+		if (node == null) {
+			return null;
+		} else if (node instanceof Attr) {
+			return ((Attr) node).getOwnerElement();
+		} else {
+			return node.getParentNode();
+		}
 	}
 }
