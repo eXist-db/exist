@@ -47,6 +47,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.w3c.dom.Attr;
 import org.w3c.dom.NodeList;
 /**
  * @author wolf
@@ -149,7 +150,7 @@ public class Insert extends Modification {
                     if (mode == INSERT_APPEND) {
                         node.appendChildren(transaction, contentList, -1);
                     } else {
-                        final NodeImpl parent = (NodeImpl) node.getParentNode();
+                        final NodeImpl parent = (NodeImpl) getParent(node);
                         switch (mode) {
                             case INSERT_BEFORE:
                                 parent.insertBefore(transaction, contentList, node);
