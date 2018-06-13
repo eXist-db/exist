@@ -70,7 +70,6 @@ public class Remove extends Modification {
 			final StoredNode[] ql = selectAndLock(transaction);
 			final NotificationService notifier = broker.getBrokerPool()
 					.getNotificationService();
-			NodeImpl parent;
 			for (int i = 0; i < ql.length; i++) {
 				final StoredNode node = ql[i];
                 final DocumentImpl doc = node.getOwnerDocument();
@@ -79,11 +78,7 @@ public class Remove extends Modification {
             				throw new PermissionDeniedException("User '" + broker.getCurrentSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                                 }
 
-				if(node.getNodeType() == Node.ATTRIBUTE_NODE) {
-					parent = (NodeImpl) ((Attr)node).getOwnerElement();
-				} else {
-					parent = (NodeImpl) node.getParentNode();
-				}
+				final NodeImpl parent = (NodeImpl) getParent(node);
 
                 if (parent == null || parent.getNodeType() != Node.ELEMENT_NODE) {
 					throw new EXistException(
