@@ -92,6 +92,10 @@ public class DocUtils {
             /* URL */
         try {
             final Source source = SourceFactory.getSource(context.getBroker(), "", path, false);
+            if (source == null) {
+                return Sequence.EMPTY_SEQUENCE;
+            }
+
             try (final InputStream is = source.getInputStream()) {
                 if (source instanceof URLSource) {
                     final int responseCode = ((URLSource) source).getResponseCode();
@@ -126,12 +130,7 @@ public class DocUtils {
         } catch (final SAXException e) {
             throw new XPathException("An error occurred while parsing " + path + ": " + e.getMessage(), e);
         } catch (final IOException e) {
-            // Special case: FileNotFoundException
-            if (e instanceof FileNotFoundException) {
-                return Sequence.EMPTY_SEQUENCE;
-            } else {
-                throw new XPathException("An error occurred while parsing " + path + ": " + e.getMessage(), e);
-            }
+            throw new XPathException("An error occurred while parsing " + path + ": " + e.getMessage(), e);
         } finally {
             if (reader != null) {
                 context.getBroker().getBrokerPool().getParserPool().returnXMLReader(reader);
