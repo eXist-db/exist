@@ -53,9 +53,12 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
+
+import javax.annotation.Nullable;
 
 /**
  * @author wolf
@@ -321,5 +324,22 @@ public abstract class Modification extends AbstractExpression
      */
     protected Txn getTransaction() {
         return context.getBroker().continueOrBeginTransaction();
+    }
+
+    /**
+     * Get's the parent of the node.
+     *
+     * @param node The node of which to retrieve the parent.
+     *
+     * @return the parent node, or null if not available
+     */
+    protected @Nullable Node getParent(@Nullable final Node node) {
+        if (node == null) {
+            return null;
+        } else if (node instanceof Attr) {
+            return ((Attr) node).getOwnerElement();
+        } else {
+            return node.getParentNode();
+        }
     }
 }

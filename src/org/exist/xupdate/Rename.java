@@ -24,13 +24,8 @@ import java.util.Map;
 
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.NodeImpl;
+import org.exist.dom.persistent.*;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -73,7 +68,6 @@ public class Rename extends Modification {
         int modificationCount = 0;
         try {
             final StoredNode[] ql = selectAndLock(transaction);
-            NodeImpl parent;
             final NotificationService notifier = broker.getBrokerPool().getNotificationService();
             final String newName = children.item(0).getTextContent();
             for (int i = 0; i < ql.length; i++) {
@@ -82,24 +76,26 @@ public class Rename extends Modification {
                 if (!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE)) {
                         throw new PermissionDeniedException("User '" + broker.getCurrentSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                 }
+
+                final NodeImpl parent = (NodeImpl) getParent(node);
+
+                //update the document
+                final NamedNode newNode;
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
-                        final ElementImpl newElem = new ElementImpl((ElementImpl) node);
-                        newElem.setNodeName(new QName(newName, "", null));
-                        parent = (NodeImpl) node.getParentNode();
-                        parent.updateChild(transaction, node, newElem);
-                        modificationCount++;
+                        newNode = new ElementImpl((ElementImpl) node);
                         break;
+
                     case Node.ATTRIBUTE_NODE:
-                        final AttrImpl newAttr = new AttrImpl((AttrImpl) node);
-                        newAttr.setNodeName(new QName(newName, "", null));
-                        parent = (NodeImpl) ((AttrImpl) node).getOwnerElement();
-                        parent.updateChild(transaction, node, newAttr);
-                        modificationCount++;
+                        newNode = new AttrImpl((AttrImpl) node);
                         break;
+
                     default:
                         throw new EXistException("unsupported node-type");
                 }
+                newNode.setNodeName(new QName(newName, "", null));
+                parent.updateChild(transaction, node, newNode);
+                modificationCount++;
 
                 doc.getMetadata().setLastModified(System.currentTimeMillis());
                 modifiedDocuments.add(doc);

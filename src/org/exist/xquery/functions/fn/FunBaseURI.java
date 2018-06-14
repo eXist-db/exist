@@ -150,7 +150,7 @@ public class FunBaseURI extends BasicFunction {
             //whose target property is PITarget and whose content property is DirPIContents. 
             //The base-uri property of the node is empty. 
             //The parent property of the node is empty.
-            if (type != Node.DOCUMENT_NODE && domNode.getParentNode() == null)
+            if (type != Node.DOCUMENT_NODE && type != Node.ATTRIBUTE_NODE && domNode.getParentNode() == null)
                 {
                 }
             else if ((type == Node.PROCESSING_INSTRUCTION_NODE ||
