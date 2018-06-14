@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
  */
 public abstract class AbstractTestUpdate {
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     // required for updateAttributeInNamespacedElement
     private final static String XCONF =

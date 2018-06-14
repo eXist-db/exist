@@ -77,10 +77,6 @@ public class Update extends Modification {
         try {
             final StoredNode ql[] = selectAndLock(transaction);
             final NotificationService notifier = broker.getBrokerPool().getNotificationService();
-            Node temp;
-            TextImpl text;
-            AttrImpl attribute;
-            ElementImpl parent;
             for (int i = 0; i < ql.length; i++) {
             	final StoredNode node = ql[i];
                 if (node == null) {
@@ -96,27 +92,30 @@ public class Update extends Modification {
                         if (modifications == 0) {modifications = 1;}
                         ((ElementImpl) node).update(transaction, children);
                         break;
+
                     case Node.TEXT_NODE:
-                        parent = (ElementImpl) node.getParentNode();
-                    	temp = children.item(0);
-                    	text = new TextImpl(temp.getNodeValue());
+                        final ElementImpl textParent = (ElementImpl) node.getParentNode();
+                    	final Node textTemp = children.item(0);
+                    	final TextImpl text = new TextImpl(textTemp.getNodeValue());
                         modifications = 1;
                         text.setOwnerDocument(doc);
-                        parent.updateChild(transaction, node, text);
+                        textParent.updateChild(transaction, node, text);
                         break;
+
                     case Node.ATTRIBUTE_NODE:
-                        parent = (ElementImpl) ((Attr)node).getOwnerElement();
-                        if (parent == null) {
+                        final ElementImpl attrParent = (ElementImpl) ((Attr)node).getOwnerElement();
+                        if (attrParent == null) {
                             LOG.warn("parent node not found for "
                                     + node.getNodeId());
                             break;
                         }
                         final AttrImpl attr = (AttrImpl) node;
-                        temp = children.item(0);
-                        attribute = new AttrImpl(attr.getQName(), temp.getNodeValue(), broker.getBrokerPool().getSymbols());
+                        final Node attrTemp = children.item(0);
+                        final AttrImpl attribute = new AttrImpl(attr.getQName(), attrTemp.getNodeValue(), broker.getBrokerPool().getSymbols());
                         attribute.setOwnerDocument(doc);
-                        parent.updateChild(transaction, node, attribute);
+                        attrParent.updateChild(transaction, node, attribute);
                         break;
+
                     default:
                         throw new EXistException("unsupported node-type");
                 }
