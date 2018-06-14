@@ -128,9 +128,6 @@ public class Update extends Modification {
                 final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
 
                 final StoredNode ql[] = selectAndLock(transaction, inSeq);
-                TextImpl text;
-                AttrImpl attribute;
-                ElementImpl parent;
                 for (final StoredNode node : ql) {
                     final DocumentImpl doc = node.getOwnerDocument();
                     if (!doc.getPermissions().validate(context.getSubject(),
@@ -147,29 +144,32 @@ public class Update extends Modification {
                                 if (Type.subTypeOf(next.getType(), Type.NODE)) {
                                     content.add(((NodeValue) next).getNode());
                                 } else {
-                                    text = new TextImpl(next.getStringValue());
+                                    final TextImpl text = new TextImpl(next.getStringValue());
                                     content.add(text);
                                 }
                             }
                             ((ElementImpl) node).update(transaction, content);
                             break;
+
                         case Node.TEXT_NODE:
-                            parent = (ElementImpl) node.getParentNode();
-                            text = new TextImpl(contentSeq.getStringValue());
+                            final ElementImpl textParent = (ElementImpl) node.getParentNode();
+                            final TextImpl text = new TextImpl(contentSeq.getStringValue());
                             text.setOwnerDocument(doc);
-                            parent.updateChild(transaction, node, text);
+                            textParent.updateChild(transaction, node, text);
                             break;
+
                         case Node.ATTRIBUTE_NODE:
-                            parent = (ElementImpl) ((Attr)node).getOwnerElement();
-                            if (parent == null) {
+                            final ElementImpl attrParent = (ElementImpl) ((Attr)node).getOwnerElement();
+                            if (attrParent == null) {
                                 LOG.warn("parent node not found for " + node.getNodeId());
                                 break;
                             }
                             final AttrImpl attr = (AttrImpl) node;
-                            attribute = new AttrImpl(attr.getQName(), contentSeq.getStringValue(), context.getBroker().getBrokerPool().getSymbols());
+                            final AttrImpl attribute = new AttrImpl(attr.getQName(), contentSeq.getStringValue(), context.getBroker().getBrokerPool().getSymbols());
                             attribute.setOwnerDocument(doc);
-                            parent.updateChild(transaction, node, attribute);
+                            attrParent.updateChild(transaction, node, attribute);
                             break;
+
                         default:
                             throw new XPathException(this, "unsupported node-type");
                     }
