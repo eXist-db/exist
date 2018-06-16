@@ -2,21 +2,21 @@
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
- *  
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
+ *
  *  $Id$
  */
 package org.exist.xquery.functions.util;
@@ -49,17 +49,22 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Optional;
 
+
 public class Parse extends BasicFunction {
-	
+
     private static final FunctionReturnSequenceType RESULT_TYPE = new FunctionReturnSequenceType( Type.DOCUMENT, Cardinality.ZERO_OR_ONE, "the XML fragment parsed from the string" );
 
 	private static final FunctionParameterSequenceType TO_BE_PARSED_PARAMETER = new FunctionParameterSequenceType( "to-be-parsed", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be parsed" );
 
 	private static final Logger logger = LogManager.getLogger(Parse.class);
-
+	/**
+		* @deprecated use parse-xml instead
+		*/		
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName( "parse", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+						"!This function will be deprecated in a future version!" +
+						"use parse-xml instead." +
             "Parses the passed string value into an XML fragment. The string has to be " +
             "well-formed XML. An empty sequence is returned if the argument is an " +
             "empty string or sequence. If the XML is not well-formed, the function throws an " +
@@ -85,7 +90,7 @@ public class Parse extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-    	
+
         if (args[0].getItemCount() == 0) {
             return Sequence.EMPTY_SEQUENCE;
         }
@@ -134,7 +139,7 @@ public class Parse extends BasicFunction {
         } catch (final IOException e) {
             throw new XPathException(this, ErrorCodes.EXXQDY0002, "Error while parsing XML: " + e.getMessage(), args[0], e);
         }
-        
+
         if (report.isValid()) {
             return adapter.getDocument();
         } else {
