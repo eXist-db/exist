@@ -105,7 +105,7 @@ declare function test:suite($functions as function(*)+,
 (:~
  : Find functions having the given annotation and call the callback function.
  :)
-declare %private function test:function-by-annotation($functions as function(*)+, $annot as xs:string, 
+declare %private function test:function-by-annotation($functions as function(*)+, $annot as xs:string,
     $callback as function(function(*), element(function)) as item()*) {
     for $function in $functions
     let $meta := util:inspect-function($function)
@@ -360,7 +360,7 @@ declare function test:enable-tracing($meta as element(function)) {
  :)
 declare %private function test:get-assertions($meta as element(function), $firstArg as element(annotation)?) {
     if ($firstArg) then
-        let $nextBlock := 
+        let $nextBlock :=
             $firstArg/following-sibling::annotation[matches(@name, ":args?")]
                 [preceding-sibling::annotation[1][contains(@name, ":assert")]][1]
         return
@@ -379,7 +379,7 @@ declare %private function test:get-assertions($meta as element(function), $first
  :)
 declare %private function test:get-run-args($firstArg as element(annotation)?) {
     if ($firstArg) then
-        let $nextBlock := 
+        let $nextBlock :=
             $firstArg/following-sibling::annotation[matches(@name, ":args?")]
                 [preceding-sibling::annotation[1][contains(@name, ":assert")]][1]
         return (
@@ -397,7 +397,7 @@ declare %private function test:get-run-args($firstArg as element(annotation)?) {
 
 (:~
  : Map any arguments from the %args or %arg annotations into function parameters and evaluate
- : the resulting function. 
+ : the resulting function.
  :)
 declare %private function test:call-test($func as function(*), $meta as element(function), $args as element(annotation)*) {
     let $funArgs :=
@@ -425,7 +425,7 @@ declare %private function test:map-named-arguments($funcArgs as element(argument
     return
         if (count($mappedArgs) != count($funcArgs)) then
             error(
-                $test:WRONG_ARG_COUNT, 
+                $test:WRONG_ARG_COUNT,
                 "The number of arguments specified via test:arg must match the arguments of the function to test"
             )
         else
@@ -451,7 +451,7 @@ declare %private function test:map-arguments($testArgs as xs:string*, $funcArgs 
     if (exists($testArgs)) then
         if (count($testArgs) != count($funcArgs)) then
             error(
-                $test:WRONG_ARG_COUNT, 
+                $test:WRONG_ARG_COUNT,
                 "The number of arguments specified in test:args must match the arguments of the function to test"
             )
         else
@@ -483,7 +483,7 @@ declare %private function test:cast($targs as xs:string*, $farg as element(argum
             case "xs:time" return
                 xs:time($targ)
             case "element()" return
-                util:parse($targ)/*
+                parse-xml($targ)/*
             case "text()" return
                 text { string($targ) }
             default return
@@ -551,7 +551,7 @@ declare %private function test:get-test-name($meta as element(function)) as xs:s
 (:~
  : Print out evaluation results for a given test.
  :)
-declare %private function test:print-result($meta as element(function), $result as item()*, 
+declare %private function test:print-result($meta as element(function), $result as item()*,
         $assertResult as element(report)*) {
     <testcase name="{test:get-test-name($meta)}" class="{$meta/@name}">
     {
@@ -824,7 +824,7 @@ declare %private function test:checkXPathResult($result as item()*) {
 declare %private function test:cast-to-type($value as item(), $result as item()) {
     typeswitch ($result)
         case node() return
-            util:parse("<r>" || $value || "</r>")/r/node()
+            parse-xml("<r>" || $value || "</r>")/r/node()
         case xs:integer return
             xs:integer($value)
         case xs:int return
