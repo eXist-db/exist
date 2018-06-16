@@ -19,10 +19,10 @@ declare option exist:output-size-limit "-1";
 
 (:~  ----------------------------------------------------------------------------
      W3C XQuery Test Suite
-     
+
      This is the main module for running the XQTS on eXist. You can either
      run the whole test suite, a specific test group or a single test case.
-     
+
      Setup:
 
      * Run EXIST_HOME/webapp/xqts/build.xml and follow the instructions.
@@ -44,16 +44,16 @@ declare function xqts:initialize() as element() {
             let $stored := xdb:store-files-from-pattern("/db/XQTS", $path, "*.xml", "text/xml")
             return
                 if (doc-available("/db/XQTS/config.xml")) then doc("/db/XQTS/config.xml")/config else ()
-    
+
     (: authenticate :)
     let $authenticated := xdb:login("/db", $config/username, $config/password)
-    
+
     let $xqtsHome := $config/basedir/text()
     let $catalog0 := doc("/db/XQTS/XQTSCatalog.xml")
     let $catalog :=
         if ($catalog0) then $catalog0
         else
-            xdb:store($collection, "XQTSCatalog.xml", 
+            xdb:store($collection, "XQTSCatalog.xml",
                 xs:anyURI(xqts:path-to-uri(concat($xqtsHome, "XQTSCatalog.xml"))))
     let $sources0 := collection("/db/XQTS/TestSources")
     let $sourceCol := xdb:create-collection("/db/XQTS", "TestSources")
@@ -64,32 +64,32 @@ declare function xqts:initialize() as element() {
             $sources0
         else
             xdb:store-files-from-pattern($sourceCol, concat($xqtsHome, "TestSources"), "*.xml", "text/xml")
-    let $docs := 
+    let $docs :=
         (
             (: since XQTS URIs are resolved against /db/XQTS/TestSources :)
             xdb:copy($sourceCol, "/db/XQTS/TestSources/collection1", "bib.xml"),
             xdb:copy($sourceCol, "/db/XQTS/TestSources/collection1", "reviews.xml"),
             xdb:copy($sourceCol, "/db/XQTS/TestSources/collection2", "bib.xml"),
             xdb:copy($sourceCol, "/db/XQTS/TestSources/collection2", "reviews.xml"),
-            xdb:copy($sourceCol, "/db/XQTS/TestSources/collection2", "books.xml"),            
+            xdb:copy($sourceCol, "/db/XQTS/TestSources/collection2", "books.xml"),
             xdb:store($collection, "hacked-tests.xml",
                 xs:anyURI(xqts:path-to-uri(
                         concat("file:///", system:get-module-load-path(), "/hacked-tests.xml")
-                    ))) 
-        )   
+                    )))
+        )
     return
         $config
 };
 
 declare function xqts:create-progress-file($testCount as xs:int) as empty-sequence() {
-    let $results := xdb:store("/db/XQTS", "progress.xml", 
+    let $results := xdb:store("/db/XQTS", "progress.xml",
         <progress total="{$testCount}" done="0" failed="0" passed="0" error="0"/>)
     return ()
 };
 
 declare function xqts:create-collections($group as element(catalog:test-group)) as node() {
     let $rootColl := xdb:create-collection("/db/XQTS", "test-results")
-    let $temp := xdb:create-collection("/db/XQTS", "temp") 
+    let $temp := xdb:create-collection("/db/XQTS", "temp")
     let $ancestors := reverse(($group/ancestor::catalog:test-group, $group))
     let $collection := xqts:create-collections($rootColl, $ancestors, "/db/XQTS/test-results")
     let $results := xdb:store($collection, "results.xml", <test-result failed="0" passed="0" error="0"/>)
@@ -117,26 +117,26 @@ declare function xqts:get-query($case as element(catalog:test-case)) {
     let $query-name := $case//catalog:query/@name
     let $filePath := concat( $xqts:XQTS_HOME, "Queries/XQuery/", $case/@FilePath, $query-name, ".xq" )
     let $xq-string := xqts:read($filePath)
-    return 
+    return
         $xq-string
 };
 
 declare function xqts:get-input-value($input as element(catalog:input-file)) as item()* {
    if ($input eq "emptydoc") then
        ()
-   else 
+   else
        let $source := root($input)//catalog:source[@ID = $input/text()]
        return
            if (empty($source)) then
                concat("no input found: ", $input/text())
            else
-               doc(concat("/db/XQTS/", $source/@FileName))   
+               doc(concat("/db/XQTS/", $source/@FileName))
 };
 
 declare function xqts:get-input-value-uri($input as element(catalog:input-file)) as item()* {
     if ($input eq "emptydoc") then
        ()
-    else 
+    else
         let $source := root($input)//catalog:source[@ID = $input/text()]
         return concat( $xqts:XQTS_HOME, "/", $source/@FileName )
 };
@@ -153,61 +153,61 @@ declare function xqts:get-variable($case as element(catalog:test-case), $varName
 
 declare function xqts:compute-specific-static-context($testCaseName as xs:string) as element()* {
     (
-        <unbind-namespace uri="http://exist.sourceforge.net/NS/exist"/>       
-    , 
+        <unbind-namespace uri="http://exist.sourceforge.net/NS/exist"/>
+    ,
         if ($testCaseName eq "ForExpr013") then
             <output-size-limit value="-1"/>
         else if ($testCaseName eq "fn-current-time-4") then
-            (: arbitrary date :)                                
-            <current-dateTime value="2005-12-05T13:38:03.455-05:00"/>  
+            (: arbitrary date :)
+            <current-dateTime value="2005-12-05T13:38:03.455-05:00"/>
         else if ($testCaseName eq "fn-current-time-6") then
-            (: arbitrary date :)                                
-            <current-dateTime value="2005-12-05T13:38:18.059-05:00"/>  
+            (: arbitrary date :)
+            <current-dateTime value="2005-12-05T13:38:18.059-05:00"/>
         else if ($testCaseName eq "fn-current-time-7") then
-            (: arbitrary date :)                                
-            <current-dateTime value="2005-12-05T13:38:18.059-05:00"/>              
+            (: arbitrary date :)
+            <current-dateTime value="2005-12-05T13:38:18.059-05:00"/>
         else if ($testCaseName eq "fn-current-time-10") then
-            (: arbitrary date :)                                
+            (: arbitrary date :)
             <current-dateTime value="2005-12-05T13:38:18.09-05:00"/>
         else if (starts-with($testCaseName, "fn-current-time-")) then
-            (: arbitrary date :)                                
+            (: arbitrary date :)
             <current-dateTime value="2005-12-05T10:15:03.408-05:00"/>
         else if ($testCaseName eq "fn-current-dateTime-6") then
             <current-dateTime value="2005-12-05T17:10:00.312-05:00"/>
         (: bloody lower-case ! :)
         else if ($testCaseName eq "fn-current-datetime-7") then
-            <current-dateTime value="2005-12-05T17:10:00.312-05:00"/>            
+            <current-dateTime value="2005-12-05T17:10:00.312-05:00"/>
         else if ($testCaseName eq "fn-current-dateTime-10") then
-            <current-dateTime value="2005-12-05T17:10:00.344-05:00"/> 
+            <current-dateTime value="2005-12-05T17:10:00.344-05:00"/>
         else if ($testCaseName eq "fn-current-dateTime-21") then
-            <current-dateTime value="2005-12-05T17:10:00.453-05:00"/>   
+            <current-dateTime value="2005-12-05T17:10:00.453-05:00"/>
         else if ($testCaseName eq "fn-current-dateTime-24") then
-            <current-dateTime value="2005-12-05T17:10:00.469-05:00"/>                                   
-        else                        
+            <current-dateTime value="2005-12-05T17:10:00.469-05:00"/>
+        else
             <current-dateTime value="2005-12-05T17:10:00.203-05:00"/>
     ,
         if (starts-with($testCaseName, "modules-") or starts-with($testCaseName, "K-ModuleImport-")) then
             (
-            <mapModule namespace="http://www.w3.org/TestModules/test1" 
-                uri="{xs:anyURI('xmldb:exist:///db/XQTS/TestSources/test1-lib.xq')}"/>,            
-            <mapModule namespace="http://www.w3.org/TestModules/test2" 
-                uri="{xs:anyURI('xmldb:exist:///db/XQTS/TestSources/test2-lib.xq')}"/>,            
-            <mapModule namespace="http://www.w3.org/TestModules/module1" 
+            <mapModule namespace="http://www.w3.org/TestModules/test1"
+                uri="{xs:anyURI('xmldb:exist:///db/XQTS/TestSources/test1-lib.xq')}"/>,
+            <mapModule namespace="http://www.w3.org/TestModules/test2"
+                uri="{xs:anyURI('xmldb:exist:///db/XQTS/TestSources/test2-lib.xq')}"/>,
+            <mapModule namespace="http://www.w3.org/TestModules/module1"
                 uri="{xs:anyURI('xmldb:exist:///db/XQTS/TestSources/module1-lib.xq')}"/>,
-            <mapModule namespace="http://www.w3.org/TestModules/module2" 
+            <mapModule namespace="http://www.w3.org/TestModules/module2"
                 uri="{xs:anyURI('xmldb:exist:///db/XQTS/TestSources/module2-lib.xq')}"/>,
-            <mapModule namespace="http://www.w3.org/TestModules/defs" 
+            <mapModule namespace="http://www.w3.org/TestModules/defs"
                 uri="{xs:anyURI('xmldb:exist:///db/XQTS/TestSources/moduleDefs-lib.xq')}"/>,
-            <mapModule namespace="http://www.w3.org/TestModules/diffns" 
-                uri="{xs:anyURI('xmldb:exist:///db/XQTS/TestSources/modulesdiffns-lib.xq')}"/>            
+            <mapModule namespace="http://www.w3.org/TestModules/diffns"
+                uri="{xs:anyURI('xmldb:exist:///db/XQTS/TestSources/modulesdiffns-lib.xq')}"/>
             )
         else
             ()
     ,
         if (matches($testCaseName,"^fn-implicit-timezone-.*$") or
-            matches($testCaseName,"^K-ContextImplicitTimezoneFunc-.*$")) then      
+            matches($testCaseName,"^K-ContextImplicitTimezoneFunc-.*$")) then
             <implicit-timezone value="-PT5H"/>
-        else 
+        else
             ()
     )
 };
@@ -246,25 +246,25 @@ declare function xqts:normalize-and-expand($text as item()*) as xs:string {
 		"&amp;gt;", "&gt;")
 };
 
-declare function xqts:get-expected-results($testCase as element(catalog:test-case), $inMemory as xs:boolean) as element()* { 
-    let $testName := $testCase/@name   
-    let $hackedTest := /hack:test-cases/hack:test-case[@name = $testName]    
+declare function xqts:get-expected-results($testCase as element(catalog:test-case), $inMemory as xs:boolean) as element()* {
+    let $testName := $testCase/@name
+    let $hackedTest := /hack:test-cases/hack:test-case[@name = $testName]
     return
     (
         for $output in $testCase/catalog:output-file
         return
             let $compare :=
-                if (exists($hackedTest/@compare)) then 
+                if (exists($hackedTest/@compare)) then
                     $hackedTest/@compare
                 else if ($output/@compare eq "Inspect") then
                     (: "Text" by default. OK in most if not all the cases :)
-                    "Text"                   
-                else                
-                    $output/@compare        
+                    "Text"
+                else
+                    $output/@compare
             let $outputFilePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $testCase/@FilePath,
                 $output/text())
             return
-                <expected-result compare="{$compare}">                
+                <expected-result compare="{$compare}">
                 {
                     if ($compare eq "Text") then
                         xqts:normalize-and-expand(xqts:read($outputFilePath))
@@ -274,7 +274,7 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                         xqts:normalize-and-expand(xqts:read($outputFilePath))
                     else if ($compare eq "XML") then
                         if ($inMemory) then
-                            util:parse(xqts:read($outputFilePath))
+                            parse-xml(xqts:read($outputFilePath))
                         else
                             util:catch(
                                 "java.lang.Exception",
@@ -286,22 +286,22 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                         let $xmlFrag := concat("<f>", xqts:read($outputFilePath), "</f>")
                         return
                             if ($inMemory) then
-                                util:parse($xmlFrag)
+                                parse-xml($xmlFrag)
                             else
                                 util:catch(
                                     "java.lang.Exception",
-                                    doc(xdb:store("/db/XQTS/temp", substring-before($output/text(), "."), $xmlFrag, "text/xml")),                            
+                                    doc(xdb:store("/db/XQTS/temp", substring-before($output/text(), "."), $xmlFrag, "text/xml")),
                                     (: Handle unexpected exceptions :)
                                     util:log("ERROR", concat("Exception while loading expected result fragment: ", $util:exception-message))
                                 )
                     else
                         util:log("ERROR", concat("Unknown comparison method: ", $compare))
                 }
-                </expected-result>              
+                </expected-result>
     ,
-        (: due to a possible bug in the MemTreeBuilder, the parent element will be copied ! :) 
+        (: due to a possible bug in the MemTreeBuilder, the parent element will be copied ! :)
         if (exists($hackedTest/hack:expected-result)) then
-            $hackedTest/hack:expected-result        
+            $hackedTest/hack:expected-result
         else
             ()
     )
@@ -310,10 +310,10 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
 declare function xqts:execute-test-case($testCase as element(catalog:test-case), $inMemory as xs:boolean) as element()? {
     let $context :=
         <static-context>
-            { 
-                xqts:compute-specific-static-context(string($testCase/@name)) 
+            {
+                xqts:compute-specific-static-context(string($testCase/@name))
             }
-            {                           
+            {
                 for $input in $testCase/catalog:input-file
                 return
                     if ($inMemory) then
@@ -339,12 +339,12 @@ declare function xqts:execute-test-case($testCase as element(catalog:test-case),
                 return
                     <staticallyKnownDocuments>{concat("/db/XQTS/TestSources/", $input)}</staticallyKnownDocuments>
             }
-        </static-context>                   
+        </static-context>
     let $query := xqts:get-query($testCase)
     let $expectedResults := xqts:get-expected-results($testCase, $inMemory)
-    let $formatedResult := 
+    let $formatedResult :=
         util:catch(
-            "java.lang.Exception",            
+            "java.lang.Exception",
             let $raw_result := util:eval-with-context($query, $context, false(), xqts:get-context-item($testCase/catalog:contextItem))
             return
                 xqts:compute-result($testCase, $query, $raw_result, $expectedResults),
@@ -369,7 +369,7 @@ declare function xqts:execute-test-case($testCase as element(catalog:test-case),
                     <exception>{$util:exception-message}</exception>
                     {
                         for $expectedResult in $expectedResults
-                        return 
+                        return
                             $expectedResult
                     }
                     {
@@ -385,18 +385,18 @@ declare function xqts:execute-test-case($testCase as element(catalog:test-case),
                     <exception>{$util:exception-message}</exception>
                     {
                         for $expectedResult in $expectedResults
-                        return 
+                        return
                             $expectedResult
                     }
                     <query>{$query}</query>
                 </test-case>
             (: Don't know what is expected but got here anyway. :)
-            else 
+            else
                 <test-case name="{$testCase/@name}" result="fail" dateRun="{util:system-time()}" print="unhandled-error">
                     <exception>{$util:exception-message}</exception>
                     {
                         for $expectedResult in $expectedResults
-                        return 
+                        return
                             $expectedResult
                     }
                     {
@@ -407,10 +407,10 @@ declare function xqts:execute-test-case($testCase as element(catalog:test-case),
                     <query>{$query}</query>
                 </test-case>
         )
-        let $log := 
-            if (fn:empty($formatedResult)) then 
-                util:log("DEBUG", ("Unable to generate a formated result: ", xs:string($testCase/@name))) 
-            else 
+        let $log :=
+            if (fn:empty($formatedResult)) then
+                util:log("DEBUG", ("Unable to generate a formated result: ", xs:string($testCase/@name)))
+            else
                 ()
     return $formatedResult
 };
@@ -423,18 +423,18 @@ declare function xqts:compute-result($testCase as element(catalog:test-case), $q
             return
                 if ($comparisonMethod eq "Text") then
                     (: don't use text() because () neq "" :)
-                    $expectedResult/string() eq xqts:normalize-text($result)                
+                    $expectedResult/string() eq xqts:normalize-text($result)
                 else if ($comparisonMethod eq "UnnormalizedText") then
                     (: don't use text() because () neq "" :)
                     (: join the results in one single string :)
                     $expectedResult/string() eq string-join($result, "")
                 else if ($comparisonMethod eq "TextAsXML") then
-                    xdiff:compare($expectedResult/*, util:eval($result))                              
+                    xdiff:compare($expectedResult/*, util:eval($result))
                 else if ($comparisonMethod eq "XML") then
                     xdiff:compare($expectedResult/*, $result)
                 else if ($comparisonMethod eq "Fragment") then
                     xdiff:compare($expectedResult/*, <f>{$result}</f>)
-                (: unlikely :)    
+                (: unlikely :)
                 else
                     false()
     ) satisfies $expectedResultTest
@@ -442,13 +442,13 @@ declare function xqts:compute-result($testCase as element(catalog:test-case), $q
         xqts:format-result($testCase, $passed, $query, $result, $expectedResults)
 };
 
-declare function xqts:format-result($testCase as element(catalog:test-case), $passed as xs:boolean, $query as xs:string, 
+declare function xqts:format-result($testCase as element(catalog:test-case), $passed as xs:boolean, $query as xs:string,
     $result as item()*, $expectedResults as item()*) as element() {
     <test-case name="{$testCase/@name}" result="{if ($passed) then 'pass' else 'fail'}" dateRun="{util:system-time()}" print="result-without-exception">
         <result>{$result}</result>
         {
             for $expectedResult in $expectedResults
-            return 
+            return
                 $expectedResult
         }
         {
@@ -456,14 +456,14 @@ declare function xqts:format-result($testCase as element(catalog:test-case), $pa
             return
                 <expected-error>{$expected-error/text()}</expected-error>
         }
-        <query>{$query}</query>            
+        <query>{$query}</query>
     </test-case>
 };
 
 declare function xqts:run-single-test-case($case as element(catalog:test-case),
     $resultRoot as element()?, $inMemory as xs:boolean) as item()* {
     let $result := xqts:execute-test-case($case, $inMemory)
-    return            
+    return
         $result
 };
 
@@ -471,7 +471,7 @@ declare function xqts:run-test-group($group as element(catalog:test-group), $inM
     (: Create the collection hierarchy for this group and get the results.xml doc to append to. :)
     let $resultsDoc := xqts:create-collections($group)
     let $tests := $group/catalog:test-case
-    return 
+    return
         (
             (: Execute the test cases :)
             let $singleTestResults :=
@@ -482,7 +482,7 @@ declare function xqts:run-test-group($group as element(catalog:test-group), $inM
             let $null := xqts:report-progress($singleTestResults)
             return
                 util:catch(
-                   "java.lang.Exception",            
+                   "java.lang.Exception",
                    update insert $singleTestResults into $resultsDoc/test-result,
                    update insert
                         <test-case result="fail" dateRun="{util:system-time()}" print="unhandled-error">
@@ -490,7 +490,7 @@ declare function xqts:run-test-group($group as element(catalog:test-group), $inM
                         </test-case>
                     into $resultsDoc/test-result
                 ),
-            
+
             if (fn:exists($tests) and fn:exists($resultsDoc/test-result)) then (
                 xqts:finish($resultsDoc/test-result)
             ) else

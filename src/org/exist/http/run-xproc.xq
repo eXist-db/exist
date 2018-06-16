@@ -16,13 +16,13 @@ let $requestparams := if($autobind eq '1') then
              ()
            else
           <binding port="{$binding}">
-             {util:parse(request:get-parameter($binding,''))}
+             {parse-xml(request:get-parameter($binding,''))}
           </binding>
     else
         ()
 let $xprocbindings := <bindings>
                         {$requestparams}
-                        {util:parse($bindings)//binding}
+                        {parse-xml($bindings)//binding}
                     </bindings>
 return
-xproc:run( doc($pipeline), doc($stdin), $debug, "0", $xprocbindings, util:parse($options))
+xproc:run( doc($pipeline), doc($stdin), $debug, "0", $xprocbindings, parse-xml($options))
