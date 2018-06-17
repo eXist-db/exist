@@ -7905,7 +7905,7 @@ inputState.guessing--;
 			if (inputState.guessing==0) {
 				
 				lexer.wsExplicit = false;
-				throw new XPathException("err:XPST0003: Parse error: " + e.getMessage() + " at line: " + e.getLine() + " column: " + e.getColumn());
+				throw new XPathException(ErrorCodes.XPST0003, "Parse error: " + e.getMessage() + " at line: " + e.getLine() + " column: " + e.getColumn());
 				
 			} else {
 				throw e;
@@ -13736,10 +13736,10 @@ inputState.guessing--;
 					elementWithAttributes_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 					
 									if (elementStack.isEmpty())
-										throw new XPathException(qn_AST, "err:XPST0003: Found closing tag without opening tag: " + cname);
+										throw new XPathException(qn_AST, ErrorCodes.XPST0003, "Found closing tag without opening tag: " + cname);
 									String prev= (String) elementStack.pop();
 									if (!prev.equals(cname))
-										throw new XPathException(qn_AST, "err:XPST0003: Found closing tag: " + cname + "; expected: " + prev);
+										throw new XPathException(qn_AST, ErrorCodes.XPST0003, "Found closing tag: " + cname + "; expected: " + prev);
 									elementWithAttributes_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(ELEMENT,cname)).add(attrs_AST));
 									if (!elementStack.isEmpty()) {
 										lexer.inElementContent= true;
@@ -13770,7 +13770,7 @@ inputState.guessing--;
 				
 					if (e.getMessage().contains("expecting XML end tag") || e.getMessage().contains("<")) {
 					            lexer.wsExplicit = false;
-					            throw new XPathException(q_AST, "err:XPST0003: Static error: no closing end tag found for element constructor: " + name);
+					            throw new XPathException(q_AST, ErrorCodes.XPST0003, "Static error: no closing end tag found for element constructor: " + name);
 					        } else if (e.getMessage().contains("unexpected token")) {
 					        	throw new XPathException(e.getLine(), e.getColumn(), ErrorCodes.XPST0003, e.getMessage() +
 					        		" (while expecting closing tag for element constructor: " + name + ")");
@@ -13882,7 +13882,7 @@ inputState.guessing--;
 				
 					if (e.getMessage().contains("expecting XML end tag") || e.getMessage().contains("<")) {
 					lexer.wsExplicit = false;
-					throw new XPathException(q_AST, "err:XPST0003: No closing end tag found for element constructor: " + name);
+					throw new XPathException(q_AST, ErrorCodes.XPST0003, "No closing end tag found for element constructor: " + name);
 				} else if (e.getMessage().contains("unexpected token")) {
 					        	throw new XPathException(e.getLine(), e.getColumn(), ErrorCodes.XPST0003, e.getMessage() +
 					        		" (while expecting closing tag for element constructor: " + name + ")");

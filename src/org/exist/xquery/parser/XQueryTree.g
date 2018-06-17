@@ -251,14 +251,14 @@ throws PermissionDeniedException, EXistException, XPathException
                 } else if (version.equals("1.0")) {
                     context.setXQueryVersion(10);
                 } else {
-                    throw new XPathException(v, "err:XQST0031: Wrong XQuery version: require 1.0, 3.0 or 3.1");
+                    throw new XPathException(v, ErrorCodes.XQST0031, "Wrong XQuery version: require 1.0, 3.0 or 3.1");
                 }
             }
             ( enc:STRING_LITERAL )?
             {
                 if (enc != null) {
                     if (!XMLChar.isValidIANAEncoding(enc.getText())) {
-                        throw new XPathException(enc, "err:XQST0087: Unknown or wrong encoding not adhering to required XML 1.0 EncName.");
+                        throw new XPathException(enc, ErrorCodes.XQST0087, "Unknown or wrong encoding not adhering to required XML 1.0 EncName.");
                     }
                     if (!enc.getText().equals("UTF-8")) {
                         //util.serializer.encodings.CharacterSet
@@ -321,7 +321,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			prefix:NAMESPACE_DECL uri:STRING_LITERAL
 			{
 				if (declaredNamespaces.get(prefix.getText()) != null)
-					throw new XPathException(prefix, "err:XQST0033: Prolog contains " +
+					throw new XPathException(prefix, ErrorCodes.XQST0033, "Prolog contains " +
 						"multiple declarations for namespace prefix: " + prefix.getText());
 				context.declareNamespace(prefix.getText(), uri.getText());
 				staticContext.declareNamespace(prefix.getText(), uri.getText());
@@ -335,7 +335,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				"preserve"
                 {
                 if (boundaryspace)
-					throw new XPathException("err:XQST0068: Boundary-space already declared.");
+					throw new XPathException(ErrorCodes.XQST0068, "Boundary-space already declared.");
                 boundaryspace = true;
                 context.setStripWhitespace(false);
                 }
@@ -343,7 +343,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				"strip"
                 {
                 if (boundaryspace)
-					throw new XPathException("err:XQST0068: Boundary-space already declared.");
+					throw new XPathException(ErrorCodes.XQST0068, "Boundary-space already declared.");
                 boundaryspace = true;
                 context.setStripWhitespace(true);
                 }
@@ -364,7 +364,7 @@ throws PermissionDeniedException, EXistException, XPathException
             )
             {
                 if (orderempty)
-                    throw new XPathException("err:XQST0065: Ordering mode already declared.");
+                    throw new XPathException(ErrorCodes.XQST0065, "Ordering mode already declared.");
                 orderempty = true;
             }
 		)
@@ -399,19 +399,19 @@ throws PermissionDeniedException, EXistException, XPathException
             )
             {
                 if (copynamespaces)
-                    throw new XPathException("err:XQST0055: Copy-namespaces mode already declared.");
+                    throw new XPathException(ErrorCodes.XQST0055, "Copy-namespaces mode already declared.");
                 copynamespaces = true;
             }
 		)
             exception catch [RecognitionException se]
-        {throw new XPathException("err:XPST0003: XQuery syntax error.");}
+        {throw new XPathException(ErrorCodes.XPST0003, "XQuery syntax error.");}
 		|
 		#(
 			"base-uri" base:STRING_LITERAL
 			{
                 context.setBaseURI(new AnyURIValue(StringValue.expand(base.getText())), true);
                 if (baseuri)
-                    throw new XPathException(base, "err:XQST0032: Base URI is already declared.");
+                    throw new XPathException(base, ErrorCodes.XQST0032, "Base URI is already declared.");
                 baseuri = true;
             }
 		)
@@ -421,7 +421,7 @@ throws PermissionDeniedException, EXistException, XPathException
             {
                 // ignored
                 if (ordering)
-                    throw new XPathException("err:XQST0065: Ordering already declared.");
+                    throw new XPathException(ErrorCodes.XQST0065, "Ordering already declared.");
                 ordering = true;
             }
 		)
@@ -431,7 +431,7 @@ throws PermissionDeniedException, EXistException, XPathException
             {
                 // ignored
                 if (construction)
-                    throw new XPathException("err:XQST0069: Construction already declared.");
+                    throw new XPathException(ErrorCodes.XQST0069, "Construction already declared.");
                 construction = true;
             }
 		)
@@ -456,12 +456,12 @@ throws PermissionDeniedException, EXistException, XPathException
 			DEF_COLLATION_DECL defc:STRING_LITERAL
 			{
                 if (defaultcollation)
-                    throw new XPathException("err:XQST0038: Default collation already declared.");
+                    throw new XPathException(ErrorCodes.XQST0038, "Default collation already declared.");
                 defaultcollation = true;
                 try {
                     context.setDefaultCollation(defc.getText());
                 } catch (XPathException xp) {
-                    throw new XPathException(defc, "err:XQST0038: the value specified by a default collation declaration is not present in statically known collations.");
+                    throw new XPathException(defc, ErrorCodes.XQST0038, "the value specified by a default collation declaration is not present in statically known collations.");
                 }
             }
 		)
@@ -478,7 +478,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				    throw new XPathException(qname.getLine(), qname.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + qname.getText());
 				}
 				if (declaredGlobalVars.contains(qn))
-					throw new XPathException(qname, "err:XQST0049: It is a " +
+					throw new XPathException(qname, ErrorCodes.XQST0049, "It is a " +
 						"static error if more than one variable declared or " +
 						"imported by a module has the same expanded QName. " +
 						"Variable: " + qn.toString());
@@ -621,7 +621,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		{
 			if (modulePrefix != null) {
 				if (declaredNamespaces.get(modulePrefix) != null)
-					throw new XPathException(i, "err:XQST0033: Prolog contains " +
+					throw new XPathException(i, ErrorCodes.XQST0033, "Prolog contains " +
 						"multiple declarations for namespace prefix: " + modulePrefix);
 				declaredNamespaces.put(modulePrefix, moduleURI.getText());
 			}
@@ -665,11 +665,11 @@ throws PermissionDeniedException, EXistException, XPathException
 		( uriList [uriList] )?
 		{
             if ("".equals(targetURI.getText()) && nsPrefix != null) {
-                    throw new XPathException(s, "err:XQST0057: A schema without target namespace (zero-length string target namespace) may not bind a namespace prefix: " + nsPrefix);
+                    throw new XPathException(s, ErrorCodes.XQST0057, "A schema without target namespace (zero-length string target namespace) may not bind a namespace prefix: " + nsPrefix);
             }
             if (nsPrefix != null) {
                 if (declaredNamespaces.get(nsPrefix) != null)
-                    throw new XPathException(s, "err:XQST0033: Prolog contains " +
+                    throw new XPathException(s, ErrorCodes.XQST0033, "Prolog contains " +
                                              "multiple declarations for namespace prefix: " + nsPrefix);
                 declaredNamespaces.put(nsPrefix, targetURI.getText());
             }
@@ -682,7 +682,7 @@ throws PermissionDeniedException, EXistException, XPathException
                 throw xpe;
             }
             // We ought to do this for now until Dannes can say it works. /ljo
-            //throw new XPathException(s, "err:XQST0009: the eXist XQuery implementation does not support the Schema Import Feature quite yet.");
+            //throw new XPathException(s, ErrorCodes.XQST0009, "The eXist-db XQuery implementation does not support the Schema Import Feature quite yet.");
 		}
 	)
 	;
@@ -1204,7 +1204,7 @@ throws PermissionDeniedException, EXistException, XPathException
             // Added for handling empty mainModule /ljo
             // System.out.println("EMPTY EXPR");
             if (eof.getText() == null || "".equals(eof.getText()))
-                throw new XPathException(eof, "err:XPST0003: EOF or zero-length string found where a valid XPath expression was expected.");
+                throw new XPathException(eof, ErrorCodes.XPST0003, "EOF or zero-length string found where a valid XPath expression was expected.");
 
         }
     |
@@ -3136,7 +3136,7 @@ throws PermissionDeniedException, EXistException, XPathException
                 QName qname = QName.parse(staticContext, qna.getText());
                 if (Namespaces.XMLNS_NS.equals(qname.getNamespaceURI())
                     || ("".equals(qname.getNamespaceURI()) && qname.getLocalPart().equals(XMLConstants.XMLNS_ATTRIBUTE)))
-                    throw new XPathException("err:XQDY0044: the node-name property of the node constructed by a computed attribute constructor is in the namespace http://www.w3.org/2000/xmlns/ (corresponding to namespace prefix xmlns), or is in no namespace and has local name xmlns.");
+                    throw new XPathException(ErrorCodes.XQDY0044, "The node-name property of the node constructed by a computed attribute constructor is in the namespace http://www.w3.org/2000/xmlns/ (corresponding to namespace prefix xmlns), or is in no namespace and has local name xmlns.");
             } catch (final IllegalQNameException iqe) {
                 throw new XPathException(qna.getLine(), qna.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + qna.getText());
             }
@@ -3165,7 +3165,7 @@ throws PermissionDeniedException, EXistException, XPathException
                 contentExpr=ex:expr [elementContent]
                 {
                     if (ex.getText() != null && ex.getText().indexOf("?>") > Constants.STRING_NOT_FOUND)
-                throw new XPathException("err:XQDY0026: content expression of a computed processing instruction constructor contains the string '?>' which is not allowed.");
+                throw new XPathException(ErrorCodes.XQDY0026, "Content expression of a computed processing instruction constructor contains the string '?>' which is not allowed.");
                 }
             )?
         )

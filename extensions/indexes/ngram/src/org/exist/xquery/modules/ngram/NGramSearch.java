@@ -403,7 +403,7 @@ public class NGramSearch extends Function implements Optimizable {
                     token.append(query.substring(i, i + 2));
                     i++;
                 } else {
-                    throw new XPathException("err:FTDY0020: query string is terminated by an unescaped backslash");
+                    throw new XPathException(ErrorCodes.FTDY0020, "Query string is terminated by an unescaped backslash");
                 }
             } else {
                 if (currentChar == '.') {
