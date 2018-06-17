@@ -951,7 +951,7 @@ public class XQueryContext implements BinaryValueManager, Context
     {
         //Not sure for the 2nd clause : eXist forces the function NS as default.
         if( ( defaultFunctionNamespace != null ) && !defaultFunctionNamespace.equals( Function.BUILTIN_FUNCTION_NS ) && !defaultFunctionNamespace.equals( uri ) ) {
-            throw( new XPathException( "err:XQST0066: default function namespace is already set to: '" + defaultFunctionNamespace + "'" ) );
+            throw( new XPathException(ErrorCodes.XQST0066, "Default function namespace is already set to: '" + defaultFunctionNamespace + "'" ) );
         }
         defaultFunctionNamespace = uri;
     }
@@ -981,7 +981,7 @@ public class XQueryContext implements BinaryValueManager, Context
     {
         // eXist forces the empty element NS as default.
         if( !defaultElementNamespaceSchema.equals( AnyURIValue.EMPTY_URI ) ) {
-            throw( new XPathException( "err:XQST0066: default function namespace schema is already set to: '" + defaultElementNamespaceSchema.getStringValue() + "'" ) );
+            throw( new XPathException(ErrorCodes.XQST0066, "Default function namespace schema is already set to: '" + defaultElementNamespaceSchema.getStringValue() + "'" ) );
         }
         defaultElementNamespaceSchema = new AnyURIValue( uri );
     }
@@ -1012,7 +1012,7 @@ public class XQueryContext implements BinaryValueManager, Context
     {
         // eXist forces the empty element NS as default.
         if( !defaultElementNamespace.equals( AnyURIValue.EMPTY_URI ) ) {
-            throw( new XPathException( "err:XQST0066: default element namespace is already set to: '" + defaultElementNamespace.getStringValue() + "'" ) );
+            throw( new XPathException(ErrorCodes.XQST0066, "Default element namespace is already set to: '" + defaultElementNamespace.getStringValue() + "'" ) );
         }
         defaultElementNamespace = new AnyURIValue( uri );
 
@@ -1043,7 +1043,7 @@ public class XQueryContext implements BinaryValueManager, Context
             uriTest = new URI( uri );
         }
         catch( final URISyntaxException e ) {
-            throw( new XPathException( "err:XQST0038: Unknown collation : '" + uri + "'" ) );
+            throw( new XPathException(ErrorCodes.XQST0038, "Unknown collation : '" + uri + "'" ) );
         }
 
         if( uri.startsWith( Collations.EXIST_COLLATION_URI ) || uri.startsWith( "?" ) || uriTest.isAbsolute() ) {
@@ -2460,7 +2460,7 @@ public class XQueryContext implements BinaryValueManager, Context
         // is then undefined, and any attempt to use its value may result in
         // an error [err:XPST0001].
         if( ( baseURI == null ) || baseURI.equals( AnyURIValue.EMPTY_URI ) ) {
-            //throw new XPathException("err:XPST0001: base URI of the static context  has not been assigned a value.");
+            //throw new XPathException(ErrorCodes.XPST0001, "Base URI of the static context  has not been assigned a value.");
             // We catch and resolve this to the XmlDbURI.ROOT_COLLECTION_URI
             // at least in DocumentImpl so maybe we should do it here./ljo
         }
