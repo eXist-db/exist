@@ -362,14 +362,10 @@ public class RestoreHandler extends DefaultHandler {
                 ((EXistResource)res).setMimeType(mimetype);
             }
 
-            if(is.getByteStreamLength() > 0) {
+            if(is.getByteStreamLength() > 0 || "BinaryResource".equals(type)) {
                 res.setContent(is);
             } else {
-                if("BinaryResource".equals(type)) {
-                    res.setContent("");
-                } else {
-                    res = null;
-                }
+                res = null;
             }
 
             // Restoring name
