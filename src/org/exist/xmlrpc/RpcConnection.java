@@ -1578,7 +1578,10 @@ public class RpcConnection implements RpcAPI {
 
         try (final OutputStream os = Files.newOutputStream(tempFile, openOptions)) {
             if (compressed) {
-                Compressor.uncompress(chunk, os);
+                final int uncompressedLen = Compressor.uncompress(chunk, os);
+                if (uncompressedLen != length) {
+                    throw new IOException("Expected " + length + " bytes of uncompressed data, but actually " + uncompressedLen);
+                }
             } else {
                 os.write(chunk, 0, length);
             }
