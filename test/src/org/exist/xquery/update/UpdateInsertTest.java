@@ -63,4 +63,23 @@ public class UpdateInsertTest extends AbstractTestUpdate {
 
         queryResource(service, docName, "//annotation-item[@temp-id = '" + tempId + "']/@id", 1);
     }
+
+    @Test
+    public void insertInMemoryDocument() throws XMLDBException {
+        final String doc = "<empty/>";
+
+        final String docName = "empty.xml";
+        final XQueryService service =
+                storeXMLStringAndGetQueryService(docName, doc);
+
+        queryResource(service, docName, "//empty/child::node()", 0);
+
+        final String uuid = UUID.randomUUID().toString();
+
+        final String update = "update insert document { <uuid>" + uuid + "</uuid> } into /empty";
+
+        queryResource(service, docName, update, 0);
+
+        queryResource(service, docName, "//empty/uuid", 1);
+    }
 }
