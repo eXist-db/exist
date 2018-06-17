@@ -293,7 +293,7 @@ public XQueryTreeParser() {
 			// Added for handling empty mainModule /ljo
 			// System.out.println("EMPTY EXPR");
 			if (eof.getText() == null || "".equals(eof.getText()))
-			throw new XPathException(eof, "err:XPST0003: EOF or zero-length string found where a valid XPath expression was expected.");
+			throw new XPathException(eof, ErrorCodes.XPST0003, "EOF or zero-length string found where a valid XPath expression was expected.");
 			
 			
 			break;
@@ -3684,7 +3684,7 @@ public XQueryTreeParser() {
 			} else if (version.equals("1.0")) {
 			context.setXQueryVersion(10);
 			} else {
-			throw new XPathException(v, "err:XQST0031: Wrong XQuery version: require 1.0, 3.0 or 3.1");
+			throw new XPathException(v, ErrorCodes.XQST0031, "Wrong XQuery version: require 1.0, 3.0 or 3.1");
 			}
 			
 			{
@@ -3710,7 +3710,7 @@ public XQueryTreeParser() {
 			
 			if (enc != null) {
 			if (!XMLChar.isValidIANAEncoding(enc.getText())) {
-			throw new XPathException(enc, "err:XQST0087: Unknown or wrong encoding not adhering to required XML 1.0 EncName.");
+			throw new XPathException(enc, ErrorCodes.XQST0087, "Unknown or wrong encoding not adhering to required XML 1.0 EncName.");
 			}
 			if (!enc.getText().equals("UTF-8")) {
 			//util.serializer.encodings.CharacterSet
@@ -4095,7 +4095,7 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				
 								if (declaredNamespaces.get(prefix.getText()) != null)
-									throw new XPathException(prefix, "err:XQST0033: Prolog contains " +
+									throw new XPathException(prefix, ErrorCodes.XQST0033, "Prolog contains " +
 										"multiple declarations for namespace prefix: " + prefix.getText());
 								context.declareNamespace(prefix.getText(), uri.getText());
 								staticContext.declareNamespace(prefix.getText(), uri.getText());
@@ -4121,7 +4121,7 @@ public XQueryTreeParser() {
 					_t = _t.getNextSibling();
 					
 					if (boundaryspace)
-										throw new XPathException("err:XQST0068: Boundary-space already declared.");
+										throw new XPathException(ErrorCodes.XQST0068, "Boundary-space already declared.");
 					boundaryspace = true;
 					context.setStripWhitespace(false);
 					
@@ -4134,7 +4134,7 @@ public XQueryTreeParser() {
 					_t = _t.getNextSibling();
 					
 					if (boundaryspace)
-										throw new XPathException("err:XQST0068: Boundary-space already declared.");
+										throw new XPathException(ErrorCodes.XQST0068, "Boundary-space already declared.");
 					boundaryspace = true;
 					context.setStripWhitespace(true);
 					
@@ -4187,7 +4187,7 @@ public XQueryTreeParser() {
 				}
 				
 				if (orderempty)
-				throw new XPathException("err:XQST0065: Ordering mode already declared.");
+				throw new XPathException(ErrorCodes.XQST0065, "Ordering mode already declared.");
 				orderempty = true;
 				
 				_t = __t18;
@@ -4265,14 +4265,14 @@ public XQueryTreeParser() {
 					}
 					
 					if (copynamespaces)
-					throw new XPathException("err:XQST0055: Copy-namespaces mode already declared.");
+					throw new XPathException(ErrorCodes.XQST0055, "Copy-namespaces mode already declared.");
 					copynamespaces = true;
 					
 					_t = __t20;
 					_t = _t.getNextSibling();
 				}
 				catch (RecognitionException se) {
-					throw new XPathException("err:XPST0003: XQuery syntax error.");
+					throw new XPathException(ErrorCodes.XPST0003, "XQuery syntax error.");
 				}
 				break;
 			}
@@ -4288,7 +4288,7 @@ public XQueryTreeParser() {
 				
 				context.setBaseURI(new AnyURIValue(StringValue.expand(base.getText())), true);
 				if (baseuri)
-				throw new XPathException(base, "err:XQST0032: Base URI is already declared.");
+				throw new XPathException(base, ErrorCodes.XQST0032, "Base URI is already declared.");
 				baseuri = true;
 				
 				_t = __t23;
@@ -4327,7 +4327,7 @@ public XQueryTreeParser() {
 				
 				// ignored
 				if (ordering)
-				throw new XPathException("err:XQST0065: Ordering already declared.");
+				throw new XPathException(ErrorCodes.XQST0065, "Ordering already declared.");
 				ordering = true;
 				
 				_t = __t24;
@@ -4366,7 +4366,7 @@ public XQueryTreeParser() {
 				
 				// ignored
 				if (construction)
-				throw new XPathException("err:XQST0069: Construction already declared.");
+				throw new XPathException(ErrorCodes.XQST0069, "Construction already declared.");
 				construction = true;
 				
 				_t = __t26;
@@ -4418,12 +4418,12 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				
 				if (defaultcollation)
-				throw new XPathException("err:XQST0038: Default collation already declared.");
+				throw new XPathException(ErrorCodes.XQST0038, "Default collation already declared.");
 				defaultcollation = true;
 				try {
 				context.setDefaultCollation(defc.getText());
 				} catch (XPathException xp) {
-				throw new XPathException(defc, "err:XQST0038: the value specified by a default collation declaration is not present in statically known collations.");
+				throw new XPathException(defc, ErrorCodes.XQST0038, "the value specified by a default collation declaration is not present in statically known collations.");
 				}
 				
 				_t = __t30;
@@ -4446,7 +4446,7 @@ public XQueryTreeParser() {
 								    throw new XPathException(qname.getLine(), qname.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + qname.getText());
 								}
 								if (declaredGlobalVars.contains(qn))
-									throw new XPathException(qname, "err:XQST0049: It is a " +
+									throw new XPathException(qname, ErrorCodes.XQST0049, "It is a " +
 										"static error if more than one variable declared or " +
 										"imported by a module has the same expanded QName. " +
 										"Variable: " + qn.toString());
@@ -6300,7 +6300,7 @@ public XQueryTreeParser() {
 			
 						if (modulePrefix != null) {
 							if (declaredNamespaces.get(modulePrefix) != null)
-								throw new XPathException(i, "err:XQST0033: Prolog contains " +
+								throw new XPathException(i, ErrorCodes.XQST0033, "Prolog contains " +
 									"multiple declarations for namespace prefix: " + modulePrefix);
 							declaredNamespaces.put(modulePrefix, moduleURI.getText());
 						}
@@ -6401,11 +6401,11 @@ public XQueryTreeParser() {
 			}
 			
 			if ("".equals(targetURI.getText()) && nsPrefix != null) {
-			throw new XPathException(s, "err:XQST0057: A schema without target namespace (zero-length string target namespace) may not bind a namespace prefix: " + nsPrefix);
+			throw new XPathException(s, ErrorCodes.XQST0057, "A schema without target namespace (zero-length string target namespace) may not bind a namespace prefix: " + nsPrefix);
 			}
 			if (nsPrefix != null) {
 			if (declaredNamespaces.get(nsPrefix) != null)
-			throw new XPathException(s, "err:XQST0033: Prolog contains " +
+			throw new XPathException(s, ErrorCodes.XQST0033, "Prolog contains " +
 			"multiple declarations for namespace prefix: " + nsPrefix);
 			declaredNamespaces.put(nsPrefix, targetURI.getText());
 			}
@@ -6418,7 +6418,7 @@ public XQueryTreeParser() {
 			throw xpe;
 			}
 			// We ought to do this for now until Dannes can say it works. /ljo
-			//throw new XPathException(s, "err:XQST0009: the eXist XQuery implementation does not support the Schema Import Feature quite yet.");
+			//throw new XPathException(s, ErrorCodes.XQST0009, "The eXist-db XQuery implementation does not support the Schema Import Feature quite yet.");
 					
 			_t = __t48;
 			_t = _t.getNextSibling();
@@ -10165,7 +10165,7 @@ public XQueryTreeParser() {
 			QName qname = QName.parse(staticContext, qna.getText());
 			if (Namespaces.XMLNS_NS.equals(qname.getNamespaceURI())
 			|| ("".equals(qname.getNamespaceURI()) && qname.getLocalPart().equals(XMLConstants.XMLNS_ATTRIBUTE)))
-			throw new XPathException("err:XQDY0044: the node-name property of the node constructed by a computed attribute constructor is in the namespace http://www.w3.org/2000/xmlns/ (corresponding to namespace prefix xmlns), or is in no namespace and has local name xmlns.");
+			throw new XPathException(ErrorCodes.XQDY0044, "The node-name property of the node constructed by a computed attribute constructor is in the namespace http://www.w3.org/2000/xmlns/ (corresponding to namespace prefix xmlns), or is in no namespace and has local name xmlns.");
 			} catch (final IllegalQNameException iqe) {
 			throw new XPathException(qna.getLine(), qna.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + qna.getText());
 			}
@@ -10438,7 +10438,7 @@ public XQueryTreeParser() {
 				_t = _retTree;
 				
 				if (ex.getText() != null && ex.getText().indexOf("?>") > Constants.STRING_NOT_FOUND)
-				throw new XPathException("err:XQDY0026: content expression of a computed processing instruction constructor contains the string '?>' which is not allowed.");
+				throw new XPathException(ErrorCodes.XQDY0026, "Content expression of a computed processing instruction constructor contains the string '?>' which is not allowed.");
 				
 				break;
 			}
