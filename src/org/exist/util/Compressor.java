@@ -90,7 +90,6 @@ public class Compressor {
         }
     }
 
-
     /**
      * Uncompress the byte array using GZip compression.
      *
@@ -100,14 +99,17 @@ public class Compressor {
      *
      * @exception IOException if an error occurs
      */
-    public static void uncompress(final byte[] buf, final OutputStream os) throws IOException {
+    public static int uncompress(final byte[] buf, final OutputStream os) throws IOException {
+        int written = 0;
         try (final FastByteArrayInputStream bais = new FastByteArrayInputStream(buf);
              final InputStream gzis = new GZIPInputStream(bais)) {
             final byte[] tmp = new byte[4096];
             int read;
             while ((read = gzis.read(tmp)) != -1) {
                 os.write(tmp, 0, read);
+                written += read;
             }
         }
+        return written;
     }
 }
