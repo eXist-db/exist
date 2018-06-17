@@ -232,7 +232,7 @@ public class FunctionCall extends Function {
                 getSignature().getReturnType().checkType(result.getItemType());
             }
         } catch(final XPathException e) {
-            throw new XPathException(this, ErrorCodes.XPTY0004, "err:XPTY0004: return type of function '" + getSignature().getName() + "'. " + e.getMessage(), Sequence.EMPTY_SEQUENCE, e);
+            throw new XPathException(this, ErrorCodes.XPTY0004, "Return type of function '" + getSignature().getName() + "'. " + e.getMessage(), Sequence.EMPTY_SEQUENCE, e);
         }
 
 	
