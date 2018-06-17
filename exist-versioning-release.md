@@ -178,7 +178,9 @@ Once development on a new stable version is complete, the following steps will p
 
 3. Ask [Evolved Binary](http://www.evolvedbinary.com) to build and upload new Docker Images for the latest release.
 
-4. Edit the links for the downloads on the eXist website.
+4. Update the Mac HomeBrew for eXist-db, see: [Releasing to Homebrew](https://github.com/eXist-db/exist/blob/develop/exist-versioning-release.md#releasing-to-homebrew).
+
+5. Edit the links for the downloads on the eXist website.
 
     1. `$ git clone https://github.com/exist-db/website.git`
     
@@ -218,7 +220,7 @@ Once development on a new stable version is complete, the following steps will p
          </a>
    ```
    
-    3. Edit the file `expath-pkg.xml` and modify `version="3.1.0"` to reflect the new version.
+    3. Edit the file `expath-pkg.xml` and bump the version i.e. `version="4"` to reflect the new version.
     
     4. Commit your change and push: `$ git commit index.html expath-pkg.xml -m "Update for eXist-3.1.0 website" && git push origin master`
     
@@ -228,17 +230,19 @@ Once development on a new stable version is complete, the following steps will p
     
     7. Visit http://www.exist-db.org/exist/apps/dashboard/index.html, login and upload the new `build/homepage.xar` file via the Package Manager.
 
-5. Login to the blog at http://exist-db.org/exist/apps/wiki/blogs/eXist/ and add a new news item which announces the release and holds the release notes. It should be named like http://exist-db.org/exist/apps/wiki/blogs/eXist/eXistdb310
+6. Login to the blog at http://exist-db.org/exist/apps/wiki/blogs/eXist/ and add a new news item which announces the release and holds the release notes. It should be named like http://exist-db.org/exist/apps/wiki/blogs/eXist/eXistdb310
 
-6. Visit the GitHub releases page https://github.com/eXist-db/exist/releases and create a new release, enter the tag you previously created and link the release notes from the blog and the binaries from BinTray.
+7. Visit the GitHub releases page https://github.com/eXist-db/exist/releases and create a new release, enter the tag you previously created and link the release notes from the blog and the binaries from BinTray.
 
-7. Send an email to the `exist-open` mailing list announcing the release with a title similar to `[ANN] Release of eXist 3.1.0`, copy and paste the release notes from the blog into the email and reformat appropriately (see past emails).
+8. Send an email to the `exist-open` mailing list announcing the release with a title similar to `[ANN] Release of eXist 3.1.0`, copy and paste the release notes from the blog into the email and reformat appropriately (see past emails).
 
-8. Tweet about it using the `existdb` twitter account.
+9. Tweet about it using the `existdb` twitter account.
 
-9. Submit a news item to XML.com - https://www.xml.com/news/submit-news-item/.
+10. Submit a news item to XML.com - https://www.xml.com/news/submit-news-item/.
 
-10. Go to GitHub and move all issues and PRs which are still open for the release milestone to the next release milestone. Close the release milestone.
+11. Update the Wikipedia page with the new version details - https://en.wikipedia.org/wiki/EXist.
+
+12. Go to GitHub and move all issues and PRs which are still open for the release milestone to the next release milestone. Close the release milestone.
 
 
 ### Preparing a Patch Release
