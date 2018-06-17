@@ -55,6 +55,7 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -192,7 +193,7 @@ public abstract class Modification extends AbstractExpression
                         final NodeHandle root = (NodeHandle) ((NodeProxy)item).getOwnerDocument().getDocumentElement();
                         item = new NodeProxy(root);
                     } else {
-                        item = (Item)((NodeValue) item).getOwnerDocument().getDocumentElement();
+                        item = (Item)((Document)item).getDocumentElement();
                     }
                 }
                 if (Type.subTypeOf(item.getType(), Type.NODE)) {
