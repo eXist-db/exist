@@ -1417,7 +1417,7 @@ public class RpcConnection implements RpcAPI {
 
                     sourceSupplier = () -> {
                         final FileInputSource source = new FileInputSource(sr.result);
-                        sr.result = null; // de-reference the VirtualTempFile in the SerializeResult
+                        sr.result = null; // de-reference the temp file in the SerializeResult, so it is not re-claimed before we need it
                         factory.resultSets.remove(handle);
                         return source;
                     };
