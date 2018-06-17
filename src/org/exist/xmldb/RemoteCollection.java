@@ -696,7 +696,7 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
             } catch (final IOException e) {
                 throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "failed to read resource from " + descString, e);
             } catch (final XmlRpcException e) {
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "networking error", e);
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "API error: " + e.getMessage(), e);
             }
         } finally {
             if(is != null) {
@@ -722,7 +722,7 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
         try {
             xmlRpcClientLease.get().execute("setTriggersEnabled", params);
         } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "networking error", e);
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "API error: " + e.getMessage(), e);
         }
     }
 }
