@@ -33,6 +33,7 @@ import com.evolvedbinary.j8fu.Either;
 import org.exist.validation.ValidationReport;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.validation.Shared;
+import org.exist.xquery.functions.fn.ParsingFunctions;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -49,6 +50,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Optional;
 
+@Deprecated
 
 public class Parse extends BasicFunction {
 
@@ -57,21 +59,18 @@ public class Parse extends BasicFunction {
 	private static final FunctionParameterSequenceType TO_BE_PARSED_PARAMETER = new FunctionParameterSequenceType( "to-be-parsed", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be parsed" );
 
 	private static final Logger logger = LogManager.getLogger(Parse.class);
-	/**
-		* @deprecated use parse-xml instead
-		*/		
+
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName( "parse", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-						"!This function will be deprecated in a future version!" +
-						"use parse-xml instead." +
-            "Parses the passed string value into an XML fragment. The string has to be " +
+						"Parses the passed string value into an XML fragment. The string has to be " +
             "well-formed XML. An empty sequence is returned if the argument is an " +
             "empty string or sequence. If the XML is not well-formed, the function throws an " +
             "error (EXXQDY0002). An XML-formatted description of the error is contained in the error value and " +
             "can be accessed using XQuery 3.0 try-catch statement.",
             new SequenceType[] { TO_BE_PARSED_PARAMETER },
-            RESULT_TYPE
+            RESULT_TYPE,
+            ParsingFunctions.signatures[0]
         ),
         new FunctionSignature(
             new QName( "parse-html", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
