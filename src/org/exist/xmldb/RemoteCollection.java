@@ -622,36 +622,37 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
                 chunk = new byte[MAX_UPLOAD_CHUNK];
             }
             try {
-                int len;
+
                 String fileName = null;
-                while ((len = is.read(chunk)) > -1) {
-                    final List<Object> params = new ArrayList<>();
-                    if (fileName != null) {
-                        params.add(fileName);
-                    }
+                if (chunk.length > 0) {
+                    int len;
+                    while ((len = is.read(chunk)) > -1) {
+                        final List<Object> params = new ArrayList<>();
+                        if (fileName != null) {
+                            params.add(fileName);
+                        }
 
                     /*
                     Only compress the chunk if it is larger than 256 bytes,
                     otherwise the compression framing overhead results in a larger chunk
                     */
-                    if (len < 256) {
-                        params.add(chunk);
-                        params.add(len);
-                        fileName = (String) xmlRpcClientLease.get().execute("upload", params);
-                    } else {
-                        final byte[] compressed = Compressor.compress(chunk, len);
-                        params.add(compressed);
-                        params.add(len);
-                        fileName = (String) xmlRpcClientLease.get().execute("uploadCompressed", params);
+                        if (len < 256) {
+                            params.add(chunk);
+                            params.add(len);
+                            fileName = (String) xmlRpcClientLease.get().execute("upload", params);
+                        } else {
+                            final byte[] compressed = Compressor.compress(chunk, len);
+                            params.add(compressed);
+                            params.add(len);
+                            fileName = (String) xmlRpcClientLease.get().execute("uploadCompressed", params);
+                        }
                     }
-                }
-                // Zero length stream? Let's get a fileName!
-                if (fileName == null) {
-                    final byte[] compressed = Compressor.compress(new byte[0], 0);
+                } else {
+                    // Zero length stream? Let's get a fileName!
                     final List<Object> params = new ArrayList<>();
-                    params.add(compressed);
+                    params.add(chunk);
                     params.add(0);
-                    fileName = (String) xmlRpcClientLease.get().execute("uploadCompressed", params);
+                    fileName = (String) xmlRpcClientLease.get().execute("upload", params);
                 }
 
                 final List<Object>params = new ArrayList<>();
@@ -695,7 +696,7 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
             } catch (final IOException e) {
                 throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "failed to read resource from " + descString, e);
             } catch (final XmlRpcException e) {
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "networking error", e);
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "API error: " + e.getMessage(), e);
             }
         } finally {
             if(is != null) {
@@ -721,7 +722,7 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
         try {
             xmlRpcClientLease.get().execute("setTriggersEnabled", params);
         } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "networking error", e);
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "API error: " + e.getMessage(), e);
         }
     }
 }

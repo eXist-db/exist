@@ -77,17 +77,21 @@ public class Compressor {
         }
     }
     
-    public static void uncompress(byte[] whatToUncompress, OutputStream os)
+    public static int uncompress(byte[] whatToUncompress, OutputStream os)
     throws IOException {
+        int written = 0;
         try (final FastByteArrayInputStream bais = new FastByteArrayInputStream(whatToUncompress);
              final ZipInputStream gzis = new ZipInputStream(bais)) {
             gzis.getNextEntry();    // move to the first entry in the zip stream!
             final byte[] buf = new byte[512];
             int bread;
-            while ((bread = gzis.read(buf)) != -1)
+            while ((bread = gzis.read(buf)) != -1) {
                 os.write(buf, 0, bread);
+                written += bread;
+            }
             gzis.closeEntry();
         }
+        return written;
     }
 }
 
