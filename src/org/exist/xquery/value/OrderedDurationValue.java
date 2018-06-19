@@ -182,7 +182,7 @@ abstract class OrderedDurationValue extends DurationValue {
 			return date.createSameKind(gc);
 		*/
             default:
-                throw new XPathException("err:XPTY0004: cannot substract " +
+                throw new XPathException(ErrorCodes.XPTY0004, "Cannot substract " +
                         Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " +
                         Type.getTypeName(getType()) + "('" + getStringValue() + "')");
         }

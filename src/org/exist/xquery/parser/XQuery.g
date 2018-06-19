@@ -1053,7 +1053,7 @@ pragma throws XPathException
 exception catch [RecognitionException e]
         {
             lexer.wsExplicit = false;
-            throw new XPathException("err:XPST0003: Parse error: " + e.getMessage() + " at line: " + e.getLine() + " column: " + e.getColumn());
+            throw new XPathException(ErrorCodes.XPST0003, "Parse error: " + e.getMessage() + " at line: " + e.getLine() + " column: " + e.getColumn());
         }
 	;
 
@@ -1671,7 +1671,7 @@ elementWithoutAttributes throws XPathException
         {
         	if (e.getMessage().contains("expecting XML end tag") || e.getMessage().contains("<")) {
             	lexer.wsExplicit = false;
-            	throw new XPathException(#q, "err:XPST0003: No closing end tag found for element constructor: " + name);
+            	throw new XPathException(#q, ErrorCodes.XPST0003, "No closing end tag found for element constructor: " + name);
             } else if (e.getMessage().contains("unexpected token")) {
 	        	throw new XPathException(e.getLine(), e.getColumn(), ErrorCodes.XPST0003, e.getMessage() +
 	        		" (while expecting closing tag for element constructor: " + name + ")");
@@ -1706,10 +1706,10 @@ elementWithAttributes throws XPathException
 			content:mixedElementContent END_TAG_START! cname=qn:qName! GT!
 			{
 				if (elementStack.isEmpty())
-					throw new XPathException(#qn, "err:XPST0003: Found closing tag without opening tag: " + cname);
+					throw new XPathException(#qn, ErrorCodes.XPST0003, "Found closing tag without opening tag: " + cname);
 				String prev= (String) elementStack.pop();
 				if (!prev.equals(cname))
-					throw new XPathException(#qn, "err:XPST0003: Found closing tag: " + cname + "; expected: " + prev);
+					throw new XPathException(#qn, ErrorCodes.XPST0003, "Found closing tag: " + cname + "; expected: " + prev);
 				#elementWithAttributes= #(#[ELEMENT, cname], #attrs);
 				if (!elementStack.isEmpty()) {
 					lexer.inElementContent= true;
@@ -1722,7 +1722,7 @@ elementWithAttributes throws XPathException
         {
         	if (e.getMessage().contains("expecting XML end tag") || e.getMessage().contains("<")) {
 	            lexer.wsExplicit = false;
-	            throw new XPathException(#q, "err:XPST0003: Static error: no closing end tag found for element constructor: " + name);
+	            throw new XPathException(#q, ErrorCodes.XPST0003, "Static error: no closing end tag found for element constructor: " + name);
 	        } else if (e.getMessage().contains("unexpected token")) {
 	        	throw new XPathException(e.getLine(), e.getColumn(), ErrorCodes.XPST0003, e.getMessage() +
 	        		" (while expecting closing tag for element constructor: " + name + ")");
