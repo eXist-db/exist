@@ -620,7 +620,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
 //              collection.addObserver(observer);
 //          }
 
-            try(final ManagedDocumentLock documentLock = broker.getBrokerPool().getLockManager().acquireDocumentWriteLock(resURI)) {
+            try(final ManagedDocumentLock documentLock = broker.getBrokerPool().getLockManager().acquireDocumentWriteLock(collection.getURI().append(resURI))) {
                 final IndexInfo info;
                 if (uri != null || res.inputSource != null) {
                     setupParser(broker, transaction, collection, res);
