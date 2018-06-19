@@ -86,7 +86,8 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
             throw new FileNotFoundException("Archive " + fileArchive.toAbsolutePath().toString() + " is not a valid eXist backup archive");
         }
 
-        if ((!base.startsWith("db/")) || (!Paths.get(base).normalize().startsWith(Paths.get("db/")))) {
+        final Path fakeDbRoot = Paths.get("/db");
+        if (!fakeDbRoot.resolve(Paths.get(base)).normalize().startsWith(fakeDbRoot)) {
             throw new IOException("Detected archive exit attack! zipFile=" + fileArchive.toAbsolutePath().normalize().toString());
         }
     }

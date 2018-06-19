@@ -1417,7 +1417,7 @@ public class RpcConnection implements RpcAPI {
 
                     sourceSupplier = () -> {
                         final FileInputSource source = new FileInputSource(sr.result);
-                        sr.result = null; // de-reference the VirtualTempFile in the SerializeResult
+                        sr.result = null; // de-reference the temp file in the SerializeResult, so it is not re-claimed before we need it
                         factory.resultSets.remove(handle);
                         return source;
                     };
@@ -1574,7 +1574,10 @@ public class RpcConnection implements RpcAPI {
 
         try (final OutputStream os = Files.newOutputStream(tempFile, openOptions)) {
             if (compressed) {
-                Compressor.uncompress(chunk, os);
+                final int uncompressedLen = Compressor.uncompress(chunk, os);
+                if (uncompressedLen != length) {
+                    throw new IOException("Expected " + length + " bytes of uncompressed data, but actually " + uncompressedLen);
+                }
             } else {
                 os.write(chunk, 0, length);
             }
