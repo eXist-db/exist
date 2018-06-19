@@ -1,10 +1,10 @@
 xquery version "1.0" encoding "UTF-8";
 module namespace u = "http://xproc.net/xproc/util";
-(: ------------------------------------------------------------------------------------- 
- 
+(: -------------------------------------------------------------------------------------
+
 	util.xqm - contains most of the XQuery processor specific functions, including all
 	helper functions.
-	
+
 ---------------------------------------------------------------------------------------- :)
 
 
@@ -96,7 +96,7 @@ declare function u:get-step($stepname as xs:string,$declarestep) {
     $const:std-steps/p:declare-step[@type=$stepname],
     $const:opt-steps/p:declare-step[@type=$stepname],
     $const:ext-steps/p:declare-step[@type=$stepname],
-    $const:comp-steps//xproc:element[@type=$stepname], 
+    $const:comp-steps//xproc:element[@type=$stepname],
     $declarestep/@type
 };
 
@@ -151,7 +151,7 @@ else
 
 (: -------------------------------------------------------------------------- :)
 declare function u:assert($booleanexp as item(), $why as xs:string)  {
-if(not($booleanexp) and boolean($u:NDEBUG)) then 
+if(not($booleanexp) and boolean($u:NDEBUG)) then
     u:dynamicError('err:XC0020',$why)
 else
     ()
@@ -160,7 +160,7 @@ else
 
 (: -------------------------------------------------------------------------- :)
 declare function u:assert($booleanexp as item(), $why as xs:string,$error)  {
-if(not($booleanexp) and boolean($u:NDEBUG)) then 
+if(not($booleanexp) and boolean($u:NDEBUG)) then
     error(QName('http://www.w3.org/ns/xproc-error',$error),concat("XProc Assert Error: ",$why))
 else
     ()
@@ -169,7 +169,7 @@ else
 
 (: -------------------------------------------------------------------------- :)
 declare function u:boolean($test as xs:string)  {
-if(contains($test,'false') ) then 
+if(contains($test,'false') ) then
     false()
 else
     true()
@@ -433,7 +433,7 @@ declare function u:xquery($query as xs:string){
 			    u:dynamicError('err:XD0001','query is empty and/or XProc step is not supported')
               else
                   $query
-    let $result := util:eval($qry)   
+    let $result := util:eval($qry)
     return
         $result
 };
@@ -472,8 +472,8 @@ else
     return
 	    util:eval-inline($xml,$query)
 		(:
-		if ( $result instance of element() or $result instance of document-node()) then 
-		
+		if ( $result instance of element() or $result instance of document-node()) then
+
 			u:dynamicError('err:XD0016',$xpathstring)
 			:)
 };
@@ -540,11 +540,11 @@ if ($strict eq '1') then
 let $e1 := (for $child in $primary/*
 		 return
 			$child)
-			
+
 let $e2 := (for $child in $secondary/*
 			return
 				$child)
-				
+
 return
 
 every $i in 1 to max((count($e1),count($e2)))
@@ -556,11 +556,11 @@ else
 let $e1 := (for $child in $primary/*
 		 return
 			u:treewalker($child))
-			
+
 let $e2 := (for $child in $secondary/*
 			return
 				u:treewalker($child))
-				
+
 return
 
 every $i in 1 to max((count($e1),count($e2)))
@@ -576,11 +576,11 @@ element {node-name($element)}
 
        for $child in $element/node()
            return
-            if ($child instance of element()) then 
+            if ($child instance of element()) then
 					u:treewalker($child)
-              else 
+              else
 					normalize-space($child)
-															
+
    }
 };
 
@@ -612,9 +612,9 @@ declare function u:copy-filter-elements($element as element(), $element-name as 
 declare function u:rename-inline-element($element as element(),$match,$newelement) as element() {
    element {if(string(node-name($element)) = string($match)) then node-name($newelement) else node-name($element)}
       {$element/@*,
-       if(string(node-name($element)) = $match) then 
+       if(string(node-name($element)) = $match) then
 				($newelement/@*)
-		else 
+		else
 			(),
           for $child in $element/node()
               return
@@ -628,9 +628,9 @@ declare function u:delete-matching-elements($element as element(),$select) as el
    element {node-name($element)}
       {$element/@*[not(. intersect $select)],
           for $child in $element/node()[not(. intersect $select)]
-              return                             
+              return
                if ($child instance of element())
-                 then 
+                 then
                      u:delete-matching-elements($child,$select)
                  else
                      $child
@@ -643,7 +643,7 @@ declare function u:replace-matching-elements($element as element(),$select,$repl
    element {node-name($element)}
       {$element/@*,
           for $child in $element/node()
-              return                   
+              return
               if ($child instance of element())
                 then
             		if ($child intersect $select) then
@@ -658,7 +658,7 @@ declare function u:replace-matching-elements($element as element(),$select,$repl
     			    else
                         u:replace-matching-elements($child,$select,$replace)
                 else
-                    $child          		
+                    $child
       }
 };
 
@@ -666,7 +666,7 @@ declare function u:insert-matching-elements($element as element(),$select,$repla
    element {node-name($element)}
       {$element/@*,
           for $child in $element/node()
-              return                   
+              return
               if ($child instance of element())
                 then
             		if ($child intersect $select) then
@@ -674,12 +674,12 @@ declare function u:insert-matching-elements($element as element(),$select,$repla
 							($replace,u:insert-matching-elements($child,$select,$replace,$position))
 						else if($position eq 'after' or $position eq 'last-child') then
 							(u:insert-matching-elements($child,$select,$replace,$position),$replace)
-						else	
+						else
 							u:insert-matching-elements($child,$select,$replace,$position)
     			    else
                         u:insert-matching-elements($child,$select,$replace,$position)
                 else
-                    $child          		
+                    $child
       }
 };
 
@@ -689,16 +689,16 @@ declare function u:rename-matching-elements($element as element(),$select,$new-n
    element {node-name($element)}
       {$element/@*,
           for $child in $element/node()
-              return                   
+              return
               if ($child instance of element())
                 then
             		if ($child intersect $select) then
 				   		element {$new-name}{$child/*
-						}						
+						}
     			    else
                         u:rename-matching-elements($child,$select,$new-name)
                 else
-                    $child          		
+                    $child
       }
 };
 
@@ -706,17 +706,17 @@ declare function u:wrap-matching-elements($element as element(),$select,$wrapper
    element {node-name($element)}
       {$element/@*,
           for $child in $element/node()
-              return                   
+              return
               if ($child instance of element())
                 then
             		if ($child intersect $select) then
 				   		element {$wrapper}{
                         	u:wrap-matching-elements($child,$select,$wrapper)
-						}						
+						}
     			    else
                         u:wrap-matching-elements($child,$select,$wrapper)
                 else
-                    $child          		
+                    $child
       }
 };
 
@@ -724,7 +724,7 @@ declare function u:unwrap-matching-elements($element as element(),$select) as el
    element {node-name($element)}
       {$element/@*,
           for $child in $element/node()
-              return                   
+              return
               if ($child instance of element())
                 then
             		if ($child intersect $select) then
@@ -732,7 +732,7 @@ declare function u:unwrap-matching-elements($element as element(),$select) as el
     			    else
                         u:unwrap-matching-elements($child,$select)
                 else
-                    $child          		
+                    $child
       }
 };
 
@@ -740,18 +740,18 @@ declare function u:label-matching-elements($element as element(),$select,$attrib
    element {node-name($element)}
       {$element/@*,
           for $child at $pos in $element/node()
-              return                   
+              return
               if ($child instance of element())
                 then
             		if ($child intersect $select) then
-				   element {node-name($child)}{    
+				   element {node-name($child)}{
 				        attribute {$attribute} {$label,"_",$pos},
                    		u:label-matching-elements($child,$select,$attribute,$label,$replace)
-						}	
+						}
     			    else
                         u:label-matching-elements($child,$select,$attribute,$label,$replace)
                 else
-                    $child          		
+                    $child
       }
 };
 
@@ -759,18 +759,18 @@ declare function u:label-matching-elements($element as element(),$select,$attrib
    element {node-name($element)}
       {$element/@*,
           for $child at $pos in $element/node()
-              return                   
+              return
               if ($child instance of element())
                 then
             		if ($child intersect $select) then
-				   element {node-name($child)}{    
+				   element {node-name($child)}{
 				        attribute {$attribute} {$label,"_",$pos},
                    		u:label-matching-elements($child,$select,$attribute,$label,$replace)
-						}	
+						}
     			    else
                         u:label-matching-elements($child,$select,$attribute,$label,$replace)
                 else
-                    $child          		
+                    $child
       }
 };
 
@@ -778,7 +778,7 @@ declare function u:add-attribute-matching-elements($element as element(),$select
    element {node-name($element)}
       {$element/@*,
           for $child at $pos in $element/node()
-              return                   
+              return
               if ($child instance of element())
                 then
 
@@ -788,17 +788,17 @@ declare function u:add-attribute-matching-elements($element as element(),$select
 				        	attribute {$attribute} {$label},
 							if ($child/node() instance of text()) then
 								$child/text()
-							else if ($child/node() instance of element()) then						
+							else if ($child/node() instance of element()) then
                					u:add-attribute-matching-elements($child,$select,$attribute,$label)
 							else
 								$child/*
-						}	
+						}
     			    else
                         u:add-attribute-matching-elements($child,$select,$attribute,$label)
-                
+
 				else if ($child/node() instance of text()) then
                     $child/text()
-          		else 
+          		else
 					$child
       }
 };
@@ -807,18 +807,18 @@ declare function u:add-attributes-matching-elements($element as element(),$selec
    element {node-name($element)}
       {$element/@*,
           for $child at $pos in $element/node()
-              return                   
+              return
               if ($child instance of element())
                 then
             		if ($child intersect $select) then
 				   element {node-name($child)}{
 				    	$attributes,
                    		u:add-attributes-matching-elements($child,$select,$attributes)
-						}	
+						}
     			    else
                         u:add-attributes-matching-elements($child,$select,$attributes)
                 else
-                    $child          		
+                    $child
       }
 };
 
@@ -827,7 +827,7 @@ declare function u:string-replace-matching-elements($element as element(),$selec
    element {node-name($element)}
       {$element/@*,
           for $child at $pos in $element/node()
-              return                   
+              return
               if ($child instance of element()) then
         			if ($child intersect $select) then
     	    			(util:log('info','attribute logged'),string($replace))
@@ -888,7 +888,7 @@ declare function u:declare-used-namespaces ( $root as node()? )  as xs:anyURI* {
 let $namespaces :=   (distinct-values($root/descendant-or-self::*/(.|@*)/namespace-uri(.)) )
 return
 for $namespace at $pos in $namespaces
-return 
+return
     let $ns := concat('ns',$pos)
     return
         util:declare-namespace($ns,$namespace)
@@ -900,7 +900,7 @@ let $prefix :=   (distinct-values($root/descendant-or-self::*/(.|@*)/substring-b
 let $namespaces :=   (distinct-values($root/descendant-or-self::*/(.|@*)/namespace-uri(.)) )
 return
 for $namespace at $pos in $namespaces
-	return 
+	return
 	 if ($namespace eq 'http://www.w3.org/XML/1998/namespace') then
 		()
 	 else if ($namespace eq 'http://www.w3.org/ns/xproc-step') then
@@ -917,15 +917,15 @@ let $prefix :=   (distinct-values($root/descendant-or-self::*/(.|@*)/substring-b
 let $namespaces :=   (distinct-values($root/descendant-or-self::*/(.|@*)/namespace-uri(.)) )
 return
 for $namespace at $pos in $namespaces
-    return 
-        
+    return
+
 		let $ns := $prefix[$pos - 1]
     			return
             if ($namespace eq '') then
                 ()
 			else if ($namespace eq 'http://www.w3.org/XML/1998/namespace') then
 				()
-            else if ($ns) then 	
+            else if ($ns) then
        			concat('declare namespace ',$ns,'="',$namespace,'";')
             else
                 concat('declare default element namespace "',$namespace,'";')
@@ -948,12 +948,13 @@ declare function u:serialize($xml,$options){
 
 
 (: -------------------------------------------------------------------------- :)
+(: TODO schedule for deprecation ? use fn:parse-xml instead :)
 declare function u:parse-string($string) as item()*{
     util:parse($string)
 };
 
 (: -------------------------------------------------------------------------- :)
-declare function u:map($func, $seqA as item()*, $seqB as item()*) 
+declare function u:map($func, $seqA as item()*, $seqB as item()*)
 as item()* {
 	if(count($seqA) != count($seqB)) then ()
 	else
@@ -964,7 +965,7 @@ as item()* {
 };
 
 (: -------------------------------------------------------------------------- :)
-declare function u:filter($func, $seq as item()*) 
+declare function u:filter($func, $seq as item()*)
 as item()* {
 	for $i in $seq
 	return
@@ -984,7 +985,7 @@ declare function u:printstep ($step,$meta,$value) {
 (: -------------------------------------------------------------------------- :)
 
 declare function u:strip-namespace($e as element()) as element() {
-  
+
    element {QName((),local-name($e))} {
     for $child in $e/(@*,node())
     return
@@ -1034,5 +1035,3 @@ declare function u:step-fold( $pipeline,
                     $result[last()],
                     ($outputs,$result))
 };
-
-

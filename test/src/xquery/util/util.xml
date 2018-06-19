@@ -30,7 +30,7 @@ declare function testmodule:test() {
         <task>util:base-to-integer</task>
         <code>util:base-to-integer(0755, 8)</code>
         <expected>493</expected>
-    </test>       
+    </test>
     <test output="text">
         <task>util:base64-encode</task>
         <code>util:base64-encode('existdb XML database rocks')</code>
@@ -186,11 +186,11 @@ testmodule:test()
         <code>
 util:eval("
 let $null := util:import-module(xs:anyURI('http://example.com/test-a'), 'testmodule', xs:anyURI('xmldb:exist:///db/util-test/test.xqm'))
-return util:eval('testmodule:test()')            
+return util:eval('testmodule:test()')
 ")
 </code>
         <expected>1</expected>
-    </test>    
+    </test>
 
     <test output="text">
         <task>util:index-type</task>
@@ -211,7 +211,7 @@ return
 util:node-xpath($a)</code>
         <expected>/test/para</expected>
     </test>
-
+<!-- TODO deprecate, replace with parse-xml -->
     <test output="text">
         <task>util:parse</task>
         <code>util:parse('&lt;test attr="aaa"/&gt;')</code>
