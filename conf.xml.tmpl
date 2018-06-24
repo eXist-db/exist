@@ -749,12 +749,17 @@
 
     <!--
         Default settings for the XSLT Transformer. Allow's for a choice of 
-        implementation:
+        implementation. The default in eXist-db is Saxon HE for XSLT. You
+        can use any implementation which implements the Java TrAX API. You
+        can also substitute Saxon HE, for PE or EE (assuming you have the
+        appropriate Saxon license). Only one XSLT TrAX implemetation should
+        be present in lib/endorsed; If you wish to use something other than
+        Saxon HE, please ensure the Jar files are present.
         
         - class:
             the name of the class that implements javax.xml.transform.TransformerFactory
             
-            for Saxon (XSLT 2.0 support):
+            for Saxon HE (XSLT 1.0, 2.0, 3.0, and 3.1 support):
             - "net.sf.saxon.TransformerFactoryImpl"
             
             for Xalan (XSLT 1.0 support):
