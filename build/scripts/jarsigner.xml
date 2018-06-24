@@ -62,6 +62,9 @@
             <fileset dir="lib/extensions">
                 <include name="*.jar"/>
             </fileset>
+            <fileset dir="tools/jetty/lib">
+                <include name="javax.annotation-api-*.jar"/>
+            </fileset>        
         </signjar>
     </target>
     
@@ -134,6 +137,9 @@
             <fileset dir="lib/extensions" erroronmissingdir="false">
                 <include name="*.jar"/>
             </fileset>
+            <fileset dir="tools/jetty/lib">
+                <include name="javax.annotation-api-*.jar"/>
+            </fileset>  
         </unsignjar>
     </target>
     
@@ -181,7 +187,7 @@
             </fileset>
             <fileset dir="lib/core">
                 <include name="*.jar"/>
-            </fileset>
+            </fileset> 
         </pack>
     </target> 
     
