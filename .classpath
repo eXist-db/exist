@@ -132,7 +132,6 @@
 	<classpathentry kind="lib" path="lib/core/jackson-core-2.9.5.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/Saxon-HE-9.8.0-12.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/serializer-2.7.2.jar"/>
-	<classpathentry kind="lib" path="lib/endorsed/xalan-2.7.2.jar"/>
 	<classpathentry kind="lib" path="lib/test/junit-4.12.jar"/>
 	<classpathentry kind="lib" path="lib/test/junit-toolbox-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/test/objenesis-2.2.jar"/>

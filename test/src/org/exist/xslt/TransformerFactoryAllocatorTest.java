@@ -2,10 +2,15 @@ package org.exist.xslt;
 
 import java.util.Arrays;
 import java.util.Collection;
+
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Parameterized;
 import org.junit.runner.RunWith;
-import java.util.Hashtable;
+import java.util.Properties;
+
 import org.exist.util.Configuration;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import org.easymock.EasyMock;
@@ -16,6 +21,8 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.verify;
 import static org.easymock.EasyMock.replay;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeThat;
+
 import org.junit.runners.Parameterized.Parameter;
 
 /**
@@ -38,7 +45,9 @@ public class TransformerFactoryAllocatorTest {
     @Test
     public void getTransformerFactory() {
 
-        final  Hashtable<String,Object> testAttributes = new Hashtable<String,Object>();
+        assumeThat("Requires transformer factory '" + transformerFactoryClass + "' to be present on the classpath", transformerFactoryClass, isOnClasspath());
+
+        final Properties testAttributes = new Properties();
 
         BrokerPool mockBrokerPool = EasyMock.createMock(BrokerPool.class);
         Configuration mockConfiguration = EasyMock.createMock(Configuration.class);
@@ -54,5 +63,42 @@ public class TransformerFactoryAllocatorTest {
         assertEquals(transformerFactoryClass, transformerFactory.getClass().getName());
 
         verify(mockBrokerPool, mockConfiguration);
+    }
+
+    private static Matcher<String> isOnClasspath() {
+        return new IsOnClasspath();
+    }
+
+    /**
+     * Matcher that only matches if the name of the
+     * class to match is present on the classpath.
+     */
+    private static class IsOnClasspath extends BaseMatcher<String> {
+        private String expectedClassOnClasspath;
+
+        @Override
+        public boolean matches(final Object o) {
+            if (o == null) {
+                return false;
+            }
+
+            expectedClassOnClasspath = o.toString();
+
+            if (!(o instanceof String)) {
+                return false;
+            }
+
+            try {
+                Class.forName((String)o);
+                return true;
+            } catch (final ClassNotFoundException e) {
+                return false;
+            }
+        }
+
+        @Override
+        public void describeTo(final Description description) {
+            description.appendText("classpath to contain class " + expectedClassOnClasspath);
+        }
     }
 }
