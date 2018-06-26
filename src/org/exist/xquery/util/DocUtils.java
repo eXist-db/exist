@@ -19,13 +19,9 @@
  */
 package org.exist.xquery.util;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.ConnectException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
+import java.net.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,8 +35,10 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
@@ -51,6 +49,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
+
+import javax.annotation.Nullable;
 
 /**
  * Utilities for XPath doc related functions
@@ -67,6 +67,7 @@ public class DocUtils {
         return getDocumentByPath(context, path);
     }
 
+    //TODO(AR) could make this much more efficient... it doesn't need to actually retrieve the document!
     public static boolean isDocumentAvailable(final XQueryContext context, final String path) throws XPathException {
         try {
             final Sequence seq = getDocumentByPath(context, path);
@@ -78,12 +79,36 @@ public class DocUtils {
     }
 
     private static Sequence getDocumentByPath(final XQueryContext context, final String path) throws XPathException, PermissionDeniedException {
-        if (path.matches("^[a-z]+:.*") && !path.startsWith("xmldb:")) {
-            /* URL */
-            return getDocumentByPathFromURL(context, path);
-        } else {
-            /* Database documents */
-            return getDocumentByPathFromDB(context, path);
+        Sequence doc = getFromDynamicallyAvailableDocuments(context, path);
+        if (doc == null) {
+            if (path.matches("^[a-z]+:.*") && !path.startsWith("xmldb:")) {
+                /* URL */
+                doc = getDocumentByPathFromURL(context, path);
+            } else {
+                /* Database documents */
+                doc = getDocumentByPathFromDB(context, path);
+            }
+        }
+
+        return doc;
+    }
+
+    private static @Nullable Sequence getFromDynamicallyAvailableDocuments(final XQueryContext context, final String path) throws XPathException {
+        try {
+            URI uri = new URI(path);
+            if (!uri.isAbsolute()) {
+                final AnyURIValue baseXdmUri = context.getBaseURI();
+                if (baseXdmUri != null && !baseXdmUri.equals(AnyURIValue.EMPTY_URI)) {
+                    URI baseUri = baseXdmUri.toURI();
+                    if (!baseUri.toString().endsWith("/")) {
+                        baseUri = new URI(baseUri.toString() + '/');
+                    }
+                    uri = baseUri.resolve(uri);
+                }
+            }
+            return context.getDynamicallyAvailableDocument(uri.toString());
+        } catch (final URISyntaxException e) {
+            throw new XPathException(context.getRootExpression(), ErrorCodes.FODC0005, e);
         }
     }
 
