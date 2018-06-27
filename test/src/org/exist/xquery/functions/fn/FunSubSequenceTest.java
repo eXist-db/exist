@@ -36,7 +36,6 @@ public class FunSubSequenceTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(true, true);
 
-
     @Test
     public void all_arity2() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery("fn:subsequence((1 to 5), 1)");
@@ -143,6 +142,18 @@ public class FunSubSequenceTest {
     public void negativeStartingLoc_arity3() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery("fn:subsequence((1 to 5), -2, 5)");
         assertEquals("(1,2)", asSequenceStr(result));
+    }
+
+    @Test
+    public void smallPartOfLargeRange_arity2() throws XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery("fn:subsequence((1 to 3000000000), 2999999995)");
+        assertEquals("(2999999995,2999999996,2999999997,2999999998,2999999999,3000000000)", asSequenceStr(result));
+    }
+
+    @Test
+    public void smallPartOfLargeRange_arity3() throws XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery("fn:subsequence((1 to 3000000000), 2999999995, 5)");
+        assertEquals("(2999999995,2999999996,2999999997,2999999998,2999999999)", asSequenceStr(result));
     }
 
     private static String asSequenceStr(final ResourceSet result) throws XMLDBException {
