@@ -189,7 +189,7 @@ public class DoubleValue extends NumericValue {
                 if (value > Integer.MAX_VALUE) {
                     throw new XPathException(ErrorCodes.FOCA0003, "Value is out of range for type xs:integer");
                 }
-                return new IntegerValue((long) value, requiredType);
+                return new IntegerValue(Double.valueOf(value).longValue(), requiredType);
             case Type.BOOLEAN:
                 return new BooleanValue(this.effectiveBooleanValue());
             default:
@@ -209,7 +209,7 @@ public class DoubleValue extends NumericValue {
 
     @Override
     public int getInt() {
-        return (int) Math.round(value);
+        return Long.valueOf(Math.round(value)).intValue();
     }
 
     @Override
