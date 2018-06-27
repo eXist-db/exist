@@ -726,18 +726,14 @@ public class Deployment {
         return errors;
     }
 
-    private boolean isResourceDir(XmldbURI target, InMemoryNodeSet resources) {
+    private boolean isResourceDir(final XmldbURI target, final InMemoryNodeSet resources) {
         // iterate here or pass into scandirectory directly or even save as class property???
-        try {
-            for (final SequenceIterator i = resources.iterate(); i.hasNext(); ) {
-                final ElementImpl child = (ElementImpl) i.nextItem();
-                final String resourcePath = child.getAttribute(RESOURCES_PATH_ATTRIBUTE);
-                if (target.toString().endsWith(resourcePath)) {
-                    return true;
-                }
+        for (final SequenceIterator i = resources.iterate(); i.hasNext(); ) {
+            final ElementImpl child = (ElementImpl) i.nextItem();
+            final String resourcePath = child.getAttribute(RESOURCES_PATH_ATTRIBUTE);
+            if (target.toString().endsWith(resourcePath)) {
+                return true;
             }
-        } catch (XPathException e) {
-            LOG.warn("Caught exception while reading resource list in repo.xml: " + e.getMessage(), e);
         }
         return false;
     }

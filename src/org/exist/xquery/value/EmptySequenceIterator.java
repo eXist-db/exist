@@ -20,20 +20,15 @@
  */
 package org.exist.xquery.value;
 
-public class EmptySequenceIterator implements SequenceIterator {
+public final class EmptySequenceIterator implements SequenceIterator {
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.SequenceIterator#hasNext()
-     */
+    @Override
     public boolean hasNext() {
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.SequenceIterator#nextItem()
-     */
+    @Override
     public Item nextItem() {
         return null;
     }
-
 }

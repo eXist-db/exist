@@ -161,13 +161,13 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     }
 
     @Override
-    public SequenceIterator iterate() throws XPathException {
+    public SequenceIterator iterate() {
         sortInDocumentOrder();
         return new NewArrayIterator();
     }
 
     @Override
-    public SequenceIterator unorderedIterator() throws XPathException {
+    public SequenceIterator unorderedIterator() {
         if(!isSorted()) {
             sort();
         }
@@ -1109,9 +1109,8 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         }
     }
 
-    private class NewArrayIterator implements NodeSetIterator, SequenceIterator {
-
-        int pos = 0;
+    protected class NewArrayIterator implements NodeSetIterator, SequenceIterator {
+        private int pos = 0;
 
         @Override
         public final boolean hasNext() {

@@ -200,12 +200,12 @@ public class SortedNodeSet extends AbstractNodeSet {
     }
 
     @Override
-    public SequenceIterator iterate() throws XPathException {
+    public SequenceIterator iterate() {
         return new SortedNodeSetIterator(list.iterator());
     }
 
     @Override
-    public SequenceIterator unorderedIterator() throws XPathException {
+    public SequenceIterator unorderedIterator() {
         return new SortedNodeSetIterator(list.iterator());
     }
 

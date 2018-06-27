@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU Library General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
+ *
  *  $Id$
  */
 package org.exist.xquery.value;
@@ -25,51 +25,48 @@ import org.exist.xquery.XPathException;
 
 public class EmptySequence extends AbstractSequence {
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#getItemType()
-     */
+    @Override
     public int getItemType() {
         return Type.EMPTY;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#iterate()
-     */
-    public SequenceIterator iterate() throws XPathException {
+    @Override
+    public SequenceIterator iterate() {
         return EmptySequenceIterator.EMPTY_ITERATOR;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AbstractSequence#unorderedIterator()
-     */
-    public SequenceIterator unorderedIterator() throws XPathException {
+    @Override
+    public SequenceIterator unorderedIterator() {
         return EmptySequenceIterator.EMPTY_ITERATOR;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#getItemCount()
-     */
+    @Override
     public int getItemCount() {
         return 0;
     }
 
+    @Override
     public Item itemAt(int pos) {
         return null;
     }
 
+    @Override
     public boolean isEmpty() {
         return true;
     }
 
+    @Override
     public boolean hasOne() {
         return false;
     }
 
-    public void add(Item item) throws XPathException {
+    @Override
+    public void add(final Item item) throws XPathException {
         throw new XPathException("cannot add an item to an empty sequence");
     }
 
-    public AtomicValue convertTo(int requiredType) throws XPathException {
+    @Override
+    public AtomicValue convertTo(final int requiredType) throws XPathException {
         switch (requiredType) {
             case Type.BOOLEAN:
                 return new BooleanValue(false);
@@ -80,24 +77,22 @@ public class EmptySequence extends AbstractSequence {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#toNodeSet()
-     */
-    public NodeSet toNodeSet() throws XPathException {
+    @Override
+    public NodeSet toNodeSet() {
         return NodeSet.EMPTY_SET;
     }
 
-    public MemoryNodeSet toMemNodeSet() throws XPathException {
+    @Override
+    public MemoryNodeSet toMemNodeSet() {
         return MemoryNodeSet.EMPTY;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#removeDuplicates()
-     */
+    @Override
     public void removeDuplicates() {
         // nothing to do
     }
 
+    @Override
     public String toString() {
         return "()";
     }
