@@ -150,4 +150,19 @@ public class RangeSequence extends AbstractSequence {
     @Override
     public void removeDuplicates() {
     }
+
+	/**
+	 * Generates a string representation of the Range Sequence.
+	 *
+	 * Range sequences can potentially be
+	 * very large, so we generate a summary here
+	 * rather than evaluating to generate a (possibly)
+	 * huge sequence of objects.
+	 *
+	 * @return a string representation of the range sequence.
+	 */
+	@Override
+	public String toString() {
+		return "Range(" + start + " to " + end + ")";
+	}
 }
