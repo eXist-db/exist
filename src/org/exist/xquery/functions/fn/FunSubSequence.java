@@ -25,15 +25,7 @@ import org.exist.dom.persistent.ExtArrayNodeSet;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
-import org.exist.xquery.value.DoubleValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 /**
  * Implements the fn:subsequence function.
@@ -110,14 +102,14 @@ public class FunSubSequence extends Function {
         if (seq.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
-            int start = ((DoubleValue) getArgument(1).eval(contextSequence,
-                    contextItem).convertTo(Type.DOUBLE)).getInt();
+            long start = ((IntegerValue)getArgument(1).eval(contextSequence,
+                    contextItem).convertTo(Type.INTEGER)).getLong();
 
-            int length = Integer.MAX_VALUE;
+            long length = Integer.MAX_VALUE;
             if (getSignature().getArgumentCount() == 3) {
-                length = ((DoubleValue) getArgument(2).eval(
+                length = ((IntegerValue) getArgument(2).eval(
                         contextSequence, contextItem)
-                        .convertTo(Type.DOUBLE)).getInt();
+                        .convertTo(Type.INTEGER)).getLong();
             }
 
             // TODO : exception? -pb
@@ -142,12 +134,12 @@ public class FunSubSequence extends Function {
 
             // move to start
             final SequenceIterator iterator = seq.iterate();
-            for (int i = 0; i < start; i++) {
+            for (long i = 0; i < start; i++) {
                 iterator.nextItem();
             }
 
             // copy from start to end
-            int i = 0;
+            long i = 0;
             while (iterator.hasNext() && i < length) {
                 final Item item = iterator.nextItem();
                 tmp.add(item);
