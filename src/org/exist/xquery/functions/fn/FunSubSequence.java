@@ -102,51 +102,67 @@ public class FunSubSequence extends Function {
         if (seq.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
-            long start = ((IntegerValue)getArgument(1).eval(contextSequence,
-                    contextItem).convertTo(Type.INTEGER)).getLong();
 
-            long length = Integer.MAX_VALUE;
-            if (getSignature().getArgumentCount() == 3) {
-                length = ((IntegerValue) getArgument(2).eval(
-                        contextSequence, contextItem)
-                        .convertTo(Type.INTEGER)).getLong();
-            }
+            final long startArg = ((IntegerValue)getArgument(1).eval(contextSequence, contextItem).convertTo(Type.INTEGER)).getLong();
+            final long toExclusive;
+            if (getArgumentCount() == 3) {
+                /*
+                    From: https://www.w3.org/TR/xpath-functions-31/#func-subsequence
 
-            // TODO : exception? -pb
-            if (start < 0) {
-                length = length + start - 1;
-                start = 0;
-            } else if (start == 0) {
-                --length;
-                --start;
+                    $sourceSeq[fn:round($startingLoc) le position()
+                            and position() lt fn:round($startingLoc) + fn:round($length)]
+                 */
+                final long lengthArg = ((IntegerValue) getArgument(2).eval(contextSequence, contextItem).convertTo(Type.INTEGER)).getLong();
+                toExclusive = startArg + lengthArg;
             } else {
-                --start;
+                /*
+                    From: https://www.w3.org/TR/xpath-functions-31/#func-subsequence
+
+                    $sourceSeq[fn:round($startingLoc) le position()]
+                 */
+                toExclusive = Long.MAX_VALUE;   // we can't travel past Long.MAX_VALUE (...at the moment!)
             }
 
-            final Sequence tmp;
-            if (seq instanceof NodeSet) {
-                tmp = new ExtArrayNodeSet();
-                ((ExtArrayNodeSet) tmp).keepUnOrdered(unordered);
+            //TODO(AR) are there shortcuts where we can determine that the result is an empty-sequence from the args
+
+            // we can't start before the first item
+            final long fromInclusive;
+            if (startArg <= 0) {
+                fromInclusive = 1;
             } else {
-                tmp = new ValueSequence();
-                ((ValueSequence) tmp).keepUnOrdered(unordered);
+                fromInclusive = startArg;
             }
+
+            // holds the intermittent result
+            Sequence tmp = Sequence.EMPTY_SEQUENCE;
 
             // move to start
             final SequenceIterator iterator = seq.iterate();
-            for (long i = 0; i < start; i++) {
+            long position = 1;
+            for (; position < fromInclusive; position++) {
                 iterator.nextItem();
             }
 
             // copy from start to end
-            long i = 0;
-            while (iterator.hasNext() && i < length) {
+            while (iterator.hasNext() && position < toExclusive) {
                 final Item item = iterator.nextItem();
+
+                // lazily initialize tmp
+                if (tmp == Sequence.EMPTY_SEQUENCE) {
+                    if (seq instanceof NodeSet) {
+                        tmp = new ExtArrayNodeSet();
+                        ((ExtArrayNodeSet) tmp).keepUnOrdered(unordered);
+                    } else {
+                        tmp = new ValueSequence();
+                        ((ValueSequence) tmp).keepUnOrdered(unordered);
+                    }
+                }
+
                 tmp.add(item);
-                i++;
+                position++;
             }
 
-            result = i > 0 ? tmp : Sequence.EMPTY_SEQUENCE;
+            result = tmp;
         }
 
         if (context.getProfiler().isEnabled()) {
