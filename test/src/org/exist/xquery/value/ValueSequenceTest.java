@@ -13,10 +13,13 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.XPathException;
 import org.junit.*;
 
 import javax.xml.XMLConstants;
 import java.util.Optional;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -61,5 +64,75 @@ public class ValueSequenceTest {
             //call sort
             seq.sortInDocumentOrder();
         }
+    }
+
+    @Test
+    public void iterate_loop() throws XPathException {
+        final ValueSequence valueSequence = mockValueSequence(99);
+
+        final SequenceIterator it = valueSequence.iterate();
+        int count = 0;
+        while (it.hasNext()) {
+            it.nextItem();
+            count++;
+        }
+
+        assertEquals(99, count);
+    }
+
+    @Test
+    public void iterate_skip_loop() throws XPathException {
+        final ValueSequence valueSequence = mockValueSequence(99);
+        final SequenceIterator it = valueSequence.iterate();
+
+        assertEquals(99, it.skippable());
+
+        assertEquals(10, it.skip(10));
+
+        assertEquals(89, it.skippable());
+
+        int count = 0;
+        while (it.hasNext()) {
+            it.nextItem();
+            count++;
+        }
+
+        assertEquals(89, count);
+    }
+
+    @Test
+    public void iterate_loop_skip_loop() throws XPathException {
+        final ValueSequence valueSequence = mockValueSequence(99);
+        final SequenceIterator it = valueSequence.iterate();
+
+        int len = 20;
+        int count = 0;
+        for (int i = 0; it.hasNext() && i < len; i++) {
+            it.nextItem();
+            count++;
+        }
+        assertEquals(20, count);
+
+        assertEquals(79, it.skippable());
+
+        assertEquals(10, it.skip(10));
+
+        assertEquals(69, it.skippable());
+
+        count = 0;
+        while (it.hasNext()) {
+            it.nextItem();
+            count++;
+        }
+
+        assertEquals(69, count);
+    }
+
+    private static ValueSequence mockValueSequence(final int size) throws XPathException {
+        final ValueSequence valueSequence = new ValueSequence();
+        for (int i = 0; i < size; i++) {
+            valueSequence.add(new StringValue(String.valueOf(i), Type.STRING));
+        }
+        return valueSequence;
     }
 }

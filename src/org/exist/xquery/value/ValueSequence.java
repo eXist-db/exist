@@ -903,6 +903,21 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             }
             return null;
         }
+
+        @Override
+        public long skippable() {
+            if (pos <= size) {
+                return size - pos + 1;
+            }
+            return 0;
+        }
+
+        @Override
+        public long skip(final long n) {
+            final long skip = Math.min(n, pos <= size ? size - pos + 1 : 0);
+            pos += skip;
+            return skip;
+        }
     }
 
     private class ReverseValueSequenceIterator implements SequenceIterator {
@@ -919,6 +934,21 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
                 return values[pos--];
             }
             return null;
+        }
+
+        @Override
+        public long skippable() {
+            if (pos >= 0) {
+                return size - pos;
+            }
+            return 0;
+        }
+
+        @Override
+        public long skip(final long n) {
+            final long skip = Math.min(n, pos >= 0 ? size - pos : 0);
+            pos -= skip;
+            return skip;
         }
     }
 }
