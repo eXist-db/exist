@@ -207,5 +207,20 @@ public class PreorderedValueSequence extends AbstractSequence {
             }
             return null;
         }
+
+        @Override
+        public long skippable() {
+            if (pos < nodes.length) {
+                return nodes.length - pos;
+            }
+            return 0;
+        }
+
+        @Override
+        public long skip(final long n) {
+            final long skip = Math.min(n, pos < nodes.length ? nodes.length - pos : 0);
+            pos += skip;
+            return skip;
+        }
     }
 }

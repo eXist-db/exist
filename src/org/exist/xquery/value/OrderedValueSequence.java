@@ -418,5 +418,20 @@ public class OrderedValueSequence extends AbstractSequence {
             }
             return null;
         }
+
+        @Override
+        public long skippable() {
+            if (pos < count) {
+                return count - pos;
+            }
+            return 0;
+        }
+
+        @Override
+        public long skip(final long n) {
+            final long skip = Math.min(n, pos < count ? count - pos : 0);
+            pos += skip;
+            return skip;
+        }
     }
 }

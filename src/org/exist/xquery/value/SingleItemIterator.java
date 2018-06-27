@@ -42,4 +42,21 @@ public class SingleItemIterator implements SequenceIterator {
         more = false;
         return item;
     }
+
+    @Override
+    public long skippable() {
+        if (more) {
+            return 1;
+        }
+        return 0;
+    }
+
+    @Override
+    public long skip(final long n) {
+        final long skip = Math.min(n, more ? 1 : 0);
+        if (skip == 1) {
+            more = false;
+        }
+        return skip;
+    }
 }
