@@ -8,10 +8,6 @@ import org.exist.xquery.XPathException;
 
 public abstract class NumericValue extends ComputableValue {
 
-    public abstract String getStringValue() throws XPathException;
-
-    public abstract AtomicValue convertTo(int requiredType) throws XPathException;
-
     public double getDouble() throws XPathException {
         return ((DoubleValue) convertTo(Type.DOUBLE)).getValue();
     }
@@ -36,7 +32,8 @@ public abstract class NumericValue extends ComputableValue {
 
     public abstract boolean isPositive();
 
-    public boolean effectiveBooleanValue() throws XPathException {
+    @Override
+    public boolean effectiveBooleanValue() {
         //If its operand is a singleton value of any numeric type or derived from a numeric type,
         //fn:boolean returns false if the operand value is NaN or is numerically equal to zero;
         //otherwise it returns true.
@@ -44,7 +41,7 @@ public abstract class NumericValue extends ComputableValue {
     }
 
     @Override
-    public boolean compareTo(Collator collator, Comparison operator, AtomicValue other)
+    public boolean compareTo(final Collator collator, final Comparison operator, final AtomicValue other)
             throws XPathException {
         if (other.isEmpty()) {
             //Never equal, or inequal...
@@ -82,7 +79,7 @@ public abstract class NumericValue extends ComputableValue {
     }
 
     @Override
-    public int compareTo(Collator collator, AtomicValue other) throws XPathException {
+    public int compareTo(final Collator collator, final AtomicValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.NUMBER)) {
             if (isNaN()) {
                 //NaN does not equal itself.
@@ -92,20 +89,14 @@ public abstract class NumericValue extends ComputableValue {
             }
             final double otherVal = ((NumericValue) other).getDouble();
             final double val = getDouble();
-            if (val == otherVal) {
-                return Constants.EQUAL;
-            } else if (val > otherVal) {
-                return Constants.SUPERIOR;
-            } else {
-                return Constants.INFERIOR;
-            }
+            return Double.compare(val, otherVal);
         } else {
             throw new XPathException("cannot compare numeric value to non-numeric value");
         }
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (obj == null) {
             return false;
         }
@@ -134,10 +125,4 @@ public abstract class NumericValue extends ComputableValue {
     public abstract IntegerValue idiv(NumericValue other) throws XPathException;
 
     public abstract NumericValue abs() throws XPathException;
-
-    public abstract AtomicValue max(Collator collator, AtomicValue other) throws XPathException;
-
-    public abstract AtomicValue min(Collator collator, AtomicValue other) throws XPathException;
-
-
 }

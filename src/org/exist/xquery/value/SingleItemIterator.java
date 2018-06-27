@@ -15,30 +15,26 @@
  *  You should have received a copy of the GNU Library General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
+ *
  *  $Id$
  */
 package org.exist.xquery.value;
 
 public class SingleItemIterator implements SequenceIterator {
 
-    boolean more = true;
-    Item item;
+    private final Item item;
+    private boolean more = true;
 
-    public SingleItemIterator(Item item) {
+    public SingleItemIterator(final Item item) {
         this.item = item;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.SequenceIterator#hasNext()
-     */
+    @Override
     public boolean hasNext() {
         return more;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.SequenceIterator#nextItem()
-     */
+    @Override
     public Item nextItem() {
         if (!more) {
             return null;
@@ -46,5 +42,4 @@ public class SingleItemIterator implements SequenceIterator {
         more = false;
         return item;
     }
-
 }

@@ -127,22 +127,16 @@ public class FunStringToCodepoints extends BasicFunction {
      * @return a <code>ValueSequence</code> value
      * @exception XPathException if an error occurs
      */
-    public static String subSequence(final ValueSequence seq, final int start) 
-        throws XPathException {
+    public static String subSequence(final ValueSequence seq, final int start) {
         final StringBuilder substring = new StringBuilder(seq.getItemCount());
-        int ch;
-        try {
-            for (int i = start >= 0 ? start : 0; i < seq.getItemCount(); i++) {
-                ch = ((IntegerValue) seq.itemAt(i)).getInt();
-                if (XMLChar.isSupplemental(ch)) {
-                    substring.append(XMLChar.highSurrogate(ch));
-                    substring.append(XMLChar.lowSurrogate(ch));
-                } else {
-                    substring.append((char) ch);
-                }
+        for (int i = start >= 0 ? start : 0; i < seq.getItemCount(); i++) {
+            final int ch = ((IntegerValue) seq.itemAt(i)).getInt();
+            if (XMLChar.isSupplemental(ch)) {
+                substring.append(XMLChar.highSurrogate(ch));
+                substring.append(XMLChar.lowSurrogate(ch));
+            } else {
+                substring.append((char) ch);
             }
-        } catch (final XPathException e) {
-            throw new XPathException("FunStringCodepoints.subSequence()/2 failure" + e.getMessage());
         }
         return substring.toString();
     }
@@ -159,24 +153,18 @@ public class FunStringToCodepoints extends BasicFunction {
     public static String subSequence(final ValueSequence seq, final int start, final int end) 
         throws XPathException {
         final StringBuilder substring = new StringBuilder(seq.getItemCount());
-        int ch;
-        final @SuppressWarnings("unused")
-		IntegerValue next;
         if (seq.getItemCount() < end) {
             return subSequence(seq, start);
         }
-        try {
-            for (int i = start >= 0 ? start : 0; i < end; i++) {
-                ch = ((IntegerValue) seq.itemAt(i)).getInt();
-                if (XMLChar.isSupplemental(ch)) {
-                    substring.append(XMLChar.highSurrogate(ch));
-                    substring.append(XMLChar.lowSurrogate(ch));
-                } else {
-                    substring.append((char) ch);             
-                }
+
+        for (int i = start >= 0 ? start : 0; i < end; i++) {
+            final int ch = ((IntegerValue) seq.itemAt(i)).getInt();
+            if (XMLChar.isSupplemental(ch)) {
+                substring.append(XMLChar.highSurrogate(ch));
+                substring.append(XMLChar.lowSurrogate(ch));
+            } else {
+                substring.append((char) ch);
             }
-        } catch (final XPathException e) {
-            throw new XPathException("FunStringCodepoints.subSequence()/3 failure" + e.getMessage());
         }
         return substring.toString();
     }
@@ -188,19 +176,14 @@ public class FunStringToCodepoints extends BasicFunction {
      * @return a <code>String</code> value
      * @exception XPathException if an error occurs
      */
-    public static String codePointToString(final IntegerValue value) 
-        throws XPathException {
+    public static String codePointToString(final IntegerValue value) {
         final StringBuilder string = new StringBuilder(2);
-        try {
-            final int intValue = value.getInt();
-            if (XMLChar.isSupplemental(intValue)) {
-                string.append(XMLChar.highSurrogate(intValue));
-                string.append(XMLChar.lowSurrogate(intValue));
-            } else {
-                string.append((char) intValue);
-            }
-        } catch (final XPathException e) {
-            throw new XPathException("FunStringCodepoints.codePointToString()/1 failure" + e.getMessage());
+        final int intValue = value.getInt();
+        if (XMLChar.isSupplemental(intValue)) {
+            string.append(XMLChar.highSurrogate(intValue));
+            string.append(XMLChar.lowSurrogate(intValue));
+        } else {
+            string.append((char) intValue);
         }
         return string.toString();
     }

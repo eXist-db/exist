@@ -828,7 +828,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     }
 
     @Override
-    public SequenceIterator iterate() throws XPathException {
+    public SequenceIterator iterate() {
         return new SingleNodeIterator(this);
     }
 

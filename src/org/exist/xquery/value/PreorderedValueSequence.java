@@ -1,24 +1,24 @@
 /*
-*  eXist Open Source Native XML Database
-*  Copyright (C) 2001-04 Wolfgang M. Meier (wolfgang@exist-db.org) 
-*  and others (see http://exist-db.org)
-*
-*  This program is free software; you can redistribute it and/or
-*  modify it under the terms of the GNU Lesser General Public License
-*  as published by the Free Software Foundation; either version 2
-*  of the License, or (at your option) any later version.
-*
-*  This program is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU Lesser General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public License
-*  along with this program; if not, write to the Free Software
-*  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-* 
-*  $Id$
-*/
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-04 Wolfgang M. Meier (wolfgang@exist-db.org)
+ *  and others (see http://exist-db.org)
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ *  $Id$
+ */
 package org.exist.xquery.value;
 
 import org.exist.dom.persistent.ContextItem;
@@ -47,9 +47,9 @@ public class PreorderedValueSequence extends AbstractSequence {
     private final OrderSpec[] orderSpecs;
     private final OrderedNodeProxy[] nodes;
 
-    public PreorderedValueSequence(OrderSpec specs[], Sequence input, int contextId) throws XPathException {
+    public PreorderedValueSequence(final OrderSpec specs[], final Sequence input, final int contextId) throws XPathException {
         this.orderSpecs = specs;
-        nodes = new OrderedNodeProxy[input.getItemCount()];
+        this.nodes = new OrderedNodeProxy[input.getItemCount()];
         int j = 0;
         for (final SequenceIterator i = input.unorderedIterator(); i.hasNext(); j++) {
             final NodeProxy p = (NodeProxy) i.nextItem();
@@ -77,76 +77,64 @@ public class PreorderedValueSequence extends AbstractSequence {
         }
     }
 
-    public void clearContext(int contextId) throws XPathException {
-        for (OrderedNodeProxy node : nodes) {
+    @Override
+    public void clearContext(final int contextId) {
+        for (final OrderedNodeProxy node : nodes) {
             node.clearContext(contextId);
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AbstractSequence#getItemType()
-     */
+    @Override
     public int getItemType() {
         return Type.NODE;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AbstractSequence#iterate()
-     */
-    public SequenceIterator iterate() throws XPathException {
+    @Override
+    public SequenceIterator iterate() {
         sort();
         return new PreorderedValueSequenceIterator();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AbstractSequence#unorderedIterator()
-     */
-    public SequenceIterator unorderedIterator() throws XPathException {
+    @Override
+    public SequenceIterator unorderedIterator() {
         return new PreorderedValueSequenceIterator();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AbstractSequence#getLength()
-     */
+    @Override
     public int getItemCount() {
         return nodes.length;
     }
 
+    @Override
     public boolean isEmpty() {
         return nodes.length == 0;
     }
 
+    @Override
     public boolean hasOne() {
         return nodes.length == 1;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AbstractSequence#add(org.exist.xquery.value.Item)
-     */
-    public void add(Item item) throws XPathException {
+    @Override
+    public void add(final Item item) {
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AbstractSequence#itemAt(int)
-     */
-    public Item itemAt(int pos) {
+    @Override
+    public Item itemAt(final int pos) {
         return nodes[pos];
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#toNodeSet()
-     */
-    public NodeSet toNodeSet() throws XPathException {
+    @Override
+    public NodeSet toNodeSet() {
         return null;
     }
 
-    public MemoryNodeSet toMemNodeSet() throws XPathException {
+    @Override
+    public MemoryNodeSet toMemNodeSet() {
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#removeDuplicates()
-     */
+    @Override
     public void removeDuplicates() {
         // TODO: is this ever relevant?
     }
@@ -157,17 +145,13 @@ public class PreorderedValueSequence extends AbstractSequence {
 
     private class OrderedComparator implements Comparator<OrderedNodeProxy> {
 
-        /* (non-Javadoc)
-         * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-         */
-        public int compare(OrderedNodeProxy p1, OrderedNodeProxy p2) {
+        @Override
+        public int compare(final OrderedNodeProxy p1, final OrderedNodeProxy p2) {
             int cmp = 0;
-            AtomicValue a;
-            AtomicValue b;
             for (int i = 0; i < p1.values.length; i++) {
                 try {
-                    a = p1.values[i];
-                    b = p2.values[i];
+                    final AtomicValue a = p1.values[i];
+                    final AtomicValue b = p2.values[i];
                     if (a == AtomicValue.EMPTY_VALUE && b != AtomicValue.EMPTY_VALUE) {
                         if ((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0) {
                             cmp = Constants.INFERIOR;
@@ -197,31 +181,26 @@ public class PreorderedValueSequence extends AbstractSequence {
     }
 
     private class OrderedNodeProxy extends NodeProxy {
+        final AtomicValue[] values;
 
-        AtomicValue[] values;
-
-        public OrderedNodeProxy(NodeProxy p) {
+        public OrderedNodeProxy(final NodeProxy p) {
             super(p);
-            values = new AtomicValue[orderSpecs.length];
-            for (int i = 0; i < values.length; i++)
+            this.values = new AtomicValue[orderSpecs.length];
+            for (int i = 0; i < values.length; i++) {
                 values[i] = AtomicValue.EMPTY_VALUE;
+            }
         }
     }
 
     private class PreorderedValueSequenceIterator implements SequenceIterator {
+        private int pos = 0;
 
-        int pos = 0;
-
-        /* (non-Javadoc)
-         * @see org.exist.xquery.value.SequenceIterator#hasNext()
-         */
+        @Override
         public boolean hasNext() {
             return pos < nodes.length;
         }
 
-        /* (non-Javadoc)
-         * @see org.exist.xquery.value.SequenceIterator#nextItem()
-         */
+        @Override
         public Item nextItem() {
             if (pos < nodes.length) {
                 return nodes[pos++];

@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU Library General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
+ *
  *  $Id$
  */
 package org.exist.xquery.value;
@@ -45,14 +45,15 @@ public abstract class AbstractSequence implements Sequence {
     /**
      * To retain compatibility with eXist versions before september 20th 2005 ,
      * for conversion to boolean;
-     *
-     * @see http://cvs.sourceforge.net/viewcvs.py/exist/eXist-1.0/src/org/exist/xquery/value/AbstractSequence.java?r1=1.11&r2=1.12
+     * <p>
+     * {@see http://cvs.sourceforge.net/viewcvs.py/exist/eXist-1.0/src/org/exist/xquery/value/AbstractSequence.java?r1=1.11&r2=1.12}
      */
     private static final boolean OLD_EXIST_VERSION_COMPATIBILITY = false;
 
     protected boolean isEmpty = true;
     protected boolean hasOne = false;
 
+    @Override
     public int getCardinality() {
         if (isEmpty()) {
             return Cardinality.EMPTY;
@@ -75,13 +76,13 @@ public abstract class AbstractSequence implements Sequence {
         final Item first = itemAt(0);
         if (Type.subTypeOf(first.getType(), Type.ATOMIC)) {
             return first.convertTo(requiredType);
-        } else
-        //TODO : clean atomization
-        {
+        } else {
+            //TODO : clean atomization
             return new StringValue(first.getStringValue()).convertTo(requiredType);
         }
     }
 
+    @Override
     public boolean hasMany() {
         return !isEmpty() && !hasOne();
     }
@@ -89,24 +90,25 @@ public abstract class AbstractSequence implements Sequence {
     @Override
     public Sequence tail() throws XPathException {
         final ValueSequence tmp = new ValueSequence(getItemCount() - 1);
-        Item item;
         final SequenceIterator iterator = iterate();
         iterator.nextItem();
         while (iterator.hasNext()) {
-            item = iterator.nextItem();
+            final Item item = iterator.nextItem();
             tmp.add(item);
         }
         return tmp;
     }
 
+    @Override
     public String getStringValue() throws XPathException {
         if (isEmpty()) {
             return "";
         }
-        final Item first = iterate().nextItem();
+        final Item first = itemAt(0);
         return first.getStringValue();
     }
 
+    @Override
     public String toString() {
         try {
             final StringBuilder buf = new StringBuilder();
@@ -126,24 +128,25 @@ public abstract class AbstractSequence implements Sequence {
         }
     }
 
-    public void addAll(Sequence other) throws XPathException {
-        for (final SequenceIterator i = other.iterate(); i.hasNext(); )
+    @Override
+    public void addAll(final Sequence other) throws XPathException {
+        for (final SequenceIterator i = other.iterate(); i.hasNext(); ) {
             add(i.nextItem());
+        }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#getDocumentSet()
-     */
+    @Override
     public DocumentSet getDocumentSet() {
         return DocumentSet.EMPTY_DOCUMENT_SET;
     }
 
+    @Override
     public Iterator<Collection> getCollectionIterator() {
         return EmptyNodeSet.EMPTY_COLLECTION_ITERATOR;
     }
 
     @Override
-    public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
+    public void nodeMoved(final NodeId oldNodeId, final NodeHandle newNode) {
         //Nothing to do
     }
 
@@ -153,6 +156,7 @@ public abstract class AbstractSequence implements Sequence {
      *
      * @see org.exist.xquery.value.Sequence#effectiveBooleanValue()
      */
+    @Override
     public boolean effectiveBooleanValue() throws XPathException {
         if (isEmpty()) {
             return false;
@@ -181,10 +185,8 @@ public abstract class AbstractSequence implements Sequence {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#conversionPreference(java.lang.Class)
-     */
-    public int conversionPreference(Class<?> javaClass) {
+    @Override
+    public int conversionPreference(final Class<?> javaClass) {
         if (javaClass.isAssignableFrom(Sequence.class)) {
             return 0;
         } else if (javaClass.isAssignableFrom(List.class) || javaClass.isArray()) {
@@ -198,9 +200,6 @@ public abstract class AbstractSequence implements Sequence {
         return Integer.MAX_VALUE;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#toJavaObject(java.lang.Class)
-     */
     @Override
     public <T> T toJavaObject(final Class<T> target) throws XPathException {
         if (Sequence.class.isAssignableFrom(target)) {
@@ -232,65 +231,62 @@ public abstract class AbstractSequence implements Sequence {
         return null;
     }
 
-    public void clearContext(int contextId) throws XPathException {
-        Item next;
+    @Override
+    public void clearContext(final int contextId) throws XPathException {
         for (final SequenceIterator i = unorderedIterator(); i.hasNext(); ) {
-            next = i.nextItem();
+            final Item next = i.nextItem();
             if (next instanceof NodeProxy) {
                 ((NodeProxy) next).clearContext(contextId);
             }
         }
     }
 
-    public void setSelfAsContext(int contextId) throws XPathException {
-        Item next;
-        NodeValue node;
+    @Override
+    public void setSelfAsContext(final int contextId) throws XPathException {
         for (final SequenceIterator i = unorderedIterator(); i.hasNext(); ) {
-            next = i.nextItem();
+            final Item next = i.nextItem();
             if (Type.subTypeOf(next.getType(), Type.NODE)) {
-                node = (NodeValue) next;
+                final NodeValue node = (NodeValue) next;
                 node.addContextNode(contextId, node);
             }
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#isCached()
-     */
+    @Override
     public boolean isCached() {
         // always return false by default
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#setIsCached(boolean)
-     */
-    public void setIsCached(boolean cached) {
+    @Override
+    public void setIsCached(final boolean cached) {
         // ignore by default
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#isPersistentSet()
-     */
+    @Override
     public boolean isPersistentSet() {
         // always return false by default
         return false;
     }
 
+    @Override
     public boolean isCacheable() {
         return false;
     }
 
+
+    @Override
     public int getState() {
         return 0;
     }
 
-    public boolean hasChanged(int previousState) {
+    @Override
+    public boolean hasChanged(final int previousState) {
         return true;
     }
 
     @Override
-    public void destroy(XQueryContext context, Sequence contextSequence) {
+    public void destroy(final XQueryContext context, final Sequence contextSequence) {
         // do nothing by default
     }
 }
