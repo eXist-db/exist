@@ -186,8 +186,8 @@ public class DoubleValue extends NumericValue {
                             + "') to "
                             + Type.getTypeName(requiredType));
                 }
-                if (value > Integer.MAX_VALUE) {
-                    throw new XPathException(ErrorCodes.FOCA0003, "Value is out of range for type xs:integer");
+                if (requiredType != Type.INTEGER && value > Integer.MAX_VALUE) {
+                    throw new XPathException(ErrorCodes.FOCA0003, "Value is out of range for type " + Type.getTypeName(requiredType));
                 }
                 return new IntegerValue(Double.valueOf(value).longValue(), requiredType);
             case Type.BOOLEAN:
