@@ -1000,5 +1000,22 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
             node = null;
             return next;
         }
+
+        @Override
+        public long skippable() {
+            if (node != null) {
+                return 1;
+            }
+            return 0;
+        }
+
+        @Override
+        public long skip(final long n) {
+            final long skip = Math.min(n, node != null ? 1 : 0);
+            if (skip == 1) {
+                node = null;
+            }
+            return skip;
+        }
     }
 }

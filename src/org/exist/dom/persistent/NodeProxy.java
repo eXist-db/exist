@@ -1305,6 +1305,23 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         }
 
         @Override
+        public long skippable() {
+            if (hasNext) {
+                return 1;
+            }
+            return 0;
+        }
+
+        @Override
+        public long skip(final long n) {
+            final long skip = Math.min(n, hasNext ? 1 : 0);
+            if(skip == 1) {
+                hasNext = false;
+            }
+            return skip;
+        }
+
+        @Override
         public final NodeProxy peekNode() {
             return node;
         }

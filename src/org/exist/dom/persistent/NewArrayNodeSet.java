@@ -1127,6 +1127,21 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         }
 
         @Override
+        public long skippable() {
+            if (pos == -1) {
+                return 0;
+            }
+            return size - pos;
+        }
+
+        @Override
+        public long skip(final long n) {
+            final long skip = Math.min(n, pos == -1 ? 0 : size - pos);
+            pos += skip;
+            return skip;
+        }
+
+        @Override
         public final void remove() {
             throw new UnsupportedOperationException();
         }
