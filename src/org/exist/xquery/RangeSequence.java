@@ -13,73 +13,78 @@ import org.exist.xquery.value.Type;
 
 public class RangeSequence extends AbstractSequence {
 
-	private final static Logger LOG = LogManager.getLogger(AbstractSequence.class);
-	
-	private IntegerValue start;
-	private IntegerValue end;
-	
-	public RangeSequence(IntegerValue start, IntegerValue end) {
-		this.start = start;
-		this.end = end;
-	}
+    private final static Logger LOG = LogManager.getLogger(AbstractSequence.class);
 
-	public void add(Item item) throws XPathException {
-		throw new XPathException("Internal error: adding to an immutable sequence");
-	}
+    private final IntegerValue start;
+    private final IntegerValue end;
 
-	public void addAll(Sequence other) throws XPathException {
-		throw new XPathException("Internal error: adding to an immutable sequence");
-	}
-
-	public int getItemType() {
-		return Type.INTEGER;
-	}
+    public RangeSequence(final IntegerValue start, final IntegerValue end) {
+        this.start = start;
+        this.end = end;
+    }
 
     @Override
-	public SequenceIterator iterate() throws XPathException {
-		return new RangeSequenceIterator(start.getLong(), end.getLong());
-	}
+    public void add(final Item item) throws XPathException {
+        throw new XPathException("Internal error: adding to an immutable sequence");
+    }
 
     @Override
-	public SequenceIterator unorderedIterator() throws XPathException {
-		return new RangeSequenceIterator(start.getLong(), end.getLong());
-	}
+    public void addAll(final Sequence other) throws XPathException {
+        throw new XPathException("Internal error: adding to an immutable sequence");
+    }
 
-    public SequenceIterator iterateInReverse() throws XPathException {
+    public int getItemType() {
+        return Type.INTEGER;
+    }
+
+    @Override
+    public SequenceIterator iterate() {
+        return new RangeSequenceIterator(start.getLong(), end.getLong());
+    }
+
+    @Override
+    public SequenceIterator unorderedIterator() {
+        return new RangeSequenceIterator(start.getLong(), end.getLong());
+    }
+
+    public SequenceIterator iterateInReverse() {
         return new ReverseRangeSequenceIterator(start.getLong(), end.getLong());
     }
 
-	private static class RangeSequenceIterator implements SequenceIterator {
-		private long current;
+    private static class RangeSequenceIterator implements SequenceIterator {
+        private long current;
         private final long end;
 
-		public RangeSequenceIterator(final long start, final long end) {
-			this.current = start;
+        private RangeSequenceIterator(final long start, final long end) {
+            this.current = start;
             this.end = end;
-		}
+        }
 
-		public Item nextItem() {
+        @Override
+        public Item nextItem() {
             if (current <= end) {
                 return new IntegerValue(current++);
             } else {
                 return null;
             }
-		}
+        }
 
-		public boolean hasNext() {
+        @Override
+        public boolean hasNext() {
             return current <= end;
-		}
-	}
+        }
+    }
 
     private static class ReverseRangeSequenceIterator implements SequenceIterator {
         private final long start;
         private long current;
 
-        public ReverseRangeSequenceIterator(final long start, final long end) {
+        private ReverseRangeSequenceIterator(final long start, final long end) {
             this.start = start;
             this.current = end;
         }
 
+        @Override
         public Item nextItem() {
             if (current >= start) {
                 return new IntegerValue(current--);
@@ -88,54 +93,61 @@ public class RangeSequence extends AbstractSequence {
             }
         }
 
+        @Override
         public boolean hasNext() {
             return current >= start;
         }
     }
-	
-	public int getItemCount() {
-		if (start.compareTo(end) > 0)
-			{return 0;}
-		try {
-			return ((IntegerValue) end.minus(start)).getInt() + 1;
-		} catch (final XPathException e) {
-			LOG.warn("Unexpected exception when processing result of range expression: " + e.getMessage(), e);
-			return 0;
-		}
-	}
 
-	public boolean isEmpty() {
-		return getItemCount() == 0;
-	}
+    @Override
+    public int getItemCount() {
+        if (start.compareTo(end) > 0) {
+            return 0;
+        }
+        try {
+            return ((IntegerValue) end.minus(start)).getInt() + 1;
+        } catch (final XPathException e) {
+            LOG.warn("Unexpected exception when processing result of range expression: " + e.getMessage(), e);
+            return 0;
+        }
+    }
 
-	public boolean hasOne() {
-		return getItemCount() == 1;
-	}
+    @Override
+    public boolean isEmpty() {
+        return getItemCount() == 0;
+    }
 
-	public boolean hasMany() {
-		return getItemCount() > 1;
-	}
+    @Override
+    public boolean hasOne() {
+        return getItemCount() == 1;
+    }
 
-	public Item itemAt(int pos) {
-		if (pos <= getItemCount())
-			try {
-				return new IntegerValue(start.getLong() + pos);
-			} catch (final XPathException e) {
-				LOG.warn("Unexpected exception when processing result of range expression: " + e.getMessage(), e);
-			}
-		return null;
-	}
+    @Override
+    public boolean hasMany() {
+        return getItemCount() > 1;
+    }
 
-	public NodeSet toNodeSet() throws XPathException {
-		throw new XPathException("Type error: the sequence cannot be converted into" +
-				" a node set. Item type is xs:integer");
-	}
+    @Override
+    public Item itemAt(final int pos) {
+        if (pos <= getItemCount()) {
+            return new IntegerValue(start.getLong() + pos);
+        }
+        return null;
+    }
 
-	public MemoryNodeSet toMemNodeSet() throws XPathException {
-		throw new XPathException("Type error: the sequence cannot be converted into" +
-			" a node set. Item type is xs:integer");
-	}
+    @Override
+    public NodeSet toNodeSet() throws XPathException {
+        throw new XPathException("Type error: the sequence cannot be converted into" +
+                " a node set. Item type is xs:integer");
+    }
 
-	public void removeDuplicates() {
-	}
+    @Override
+    public MemoryNodeSet toMemNodeSet() throws XPathException {
+        throw new XPathException("Type error: the sequence cannot be converted into" +
+                " a node set. Item type is xs:integer");
+    }
+
+    @Override
+    public void removeDuplicates() {
+    }
 }

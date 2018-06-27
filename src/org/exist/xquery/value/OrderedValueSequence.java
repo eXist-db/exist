@@ -50,54 +50,45 @@ import java.util.stream.Stream;
 public class OrderedValueSequence extends AbstractSequence {
 
     private final OrderSpec[] orderSpecs;
-    private Entry[] items = null;
+    private Entry[] items;
     private int count = 0;
     private int state = 0;
 
     // used to keep track of the type of added items.
     private int itemType = Type.ANY_TYPE;
 
-    public OrderedValueSequence(OrderSpec orderSpecs[], int size) {
+    public OrderedValueSequence(final OrderSpec orderSpecs[], final int size) {
         this.orderSpecs = orderSpecs;
-        if (size == 0) {
-            size = 1;
-        }
-        this.items = new Entry[size];
+        this.items = new Entry[size == 0 ? 1 : size];
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#iterate()
-     */
-    public SequenceIterator iterate() throws XPathException {
+    @Override
+    public SequenceIterator iterate() {
         return new OrderedValueSequenceIterator();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AbstractSequence#unorderedIterator()
-     */
-    public SequenceIterator unorderedIterator() throws XPathException {
+    @Override
+    public SequenceIterator unorderedIterator() {
         return new OrderedValueSequenceIterator();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#getLength()
-     */
+    @Override
     public int getItemCount() {
         return (items == null) ? 0 : count;
     }
 
+    @Override
     public boolean isEmpty() {
         return isEmpty;
     }
 
+    @Override
     public boolean hasOne() {
         return hasOne;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
-     */
-    public void add(Item item) throws XPathException {
+    @Override
+    public void add(final Item item) throws XPathException {
         if (hasOne) {
             hasOne = false;
         }
@@ -108,7 +99,7 @@ public class OrderedValueSequence extends AbstractSequence {
         if (count == 0 && items.length == 1) {
             items = new Entry[2];
         } else if (count == items.length) {
-            Entry newItems[] = new Entry[count * 2];
+            final Entry newItems[] = new Entry[count * 2];
             System.arraycopy(items, 0, newItems, 0, count);
             items = newItems;
         }
@@ -117,10 +108,8 @@ public class OrderedValueSequence extends AbstractSequence {
         setHasChanged();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AbstractSequence#addAll(org.exist.xquery.value.Sequence)
-     */
-    public void addAll(Sequence other) throws XPathException {
+    @Override
+    public void addAll(final Sequence other) throws XPathException {
         if (other.hasOne()) {
             add(other.itemAt(0));
         } else if (!other.isEmpty()) {
@@ -146,10 +135,8 @@ public class OrderedValueSequence extends AbstractSequence {
                         .toArray(Entry[]::new);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#itemAt(int)
-     */
-    public Item itemAt(int pos) {
+    @Override
+    public Item itemAt(final int pos) {
         if (items != null && pos > -1 && pos < count) {
             return items[pos].item;
         } else {
@@ -157,7 +144,7 @@ public class OrderedValueSequence extends AbstractSequence {
         }
     }
 
-    private void checkItemType(int type) {
+    private void checkItemType(final int type) {
         if (itemType == type) {
             return;
         } else if (itemType == Type.ANY_TYPE) {
@@ -167,16 +154,12 @@ public class OrderedValueSequence extends AbstractSequence {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#getItemType()
-     */
+    @Override
     public int getItemType() {
         return itemType;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#toNodeSet()
-     */
+    @Override
     public NodeSet toNodeSet() throws XPathException {
         //return early
         if (isEmpty()) {
@@ -208,12 +191,12 @@ public class OrderedValueSequence extends AbstractSequence {
                         final DocumentImpl expandedDoc = doc.expandRefs(null);
                         final org.exist.dom.persistent.DocumentImpl newDoc = expandedDoc.makePersistent();
                         if (newDoc != null) {
-                            NodeId rootId = newDoc.getBrokerPool().getNodeFactory().createInstance();
+                            final NodeId rootId = newDoc.getBrokerPool().getNodeFactory().createInstance();
                             for (int j = i; j < count; j++) {
                                 v = (NodeValue) items[j].item;
                                 if (v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
                                     NodeImpl node = (NodeImpl) v;
-                                    Document nodeOwnerDoc = node.getNodeType() == Node.DOCUMENT_NODE ? (org.exist.dom.memtree.DocumentImpl)v : ((NodeImpl) v).getOwnerDocument();
+                                    final Document nodeOwnerDoc = node.getNodeType() == Node.DOCUMENT_NODE ? (org.exist.dom.memtree.DocumentImpl)v : ((NodeImpl) v).getOwnerDocument();
 
                                     if (nodeOwnerDoc == doc) {
                                         node = expandedDoc.getNode(node.getNodeNumber());
@@ -226,7 +209,7 @@ public class OrderedValueSequence extends AbstractSequence {
                                         } else {
                                             nodeId = rootId.append(nodeId);
                                         }
-                                        NodeProxy p = new NodeProxy(newDoc, nodeId, node.getNodeType());
+                                        final NodeProxy p = new NodeProxy(newDoc, nodeId, node.getNodeType());
                                         if (p != null) {
                                             // replace the node by the NodeProxy
                                             items[j].item = p;
@@ -248,17 +231,14 @@ public class OrderedValueSequence extends AbstractSequence {
         }
     }
 
-    /* (non-Javadoc)
-    * @see org.exist.xquery.value.Sequence#isPersistentSet()
-    */
+    @Override
     public boolean isPersistentSet() {
         if (count == 0) {
             return true;
         }
         if (itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.NODE)) {
-            NodeValue v;
             for (int i = 0; i < count; i++) {
-                v = (NodeValue) items[i].item;
+                final NodeValue v = (NodeValue) items[i].item;
                 if (v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
                     return false;
                 }
@@ -268,6 +248,7 @@ public class OrderedValueSequence extends AbstractSequence {
         return false;
     }
 
+    @Override
     public MemoryNodeSet toMemNodeSet() throws XPathException {
         if (count == 0) {
             return MemoryNodeSet.EMPTY;
@@ -276,9 +257,8 @@ public class OrderedValueSequence extends AbstractSequence {
             throw new XPathException("Type error: the sequence cannot be converted into" +
                     " a node set. Item type is " + Type.getTypeName(itemType));
         }
-        NodeValue v;
         for (int i = 0; i < count; i++) {
-            v = (NodeValue) items[i].item;
+            final NodeValue v = (NodeValue) items[i].item;
             if (v.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                 return null;
             }
@@ -286,6 +266,7 @@ public class OrderedValueSequence extends AbstractSequence {
         return new ValueSequence(this);
     }
 
+    @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();
         for (int i = 0; i < count; i++) {
@@ -294,9 +275,7 @@ public class OrderedValueSequence extends AbstractSequence {
         return builder.toString();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#removeDuplicates()
-     */
+    @Override
     public void removeDuplicates() {
         // TODO: is this ever relevant?
     }
@@ -305,30 +284,32 @@ public class OrderedValueSequence extends AbstractSequence {
         state = (state == Integer.MAX_VALUE ? state = 0 : state + 1);
     }
 
+    @Override
     public int getState() {
         return state;
     }
 
-    public boolean hasChanged(int previousState) {
+    @Override
+    public boolean hasChanged(final int previousState) {
         return state != previousState;
     }
 
+    @Override
     public boolean isCacheable() {
         return true;
     }
 
     private class Entry implements Comparable<Entry> {
-
         Item item;
         AtomicValue values[];
-        int pos;
+        private final int pos;
 
         /**
          * @param item     the item in the sequence
          * @param position the original position of the item in the result sequence
          * @throws XPathException
          */
-        public Entry(Item item, int position) throws XPathException {
+        public Entry(final Item item, final int position) throws XPathException {
             this.item = item;
             this.pos = position;
             values = new AtomicValue[orderSpecs.length];
@@ -345,17 +326,13 @@ public class OrderedValueSequence extends AbstractSequence {
             }
         }
 
-        /* (non-Javadoc)
-         * @see java.lang.Comparable#compareTo(java.lang.Object)
-         */
-        public int compareTo(Entry other) {
+        @Override
+        public int compareTo(final Entry other) {
             int cmp = 0;
-            AtomicValue a;
-            AtomicValue b;
             for (int i = 0; i < values.length; i++) {
                 try {
-                    a = values[i];
-                    b = other.values[i];
+                    final AtomicValue a = values[i];
+                    final AtomicValue b = other.values[i];
                     final boolean aIsEmpty = (a.isEmpty() || (Type.subTypeOf(a.getType(), Type.NUMBER) && ((NumericValue) a).isNaN()));
                     final boolean bIsEmpty = (b.isEmpty() || (Type.subTypeOf(b.getType(), Type.NUMBER) && ((NumericValue) b).isNaN()));
                     if (aIsEmpty) {
@@ -406,6 +383,7 @@ public class OrderedValueSequence extends AbstractSequence {
             return cmp;
         }
 
+        @Override
         public String toString() {
             final StringBuilder builder = new StringBuilder();
             builder.append(item);
@@ -426,19 +404,14 @@ public class OrderedValueSequence extends AbstractSequence {
     }
 
     private class OrderedValueSequenceIterator implements SequenceIterator {
+        private int pos = 0;
 
-        int pos = 0;
-
-        /* (non-Javadoc)
-         * @see org.exist.xquery.value.SequenceIterator#hasNext()
-         */
+        @Override
         public boolean hasNext() {
             return pos < count;
         }
 
-        /* (non-Javadoc)
-         * @see org.exist.xquery.value.SequenceIterator#nextItem()
-         */
+        @Override
         public Item nextItem() {
             if (pos < count) {
                 return items[pos++].item;

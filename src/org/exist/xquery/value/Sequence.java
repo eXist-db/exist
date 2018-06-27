@@ -133,7 +133,7 @@ public interface Sequence {
     boolean hasMany();
 
     /**
-     * Explicitely remove all duplicate nodes from this sequence.
+     * Explicitly remove all duplicate nodes from this sequence.
      */
     void removeDuplicates();
 
@@ -262,7 +262,7 @@ public interface Sequence {
      * @param newNode
      * @see org.exist.storage.UpdateListener
      */
-    void nodeMoved(NodeId oldNodeId, NodeHandle newNode);  //TODO why is this here, it only pertains to Peristent nodes and NOT also in-memory nodes
+    void nodeMoved(NodeId oldNodeId, NodeHandle newNode);  //TODO why is this here, it only pertains to Persistent nodes and NOT also in-memory nodes
 
     boolean isCacheable();
 

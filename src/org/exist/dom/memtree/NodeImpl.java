@@ -611,7 +611,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     }
 
     @Override
-    public SequenceIterator iterate() throws XPathException {
+    public SequenceIterator iterate() {
         return new SingleNodeIterator(this);
     }
 
@@ -983,7 +983,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     }
 
     private final static class SingleNodeIterator implements SequenceIterator {
-        NodeImpl node;
+        private NodeImpl node;
 
         public SingleNodeIterator(final NodeImpl node) {
             this.node = node;
@@ -1000,6 +1000,5 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
             node = null;
             return next;
         }
-
     }
 }

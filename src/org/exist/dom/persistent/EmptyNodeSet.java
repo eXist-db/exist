@@ -24,7 +24,6 @@ import java.util.NoSuchElementException;
 
 import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
-import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Node;
@@ -40,12 +39,12 @@ public final class EmptyNodeSet extends AbstractNodeSet {
     }
 
     @Override
-    public SequenceIterator iterate() throws XPathException {
+    public SequenceIterator iterate() {
         return SequenceIterator.EMPTY_ITERATOR;
     }
 
     @Override
-    public SequenceIterator unorderedIterator() throws XPathException {
+    public SequenceIterator unorderedIterator() {
         return SequenceIterator.EMPTY_ITERATOR;
     }
 
