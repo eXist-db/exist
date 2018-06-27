@@ -136,11 +136,18 @@ public class FunSubSequence extends Function {
             // holds the intermittent result
             Sequence tmp = Sequence.EMPTY_SEQUENCE;
 
-            // move to start
-            final SequenceIterator iterator = seq.iterate();
             long position = 1;
-            for (; position < fromInclusive; position++) {
-                iterator.nextItem();
+            final SequenceIterator iterator = seq.iterate();
+            if (position != fromInclusive) {
+                // move to start (i.e. fromInclusive)
+                if (iterator.skip(fromInclusive - position) > -1) {
+                    position = fromInclusive;
+                } else {
+                    // SequenceIterator does not support skipping, we have to iterate through each item :-/
+                    for (; position < fromInclusive; position++) {
+                        iterator.nextItem();
+                    }
+                }
             }
 
             // copy from start to end

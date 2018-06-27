@@ -73,6 +73,18 @@ public class RangeSequence extends AbstractSequence {
         public boolean hasNext() {
             return current <= end;
         }
+
+        @Override
+        public long skippable() {
+            return end - current + 1;
+        }
+
+        @Override
+        public long skip(final long n) {
+            final long skip = Math.min(n, end - current + 1);
+            current += skip;
+            return skip;
+        }
     }
 
     private static class ReverseRangeSequenceIterator implements SequenceIterator {
@@ -96,6 +108,18 @@ public class RangeSequence extends AbstractSequence {
         @Override
         public boolean hasNext() {
             return current >= start;
+        }
+
+        @Override
+        public long skippable() {
+            return current - start + 1;
+        }
+
+        @Override
+        public long skip(final long n) {
+            final long skip = Math.min(n, current - start + 1);
+            current -= skip;
+            return skip;
         }
     }
 
