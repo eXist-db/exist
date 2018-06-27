@@ -55,7 +55,8 @@ import org.junit.runners.Suite;
         TestXPathOpOrSpecialCase.class,
         MemtreeDescendantOrSelfNodeKindTest.class,
         PersistentDescendantOrSelfNodeKindTest.class,
-        CleanupTest.class
+        CleanupTest.class,
+        RangeSequenceTest.class
 })
 public class AllXqueryTests {
 }
