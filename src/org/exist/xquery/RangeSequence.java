@@ -152,6 +152,18 @@ public class RangeSequence extends AbstractSequence {
     }
 
     @Override
+    public int getCardinality() {
+        final long itemCount = getItemCount();
+        if (itemCount <= 0) {
+            return Cardinality.EMPTY;
+        }
+        if (itemCount == 1) {
+            return Cardinality.EXACTLY_ONE;
+        }
+        return Cardinality.MANY;
+    }
+
+    @Override
     public Item itemAt(final int pos) {
         if (pos <= getItemCount()) {
             return new IntegerValue(start.getLong() + pos);
@@ -168,7 +180,7 @@ public class RangeSequence extends AbstractSequence {
     @Override
     public MemoryNodeSet toMemNodeSet() throws XPathException {
         throw new XPathException("Type error: the sequence cannot be converted into" +
-                " a node set. Item type is xs:integer");
+                " a memory node set. Item type is xs:integer");
     }
 
     @Override
