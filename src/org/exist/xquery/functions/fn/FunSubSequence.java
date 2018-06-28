@@ -133,43 +133,7 @@ public class FunSubSequence extends Function {
                 fromInclusive = startArg;
             }
 
-            // holds the intermittent result
-            Sequence tmp = Sequence.EMPTY_SEQUENCE;
-
-            long position = 1;
-            final SequenceIterator iterator = seq.iterate();
-            if (position != fromInclusive) {
-                // move to start (i.e. fromInclusive)
-                if (iterator.skip(fromInclusive - position) > -1) {
-                    position = fromInclusive;
-                } else {
-                    // SequenceIterator does not support skipping, we have to iterate through each item :-/
-                    for (; position < fromInclusive; position++) {
-                        iterator.nextItem();
-                    }
-                }
-            }
-
-            // copy from start to end
-            while (iterator.hasNext() && position < toExclusive) {
-                final Item item = iterator.nextItem();
-
-                // lazily initialize tmp
-                if (tmp == Sequence.EMPTY_SEQUENCE) {
-                    if (seq instanceof NodeSet) {
-                        tmp = new ExtArrayNodeSet();
-                        ((ExtArrayNodeSet) tmp).keepUnOrdered(unordered);
-                    } else {
-                        tmp = new ValueSequence();
-                        ((ValueSequence) tmp).keepUnOrdered(unordered);
-                    }
-                }
-
-                tmp.add(item);
-                position++;
-            }
-
-            result = tmp;
+            result = new SubSequence(fromInclusive, toExclusive, seq);
         }
 
         if (context.getProfiler().isEnabled()) {
