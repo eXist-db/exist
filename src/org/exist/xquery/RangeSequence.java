@@ -124,12 +124,12 @@ public class RangeSequence extends AbstractSequence {
     }
 
     @Override
-    public int getItemCount() {
+    public long getItemCountLong() {
         if (start.compareTo(end) > 0) {
             return 0;
         }
         try {
-            return ((IntegerValue) end.minus(start)).getInt() + 1;
+            return ((IntegerValue) end.minus(start)).getLong() + 1;
         } catch (final XPathException e) {
             LOG.warn("Unexpected exception when processing result of range expression: " + e.getMessage(), e);
             return 0;
@@ -138,22 +138,22 @@ public class RangeSequence extends AbstractSequence {
 
     @Override
     public boolean isEmpty() {
-        return getItemCount() == 0;
+        return getItemCountLong() == 0;
     }
 
     @Override
     public boolean hasOne() {
-        return getItemCount() == 1;
+        return getItemCountLong() == 1;
     }
 
     @Override
     public boolean hasMany() {
-        return getItemCount() > 1;
+        return getItemCountLong() > 1;
     }
 
     @Override
     public int getCardinality() {
-        final long itemCount = getItemCount();
+        final long itemCount = getItemCountLong();
         if (itemCount <= 0) {
             return Cardinality.EMPTY;
         }
@@ -165,7 +165,7 @@ public class RangeSequence extends AbstractSequence {
 
     @Override
     public Item itemAt(final int pos) {
-        if (pos < getItemCount()) {
+        if (pos < getItemCountLong()) {
             return new IntegerValue(start.getLong() + pos);
         }
         return null;

@@ -201,7 +201,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     }
 
     @Override
-    public int getItemCount() {
+    public long getItemCountLong() {
         sortInDocumentOrder();
         return size + 1;
     }

@@ -101,7 +101,7 @@ public class PreorderedValueSequence extends AbstractSequence {
     }
 
     @Override
-    public int getItemCount() {
+    public long getItemCountLong() {
         return nodes.length;
     }
 

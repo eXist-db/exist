@@ -58,9 +58,8 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         return size;
     }
 
-    //TODO : evaluate both semantics
     @Override
-    public int getItemCount() {
+    public long getItemCountLong() {
         return size;
     }
 

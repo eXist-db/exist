@@ -92,7 +92,8 @@ public class FunCount extends Function {
         if (getArgumentCount() == 0) {
             result = IntegerValue.ZERO;
         } else {
-            result = new IntegerValue(getArgument(0).eval(contextSequence).getItemCount());
+            final Sequence seq = getArgument(0).eval(contextSequence);
+            result = new IntegerValue(seq.getItemCountLong());
         }
 
         if (context.getProfiler().isEnabled()) {
