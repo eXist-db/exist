@@ -621,7 +621,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     }
 
     @Override
-    public int getItemCount() {
+    public long getItemCountLong() {
         return 1;
     }
 

@@ -893,9 +893,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         return 1;
     }
 
-    //TODO : evaluate both semantics
     @Override
-    public int getItemCount() {
+    public long getItemCountLong() {
         return 1;
     }
 

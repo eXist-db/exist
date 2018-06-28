@@ -104,13 +104,12 @@ public class SubSequence extends AbstractSequence {
     }
 
     @Override
-    public int getItemCount() {
+    public long getItemCountLong() {
         if (toExclusive < 1) {
             return 0;
         }
 
-        //TODO(AR) Sequence#getItemCount() should return long!
-        long subseqAvailable = sequence.getItemCount() - (fromInclusive - 1);
+        long subseqAvailable = sequence.getItemCountLong() - (fromInclusive - 1);
         if (subseqAvailable < 0) {
             subseqAvailable = 0;
         }
@@ -120,25 +119,25 @@ public class SubSequence extends AbstractSequence {
             length = 0;
         }
 
-        return (int) Math.min(length, subseqAvailable);
+        return Math.min(length, subseqAvailable);
     }
 
     @Override
     public boolean isEmpty() {
         final long length = toExclusive - fromInclusive;
-        return length < 1 || sequence.isEmpty() || sequence.getItemCount() - fromInclusive < 0;
+        return length < 1 || sequence.isEmpty() || sequence.getItemCountLong() - fromInclusive < 0;
     }
 
     @Override
     public boolean hasOne() {
-        final long subseqAvailable = sequence.getItemCount() - (fromInclusive - 1);
+        final long subseqAvailable = sequence.getItemCountLong() - (fromInclusive - 1);
         final long length = toExclusive - fromInclusive;
         return subseqAvailable > 0 && length == 1;
     }
 
     @Override
     public boolean hasMany() {
-        final long subseqAvailable = sequence.getItemCount() - (fromInclusive - 1);
+        final long subseqAvailable = sequence.getItemCountLong() - (fromInclusive - 1);
         final long length = toExclusive - fromInclusive;
         return subseqAvailable > 1 && length > 1;
     }
@@ -154,7 +153,7 @@ public class SubSequence extends AbstractSequence {
            return Cardinality.EMPTY;
         }
 
-        final long subseqAvailable = sequence.getItemCount() - (fromInclusive - 1);
+        final long subseqAvailable = sequence.getItemCountLong() - (fromInclusive - 1);
         if (subseqAvailable < 1) {
             return Cardinality.EMPTY;
         }
@@ -178,7 +177,7 @@ public class SubSequence extends AbstractSequence {
             return null;
         }
 
-        final long subseqAvailable = sequence.getItemCount() - (fromInclusive - 1);
+        final long subseqAvailable = sequence.getItemCountLong() - (fromInclusive - 1);
         if (pos >= subseqAvailable) {
             return null;
         }

@@ -154,7 +154,7 @@ public abstract class AbstractArrayNodeSet extends AbstractNodeSet implements Do
     }
 
     @Override
-    public int getItemCount() {
+    public long getItemCountLong() {
         return getLength();
     }
 

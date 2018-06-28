@@ -41,7 +41,7 @@ public class EmptySequence extends AbstractSequence {
     }
 
     @Override
-    public int getItemCount() {
+    public long getItemCountLong() {
         return 0;
     }
 
