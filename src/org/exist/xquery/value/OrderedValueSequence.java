@@ -73,7 +73,7 @@ public class OrderedValueSequence extends AbstractSequence {
     }
 
     @Override
-    public int getItemCount() {
+    public long getItemCountLong() {
         return (items == null) ? 0 : count;
     }
 

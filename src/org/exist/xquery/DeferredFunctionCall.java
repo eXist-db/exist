@@ -139,10 +139,11 @@ public abstract class DeferredFunctionCall implements Sequence {
         }
     }
 
-    public int getItemCount() {
+    @Override
+    public long getItemCountLong() {
         try {
             realize();
-            return sequence.getItemCount();
+            return sequence.getItemCountLong();
         } catch (XPathException e) {
             caughtException = e;
             LOG.error("Exception in deferred function: " + e.getMessage());

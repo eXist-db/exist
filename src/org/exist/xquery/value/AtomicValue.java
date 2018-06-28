@@ -119,7 +119,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
     }
 
     @Override
-    public int getItemCount() {
+    public long getItemCountLong() {
         return 1;
     }
 

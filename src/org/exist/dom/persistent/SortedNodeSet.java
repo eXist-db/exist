@@ -175,9 +175,8 @@ public class SortedNodeSet extends AbstractNodeSet {
         return list.size();
     }
 
-    //TODO : evaluate both semantics (length/item count)
     @Override
-    public int getItemCount() {
+    public long getItemCountLong() {
         return list.size();
     }
 
