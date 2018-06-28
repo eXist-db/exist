@@ -165,7 +165,7 @@ public class RangeSequence extends AbstractSequence {
 
     @Override
     public Item itemAt(final int pos) {
-        if (pos <= getItemCount()) {
+        if (pos < getItemCount()) {
             return new IntegerValue(start.getLong() + pos);
         }
         return null;
