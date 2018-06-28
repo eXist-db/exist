@@ -25,6 +25,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class RangeSequenceTest {
 
@@ -144,5 +145,15 @@ public class RangeSequenceTest {
         }
 
         assertEquals(69, count);
+    }
+
+    @Test
+    public void itemAt_last() throws XPathException {
+        assertEquals(99, rangeSequence.itemAt(98).toJavaObject(Integer.class).intValue());
+    }
+
+    @Test
+    public void itemAt_afterEnd() {
+        assertNull(rangeSequence.itemAt(99));
     }
 }
