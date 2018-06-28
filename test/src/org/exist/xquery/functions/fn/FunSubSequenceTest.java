@@ -156,6 +156,18 @@ public class FunSubSequenceTest {
         assertEquals("(2999999995,2999999996,2999999997,2999999998,2999999999)", asSequenceStr(result));
     }
 
+    @Test
+    public void largeRange_arity2() throws XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery("fn:count(fn:subsequence((1 to 3000000000), -2147483649))");
+        assertEquals("(3000000000)", asSequenceStr(result));
+    }
+
+    @Test
+    public void largeRange_arity3() throws XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery("fn:count(fn:subsequence((1 to 3000000000), 1, 3000000000))");
+        assertEquals("(3000000000)", asSequenceStr(result));
+    }
+
     private static String asSequenceStr(final ResourceSet result) throws XMLDBException {
         final StringBuilder builder = new StringBuilder();
         builder.append('(');
