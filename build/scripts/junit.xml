@@ -182,6 +182,7 @@
             <test fork="yes" name="xquery.numbers.NumberTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="xquery.modules.compression.CompressionTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="xquery.modules.file.FileTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="xquery.validation.ValidationTests" todir="${junit.reports.dat}"/>
 
             <!--  //-->
             <test fork="yes" name="org.exist.http.AuditTrailSessionListenerTest" todir="${junit.reports.dat}"/>
