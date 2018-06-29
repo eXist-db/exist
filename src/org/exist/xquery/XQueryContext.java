@@ -31,12 +31,15 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.*;
 
+import javax.annotation.Nullable;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.stream.XMLStreamException;
 
+import com.evolvedbinary.j8fu.Either;
+import com.evolvedbinary.j8fu.function.TriFunctionE;
 import com.ibm.icu.text.Collator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -82,6 +85,7 @@ import org.exist.xquery.value.*;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import java.util.function.Predicate;
@@ -214,6 +218,14 @@ public class XQueryContext implements BinaryValueManager, Context
 
     /** The set of statically known documents specified as an array of paths to documents and collections. */
     protected XmldbURI[]                               staticCollections             = null;
+
+
+    /**
+     * The available documents of the dynamic context.
+     *
+     * {@see https://www.w3.org/TR/xpath-31/#dt-available-docs}.
+     */
+    private Map<String, TriFunctionE<DBBroker, Txn, String, Either<org.exist.dom.memtree.DocumentImpl, org.exist.dom.persistent.DocumentImpl>, XPathException>> dynamicDocuments = null;
 
     /**
      * A set of documents which were modified during the query, usually through an XQuery update extension. The documents will be checked after the
@@ -461,6 +473,7 @@ public class XQueryContext implements BinaryValueManager, Context
         ctx.baseURISetInProlog       = this.baseURISetInProlog;
         ctx.staticDocumentPaths      = this.staticDocumentPaths;
         ctx.staticDocuments          = this.staticDocuments;
+        ctx.dynamicDocuments         = this.dynamicDocuments;
         ctx.moduleLoadPath           = this.moduleLoadPath;
         ctx.defaultFunctionNamespace = this.defaultFunctionNamespace;
         ctx.defaultElementNamespace  = this.defaultElementNamespace;
@@ -1095,6 +1108,13 @@ public class XQueryContext implements BinaryValueManager, Context
         staticDocuments = set;
     }
 
+    public void addDynamicallyAvailableDocument(final String uri, final TriFunctionE<DBBroker, Txn, String, Either<org.exist.dom.memtree.DocumentImpl, org.exist.dom.persistent.DocumentImpl>, XPathException> supplier) {
+        if (dynamicDocuments == null) {
+            dynamicDocuments = new HashMap<>();
+        }
+        dynamicDocuments.put(uri, supplier);
+    }
+
 
     //TODO : not sure how these 2 options might/have to be related
     public void setCalendar( XMLGregorianCalendar newCalendar )
@@ -1210,6 +1230,23 @@ public class XQueryContext implements BinaryValueManager, Context
 
     public DocumentSet getStaticDocs() {
         return staticDocuments;
+    }
+
+    /**
+     * Get's a document from the "Available documents" of the
+     * dynamic context.
+     */
+    public @Nullable Sequence getDynamicallyAvailableDocument(final String uri) throws XPathException {
+        if (dynamicDocuments == null) {
+            return null;
+        }
+
+        final TriFunctionE<DBBroker, Txn, String, Either<org.exist.dom.memtree.DocumentImpl, DocumentImpl>, XPathException> docSupplier = dynamicDocuments.get(uri);
+        if (docSupplier == null) {
+            return null;
+        }
+
+        return docSupplier.apply(getBroker(), getBroker().getCurrentTransaction(), uri).fold(md -> (Sequence)md, pd -> (Sequence)pd);
     }
 
     public ExtendedXMLStreamReader getXMLStreamReader( NodeValue nv ) throws XMLStreamException, IOException
@@ -1394,6 +1431,7 @@ public class XQueryContext implements BinaryValueManager, Context
             // do not reset the statically known documents
             staticDocumentPaths = null;
             staticDocuments     = null;
+            dynamicDocuments = null;
         }
 
         if( !isShared ) {

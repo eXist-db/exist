@@ -172,7 +172,7 @@ public class DocumentImplTest {
         final SAXParser saxParser  = saxParserFactory.newSAXParser();
         final XMLReader reader = saxParser.getXMLReader();
         final InputSource src = new InputSource(is);
-        final SAXAdapter adapter = new SAXAdapter(null);
+        final SAXAdapter adapter = new SAXAdapter();
         reader.setContentHandler(adapter);
 
         reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
