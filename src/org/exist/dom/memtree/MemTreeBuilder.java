@@ -120,7 +120,7 @@ public class MemTreeBuilder {
         final int prefixIdx = qname.indexOf(':');
 
         String prefix = null;
-        if(context != null && !getDefaultNamespace().equals(namespaceURI == null ? XMLConstants.NULL_NS_URI : namespaceURI)) {
+        if (context != null && !getDefaultNamespace().equals(namespaceURI == null ? XMLConstants.NULL_NS_URI : namespaceURI)) {
             prefix = context.getPrefixForURI(namespaceURI);
         }
 
@@ -128,8 +128,12 @@ public class MemTreeBuilder {
             prefix = (prefixIdx != Constants.STRING_NOT_FOUND) ? qname.substring(0, prefixIdx) : null;
         }
 
-        if(localName.isEmpty() && prefixIdx > -1) {
-            localName = qname.substring(prefixIdx + 1);
+        if (localName.isEmpty()) {
+            if (prefixIdx > -1) {
+                localName = qname.substring(prefixIdx + 1);
+            } else {
+                localName = qname;
+            }
         }
 
         final QName qn = new QName(localName, namespaceURI, prefix);
