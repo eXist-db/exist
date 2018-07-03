@@ -73,6 +73,11 @@ public class Collations {
     public final static String HTML_ASCII_CASE_INSENSITIVE_COLLATION_URI = "http://www.w3.org/2005/xpath-functions/collation/html-ascii-case-insensitive";
 
     /**
+     * The XQTS ASCII Case-blind Collation as defined by the XQTS 3.1.
+     */
+    public final static String XQTS_ASCII_CASE_BLIND_COLLATION_URI = "http://www.w3.org/2010/09/qt-fots-catalog/collation/caseblind";
+
+    /**
      * The URI used to select collations in eXist.
      */
     public final static String EXIST_COLLATION_URI = "http://exist-db.org/collation";
@@ -81,6 +86,11 @@ public class Collations {
      * Lazy-initialized singleton Html Ascii Case Insensitive Collator
      */
     private final static AtomicReference<Collator> htmlAsciiCaseInsensitiveCollator = new AtomicReference<>();
+
+    /**
+     * Lazy-initialized singleton XQTS Case Blind Collator
+     */
+    private final static AtomicReference<Collator> xqtsAsciiCaseBlindCollator = new AtomicReference<>();
 
     /**
      * Lazy-initialized singleton Samisk Collator
@@ -205,7 +215,13 @@ public class Collations {
             try {
                 return getHtmlAsciiCaseInsensitiveCollator();
             } catch (final Exception e) {
-                throw new XPathException("Unable to instantiate HTML ASCII Case Insensitive Collator: "+ e.getMessage(), e);
+                throw new XPathException("Unable to instantiate HTML ASCII Case Insensitive Collator: " + e.getMessage(), e);
+            }
+        } else if(XQTS_ASCII_CASE_BLIND_COLLATION_URI.equals(uri)) {
+            try {
+                return getXqtsAsciiCaseBlindCollator();
+            } catch (final Exception e) {
+                throw new XPathException("Unable to instantiate XQTS ASCII Case Blind Collator: " + e.getMessage(), e);
             }
         } else if (uri.startsWith("java:")) {
             // java class specified: this should be a subclass of
@@ -688,6 +704,21 @@ public class Collations {
             htmlAsciiCaseInsensitiveCollator.compareAndSet(null,
                     collator.freeze());
             collator = htmlAsciiCaseInsensitiveCollator.get();
+        }
+
+        return collator;
+    }
+
+    private static Collator getXqtsAsciiCaseBlindCollator() throws Exception {
+        Collator collator = xqtsAsciiCaseBlindCollator.get();
+        if (collator == null) {
+            collator = new RuleBasedCollator("&a=A &b=B &c=C &d=D &e=E &f=F &g=G &h=H "
+                    + "&i=I &j=J &k=K &l=L &m=M &n=N &o=O &p=P &q=Q &r=R &s=S &t=T "
+                    + "&u=U &v=V &w=W &x=X &y=Y &z=Z");
+            collator.setStrength(Collator.PRIMARY);
+            xqtsAsciiCaseBlindCollator.compareAndSet(null,
+                    collator.freeze());
+            collator = xqtsAsciiCaseBlindCollator.get();
         }
 
         return collator;
