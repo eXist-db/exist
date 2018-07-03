@@ -117,17 +117,19 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
     public void startElement(final String namespaceURI, final String localName, final String qName, final Attributes atts) throws SAXException {
         builder.startElement(namespaceURI, localName, qName, atts);
 
-        if(namespaces != null) {
-            for(final Map.Entry<String, String> entry : namespaces.entrySet()) {
+        if (namespaces != null) {
+            for (final Map.Entry<String, String> entry : namespaces.entrySet()) {
                 builder.namespaceNode(entry.getKey(), entry.getValue());
             }
         }
 
-        for(int i = 0; i < atts.getLength(); i++) {
-            if(atts.getQName(i).startsWith(XMLConstants.XMLNS_ATTRIBUTE)) {
-                final String prefix = null;
+        for (int i = 0; i < atts.getLength(); i++) {
+            final String attQName = atts.getQName(i);
+            if (attQName.startsWith(XMLConstants.XMLNS_ATTRIBUTE)) {
+                final int idxPrefixSep = attQName.indexOf(":");
+                final String prefix = idxPrefixSep > -1 ? attQName.substring(idxPrefixSep + 1) : null;
                 final String uri = atts.getValue(i);
-                if(namespaces == null || !namespaces.containsKey(prefix)) {
+                if (namespaces == null || !namespaces.containsKey(prefix)) {
                     builder.namespaceNode(prefix, uri);
                 }
             }
