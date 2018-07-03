@@ -2,6 +2,7 @@ xquery version "3.0";
 
 module namespace mt="http://exist-db.org/xquery/test/maps";
 
+import module namespace map="http://www.w3.org/2005/xpath-functions/map";
 import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
 
 declare variable $mt:daysOfWeek :=
@@ -323,7 +324,7 @@ function mt:nestedMaps() {
 declare
     %test:assertEquals("Monday")
 function mt:nestedMaps2() {
-    let $map := map { "week" := map { "days" : $mt:daysOfWeek } }
+    let $map := map { "week" : map { "days" : $mt:daysOfWeek } }
     return
         $map("week")("days")("Mo")
 };
@@ -449,7 +450,7 @@ function mt:lookupWildcard() {
 declare
     %test:assertEquals(1)
 function mt:compat() {
-    let $map := map { "one":= 1, "two":= "2" }
+    let $map := map { "one": 1, "two": "2" }
     return
         $map("one")
 };
