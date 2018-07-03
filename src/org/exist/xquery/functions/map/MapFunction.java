@@ -215,7 +215,12 @@ public class MapFunction extends BasicFunction {
 
     private Sequence get(final Sequence[] args) {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
-        return map.get((AtomicValue) args[1].itemAt(0));
+        final Sequence value = map.get((AtomicValue) args[1].itemAt(0));
+        if (value != null) {
+            return value;
+        } else {
+            return Sequence.EMPTY_SEQUENCE;
+        }
     }
 
     private Sequence put(final Sequence[] args) throws XPathException {
