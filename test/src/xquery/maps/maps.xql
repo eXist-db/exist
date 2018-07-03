@@ -477,3 +477,9 @@ function mt:qname() {
     return
             $m?1
 };
+
+declare
+    %test:assertEmpty
+function mt:no-such-entry() {
+    map:get(map:entry("foo", "bar"), "baz")
+};
