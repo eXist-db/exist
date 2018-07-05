@@ -94,7 +94,11 @@ public class FunData extends Function {
         if (getArgumentCount() == 1) {
             items = Atomize.atomize(getArgument(0).eval(contextSequence, contextItem));
         } else {
-            items = Atomize.atomize(contextItem.toSequence());
+            if (contextItem != null) {
+                items = Atomize.atomize(contextItem.toSequence());
+            } else {
+                items = Sequence.EMPTY_SEQUENCE;
+            }
         }
 
         final Sequence result;
