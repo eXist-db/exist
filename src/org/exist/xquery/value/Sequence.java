@@ -28,6 +28,7 @@ import org.exist.numbering.NodeId;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 
 /**
@@ -163,7 +164,7 @@ public interface Sequence {
      * @param requiredType one of the type constants defined in class {@link Type}
      * @throws XPathException
      */
-    AtomicValue convertTo(int requiredType) throws XPathException;
+    @Nullable AtomicValue convertTo(int requiredType) throws XPathException;
 
     /**
      * Convert the sequence to a string.
