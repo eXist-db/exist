@@ -134,7 +134,9 @@ public class EnclosedExpr extends PathExpr {
                                     "An attribute may not appear after another child node.");
                         }
                         try {
+                            receiver.setCheckNS(false);
                             next.copyTo(context.getBroker(), receiver);
+                            receiver.setCheckNS(true);
                         } catch (DOMException e) {
                             if (e.code == DOMException.NAMESPACE_ERR) {
                                 throw new XPathException(this, ErrorCodes.XQDY0102, e.getMessage());
