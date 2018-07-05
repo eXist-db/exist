@@ -66,7 +66,12 @@ public abstract class AbstractSequence implements Sequence {
         throw new IllegalArgumentException("Illegal argument");
     }
 
-    public AtomicValue convertTo(int requiredType) throws XPathException {
+    @Override
+    public AtomicValue convertTo(final int requiredType) throws XPathException {
+        if(isEmpty) {
+            return null;
+        }
+
         final Item first = itemAt(0);
         if (Type.subTypeOf(first.getType(), Type.ATOMIC)) {
             return first.convertTo(requiredType);

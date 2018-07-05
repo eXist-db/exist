@@ -51,6 +51,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Arrays;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.custommonkey.xmlunit.XMLUnit.compareXML;
@@ -1298,13 +1299,10 @@ public class XQueryTest {
         assertEquals("XQuery: " + query, "false", result.getResource(0).getContent());
     }
 
-    private String makeString(int n) {
-        StringBuffer b = new StringBuffer();
-        char c = 'a';
-        for (int i = 0; i < n; i++) {
-            b.append(c);
-        }
-        return b.toString();
+    private String makeString(final int n) {
+        final char buf[] = new char[n];
+        Arrays.fill(buf, 'a');
+        return new String(buf);
     }
 
     @Test

@@ -51,7 +51,7 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
 
     private final static Logger LOG = LogManager.getLogger(XMLReaderObjectFactory.class);
 
-    public static enum VALIDATION_SETTING {
+    public enum VALIDATION_SETTING {
         UNKNOWN, ENABLED, AUTO, DISABLED
     }
 
