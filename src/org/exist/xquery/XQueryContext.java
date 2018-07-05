@@ -28,6 +28,7 @@ import java.lang.invoke.MethodHandles;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -40,6 +41,8 @@ import javax.xml.stream.XMLStreamException;
 
 import com.evolvedbinary.j8fu.Either;
 import com.evolvedbinary.j8fu.function.TriFunctionE;
+import com.evolvedbinary.j8fu.function.QuadFunctionE;
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import com.ibm.icu.text.Collator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -90,6 +93,7 @@ import org.w3c.dom.Node;
 
 import java.util.function.Predicate;
 
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.lang.invoke.MethodType.methodType;
 
 /**
@@ -226,6 +230,13 @@ public class XQueryContext implements BinaryValueManager, Context
      * {@see https://www.w3.org/TR/xpath-31/#dt-available-docs}.
      */
     private Map<String, TriFunctionE<DBBroker, Txn, String, Either<org.exist.dom.memtree.DocumentImpl, org.exist.dom.persistent.DocumentImpl>, XPathException>> dynamicDocuments = null;
+
+    /**
+     * The available test resources of the dynamic context.
+     *
+     * {@see https://www.w3.org/TR/xpath-31/#dt-available-text-resources}.
+     */
+    private Map<Tuple2<String, Charset>, QuadFunctionE<DBBroker, Txn, String, Charset, Reader, XPathException>> dynamicTextResources = null;
 
     /**
      * A set of documents which were modified during the query, usually through an XQuery update extension. The documents will be checked after the
@@ -474,6 +485,7 @@ public class XQueryContext implements BinaryValueManager, Context
         ctx.staticDocumentPaths      = this.staticDocumentPaths;
         ctx.staticDocuments          = this.staticDocuments;
         ctx.dynamicDocuments         = this.dynamicDocuments;
+        ctx.dynamicTextResources     = this.dynamicTextResources;
         ctx.moduleLoadPath           = this.moduleLoadPath;
         ctx.defaultFunctionNamespace = this.defaultFunctionNamespace;
         ctx.defaultElementNamespace  = this.defaultElementNamespace;
@@ -1115,6 +1127,13 @@ public class XQueryContext implements BinaryValueManager, Context
         dynamicDocuments.put(uri, supplier);
     }
 
+    public void addDynamicallyAvailableTextResource(final String uri, final Charset encoding, final QuadFunctionE<DBBroker, Txn, String, Charset, Reader, XPathException> supplier) {
+        if (dynamicTextResources == null) {
+            dynamicTextResources = new HashMap<>();
+        }
+        dynamicTextResources.put(Tuple(uri, encoding), supplier);
+    }
+
 
     //TODO : not sure how these 2 options might/have to be related
     public void setCalendar( XMLGregorianCalendar newCalendar )
@@ -1247,6 +1266,23 @@ public class XQueryContext implements BinaryValueManager, Context
         }
 
         return docSupplier.apply(getBroker(), getBroker().getCurrentTransaction(), uri).fold(md -> (Sequence)md, pd -> (Sequence)pd);
+    }
+
+    /**
+     * Get's a text resource from the "Available text resources" of the
+     * dynamic context.
+     */
+    public @Nullable Reader getDynamicallyAvailableTextResource(final String uri, final Charset charset) throws XPathException {
+        if (dynamicTextResources == null) {
+            return null;
+        }
+
+        final QuadFunctionE<DBBroker, Txn, String, Charset, Reader, XPathException> textResourceSupplier = dynamicTextResources.get(Tuple(uri, charset));
+        if (textResourceSupplier == null) {
+            return null;
+        }
+
+        return textResourceSupplier.apply(getBroker(), getBroker().getCurrentTransaction(), uri, charset);
     }
 
     public ExtendedXMLStreamReader getXMLStreamReader( NodeValue nv ) throws XMLStreamException, IOException
@@ -1432,6 +1468,7 @@ public class XQueryContext implements BinaryValueManager, Context
             staticDocumentPaths = null;
             staticDocuments     = null;
             dynamicDocuments = null;
+            dynamicTextResources = null;
         }
 
         if( !isShared ) {
