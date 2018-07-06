@@ -122,7 +122,11 @@ Once development on a new stable version is complete, the following steps will p
     project.version = 3.1.0
     ```
     
-    And commit the changes and push to `origin` (or `upstream` if you are on a fork).
+    And commit the changes and push to `origin` (or `upstream` if you are on a fork):
+    ```
+    $ git commit build.properties -m "[release] Set version for 3.1.0 release"
+    $ git push origin/develop
+    ```
 
 4. Git tag **and sign** eXist-3.1.0 from the `HEAD` of `develop` branch and push the tag to `origin` (or `upstream` if you are on a fork):
     ```
@@ -139,7 +143,11 @@ Once development on a new stable version is complete, the following steps will p
     project.version = 3.2.0-SNAPSHOT
     ```
 
-    And commit the changes and push to `origin` (or `upstream` if you are on a fork).
+    And commit the changes and push to `origin` (or `upstream` if you are on a fork):
+    ```
+    $ git commit build.properties -m "[release] Set version to 3.2.0-SNAPSHOT"
+    $ git push origin/develop
+    ```
 
     **NOTE:** We increment to the next `MINOR` version, rather than to the next `PATCH` or `MAJOR` version, for two reasons. First, we assume the next version will likely contain features and not just bug patches, although this does not prevent us from doing a `3.1.1` (a `PATCH` release) release next, should we have only patches. By the same token, the future is uncertain and we recognise that it is easier to release features with non-breaking API changes and patches, although this still does not prevent us from doing a `4.0.0` release next, should we have breaking API changes.
 
