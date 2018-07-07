@@ -68,7 +68,7 @@ public abstract class AbstractSequence implements Sequence {
 
     @Override
     public AtomicValue convertTo(final int requiredType) throws XPathException {
-        if(isEmpty) {
+        if(isEmpty()) {
             return null;
         }
 
