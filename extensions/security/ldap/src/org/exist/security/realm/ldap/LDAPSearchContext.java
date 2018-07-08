@@ -9,7 +9,6 @@ import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 
 /**
- *
  * @author aretter
  */
 @ConfigurationClass("search")
@@ -32,22 +31,24 @@ public class LDAPSearchContext implements Configurable {
 
     private final Configuration configuration;
 
-    public LDAPSearchContext(Configuration config) {
+    public LDAPSearchContext(final Configuration config) {
         this.configuration = Configurator.configure(this, config);
     }
 
     public String getBase() {
         return base;
     }
-    
+
     public String getAbsoluteBase() throws NamingException {
-        if(getBase() != null) {
+        if (getBase() != null) {
             int index;
-            if ((index = getBase().indexOf("dc=")) >= 0)
+            if ((index = getBase().indexOf("dc=")) >= 0) {
                 return getBase().substring(index);
-            
-            if ((index = getBase().indexOf("DC=")) >= 0)
+            }
+
+            if ((index = getBase().indexOf("DC=")) >= 0) {
                 return getBase().substring(index);
+            }
         } else {
             throw new NamingException("no 'base' defined");
         }

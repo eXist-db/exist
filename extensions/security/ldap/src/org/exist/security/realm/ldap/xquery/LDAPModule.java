@@ -1,17 +1,3 @@
-package org.exist.security.realm.ldap.xquery;
-
-import java.util.List;
-import java.util.Map;
-import org.exist.xquery.AbstractInternalModule;
-import org.exist.xquery.FunctionDef;
-
-/**
- *
- * http://exist-db.org/xquery/versioning
- * 
- * @author Adam Retter <adam@exist-db.org>
- */
-
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001-11 The eXist-db Project
@@ -30,23 +16,32 @@ import org.exist.xquery.FunctionDef;
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * $Id$
+ */
+package org.exist.security.realm.ldap.xquery;
+
+import java.util.List;
+import java.util.Map;
+
+import org.exist.xquery.AbstractInternalModule;
+import org.exist.xquery.FunctionDef;
+
+/**
+ * @author Adam Retter <adam@exist-db.org>
  */
 public class LDAPModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = "http://exist-db.org/security/ldap/xquery";
-    public final static String PREFIX = "ldap";
-    public final static String RELEASED_IN_VERSION = "eXist-1.5";
-    
+    public static final String NAMESPACE_URI = "http://exist-db.org/security/ldap/xquery";
+    public static final String PREFIX = "ldap";
+    public static final String RELEASED_IN_VERSION = "eXist-1.5";
+
     public static final FunctionDef[] functions = {
-        new FunctionDef(AccountFunctions.signatures[0], AccountFunctions.class)
+            new FunctionDef(AccountFunctions.signatures[0], AccountFunctions.class)
     };
 
-    public LDAPModule(Map<String, List<? extends Object>> parameters) {
+    public LDAPModule(final Map<String, List<? extends Object>> parameters) {
         super(functions, parameters);
     }
-    
+
     @Override
     public String getNamespaceURI() {
         return NAMESPACE_URI;

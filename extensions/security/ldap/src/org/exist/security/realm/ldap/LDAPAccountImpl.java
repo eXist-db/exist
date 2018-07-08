@@ -11,39 +11,38 @@ import org.exist.security.internal.AccountImpl;
 import org.exist.storage.DBBroker;
 
 /**
- *
  * @author aretter
  */
 @ConfigurationClass("account")
 public class LDAPAccountImpl extends AccountImpl {
 
-    public LDAPAccountImpl(AbstractRealm realm, Configuration configuration) throws ConfigurationException {
+    public LDAPAccountImpl(final AbstractRealm realm, final Configuration configuration) throws ConfigurationException {
         super(realm, configuration);
     }
 
-    public LDAPAccountImpl(DBBroker broker, AbstractRealm realm, AccountImpl from_user) throws ConfigurationException {
+    public LDAPAccountImpl(final DBBroker broker, final AbstractRealm realm, final AccountImpl from_user) throws ConfigurationException {
         super(broker, realm, from_user);
     }
 
-    public LDAPAccountImpl(DBBroker broker, AbstractRealm realm, int id, Account from_user) throws ConfigurationException, PermissionDeniedException {
+    public LDAPAccountImpl(final DBBroker broker, final AbstractRealm realm, final int id, final Account from_user) throws ConfigurationException, PermissionDeniedException {
         super(broker, realm, id, from_user);
     }
 
-    public LDAPAccountImpl(DBBroker broker, AbstractRealm realm, String name) throws ConfigurationException {
+    public LDAPAccountImpl(final DBBroker broker, final AbstractRealm realm, final String name) throws ConfigurationException {
         super(broker, realm, name);
     }
 
-    public LDAPAccountImpl(DBBroker broker, AbstractRealm realm, int id, String name, String password) throws ConfigurationException {
+    public LDAPAccountImpl(final DBBroker broker, final AbstractRealm realm, final int id, final String name, final String password) throws ConfigurationException {
         super(broker, realm, id, name, password);
     }
 
-    LDAPAccountImpl(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {
+    LDAPAccountImpl(final AbstractRealm realm, final Configuration config, final boolean removed) throws ConfigurationException {
         super(realm, config, removed);
     }
 
     @Override
-    public Group addGroup(Group group) throws PermissionDeniedException {
-        if(group instanceof LDAPGroupImpl) {
+    public Group addGroup(final Group group) throws PermissionDeniedException {
+        if (group instanceof LDAPGroupImpl) {
             //TODO
             //we dont support writes to LDAP yet!
             return null;
@@ -54,13 +53,13 @@ public class LDAPAccountImpl extends AccountImpl {
     }
 
     @Override
-    public Group addGroup(String name) throws PermissionDeniedException {
+    public Group addGroup(final String name) throws PermissionDeniedException {
         Group group = getRealm().getGroup(name);
 
         //allow LDAP users to have groups from other realms
-        if(group == null) {
-           //if the group is not present in this realm, look externally
-           group = getRealm().getExternalGroup(name);
+        if (group == null) {
+            //if the group is not present in this realm, look externally
+            group = getRealm().getExternalGroup(name);
         }
         return addGroup(group);
     }
