@@ -481,8 +481,7 @@ public class LDAPRealm extends AbstractRealm {
         }
     }
 
-    public final synchronized Account getAccount(final LdapContext ctx, String name) {
-
+    private synchronized Account getAccount(final LdapContext ctx, String name) {
         name = ensureCase(name);
 
         if (LOG.isDebugEnabled()) {
@@ -535,10 +534,6 @@ public class LDAPRealm extends AbstractRealm {
                 }
                 //LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
                 return null;
-            } finally {
-                if (ctx != null) {
-                    LdapUtils.closeContext(ctx);
-                }
             }
         }
     }
@@ -632,8 +627,7 @@ public class LDAPRealm extends AbstractRealm {
         }
     }
 
-    public final synchronized Group getGroup(final LdapContext ctx, final DBBroker broker, final String name) {
-
+    private synchronized Group getGroup(final LdapContext ctx, final DBBroker broker, final String name) {
         if (name == null) {
             return null;
         }
@@ -663,10 +657,6 @@ public class LDAPRealm extends AbstractRealm {
             } catch (final NamingException ne) {
                 LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
                 return null;
-            } finally {
-                if (ctx != null) {
-                    LdapUtils.closeContext(ctx);
-                }
             }
         }
     }
@@ -1044,7 +1034,6 @@ public class LDAPRealm extends AbstractRealm {
 
 
     private List<String> findGroupnamesForUserDistinguishedName(final LdapContext ctx, final String userDistinguishedName) {
-
         final List<String> groupnames = new ArrayList<>();
 
         try {
@@ -1068,10 +1057,6 @@ public class LDAPRealm extends AbstractRealm {
             }
         } catch (final NamingException ne) {
             LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
-        } finally {
-            if (ctx != null) {
-                LdapUtils.closeContext(ctx);
-            }
         }
 
         return groupnames;
