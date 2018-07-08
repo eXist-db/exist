@@ -2,6 +2,7 @@ package org.exist.security.realm.ldap;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
@@ -10,7 +11,6 @@ import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 
 /**
- *
  * @author aretter
  */
 @ConfigurationClass("transformation")
@@ -22,13 +22,13 @@ public class LDAPTransformationContext implements TransformationContext, Configu
 
     private final Configuration configuration;
 
-    public LDAPTransformationContext(Configuration config) {
+    public LDAPTransformationContext(final Configuration config) {
         this.configuration = Configurator.configure(this, config);
     }
 
     @Override
     public List<String> getAdditionalGroups() {
-        List<String> additionalGroups = new ArrayList<String>();
+        final List<String> additionalGroups = new ArrayList<>();
         additionalGroups.add(addGroup);
         return additionalGroups;
     }

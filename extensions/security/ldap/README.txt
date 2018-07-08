@@ -13,15 +13,15 @@ To enable LDAP authentication you need to make sure that the file /db/system/sec
                 <default-password>some-ldap-password</default-password>
 				<account>
                     <search-filter-prefix>(&amp;(objectClass=user)(sAMAccountName=${account-name}))</search-filter-prefix>
-                    <search-attribute>....
-                    <metadata-search-attribute>...
+                    <search-attribute>...</search-attribute>
+                    <metadata-search-attribute>..</metadata-search-attribute>
                     <whitelist><principal>..</principal><principal>..</principal></whitelist>
                     <blacklist><principal>..</principal><principal>..</principal></blacklist>
                 </account
                 <group>
                     <search-filter-prefix>(&amp;(objectClass=group)(sAMAccountName=${group-name}))</group-search-filter>
-                    <search-attribute>....
-                    <metadata-search-attribute>...
+                    <search-attribute>...</search-attribute>
+                    <metadata-search-attribute>..</metadata-search-attribute>
                     <whitelist><principal>..</principal><principal>..</principal></whitelist>
                     <blacklist><principal>..</principal><principal>..</principal></blacklist>
                 </group>
