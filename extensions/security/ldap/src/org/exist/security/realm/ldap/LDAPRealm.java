@@ -213,8 +213,9 @@ public class LDAPRealm extends AbstractRealm {
             throw new PermissionDeniedException("You do not have permission to modify the account");
         }
 
+        LdapContext ctx = null;
         try {
-            final LdapContext ctx = getContext(invokingUser);
+             ctx = getContext(invokingUser);
             final SearchResult ldapUser = findAccountByAccountName(ctx, account.getName());
             if (ldapUser == null) {
                 throw new AuthenticationException(AuthenticationException.ACCOUNT_NOT_FOUND, "Could not find the account in the LDAP");
@@ -319,6 +320,8 @@ public class LDAPRealm extends AbstractRealm {
             });
         } catch (final NamingException | EXistException ne) {
             throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage(), ne);
+        } finally {
+            LdapUtils.closeContext(ctx);
         }
     }
 
