@@ -38,6 +38,7 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
+import com.evolvedbinary.j8fu.function.BiFunction3E;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -221,21 +222,19 @@ public class LDAPRealm extends AbstractRealm {
                 throw new AuthenticationException(AuthenticationException.ACCOUNT_NOT_FOUND, "Could not find the account in the LDAP");
             }
 
-            return executeAsSystemUser(ctx, new Unit<Account>() {
-                @Override
-                public Account execute(final LdapContext ctx, final DBBroker broker) throws EXistException, PermissionDeniedException, NamingException {
+            return executeAsSystemUser(ctx, (ctx2, broker) -> {
 
                     int update = UPDATE_NONE;
 
                     //1) get the ldap group membership
-                    final List<Group> memberOf_groups = getGroupMembershipForLdapUser(ctx, broker, ldapUser);
+                    final List<Group> memberOf_groups = getGroupMembershipForLdapUser(ctx2, broker, ldapUser);
 
                     //2) get the ldap primary group
-                    final String primaryGroup = findGroupBySID(ctx, getPrimaryGroupSID(ldapUser));
+                    final String primaryGroup = findGroupBySID(ctx2, getPrimaryGroupSID(ldapUser));
 
                     //append the ldap primaryGroup to the head of the ldap group list, and compare
                     //to the account group list
-                    memberOf_groups.add(0, getGroup(ctx, broker, primaryGroup));
+                    memberOf_groups.add(0, getGroup(ctx2, broker, primaryGroup));
 
                     final String accountGroups[] = account.getGroups();
 
@@ -316,7 +315,6 @@ public class LDAPRealm extends AbstractRealm {
                     }
 
                     return account;
-                }
             });
         } catch (final NamingException | EXistException ne) {
             throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage(), ne);
@@ -330,9 +328,7 @@ public class LDAPRealm extends AbstractRealm {
         //final LDAPSearchAccount searchAccount = ensureContextFactory().getSearch().getSearchAccount();
 
         try {
-            return executeAsSystemUser(ctx, new Unit<Account>() {
-                @Override
-                public Account execute(final LdapContext ctx, final DBBroker broker) throws EXistException, PermissionDeniedException, NamingException {
+            return executeAsSystemUser(ctx, (ctx2, broker) -> {
 
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Saving account '" + username + "'.");
@@ -391,7 +387,6 @@ public class LDAPRealm extends AbstractRealm {
                     }*/
 
                     return account;
-                }
             });
         } catch (final Exception e) {
             if (LOG.isDebugEnabled()) {
@@ -401,14 +396,12 @@ public class LDAPRealm extends AbstractRealm {
         }
     }
 
-    private interface Unit<R> {
-        R execute(LdapContext ctx, DBBroker broker) throws EXistException, PermissionDeniedException, NamingException;
-    }
+    private interface LDAPFunction<R> extends BiFunction3E<LdapContext, DBBroker, R, EXistException, PermissionDeniedException, NamingException> {}
 
-    private <R> R executeAsSystemUser(final LdapContext ctx, final Unit<R> unit) throws EXistException, PermissionDeniedException, NamingException {
+    private <R> R executeAsSystemUser(final LdapContext ctx, final LDAPFunction<R> ldapFunction) throws EXistException, PermissionDeniedException, NamingException {
         try (final DBBroker broker = getDatabase().get(Optional.of(getSecurityManager().getSystemSubject()))) {
             //perform as SYSTEM user
-            return unit.execute(ctx, broker);
+            return ldapFunction.apply(ctx, broker);
         }
     }
 
