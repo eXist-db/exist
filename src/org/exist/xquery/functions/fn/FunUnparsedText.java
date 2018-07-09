@@ -36,6 +36,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import static org.exist.xquery.FunctionDSL.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class FunUnparsedText extends BasicFunction {
 
@@ -79,35 +80,77 @@ public class FunUnparsedText extends BasicFunction {
         if (!args[0].isEmpty()) {
             if (isCalledAs("unparsed-text-lines")) {
                 return readLines(args[0].getStringValue(), encoding);
+            } else if (isCalledAs("unparsed-text-available")) {
+                return BooleanValue.valueOf(contentAvailable(args[0].getStringValue(), encoding));
             } else {
-                final String content;
-                try {
-                    content = readContent(args[0].getStringValue(), encoding);
-                } catch (XPathException e) {
-                    if (isCalledAs("unparsed-text-available")) {
-                        return BooleanValue.FALSE;
-                    }
-                    throw e;
-                }
-                if (isCalledAs("unparsed-text-available")) {
-                    return BooleanValue.TRUE;
-                }
-                return new StringValue(content);
+                return new StringValue(readContent(args[0].getStringValue(), encoding));
             }
         }
         return Sequence.EMPTY_SEQUENCE;
     }
 
-    private String readContent(final String uriParam, final String encoding) throws XPathException {
+    private boolean contentAvailable(final String uri, final String encoding) {
+        final Charset charset;
         try {
-            final Source source = getSource(uriParam);
-            Charset charset = getCharset(encoding, source);
+            charset = encoding != null ? Charset.forName(encoding) : UTF_8;
+        } catch (final IllegalArgumentException e) {
+            return false;
+        }
+
+        try (final Reader dynamicTextResource = context.getDynamicallyAvailableTextResource(toUri(uri).toString(), charset)) {
+            if (dynamicTextResource != null) {
+                return true;
+            } else {
+                try {
+                    readContent(getSource(uri), encoding);
+                    return true;
+                } catch (final XPathException e) {
+                    return false;
+                }
+            }
+        } catch (final XPathException | IOException e) {
+            return false;
+        }
+    }
+
+    private String readContent(final String uri, final String encoding) throws XPathException {
+        final Charset charset;
+        try {
+            charset = encoding != null ? Charset.forName(encoding) : UTF_8;
+        } catch (final IllegalArgumentException e) {
+            throw new XPathException(this, ErrorCodes.FOUT1190, e.getMessage());
+        }
+
+        try (final Reader dynamicTextResource = context.getDynamicallyAvailableTextResource(toUri(uri).toString(), charset)) {
+            if (dynamicTextResource != null) {
+                return readAll(dynamicTextResource);
+            } else {
+                return readContent(getSource(uri), encoding);
+            }
+        } catch (final IOException e) {
+            throw new XPathException(this, ErrorCodes.FOUT1170, "Cannot read text resource");
+        }
+    }
+
+    private String readAll(final Reader reader) throws IOException {
+        final StringBuilder builder = new StringBuilder();
+        final char buf[] = new char[4096];
+        int read = -1;
+        while ((read = reader.read(buf)) > 0) {
+            builder.append(buf, 0, read);
+        }
+        return builder.toString();
+    }
+
+    private String readContent(final Source source, final String encoding) throws XPathException {
+        try {
+            final Charset charset = getCharset(encoding, source);
             final StringWriter output = new StringWriter();
             try (final InputStream is = source.getInputStream()) {
                 IOUtils.copy(is, output, charset);
             }
             return output.toString();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new XPathException(this, ErrorCodes.FOUT1170, e.getMessage());
         }
     }
@@ -125,7 +168,7 @@ public class FunUnparsedText extends BasicFunction {
                 }
             }
             return result;
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new XPathException(this, ErrorCodes.FOUT1170, e.getMessage());
         }
     }
@@ -135,7 +178,7 @@ public class FunUnparsedText extends BasicFunction {
         if (encoding == null) {
             try {
                 charset = source.getEncoding();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new XPathException(this, ErrorCodes.FOUT1170, e.getMessage());
             }
             if (charset == null) {
@@ -144,7 +187,7 @@ public class FunUnparsedText extends BasicFunction {
         } else {
             try {
                 charset = Charset.forName(encoding);
-            } catch (IllegalArgumentException e) {
+            } catch (final IllegalArgumentException e) {
                 throw new XPathException(this, ErrorCodes.FOUT1190, e.getMessage());
             }
         }
@@ -172,6 +215,27 @@ public class FunUnparsedText extends BasicFunction {
             return source;
         } catch (final IOException | PermissionDeniedException | URISyntaxException e) {
             throw new XPathException(this, ErrorCodes.FOUT1170, e.getMessage());
+        }
+    }
+
+    private URI toUri(final String uriStr) throws XPathException {
+        try {
+            URI uri = new URI(uriStr);
+            if (!uri.isAbsolute()) {
+                final AnyURIValue baseXdmUri = context.getBaseURI();
+                if (baseXdmUri != null && !baseXdmUri.equals(AnyURIValue.EMPTY_URI)) {
+                    URI baseUri = baseXdmUri.toURI();
+                    if (!baseUri.toString().endsWith("/")) {
+                        baseUri = new URI(baseUri.toString() + '/');
+                    }
+                    uri = baseUri.resolve(uri);
+                } else if (!XmldbURI.create(uri).isAbsolute()) {
+                    throw new XPathException(this, ErrorCodes.FOUT1170, "$uri is a relative URI but there is no base-URI set");
+                }
+            }
+            return uri;
+        } catch (final URISyntaxException e) {
+            throw new XPathException(context.getRootExpression(), ErrorCodes.FODC0005, e);
         }
     }
 }
