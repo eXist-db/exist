@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -177,8 +178,10 @@ public class SerializeToFile extends BasicFunction {
         //parse serialization options
         final Properties outputProperties = new Properties();
 
+        // defaults
         outputProperties.setProperty( OutputKeys.INDENT, "yes" );
         outputProperties.setProperty( OutputKeys.OMIT_XML_DECLARATION, "yes" );
+        outputProperties.setProperty( OutputKeys.ENCODING, "UTF-8" );
 
         if (sSerializeParams.hasOne() && Type.subTypeOf(sSerializeParams.getItemType(), Type.NODE)) {
             SerializerUtils.getSerializationOptions(this, (NodeValue) sSerializeParams.itemAt(0), outputProperties);
@@ -205,7 +208,7 @@ public class SerializeToFile extends BasicFunction {
 
 
         try (final OutputStream os = Files.newOutputStream(file, ops);
-                final Writer writer = new OutputStreamWriter(os)) {
+                final Writer writer = new OutputStreamWriter(os, Charset.forName(outputProperties.getProperty(OutputKeys.ENCODING)))) {
 
             serializer.setProperties(outputProperties);
 
