@@ -228,6 +228,13 @@ public class XQueryContext implements BinaryValueManager, Context
     private Map<String, TriFunctionE<DBBroker, Txn, String, Either<org.exist.dom.memtree.DocumentImpl, org.exist.dom.persistent.DocumentImpl>, XPathException>> dynamicDocuments = null;
 
     /**
+     * The available collections of the dynamic context.
+     *
+     * {@see https://www.w3.org/TR/xpath-31/#dt-available-collections}.
+     */
+    private Map<String, TriFunctionE<DBBroker, Txn, String, Sequence, XPathException>> dynamicCollections = null;
+
+    /**
      * A set of documents which were modified during the query, usually through an XQuery update extension. The documents will be checked after the
      * query completed to see if a defragmentation run is needed.
      */
@@ -474,6 +481,7 @@ public class XQueryContext implements BinaryValueManager, Context
         ctx.staticDocumentPaths      = this.staticDocumentPaths;
         ctx.staticDocuments          = this.staticDocuments;
         ctx.dynamicDocuments         = this.dynamicDocuments;
+        ctx.dynamicCollections       = this.dynamicCollections;
         ctx.moduleLoadPath           = this.moduleLoadPath;
         ctx.defaultFunctionNamespace = this.defaultFunctionNamespace;
         ctx.defaultElementNamespace  = this.defaultElementNamespace;
@@ -1115,6 +1123,13 @@ public class XQueryContext implements BinaryValueManager, Context
         dynamicDocuments.put(uri, supplier);
     }
 
+    public void addDynamicallyAvailableCollection(final String uri, final TriFunctionE<DBBroker, Txn, String, Sequence, XPathException> supplier) {
+        if (dynamicCollections == null) {
+            dynamicCollections = new HashMap<>();
+        }
+        dynamicCollections.put(uri, supplier);
+    }
+
 
     //TODO : not sure how these 2 options might/have to be related
     public void setCalendar( XMLGregorianCalendar newCalendar )
@@ -1247,6 +1262,23 @@ public class XQueryContext implements BinaryValueManager, Context
         }
 
         return docSupplier.apply(getBroker(), getBroker().getCurrentTransaction(), uri).fold(md -> (Sequence)md, pd -> (Sequence)pd);
+    }
+
+    /**
+     * Get's a document from the "Available collections" of the
+     * dynamic context.
+     */
+    public @Nullable Sequence getDynamicallyAvailableCollection(final String uri) throws XPathException {
+        if (dynamicCollections == null) {
+            return null;
+        }
+
+        final TriFunctionE<DBBroker, Txn, String, Sequence, XPathException> collectionSupplier = dynamicCollections.get(uri);
+        if (collectionSupplier == null) {
+            return null;
+        }
+
+        return collectionSupplier.apply(getBroker(), getBroker().getCurrentTransaction(), uri);
     }
 
     public ExtendedXMLStreamReader getXMLStreamReader( NodeValue nv ) throws XMLStreamException, IOException
@@ -1432,6 +1464,7 @@ public class XQueryContext implements BinaryValueManager, Context
             staticDocumentPaths = null;
             staticDocuments     = null;
             dynamicDocuments = null;
+            dynamicCollections = null;
         }
 
         if( !isShared ) {

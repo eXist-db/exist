@@ -42,17 +42,17 @@ function rt:setup() {
     xmldb:create-collection("/db/system/config/db", $rt:INDEXED_COLLECTION_NAME),
     xmldb:store("/db/system/config/db/" || $rt:INDEXED_COLLECTION_NAME, "collection.xconf", $rt:COLLECTION_CONFIG),
     xmldb:create-collection("/db", $rt:INDEXED_COLLECTION_NAME),
-    xmldb:store($rt:INDEXED_COLLECTION_NAME, "test.xml", $rt:DATA),
+    xmldb:store($rt:INDEXED_COLLECTION, "test.xml", $rt:DATA),
     xmldb:create-collection("/db", $rt:NON_INDEXED_COLLECTION_NAME),
-    xmldb:store($rt:NON_INDEXED_COLLECTION_NAME, "test.xml", $rt:DATA)
+    xmldb:store($rt:NON_INDEXED_COLLECTION, "test.xml", $rt:DATA)
 };
 
 declare
     %test:tearDown
 function rt:cleanup() {
-    xmldb:remove($rt:INDEXED_COLLECTION_NAME),
+    xmldb:remove($rt:INDEXED_COLLECTION),
     xmldb:remove("/db/system/config/db/" || $rt:INDEXED_COLLECTION_NAME),
-    xmldb:remove($rt:NON_INDEXED_COLLECTION_NAME)
+    xmldb:remove($rt:NON_INDEXED_COLLECTION)
 };
 
 declare function rt:get-note($div as element(div)) as element(note)  {
@@ -65,7 +65,7 @@ declare function rt:get-note($div as element(div)) as element(note)  {
 declare
     %test:assertXPath('/@type = "summary"')
 function rt:test-indexed-collection() {
-    rt:get-note(collection($rt:INDEXED_COLLECTION_NAME)//div)
+    rt:get-note(collection($rt:INDEXED_COLLECTION)//div)
 };
 
 (:~
@@ -74,5 +74,5 @@ function rt:test-indexed-collection() {
 declare
     %test:assertXPath('/@type = "summary"')
 function rt:test-non-indexed-collection() {
-    rt:get-note(collection($rt:NON_INDEXED_COLLECTION_NAME)//div)
+    rt:get-note(collection($rt:NON_INDEXED_COLLECTION)//div)
 };
