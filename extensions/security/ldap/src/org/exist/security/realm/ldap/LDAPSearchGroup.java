@@ -12,7 +12,7 @@ import org.exist.config.annotation.ConfigurationClass;
 @ConfigurationClass("group")
 public class LDAPSearchGroup extends AbstractLDAPSearchPrincipal implements Configurable {
 
-    public LDAPSearchGroup(Configuration config) {
+    public LDAPSearchGroup(final Configuration config) {
         super(config);
 
         //it require, because class's fields initializing after super constructor

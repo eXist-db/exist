@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
@@ -13,7 +14,6 @@ import org.exist.config.annotation.ConfigurationFieldClassMask;
 import org.exist.security.AXSchemaType;
 
 /**
- *
  * @author aretter
  */
 @ConfigurationClass("")
@@ -23,20 +23,20 @@ public abstract class AbstractLDAPSearchPrincipal implements Configurable {
     protected String searchFilterPrefix = null;
 
     @ConfigurationFieldAsElement("search-attribute")
-    protected Map<String, String> searchAttributes = new HashMap<String, String>();
+    protected Map<String, String> searchAttributes = new HashMap<>();
 
     @ConfigurationFieldAsElement("metadata-search-attribute")
-    protected Map<String, String> metadataSearchAttributes = new HashMap<String, String>();
-    
+    protected Map<String, String> metadataSearchAttributes = new HashMap<>();
+
     @ConfigurationFieldAsElement("whitelist")
     protected LDAPPrincipalWhiteList whiteList = null;
-    
+
     @ConfigurationFieldAsElement("blacklist")
     protected LDAPPrincipalBlackList blackList = null;
 
     protected Configuration configuration;
 
-    public AbstractLDAPSearchPrincipal(Configuration config) {
+    public AbstractLDAPSearchPrincipal(final Configuration config) {
         this.configuration = Configurator.configure(this, config);
     }
 
@@ -44,18 +44,18 @@ public abstract class AbstractLDAPSearchPrincipal implements Configurable {
         return searchFilterPrefix;
     }
 
-    public String getSearchAttribute(LDAPSearchAttributeKey ldapSearchAttributeKey) {
+    public String getSearchAttribute(final LDAPSearchAttributeKey ldapSearchAttributeKey) {
         return searchAttributes.get(ldapSearchAttributeKey.getKey());
     }
 
-    public String getMetadataSearchAttribute(AXSchemaType axSchemaType) {
+    public String getMetadataSearchAttribute(final AXSchemaType axSchemaType) {
         return metadataSearchAttributes.get(axSchemaType.getNamespace());
     }
 
 
     public Set<AXSchemaType> getMetadataSearchAttributeKeys() {
-        Set<AXSchemaType> metadataSearchAttributeKeys = new HashSet<AXSchemaType>();
-        for(String key : metadataSearchAttributes.keySet()) {
+        final Set<AXSchemaType> metadataSearchAttributeKeys = new HashSet<>();
+        for (final String key : metadataSearchAttributes.keySet()) {
             metadataSearchAttributeKeys.add(AXSchemaType.valueOfNamespace(key));
         }
         return metadataSearchAttributeKeys;
@@ -78,7 +78,7 @@ public abstract class AbstractLDAPSearchPrincipal implements Configurable {
     public LDAPPrincipalWhiteList getWhiteList() {
         return whiteList;
     }
-    
+
     public enum LDAPSearchAttributeKey {
         NAME("name"),
         DN("dn"),
@@ -89,17 +89,18 @@ public abstract class AbstractLDAPSearchPrincipal implements Configurable {
         OBJECT_SID("objectSid");
 
         private final String key;
-        LDAPSearchAttributeKey(String key) {
+
+        LDAPSearchAttributeKey(final String key) {
             this.key = key;
         }
 
-        public String getKey(){
+        public String getKey() {
             return key;
         }
 
-        public static LDAPSearchAttributeKey valueOfKey(String key) {
-            for(LDAPSearchAttributeKey ldapSearchAttributeKey : LDAPSearchAttributeKey.values()) {
-                if(ldapSearchAttributeKey.getKey().equals(key)){
+        public static LDAPSearchAttributeKey valueOfKey(final String key) {
+            for (final LDAPSearchAttributeKey ldapSearchAttributeKey : LDAPSearchAttributeKey.values()) {
+                if (ldapSearchAttributeKey.getKey().equals(key)) {
                     return ldapSearchAttributeKey;
                 }
             }

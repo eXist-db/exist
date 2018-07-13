@@ -2,21 +2,21 @@
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2010 The eXist Project
  *  http://exist-db.org
- *  
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
+ *
  *  $Id$
  */
 package org.exist.security.realm.ldap;
@@ -29,6 +29,7 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,14 +41,13 @@ import org.exist.config.annotation.ConfigurationFieldAsElement;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- * 
  */
 @ConfigurationClass("context")
 public class LdapContextFactory implements Configurable {
 
-    protected final static Logger LOG = LogManager.getLogger(LdapContextFactory.class);
+    private static final Logger LOG = LogManager.getLogger(LdapContextFactory.class);
 
-    protected static final String SUN_CONNECTION_POOLING_PROPERTY = "com.sun.jndi.ldap.connect.pool";
+    private static final String SUN_CONNECTION_POOLING_PROPERTY = "com.sun.jndi.ldap.connect.pool";
 
     @ConfigurationFieldAsElement("authentication")
     protected String authentication = "simple";
@@ -89,48 +89,48 @@ public class LdapContextFactory implements Configurable {
     }
 
     public LdapContext getSystemLdapContext() throws NamingException {
-            return getLdapContext(systemUsername, systemPassword);
+        return getLdapContext(systemUsername, systemPassword);
     }
-    
+
     public LdapContext getLdapContext(final String username, final String password) throws NamingException {
         return getLdapContext(username, password, null);
     }
-        
-    public LdapContext getLdapContext(String username, final String password, final Map<String, Object>additionalEnv) throws NamingException {
-        
+
+    public LdapContext getLdapContext(String username, final String password, final Map<String, Object> additionalEnv) throws NamingException {
+
         if (url == null) {
             throw new IllegalStateException("An LDAP URL must be specified of the form ldap://<hostname>:<port>");
         }
 
-        if(StringUtils.isBlank(password)) {
+        if (StringUtils.isBlank(password)) {
             throw new IllegalStateException("Password for LDAP authentication may not be empty.");
         }
 
         if (username != null && principalPattern != null) {
-            username = principalPatternFormat.format(new String[] { username });
+            username = principalPatternFormat.format(new String[]{username});
         }
 
         final Hashtable<String, Object> env = new Hashtable<String, Object>();
 
         env.put(Context.SECURITY_AUTHENTICATION, authentication);
-        if(ssl) {
+        if (ssl) {
             env.put(Context.SECURITY_PROTOCOL, "ssl");
         }
-        
+
         if (username != null) {
             env.put(Context.SECURITY_PRINCIPAL, username);
         }
-        
+
         if (password != null) {
             env.put(Context.SECURITY_CREDENTIALS, password);
         }
-        
+
         env.put(Context.INITIAL_CONTEXT_FACTORY, contextFactoryClassName);
         env.put(Context.PROVIDER_URL, url);
 
         //Absolutely nessecary for working with Active Directory
         env.put("java.naming.ldap.attributes.binary", "objectSid");
-        
+
         // the following is helpful in debugging errors
         //env.put("com.sun.jndi.ldap.trace.ber", System.err);
 
@@ -140,7 +140,7 @@ public class LdapContextFactory implements Configurable {
             env.put(SUN_CONNECTION_POOLING_PROPERTY, "true");
         }
 
-        if(additionalEnv != null) {
+        if (additionalEnv != null) {
             env.putAll(additionalEnv);
         }
 
