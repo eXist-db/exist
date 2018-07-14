@@ -1631,6 +1631,9 @@ public void removeXMLResource(final Txn transaction, final DBBroker broker, fina
             if (!broker.preserveOnCopy(preserve)) {
                 blob.copyOf(broker, blob, oldDoc);
             }
+            if (blob.getMetadata() == null) {
+                blob.setMetadata(new DocumentMetadata());
+            }
             final DocumentMetadata metadata = blob.getMetadata();
             metadata.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
             if (created != null) {
