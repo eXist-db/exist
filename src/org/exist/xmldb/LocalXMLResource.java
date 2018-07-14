@@ -20,10 +20,11 @@
 package org.exist.xmldb;
 
 import com.evolvedbinary.j8fu.function.ConsumerE;
-import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.MethodInterceptor;
-import net.sf.cglib.proxy.MethodProxy;
+import com.evolvedbinary.j8fu.tuple.Tuple3;
+import net.sf.cglib.proxy.*;
+import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.persistent.XMLUtil;
 import org.exist.dom.memtree.AttrImpl;
 import org.exist.dom.memtree.NodeImpl;
@@ -63,6 +64,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Stream;
 
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -234,7 +236,152 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
             });
         }
 
-        return result;
+        return exportInternalNode(result);
+    }
+
+    /**
+     * Provides a safe export of an internal persistent DOM
+     * node from eXist via the Local XML:DB API.
+     *
+     * This is done by providing a cglib Proxy object that only implements
+     * the appropriate W3C DOM interface. This helps prevent the
+     * XML:DB Local API from leaking implementation through
+     * its abstractions.
+     */
+    private Node exportInternalNode(final Node node) {
+        final Optional<Class<? extends Node>> domClazz = getW3cNodeInterface(node.getClass());
+        if(!domClazz.isPresent()) {
+            throw new IllegalArgumentException("Provided node does not implement org.w3c.dom");
+        }
+
+        final Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(domClazz.get());
+        final Class[] interfaceClasses;
+        if (node instanceof StoredNode) {
+            interfaceClasses = new Class[]{domClazz.get(), StoredNodeIdentity.class};
+        } else if (node instanceof org.exist.dom.memtree.NodeImpl) {
+            interfaceClasses = new Class[]{domClazz.get(), MemtreeNodeIdentity.class};
+        } else {
+            interfaceClasses = new Class[] { domClazz.get() };
+        }
+        enhancer.setInterfaces(interfaceClasses);
+        enhancer.setCallback(new DOMMethodInterceptor(node));
+
+        return (Node)enhancer.create();
+    }
+
+    private Optional<Class<? extends Node>> getW3cNodeInterface(final Class<? extends Node> nodeClazz) {
+        return Stream.of(nodeClazz.getInterfaces())
+                .filter(iface -> iface.getPackage().getName().equals("org.w3c.dom"))
+                .findFirst()
+                .map(c -> (Class<? extends Node>)c);
+    }
+
+    private class DOMMethodInterceptor implements MethodInterceptor {
+        private final Node node;
+
+        public DOMMethodInterceptor(final Node node) {
+            this.node = node;
+        }
+
+        @Override
+        public Object intercept(final Object obj, final Method method, final Object[] args, final MethodProxy proxy) throws Throwable {
+            /*
+                NOTE(AR): we have to take special care of eXist-db's
+                persistent and memtree DOM's node equality.
+
+                For the persistent DOM, we reproduce in the proxy the behaviour taken
+                by org.exist.dom.persistent.StoredNode#equals(Object),
+                by overriding equals for StoredNode's and then implementing
+                a method to retrieve the nodeIds from each side of the equality
+                comparison. We have to do this as StoredNode attempts instanceof
+                equality which will fail against the proxied objects.
+
+                For the memtree DOM, we reproduce in the proxy the behaviour taken
+                by org.exist.dom.memtree.NodeImpl#equals(Object),
+                by overriding equals for memtree.NodeImpl's and then implementing
+                a method to retrieve the nodeIds from each side of the equality
+                comparison. We have to do this as NodeImpl attempts instanceof and
+                reference equality which will fail against the proxied objects.
+             */
+            Object domResult = null;
+            if(method.getName().equals("equals")
+                    && obj instanceof StoredNodeIdentity
+                    && args.length == 1 && args[0] instanceof StoredNodeIdentity) {
+                final StoredNodeIdentity ni1 = ((StoredNodeIdentity) obj);
+                final StoredNodeIdentity ni2 = ((StoredNodeIdentity) args[0]);
+
+                final Optional<Boolean> niEquals = ni1.getNodeId().flatMap(n1id -> ni2.getNodeId().map(n2id -> n1id.equals(n2id)));
+                if (niEquals.isPresent()) {
+                    domResult = niEquals.get();
+                }
+            } else if(method.getName().equals("equals")
+                        && obj instanceof MemtreeNodeIdentity
+                        && args.length == 1 && args[0] instanceof MemtreeNodeIdentity) {
+                    final MemtreeNodeIdentity ni1 = ((MemtreeNodeIdentity) obj);
+                    final MemtreeNodeIdentity ni2 = ((MemtreeNodeIdentity) args[0]);
+
+                    final Optional<Boolean> niEquals = ni1.getNodeId().flatMap(n1id -> ni2.getNodeId().map(n2id -> n1id._1 == n2id._1 && n1id._2 == n2id._2 && n1id._3 == n2id._3));
+                    if (niEquals.isPresent()) {
+                        domResult = niEquals.get();
+                    }
+            } else if(method.getName().equals("getNodeId")) {
+                if (obj instanceof StoredNodeIdentity
+                        && args.length == 0
+                        && node instanceof StoredNode) {
+                    domResult = Optional.of(((StoredNode) node).getNodeId());
+                } else if (obj instanceof MemtreeNodeIdentity
+                        && args.length == 0
+                        && node instanceof org.exist.dom.memtree.NodeImpl) {
+                    final org.exist.dom.memtree.NodeImpl memtreeNode = (org.exist.dom.memtree.NodeImpl) node;
+                    domResult = Optional.of(Tuple(memtreeNode.getOwnerDocument(), memtreeNode.getNodeNumber(), memtreeNode.getNodeType()));
+                } else {
+                    domResult = Optional.empty();
+                }
+            }
+
+            if (domResult == null) {
+                domResult = method.invoke(node, args);
+            }
+
+            if(domResult != null && Node.class.isAssignableFrom(method.getReturnType())) {
+                return exportInternalNode((Node) domResult); //recursively wrap node result
+
+            } else if(domResult != null && method.getReturnType().equals(NodeList.class)) {
+                final NodeList underlying = (NodeList)domResult; //recursively wrap nodes in nodelist result
+                return new NodeList() {
+                    @Override
+                    public Node item(final int index) {
+                        return Optional.ofNullable(underlying.item(index))
+                                .map(n -> exportInternalNode(n))
+                                .orElse(null);
+                    }
+
+                    @Override
+                    public int getLength() {
+                        return underlying.getLength();
+                    }
+                };
+            } else {
+                return domResult;
+            }
+        }
+    }
+
+    /**
+     * Used by {@link DOMMethodInterceptor} to
+     * help with equality of persistent DOM nodes.
+     */
+    private interface StoredNodeIdentity {
+        Optional<NodeId> getNodeId();
+    }
+
+    /**
+     * Used by {@link DOMMethodInterceptor} to
+     * help with equality of memtree DOM nodes.
+     */
+    private interface MemtreeNodeIdentity {
+        Optional<Tuple3<DocumentImpl, Integer, Short>> getNodeId();
     }
 
     @Override
