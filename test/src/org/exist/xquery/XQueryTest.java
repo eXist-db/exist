@@ -22,11 +22,21 @@
 package org.exist.xquery;
 
 import org.custommonkey.xmlunit.DetailedDiff;
+import org.exist.EXistException;
+import org.exist.dom.QName;
+import org.exist.security.PermissionDeniedException;
+import org.exist.source.SourceFactory;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.XQueryPool;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.EXistXPathQueryService;
-import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.value.IntegerValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 import org.junit.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -1111,12 +1121,60 @@ public class XQueryTest {
     }
 
     @Test
-    public void importExternalClasspathModule() throws XMLDBException {
+    public void importExternalClasspathMainModule() throws EXistException, IOException, PermissionDeniedException, XPathException, QName.IllegalQNameException {
+        final long timestamp = System.currentTimeMillis();
+        final BrokerPool brokerPool = BrokerPool.getInstance();
+        try (final DBBroker broker = brokerPool.getBroker()) {
+            final org.exist.source.Source source = SourceFactory.getSource(broker, "/", "resource:org/exist/xquery/external-classpath-main-module.xq", false);
+
+            final XQuery xquery = brokerPool.getXQueryService();
+            final XQueryPool queryPool = brokerPool.getXQueryPool();
+
+            CompiledXQuery compiled = null;
+            XQueryContext context = null;
+            try {
+                compiled = queryPool.borrowCompiledXQuery(broker, source);
+                context = compiled == null ? new XQueryContext(brokerPool) : compiled.getContext();
+
+                context.declareVariable(new QName("s"), new IntegerValue(timestamp));
+
+                if(compiled == null) {
+                    compiled = xquery.compile(broker, context, source);
+                }
+
+                final Sequence result = xquery.execute(broker, compiled, null, null);
+                assertEquals(1, result.getItemCount());
+                final Item item = result.itemAt(0);
+                assertTrue(Type.subTypeOf(item.getType(), Type.NODE));
+
+                final Source expected = Input.fromString("<echo>" + timestamp + "</echo>").build();
+                final Source actual = Input.fromNode((Node)item).build();
+                final Diff diff = DiffBuilder.compare(expected).withTest(actual)
+                        .checkForSimilar()
+                        .build();
+                assertFalse(diff.toString(), diff.hasDifferences());
+
+            } finally {
+                if (compiled != null) {
+                    compiled.reset();
+                }
+                if (context != null) {
+                    context.reset();
+                }
+                if (compiled != null) {
+                    queryPool.returnCompiledXQuery(source, compiled);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void importExternalClasspathLibraryModule() throws XMLDBException {
         final long timestamp = System.currentTimeMillis();
         final Collection testCollection = getTestCollection();
         final Resource doc = testCollection.createResource("import-external-classpath.xq", "BinaryResource");
         doc.setContent(
-                "import module namespace ext1 = \"http://import-external-classpath-test.com\" at \"resource:org/exist/xquery/external-classpath-module.xqm\";\n"
+                "import module namespace ext1 = \"http://import-external-classpath-library-module-test.com\" at \"resource:org/exist/xquery/external-classpath-library-module.xqm\";\n"
                 + "ext1:echo(" + timestamp + ")"
         );
         ((EXistResource) doc).setMimeType("application/xquery");
