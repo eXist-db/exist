@@ -9,6 +9,7 @@ import org.exist.xquery.util.URIUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.xml.sax.InputSource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -22,6 +23,7 @@ import org.xmlunit.diff.Diff;
 
 import javax.xml.transform.Source;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -121,6 +123,33 @@ public class RemoteCollectionTest extends RemoteDBTest {
         assertNotNull(result);
         assertEquals(bin, new String(result, UTF_8));
 	}
+
+	@Test
+    public void createEmptyBinaryResource() throws XMLDBException, IOException {
+        final Collection collection = getCollection();
+        final String resourceName = "empty.dtd";
+        final Resource resource = collection.createResource(resourceName, BinaryResource.RESOURCE_TYPE);
+        ((EXistResource) resource).setMimeType("application/xml-dtd");
+
+        final byte[] bin = new byte[0];
+        try (final InputStream is = new FastByteArrayInputStream(bin)) {
+            final InputSource inputSource = new InputSource();
+            inputSource.setByteStream(is);
+            inputSource.setSystemId("empty.dtd");
+
+            resource.setContent(inputSource);
+            collection.storeResource(resource);
+        }
+
+        final Resource retrievedResource = collection.getResource(resourceName);
+        assertNotNull(retrievedResource);
+        assertEquals(BinaryResource.RESOURCE_TYPE, retrievedResource.getResourceType());
+        assertTrue(retrievedResource instanceof BinaryResource);
+        final byte[] result = (byte[]) retrievedResource.getContent();
+        assertNotNull(result);
+        assertArrayEquals(bin, result);
+    }
+
 
     @Test /* issue 1874 */
     public void createXMLFileResource() throws XMLDBException, IOException {
