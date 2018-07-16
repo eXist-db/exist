@@ -68,9 +68,10 @@
         <filter token="memory.max" value="${memory.max}"/>
         <copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf" filtering="true" overwrite="true" />
         
-        <filter token="java.vm" value="${java.bin}"/>
-        <filter token="server.dir" value="${INSTALL_PATH}"/>
-        <filter token="memory.max" value="${MAX_MEMORY}"/>
+        <filter token="java.vm" value="$JAVA_HOME/bin/java"/>
+        <filter token="jetty.dir" value="$INSTALL_PATH/${jetty.dir}"/>
+        <filter token="server.dir" value="$INSTALL_PATH"/>
+        <filter token="memory.max" value="$MAX_MEMORY"/>
         <copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf.install" filtering="true" overwrite="true"/>
     </target>
 
