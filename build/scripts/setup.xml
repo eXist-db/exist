@@ -46,6 +46,7 @@
     Download xar files from the package website.
   -->
   <target name="setup" depends="prepare" description="Download standard xar packages.">
+    <echo message="Downloading xar packages: ${autodeploy}..."/>
     <foreach list="${autodeploy}" target="download" param="xar"></foreach>
   </target>
 
@@ -55,6 +56,10 @@
             <include name="${xar}-*.xar"/>
         </fileset>
     </pathconvert>
+    <condition property="xar-found-status" value="Existing copy of ${xar} found at ${xar-installed}. Download will be skipped." else="No copy of ${xar} found in ${autostart-dir}. Download will be attempted.">
+      <isset property="xar-installed"/>
+    </condition>
+    <echo message="${xar-found-status}"/>
     <antcall target="download-xar"/>
   </target>
 
