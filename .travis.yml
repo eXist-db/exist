@@ -9,5 +9,9 @@ matrix:
       osx_image: xcode9.2
       env: JAVA_HOME=$(/usr/libexec/java_home)
 script: ./build.sh -Dexist.autodeploy=off -Dtest.haltonerror=true -Dtest.haltonfailure=true clean clean-all all test
+cache:
+  directories:
+  - $HOME/.ivy2
+  - $HOME/.m2
 notifications:
   hipchat: ec8fcfa661addc56a361a8ef536320@integrations
