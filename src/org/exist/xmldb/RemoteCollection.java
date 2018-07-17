@@ -647,10 +647,12 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
                             fileName = (String) xmlRpcClientLease.get().execute("uploadCompressed", params);
                         }
                     }
-                } else {
+                }
+
+                if (fileName == null) {
                     // Zero length stream? Let's get a fileName!
                     final List<Object> params = new ArrayList<>();
-                    params.add(chunk);
+                    params.add(new byte[0]);
                     params.add(0);
                     fileName = (String) xmlRpcClientLease.get().execute("upload", params);
                 }
