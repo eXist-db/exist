@@ -24,6 +24,7 @@ package org.exist.xquery.util;
 
 
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -64,24 +65,16 @@ public class HTTPUtils {
 			LOG.debug("mostRecentDocumentTime: " + mostRecentDocumentTime);
 
 			if (mostRecentDocumentTime > 0) {
-				final ResponseModule myModule = (ResponseModule) context
-						.getModule(ResponseModule.NAMESPACE_URI);
-				if (myModule == null)
-					{return;}
-				// response servlet object is read from global variable $response
-				final Variable var = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
-				
-				if (var != null && var.getValue() != null) {
-					final JavaObjectValue value = (JavaObjectValue) var.getValue()
-							.itemAt(0);
-					if (value != null
-							&& value.getObject() instanceof ResponseWrapper) {
-						// have to take in account that if the header has allready been explicitely set 
-						// by the XQuery script, we should not modify it .
-						final ResponseWrapper responseWrapper = ((ResponseWrapper) value.getObject());
-						if ( responseWrapper.getDateHeader("Last-Modified") == 0 )
-							{responseWrapper.setDateHeader(
-								"Last-Modified", mostRecentDocumentTime);}
+
+				final Optional<ResponseWrapper> maybeResponse = Optional.ofNullable(context.getHttpContext())
+						.map(XQueryContext.HttpContext::getResponse);
+
+				if (maybeResponse.isPresent()) {
+					// have to take in account that if the header has allready been explicitely set
+					// by the XQuery script, we should not modify it .
+					final ResponseWrapper responseWrapper = maybeResponse.get();
+					if (responseWrapper.getDateHeader("Last-Modified") == 0) {
+						responseWrapper.setDateHeader("Last-Modified", mostRecentDocumentTime);
 					}
 				}
 			}

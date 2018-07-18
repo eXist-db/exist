@@ -28,16 +28,16 @@ import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author wolf
  */
-public class SetAttribute extends Function {
+public class SetAttribute extends StrictRequestFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(SetAttribute.class);
 	
@@ -52,54 +52,18 @@ public class SetAttribute extends Function {
 			new SequenceType( Type.ITEM, Cardinality.EMPTY )
 		);
 	
-	public SetAttribute(XQueryContext context) 
+	public SetAttribute(final XQueryContext context)
 	{
 		super( context, signature );
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval (Sequence contextSequence, Item contextItem ) throws XPathException 
-	{
-		if( context.getProfiler().isEnabled() ) {
-			context.getProfiler().start( this );       
-			context.getProfiler().message( this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName( this.getDependencies() ) );
-			
-			if( contextSequence != null ) {
-				context.getProfiler().message( this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence );
-			}
-			
-			if( contextItem != null ) {
-				context.getProfiler().message( this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence() );
-			}
-		}
-		
-		RequestModule myModule = (RequestModule)context.getModule( RequestModule.NAMESPACE_URI );
-		
-		// request object is read from global variable $request
-		Variable var = myModule.resolveVariable( RequestModule.REQUEST_VAR );
-		
-		if( var == null || var.getValue() == null ) {
-			throw( new XPathException( this, ErrorCodes.XPDY0002, "Request not set" ) );
-		}
+	@Override
+	public Sequence eval(final Sequence args[], @Nonnull final RequestWrapper request) throws XPathException {
+		final String attribName = args[0].getStringValue();
+		final Sequence attribValue = args[1];
 
-		if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
-			throw( new XPathException( this, ErrorCodes.XPDY0002, "Variable $request is not bound to a Java object." ) );
-		}
+		request.setAttribute(attribName, attribValue);
 
-		JavaObjectValue request = (JavaObjectValue)var.getValue().itemAt( 0 );
-		
-		// get attribute name parameter
-		String attribName 		= getArgument( 0 ).eval( contextSequence, contextItem ).getStringValue();
-		Sequence attribValue 	= getArgument( 1 ).eval( contextSequence, contextItem );
-		
-		if( request.getObject() instanceof RequestWrapper ) {
-			((RequestWrapper)request.getObject()).setAttribute( attribName, attribValue );
-		} else {
-			throw(  new XPathException( this, ErrorCodes.XPDY0002, "Type error: variable $request is not bound to a request object" ) );
-		}
-
-		return( Sequence.EMPTY_SEQUENCE );
+		return Sequence.EMPTY_SEQUENCE;
 	}
 }
