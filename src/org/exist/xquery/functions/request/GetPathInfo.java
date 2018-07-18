@@ -28,15 +28,16 @@ import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class GetPathInfo extends BasicFunction {
+public class GetPathInfo extends StrictRequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetPathInfo.class);
 
@@ -48,34 +49,14 @@ public class GetPathInfo extends BasicFunction {
 			null,
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the request path information"));
 
-	/**
-	 * @param context
-	 */
-	public GetPathInfo(XQueryContext context) {
+	public GetPathInfo(final XQueryContext context) {
 		super(context, signature);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-		throws XPathException {
-		
-		final RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
-		
-		// request object is read from global variable $request
-		final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
-		if(var == null || var.getValue() == null)
-			{throw new XPathException(this, ErrorCodes.XPDY0002, "No request object found in the current XQuery context.");}
-		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
-			{throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to an Java object.");}
-
-		final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		if (value.getObject() instanceof RequestWrapper) {
-            final String path = ((RequestWrapper) value.getObject()).getPathInfo();
-            return new StringValue(path == null ? "" : path);
-        } else
-			{throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to a Request object.");}
+	@Override
+	public Sequence eval(final Sequence[] args, @Nonnull final RequestWrapper request)
+			throws XPathException {
+		final String path = request.getPathInfo();
+		return new StringValue(path == null ? "" : path);
 	}
-	
 }
