@@ -29,76 +29,42 @@ import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 
 /**
- * DOCUMENT ME!
+ * Performs an HTTP Redirect.
  *
  * @author  Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class RedirectTo extends BasicFunction
-{
-    protected static final Logger logger = LogManager.getLogger(RedirectTo.class);
+public class RedirectTo extends StrictResponseFunction {
+    private static final Logger logger = LogManager.getLogger(RedirectTo.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("redirect-to", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-			"Sends a HTTP redirect response (302) to the client. Note: this is not supported by the Cocooon " +
-			"generator. Use a sitemap redirect instead.",
+			"Sends a HTTP redirect response (302) to the client.",
 			new SequenceType[] { new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI to redirect the client to") },
-			new SequenceType(Type.ITEM, Cardinality.EMPTY));
+			new SequenceType(Type.EMPTY, Cardinality.EMPTY));
 
-    /**
-     * Creates a new RedirectTo object.
-     *
-     * @param  context
-     */
-    public RedirectTo( XQueryContext context )
+    public RedirectTo(final XQueryContext context)
     {
         super( context, signature );
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-     */
-    public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
-    {
-        final ResponseModule myModule    = (ResponseModule)context.getModule( ResponseModule.NAMESPACE_URI );
-
-        final String         redirectURI = args[0].getStringValue();
-
-        // response object is read from global variable $response
-        final Variable       var         = myModule.resolveVariable( ResponseModule.RESPONSE_VAR );
-
-        if( ( var == null ) || ( var.getValue() == null ) ) {
-            throw( new XPathException( this, ErrorCodes.XPDY0002, "No response object found in the current XQuery context." ) );
+    @Override
+    public Sequence eval(final Sequence[] args, @Nonnull final ResponseWrapper response) throws XPathException {
+        try {
+            final String redirectURI = args[0].getStringValue();
+            response.sendRedirect(redirectURI);
+            return Sequence.EMPTY_SEQUENCE;
+        } catch(final IOException e) {
+            throw new XPathException(this, "An IO exception occurred during redirect: " + e.getMessage(), e);
         }
-
-        if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
-            throw( new XPathException( this, ErrorCodes.XPDY0002, "Variable $response is not bound to an Java object." ) );
-        }
-
-        final JavaObjectValue value = (JavaObjectValue)var.getValue().itemAt( 0 );
-
-        if( value.getObject() instanceof ResponseWrapper ) {
-
-            try {
-                ( (ResponseWrapper)value.getObject() ).sendRedirect( redirectURI );
-            }
-            catch( final IOException e ) {
-                throw( new XPathException( this, "An IO exception occurred during redirect: " + e.getMessage(), e ) );
-            }
-        } else {
-            throw( new XPathException( this, ErrorCodes.XPDY0002, "Variable response is not bound to a response object." ) );
-        }
-        
-        return( Sequence.EMPTY_SEQUENCE );
     }
-
 }

@@ -31,17 +31,18 @@ import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author wolf
  */
-public class GetUploadedFileName extends BasicFunction {
+public class GetUploadedFileName extends StrictRequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetUploadedFileName.class);
 
@@ -57,43 +58,23 @@ public class GetUploadedFileName extends BasicFunction {
 			},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the file name of the uploaded files"));
 	
-	public GetUploadedFileName(XQueryContext context) {
+	public GetUploadedFileName(final XQueryContext context) {
 		super(context, signature);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
+	@Override
+	public Sequence eval(final Sequence[] args, @Nonnull final RequestWrapper request)
 			throws XPathException {
-		
-		final RequestModule myModule =
-			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
-
-		// request object is read from global variable $request
-		final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
-		if(var == null || var.getValue() == null)
-			{throw new XPathException(this, ErrorCodes.XPDY0002, "No request object found in the current XQuery context.");}
-		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
-			{throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to an Java object.");}
-
-		// get parameters
 		final String uploadParamName = args[0].getStringValue();
+		final List<String> fnames = request.getUploadedFileName(uploadParamName);
+		if (fnames == null || fnames.isEmpty()) {
+			return Sequence.EMPTY_SEQUENCE;
+		}
 
-		final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		if (value.getObject() instanceof RequestWrapper) {
-			final RequestWrapper request = (RequestWrapper)value.getObject();
-			final List<String> fnames = request.getUploadedFileName(uploadParamName);
-			if(fnames == null) {
-				return Sequence.EMPTY_SEQUENCE;
-			}
-			final ValueSequence result = new ValueSequence();
-			for (final String name: fnames) {
-				result.add(new StringValue(name));
-			}
-			return result;
-		} else
-			{throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to a Request object.");}
+		final ValueSequence result = new ValueSequence();
+		for (final String name: fnames) {
+			result.add(new StringValue(name));
+		}
+		return result;
 	}
-
 }

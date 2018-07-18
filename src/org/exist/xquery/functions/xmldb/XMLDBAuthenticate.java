@@ -33,18 +33,13 @@ import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
-import org.exist.xquery.functions.request.RequestModule;
-import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
@@ -182,49 +177,33 @@ public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
      * @param createSession Create session?
      */
     private void cacheUserInHttpSession(final Subject user, final boolean createSession) throws XPathException {
-        final Variable var = getSessionVar(createSession);
-
-        if (var != null && var.getValue() != null) {
-            if (var.getValue().getItemType() == Type.JAVA_OBJECT) {
-                final JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
-
-                if (session.getObject() instanceof SessionWrapper) {
-                    ((SessionWrapper) session.getObject()).setAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER, user);
-                }
-            }
-        }
+        final Optional<SessionWrapper> session = getSession(createSession);
+        session.ifPresent(sess -> sess.setAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER, user));
     }
 
     /**
-     * Get the HTTP Session variable. Create it if requested and it doesn't exist.
+     * Get the HTTP Session. Create it if requested and it doesn't exist.
      *
-     * @param createSession Create session?
+     * @param createSession true to create a new session if one does not exist.
+     *
+     * @return the session if we could get or create it.
      */
-    private Variable getSessionVar(final boolean createSession) throws XPathException {
-        final SessionModule sessionModule = (SessionModule) context.getModule(SessionModule.NAMESPACE_URI);
-        Variable var = sessionModule.resolveVariable(SessionModule.SESSION_VAR);
+    private Optional<SessionWrapper> getSession(final boolean createSession)
+            throws XPathException {
+        final Optional<SessionWrapper> existingSession =
+                Optional.ofNullable(context.getHttpContext())
+                        .map(XQueryContext.HttpContext::getSession);
 
-        if (createSession && (var == null || var.getValue() == null)) {
-            final RequestModule reqModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
-
-            // request object is read from global variable $request
-            final Variable reqVar = reqModule.resolveVariable(RequestModule.REQUEST_VAR);
-
-            if (reqVar == null || reqVar.getValue() == null) {
-                logger.error("No request object found in the current XQuery context.");
-                throw new XPathException(this, ErrorCodes.XPDY0002, "No request object found in the current XQuery context.");
-            }
-            if (reqVar.getValue().getItemType() != Type.JAVA_OBJECT) {
-                logger.error("Variable $request is not bound to an Java object.");
-                throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to an Java object.");
-            }
-
-            final JavaObjectValue reqValue = (JavaObjectValue) reqVar.getValue().itemAt(0);
-            if (reqValue.getObject() instanceof RequestWrapper) {
-                final SessionWrapper session = ((RequestWrapper) reqValue.getObject()).getSession(true);
-                var = sessionModule.declareVariable(SessionModule.SESSION_VAR, session);
-            }
+        if (existingSession.isPresent() || !createSession) {
+            return existingSession;
         }
-        return var;
+
+        final RequestWrapper request = Optional.ofNullable(context.getHttpContext())
+                .map(XQueryContext.HttpContext::getRequest)
+                .orElseThrow(() -> new XPathException(this, ErrorCodes.XPDY0002, "No response object found in the current XQuery context."));
+
+        final Optional<SessionWrapper> newSession = Optional.ofNullable(request.getSession(true));
+        newSession.ifPresent(session -> context.setHttpContext(context.getHttpContext().setSession(session)));
+        return newSession;
     }
 }

@@ -25,12 +25,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.http.servlets.RequestWrapper;
-import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.*;
-import org.exist.xquery.functions.request.RequestModule;
-import org.exist.xquery.value.JavaObjectValue;
-import org.exist.xquery.value.Type;
 
 /**
  * Module function definitions for transform module.
@@ -101,50 +96,5 @@ public class SessionModule extends AbstractInternalModule {
     @Override
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
-    }
-
-	/**
-	 * Utility method to create a session and store it in the context as a variable
-	 
-	 * @param context
-	 */
-	static JavaObjectValue createSession( XQueryContext context, Function fn ) throws XPathException 
-	{
-		JavaObjectValue ret = null;
-		
-		final RequestModule myModule = (RequestModule)context.getModule( RequestModule.NAMESPACE_URI );
-		
-		// request object is read from global variable $request
-		final Variable var = myModule.resolveVariable( RequestModule.REQUEST_VAR );
-		
-		if( var == null || var.getValue() == null ) {
-			throw( new XPathException( fn, ErrorCodes.XPDY0002, "No request object found in the current XQuery context." ) );
-		}
-	
-		if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
-			throw( new XPathException( fn, ErrorCodes.XPDY0002, "Variable $request is not bound to an Java object." ) );
-		}
-
-		final JavaObjectValue value = (JavaObjectValue)var.getValue().itemAt( 0 );
-		
-		if( value.getObject() instanceof RequestWrapper ) {
-			final SessionModule  sessionModule 	= (SessionModule)context.getModule( SessionModule.NAMESPACE_URI );
-			final SessionWrapper session 			= ((RequestWrapper)value.getObject()).getSession( true );
-			
-			sessionModule.declareVariable( SessionModule.SESSION_VAR, session );
-			ret = (JavaObjectValue)sessionModule.resolveVariable( SessionModule.SESSION_VAR ).getValue().itemAt( 0 );
-		} else {
-			throw( new XPathException( fn, ErrorCodes.XPDY0002, "Variable $request is not bound to a Request object." ) );
-		}
-		
-		return( ret );
-	}
-
-    @Override
-    public void reset(final XQueryContext xqueryContext, final boolean keepGlobals) {
-        if (!keepGlobals) {
-            mGlobalVariables.clear();
-        }
-        super.reset(xqueryContext, keepGlobals);
     }
 }

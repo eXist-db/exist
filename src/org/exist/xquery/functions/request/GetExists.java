@@ -25,10 +25,9 @@ package org.exist.xquery.functions.request;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
+import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
@@ -36,11 +35,14 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
+import java.util.Optional;
+
 /**
+ * Determines if the HTTP Request is set in the XQuery Context.
+ *
  * @author Andrzej Taramina <andrzej@chaeron.com>
  */
-public class GetExists extends BasicFunction 
-{
+public class GetExists extends RequestFunction {
 	protected static final Logger logger = LogManager.getLogger(GetExists.class);
 
 	public final static FunctionSignature signature =
@@ -50,35 +52,14 @@ public class GetExists extends BasicFunction
 			FunctionSignature.NO_ARGS,
 			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the request object exists" ) );
 
-	/**
-	 * @param context
-	 */
-	
-	public GetExists( XQueryContext context ) 
+	public GetExists(final XQueryContext context)
 	{
 		super( context, signature );
 	}
 	
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	
-	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
-	{
-		
-		BooleanValue exists = BooleanValue.TRUE;
-		
-		RequestModule myModule = (RequestModule)context.getModule( RequestModule.NAMESPACE_URI );
-		
-		// request object is read from global variable $request
-		Variable var = myModule.resolveVariable( RequestModule.REQUEST_VAR );
-		
-		if( var == null || var.getValue() == null ) {
-			exists = BooleanValue.FALSE;
-		} 
-			
-		return( exists );
+	@Override
+	public Sequence eval(final Sequence[] args, final Optional<RequestWrapper> request)
+			throws XPathException {
+		return BooleanValue.valueOf(request.isPresent());
 	}
-	
 }
