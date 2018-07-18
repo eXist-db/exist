@@ -22,10 +22,8 @@ package org.exist.xquery.util;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.ConnectException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
+import java.net.*;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -62,6 +60,8 @@ public class DocUtils {
 
     protected static final Logger LOG = LogManager.getLogger(DocUtils.class);
 
+    private static final Pattern PTN_PROTOCOL_PREFIX = Pattern.compile("^[a-z]+:.*");
+
     public static Sequence getDocument(final XQueryContext context, final String path) throws XPathException, PermissionDeniedException {
         return getDocumentByPath(context, path);
     }
@@ -77,7 +77,7 @@ public class DocUtils {
     }
 
     private static Sequence getDocumentByPath(final XQueryContext context, final String path) throws XPathException, PermissionDeniedException {
-        if (path.matches("^[a-z]+:.*") && !path.startsWith("xmldb:")) {
+        if (PTN_PROTOCOL_PREFIX.matcher(path).matches() && !path.startsWith("xmldb:")) {
             /* URL */
             return getDocumentByPathFromURL(context, path);
         } else {
