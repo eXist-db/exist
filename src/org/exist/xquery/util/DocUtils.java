@@ -23,10 +23,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
@@ -49,6 +48,8 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
+import static com.evolvedbinary.j8fu.Try.Try;
+
 /**
  * Utilities for XPath doc related functions
  *
@@ -57,8 +58,6 @@ import org.xml.sax.XMLReader;
  */
 //TODO : many more improvements to handle efficiently any URI
 public class DocUtils {
-
-    protected static final Logger LOG = LogManager.getLogger(DocUtils.class);
 
     private static final Pattern PTN_PROTOCOL_PREFIX = Pattern.compile("^[a-z]+:.*");
 
@@ -142,24 +141,24 @@ public class DocUtils {
         final LockMode lockType = context.lockDocumentsOnLoad() ? LockMode.WRITE_LOCK : LockMode.READ_LOCK;
         DocumentImpl doc = null;
         try {
-            XmldbURI pathUri = XmldbURI.xmldbUriFor(path, false);
-
             final XmldbURI baseURI = context.getBaseURI().toXmldbURI();
+            final XmldbURI pathUri;
             if (baseURI != null && !(baseURI.equals("") || baseURI.equals("/db"))) {
                 // relative collection Path: add the current base URI
-                pathUri = baseURI.resolveCollectionPath(pathUri);
+                pathUri = baseURI.resolveCollectionPath(XmldbURI.xmldbUriFor(path, false));
+            } else {
+                pathUri = XmldbURI.xmldbUriFor(path, false);
             }
 
-            // relative collection Path: add the current module call URI
-            try {
-                pathUri = XmldbURI.xmldbUriFor(context.getModuleLoadPath()).resolveCollectionPath(pathUri);
-            } catch (final Exception e) {
-                //workaround: ignore Windows issue
-                LOG.error(e);
-            }
+            // relative collection Path: add the current module call URI if applicable
+            final XmldbURI resourceUri = Optional.ofNullable(context.getModuleLoadPath())
+                    .filter(moduleLoadPath -> !moduleLoadPath.isEmpty())
+                    .flatMap(moduleLoadPath -> Try(() -> XmldbURI.xmldbUriFor(moduleLoadPath)).toOption())
+                    .map(moduleLoadPath -> moduleLoadPath.resolveCollectionPath(pathUri))
+                    .orElse(pathUri);
 
             // try to open the document and acquire a lock
-            doc = context.getBroker().getXMLResource(pathUri, lockType);
+            doc = context.getBroker().getXMLResource(resourceUri, lockType);
             if (doc == null) {
                 return Sequence.EMPTY_SEQUENCE;
             } else {
