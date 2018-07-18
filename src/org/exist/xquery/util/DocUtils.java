@@ -22,6 +22,7 @@ package org.exist.xquery.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -61,7 +62,7 @@ import javax.annotation.Nullable;
 //TODO : many more improvements to handle efficiently any URI
 public class DocUtils {
 
-    protected static final Logger LOG = LogManager.getLogger(DocUtils.class);
+    private static final Pattern PTN_PROTOCOL_PREFIX = Pattern.compile("^[a-z]+:.*");
 
     public static Sequence getDocument(final XQueryContext context, final String path) throws XPathException, PermissionDeniedException {
         return getDocumentByPath(context, path);
@@ -81,7 +82,7 @@ public class DocUtils {
     private static Sequence getDocumentByPath(final XQueryContext context, final String path) throws XPathException, PermissionDeniedException {
         Sequence doc = getFromDynamicallyAvailableDocuments(context, path);
         if (doc == null) {
-            if (path.matches("^[a-z]+:.*") && !path.startsWith("xmldb:")) {
+            if (PTN_PROTOCOL_PREFIX.matcher(path).matches() && !path.startsWith("xmldb:")) {
                 /* URL */
                 doc = getDocumentByPathFromURL(context, path);
             } else {
