@@ -22,9 +22,9 @@ package org.exist.xquery.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
@@ -52,6 +52,8 @@ import org.xml.sax.XMLReader;
 
 import javax.annotation.Nullable;
 
+import static com.evolvedbinary.j8fu.Try.Try;
+
 /**
  * Utilities for XPath doc related functions
  *
@@ -61,7 +63,7 @@ import javax.annotation.Nullable;
 //TODO : many more improvements to handle efficiently any URI
 public class DocUtils {
 
-    protected static final Logger LOG = LogManager.getLogger(DocUtils.class);
+    private static final Pattern PTN_PROTOCOL_PREFIX = Pattern.compile("^[a-z]+:.*");
 
     public static Sequence getDocument(final XQueryContext context, final String path) throws XPathException, PermissionDeniedException {
         return getDocumentByPath(context, path);
@@ -81,7 +83,7 @@ public class DocUtils {
     private static Sequence getDocumentByPath(final XQueryContext context, final String path) throws XPathException, PermissionDeniedException {
         Sequence doc = getFromDynamicallyAvailableDocuments(context, path);
         if (doc == null) {
-            if (path.matches("^[a-z]+:.*") && !path.startsWith("xmldb:")) {
+            if (PTN_PROTOCOL_PREFIX.matcher(path).matches() && !path.startsWith("xmldb:")) {
                 /* URL */
                 doc = getDocumentByPathFromURL(context, path);
             } else {
@@ -167,24 +169,24 @@ public class DocUtils {
         // check if the loaded documents should remain locked
         final LockMode lockType = context.lockDocumentsOnLoad() ? LockMode.WRITE_LOCK : LockMode.READ_LOCK;
         try {
-            XmldbURI pathUri = XmldbURI.xmldbUriFor(path, false);
-
             final XmldbURI baseURI = context.getBaseURI().toXmldbURI();
+            final XmldbURI pathUri;
             if (baseURI != null && !(baseURI.equals("") || baseURI.equals("/db"))) {
                 // relative collection Path: add the current base URI
-                pathUri = baseURI.resolveCollectionPath(pathUri);
+                pathUri = baseURI.resolveCollectionPath(XmldbURI.xmldbUriFor(path, false));
+            } else {
+                pathUri = XmldbURI.xmldbUriFor(path, false);
             }
 
-            // relative collection Path: add the current module call URI
-            try {
-                pathUri = XmldbURI.xmldbUriFor(context.getModuleLoadPath()).resolveCollectionPath(pathUri);
-            } catch (final Exception e) {
-                //workaround: ignore Windows issue
-                LOG.error(e);
-            }
+            // relative collection Path: add the current module call URI if applicable
+            final XmldbURI resourceUri = Optional.ofNullable(context.getModuleLoadPath())
+                    .filter(moduleLoadPath -> !moduleLoadPath.isEmpty())
+                    .flatMap(moduleLoadPath -> Try(() -> XmldbURI.xmldbUriFor(moduleLoadPath)).toOption())
+                    .map(moduleLoadPath -> moduleLoadPath.resolveCollectionPath(pathUri))
+                    .orElse(pathUri);
 
             // try to open the document and acquire a lock
-            try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(pathUri, lockType)){
+            try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(resourceUri, lockType)){
                 if (lockedDoc == null) {
                     return Sequence.EMPTY_SEQUENCE;
                 } else {
