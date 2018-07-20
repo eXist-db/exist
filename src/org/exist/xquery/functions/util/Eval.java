@@ -418,6 +418,7 @@ public class Eval extends BasicFunction {
                 compiled = xqueryService.compile(broker, innerContext, querySource);
             } else {
                 compiled.getContext().updateContext(innerContext);
+                compiled.getContext().prepareForReuse();
             }
 
             Sequence sequence = xqueryService.execute(broker, compiled, exprContext, false);

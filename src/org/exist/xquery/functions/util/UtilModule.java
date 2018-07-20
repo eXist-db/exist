@@ -28,6 +28,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.inspect.InspectFunction;
 
 
@@ -162,9 +163,6 @@ public class UtilModule extends AbstractInternalModule {
 
     public UtilModule(final Map<String, List<? extends Object>> parameters) throws XPathException {
         super(functions, parameters, true);
-        declareVariable(EXCEPTION_QNAME, null);
-        declareVariable(EXCEPTION_MESSAGE_QNAME, null);
-        declareVariable(ERROR_CODE_QNAME, null);
         
         final List<String> evalDisabledParamList = (List<String>)getParameter("evalDisabled");
         if(evalDisabledParamList != null && !evalDisabledParamList.isEmpty()) {
@@ -173,6 +171,13 @@ public class UtilModule extends AbstractInternalModule {
                 this.evalDisabled = Boolean.parseBoolean(strEvalDisabled);
             }
         }
+    }
+
+    @Override
+    public void prepare(final XQueryContext context) throws XPathException {
+        declareVariable(EXCEPTION_QNAME, null);
+        declareVariable(EXCEPTION_MESSAGE_QNAME, null);
+        declareVariable(ERROR_CODE_QNAME, null);
     }
 
     @Override

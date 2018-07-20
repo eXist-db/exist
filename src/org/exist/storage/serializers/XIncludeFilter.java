@@ -404,6 +404,7 @@ public class XIncludeFilter implements Receiver {
                 CompiledXQuery compiled = pool.borrowCompiledXQuery(serializer.broker, source);
                 if (compiled != null) {
                     context = compiled.getContext();
+                    context.prepareForReuse();
                 } else {
                     context = new XQueryContext(serializer.broker.getBrokerPool());
                 }
@@ -412,17 +413,7 @@ public class XIncludeFilter implements Receiver {
 
                 //setup the http context if known
                 if (serializer.httpContext != null) {
-                    if (serializer.httpContext.getRequest() != null) {
-                        context.declareVariable(RequestModule.PREFIX + ":request", serializer.httpContext.getRequest());
-                    }
-
-                    if (serializer.httpContext.getResponse() != null) {
-                        context.declareVariable(ResponseModule.PREFIX + ":response", serializer.httpContext.getResponse());
-                    }
-
-                    if (serializer.httpContext.getSession() != null) {
-                        context.declareVariable(SessionModule.PREFIX + ":session", serializer.httpContext.getSession());
-                    }
+                    context.setHttpContext(serializer.httpContext);
                 }
 
                 //TODO: change these to putting the XmldbURI in, but we need to warn users!

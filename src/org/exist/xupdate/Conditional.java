@@ -75,11 +75,12 @@ public class Conditional extends Modification {
 		final Source source = new StringSource(selectStmt);
 		CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
 		XQueryContext context;
-		if(compiled == null)
-		    {context = new XQueryContext(broker.getBrokerPool());}
-		else
-		    {context = compiled.getContext();}
-
+		if(compiled == null) {
+			context = new XQueryContext(broker.getBrokerPool());
+		} else {
+			context = compiled.getContext();
+			context.prepareForReuse();
+		}
 		//context.setBackwardsCompatibility(true);
 		context.setStaticallyKnownDocuments(docs);
 		declareNamespaces(context);

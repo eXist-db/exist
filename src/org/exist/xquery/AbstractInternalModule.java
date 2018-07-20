@@ -21,15 +21,8 @@
  */
 package org.exist.xquery;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
-//import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
 
@@ -49,7 +42,7 @@ public abstract class AbstractInternalModule implements InternalModule {
 
     public static class FunctionComparator implements Comparator<FunctionDef> {
         @Override
-        public int compare(FunctionDef o1, FunctionDef o2) {
+        public int compare(final FunctionDef o1, final FunctionDef o2) {
             return o1.getSignature().getFunctionId().compareTo(o2.getSignature().getFunctionId());
         }
     }
@@ -58,23 +51,21 @@ public abstract class AbstractInternalModule implements InternalModule {
     protected final boolean ordered;
     private final Map<String, List<? extends Object>> parameters;
 
-    protected final TreeMap<QName, Variable> mGlobalVariables = new TreeMap<QName, Variable>();
+    protected final Map<QName, Variable> mGlobalVariables = new HashMap<>();
 
-    public AbstractInternalModule(FunctionDef[] functions,
-            Map<String, List<? extends Object>> parameters) {
+    public AbstractInternalModule(final FunctionDef[] functions,
+            final Map<String, List<? extends Object>> parameters) {
         this(functions, parameters, false);
     }
 
-    public AbstractInternalModule(FunctionDef[] functions, Map<String,
-            List<? extends Object>> parameters, boolean functionsOrdered) {
+    public AbstractInternalModule(final FunctionDef[] functions,
+            final Map<String, List<? extends Object>> parameters,
+            final boolean functionsOrdered) {
         this.mFunctions = functions;
         this.ordered = functionsOrdered;
         this.parameters = parameters;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#isInternalModule()
-     */
     @Override
     public boolean isInternalModule() {
         return true;
@@ -83,12 +74,12 @@ public abstract class AbstractInternalModule implements InternalModule {
     /**
      * returns a module parameter
      */
-    protected List<? extends Object> getParameter(String paramName) {
+    protected List<? extends Object> getParameter(final String paramName) {
         return parameters.get(paramName);
     }
 
     @Override
-    public void setContextItem(Sequence contextItem) {
+    public void setContextItem(final Sequence contextItem) {
         // not used for internal modules
     }
 
@@ -107,8 +98,8 @@ public abstract class AbstractInternalModule implements InternalModule {
     }
 
     @Override
-    public Iterator<FunctionSignature> getSignaturesForFunction(QName qname) {
-        final List<FunctionSignature> signatures = new ArrayList<FunctionSignature>(2);
+    public Iterator<FunctionSignature> getSignaturesForFunction(final QName qname) {
+        final List<FunctionSignature> signatures = new ArrayList<>(2);
         for (int i = 0; i < mFunctions.length; i++) {
             final FunctionSignature signature = mFunctions[i].getSignature();
             if (signature.getName().compareTo(qname) == 0){
@@ -118,9 +109,6 @@ public abstract class AbstractInternalModule implements InternalModule {
         return signatures.iterator();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getClassForFunction(org.exist.dom.QName)
-     */
     @Override
     public FunctionDef getFunctionDef(QName qname, int arity) {
         final FunctionId id = new FunctionId(qname, arity);
@@ -136,7 +124,7 @@ public abstract class AbstractInternalModule implements InternalModule {
         return null;
     }
 
-    private FunctionDef binarySearch(FunctionId id) {
+    private FunctionDef binarySearch(final FunctionId id) {
         int low = 0;
         int high = mFunctions.length - 1;
 
@@ -156,8 +144,8 @@ public abstract class AbstractInternalModule implements InternalModule {
     }
 
     @Override
-    public List<FunctionSignature> getFunctionsByName(QName qname) {
-        final List<FunctionSignature> funcs = new ArrayList<FunctionSignature>();
+    public List<FunctionSignature> getFunctionsByName(final QName qname) {
+        final List<FunctionSignature> funcs = new ArrayList<>();
         for (int i = 0; i < mFunctions.length; i++) {
             final FunctionSignature sig = mFunctions[i].getSignature();
             if (sig.getName().compareTo(qname) == 0) {
@@ -171,8 +159,24 @@ public abstract class AbstractInternalModule implements InternalModule {
         return mGlobalVariables.keySet().iterator();
     }
 
+    /**
+     * Declares a variable defined by the module.
+     *
+     * NOTE: this should not be called from the constructor of a module
+     * otherwise when {@link #reset(XQueryContext, boolean)} is called
+     * with {@code keepGlobals = false}, the variables will be removed
+     * from the module. Which means they will not be available
+     * for subsequent re-executions of a cached XQuery.
+     * Instead, module level variables should be initialised
+     * in {@link #prepare(XQueryContext)}.
+     *
+     * @param qname The name of the variable
+     * @param value The Java value of the variable, will be converted to an XDM type.
+     *
+     * @return the variable
+     */
     @Override
-    public Variable declareVariable(QName qname, Object value) throws XPathException {
+    public Variable declareVariable(final QName qname, final Object value) throws XPathException {
         final Sequence val = XPathUtil.javaObjectToXPath(value, null);
         Variable var = mGlobalVariables.get(qname);
         if (var == null){
@@ -183,34 +187,47 @@ public abstract class AbstractInternalModule implements InternalModule {
         return var;
     }
 
+    /**
+     * Declares a variable defined by the module.
+     *
+     * NOTE: this should not be called from the constructor of a module
+     * otherwise when {@link #reset(XQueryContext, boolean)} is called
+     * with {@code keepGlobals = false}, the variables will be removed
+     * from the module. Which means they will not be available
+     * for subsequent re-executions of a cached XQuery.
+     * Instead, module level variables should be initialised
+     * in {@link #prepare(XQueryContext)}.
+     *
+     * @param var The variable
+     *
+     * @return the variable
+     */
     @Override
-    public Variable declareVariable(Variable var) {
+    public Variable declareVariable(final Variable var) {
         mGlobalVariables.put(var.getQName(), var);
         return var;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#resolveVariable(org.exist.dom.QName)
-     */
     @Override
-    public Variable resolveVariable(QName qname) throws XPathException {
+    public Variable resolveVariable(final QName qname) throws XPathException {
         return mGlobalVariables.get(qname);
     }
 
     @Override
-    public boolean isVarDeclared(QName qname) {
+    public boolean isVarDeclared(final QName qname) {
         return mGlobalVariables.get(qname) != null;
     }
 
     @Override
-    public void reset(XQueryContext context) {
+    public void reset(final XQueryContext context) {
         //Nothing to do
     }
 
     @Override
-    public void reset(XQueryContext xqueryContext, boolean keepGlobals) {
+    public void reset(final XQueryContext xqueryContext, final boolean keepGlobals) {
         // call deprecated method for backwards compatibility
         reset(xqueryContext);
+
         if (!keepGlobals) {
             mGlobalVariables.clear();
         }

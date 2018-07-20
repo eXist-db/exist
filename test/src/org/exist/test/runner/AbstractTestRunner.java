@@ -70,6 +70,7 @@ public abstract class AbstractTestRunner extends Runner {
                     context = new XQueryContext(broker.getBrokerPool());
                 } else {
                     context = compiledQuery.getContext();
+                    context.prepareForReuse();
                 }
 
                 // setup misc. context
