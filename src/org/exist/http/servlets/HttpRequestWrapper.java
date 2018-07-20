@@ -37,6 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -787,5 +788,10 @@ public class HttpRequestWrapper implements RequestWrapper {
     @Override
     public boolean isMultipartContent() {
         return isMultipartContent;
+    }
+
+    @Override
+    public RequestDispatcher getRequestDispatcher(final String path) {
+        return servletRequest.getRequestDispatcher(path);
     }
 }

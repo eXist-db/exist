@@ -192,36 +192,9 @@ public abstract class Serializer implements XMLReader {
     protected LexicalHandler lexicalHandler = null;
     protected Subject user = null;
     
-    protected HttpContext httpContext = null;
-
-    public static class HttpContext
-    {
-    	private RequestWrapper request = null;
-    	private ResponseWrapper response = null;
-    	private SessionWrapper session = null;
-		
-    	public RequestWrapper getRequest() {
-			return request;
-		}
-		public void setRequest(RequestWrapper request) {
-			this.request = request;
-		}
-		public ResponseWrapper getResponse() {
-			return response;
-		}
-		public void setResponse(ResponseWrapper response) {
-			this.response = response;
-		}
-		public SessionWrapper getSession() {
-			return session;
-		}
-		public void setSession(SessionWrapper session) {
-			this.session = session;
-		}
-    }
+    protected XQueryContext.HttpContext httpContext = null;
     
-    public void setHttpContext(HttpContext httpContext)
-    {
+    public void setHttpContext(final XQueryContext.HttpContext httpContext) {
     	this.httpContext = httpContext;
     }
     

@@ -79,7 +79,7 @@ public class StringValue extends AtomicValue {
         }
     }
 
-    public StringValue(String string) {
+    public StringValue(final String string) {
         //string = StringValue.expand(string); //Should we have character entities
         value = string;
     }

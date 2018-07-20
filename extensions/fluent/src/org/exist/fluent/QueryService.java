@@ -315,8 +315,9 @@ public class QueryService implements Cloneable {
 					context = new XQueryContext(broker.getBrokerPool());
 					buildXQueryStaticContext(context, true);
 				} else {
-					context = compiledQuery.getContext();
 					// static context already set
+					context = compiledQuery.getContext();
+					context.prepareForReuse();
 				}
 				buildXQueryDynamicContext(context, params, docsToLock, true);
 				t2 = System.currentTimeMillis();
@@ -551,6 +552,7 @@ public class QueryService implements Cloneable {
 					t3 = System.currentTimeMillis();
 				} else {
 					context = (AnalysisXQueryContext) compiledQuery.getContext();
+					context.prepareForReuse();
 					t2 = System.currentTimeMillis();
 				}
 				return new QueryAnalysis(

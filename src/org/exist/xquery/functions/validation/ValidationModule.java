@@ -28,6 +28,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 
 /**
  * Module function definitions for validation module.
@@ -79,13 +80,17 @@ public class ValidationModule extends AbstractInternalModule {
     public final static QName EXCEPTION_MESSAGE_QNAME =
             new QName("exception-message", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX);
     
-    public ValidationModule(Map<String, List<?>> parameters) throws XPathException {
+    public ValidationModule(final Map<String, List<?>> parameters) throws XPathException {
         super(functions, parameters);
+    }
+
+    @Override
+    public void prepare(final XQueryContext context) throws XPathException {
         declareVariable(EXCEPTION_QNAME, null);
         declareVariable(EXCEPTION_MESSAGE_QNAME, null);
     }
-    
-        /* (non-Javadoc)
+
+    /* (non-Javadoc)
          * @see org.exist.xquery.ValidationModule#getDescription()
          */
     public String getDescription() {
@@ -109,5 +114,4 @@ public class ValidationModule extends AbstractInternalModule {
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }
-
 }

@@ -225,7 +225,17 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	public void setIntHeader(String arg0, int arg1) {
 		response.setIntHeader(arg0, arg1);
 	}
-	
+
+	@Override
+	public void sendError(final int code) throws IOException {
+		response.sendError(code);
+	}
+
+	@Override
+	public void sendError(final int code, final String msg) throws IOException {
+		response.sendError(code, msg);
+	}
+
 	/**
      * @param arg0
      */

@@ -193,6 +193,7 @@ public class UserXQueryJob extends UserJob {
                 context = new XQueryContext(pool);
             } else {
                 context = compiled.getContext();
+                context.prepareForReuse();
             }
 
             if(source instanceof  DBSource) {

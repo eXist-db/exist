@@ -44,6 +44,7 @@ import com.evolvedbinary.j8fu.function.TriFunctionE;
 import com.evolvedbinary.j8fu.function.QuadFunctionE;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import com.ibm.icu.text.Collator;
+import net.jcip.annotations.Immutable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
@@ -54,7 +55,7 @@ import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.DebuggeeJoint;
 import org.exist.dom.persistent.*;
 import org.exist.dom.QName;
-import org.exist.http.servlets.RequestWrapper;
+import org.exist.http.servlets.*;
 import org.exist.interpreter.Context;
 import org.exist.dom.memtree.InMemoryXMLStreamReader;
 import org.exist.dom.memtree.MemTreeBuilder;
@@ -71,8 +72,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.LockedDocumentMap;
-import org.exist.storage.txn.TransactionException;
-import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Collations;
 import org.exist.util.Configuration;
@@ -88,10 +87,11 @@ import org.exist.xquery.value.*;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.lang.invoke.MethodType.methodType;
@@ -359,6 +359,33 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     private boolean pushedUserFromHttpSession = false;
 
+    /**
+     * The HTTP context within which the XQuery
+     * is executing, or null if there is no
+     * HTTP context.
+     */
+    @Nullable private HttpContext httpContext = null;
+
+    /**
+     * Get the HTTP context of the XQuery.
+     *
+     * @return the HTTP context, or null if the query
+     *     is not being executed within an HTTP context.
+     */
+    public @Nullable HttpContext getHttpContext() {
+        return httpContext;
+    }
+
+    /**
+     * Set the HTTP context of the XQuery.
+     *
+     * @param httpContext the HTTP context within which the XQuery
+     *     is being executed.
+     */
+    public void setHttpContext(final HttpContext httpContext) {
+        this.httpContext = httpContext;
+    }
+
     public synchronized Optional<ExistRepository> getRepository()
     throws XPathException {
         return getBroker().getBrokerPool().getExpathRepo();
@@ -432,6 +459,25 @@ public class XQueryContext implements BinaryValueManager, Context
     }
 
     /**
+     * Prepares the XQuery Context for use.
+     *
+     * Should be called before compilation to prepare the query context,
+     * or before re-execution if the query was cached.
+     */
+    public void prepareForReuse() throws XPathException {
+        // prepare the variables of the internal modules (which were previously reset)
+        try (final Stream<InternalModule> internalModules = allModules
+                .values()
+                .stream()
+                .filter(module -> module instanceof InternalModule)
+                .map(module -> (InternalModule)module)) {
+            for (final InternalModule internalModule : internalModules.collect(Collectors.toList())) {
+                internalModule.prepare(this);
+            }
+        }
+    }
+
+    /**
      * Returns true if this context has a parent context (means it is a module context).
      *
      * @return  False.
@@ -480,6 +526,7 @@ public class XQueryContext implements BinaryValueManager, Context
         this.dynamicOptions				= from.dynamicOptions;
         this.staticOptions				= from.staticOptions;
         this.db							= from.db;
+        this.httpContext                = from.httpContext;
     }
 
 
@@ -551,6 +598,7 @@ public class XQueryContext implements BinaryValueManager, Context
         }
 
         ctx.source = this.source;
+        ctx.httpContext = this.httpContext;
         
     }
 
@@ -1547,6 +1595,10 @@ public class XQueryContext implements BinaryValueManager, Context
         clearUpdateListeners();
 
         profiler.reset();
+
+        if (!keepGlobals) {
+            httpContext = null;
+        }
         
         analyzed = false;
     }
@@ -1824,6 +1876,10 @@ public class XQueryContext implements BinaryValueManager, Context
 
             modules.put(module.getNamespaceURI(), module);
             allModules.put(module.getNamespaceURI(), module);
+
+            if (module instanceof InternalModule) {
+                ((InternalModule)module).prepare(this);
+            }
         } catch(final Throwable e) {
             if (e instanceof InterruptedException) {
                 // NOTE: must set interrupted flag
@@ -2282,50 +2338,33 @@ public class XQueryContext implements BinaryValueManager, Context
      *
      * @return  The user or null if there is no session or no user
      */
-    public Subject getUserFromHttpSession()
-    {
-        final RequestModule myModule = (RequestModule)getModule( RequestModule.NAMESPACE_URI );
+    public Subject getUserFromHttpSession() {
 
-        //Sanity check : one may *not* want to bind the module !
-        if( myModule == null ) {
-            return( null );
-        }
+        final Optional<RequestWrapper> maybeRequest = Optional.ofNullable(getHttpContext())
+                .map(HttpContext::getRequest);
 
-        Variable var = null;
+        if (maybeRequest.isPresent()) {
+            final RequestWrapper request = maybeRequest.get();
+            final Object user = request.getAttribute(HTTP_REQ_ATTR_USER);
+            final Object passAttr = request.getAttribute(HTTP_REQ_ATTR_PASS);
+            if (user != null) {
+                final String password = passAttr == null ? null : passAttr.toString();
+                try {
+                    return getBroker().getBrokerPool().getSecurityManager().authenticate(user.toString(), password);
+                } catch (final AuthenticationException e) {
+                    LOG.error("User can not be authenticated: " + user.toString());
+                }
+            } else {
+                final Optional<SessionWrapper> maybeSession = Optional.ofNullable(getHttpContext())
+                        .map(HttpContext::getSession);
 
-        try {
-            var = myModule.resolveVariable( RequestModule.REQUEST_VAR );
-        }
-        catch( final XPathException xpe ) {
-            return( null );
-        }
-
-        if( ( var != null ) && ( var.getValue() != null ) ) {
-
-            if( var.getValue().getItemType() == Type.JAVA_OBJECT ) {
-                final JavaObjectValue reqValue = (JavaObjectValue)var.getValue().itemAt( 0 );
-
-                if( reqValue.getObject() instanceof RequestWrapper) {
-                    final RequestWrapper req = (RequestWrapper) reqValue.getObject();
-                    final Object user = req.getAttribute(HTTP_REQ_ATTR_USER);
-                    final Object passAttr = req.getAttribute(HTTP_REQ_ATTR_PASS);
-                    if (user != null) {
-                        final String password = passAttr == null ? null : passAttr.toString();
-                        try {
-                            return getBroker().getBrokerPool().getSecurityManager().authenticate(user.toString(), password);
-                        } catch (final AuthenticationException e) {
-                            LOG.error("User can not be authenticated: " + user.toString());
-                        }
-                    } else {
-                        if (req.getSession() != null) {
-                            return (Subject) req.getSession().getAttribute(HTTP_SESSIONVAR_XMLDB_USER);
-                        }
-                    }
+                if (maybeSession.isPresent()) {
+                    return (Subject) maybeSession.get().getAttribute(HTTP_SESSIONVAR_XMLDB_USER);
                 }
             }
         }
 
-        return( null );
+        return null;
     }
 
     /** The builder used for creating in-memory document fragments. */
@@ -3857,5 +3896,50 @@ public class XQueryContext implements BinaryValueManager, Context
         // now it is safe to clear the cleanup tasks list as we know they have run
         // do not move this anywhere else
         cleanupTasks.clear();
+    }
+
+    @Immutable
+    public static class HttpContext {
+        private final RequestWrapper request;
+        private final ResponseWrapper response;
+        private final SessionWrapper session;
+
+        public HttpContext(final RequestWrapper request, final ResponseWrapper response,
+                final SessionWrapper session) {
+            this.request = request;
+            this.response = response;
+            this.session = session;
+        }
+
+        public HttpContext(final RequestWrapper request, final ResponseWrapper response) {
+            this.request = request;
+            this.response = response;
+            this.session = request.getSession(false);
+        }
+
+        public RequestWrapper getRequest() {
+            return request;
+        }
+
+        public ResponseWrapper getResponse() {
+            return response;
+        }
+
+        public SessionWrapper getSession() {
+            return session;
+        }
+
+        /**
+         * Returns a new HttpContext with the new session set.
+         *
+         * The request and response are referenced from this object.
+         *
+         * @param newSession the new session to set.
+         *
+         * @return the new HttpContext.
+         */
+        public HttpContext setSession(final SessionWrapper newSession) {
+            return new HttpContext(request, response, newSession);
+        }
     }
 }

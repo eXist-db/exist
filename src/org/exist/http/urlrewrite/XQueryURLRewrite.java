@@ -658,7 +658,9 @@ public class XQueryURLRewrite extends HttpServlet {
             queryContext = new XQueryContext(broker.getBrokerPool());
         } else {
             queryContext = compiled.getContext();
+            queryContext.prepareForReuse();
         }
+
         // Find correct module load path
         queryContext.setModuleLoadPath(sourceInfo.moduleLoadPath);
         declareVariables(queryContext, sourceInfo, staticRewrite, basePath, request, response);
@@ -909,9 +911,7 @@ public class XQueryURLRewrite extends HttpServlet {
         final HttpResponseWrapper respw = new HttpResponseWrapper(response);
         // context.declareNamespace(RequestModule.PREFIX,
         // RequestModule.NAMESPACE_URI);
-        context.declareVariable(RequestModule.PREFIX + ":request", reqw);
-        context.declareVariable(ResponseModule.PREFIX + ":response", respw);
-        context.declareVariable(SessionModule.PREFIX + ":session", reqw.getSession(false));
+        context.setHttpContext(new XQueryContext.HttpContext(reqw, respw));
 
         context.declareVariable("exist:controller", sourceInfo.controllerPath);
         request.setAttribute("$exist:controller", sourceInfo.controllerPath);
