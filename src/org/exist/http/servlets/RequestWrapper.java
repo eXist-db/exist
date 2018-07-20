@@ -30,6 +30,7 @@ import java.security.Principal;
 import java.util.Enumeration;
 import java.util.List;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.http.Cookie;
 
 /**
@@ -123,5 +124,7 @@ import javax.servlet.http.Cookie;
 	
 	 void setCharacterEncoding(String arg0) throws UnsupportedEncodingException;
 
-         boolean isMultipartContent();
+	 boolean isMultipartContent();
+
+	 RequestDispatcher getRequestDispatcher(final String path);
 }

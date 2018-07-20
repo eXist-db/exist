@@ -125,6 +125,11 @@ public interface ResponseWrapper {
 	 * @param arg1
 	 */
 	public void setIntHeader(String arg0, int arg1);
+
+	void sendError(final int code) throws IOException;
+
+	void sendError(final int code, final String msg) throws IOException;
+
     /**
      * @param arg0
      */

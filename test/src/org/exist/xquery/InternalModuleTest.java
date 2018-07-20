@@ -26,7 +26,7 @@ import org.exist.source.StringSource;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.LocalXMLResource;
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.w3c.dom.Node;
 import org.xmldb.api.base.ResourceSet;
@@ -51,24 +51,17 @@ public class InternalModuleTest {
 
     private static final AtomicLong COUNTER = new AtomicLong();
 
-    @ClassRule
-    public static final ExistXmldbEmbeddedServer existServer = new ExistXmldbEmbeddedServer(true, true, true);
+    @Rule
+    public final ExistXmldbEmbeddedServer existServer = new ExistXmldbEmbeddedServer(true, true, true);
 
     private static final String EOL = System.getProperty("line.separator");
-    private static final String MODULE_VARIABLE_QUERY =
-            "import module namespace " + PREFIX + " = '" + NS + "' at 'java:org.exist.xquery.InternalModuleTest$TestModuleWithVariables';" + EOL
-            + "document {" + EOL
-            + "  <variables>" + EOL
-            + "    <var1>{$" + PREFIX + ":var1}</var1>" + EOL
-            + "  </variables>" + EOL
-            + "}" + EOL;
 
     @Test
     public void moduleVariables() throws XMLDBException {
-        final Source querySource = new StringSource(MODULE_VARIABLE_QUERY);
+        final Source querySource = new StringSource(getModuleVariableQuery("org.exist.xquery.InternalModuleTest$TestModuleWithVariables"));
         final EXistXQueryService queryService = (EXistXQueryService)existServer.getRoot().getService("XQueryService", "1.0");
 
-        moduleVariablesQuery(queryService, querySource);
+        moduleVariablesQuery(queryService, querySource, COUNTER.get());
     }
 
     /**
@@ -79,16 +72,106 @@ public class InternalModuleTest {
      */
     @Test
     public void reusedModuleVariables() throws XMLDBException {
-        final Source querySource = new StringSource(MODULE_VARIABLE_QUERY);
+        final Source querySource = new StringSource(getModuleVariableQuery("org.exist.xquery.InternalModuleTest$TestModuleWithVariables"));
         final EXistXQueryService queryService = (EXistXQueryService)existServer.getRoot().getService("XQueryService", "1.0");
 
-        moduleVariablesQuery(queryService, querySource);
-        moduleVariablesQuery(queryService, querySource);
-        moduleVariablesQuery(queryService, querySource);
+        moduleVariablesQuery(queryService, querySource, COUNTER.get());
+        moduleVariablesQuery(queryService, querySource, COUNTER.get());
+        moduleVariablesQuery(queryService, querySource, COUNTER.get());
     }
 
-    private void moduleVariablesQuery(final EXistXQueryService queryService, final Source query) throws XMLDBException {
-        final long expectedVar1 = COUNTER.get();
+    /**
+     * Similar to {@link #moduleVariables()} but
+     * uses the old 4.x.x API.
+     *
+     * @deprecated remove in eXist-db 5.0.0.
+     */
+    @Deprecated
+    @Test
+    public void moduleVariables_Old_API() throws XMLDBException {
+        final Source querySource = new StringSource(getModuleVariableQuery("org.exist.xquery.InternalModuleTest$TestModuleWithVariables_Old_API"));
+        final EXistXQueryService queryService = (EXistXQueryService)existServer.getRoot().getService("XQueryService", "1.0");
+
+        final long count = COUNTER.get();
+        moduleVariablesQuery(queryService, querySource, count);
+    }
+
+    /**
+     * Similar to {@link #reusedModuleVariables_Old_API()} but
+     * uses the old 4.x.x API.
+     *
+     * @deprecated remove in eXist-db 5.0.0.
+     */
+    @Deprecated
+    @Test
+    public void reusedModuleVariables_Old_API() throws XMLDBException {
+        final Source querySource = new StringSource(getModuleVariableQuery("org.exist.xquery.InternalModuleTest$TestModuleWithVariables_Old_API"));
+        final EXistXQueryService queryService = (EXistXQueryService)existServer.getRoot().getService("XQueryService", "1.0");
+
+        final long count = COUNTER.get();
+        moduleVariablesQuery(queryService, querySource, count);
+        moduleVariablesQuery(queryService, querySource, count);
+        moduleVariablesQuery(queryService, querySource, count);
+    }
+
+    /**
+     * @deprecated remove in eXist-db 5.0.0.
+     */
+    @Deprecated
+    @Test
+    public void requestResponseSessionVariables_Old_API() throws XMLDBException {
+        final Source querySource = new StringSource(
+                "document{" + EOL +
+                        "  <vars>" + EOL +
+                        "    <request>{empty($request:request)}</request>" + EOL +
+                        "    <session>{empty($session:session)}</session>" + EOL +
+                        "    <response>{empty($response:response)}</response>" + EOL +
+                        "  </vars>" + EOL +
+                        "}"
+
+        );
+        final EXistXQueryService queryService = (EXistXQueryService)existServer.getRoot().getService("XQueryService", "1.0");
+
+        requestResponseSessionVariablesQuery_OldApi(queryService, querySource);
+    }
+
+    /**
+     * @deprecated remove in eXist-db 5.0.0.
+     */
+    @Deprecated
+    private void requestResponseSessionVariablesQuery_OldApi(final EXistXQueryService queryService, final Source query) throws XMLDBException {
+        final ResourceSet result = queryService.execute(query);  // this variation of execute will use the XQueryPool for caching
+
+        assertNotNull(result);
+        assertEquals(1, result.getSize());
+
+        final LocalXMLResource resource = (LocalXMLResource)result.getResource(0);
+        assertNotNull(resource);
+
+        final Node actualDoc = resource.getContentAsDOM();
+
+        final javax.xml.transform.Source expected = Input.fromString("<vars><request>true</request><session>true</session><response>true</response></vars>").build();
+        final javax.xml.transform.Source actual = Input.fromNode(actualDoc).build();
+
+        final Diff diff = DiffBuilder.compare(actual)
+                .withTest(expected)
+                .checkForSimilar()
+                .build();
+
+        assertFalse(diff.toString(), diff.hasDifferences());
+    }
+
+    private static String getModuleVariableQuery(final String javaClass) {
+        return
+                "import module namespace " + PREFIX + " = '" + NS + "' at 'java:" + javaClass + "';" + EOL
+                + "document {" + EOL
+                + "  <variables>" + EOL
+                + "    <var1>{$" + PREFIX + ":var1}</var1>" + EOL
+                + "  </variables>" + EOL
+                + "}" + EOL;
+    }
+
+    private void moduleVariablesQuery(final EXistXQueryService queryService, final Source query, final long expectedCount) throws XMLDBException {
 
         final ResourceSet result = queryService.execute(query);  // this variation of execute will use the XQueryPool for caching
 
@@ -100,7 +183,7 @@ public class InternalModuleTest {
 
         final Node actualDoc = resource.getContentAsDOM();
 
-        final javax.xml.transform.Source expected = Input.fromString("<variables><var1>" + expectedVar1 + "</var1></variables>").build();
+        final javax.xml.transform.Source expected = Input.fromString("<variables><var1>" + expectedCount + "</var1></variables>").build();
         final javax.xml.transform.Source actual = Input.fromNode(actualDoc).build();
 
         final Diff diff = DiffBuilder.compare(actual)
@@ -119,7 +202,50 @@ public class InternalModuleTest {
 
         public TestModuleWithVariables(final Map<String, List<?>> parameters) throws XPathException {
             super(new FunctionDef[0], parameters);
+        }
 
+        @Override
+        public void prepare(final XQueryContext context) throws XPathException {
+            declareVariable(VAR1_NAME, COUNTER.getAndIncrement());
+        }
+
+        @Override
+        public String getNamespaceURI() {
+            return NS;
+        }
+
+        @Override
+        public String getDefaultPrefix() {
+            return PREFIX;
+        }
+
+        @Override
+        public String getDescription() {
+            return "mod1";
+        }
+
+        @Override
+        public String getReleaseVersion() {
+            return "99";
+        }
+    }
+
+    /**
+     * This uses the old eXist-db 4.x.x API approach.
+     * It can be removed in 5.0.0 in favour of only testing
+     * {@link TestModuleWithVariables}.
+     *
+     * @deprecated remove in eXist-db 5.0.0.
+     */
+    @Deprecated
+    public static class TestModuleWithVariables_Old_API extends AbstractInternalModule {
+        public static final String NS = "http://TestModuleWithVariables";
+        public static final String PREFIX = "tmwv";
+
+        public static final QName VAR1_NAME = new QName("var1", NS);
+
+        public TestModuleWithVariables_Old_API(final Map<String, List<?>> parameters) throws XPathException {
+            super(new FunctionDef[0], parameters);
             declareVariable(VAR1_NAME, COUNTER.getAndIncrement());
         }
 
