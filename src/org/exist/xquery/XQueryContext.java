@@ -1588,8 +1588,10 @@ public class XQueryContext implements BinaryValueManager, Context
         //remove the context-vars, subsequent execution of the query
         //may generate different values for the vars based on the
         //content of the db
-        XQueryContextVars.clear();
-        
+        if (!keepGlobals) {
+            XQueryContextVars.clear();
+        }
+
         attributes.clear();
 
         clearUpdateListeners();
