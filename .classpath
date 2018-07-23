@@ -62,6 +62,7 @@
 	<classpathentry kind="lib" path="lib/core/xmldb.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/commons-io-2.6.jar"/>
+        <classpathentry kind="lib" path="lib/optional/jaxb-api-2.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jaxrpc-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/saaj-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/wsdl4j-1.5.1.jar"/>
