@@ -36,6 +36,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import org.exist.extensions.exquery.restxq.RestXqServiceCompiledXQueryCache;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.XPathException;
 import org.exquery.restxq.RestXqService;
 import org.exquery.restxq.RestXqServiceException;
 import org.jctools.queues.atomic.MpmcAtomicArrayQueue;
@@ -75,11 +76,14 @@ public class RestXqServiceCompiledXQueryCacheImpl implements RestXqServiceCompil
         CompiledXQuery xquery = queue.poll();
         if(xquery == null) {
             xquery = XQueryCompiler.compile(broker, xqueryLocation);
+        } else {
+            // prepare the context for re-use
+            try {
+                xquery.getContext().prepareForReuse();
+            } catch (final XPathException e) {
+                throw new RestXqServiceException("Unable to prepare compiled XQuery for reuse", e);
+            }
         }
-
-        //reset the state of the query
-        xquery.reset();
-        xquery.getContext().getWatchDog().reset();
         xquery.getContext().prepareForExecution();
 
         return xquery;

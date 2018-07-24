@@ -32,10 +32,7 @@ import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.EXistXQueryService;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Sequence;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -152,6 +149,8 @@ public class CleanupTest {
         }
     }
 
+    //TODO(AR) reinstate for eXist-db 5.0.0
+    @Ignore("Not API compatible in the 4.x.x line")
     @Test
     public void preserveExternalVariable() throws XMLDBException, XPathException {
         // see https://github.com/eXist-db/exist/pull/1512 and use of util:eval

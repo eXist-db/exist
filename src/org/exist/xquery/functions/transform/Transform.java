@@ -34,7 +34,6 @@ import org.exist.util.serializer.Receiver;
 import org.exist.util.serializer.ReceiverToSAX;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
-import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.value.*;
 import org.exist.xslt.Stylesheet;
 import org.exist.xslt.TemplatesFactory;
@@ -53,6 +52,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -260,25 +260,18 @@ public class Transform extends BasicFunction {
         } else {
             //transform:stream-transform()
 
-            final ResponseModule myModule = (ResponseModule) context.getModule(ResponseModule.NAMESPACE_URI);
-            // response object is read from global variable $response
-            final Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
+            final Optional<ResponseWrapper> maybeResponse = Optional.ofNullable(context.getHttpContext())
+                    .map(XQueryContext.HttpContext::getResponse);
 
-            if (respVar == null) {
+            if (!maybeResponse.isPresent()) {
                 throw new XPathException(this, ErrorCodes.XPDY0002, "No response object found in the current XQuery context.");
             }
 
-            if (respVar.getValue().getItemType() != Type.JAVA_OBJECT) {
-                throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $response is not bound to an Java object.");
-            }
-
-            final JavaObjectValue respValue = (JavaObjectValue) respVar.getValue().itemAt(0);
-            if (!"org.exist.http.servlets.HttpResponseWrapper".equals(respValue.getObject().getClass().getName())) {
+            final ResponseWrapper response =  maybeResponse.get();
+            if (!"org.exist.http.servlets.HttpResponseWrapper".equals(response.getClass().getName())) {
                 throw new XPathException(this, ErrorCodes.XPDY0002, signatures[1] +
                         " can only be used within the EXistServlet or XQueryServlet");
             }
-
-            final ResponseWrapper response = (ResponseWrapper) respValue.getObject();
 
             //setup the response correctly
             final String mediaType = handler.getTransformer().getOutputProperty("media-type");

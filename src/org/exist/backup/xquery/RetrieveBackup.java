@@ -29,12 +29,9 @@ import org.exist.util.FileUtils;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -44,6 +41,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.Properties;
 
 
@@ -95,24 +93,17 @@ public class RetrieveBackup extends BasicFunction
         }
 
         // directly stream the backup contents to the HTTP response
-        final ResponseModule myModule = (ResponseModule)context.getModule( ResponseModule.NAMESPACE_URI );
+        final Optional<ResponseWrapper> maybeResponse = Optional.ofNullable(context.getHttpContext())
+                .map(XQueryContext.HttpContext::getResponse);
 
-        // response object is read from global variable $response
-        final Variable       respVar  = myModule.resolveVariable( ResponseModule.RESPONSE_VAR );
-
-        if( respVar == null ) {
+        if(!maybeResponse.isPresent()) {
             throw( new XPathException( this, "No response object found in the current XQuery context." ) );
         }
 
-        if( respVar.getValue().getItemType() != Type.JAVA_OBJECT ) {
-            throw( new XPathException( this, "Variable $response is not bound to an Java object." ) );
+        final ResponseWrapper response =  maybeResponse.get();
+        if( !"org.exist.http.servlets.HttpResponseWrapper".equals(response.getClass().getName())) {
+            throw new XPathException(this, signature.toString() + " can only be used within the EXistServlet or XQueryServlet");
         }
-        final JavaObjectValue respValue = (JavaObjectValue)respVar.getValue().itemAt( 0 );
-
-        if( !"org.exist.http.servlets.HttpResponseWrapper".equals( respValue.getObject().getClass().getName() ) ) {
-            throw( new XPathException( this, signature.toString() + " can only be used within the EXistServlet or XQueryServlet" ) );
-        }
-        final ResponseWrapper response = (ResponseWrapper)respValue.getObject();
 
         response.setContentType("application/zip");
         response.setHeader("Content-Length", String.valueOf(FileUtils.sizeQuietly(backupFile)));

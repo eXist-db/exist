@@ -174,10 +174,11 @@ public class UserXQueryJob extends UserJob {
                 //try and get a pre-compiled query from the pool
                 compiled = xqPool.borrowCompiledXQuery(broker, source);
 
-                if(compiled == null) {
+                if (compiled == null) {
                     context = new XQueryContext(pool);
                 } else {
                     context = compiled.getContext();
+                    context.prepareForReuse();
                 }
 
                 //TODO: don't hardcode this?

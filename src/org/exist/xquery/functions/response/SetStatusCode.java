@@ -30,79 +30,42 @@ import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import javax.annotation.Nonnull;
 
 
 /**
  * Set's a HTTP server status code on the HTTP Response.
  *
- * @author  Andrzej Taramina <andrzej@chaeron.com>
- * @see     org.exist.xquery.Function
+ * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @see org.exist.xquery.Function
  */
-public class SetStatusCode extends Function
-{
-    protected static final Logger logger = LogManager.getLogger(SetStatusCode.class);
+public class SetStatusCode extends StrictResponseFunction {
+    private static final Logger logger = LogManager.getLogger(SetStatusCode.class);
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("set-status-code", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-			"Sets a HTTP server status code on the HTTP Response.",
-			new SequenceType[] {
-				new FunctionParameterSequenceType("code", Type.INTEGER, Cardinality.EXACTLY_ONE, "The status code")
-			},
-			new SequenceType(Type.ITEM, Cardinality.EMPTY));
+    public final static FunctionSignature signature =
+            new FunctionSignature(
+                    new QName("set-status-code", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
+                    "Sets a HTTP server status code on the HTTP Response.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("code", Type.INTEGER, Cardinality.EXACTLY_ONE, "The status code")
+                    },
+                    new SequenceType(Type.EMPTY, Cardinality.EMPTY));
 
-    public SetStatusCode( XQueryContext context )
-    {
-        super( context, signature );
+    public SetStatusCode(final XQueryContext context) {
+        super(context, signature);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-     */
-    public Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException
-    {
-        if( context.getProfiler().isEnabled() ) {
-            context.getProfiler().start( this );
-            context.getProfiler().message( this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName( this.getDependencies() ) );
+    @Override
+    public Sequence eval(final Sequence[] args, @Nonnull final ResponseWrapper response)
+            throws XPathException {
+        final int code = ((IntegerValue) args[0].convertTo(Type.INTEGER)).getInt();
 
-            if( contextSequence != null ) {
-                context.getProfiler().message( this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence );
-            }
+        response.setStatusCode(code);
 
-            if( contextItem != null ) {
-                context.getProfiler().message( this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence() );
-            }
-        }
-
-        final ResponseModule myModule = (ResponseModule)context.getModule( ResponseModule.NAMESPACE_URI );
-
-        // response object is read from global variable $response
-        final Variable       var      = myModule.resolveVariable( ResponseModule.RESPONSE_VAR );
-
-        if( ( var == null ) || ( var.getValue() == null ) ) {
-            throw( new XPathException( this, ErrorCodes.XPDY0002, "Response not set" ) );
-        }
-
-        if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
-            throw( new XPathException( this, ErrorCodes.XPDY0002, "Variable $response is not bound to a Java object." ) );
-        } 
-        final JavaObjectValue response = (JavaObjectValue)var.getValue().itemAt( 0 );
-
-        //get parameter
-        final int             code     = ( (IntegerValue)getArgument( 0 ).eval( contextSequence, contextItem ).convertTo( Type.INTEGER ) ).getInt();
-
-        //set response status code
-        if( response.getObject() instanceof ResponseWrapper ) {
-            ( (ResponseWrapper)response.getObject() ).setStatusCode( code );
-        } else {
-            throw( new XPathException( this, ErrorCodes.XPDY0002, "Type error: variable $response is not bound to a response object" ) );
-        }
-
-        return( Sequence.EMPTY_SEQUENCE );
+        return Sequence.EMPTY_SEQUENCE;
     }
 }

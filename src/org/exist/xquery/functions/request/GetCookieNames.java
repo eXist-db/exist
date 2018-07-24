@@ -30,16 +30,17 @@ import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
+import java.util.Optional;
+
 /**
  * @author Adam Retter (adam.retter@devon.gov.uk)
  */
-public class GetCookieNames extends BasicFunction {
+public class GetCookieNames extends RequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetCookieNames.class);
 
@@ -53,44 +54,27 @@ public class GetCookieNames extends BasicFunction {
 			FunctionSignature.NO_ARGS,
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "a sequence of the names of all Cookies in the request"));
 
-	public GetCookieNames(XQueryContext context) {
+	public GetCookieNames(final XQueryContext context) {
 		super(context, signature);
 	}
 
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
-	{
-		final RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
+	@Override
+	public Sequence eval(final Sequence[] args, final Optional<RequestWrapper> request)
+			throws XPathException {
+		return request.map(this::getCookieNames)
+				.orElse(Sequence.EMPTY_SEQUENCE);
+	}
 
-		// request object is read from global variable $request
-		final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
-		if (var == null || var.getValue() == null || var.getValue().getItemType() != Type.JAVA_OBJECT) {
-			return Sequence.EMPTY_SEQUENCE;
-		}
-
-		final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		if (value.getObject() instanceof RequestWrapper)
-		{
-			final Cookie[] cookies = ((RequestWrapper)value.getObject()).getCookies();
-			if(cookies != null)
-			{
-				if(cookies.length != 0)
-				{
-					final ValueSequence names = new ValueSequence();
-
-					for (Cookie cookie : cookies) {
-						names.add(new StringValue(cookie.getName()));
-					}
-					
-					return names;
-				}
+	private Sequence getCookieNames(final RequestWrapper request) {
+		final Cookie[] cookies = request.getCookies();
+		if (cookies != null && cookies.length > 0) {
+			final ValueSequence names = new ValueSequence();
+			for (final Cookie cookie : cookies) {
+				names.add(new StringValue(cookie.getName()));
 			}
+			return names;
+		} else {
 			return Sequence.EMPTY_SEQUENCE;
 		}
-		else
-			{throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to a Request object.");}
 	}
 }

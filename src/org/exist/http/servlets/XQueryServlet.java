@@ -451,14 +451,15 @@ public class XQueryServlet extends AbstractExistHttpServlet {
             } else {
                context = query.getContext();
                context.setModuleLoadPath(moduleLoadPath);
+               context.prepareForReuse();
             }
 
             final Properties outputProperties = new Properties();
             outputProperties.put("base-uri", collectionURI.toString());
-            
-            context.declareVariable(RequestModule.PREFIX + ":request", new HttpRequestWrapper(request, getFormEncoding(), getContainerEncoding()));
-            context.declareVariable(ResponseModule.PREFIX + ":response", new HttpResponseWrapper(response));
-            context.declareVariable(SessionModule.PREFIX + ":session", ( session != null ? new HttpSessionWrapper( session ) : null ) );
+
+            final HttpRequestWrapper reqw = new HttpRequestWrapper(request, getFormEncoding(), getContainerEncoding());
+            final ResponseWrapper respw = new HttpResponseWrapper(response);
+            context.setHttpContext(new XQueryContext.HttpContext(reqw, respw, session != null ? new HttpSessionWrapper( session ) : null));
 
             final String timeoutOpt = (String) request.getAttribute(ATTR_TIMEOUT);
             if (timeoutOpt != null) {

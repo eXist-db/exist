@@ -34,6 +34,7 @@ import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.Sequence;
 
+import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import java.net.URISyntaxException;
@@ -410,6 +411,17 @@ public class ModuleContext extends XQueryContext {
     
     public Map<QName, Variable> getGlobalVariables() {
     	return parentContext.getGlobalVariables();
+    }
+
+    @Nullable
+    @Override
+    public HttpContext getHttpContext() {
+        return parentContext.getHttpContext();
+    }
+
+    @Override
+    public void setHttpContext(final HttpContext httpContext) {
+        parentContext.setHttpContext(httpContext);
     }
 
     public void restoreStack(List<ClosureVariable> stack) throws XPathException {

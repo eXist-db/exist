@@ -25,6 +25,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 
 import java.util.Arrays;
 import java.util.List;
@@ -65,8 +66,12 @@ public class CounterModule extends AbstractInternalModule {
 
 	public CounterModule(Map<String, List<?>> parameters) throws XPathException {
 		super(functions, parameters, true);
+	}
+
+	@Override
+	public void prepare(final XQueryContext context) throws XPathException {
 		declareVariable(EXCEPTION_QNAME, null);
-        declareVariable(EXCEPTION_MESSAGE_QNAME, null);
+		declareVariable(EXCEPTION_MESSAGE_QNAME, null);
 	}
 
 	/* (non-Javadoc)
@@ -94,5 +99,12 @@ public class CounterModule extends AbstractInternalModule {
         return RELEASED_IN_VERSION;
     }
 
+	@Override
+	public void reset(final XQueryContext xqueryContext, final boolean keepGlobals) {
+		if (!keepGlobals) {
+			mGlobalVariables.clear();
+		}
+		super.reset(xqueryContext, keepGlobals);
+	}
 }
 

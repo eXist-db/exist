@@ -37,6 +37,15 @@ import org.exist.dom.QName;
 public interface InternalModule extends Module {
 
 	/**
+	 * Prepare the module for use.
+	 *
+	 * @param context The XQuery Context.
+	 */
+	default void prepare(final XQueryContext context) throws XPathException {
+		// no-op
+	}
+
+	/**
 	 * Returns the implementing class for the function identified
 	 * by qname or null if it is not defined. Called by
 	 * {@link FunctionFactory}.
@@ -44,7 +53,7 @@ public interface InternalModule extends Module {
 	 * @param qname
 	 * @return implementing class for the function
 	 */
-	public FunctionDef getFunctionDef(QName qname, int argCount);
+	FunctionDef getFunctionDef(QName qname, int argCount);
 	
 	/**
 	 * Returns all functions defined in this module matching the
@@ -53,5 +62,5 @@ public interface InternalModule extends Module {
 	 * @param qname
 	 * @return all functions defined in this module
 	 */
-	public List<FunctionSignature> getFunctionsByName(QName qname);
+	List<FunctionSignature> getFunctionsByName(QName qname);
 }

@@ -17,67 +17,45 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
+ *
  *  $Id$
  */
 package org.exist.xquery.functions.session;
 
-//import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.*;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import java.util.Optional;
 
 
 /**
  * @author wolf
  */
-public class Invalidate extends BasicFunction {
+public class Invalidate extends SessionFunction {
 
-//	private static final Logger logger = LogManager.getLogger(Invalidate.class);
-	
     public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("invalidate", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
-			"Invalidate (remove) the current HTTP session if present",
-			null,
-			new SequenceType(Type.ITEM, Cardinality.EMPTY));
-    
-    /**
-     * @param context
-     */
-    public Invalidate(XQueryContext context) {
+            new FunctionSignature(
+                    new QName("invalidate", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
+                    "Invalidate (remove) the current HTTP session if present",
+                    null,
+                    new SequenceType(Type.EMPTY, Cardinality.EMPTY));
+
+    public Invalidate(final XQueryContext context) {
         super(context, signature);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-     */
-    public Sequence eval(Sequence[] args, Sequence contextSequence)
+    @Override
+    public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> session)
             throws XPathException {
-    	
-        final SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
-        // session object is read from global variable $session
-		final Variable var = myModule.resolveVariable(SessionModule.SESSION_VAR);
-		if(var == null || var.getValue() == null) { 
-			//Always called as "invalidate") because the translation is made at compile time			
-			if (!isCalledAs("invalidate"))
-				{throw new XPathException(this, ErrorCodes.XPDY0002, SessionModule.SESSION_VAR + " not set");}
-			return Sequence.EMPTY_SEQUENCE;
-		}
-		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
-			{throw new XPathException(this, ErrorCodes.XPDY0002, SessionModule.SESSION_VAR + " is not bound to a Java object.");}
-		final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		if(value.getObject() instanceof SessionWrapper) {
-			final SessionWrapper session = (SessionWrapper)value.getObject();
-			session.invalidate();
-			return Sequence.EMPTY_SEQUENCE;
-		} else
-			{throw new XPathException(this, ErrorCodes.XPDY0002, SessionModule.SESSION_VAR + " is not bound to a session object");}
-    }
+        if (!session.isPresent()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
 
+        session.get().invalidate();
+        return Sequence.EMPTY_SEQUENCE;
+    }
 }

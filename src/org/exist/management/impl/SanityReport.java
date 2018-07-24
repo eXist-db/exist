@@ -59,7 +59,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     public final static String STATUS_FAIL = "FAIL";
 
     public final static StringSource TEST_XQUERY = new StringSource("<r>{current-dateTime()}</r>");
-    
+
     public final static int PING_WAITING = -1;
     public final static int PING_ERROR = -2;
 
@@ -76,7 +76,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     private String lastActionInfo = "nothing done";
 
     private long lastPingRespTime = 0;
-    
+
     private String output = "";
 
     private TaskStatus taskstatus = new TaskStatus(TaskStatus.Status.NEVER_RUN);
@@ -84,7 +84,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     private List<ErrorReport> errors = NO_ERRORS;
 
     private BrokerPool pool;
-    
+
     public SanityReport(BrokerPool pool) {
         this.pool = pool;
     }
@@ -182,7 +182,9 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     			if (compiled == null) {
     				final XQueryContext context = new XQueryContext(pool);
     				compiled = xquery.compile(broker, context, TEST_XQUERY);
-    			}
+                } else {
+                    compiled.getContext().prepareForReuse();
+                }
 				try {
 					xquery.execute(broker, compiled, null);
 				} finally {
@@ -206,7 +208,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     	}
 		return lastPingRespTime;
     }
-    
+
     private Properties parseParameter(String output, String backup, String incremental) {
         final Properties properties = new Properties();
         final boolean doBackup = backup.equalsIgnoreCase("YES");

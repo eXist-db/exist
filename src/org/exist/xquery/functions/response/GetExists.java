@@ -26,10 +26,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
+import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
@@ -37,15 +36,16 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
+import java.util.Optional;
+
 
 /**
- * DOCUMENT ME!
+ * Determines if the HTTP Response is set in the XQuery Context.
  *
  * @author  Andrzej Taramina <andrzej@chaeron.com>
  */
-public class GetExists extends BasicFunction
-{
-    protected static final Logger logger = LogManager.getLogger(GetExists.class);
+public class GetExists extends ResponseFunction {
+    private static final Logger logger = LogManager.getLogger(GetExists.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -54,36 +54,14 @@ public class GetExists extends BasicFunction
 			null,
 			new FunctionParameterSequenceType( "result", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the response object exists" ) );
 
-    /**
-     * Creates a new GetExists object.
-     *
-     * @param  context
-     */
-
-    public GetExists( XQueryContext context )
+    public GetExists(final XQueryContext context)
     {
         super( context, signature );
     }
 
-
-    /* (non-Javadoc)
-     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-     */
-
-    public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
-    {
-        BooleanValue   exists   = BooleanValue.TRUE;
-
-        ResponseModule myModule = (ResponseModule)context.getModule( ResponseModule.NAMESPACE_URI );
-
-        // response object is read from global variable $response
-        Variable       var      = myModule.resolveVariable( ResponseModule.RESPONSE_VAR );
-
-        if( ( var == null ) || ( var.getValue() == null ) ) {
-            exists = BooleanValue.FALSE;
-        }
-
-        return( exists );
+    @Override
+    public Sequence eval(final Sequence[] args, final Optional<ResponseWrapper> response) throws XPathException {
+        return BooleanValue.valueOf(response.isPresent());
     }
 
 }
