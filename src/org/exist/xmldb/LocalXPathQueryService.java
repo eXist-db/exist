@@ -261,6 +261,7 @@ public class LocalXPathQueryService extends AbstractLocalService implements EXis
                 context = new XQueryContext(broker.getBrokerPool());
             } else {
                 context = compiled.getContext();
+                context.prepareForReuse();
             }
 
             context.setStaticallyKnownDocuments(docs);

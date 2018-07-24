@@ -86,7 +86,6 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.ManagedCollectionLock;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
-import org.exist.storage.serializers.Serializer.HttpContext;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
@@ -108,9 +107,6 @@ import org.exist.xquery.NameTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.request.RequestModule;
-import org.exist.xquery.functions.response.ResponseModule;
-import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.value.*;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
@@ -1302,6 +1298,7 @@ public class RESTServer {
                 context = new XQueryContext(broker.getBrokerPool());
             } else {
                 context = compiled.getContext();
+                context.prepareForReuse();
             }
 
             context.setStaticallyKnownDocuments(new XmldbURI[]{pathUri});
@@ -1376,12 +1373,7 @@ public class RESTServer {
 
         final HttpRequestWrapper reqw = new HttpRequestWrapper(request, formEncoding, containerEncoding);
         final ResponseWrapper respw = new HttpResponseWrapper(response);
-
-        // context.declareNamespace(RequestModule.PREFIX,
-        // RequestModule.NAMESPACE_URI);
-        context.declareVariable(RequestModule.PREFIX + ":request", reqw);
-        context.declareVariable(ResponseModule.PREFIX + ":response", respw);
-        context.declareVariable(SessionModule.PREFIX + ":session", reqw.getSession(false));
+        context.setHttpContext(new XQueryContext.HttpContext(reqw, respw));
 
         //enable EXQuery Request Module (if present)
         try { 
@@ -1484,10 +1476,10 @@ public class RESTServer {
             // cache
             response.setHeader("X-XQuery-Cached", "false");
             context = new XQueryContext(broker.getBrokerPool());
-
         } else {
             response.setHeader("X-XQuery-Cached", "true");
             context = compiled.getContext();
+            context.prepareForReuse();
         }
 
         // TODO: don't hardcode this?
@@ -1550,6 +1542,7 @@ public class RESTServer {
             context = new XQueryContext(broker.getBrokerPool());
         } else {
             context = compiled.getContext();
+            context.prepareForReuse();
         }
 
         context.declareVariable("pipeline", resource.getURI().toString());
@@ -1709,12 +1702,9 @@ public class RESTServer {
             serializer.reset();
 
             //setup the http context
-            final HttpContext httpContext = new HttpContext();
             final HttpRequestWrapper reqw = new HttpRequestWrapper(request, formEncoding, containerEncoding);
-            httpContext.setRequest(reqw);
-            httpContext.setSession(reqw.getSession(false));
-            serializer.setHttpContext(httpContext);
-
+            final HttpResponseWrapper resw = new HttpResponseWrapper(response);
+            serializer.setHttpContext(new XQueryContext.HttpContext(reqw, resw));
 
             // Serialize the document
             try {

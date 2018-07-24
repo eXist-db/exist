@@ -1134,7 +1134,12 @@ public class XQueryTest {
             XQueryContext context = null;
             try {
                 compiled = queryPool.borrowCompiledXQuery(broker, source);
-                context = compiled == null ? new XQueryContext(brokerPool) : compiled.getContext();
+                if (compiled == null) {
+                    context = new XQueryContext(brokerPool);
+                } else {
+                    context = compiled.getContext();
+                    context.prepareForReuse();
+                }
 
                 context.declareVariable(new QName("s"), new IntegerValue(timestamp));
 

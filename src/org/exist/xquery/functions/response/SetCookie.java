@@ -31,154 +31,123 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DurationValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 import java.util.Date;
 
+import javax.annotation.Nonnull;
 import javax.xml.datatype.Duration;
 
 
 /**
  * Set's a HTTP Cookie on the HTTP Response.
  *
- * @author  Adam Retter <adam.retter@devon.gov.uk>
- * @author  José María Fernández (jmfg@users.sourceforge.net)
- * @see     org.exist.xquery.Function
+ * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author José María Fernández (jmfg@users.sourceforge.net)
+ * @see org.exist.xquery.Function
  */
-public class SetCookie extends Function
-{
-    protected static final Logger logger = LogManager.getLogger(SetCookie.class);
-	protected static final FunctionParameterSequenceType NAME_PARAM = new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The cookie name");
-	protected static final FunctionParameterSequenceType VALUE_PARAM = new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The cookie value");
-	protected static final FunctionParameterSequenceType MAX_AGE_PARAM = new FunctionParameterSequenceType("max-age", Type.DURATION, Cardinality.ZERO_OR_ONE, "The xs:duration of the cookie");
-	protected static final FunctionParameterSequenceType SECURE_PARAM = new FunctionParameterSequenceType("secure-flag", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "The flag for whether the cookie is to be secure (i.e., only transferred using HTTPS)");
-	protected static final FunctionParameterSequenceType DOMAIN_PARAM = new FunctionParameterSequenceType("domain", Type.STRING, Cardinality.ZERO_OR_ONE, "The cookie domain");
-	protected static final FunctionParameterSequenceType PATH_PARAM = new FunctionParameterSequenceType("path", Type.STRING, Cardinality.ZERO_OR_ONE, "The cookie path");
+public class SetCookie extends StrictResponseFunction {
+    private static final Logger logger = LogManager.getLogger(SetCookie.class);
+    private static final FunctionParameterSequenceType NAME_PARAM = new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The cookie name");
+    private static final FunctionParameterSequenceType VALUE_PARAM = new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The cookie value");
+    private static final FunctionParameterSequenceType MAX_AGE_PARAM = new FunctionParameterSequenceType("max-age", Type.DURATION, Cardinality.ZERO_OR_ONE, "The xs:duration of the cookie");
+    private static final FunctionParameterSequenceType SECURE_PARAM = new FunctionParameterSequenceType("secure-flag", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "The flag for whether the cookie is to be secure (i.e., only transferred using HTTPS)");
+    private static final FunctionParameterSequenceType DOMAIN_PARAM = new FunctionParameterSequenceType("domain", Type.STRING, Cardinality.ZERO_OR_ONE, "The cookie domain");
+    private static final FunctionParameterSequenceType PATH_PARAM = new FunctionParameterSequenceType("path", Type.STRING, Cardinality.ZERO_OR_ONE, "The cookie path");
 
-	public final static FunctionSignature signatures[] = {
-		new FunctionSignature(
-			new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-			"Sets a HTTP Cookie on the HTTP Response.",
-			new SequenceType[] { NAME_PARAM, VALUE_PARAM },
-			new SequenceType(Type.ITEM, Cardinality.EMPTY)),
-		new FunctionSignature(
-			new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-			"Sets a HTTP Cookie on the HTTP Response.",
-			new SequenceType[] { NAME_PARAM, VALUE_PARAM, MAX_AGE_PARAM, SECURE_PARAM },
-			new SequenceType(Type.ITEM, Cardinality.EMPTY)),
-		new FunctionSignature(
-			new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-			"Sets a HTTP Cookie on the HTTP Response.",
-			new SequenceType[] { NAME_PARAM, VALUE_PARAM, MAX_AGE_PARAM, SECURE_PARAM, DOMAIN_PARAM, PATH_PARAM },
-			new SequenceType(Type.ITEM, Cardinality.EMPTY))
-		};
+    public final static FunctionSignature signatures[] = {
+            new FunctionSignature(
+                    new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
+                    "Sets a HTTP Cookie on the HTTP Response.",
+                    new SequenceType[]{NAME_PARAM, VALUE_PARAM},
+                    new SequenceType(Type.EMPTY, Cardinality.EMPTY)),
+            new FunctionSignature(
+                    new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
+                    "Sets a HTTP Cookie on the HTTP Response.",
+                    new SequenceType[]{NAME_PARAM, VALUE_PARAM, MAX_AGE_PARAM, SECURE_PARAM},
+                    new SequenceType(Type.EMPTY, Cardinality.EMPTY)),
+            new FunctionSignature(
+                    new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
+                    "Sets a HTTP Cookie on the HTTP Response.",
+                    new SequenceType[]{NAME_PARAM, VALUE_PARAM, MAX_AGE_PARAM, SECURE_PARAM, DOMAIN_PARAM, PATH_PARAM},
+                    new SequenceType(Type.EMPTY, Cardinality.EMPTY))
+    };
 
-    public SetCookie( XQueryContext context, FunctionSignature signature )
-    {
-        super( context, signature );
+    public SetCookie(final XQueryContext context, final FunctionSignature signature) {
+        super(context, signature);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-     */
-    public Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException
-    {
-        if( context.getProfiler().isEnabled() ) {
-            context.getProfiler().start( this );
-            context.getProfiler().message( this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName( this.getDependencies() ) );
-
-            if( contextSequence != null ) {
-                context.getProfiler().message( this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence );
-            }
-
-            if( contextItem != null ) {
-                context.getProfiler().message( this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence() );
-            }
-        }
-
-        final ResponseModule myModule = (ResponseModule)context.getModule( ResponseModule.NAMESPACE_URI );
-
-        // response object is read from global variable $response
-        final Variable       var      = myModule.resolveVariable( ResponseModule.RESPONSE_VAR );
-
-        if( ( var == null ) || ( var.getValue() == null ) ) {
-            throw( new XPathException( this, ErrorCodes.XPDY0002, "Response not set" ) );
-        }
-
-        if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
-            throw( new XPathException( this, ErrorCodes.XPDY0002, "Variable $response is not bound to a Java object." ) );
-        }
-        final JavaObjectValue response  = (JavaObjectValue)var.getValue().itemAt( 0 );
+    @Override
+    public Sequence eval(final Sequence[] args, @Nonnull final ResponseWrapper response)
+            throws XPathException {
 
         //get parameters
-        final String          name      = getArgument( 0 ).eval( contextSequence, contextItem ).getStringValue();
-        final String          value     = getArgument( 1 ).eval( contextSequence, contextItem ).getStringValue();
+        final String name = args[0].getStringValue();
+        final String value = args[1].getStringValue();
 
-        Sequence        ageSeq    = Sequence.EMPTY_SEQUENCE;
-        Sequence        secureSeq = Sequence.EMPTY_SEQUENCE;
-        Sequence        domainSeq = Sequence.EMPTY_SEQUENCE;
-        Sequence        pathSeq   = Sequence.EMPTY_SEQUENCE;
-        int             maxAge    = -1;
+        final int maxAge;
+        final Sequence secureSeq, domainSeq, pathSeq;
+        if (getArgumentCount() > 2) {
+            final Sequence ageSeq = args[2];
+            secureSeq = args[3];
 
-        if( getArgumentCount() > 2 ) {
-            ageSeq    = getArgument( 2 ).eval( contextSequence, contextItem );
-            secureSeq = getArgument( 3 ).eval( contextSequence, contextItem );
-
-            if( !ageSeq.isEmpty() ) {
-                final Duration duration = ( (DurationValue)ageSeq.itemAt( 0 ) ).getCanonicalDuration();
-                maxAge = (int)( duration.getTimeInMillis( new Date( System.currentTimeMillis() ) ) / 1000L );
+            if (!ageSeq.isEmpty()) {
+                final Duration duration = ((DurationValue) ageSeq.itemAt(0)).getCanonicalDuration();
+                maxAge = (int) (duration.getTimeInMillis(new Date(System.currentTimeMillis())) / 1000L);
+            } else {
+                maxAge = -1;
             }
 
-            if( getArgumentCount() > 4 ) {
-                domainSeq = getArgument( 4 ).eval( contextSequence, contextItem );
-                pathSeq   = getArgument( 5 ).eval( contextSequence, contextItem );
+            if (getArgumentCount() > 4) {
+                domainSeq = args[4];
+                pathSeq = args[5];
+            } else {
+                domainSeq = Sequence.EMPTY_SEQUENCE;
+                pathSeq = Sequence.EMPTY_SEQUENCE;
             }
+        } else {
+            secureSeq = Sequence.EMPTY_SEQUENCE;
+            domainSeq = Sequence.EMPTY_SEQUENCE;
+            pathSeq = Sequence.EMPTY_SEQUENCE;
+            maxAge = -1;
         }
 
         //set response header
-        if( response.getObject() instanceof ResponseWrapper ) {
+        switch (getArgumentCount()) {
 
-            switch( getArgumentCount() ) {
-
-                case 2: {
-                    ( (ResponseWrapper)response.getObject() ).addCookie( name, value );
-                    break;
-                }
-
-                case 4: {
-                    if( secureSeq.isEmpty() ) {
-                        ( (ResponseWrapper)response.getObject() ).addCookie( name, value, maxAge );
-                    } else {
-                        ( (ResponseWrapper)response.getObject() ).addCookie( name, value, maxAge, ( (BooleanValue)secureSeq.itemAt( 0 ) ).effectiveBooleanValue() );
-                    }
-                    break;
-                }
-
-                case 6: {
-                    boolean secure = false;
-                    String  domain = null;
-                    String  path   = null;
-                    if( !secureSeq.isEmpty() ) {
-                        secure = ( (BooleanValue)secureSeq.itemAt( 0 ) ).effectiveBooleanValue();
-                    }
-                    if( !domainSeq.isEmpty() ) {
-                        domain = domainSeq.itemAt( 0 ).getStringValue();
-                    }
-                    if( !pathSeq.isEmpty() ) {
-                        path = pathSeq.itemAt( 0 ).getStringValue();
-                    }
-                    ( (ResponseWrapper)response.getObject() ).addCookie( name, value, maxAge, secure, domain, path );
-                    break;
-                }
+            case 2: {
+                response.addCookie(name, value);
+                break;
             }
-        } else {
-            throw( new XPathException( this, ErrorCodes.XPDY0002, "Type error: variable $response is not bound to a response object" ) );
+
+            case 4: {
+                if (secureSeq.isEmpty()) {
+                    response.addCookie(name, value, maxAge);
+                } else {
+                    response.addCookie(name, value, maxAge, ((BooleanValue) secureSeq.itemAt(0)).effectiveBooleanValue());
+                }
+                break;
+            }
+
+            case 6: {
+                boolean secure = false;
+                String domain = null;
+                String path = null;
+                if (!secureSeq.isEmpty()) {
+                    secure = ((BooleanValue) secureSeq.itemAt(0)).effectiveBooleanValue();
+                }
+                if (!domainSeq.isEmpty()) {
+                    domain = domainSeq.itemAt(0).getStringValue();
+                }
+                if (!pathSeq.isEmpty()) {
+                    path = pathSeq.itemAt(0).getStringValue();
+                }
+                response.addCookie(name, value, maxAge, secure, domain, path);
+                break;
+            }
         }
-        
-        return( Sequence.EMPTY_SEQUENCE );
+        return Sequence.EMPTY_SEQUENCE;
     }
 }

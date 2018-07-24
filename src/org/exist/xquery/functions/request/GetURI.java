@@ -30,14 +30,15 @@ import org.exist.http.urlrewrite.XQueryURLRewrite;
 import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+
+import javax.annotation.Nonnull;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class GetURI extends BasicFunction {
+public class GetURI extends StrictRequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetURI.class);
 
@@ -57,37 +58,18 @@ public class GetURI extends BasicFunction {
 			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the URI of the request"))
     };
 
-	/**
-	 * @param context
-	 */
-	public GetURI(XQueryContext context, FunctionSignature signature) {
+	public GetURI(final XQueryContext context, final FunctionSignature signature) {
 		super(context, signature);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-		throws XPathException {
-		
-		final RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
-		
-		// request object is read from global variable $request
-		final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
-		if(var == null || var.getValue() == null)
-			{throw new XPathException(this, ErrorCodes.XPDY0002, "No request object found in the current XQuery context.");}
-		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
-			{throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to an Java object.");}
-
-		final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		if (value.getObject() instanceof RequestWrapper) {
-            final RequestWrapper wrapper = (RequestWrapper) value.getObject();
-            final Object attr = wrapper.getAttribute(XQueryURLRewrite.RQ_ATTR_REQUEST_URI);
-            if (attr == null || isCalledAs("get-effective-uri"))
-			    {return new AnyURIValue(wrapper.getRequestURI());}
-            else
-                {return new AnyURIValue(attr.toString());}
-		} else
-			{throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to a Request object.");}
-	}	
+	@Override
+	public Sequence eval(final Sequence[] args, @Nonnull final RequestWrapper request)
+			throws XPathException {
+		final Object attr = request.getAttribute(XQueryURLRewrite.RQ_ATTR_REQUEST_URI);
+		if (attr == null || isCalledAs("get-effective-uri")) {
+			return new AnyURIValue(request.getRequestURI());
+		} else {
+			return new AnyURIValue(attr.toString());
+		}
+	}
 }

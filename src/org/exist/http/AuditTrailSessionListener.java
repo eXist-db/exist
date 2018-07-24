@@ -128,6 +128,7 @@ public class AuditTrailSessionListener implements HttpSessionListener {
                             context = new XQueryContext(broker.getBrokerPool());
                         } else {
                             context = compiled.getContext();
+                            context.prepareForReuse();
                         }
                         context.setStaticallyKnownDocuments(new XmldbURI[]{pathUri});
                         context.setBaseURI(new AnyURIValue(pathUri.toString()));

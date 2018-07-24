@@ -28,20 +28,16 @@ import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.urlrewrite.XQueryURLRewrite;
 import org.exist.source.Source;
 import org.exist.util.Configuration;
-import org.exist.xquery.Variable;
-import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
 
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.JavaObjectValue;
-import org.exist.xquery.value.Type;
 
 import java.util.*;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.StreamSupport;
 
 /**
  * Class to keep track of all running queries in a database instance. The main
@@ -389,35 +385,26 @@ public class ProcessMonitor implements BrokerPoolService {
         if (reqModule == null) {
             return null;
         }
-        try {
-            final Variable var = reqModule.resolveVariable(RequestModule.REQUEST_VAR);
-            if(var == null || var.getValue() == null) {
-                return null;
-            }
+        final Optional<RequestWrapper> maybeRequest = Optional.ofNullable(watchdog.getContext())
+                .map(XQueryContext::getHttpContext)
+                .map(XQueryContext.HttpContext::getRequest);
 
-            if (var.getValue().getItemType() != Type.JAVA_OBJECT) {
-                return null;
-            }
-
-            final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-            if (value.getObject() instanceof RequestWrapper) {
-                final RequestWrapper wrapper = (RequestWrapper) value.getObject();
-                final Object attr = wrapper.getAttribute(XQueryURLRewrite.RQ_ATTR_REQUEST_URI);
-                String uri;
-                if (attr == null) {
-                    uri = wrapper.getRequestURI();
-                } else {
-                    uri = attr.toString();
-                }
-                String queryString = wrapper.getQueryString();
-                if (queryString != null) {
-                    uri += "?" + queryString;
-                }
-                return uri;
-            }
-        } catch (XPathException e) {
-            // ignore and return null
+        if (!maybeRequest.isPresent()) {
+            return null;
         }
-        return null;
+
+        final RequestWrapper request = maybeRequest.get();
+        final Object attr = request.getAttribute(XQueryURLRewrite.RQ_ATTR_REQUEST_URI);
+        String uri;
+        if (attr == null) {
+            uri = request.getRequestURI();
+        } else {
+            uri = attr.toString();
+        }
+        String queryString = request.getQueryString();
+        if (queryString != null) {
+            uri += "?" + queryString;
+        }
+        return uri;
     }
 }

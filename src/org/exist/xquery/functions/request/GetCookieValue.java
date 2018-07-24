@@ -31,18 +31,19 @@ import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+
+import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 /**
  * @author Adam Retter (adam.retter@devon.gov.uk)
  */
-public class GetCookieValue extends BasicFunction {
+public class GetCookieValue extends RequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetCookieValue.class);
 
@@ -58,49 +59,36 @@ public class GetCookieValue extends BasicFunction {
 			},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the value of the named Cookie"));
 
-	public GetCookieValue(XQueryContext context) {
+	public GetCookieValue(final XQueryContext context) {
 		super(context, signature);
 	}
 
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
-	{
-		final RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
-
-		// request object is read from global variable $request
-		final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
-		if (var == null || var.getValue() == null || var.getValue().getItemType() != Type.JAVA_OBJECT) {
+	@Override
+	public Sequence eval(final Sequence[] args, final Optional<RequestWrapper> request)
+			throws XPathException {
+		if(!request.isPresent()) {
 			return Sequence.EMPTY_SEQUENCE;
+		} else {
+			return getCookieValue(args, request.get());
 		}
+	}
 
-		// get the cookieName to match
-		final String cookieName = args[0].getStringValue();
-
-		final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		if (value.getObject() instanceof RequestWrapper)
-		{
-			final Cookie[] cookies = ((RequestWrapper)value.getObject()).getCookies();
-			if(cookies != null)
-			{
-				for (Cookie cookie : cookies) {
-					if (cookie.getName().equals(cookieName)) {
-						return new StringValue(decode(cookie.getValue()));
-					}
+	private Sequence getCookieValue(final Sequence[] args, final RequestWrapper request) throws XPathException {
+		final Cookie[] cookies = request.getCookies();
+		if(cookies != null) {
+			// get the cookieName to match
+			final String cookieName = args[0].getStringValue();
+			for (final Cookie cookie : cookies) {
+				if (cookie.getName().equals(cookieName)) {
+					return new StringValue(decode(cookie.getValue()));
 				}
 			}
-			
-			return Sequence.EMPTY_SEQUENCE;
 		}
-		else
-			{throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to a Request object.");}
+		return Sequence.EMPTY_SEQUENCE;
 	}
 	
 	// TODO: remove this hack after fixing HTTP 1.1	
-	private String decode (String value)
-	{
+	private String decode (final String value) {
         return new String(value.getBytes(ISO_8859_1));
 	}
 }
