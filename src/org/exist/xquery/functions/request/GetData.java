@@ -47,11 +47,13 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  * @author Adam retter <adam@exist-db.org>
  */
-public class GetData extends BasicFunction {
+public class GetData extends StrictRequestFunction {
 
     protected static final Logger logger = LogManager.getLogger(GetData.class);
 
@@ -66,38 +68,16 @@ public class GetData extends BasicFunction {
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "the content of a POST request")
     );
 
-    public GetData(XQueryContext context) {
+    public GetData(final XQueryContext context) {
         super(context, signature);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-     */
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-
-        final RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
-
-        // request object is read from global variable $request
-        final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
-
-        if(var == null || var.getValue() == null) {
-            throw new XPathException(this, ErrorCodes.XPDY0002, "No request object found in the current XQuery context.");
-        }
-
-        if(var.getValue().getItemType() != Type.JAVA_OBJECT) {
-            throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to an Java object.");
-        }
-
-        final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-
-        if(!(value.getObject() instanceof RequestWrapper)) {
-            throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to a Request object.");
-        }
-        final RequestWrapper request = (RequestWrapper) value.getObject();
+    public Sequence eval(final Sequence[] args, @Nonnull final RequestWrapper request)
+            throws XPathException {
 
         //if the content length is unknown or 0, return
-        if (request.getContentLength() == -1 || request.getContentLength() == 0) {
+        if (request.getContentLength() <= 0) {
             return Sequence.EMPTY_SEQUENCE;
         }
 

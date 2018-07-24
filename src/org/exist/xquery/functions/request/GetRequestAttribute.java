@@ -29,12 +29,13 @@ import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
+import javax.annotation.Nonnull;
 import java.util.Enumeration;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class GetRequestAttribute extends BasicFunction {
+public class GetRequestAttribute extends StrictRequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetRequestAttribute.class);
 
@@ -56,43 +57,29 @@ public class GetRequestAttribute extends BasicFunction {
         )
     };
 
-	/**
-	 * @param context
-	 */
-	public GetRequestAttribute(XQueryContext context, FunctionSignature signature) {
+	public GetRequestAttribute(final XQueryContext context, final FunctionSignature signature) {
 		super(context, signature);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-		throws XPathException {
+	@Override
+	public Sequence eval(final Sequence[] args, @Nonnull final RequestWrapper request)
+			throws XPathException {
 
-        final RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
-		
-		// request object is read from global variable $request
-		final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
-		if(var == null || var.getValue() == null)
-			{throw new XPathException(this, ErrorCodes.XPDY0002, "No request object found in the current XQuery context.");}
-		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
-			{throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to an Java object.");}
+		if (isCalledAs("get-attribute")) {
+			final String name = args[0].getStringValue();
+			final Object attrib = request.getAttribute(name);
+			return attrib == null ? Sequence.EMPTY_SEQUENCE : XPathUtil.javaObjectToXPath(attrib, context);
+		} else {
+			final Enumeration<String> attributeNames = request.getAttributeNames();
+			if (!attributeNames.hasMoreElements()) {
+				return Sequence.EMPTY_SEQUENCE;
+			}
 
-		final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		if (value.getObject() instanceof RequestWrapper) {
-            if (isCalledAs("get-attribute")) {
-                final String name = args[0].getStringValue();
-                final Object attrib = ((RequestWrapper) value.getObject()).getAttribute(name);
-                return attrib == null ? Sequence.EMPTY_SEQUENCE : XPathUtil.javaObjectToXPath(attrib, context);
-            } else {
-                final ValueSequence names = new ValueSequence();
-                for (final Enumeration<String> e = ((RequestWrapper) value.getObject()).getAttributeNames(); e.hasMoreElements(); ) {
-                    names.add(new StringValue(e.nextElement()));
-                }
-                return names;
-            }
-        } else
-			{throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to a Request object.");}
+			final ValueSequence names = new ValueSequence();
+			while (attributeNames.hasMoreElements()) {
+				names.add(new StringValue(attributeNames.nextElement()));
+			}
+			return names;
+		}
 	}
-	
 }

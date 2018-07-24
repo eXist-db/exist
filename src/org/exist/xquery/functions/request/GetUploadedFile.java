@@ -35,16 +35,17 @@ import org.exist.xquery.value.Base64BinaryValueType;
 import org.exist.xquery.value.BinaryValueFromFile;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author wolf
  */
-public class GetUploadedFile extends BasicFunction {
+public class GetUploadedFile extends StrictRequestFunction {
 
     protected static final Logger logger = LogManager.getLogger(GetUploadedFile.class);
     public final static FunctionSignature signatures[] = {
@@ -59,82 +60,28 @@ public class GetUploadedFile extends BasicFunction {
         new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE, "the base64 encoded data from the uploaded file"))
     };
 
-    public GetUploadedFile(XQueryContext context, FunctionSignature signature) {
+    public GetUploadedFile(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-     */
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence)
+    public Sequence eval(final Sequence[] args, @Nonnull final RequestWrapper request)
             throws XPathException {
 
-        final RequestModule myModule =
-                (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
-
-        // request object is read from global variable $request
-        final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
-        if (var == null || var.getValue() == null) {
-            throw new XPathException(this, ErrorCodes.XPDY0002, "No request object found in the current XQuery context.");
-        }
-
-        if (var.getValue().getItemType() != Type.JAVA_OBJECT) {
-            throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to an Java object.");
-        }
-
-        // get parameters
         final String uploadParamName = args[0].getStringValue();
-
-        final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-
-        if (value.getObject() instanceof RequestWrapper) {
-
-            final RequestWrapper request = (RequestWrapper) value.getObject();
-
-            final List<Path> files = request.getFileUploadParam(uploadParamName);
-            if (files == null) {
+        final List<Path> files = request.getFileUploadParam(uploadParamName);
+        if (files == null || files.isEmpty()) {
+            if (logger.isDebugEnabled()) {
                 logger.debug("File param not found: " + uploadParamName);
-                return Sequence.EMPTY_SEQUENCE;
             }
-
-
-            /* InputStream is = null;
-            try {
-                is = new BufferedInputStream(new FileInputStream(file));
-                byte buf[] = new byte[1024];
-                int read = -1;
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                while ((read = is.read(buf)) != -1) {
-                    baos.write(buf, 0, read);
-                }
-
-                return new Base64Binary(baos.toByteArray());
-
-            } catch (FileNotFoundException fnfe) {
-                throw new XPathException(this, fnfe.getMessage(), fnfe);
-
-            } catch (IOException ioe) {
-                throw new XPathException(this, ioe.getMessage(), ioe);
-
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException ioe) {
-                        logger.warn(ioe.getMessage(), ioe);
-                    }
-                }
-            } */
-
-            final ValueSequence result = new ValueSequence();
-            for (final Path file : files) {
-            	result.add(BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(), file));
-            }
-
-            return result;
-        } else {
-            throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to a Request object.");
+            return Sequence.EMPTY_SEQUENCE;
         }
+
+        final ValueSequence result = new ValueSequence();
+        for (final Path file : files) {
+            result.add(BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(), file));
+        }
+
+        return result;
     }
 }

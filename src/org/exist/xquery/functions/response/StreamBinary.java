@@ -28,7 +28,6 @@ import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -37,12 +36,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import org.exist.xquery.value.BinaryValue;
 
-public class StreamBinary extends BasicFunction {
+import javax.annotation.Nonnull;
 
-    protected static final Logger logger = LogManager.getLogger(StreamBinary.class);
-    protected static final FunctionParameterSequenceType BINARY_DATA_PARAM = new FunctionParameterSequenceType("binary-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The binary data to stream");
-    protected static final FunctionParameterSequenceType CONTENT_TYPE_PARAM = new FunctionParameterSequenceType("content-type", Type.STRING, Cardinality.EXACTLY_ONE, "The ContentType HTTP header value");
-    protected static final FunctionParameterSequenceType FILENAME_PARAM = new FunctionParameterSequenceType("filename", Type.STRING, Cardinality.ZERO_OR_ONE, "The filename.  If provided, a Content-Disposition header is set for the filename in the HTTP Response");
+public class StreamBinary extends StrictResponseFunction {
+
+    private static final Logger logger = LogManager.getLogger(StreamBinary.class);
+    private static final FunctionParameterSequenceType BINARY_DATA_PARAM = new FunctionParameterSequenceType("binary-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The binary data to stream");
+    private static final FunctionParameterSequenceType CONTENT_TYPE_PARAM = new FunctionParameterSequenceType("content-type", Type.STRING, Cardinality.EXACTLY_ONE, "The ContentType HTTP header value");
+    private static final FunctionParameterSequenceType FILENAME_PARAM = new FunctionParameterSequenceType("filename", Type.STRING, Cardinality.ZERO_OR_ONE, "The filename.  If provided, a Content-Disposition header is set for the filename in the HTTP Response");
     public final static FunctionSignature signature =
             new FunctionSignature(
             new QName("stream-binary", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
@@ -54,12 +55,12 @@ public class StreamBinary extends BasicFunction {
             new SequenceType(Type.EMPTY, Cardinality.EMPTY),
             true);
 
-    public StreamBinary(XQueryContext context) {
+    public StreamBinary(final XQueryContext context) {
         super(context, signature);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, @Nonnull final ResponseWrapper response) throws XPathException {
         if(args[0].isEmpty() || args[1].isEmpty()) {
             return (Sequence.EMPTY_SEQUENCE);
         }
@@ -72,26 +73,10 @@ public class StreamBinary extends BasicFunction {
             filename = args[2].getStringValue();
         }
 
-        final ResponseModule myModule = (ResponseModule) context.getModule(ResponseModule.NAMESPACE_URI);
-
-        // response object is read from global variable $response
-        final Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
-
-        if((respVar == null) || (respVar.getValue() == null)) {
-            throw (new XPathException(this, ErrorCodes.XPDY0002, "No response object found in the current XQuery context."));
-        }
-
-        if(respVar.getValue().getItemType() != Type.JAVA_OBJECT) {
-            throw (new XPathException(this, ErrorCodes.XPDY0002, "Variable $response is not bound to an Java object."));
-        }
-
-        final JavaObjectValue respValue = (JavaObjectValue) respVar.getValue().itemAt(0);
-
-        if(!"org.exist.http.servlets.HttpResponseWrapper".equals(respValue.getObject().getClass().getName())) {
+        if(!"org.exist.http.servlets.HttpResponseWrapper".equals(response.getClass().getName())) {
             throw (new XPathException(this, ErrorCodes.XPDY0002, signature.toString() + " can only be used within the EXistServlet or XQueryServlet"));
         }
 
-        final ResponseWrapper response = (ResponseWrapper) respValue.getObject();
         response.setHeader("Content-Type", contentType);
 
         if(filename != null) {
@@ -109,6 +94,6 @@ public class StreamBinary extends BasicFunction {
             throw (new XPathException(this, "IO exception while streaming data: " + e.getMessage(), e));
         }
 
-        return (Sequence.EMPTY_SEQUENCE);
+        return Sequence.EMPTY_SEQUENCE;
     }
 }

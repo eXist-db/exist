@@ -291,6 +291,7 @@ public class RpcConnection implements RpcAPI {
             context = new XQueryContext(broker.getBrokerPool());
         } else {
             context = compiled.getContext();
+            context.prepareForReuse();
         }
         final String base = (String) parameters.get(RpcAPI.BASE_URI);
         if (base != null) {

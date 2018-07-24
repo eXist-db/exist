@@ -30,88 +30,51 @@ import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import javax.annotation.Nonnull;
 
 
 /**
  * Set's a HTTP header on the HTTP Response.
  *
- * @author  Adam Retter <adam.retter@devon.gov.uk>
- * @see     org.exist.xquery.Function
+ * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @see org.exist.xquery.Function
  */
-public class SetHeader extends Function
-{
-    protected static final Logger logger = LogManager.getLogger(SetHeader.class);
-	protected static final FunctionParameterSequenceType NAME_PARAM = new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The header name");
-	protected static final FunctionParameterSequenceType VALUE_PARAM = new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The header value");
+public class SetHeader extends StrictResponseFunction {
+    private static final Logger logger = LogManager.getLogger(SetHeader.class);
+    private static final FunctionParameterSequenceType NAME_PARAM = new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The header name");
+    private static final FunctionParameterSequenceType VALUE_PARAM = new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The header value");
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("set-header", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-			"Sets a HTTP Header on the HTTP Response.",
-			new SequenceType[] { NAME_PARAM, VALUE_PARAM },
-			new SequenceType(Type.ITEM, Cardinality.EMPTY));
+    public final static FunctionSignature signature =
+            new FunctionSignature(
+                    new QName("set-header", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
+                    "Sets a HTTP Header on the HTTP Response.",
+                    new SequenceType[]{NAME_PARAM, VALUE_PARAM},
+                    new SequenceType(Type.EMPTY, Cardinality.EMPTY));
 
-	public final static FunctionSignature deprecated =
-		new FunctionSignature(
-			new QName("set-response-header", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Set's a HTTP Header on the HTTP Response.",
-			new SequenceType[] { NAME_PARAM, VALUE_PARAM },
-			new SequenceType(Type.ITEM, Cardinality.EMPTY),
-			SetHeader.signature);
+    public final static FunctionSignature deprecated =
+            new FunctionSignature(
+                    new QName("set-response-header", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+                    "Set's a HTTP Header on the HTTP Response.",
+                    new SequenceType[]{NAME_PARAM, VALUE_PARAM},
+                    new SequenceType(Type.EMPTY, Cardinality.EMPTY),
+                    SetHeader.signature);
 
-    public SetHeader( XQueryContext context )
-    {
-        super( context, signature );
+    public SetHeader(final XQueryContext context) {
+        super(context, signature);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-     */
-    public Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException
-    {
-        if( context.getProfiler().isEnabled() ) {
-            context.getProfiler().start( this );
-            context.getProfiler().message( this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName( this.getDependencies() ) );
+    @Override
+    public Sequence eval(final Sequence[] args, @Nonnull final ResponseWrapper response)
+            throws XPathException {
+        final String name = args[0].getStringValue();
+        final String value = args[1].getStringValue();
 
-            if( contextSequence != null ) {
-                context.getProfiler().message( this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence );
-            }
+        response.setHeader(name, value);
 
-            if( contextItem != null ) {
-                context.getProfiler().message( this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence() );
-            }
-        }
-
-        final ResponseModule myModule = (ResponseModule)context.getModule( ResponseModule.NAMESPACE_URI );
-
-        // response object is read from global variable $response
-        final Variable       var      = myModule.resolveVariable( ResponseModule.RESPONSE_VAR );
-
-        if( ( var == null ) || ( var.getValue() == null ) ) {
-            throw( new XPathException( this, ErrorCodes.XPDY0002, "Response not set" ) );
-        }
-
-        if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
-            throw( new XPathException( this, ErrorCodes.XPDY0002, "Variable $response is not bound to a Java object." ) );
-        }
-        final JavaObjectValue response = (JavaObjectValue)var.getValue().itemAt( 0 );
-
-        //get parameters
-        final String          name     = getArgument( 0 ).eval( contextSequence, contextItem ).getStringValue();
-        final String          value    = getArgument( 1 ).eval( contextSequence, contextItem ).getStringValue();
-
-        //set response header
-        if( response.getObject() instanceof ResponseWrapper ) {
-            ( (ResponseWrapper)response.getObject() ).setHeader( name, value );
-        } else {
-            throw( new XPathException( this, ErrorCodes.XPDY0002, "Type error: variable $response is not bound to a response object" ) );
-        }
-
-        return( Sequence.EMPTY_SEQUENCE );
+        return Sequence.EMPTY_SEQUENCE;
     }
 }

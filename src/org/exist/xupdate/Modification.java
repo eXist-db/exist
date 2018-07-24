@@ -144,11 +144,12 @@ public abstract class Modification {
 		final Source source = new StringSource(selectStmt);
 		CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
 		XQueryContext context;
-		if(compiled == null)
-		    {context = new XQueryContext(broker.getBrokerPool());}
-		else
-		    {context = compiled.getContext();}
-
+		if(compiled == null) {
+			context = new XQueryContext(broker.getBrokerPool());
+		} else {
+			context = compiled.getContext();
+			context.prepareForReuse();
+		}
 		context.setStaticallyKnownDocuments(docs);
 		declareNamespaces(context);
 		declareVariables(context);

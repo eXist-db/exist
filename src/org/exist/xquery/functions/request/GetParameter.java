@@ -29,15 +29,16 @@ import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import java.util.Optional;
+
 /**
  * @author wolf
  */
-public class GetParameter extends BasicFunction {
+public class GetParameter extends RequestFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(GetParameter.class);
 
@@ -73,30 +74,23 @@ public class GetParameter extends BasicFunction {
 		
 	};
 	
-	public GetParameter(XQueryContext context, FunctionSignature signature) {
+	public GetParameter(final XQueryContext context, final FunctionSignature signature) {
 		super(context, signature);
 	}
-	
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-		throws XPathException {
+
+	@Override
+	public Sequence eval(final Sequence[] args, final Optional<RequestWrapper> request)
+			throws XPathException {
 		
-		final RequestModule myModule =
-			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
-		
-		boolean failOnError = true;
-		
-		if( getSignature().getArgumentCount() == 3 ) {
+		final boolean failOnError;
+		if (getSignature().getArgumentCount() == 3) {
 			failOnError = args[2].effectiveBooleanValue();
+		} else {
+			failOnError = true;
 		}
-		
-		// request object is read from global variable $request
-		final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
-		if (var == null || var.getValue() == null || var.getValue().getItemType() != Type.JAVA_OBJECT) {
-			if( failOnError ) {
+
+		if (!request.isPresent()) {
+			if (failOnError) {
 				throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to an Java object.");
 			} else {
 				return args[1];
@@ -105,24 +99,16 @@ public class GetParameter extends BasicFunction {
 		
 		// get parameters
 		final String param = args[0].getStringValue();
-		
-		final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		if (value.getObject() instanceof RequestWrapper) {
-			final String[] values = ((RequestWrapper)value.getObject()).getParameterValues(param);
-			if (values == null || values.length == 0) {
-				return args[1];
-			}
-			if (values.length == 1) {
-				return XPathUtil.javaObjectToXPath(values[0], null, false);
-			} else {
-				return XPathUtil.javaObjectToXPath(values, null, false);
-			}
+
+		final String[] values = request.get().getParameterValues(param);
+		if (values == null || values.length == 0) {
+			return args[1];
+		}
+
+		if (values.length == 1) {
+			return XPathUtil.javaObjectToXPath(values[0], null, false);
 		} else {
-			if( failOnError ) {
-				throw new XPathException(this, "Variable $request is not bound to a Request object.");
-			} else {
-				return args[1];				
-			}
+			return XPathUtil.javaObjectToXPath(values, null, false);
 		}
 	}
 }
