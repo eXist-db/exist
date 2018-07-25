@@ -117,7 +117,8 @@ public class ScheduleFunctions extends BasicFunction
 			new QName( SCHEDULE_XQUERY_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX ),
 			"Schedules the named XQuery resource (e.g. /db/foo.xql) according to the Cron expression. " +
 			"XQuery job's will be launched under the guest account initially, although the running XQuery may switch permissions through calls to xmldb:login(). " +
-            "The job will be registered using the job name.",
+            "The job will be registered using the job name. " +
+            "Jobs submitted via this function are transitory and will be lost on a server restart. To ensure the persistence of scheduled tasks add them to the conf.xml file.",
 			new SequenceType[]
 			{
 				new FunctionParameterSequenceType( "xquery-resource", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the XQuery resource" ),
@@ -134,7 +135,8 @@ public class ScheduleFunctions extends BasicFunction
             "The job will be registered using the job name. The final argument can be used to specify " +
             "parameters for the job, which will be passed to the query as external variables. Parameters are specified " +
             "in an XML fragment with the following structure: " +
-			"<parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>",
+			"<parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters> " +
+            "Jobs submitted via this function are transitory and will be lost on a server restart. To ensure the persistence of scheduled tasks add them to the conf.xml file.",
             new SequenceType[]
             {
 				new FunctionParameterSequenceType( "xquery-resource", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the XQuery resource" ),
@@ -152,7 +154,8 @@ public class ScheduleFunctions extends BasicFunction
             "The job will be registered using the job name. The job parameters argument can be used to specify " +
             "parameters for the job, which will be passed to the query as external variables. Parameters are specified " +
             "in an XML fragment with the following structure: " +
-			"<parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>",
+			"<parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters> " +
+            "Jobs submitted via this function are transitory and will be lost on a server restart. To ensure the persistence of scheduled tasks add them to the conf.xml file.",
             new SequenceType[]
             {
 				new FunctionParameterSequenceType( "xquery-resource", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the XQuery resource" ),
@@ -172,7 +175,8 @@ public class ScheduleFunctions extends BasicFunction
             "parameters for the job, which will be passed to the query as external variables. Parameters are specified " +
             "in an XML fragment with the following structure: " +
 			"<parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>" +
-			",  Given the delay passed and the repeat value.",
+			",  Given the delay passed and the repeat value. " +
+            "Jobs submitted via this function are transitory and will be lost on a server restart. To ensure the persistence of scheduled tasks add them to the conf.xml file.",
             new SequenceType[]
             {
 				new FunctionParameterSequenceType( "xquery-resource", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the XQuery resource" ),
@@ -193,7 +197,8 @@ public class ScheduleFunctions extends BasicFunction
             "parameters for the job, which will be passed to the query as external variables. Parameters are specified " +
             "in an XML fragment with the following structure: " +
 			"<parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>" +
-			",  Given the delay passed and the repeat value.",
+			",  Given the delay passed and the repeat value. " + 
+            "Jobs submitted via this function are transitory and will be lost on a server restart. To ensure the persistence of scheduled tasks add them to the conf.xml file.",
             new SequenceType[]
             {
 				new FunctionParameterSequenceType( "xquery-resource", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the XQuery resource" ),
