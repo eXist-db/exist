@@ -23,11 +23,7 @@ package org.exist.backup.restore;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Observable;
-import java.util.Stack;
+import java.util.*;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -514,9 +510,11 @@ public class RestoreHandler extends DefaultHandler {
             final XmldbURI xmldbURI = dbUri.resolveCollectionPath(p);
             EXistCollection c = null;
 
-            final boolean localConnection = xmldbURI.startsWith(XmldbURI.EMBEDDED_SERVER_URI) || xmldbURI.startsWith("xmldb:exist:///");
+            final boolean localConnection = Optional.ofNullable(xmldbURI.getApiName())
+                    .map(XmldbURI.API_LOCAL::equals)
+                    .orElse(false);
 
-            if(localConnection) {
+            if (localConnection) {
                 //short-cut to an XMLDB Collection that can be used with the current transaction
                 try {
                     final BrokerPool pool = BrokerPool.getInstance();
