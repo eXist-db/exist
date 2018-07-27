@@ -219,144 +219,116 @@
         </war>
         <delete dir="${war.tmp}"/>
     </target>
-    
+
+    <target name="clean-dist" depends="git.details">
+        <property name="dist.dir" value="${dist}/${project.name}-${project.version}${build.label}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
     <!-- ================================================================== -->
     <!-- Prepare dist                                                       -->
     <!-- ================================================================== -->
-    <target depends="jar,samples,extension-modules,wrapper" name="dist">
-        <delete dir="dist"/>
-        <delete failonerror="false">
-            <fileset dir="webapp/WEB-INF/logs" includes="*.log"/>
-        </delete>
-        <mkdir dir="${dist}"/>
-        <mkdir dir="${dist.dir}"/>
-        <mkdir dir="${dist.dir}/bin"/>
-        <mkdir dir="${dist.dir}/build"/>
-        <mkdir dir="${dist.dir}/build/scripts"/>
-        <mkdir dir="${dist.dir}/src"/>
-        <mkdir dir="${dist.dir}/lib"/>
-        <mkdir dir="${dist.dir}/lib/core"/>
-        <mkdir dir="${dist.dir}/lib/optional"/>
-        <mkdir dir="${dist.dir}/lib/endorsed"/>
-        <mkdir dir="${dist.dir}/lib/user"/>
-        <mkdir dir="${dist.dir}/lib/extensions"/>
-        <mkdir dir="${dist.dir}/tools"/>
-        <mkdir dir="${dist.dir}/tools/ant"/>
-        <mkdir dir="${jetty.dir}/logs"/>
-        <mkdir dir="${jetty.dir}/work"/>
-        <mkdir dir="${dist.dir}/webapp"/>
-        <mkdir dir="${dist.dir}/webapp/WEB-INF/logs"/>
-        <mkdir dir="${dist.dir}/webapp/WEB-INF/data"/>
-        <mkdir dir="${dist.dir}/log"/>
-        <mkdir dir="${dist.dir}/samples"/>
-        <mkdir dir="${dist.dir}/extensions"/>
-        <mkdir dir="${dist.dir}/extensions/modules"/>
-        <touch file="${dist.dir}/webapp/WEB-INF/data/.DO_NOT_DELETE"/>
-        <touch file="${dist.dir}/webapp/WEB-INF/logs/.DO_NOT_DELETE"/>
-        <touch file="${dist.dir}/log/.DO_NOT_DELETE"/>
+    <target name="dist" depends="clean-dist,all,dist-dir"/>
 
-        <filter token="database" value="native"/>
+    <target name="dist-dir" depends="git.details">
+        <property name="dist.dir" value="${dist}/${project.name}-${project.version}${build.label}"/>
 
-        <copy todir="${dist.dir}/" filtering="true">
+        <copy todir="${dist.dir}">
             <fileset dir=".">
                 <include name="LICENSE"/>
                 <include name="README"/>
+                <include name="README.md"/>
+                <include name="CONTRIBUTING.md"/>
                 <include name="*.bat"/>
                 <include name="*.sh"/>
                 <include name="conf.xml"/>
                 <include name="server.xml"/>
-                <include name="*.tmpl"/>
                 <include name="descriptor.xml"/>
                 <include name="build.xml"/>
                 <include name="log4j2.xml"/>
-                <include name="examples-setup.xml"/>
-                <include name="stopword"/>
                 <include name="*.properties"/>
-                <include name="*.jpg"/>
-                <include name="*.css"/>
-            </fileset>
-        </copy>
-
-        <copy todir="${dist.dir}/">
-            <fileset dir=".">
                 <include name="exist.jar"/>
                 <include name="exist-optional.jar"/>
                 <include name="examples.jar"/>
                 <include name="start.jar"/>
                 <include name="exist-modules.jar"/>
+                <include name="exist-testkit.jar"/>
             </fileset>
         </copy>
 
-        <copy todir="${dist.dir}/src">
-            <fileset dir="./src">
-                <exclude name="**/*~"/>
-                <exclude name=".*"/>
-            </fileset>
-        </copy>
         <copy todir="${dist.dir}/autodeploy">
-            <fileset dir="./autodeploy">
-                <include name="*.xar"/>
-            </fileset>
+            <fileset dir="autodeploy"/>
         </copy>
         <copy todir="${dist.dir}/bin">
-            <fileset dir="./bin">
-                <exclude name="**/*~"/>
-                <exclude name="*.log"/>
-                <exclude name=".*"/>
-            </fileset>
+            <fileset dir="bin"/>
         </copy>
+        <copy todir="${dist.dir}/src">
+            <fileset dir="src"/>
+        </copy>
+        <copy todir="${dist.dir}/lib">
+            <fileset dir="lib"/>
+        </copy>
+
         <copy todir="${dist.dir}/build/scripts">
             <fileset dir="${build.scripts}"/>
         </copy>
-        <copy todir="${dist.dir}/lib/core">
-            <fileset dir="${lib.core}"/>
-        </copy>
-        <copy todir="${dist.dir}/lib/optional">
-            <fileset dir="${lib.optional}"/>
-        </copy>
-        <copy todir="${dist.dir}/lib/endorsed">
-            <fileset dir="${lib.endorsed}"/>
-        </copy>
-        <copy todir="${dist.dir}/lib/extensions">
-            <fileset dir="${lib.extensions}"/>
-        </copy>
-        <copy todir="${dist.dir}/lib/user">
-            <fileset dir="${lib.user}"/>
-        </copy>
+
         <copy todir="${dist.dir}/tools">
             <fileset dir="tools">
                 <exclude name="**/work/**/*"/>
                 <exclude name="**/logs/*"/>
-                <exclude name="**/javasvn*jar"/>
+                <exclude name="**/tmp/*"/>
             </fileset>
         </copy>
+
         <copy todir="${dist.dir}/webapp">
-            <fileset dir="./webapp">
-                <exclude name="**/*.dbx"/>
-                <exclude name="**/*.lck"/>
-                <exclude name="**/logs/*"/>
-                <exclude name="*~"/>
-                <exclude name=".*"/>
+            <fileset dir="webapp">
+                <exclude name="api/"/>
+                <exclude name="xqts/"/>
+                <exclude name="WEB-INF/"/>
             </fileset>
         </copy>
+
+        <copy todir="${dist.dir}/webapp/WEB-INF">
+            <fileset dir="webapp/WEB-INF">
+                <exclude name="classes/"/>
+                <exclude name="data/"/>
+                <exclude name="logs/"/>
+                <exclude name="loggerdir/"/>
+            </fileset>
+        </copy>
+
+        <copy todir="${dist.dir}/webapp/WEB-INF/data">
+            <fileset dir="webapp/WEB-INF/data">
+                <include name=".DO_NOT_DELETE"/>
+                <include name="README"/>
+                <include name="RECOVERY"/>
+            </fileset>
+        </copy>
+
+        <copy todir="${dist.dir}/webapp/WEB-INF/logs">
+            <fileset dir="webapp/WEB-INF/logs">
+                <include name=".DO_NOT_DELETE"/>
+            </fileset>
+        </copy>
+
         <copy todir="${dist.dir}/extensions">
-            <fileset dir="./extensions"/>
+            <fileset dir="extensions"/>
         </copy>
+
         <copy todir="${dist.dir}/samples">
-            <fileset dir="./samples">
-                <exclude name="**/*~"/>
-                <exclude name=".*"/>
-                <exclude name="xupdate/**"/>
-                <exclude name="test.xml"/>
-            </fileset>
+            <fileset dir="samples"/>
         </copy>
-        <copy file="${src}/org/exist/util/mime-types.xml"
-                todir="${dist.dir}"/>
+
+        <copy file="${src}/org/exist/util/mime-types.xml" todir="${dist.dir}"/>
+
         <fixcrlf eol="crlf" includes="**/*.bat" srcdir="${dist.dir}/bin"/>
-        <fixcrlf eof="remove" eol="lf" includes="**/*.sh" srcdir="${dist.dir}/bin"/>
+        <fixcrlf eol="crlf" includes="**/*.bat" srcdir="${dist.dir}/tools/yajsw/bin"/>
+        <fixcrlf eol="lf" eof="remove" includes="**/*.sh" srcdir="${dist.dir}/bin"/>
+        <fixcrlf eol="lf" eof="remove" includes="**/*.sh" srcdir="${dist.dir}/tools/yajsw/bin"/>
         <fixcrlf eol="crlf" includes="build.bat" srcdir="${dist.dir}"/>
-        <fixcrlf eof="remove" eol="lf" includes="build.sh" srcdir="${dist.dir}"/>
-        <fixcrlf eol="crlf" includes="conf.xml" srcdir="${dist.dir}"/>
+        <fixcrlf eol="lf" eof="remove" includes="build.sh" srcdir="${dist.dir}"/>
+
         <chmod perm="+x">
             <fileset dir="${dist.dir}">
                 <include name="**/*.sh"/>
@@ -368,27 +340,71 @@
                 <include name="*.sh"/>
             </fileset>
         </chmod>
+
     </target>
     
     <!-- ================================================================== -->
-    <!-- Create dist-zip                                                    -->
+    <!-- Create zip                                                         -->
     <!-- ================================================================== -->
-    <target depends="dist" name="dist-zip" description="Create dist-zip">
-        <zip basedir="${dist}" compress="true"
-                excludes="${project.name}-${project.version}.zip"
-                zipfile="${dist}/${project.name}-${project.version}${build.label}.zip"/>
-    </target>
-    
-    <!-- ================================================================== -->
-    <!-- Create dist-tgz                                                    -->
-    <!-- ================================================================== -->
-    <target depends="dist" name="dist-tgz" description="Create dist-tgz">
+    <target name="dist-zip" depends="dist-dir" description="Create zip distribution">
         <property name="dist.name" value="${project.name}-${project.version}${build.label}"/>
-        <delete file="${dist}/${dist.name}.tar.gz"/>
-        <delete file="${dist}/${dist.name}.tar"/>
-        <tar basedir="${dist}" excludes="${dist.name}.zip" longfile="gnu" tarfile="${dist}/${dist.name}.tar"/>
+        <zip destfile="${dist}/${dist.name}.zip" encoding="UTF-8" compress="true" level="9">
+            <zipfileset dir="${dist.dir}" prefix="${dist.name}">
+                <include name="**"/>
+                <exclude name="*.sh"/>
+                <exclude name="bin/*.sh"/>
+                <exclude name="tools/yajsw/bin/*.sh"/>
+            </zipfileset>
+            <zipfileset dir="${dist.dir}" prefix="${dist.name}" filemode="755">
+                <include name="*.sh"/>
+            </zipfileset>
+            <zipfileset dir="${dist.dir}/bin" prefix="${dist.name}/bin" filemode="755">
+                <include name="*.sh"/>
+            </zipfileset>
+            <zipfileset dir="${dist.dir}/tools/yajsw/bin" prefix="${dist.name}/tools/yajsw/bin" filemode="755">
+                <include name="*.sh"/>
+            </zipfileset>
+        </zip>
+    </target>
+    
+    <!-- ================================================================== -->
+    <!-- Create tar                                                         -->
+    <!-- ================================================================== -->
+    <target name="dist-tar" depends="dist-dir" description="Create tar distribution">
+        <property name="dist.name" value="${project.name}-${project.version}${build.label}"/>
+        <tar destfile="${dist}/${dist.name}.tar" longfile="gnu">
+            <tarfileset dir="${dist.dir}" prefix="${dist.name}" preserveLeadingSlashes="false">
+                <include name="**"/>
+                <exclude name="*.sh"/>
+                <exclude name="bin/*.sh"/>
+                <exclude name="tools/yajsw/bin/*.sh"/>
+            </tarfileset>
+            <tarfileset dir="${dist.dir}" prefix="${dist.name}" preserveLeadingSlashes="false" filemode="755">
+                <include name="*.sh"/>
+            </tarfileset>
+            <tarfileset dir="${dist.dir}/bin" prefix="${dist.name}/bin" preserveLeadingSlashes="false" filemode="755">
+                <include name="*.sh"/>
+            </tarfileset>
+            <tarfileset dir="${dist.dir}/tools/yajsw/bin" prefix="${dist.name}/tools/yajsw/bin" preserveLeadingSlashes="false" filemode="755">
+                <include name="*.sh"/>
+            </tarfileset>
+        </tar>
+    </target>
+
+    <!-- ================================================================== -->
+    <!-- Create tar.gz                                                      -->
+    <!-- ================================================================== -->
+    <target name="dist-tgz" depends="dist-tar" description="Create tar.gz distribution">
+        <property name="dist.name" value="${project.name}-${project.version}${build.label}"/>
         <gzip src="${dist}/${dist.name}.tar" zipfile="${dist}/${dist.name}.tar.gz"/>
-        <delete file="${dist}/${dist.name}.tar"/>
+    </target>
+
+    <!-- ================================================================== -->
+    <!-- Create tar.bz2                                                     -->
+    <!-- ================================================================== -->
+    <target name="dist-bz2" depends="dist-tar" description="Create tar.bz2 distribution">
+        <property name="dist.name" value="${project.name}-${project.version}${build.label}"/>
+        <bzip2 src="${dist}/${dist.name}.tar" zipfile="${dist}/${dist.name}.tar.bz2"/>
     </target>
 
 </project>
