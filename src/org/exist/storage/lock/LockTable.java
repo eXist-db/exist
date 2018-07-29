@@ -293,19 +293,20 @@ public class LockTable {
 
         @Override
         public void run() {
-            while (true) {
-                try {
+            try {
+                while (true) {
                     final Either<ListenerAction, LockAction> event = queue.take();
 
-                    if(event.isLeft()) {
+                    if (event.isLeft()) {
                         processListenerAction(event.left().get());
                     } else {
                         processLockAction(event.right().get());
                     }
-
-                } catch (final InterruptedException e) {
-                    LOG.fatal("LockTable.QueueConsumer was interrupted");
                 }
+            } catch (final InterruptedException e) {
+                LOG.fatal("LockTable.QueueConsumer was interrupted", e);
+                // Restore the interrupted status
+                Thread.currentThread().interrupt();
             }
         }
 
