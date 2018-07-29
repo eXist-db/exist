@@ -93,10 +93,11 @@ public class LockTable {
      * {@link QueueConsumer} to ensure serializability of locking events and monitoring
      */
     private final TransferQueue<Either<ListenerAction, LockAction>> queue = new LinkedTransferQueue<>();
+    private final ExecutorService executorService;
     private final Future<?> queueConsumer;
 
     private LockTable() {
-        final ExecutorService executorService = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "exist-lockTable.processor"));
+        this.executorService = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "exist-lockTable.processor"));
         this.queueConsumer = executorService.submit(new QueueConsumer(queue, attempting, acquired));
 
         // add a log listener if trace level logging is enabled
@@ -107,6 +108,18 @@ public class LockTable {
 
     public static LockTable getInstance() {
         return instance;
+    }
+
+    /**
+     * Shuts down the lock table processor.
+     *
+     * After calling this, no further lock
+     * events will be reported.
+     */
+    public void shutdown() {
+        if (!executorService.isShutdown()) {
+            executorService.shutdownNow();
+        }
     }
 
     /**

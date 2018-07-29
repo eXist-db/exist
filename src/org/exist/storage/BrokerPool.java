@@ -56,6 +56,7 @@ import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.journal.JournalManager;
 import org.exist.storage.lock.FileLockService;
 import org.exist.storage.lock.LockManager;
+import org.exist.storage.lock.LockTable;
 import org.exist.storage.recovery.RecoveryManager;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.sync.SyncTask;
@@ -1674,6 +1675,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 xmlReaderPool = null;
                 shutdownListener = null;
                 securityManager = null;
+
+                LockTable.getInstance().shutdown();
+
                 notificationService = null;
                 statusObservers.clear();
 
