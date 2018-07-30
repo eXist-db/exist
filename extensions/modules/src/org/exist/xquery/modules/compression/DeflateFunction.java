@@ -100,7 +100,6 @@ public class DeflateFunction extends BasicFunction
         // deflate the data
         try(final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 	    DeflaterOutputStream dos = new DeflaterOutputStream(baos, defl)) {
-	    //DeflaterOutputStream dos = new DeflaterOutputStream(baos, new Deflater(java.util.zip.Deflater.DEFAULT_COMPRESSION, true))) {
             bin.streamBinaryTo(dos);
             
             dos.flush();
