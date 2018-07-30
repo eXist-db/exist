@@ -60,7 +60,7 @@ public class CompressionModule extends AbstractInternalModule {
                     UnGZipFunction.signatures[0]
             ),
             functionDefs(DeflateFunction.class,
-		    DeflateFunction.signatures[0],
+                    DeflateFunction.signatures[0],
                     DeflateFunction.signatures[1]
             ),
             functionDefs(InflateFunction.class,
