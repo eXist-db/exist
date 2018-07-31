@@ -22,15 +22,18 @@
 package org.exist.xupdate;
 
 import java.util.Random;
+import java.util.stream.IntStream;
 
 import org.exist.TestUtils;
 
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.DBUtils;
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -47,17 +50,17 @@ import org.xmldb.api.modules.XUpdateQueryService;
  */
 public class StressTest {
     
-    private final static String XML = "<root><a/><b/><c/></root>";
-    
-    private final static String URI = XmldbURI.LOCAL_DB;
+    private static final String XML = "<root><a/><b/><c/></root>";
     
     private final static int RUNS = 1000;
-    
-    private Collection rootCol;
+
     private Collection testCol;
     private final Random rand = new Random();
-    
+
     private String[] tags;
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
     
     @Test
     public void stressTest() throws XMLDBException {
@@ -130,9 +133,8 @@ public class StressTest {
     }
     
     @Before
-    public void setUp() throws Exception {
-        rootCol = DBUtils.setupDB(URI);
-        
+    public void setUp() throws XMLDBException {
+        final Collection rootCol =  existXmldbEmbeddedServer.getRoot();
         testCol = rootCol.getChildCollection(XmldbURI.ROOT_COLLECTION + "/test");
         if(testCol != null) {
             CollectionManagementService mgr = DBUtils.getCollectionManagementService(rootCol);
@@ -141,19 +143,17 @@ public class StressTest {
         
         testCol = DBUtils.addCollection(rootCol, "test");
         assertNotNull(testCol);
-        
-        tags = new String[RUNS];
-        for (int i = 0; i < RUNS; i++) {
-            tags[i] = "TAG" + i;
-        }
-        
-        
+
+        tags = IntStream
+                .range(0, RUNS)
+                .mapToObj(i -> "TAG" + i)
+                .toArray(String[]::new);
+
         DBUtils.addXMLResource(testCol, "test.xml", XML);
     }
     
     @After
     public void tearDown() throws XMLDBException {
         TestUtils.cleanupDB();
-        DBUtils.shutdownDB(URI);
     }
 }

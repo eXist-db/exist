@@ -23,26 +23,21 @@ package org.exist.xmldb.concurrent.action;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
-
 public class RetrieveResourceAction extends Action {
-	
-	/**
-	 * 
-	 */
-	public RetrieveResourceAction(String collectionPath, String resourceName) {
+
+	public RetrieveResourceAction(final String collectionPath, final String resourceName) {
 		super(collectionPath, resourceName);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xmldb.test.concurrent.ConcurrentXUpdateTest.Action#execute()
-	 */
-	public boolean execute() throws Exception {
-		Collection col = DatabaseManager.getCollection(collectionPath);
-		XMLResource res = (XMLResource)col.getResource(resourceName);
+	@Override
+	public boolean execute() throws XMLDBException {
+		final Collection col = DatabaseManager.getCollection(collectionPath);
+		final XMLResource res = (XMLResource)col.getResource(resourceName);
 
-		DefaultHandler handler = new DefaultHandler();
+		final DefaultHandler handler = new DefaultHandler();
 		res.getContentAsSAX(handler);
 
 		return false;

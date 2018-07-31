@@ -24,13 +24,11 @@ package org.exist.xmldb.concurrent;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.CreateCollectionAction;
 import org.exist.xmldb.concurrent.action.XQueryAction;
-import org.junit.After;
-import org.junit.Before;
-import org.xmldb.api.base.XMLDBException;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class FragmentsTest extends ConcurrentTestBase {
-
-    private final static String URI = "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/exist/xmlrpc" + XmldbURI.ROOT_COLLECTION;
     
     private final static String QUERY =
         "let $node := " +
@@ -40,24 +38,18 @@ public class FragmentsTest extends ConcurrentTestBase {
         "   </root>" +
         "return" +
         "   $node/nodeA/nodeB";
-    
-    public FragmentsTest() {
-        super(URI, "C1");
+
+    @Override
+    public String getTestCollectionName() {
+        return "C1";
     }
 
-    @Before
     @Override
-    public void setUp() throws Exception {
-        super.setUp();
-
-        addAction(new XQueryAction(URI + "/C1", "test.xml", QUERY), 200, 0, 200);
-        addAction(new XQueryAction(URI + "/C2", "test.xml", QUERY), 200, 0, 200);
-        addAction(new CreateCollectionAction(URI + "/C1", "testappend.xml"), 200, 0, 0);
-    }
-    
-    @After
-    @Override
-    public void tearDown() throws XMLDBException {
-        super.tearDown();
+    public List<Runner> getRunners() {
+        return Arrays.asList(
+                new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C1", "test.xml", QUERY), 200, 0, 200),
+                new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C2", "test.xml", QUERY), 200, 0, 200),
+                new Runner(new CreateCollectionAction(XmldbURI.LOCAL_DB + "/C1", "testappend.xml"), 200, 0, 0)
+        );
     }
 }
