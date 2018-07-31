@@ -20,8 +20,9 @@
  */
 package org.exist.xmldb.concurrent;
 
-import java.io.File;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 
 import org.exist.util.FileUtils;
 import org.exist.xmldb.IndexQueryService;
@@ -41,9 +42,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class ConcurrentXUpdateTest extends ConcurrentTestBase {
 
-	private final static String URI = XmldbURI.LOCAL_DB;
-
-	private final static String CONFIG =
+	private static final String CONFIG =
     	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" + 
     	"	<index>" + 
     	"		<create path=\"//ELEMENT-1/@attribute-3\" type=\"xs:string\"/>" +
@@ -51,41 +50,43 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
     	"	</index>" + 
     	"</collection>";
 
+	private String[] wordList;
 	private Path tempFile;
-	
-	public ConcurrentXUpdateTest() {
-		super(URI, "C1");
+
+	@Override
+	public String getTestCollectionName() {
+		return "C1";
+	}
+
+	@Override
+	public List<Runner> getRunners() {
+		//String query0 = "xmldb:document('" + DBBroker.ROOT_COLLECTION + "/C1/R1.xml')/ROOT-ELEMENT//ELEMENT-1[@attribute-3]";
+		//String query1 = "xmldb:document()/ROOT-ELEMENT//ELEMENT-2[@attribute-2]";
+
+		return Arrays.asList(
+				new Runner(new RemoveAppendAction(XmldbURI.LOCAL_DB + "/C1", "R1.xml", wordList), 50, 0, 200)
+				//new Runner(new RemoveAppendAction(getUri + "/C1", "R1.xml", wordList), 50, 100, 200);
+				//new Runner(new MultiResourcesAction("samples/mods", getUri + "/C1"), 1, 0, 300);
+				//new Runner(new RetrieveResourceAction(getUri + "/C1", "R1.xml"), 10, 1000, 2000);
+				//new Runner(new XQueryAction(getUri + "/C1", "R1.xml", query0), 100, 100, 100);
+				//new Runner(new XQueryAction(getUri + "/C1", "R1.xml", query1), 100, 200, 100);
+		);
 	}
 
 	@Before
-	@Override
 	public void setUp() throws Exception {
-        super.setUp();
-        IndexQueryService idxConf = (IndexQueryService)
+        final IndexQueryService idxConf = (IndexQueryService)
             getTestCollection().getService("IndexQueryService", "1.0");
         assertNotNull(idxConf);
         idxConf.configureCollection(CONFIG);
-        String[] wordList = DBUtils.wordList(rootCol);
+        this.wordList = DBUtils.wordList(existXmldbEmbeddedServer.getRoot());
         assertNotNull(wordList);
-        tempFile = DBUtils.generateXMLFile(500, 10, wordList);
+        this.tempFile = DBUtils.generateXMLFile(500, 10, wordList);
         DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
-
-        //String query0 = "xmldb:document('" + DBBroker.ROOT_COLLECTION + "/C1/R1.xml')/ROOT-ELEMENT//ELEMENT-1[@attribute-3]";
-        //String query1 = "xmldb:document()/ROOT-ELEMENT//ELEMENT-2[@attribute-2]";
-
-        addAction(new RemoveAppendAction(URI + "/C1", "R1.xml", wordList), 50, 0, 200);
-        //addAction(new RemoveAppendAction(getUri + "/C1", "R1.xml", wordList), 50, 100, 200);
-        //addAction(new MultiResourcesAction("samples/mods", getUri + "/C1"), 1, 0, 300);
-        //addAction(new RetrieveResourceAction(getUri + "/C1", "R1.xml"), 10, 1000, 2000);
-        //addAction(new XQueryAction(getUri + "/C1", "R1.xml", query0), 100, 100, 100);
-        //addAction(new XQueryAction(getUri + "/C1", "R1.xml", query1), 100, 200, 100);
 	}
 
 	@After
-    @Override
 	public void tearDown() throws XMLDBException {
-        //super.tearDown();
-        DBUtils.shutdownDB(URI);
 		FileUtils.deleteQuietly(tempFile);
 	}
 }

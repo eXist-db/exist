@@ -1,7 +1,5 @@
 package org.exist.xmldb.concurrent.action;
 
-import junit.framework.Assert;
-
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
@@ -10,12 +8,14 @@ import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * @author wolf
  */
 public class ComplexUpdateAction extends Action {
 
-	String sessionUpdate =
+	private static final String sessionUpdate =
 		"<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
 		"<xu:update select=\"//USER-SESSION-DATA[1]\">" +
 		"<xu:element name=\"USER-SESSION-STATUS\">" +
@@ -56,34 +56,28 @@ public class ComplexUpdateAction extends Action {
         "</xu:update>" +
         "</xu:modifications>";
 	
-	String statusUpdate =
+	private static final String statusUpdate =
 		"<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
 		"<xu:update select=\"//USER-SESSION-DATA[1]/USER-SESSION-STATUS/@session-state\">INACTIVE</xu:update>" +
 		"</xu:modifications>";
 	
-	private int repeat;
+	private final int repeat;
 
-	/**
-	 * @param collectionPath
-	 * @param resourceName
-	 */
-	public ComplexUpdateAction(String collectionPath, String resourceName, int repeat) {
+	public ComplexUpdateAction(final String collectionPath, final String resourceName, final int repeat) {
 		super(collectionPath, resourceName);
 		this.repeat = repeat;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xmldb.test.concurrent.Action#execute()
-	 */
-	public boolean execute() throws Exception {
-		Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
+	@Override
+	public boolean execute() throws XMLDBException {
+		final Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
 		for(int i = 0; i < repeat; i++) {
 			query(col, i); 
 			col.close();
 			
 			update(col, sessionUpdate);
 			// The following update will fail
-			String versionUpdate =
+			final String versionUpdate =
 				"<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
 				"<xu:update select=\"//USER-SESSION-DATA[1]/@version\">" + (i + 1) +
 				"</xu:update></xu:modifications>";
@@ -93,29 +87,21 @@ public class ComplexUpdateAction extends Action {
 		return false;
 	}
 
-	/**
-	 * @param col
-	 */
-	private void query(Collection col, int repeat) throws XMLDBException {
-		XPathQueryService service = (XPathQueryService)col.getService("XPathQueryService", "1.0");
+	private void query(final Collection col, final int repeat) throws XMLDBException {
+		final XPathQueryService service = (XPathQueryService)col.getService("XPathQueryService", "1.0");
 		ResourceSet r = service.query("//USER-SESSION-DATA");
-		Assert.assertEquals(1, r.getSize());
+		assertEquals(1, r.getSize());
 		for(long i = 0; i < r.getSize(); i++) {
 			XMLResource res = (XMLResource)r.getResource(i);
 		}
 		r = service.query("string(//USER-SESSION-DATA[1]/@version)");
-		Assert.assertEquals(1, r.getSize());
-		Assert.assertEquals(repeat, Integer.parseInt(r.getResource(0).getContent().toString()));
+		assertEquals(1, r.getSize());
+		assertEquals(repeat, Integer.parseInt(r.getResource(0).getContent().toString()));
 	}
 
-	private void update(Collection col, String xupdate) throws XMLDBException {
-		XUpdateQueryService service = (XUpdateQueryService)
+	private void update(final Collection col, final String xupdate) throws XMLDBException {
+		final XUpdateQueryService service = (XUpdateQueryService)
 		col.getService("XUpdateQueryService", "1.0");
 		long mods = service.updateResource(resourceName, xupdate);
-	}
-	
-	@SuppressWarnings("unused")
-	private void displayResource(Collection col) throws XMLDBException {
-		XMLResource res = (XMLResource)col.getResource(resourceName);
 	}
 }
