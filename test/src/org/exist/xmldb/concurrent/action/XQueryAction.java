@@ -64,7 +64,7 @@ public class XQueryAction extends Action {
 		runningTime += (System.currentTimeMillis() - start);
 		called++;
 
-		return false;
+		return true;
 	}
 
 	public String getQuery() {

@@ -40,6 +40,6 @@ public class RetrieveResourceAction extends Action {
 		final DefaultHandler handler = new DefaultHandler();
 		res.getContentAsSAX(handler);
 
-		return false;
+		return true;
 	}
 }

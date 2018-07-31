@@ -41,6 +41,6 @@ public class AttributeUpdateAction extends RemoveAppendAction {
 			final String xupdate = XUPDATE_START + xmlGenerator.generateText(attrSize) + XUPDATE_END;
 			long mods = service.update(xupdate);
 		}
-		return false;
+		return true;
 	}
 }

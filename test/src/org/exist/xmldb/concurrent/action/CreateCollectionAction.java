@@ -59,7 +59,7 @@ public class CreateCollectionAction extends Action {
         }
 
         resources = copy.listResources();
-        return false;
+        return true;
     }
 
     private void addFiles(final Collection col) throws XMLDBException, IOException {

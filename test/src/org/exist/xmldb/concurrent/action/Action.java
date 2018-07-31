@@ -39,6 +39,11 @@ public abstract class Action {
 		this.collectionPath = collectionPath;
 		this.resourceName = resourceName;
 	}
-	
+
+	/**
+	 * Returns true if execution compled successfully.
+	 *
+	 * @return true if execution completed successfully, false otherwise.
+	 */
 	abstract public boolean execute() throws XMLDBException, IOException;
 }

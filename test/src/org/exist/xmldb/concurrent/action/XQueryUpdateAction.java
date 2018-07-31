@@ -31,6 +31,6 @@ public class XQueryUpdateAction extends Action {
 		final XQueryService service = (XQueryService) col.getService("XQueryService", "1.0");
 		
 		service.query(query);
-		return false;
+		return true;
 	}
 }

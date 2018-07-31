@@ -55,7 +55,7 @@ public class ValueAppendAction extends Action {
 		append(service);
 		query(query);
         remove(service);
-        return false;
+        return true;
     }
 
     private void remove(final XUpdateQueryService service) throws XMLDBException {
