@@ -21,11 +21,14 @@ package org.exist.management.impl;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockType;
 import org.exist.storage.lock.LockTable.LockModeOwner;
 import org.exist.storage.lock.LockTableUtils;
 
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 import java.util.List;
 import java.util.Map;
 
@@ -36,27 +39,49 @@ import java.util.Map;
  */
 public class LockTable implements LockTableMXBean {
 
-    public static final String OBJECT_NAME = "org.exist.management:type=LockTable";
+    private final BrokerPool pool;
+
+    public LockTable(final BrokerPool brokerPool) {
+        this.pool = brokerPool;
+    }
+
+    public static String getAllInstancesQuery() {
+        return getName("*");
+    }
+
+    private static String getName(final String instanceId) {
+        return "org.exist.management." + instanceId + ":type=LockTable";
+    }
+
+    @Override
+    public ObjectName getName() throws MalformedObjectNameException {
+        return new ObjectName(getName(pool.getId()));
+    }
+
+    @Override
+    public String getInstanceId() {
+        return pool.getId();
+    }
 
     @Override
     public Map<String, Map<LockType, Map<Lock.LockMode, Map<String, Integer>>>> getAcquired() {
-        return org.exist.storage.lock.LockTable.getInstance().getAcquired();
+        return pool.getLockManager().getLockTable().getAcquired();
     }
 
     @Override
     public Map<String, Map<LockType, List<LockModeOwner>>> getAttempting() {
-        return org.exist.storage.lock.LockTable.getInstance().getAttempting();
+        return pool.getLockManager().getLockTable().getAttempting();
     }
 
     @Override
     public void dumpToConsole() {
-        System.out.println(LockTableUtils.stateToString(org.exist.storage.lock.LockTable.getInstance()));
+        System.out.println(LockTableUtils.stateToString(pool.getLockManager().getLockTable()));
     }
 
     private final static Logger LOCK_LOG = LogManager.getLogger(org.exist.storage.lock.LockTable.class);
 
     @Override
     public void dumpToLog() {
-        LOCK_LOG.info(LockTableUtils.stateToString(org.exist.storage.lock.LockTable.getInstance()));
+        LOCK_LOG.info(LockTableUtils.stateToString(pool.getLockManager().getLockTable()));
     }
 }

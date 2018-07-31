@@ -83,13 +83,13 @@ public class NativeBrokerLockingTest {
 
     @Test
     public void openCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
-        final LockTable lockTable = LockTable.getInstance();
+        final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
+        final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
 
         final LockSymmetryListener lockSymmetryListener = new LockSymmetryListener();
         boolean registered = false;
         try {
-            final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
             try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
                  final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
@@ -118,13 +118,13 @@ public class NativeBrokerLockingTest {
 
     @Test
     public void openCollection_doesntExist() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
-        final LockTable lockTable = LockTable.getInstance();
+        final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
+        final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
 
         final LockSymmetryListener lockSymmetryListener = new LockSymmetryListener();
         boolean registered = false;
         try {
-            final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
             try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
                  final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
@@ -153,13 +153,13 @@ public class NativeBrokerLockingTest {
 
     @Test
     public void getCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
-        final LockTable lockTable = LockTable.getInstance();
+        final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
+        final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
 
         final LockSymmetryListener lockSymmetryListener = new LockSymmetryListener();
         boolean registered = false;
         try {
-            final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
             try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
                  final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
@@ -187,13 +187,13 @@ public class NativeBrokerLockingTest {
 
     @Test
     public void getCollection_doesntExist() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
-        final LockTable lockTable = LockTable.getInstance();
+        final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
+        final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
 
         final LockSymmetryListener lockSymmetryListener = new LockSymmetryListener();
         boolean registered = false;
         try {
-            final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
             try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
                  final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
@@ -221,13 +221,13 @@ public class NativeBrokerLockingTest {
 
     @Test
     public void getOrCreateCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
-        final LockTable lockTable = LockTable.getInstance();
+        final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
+        final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
 
         final LockSymmetryListener lockSymmetryListener = new LockSymmetryListener();
         boolean registered = false;
         try {
-            final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
             try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
                  final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
@@ -257,13 +257,13 @@ public class NativeBrokerLockingTest {
 
     @Test
     public void moveCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
-        final LockTable lockTable = LockTable.getInstance();
+        final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
+        final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
 
         final LockSymmetryListener lockSymmetryListener = new LockSymmetryListener();
         boolean registered = false;
         try {
-            final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
             try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
                  final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
@@ -293,13 +293,13 @@ public class NativeBrokerLockingTest {
 
     @Test
     public void copyEmptyCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
-        final LockTable lockTable = LockTable.getInstance();
+        final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
+        final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
 
         final LockSymmetryListener lockSymmetryListener = new LockSymmetryListener();
         boolean registered = false;
         try {
-            final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
             try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
                  final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
@@ -329,13 +329,13 @@ public class NativeBrokerLockingTest {
 
     @Test
     public void removeEmptyCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
-        final LockTable lockTable = LockTable.getInstance();
+        final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
+        final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
 
         final LockSymmetryListener lockSymmetryListener = new LockSymmetryListener();
         boolean registered = false;
         try {
-            final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
             try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
                  final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 

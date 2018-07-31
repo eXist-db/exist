@@ -131,7 +131,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      */
     private final String instanceName;
 
-    private final LockManager lockManager;
+    private final int concurrencyLevel;
+    private LockManager lockManager;
 
     /**
      * State of the BrokerPool instance
@@ -396,8 +397,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         //Configuration is valid, save it
         this.conf = conf;
 
-        final int concurrencyLevel = Math.max(maxBrokers, 2 * Runtime.getRuntime().availableProcessors());
-        this.lockManager = new LockManager(concurrencyLevel);
+        this.concurrencyLevel = Math.max(maxBrokers, 2 * Runtime.getRuntime().availableProcessors());
 
         statusObserver.ifPresent(this.statusObservers::add);
 
@@ -434,6 +434,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     }
 
     private void _initialize() throws EXistException, DatabaseConfigurationException {
+        this.lockManager = new LockManager(concurrencyLevel);
+
         //Flag to indicate that we are initializing
         status.process(Event.INITIALIZE);
 
@@ -1676,7 +1678,10 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 shutdownListener = null;
                 securityManager = null;
 
-                LockTable.getInstance().shutdown();
+                if (lockManager != null) {
+                    lockManager.getLockTable().shutdown();
+                    lockManager = null;
+                }
 
                 notificationService = null;
                 statusObservers.clear();

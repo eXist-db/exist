@@ -69,7 +69,6 @@ public class LockManager {
 
     private static final Logger LOG = LogManager.getLogger(LockManager.class);
     private static final boolean USE_FAIR_SCHEDULER = true;  //Java's ReentrantReadWriteLock must use the Fair Scheduler to get FIFO like ordering
-    private static final LockTable lockTable = LockTable.getInstance();
 
     /**
      * Set to true to enable Multi-Writer/Multi-Reader semantics for
@@ -90,17 +89,27 @@ public class LockManager {
     private volatile boolean warnWaitOnReadForWrite = Boolean.getBoolean(PROP_WARN_WAIT_ON_READ_FOR_WRITE);
 
 
-
+    private final LockTable lockTable;
     private final WeakLazyStripes<String, MultiLock> collectionLocks;
     private final WeakLazyStripes<String, ReentrantReadWriteLock> documentLocks;
     private final WeakLazyStripes<String, ReentrantLock> btreeLocks;
 
 
     public LockManager(final int concurrencyLevel) {
+        this.lockTable = new LockTable();
         this.collectionLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createCollectionLock);
         this.documentLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createDocumentLock);
         this.btreeLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createBtreeLock);
         LOG.info("Configured LockManager with concurrencyLevel={}", concurrencyLevel);
+    }
+
+    /**
+     * Get the lock table.
+     *
+     * @return the lock table.
+     */
+    public LockTable getLockTable() {
+        return lockTable;
     }
 
     /**

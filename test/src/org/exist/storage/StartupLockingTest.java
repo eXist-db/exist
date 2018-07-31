@@ -35,6 +35,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -64,8 +65,14 @@ public class StartupLockingTest {
 //    private static LockEventJsonListener lockEventJsonListener = new LockEventJsonListener(Paths.get("/tmp/startupLockingTest" + System.currentTimeMillis() + ".json"), true);
 //    private static LockEventXmlListener lockEventXmlListener = new LockEventXmlListener(Paths.get("/tmp/startupLockingTest" + System.currentTimeMillis() + ".xml"), true);
 
-    private static LockTable lockTable = LockTable.getInstance();
-    static {
+    private static LockTable lockTable;
+
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+
+    @BeforeClass
+    public static void addListener() {
+        lockTable = existEmbeddedServer.getBrokerPool().getLockManager().getLockTable();
         lockTable.registerListener(lockCountListener);
         while(!lockCountListener.isRegistered()) {}
 //        lockTable.registerListener(lockEventJsonListener);
@@ -73,9 +80,6 @@ public class StartupLockingTest {
 //        lockTable.registerListener(lockEventXmlListener);
 //        while(!lockEventXmlListener.isRegistered()) {}
     }
-
-    @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @AfterClass
     public static void removeListener() {

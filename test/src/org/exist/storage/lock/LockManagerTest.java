@@ -93,8 +93,8 @@ public class LockManagerTest {
      */
     @Test
     public void acquireCollectionReadLock_root() throws LockException {
-        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
-            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             try(final ManagedCollectionLock rootLock
                         = lockManager.acquireCollectionReadLock(XmldbURI.ROOT_COLLECTION_URI)) {
                 assertNotNull(rootLock);
@@ -131,8 +131,8 @@ public class LockManagerTest {
     public void acquireCollectionReadLock_depth2() throws LockException {
         final String collectionPath = "/db/colA";
 
-        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
-            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedCollectionLock colALock
                          = lockManager.acquireCollectionReadLock(XmldbURI.create(collectionPath))) {
                 assertNotNull(colALock);
@@ -187,8 +187,8 @@ public class LockManagerTest {
         final String collectionAPath = "/db/colA";
         final String collectionBPath = collectionAPath + "/colB";
 
-        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
-            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedCollectionLock colBLock
                          = lockManager.acquireCollectionReadLock(XmldbURI.create(collectionBPath))) {
                 assertNotNull(colBLock);
@@ -269,8 +269,8 @@ public class LockManagerTest {
     }
 
     private void acquireCollectionWriteLock_root(final boolean lockParent) throws LockException {
-        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
-            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedCollectionLock rootLock
                          = lockManager.acquireCollectionWriteLock(XmldbURI.ROOT_COLLECTION_URI, lockParent)) {
                 assertNotNull(rootLock);
@@ -306,8 +306,8 @@ public class LockManagerTest {
     public void acquireCollectionWriteLock_depth2_withoutLockParent() throws LockException {
         final String collectionPath = "/db/colA";
 
-        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
-            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             final boolean lockParent = false;
             try (final ManagedCollectionLock colALock
                          = lockManager.acquireCollectionWriteLock(XmldbURI.create(collectionPath), lockParent)) {
@@ -362,8 +362,8 @@ public class LockManagerTest {
     public void acquireCollectionWriteLock_depth2_withLockParent() throws LockException {
         final String collectionPath = "/db/colA";
 
-        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
-            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             final boolean lockParent = true;
             try (final ManagedCollectionLock colALock
                          = lockManager.acquireCollectionWriteLock(XmldbURI.create(collectionPath), lockParent)) {
@@ -417,8 +417,8 @@ public class LockManagerTest {
         final String collectionAPath = "/db/colA";
         final String collectionBPath = collectionAPath + "/colB";
 
-        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
-            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             final boolean lockParent = false;
             try (final ManagedCollectionLock colBLock
                          = lockManager.acquireCollectionWriteLock(XmldbURI.create(collectionBPath), lockParent)) {
@@ -492,8 +492,8 @@ public class LockManagerTest {
         final String collectionAPath = "/db/colA";
         final String collectionBPath = collectionAPath + "/colB";
 
-        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
-            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             final boolean lockParent = true;
             try (final ManagedCollectionLock colBLock
                          = lockManager.acquireCollectionWriteLock(XmldbURI.create(collectionBPath), lockParent)) {
@@ -587,8 +587,8 @@ public class LockManagerTest {
     public void acquireDocumentReadLock() throws LockException {
         final XmldbURI docUri = XmldbURI.create("/db/a/b/c/1.xml");
 
-        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
-            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedDocumentLock doc1Lock
                          = lockManager.acquireDocumentReadLock(docUri)) {
                 assertNotNull(doc1Lock);
@@ -623,8 +623,8 @@ public class LockManagerTest {
     public void acquireDocumentWriteLock() throws LockException {
         final XmldbURI docUri = XmldbURI.create("/db/a/b/c/1.xml");
 
-        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
-            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedDocumentLock doc1Lock
                          = lockManager.acquireDocumentWriteLock(docUri)) {
                 assertNotNull(doc1Lock);
@@ -682,8 +682,8 @@ public class LockManagerTest {
     public void acquireBTreeReadLock() throws LockException {
         final String btree1Name = "btree1.dbx";
 
-        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
-            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedLock<ReentrantLock> btree1Lock
                          = lockManager.acquireBtreeReadLock(btree1Name)) {
                 assertNotNull(btree1Lock);
@@ -718,8 +718,8 @@ public class LockManagerTest {
     public void acquireBTreeWriteLock() throws LockException {
         final String btree1Name = "btree1.dbx";
 
-        final Stack<LockTable.LockAction> events = recordLockEvents(() -> {
-            final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedLock<ReentrantLock> btree1Lock
                          = lockManager.acquireBtreeWriteLock(btree1Name)) {
                 assertNotNull(btree1Lock);
@@ -746,8 +746,8 @@ public class LockManagerTest {
     }
 
 
-    private Stack<LockTable.LockAction> recordLockEvents(final RunnableE<LockException> runnable) throws LockException{
-        final LockTable lockTable = LockTable.getInstance();
+    private Stack<LockTable.LockAction> recordLockEvents(final LockManager lockManager, final RunnableE<LockException> runnable) throws LockException{
+        final LockTable lockTable = lockManager.getLockTable();
         final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
         lockTable.registerListener(lockEventRecordingListener);
 
