@@ -21,12 +21,13 @@
 */
 package org.exist.xmldb.concurrent.action;
 
-import junit.framework.Assert;
-
 import org.exist.xmldb.concurrent.DBUtils;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Replace an existing resource.
@@ -35,7 +36,7 @@ import org.xmldb.api.base.ResourceSet;
  */
 public class ReplaceResourceAction extends Action {
 
-	public final static String XML =
+	public static final String XML =
 		"<config>" +
 		"<user id=\"george\">" +
 		"<phone>+49 69 888478</phone>" +
@@ -56,35 +57,29 @@ public class ReplaceResourceAction extends Action {
 	private final static String TEST_QUERY3 = "//user[email = 'sam@email.com']";
 	
 	private int count = 0;
-	
-	/**
-	 * @param collectionPath
-	 * @param resourceName
-	 */
-	public ReplaceResourceAction(String collectionPath, String resourceName) {
+
+	public ReplaceResourceAction(final String collectionPath, final String resourceName) {
 		super(collectionPath, resourceName);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xmldb.test.concurrent.Action#execute()
-	 */
-	public boolean execute() throws Exception {
-		Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
-		String xml =
+	@Override
+	public boolean execute() throws XMLDBException {
+		final Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
+		final String xml =
 			"<data now=\"" + System.currentTimeMillis() + "\" count=\"" +
 			++count + "\">" + XML + "</data>";
 			
 		DBUtils.addXMLResource(col, resourceName, xml);
 		
 		ResourceSet result = DBUtils.queryResource(col, resourceName, TEST_QUERY1);
-		Assert.assertEquals(1, result.getSize());
-		Assert.assertEquals("+49 69 888478", result.getResource(0).getContent());
+		assertEquals(1, result.getSize());
+		assertEquals("+49 69 888478", result.getResource(0).getContent());
 		
 		result = DBUtils.queryResource(col, resourceName, TEST_QUERY2);
-		Assert.assertEquals(1, result.getSize());
+		assertEquals(1, result.getSize());
 		
 		result = DBUtils.queryResource(col, resourceName, TEST_QUERY3);
-		Assert.assertEquals(1, result.getSize());
+		assertEquals(1, result.getSize());
 		return false;
 	}
 }

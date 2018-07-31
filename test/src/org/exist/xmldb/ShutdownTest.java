@@ -25,15 +25,16 @@ package org.exist.xmldb;
 import java.nio.file.Path;
 
 import org.exist.TestUtils;
+import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.FileUtils;
 import org.exist.xmldb.concurrent.DBUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -53,30 +54,68 @@ public class ShutdownTest {
 		"<phone>+49 69 888478</phone>" +
 		"<email>george@email.com</email>" +
 		"<customer-id>64534233</customer-id>" +
-		"<bank-account>7466356</bank-account>" +
+		"<reference>7466356</reference>" +
 		"</user>" +
 		"<user id=\"sam\">" +
 		"<phone>+49 69 774345</phone>" +
 		"<email>sam@email.com</email>" +
 		"<customer-id>993834</customer-id>" +
-		"<bank-account>364553</bank-account>" +
+		"<reference>364553</reference>" +
 		"</user>" +
 		"</config>";
 	
-	private final static String TEST_QUERY1 = "//user[@id = 'george']/phone[contains(., '69')]/text()";
-	private final static String TEST_QUERY2 = "//user[@id = 'sam']/customer-id[. = '993834']";
-	private final static String TEST_QUERY3 = "//user[email = 'sam@email.com']";
-	private final static String TEST_QUERY4 = "/ROOT-ELEMENT/ELEMENT/ELEMENT-1";
-	
+	private static final String TEST_QUERY1 = "//user[@id = 'george']/phone[contains(., '69')]/text()";
+	private static final String TEST_QUERY2 = "//user[@id = 'sam']/customer-id[. = '993834']";
+	private static final String TEST_QUERY3 = "//user[email = 'sam@email.com']";
+	private static final String TEST_QUERY4 = "/ROOT-ELEMENT/ELEMENT/ELEMENT-1";
+
+	private Path tempFile;
 	private String[] wordList;
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
+
+    @Before
+    public void setUp() throws Exception {
+        final Collection rootCol = existXmldbEmbeddedServer.getRoot();
+        Collection testCol = rootCol.getChildCollection("C1");
+        if(testCol == null) {
+            testCol = DBUtils.addCollection(rootCol, "C1");
+            assertNotNull(testCol);
+        }
+
+        DBUtils.addXMLResource(rootCol, "biblio.rdf", TestUtils.resolveSample("biblio.rdf"));
+        wordList = DBUtils.wordList(rootCol);
+        assertNotNull(wordList);
+        assertNotEquals(0, wordList.length);
+        // store the data files
+        final String xml =
+                "<data now=\"" + System.currentTimeMillis() + "\" count=\"1\">" + XML + "</data>";
+        DBUtils.addXMLResource(testCol, "R1.xml", xml);
+
+        tempFile = DBUtils.generateXMLFile(5000, 7, wordList);
+        DBUtils.addXMLResource(testCol, "R2.xml", tempFile);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        if (tempFile != null) {
+            FileUtils.deleteQuietly(tempFile);
+        }
+        Collection rootCol = existXmldbEmbeddedServer.getRoot();
+        DBUtils.removeCollection(rootCol, "C1");
+        Resource res = rootCol.getResource("biblio.rdf");
+        rootCol.removeResource(res);
+    }
 
 	@Test
 	public void shutdown() throws Exception {
 		for (int i = 0; i < 50; i++) {
-			Collection rootCol = DBUtils.setupDB(URI);
+			existXmldbEmbeddedServer.restart();
+			final Collection rootCol = existXmldbEmbeddedServer.getRoot();
 
 			// after restarting the db, we first try a bunch of queries
-			Collection testCol = rootCol.getChildCollection("C1");
+			final Collection testCol = rootCol.getChildCollection("C1");
 
 			ResourceSet result = DBUtils.query(testCol, TEST_QUERY1);
 			assertEquals(1, result.getSize());
@@ -92,47 +131,14 @@ public class ShutdownTest {
 			assertEquals(5000, result.getSize());
 
 			// now replace the data files
-			String xml =
+			final String xml =
 				"<data now=\"" + System.currentTimeMillis() + "\" count=\"" +
 				i + "\">" + XML + "</data>";
 			DBUtils.addXMLResource(testCol, "R1.xml", xml);
 
-			Path tempFile = DBUtils.generateXMLFile(5000, 7, wordList);
+			final Path testTempFile = DBUtils.generateXMLFile(5000, 7, wordList);
 			DBUtils.addXMLResource(testCol, "R2.xml", tempFile);
-
-			DBUtils.shutdownDB(URI);
+			FileUtils.deleteQuietly(testTempFile);
 		}
-	}
-
-    @Before
-	public void setUp() throws Exception {
-        Collection rootCol = DBUtils.setupDB(URI);
-        Collection testCol = rootCol.getChildCollection("C1");
-        if(testCol == null) {
-            testCol = DBUtils.addCollection(rootCol, "C1");
-            assertNotNull(testCol);
-        }
-
-        DBUtils.addXMLResource(rootCol, "biblio.rdf", TestUtils.resolveSample("biblio.rdf"));
-        wordList = DBUtils.wordList(rootCol);
-
-        // store the data files
-        String xml =
-            "<data now=\"" + System.currentTimeMillis() + "\" count=\"1\">" + XML + "</data>";
-        DBUtils.addXMLResource(testCol, "R1.xml", xml);
-
-        Path tempFile = DBUtils.generateXMLFile(5000, 7, wordList);
-        DBUtils.addXMLResource(testCol, "R2.xml", tempFile);
-
-        DBUtils.shutdownDB(URI);
-	}
-	
-	@After
-	public void tearDown() throws Exception {
-        Collection rootCol = DBUtils.setupDB(URI);
-        DBUtils.removeCollection(rootCol, "C1");
-        Resource res = rootCol.getResource("biblio.rdf");
-        rootCol.removeResource(res);
-        DBUtils.shutdownDB(URI);
 	}
 }

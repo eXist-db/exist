@@ -20,12 +20,16 @@
  */
 package org.exist.xmldb.concurrent;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.exist.TestUtils;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.concurrent.action.Action;
 import org.exist.xmldb.IndexQueryService;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -51,52 +55,71 @@ public abstract class ConcurrentTestBase {
         "	</index>" +
     	"</collection>";
 
-    protected String rootColURI;
-
-    protected Collection rootCol;
-
-    protected String testColName;
-
     protected Collection testCol;
-
-    protected List<Runner> actions = new ArrayList<>(5);
-
     protected volatile boolean failed = false;
 
-    /**
-     * @param uri the XMLDB getUri of the root collection.
-     * @param testCollection the name of the collection that will be created for the test.
-     */
-    public ConcurrentTestBase(String uri, String testCollection) {
-        this.rootColURI = uri;
-        this.testColName = testCollection;
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
+
+    @Before
+    public final void startupDb() throws Exception {
+        final Collection rootCol = existXmldbEmbeddedServer.getRoot();
+        assertNotNull(rootCol);
+        final IndexQueryService idxConf = (IndexQueryService) rootCol.getService("IndexQueryService", "1.0");
+        idxConf.configureCollection(COLLECTION_CONFIG);
+        testCol = rootCol.getChildCollection(getTestCollectionName());
+        if (testCol != null) {
+            CollectionManagementService mgr = DBUtils.getCollectionManagementService(rootCol);
+            mgr.removeCollection(getTestCollectionName());
+        }
+        testCol = DBUtils.addCollection(rootCol, getTestCollectionName());
+        assertNotNull(testCol);
+        DBUtils.addXMLResource(rootCol, "biblio.rdf", TestUtils.resolveSample("biblio.rdf"));
+    }
+
+    @After
+    public final void tearDownDb() throws XMLDBException {
+        final Collection rootCol = existXmldbEmbeddedServer.getRoot();
+        final Resource res = rootCol.getResource("biblio.rdf");
+        assertNotNull(res);
+        rootCol.removeResource(res);
+        DBUtils.removeCollection(rootCol, getTestCollectionName());
+
+        testCol = null;
     }
 
     /**
-     * Add an {@link Action} to the list of actions that will be processed
-     * concurrently. Should be called after {@link #setUp()}.
-     * 
-     * @param action the action.
-     * @param repeat number of times the actions should be repeated.
+     * Get the name of the test collection.
+     *
+     * @return the name of the test collection.
      */
-    public void addAction(Action action, int repeat, long delayBeforeStart, long delay) {
-        actions.add(new Runner(action, repeat, delayBeforeStart, delay));
-    }
+    public abstract String getTestCollectionName();
+
+    /**
+     * Get the runners for the test
+     *
+     * @return the runners for the test.
+     */
+    public abstract List<Runner> getRunners();
 
     public Collection getTestCollection() {
         return testCol;
     }
 
     @Test
-    public void concurrent() {
+    public void concurrent() throws XMLDBException {
+
+        // make a copy of the actions
+        final List<Runner> runners = Collections.unmodifiableList(getRunners());
+
         // start all threads
-        for (Thread t : actions) {
+        for (final Thread t : runners) {
             t.start();
         }
 
         // wait for threads to finish
         try {
-            for (Thread t : actions) {
+            for (final Thread t : runners) {
                 t.join();
             }
         } catch (Exception e) {
@@ -105,33 +128,16 @@ public abstract class ConcurrentTestBase {
         }
 
         assertFalse(failed);
+        assertAdditional();
     }
 
-    public void setUp() throws Exception {
-        rootCol = DBUtils.setupDB(rootColURI);
-        assertNotNull(rootCol);
-        IndexQueryService idxConf = (IndexQueryService) rootCol.getService("IndexQueryService", "1.0");
-        idxConf.configureCollection(COLLECTION_CONFIG);
-        testCol = rootCol.getChildCollection(testColName);
-        if (testCol != null) {
-            CollectionManagementService mgr = DBUtils.getCollectionManagementService(rootCol);
-            mgr.removeCollection(testColName);
-        }
-        testCol = DBUtils.addCollection(rootCol, testColName);
-        assertNotNull(testCol);
-
-        DBUtils.addXMLResource(rootCol, "biblio.rdf", TestUtils.resolveSample("biblio.rdf"));
-    }
-
-    public void tearDown() throws XMLDBException {
-        Resource res = rootCol.getResource("biblio.rdf");
-        assertNotNull(res);
-        rootCol.removeResource(res);
-        DBUtils.removeCollection(rootCol, testColName);
-        DBUtils.shutdownDB(rootColURI);
-
-        rootCol = null;
-        testCol = null;
+    /**
+     * Override this if you need to make
+     * additional assertions after the {@link #concurrent()}
+     * test has completed.
+     */
+    protected void assertAdditional() throws XMLDBException {
+        // no-op
     }
 
     /**
@@ -140,16 +146,12 @@ public abstract class ConcurrentTestBase {
      * @author wolf
      */
     class Runner extends Thread {
+        private final Action action;
+        private final int repeat;
+        private final long delayBeforeStart;
+        private final long delay;
 
-        private Action action;
-
-        private int repeat;
-
-        private long delay = 0;
-
-        private long delayBeforeStart = 0;
-
-        public Runner(Action action, int repeat, long delayBeforeStart, long delay) {
+        public Runner(final Action action, final int repeat, final long delayBeforeStart, final long delay) {
             super();
             this.action = action;
             this.repeat = repeat;
