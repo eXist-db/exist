@@ -21,14 +21,12 @@
  */
 package org.exist.xquery.modules.compression;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
-
 import org.exist.dom.QName;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -98,15 +96,15 @@ public class DeflateFunction extends BasicFunction
 	Deflater defl = new Deflater(java.util.zip.Deflater.DEFAULT_COMPRESSION, rawflag);
 
         // deflate the data
-        try(final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream();
 	    DeflaterOutputStream dos = new DeflaterOutputStream(baos, defl)) {
-	    //DeflaterOutputStream dos = new DeflaterOutputStream(baos, new Deflater(java.util.zip.Deflater.DEFAULT_COMPRESSION, true))) {
+
             bin.streamBinaryTo(dos);
             
             dos.flush();
             dos.finish();
             
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toFastByteInputStream());
         } catch(IOException ioe) {
             throw new XPathException(this, ioe.getMessage(), ioe);
         }

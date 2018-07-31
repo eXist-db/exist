@@ -22,14 +22,12 @@
 
 package org.exist.xquery.modules.compression;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
-
 import org.exist.dom.QName;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -56,7 +54,7 @@ public class InflateFunction extends BasicFunction
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("inflate", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
-            "Inflate's data",
+            "Inflate data (RFC 1950)",
             new SequenceType[] {
                 new FunctionParameterSequenceType("inflate-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The inflate data to uncompress.")
             },
@@ -64,7 +62,7 @@ public class InflateFunction extends BasicFunction
         ),
         new FunctionSignature(
             new QName("inflate", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
-            "Inflate's data",
+            "Inflate data (RFC 1951)",
             new SequenceType[] {
                 new FunctionParameterSequenceType("inflate-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The inflate data to uncompress."),
                 new FunctionParameterSequenceType("raw", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "If true, expect raw deflate data that is not wrapped inside zlib header and checksum.")
@@ -95,14 +93,14 @@ public class InflateFunction extends BasicFunction
 
         // uncompress the data
         try(final InflaterInputStream iis = new InflaterInputStream(bin.getInputStream(), infl);
-                final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
             int read = -1;
             final byte[] b = new byte[4096];
             while ((read = iis.read(b)) != -1) {
                 baos.write(b, 0, read);
             }
 
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toFastByteInputStream());
         } catch(final IOException ioe) {
             throw new XPathException(this, ioe.getMessage(), ioe);
         }
