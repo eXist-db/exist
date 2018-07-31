@@ -98,6 +98,6 @@ public class TextUpdateAction extends Action {
 		
 		mods = service.update(REMOVE);
 		assertEquals(1, mods);
-		return false;
+		return true;
 	}
 }

@@ -20,8 +20,9 @@
  */
 package org.exist.xmldb.concurrent;
 
-import java.util.Collections;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.*;
 
 import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
@@ -36,13 +37,13 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * Abstract base class for concurrent tests.
  * 
  * @author wolf
+ * @author aretter
  */
 public abstract class ConcurrentTestBase {
 
@@ -56,7 +57,6 @@ public abstract class ConcurrentTestBase {
     	"</collection>";
 
     protected Collection testCol;
-    protected volatile boolean failed = false;
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
@@ -107,27 +107,77 @@ public abstract class ConcurrentTestBase {
     }
 
     @Test
-    public void concurrent() throws XMLDBException {
+    public void concurrent() throws Exception {
 
         // make a copy of the actions
         final List<Runner> runners = Collections.unmodifiableList(getRunners());
 
         // start all threads
-        for (final Thread t : runners) {
-            t.start();
+        final ExecutorService executorService = Executors.newFixedThreadPool(runners.size());
+        final List<Future<Boolean>> futures = new ArrayList<>();
+        for (final Runner runner : runners) {
+            futures.add(executorService.submit(runner));
         }
 
-        // wait for threads to finish
-        try {
-            for (final Thread t : runners) {
-                t.join();
+        // await first error, or all results
+        boolean failed = false;
+        Exception failedException = null;
+        while (true) {
+
+            if (futures.isEmpty()) {
+                break;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            failed = true;
+
+            Future<Boolean> completedFuture = null;
+            for (final Future<Boolean> future : futures) {
+                if (future.isDone()) {
+                    completedFuture = future;
+                    break;  // exit for-loop
+                }
+            }
+
+            if (completedFuture != null) {
+                // remove the completed future from the list of futures
+                futures.remove(completedFuture);
+
+                try {
+                    final boolean success = completedFuture.get();
+                    if (!success) {
+                        failed = true;
+                        break;  // exit while-loop
+                    }
+                } catch (final InterruptedException | ExecutionException e) {
+                    if (e instanceof InterruptedException) {
+                        // Restore the interrupted status
+                        Thread.currentThread().interrupt();
+                    }
+                    failed = true;
+                    failedException = e;
+                    break;  // exit while-loop
+                }
+            } else {
+                // sleep, repeat...
+                try {
+                    Thread.sleep(50);
+                } catch (final InterruptedException e) {
+                    failed = true;
+                    failedException = e;
+                    break;  // exit while-loop
+                }
+            }
+        }  // repeat while-loop
+
+
+        if (failed) {
+            executorService.shutdownNow();
+
+            if (failedException != null) {
+                throw failedException;
+            } else {
+                assertFalse(failed);
+            }
         }
 
-        assertFalse(failed);
         assertAdditional();
     }
 
@@ -145,7 +195,7 @@ public abstract class ConcurrentTestBase {
      * 
      * @author wolf
      */
-    class Runner extends Thread {
+    class Runner implements Callable<Boolean> {
         private final Action action;
         private final int repeat;
         private final long delayBeforeStart;
@@ -155,40 +205,54 @@ public abstract class ConcurrentTestBase {
             super();
             this.action = action;
             this.repeat = repeat;
-            this.delay = delay;
             this.delayBeforeStart = delayBeforeStart;
+            this.delay = delay;
         }
 
+        /**
+         * Returns true if execution completes.
+         *
+         * @return true if execution completes, false otherwise
+         */
         @Override
-        public void run() {
+        public Boolean call() throws XMLDBException, IOException {
             if (delayBeforeStart > 0) {
-                synchronized (this) {
-                    try {
-                        wait(delayBeforeStart);
-                    } catch (InterruptedException e) {
-                        System.err.println("Action failed in Thread " + getName() + ": "
-                                + e.getMessage());
-                        e.printStackTrace();
-                        failed = true;
+                if (!sleep(delayBeforeStart)) {
+                    return false;
+                }
+            }
+
+            for (int i = 0; i < repeat; i++) {
+
+                if (!action.execute()) {
+                    return false;
+                }
+
+                if (delay > 0) {
+                    if (!sleep(delay)) {
+                        return false;
                     }
                 }
             }
-            try {
-                for (int i = 0; i < repeat; i++) {
-                    if (failed) {
-                        break;
-                    }
 
-                    failed = action.execute();
-                    if (delay > 0)
-                        synchronized (this) {
-                            wait(delay);
-                        }
-                }
-            } catch (Exception e) {
-                System.err.println("Action failed in Thread " + getName() + ": " + e.getMessage());
-                e.printStackTrace();
-                failed = true;
+            return true;
+        }
+
+        /**
+         * Sleeps the current thread for a period of time.
+         *
+         * @param period the period to sleep for.
+         *
+         * @return true if the thread slept for the period and was not interrupted
+         */
+        private boolean sleep(final long period) {
+            try {
+                Thread.sleep(period);
+                return true;
+            } catch (final InterruptedException e) {
+                // Restore the interrupted status
+                Thread.currentThread().interrupt();
+                return false;
             }
         }
     }
