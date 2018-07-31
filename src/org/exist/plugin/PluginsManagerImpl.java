@@ -126,8 +126,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
 
                 transaction.commit(txn);
             } catch (final Exception e) {
-                e.printStackTrace();
-                LOG.debug("loading configuration failed: " + e.getMessage());
+                LOG.warn("Loading PluginsManager configuration failed: " + e.getMessage());
             }
 
             final Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
@@ -154,12 +153,11 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
                             // NOTE: must set interrupted flag
                             interrupted = true;
                         }
-
-                        e.printStackTrace();
+                        LOG.error(e);
                     }
                 }
             } catch (final Throwable e) {
-                e.printStackTrace();
+                LOG.error(e);
             }
             //UNDERSTAND: call save?
 
@@ -239,7 +237,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
                 // NOTE: must set interrupted flag
                 Thread.currentThread().interrupt();
             }
-//			e.printStackTrace();
+            LOG.error(e);
 		}
 	}
 
