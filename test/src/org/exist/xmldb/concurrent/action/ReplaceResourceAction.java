@@ -80,6 +80,6 @@ public class ReplaceResourceAction extends Action {
 		
 		result = DBUtils.queryResource(col, resourceName, TEST_QUERY3);
 		assertEquals(1, result.getSize());
-		return false;
+		return true;
 	}
 }

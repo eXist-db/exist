@@ -55,7 +55,7 @@ public class RemoveAppendAction extends Action {
 		final XUpdateQueryService service = (XUpdateQueryService) col.getService("XUpdateQueryService", "1.0");
 		append(service);
         remove(service);
-        return false;
+        return true;
 	}
 	
 	private void remove(final XUpdateQueryService service) throws XMLDBException {

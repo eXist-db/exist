@@ -84,7 +84,7 @@ public class ComplexUpdateAction extends Action {
 			update(col, versionUpdate);
 			update(col, statusUpdate);
 		}
-		return false;
+		return true;
 	}
 
 	private void query(final Collection col, final int repeat) throws XMLDBException {
