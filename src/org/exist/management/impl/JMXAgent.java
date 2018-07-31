@@ -79,7 +79,6 @@ public class JMXAgent implements Agent {
 
     private void registerSystemMBeans() {
         try {
-            addMBean(new ObjectName(LockTable.OBJECT_NAME), new org.exist.management.impl.LockTable());
             addMBean(new ObjectName(SystemInfo.OBJECT_NAME), new org.exist.management.impl.SystemInfo());
         } catch (final MalformedObjectNameException | DatabaseConfigurationException e) {
             LOG.warn("Exception while registering cache mbean.", e);
@@ -90,6 +89,7 @@ public class JMXAgent implements Agent {
     public synchronized void initDBInstance(final BrokerPool instance) {
         final List<PerInstanceMBean> perInstanceMBeans = Arrays.asList(
                 new Database(instance),
+                new LockTable(instance),
                 new SanityReport(instance),
                 new DiskUsage(instance),
                 new ProcessReport(instance),

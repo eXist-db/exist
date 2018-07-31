@@ -39,11 +39,11 @@ import static org.exist.storage.lock.LockTable.LockAction.Action.*;
 /**
  * The Lock Table holds the details of
  * threads awaiting to acquire a Lock
- * and threads that have acquired a lock
+ * and threads that have acquired a lock.
  *
  * It is arranged by the id of the lock
  * which is typically an indicator of the
- * lock subject
+ * lock subject.
  *
  * @author Adam Retter <adam@evolvedbinary.com>
  */
@@ -96,7 +96,7 @@ public class LockTable {
     private final ExecutorService executorService;
     private final Future<?> queueConsumer;
 
-    private LockTable() {
+    LockTable() {
         this.executorService = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "exist-lockTable.processor"));
         this.queueConsumer = executorService.submit(new QueueConsumer(queue, attempting, acquired));
 
@@ -104,10 +104,6 @@ public class LockTable {
         if(LOG.isTraceEnabled()) {
             registerListener(new LockEventLogListener(LOG, Level.TRACE));
         }
-    }
-
-    public static LockTable getInstance() {
-        return instance;
     }
 
     /**
@@ -317,7 +313,7 @@ public class LockTable {
                     }
                 }
             } catch (final InterruptedException e) {
-                LOG.fatal("LockTable.QueueConsumer was interrupted", e);
+                LOG.warn("LockTable.QueueConsumer was interrupted. LockTable will no longer report lock events!");
                 // Restore the interrupted status
                 Thread.currentThread().interrupt();
             }

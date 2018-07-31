@@ -86,10 +86,10 @@ public class JMXtoXML {
 
         // eXist cross-instance
         putCategory("system", SystemInfo.OBJECT_NAME);
-        putCategory("locking", LockTable.OBJECT_NAME);
 
         // eXist per-instance
         putCategory("instances", Database.getAllInstancesQuery());
+        putCategory("locking", LockTable.getAllInstancesQuery());
         putCategory("disk", DiskUsage.getAllInstancesQuery());
         putCategory("collectioncaches", CollectionCache.getAllInstancesQuery());
         putCategory("caches",
