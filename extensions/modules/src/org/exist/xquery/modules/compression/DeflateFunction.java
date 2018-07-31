@@ -98,9 +98,7 @@ public class DeflateFunction extends BasicFunction
         // deflate the data
         try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream();
 	    DeflaterOutputStream dos = new DeflaterOutputStream(baos, defl)) {
-
             bin.streamBinaryTo(dos);
-            
             dos.flush();
             dos.finish();
             
