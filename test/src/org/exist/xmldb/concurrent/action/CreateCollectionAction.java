@@ -39,26 +39,27 @@ public class CreateCollectionAction extends Action {
     
     private int collectionCnt = 0;
     
-    public CreateCollectionAction(String collectionPath, String resourceName) {
+    public CreateCollectionAction(final String collectionPath, final String resourceName) {
         super(collectionPath, resourceName);
     }
-    
-    public boolean execute() throws Exception {
-        Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
-        Collection target = DBUtils.addCollection(col, "C" + ++collectionCnt);
+
+    @Override
+    public boolean execute() throws XMLDBException, IOException {
+        final Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
+        final Collection target = DBUtils.addCollection(col, "C" + ++collectionCnt);
         addFiles(target);
         String resources[] = target.listResources();
         
-        EXistCollectionManagementService mgt = (EXistCollectionManagementService)
+        final EXistCollectionManagementService mgt = (EXistCollectionManagementService)
             col.getService("CollectionManagementService", "1.0");
-        Collection copy = DBUtils.addCollection(col, "CC" + collectionCnt);
+        final Collection copy = DBUtils.addCollection(col, "CC" + collectionCnt);
         for (int i = 0; i < resources.length; i++) {
            mgt.copyResource(target.getName() + '/' + resources[i], 
                    copy.getName(), null);
         }
 
         resources = copy.listResources();
-        return false;
+        return true;
     }
 
     private void addFiles(final Collection col) throws XMLDBException, IOException {

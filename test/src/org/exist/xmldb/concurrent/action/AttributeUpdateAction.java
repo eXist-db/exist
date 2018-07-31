@@ -10,6 +10,7 @@ import java.util.Random;
 
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XUpdateQueryService;
 
 /**
@@ -25,28 +26,21 @@ public class AttributeUpdateAction extends RemoveAppendAction {
 		"</xu:update>" +
 		"</xu:modifications>";
 	
-	private Random rand = new Random();
-	
-	/**
-	 * @param collectionPath
-	 * @param resourceName
-	 */
-	public AttributeUpdateAction(String collectionPath, String resourceName, String[] wordList) {
+	private final Random rand = new Random();
+
+	public AttributeUpdateAction(final String collectionPath, final String resourceName, final String[] wordList) {
 		super(collectionPath, resourceName, wordList);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xmldb.test.concurrent.Action#execute()
-	 */
-	public boolean execute() throws Exception {
-		Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
-		XUpdateQueryService service = (XUpdateQueryService)
-			col.getService("XUpdateQueryService", "1.0");
-		int attrSize = rand.nextInt(5);
+	@Override
+	public boolean execute() throws XMLDBException {
+		final Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
+		final XUpdateQueryService service = (XUpdateQueryService) col.getService("XUpdateQueryService", "1.0");
+		final int attrSize = rand.nextInt(5);
 		for (int i = 0; i < 10; i++) {
-			String xupdate = XUPDATE_START + xmlGenerator.generateText(attrSize) + XUPDATE_END;
+			final String xupdate = XUPDATE_START + xmlGenerator.generateText(attrSize) + XUPDATE_END;
 			long mods = service.update(xupdate);
 		}
-		return false;
+		return true;
 	}
 }

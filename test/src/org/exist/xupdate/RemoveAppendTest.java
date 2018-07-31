@@ -27,14 +27,14 @@ import java.io.Writer;
 import java.util.Random;
 import org.exist.TestUtils;
 
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.DBUtils;
-import org.junit.After;
+import org.junit.*;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -48,30 +48,20 @@ import org.xmldb.api.modules.XUpdateQueryService;
  */
 public class RemoveAppendTest {
     
-    private final static String URI = XmldbURI.LOCAL_DB;
-    
-    @SuppressWarnings("unused")
-	private final static String XU_INSERT_START =
-        "<xu:modifications xmlns:xu=\""+ XUpdateProcessor.XUPDATE_NS + "\" version=\"1.0\">" +
-        "   <xu:insert-before select=\"/test/item[@id='5']\">";
-    
-    @SuppressWarnings("unused")
-	private final static String XU_INSERT_END =
-        "   </xu:insert-before>" +
-        "</xu:modifications>";
-    
     private final static String XU_REMOVE =
         "<xu:modifications xmlns:xu=\""+ XUpdateProcessor.XUPDATE_NS + "\" version=\"1.0\">" +
         "   <xu:remove select=\"/test/item[@id='5'][2]\"/>" +
         "</xu:modifications>";
-    
-    @SuppressWarnings("unused")
+
     private static final int ITEM_COUNT = 0;
     
     private Collection rootCol;
     private Collection testCol;
     private final Random rand = new Random();
-    
+
+    @Rule
+    public final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
+
     @Ignore
     @Test
     public void testRemoveAppend() throws Exception {
@@ -152,7 +142,7 @@ public class RemoveAppendTest {
     
     @Before
     public void setUp() throws Exception {
-        rootCol = DBUtils.setupDB(URI);
+        rootCol = existXmldbEmbeddedServer.getRoot();
         
         testCol = rootCol.getChildCollection(XmldbURI.ROOT_COLLECTION + "/test");
         if(testCol != null) {
@@ -169,7 +159,6 @@ public class RemoveAppendTest {
     @After
     public void tearDown() throws Exception {
         TestUtils.cleanupDB();
-        DBUtils.shutdownDB(URI);
     }
     
     protected void createItem(final int id, final Writer out) throws IOException {
@@ -194,7 +183,6 @@ public class RemoveAppendTest {
 
     /**
      * @param out
-     * @param rand
      * @throws IOException
      */
     private void addAttributes(final Writer out) throws IOException {
