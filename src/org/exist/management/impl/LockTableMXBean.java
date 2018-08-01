@@ -33,7 +33,7 @@ import java.util.Set;
  *
  * @author Adam Retter <adam@evolvedbinary.com>
  */
-public interface LockTableMXBean {
+public interface LockTableMXBean extends PerInstanceMBean {
 
     /**
      * Get information about acquired locks

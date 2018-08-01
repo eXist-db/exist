@@ -7,6 +7,8 @@
 package org.exist.xmldb.concurrent;
 
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
@@ -22,35 +24,36 @@ import static org.junit.Assert.assertNotNull;
  */
 public class ConcurrentAttrUpdateTest extends ConcurrentTestBase {
 
-	private final static String URI = XmldbURI.LOCAL_DB;
-	
-	@SuppressWarnings("unused")
-	private final static String QUERY =
-		"//ELEMENT[@attribute-1]";
-	
-	private Path tempFile;
+//	private static final String QUERY =
+//		"//ELEMENT[@attribute-1]";
 
-	public ConcurrentAttrUpdateTest() {
-		super(URI, "C1");
-	}
+    private String[] wordList;
+    private Path tempFile;
 
-	@Before
-	@Override
-	public void setUp() throws Exception {
-        super.setUp();
-        String[] wordList = DBUtils.wordList(rootCol);
+    @Before
+    public void setUp() throws Exception {
+        this.wordList = DBUtils.wordList(existXmldbEmbeddedServer.getRoot());
         assertNotNull(wordList);
-        tempFile = DBUtils.generateXMLFile(250, 10, wordList);
+        this.tempFile = DBUtils.generateXMLFile(250, 10, wordList);
         DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
-        addAction(new AttributeUpdateAction(URI + "/C1", "R1.xml", wordList), 20, 0, 0);
-        //addAction(new XQueryAction(getUri + "/C1", "R1.xml", QUERY), 100, 100, 30);
-	}
+    }
 
     @After
-    @Override
     public void tearDown() throws XMLDBException {
-        super.tearDown();
         FileUtils.deleteQuietly(tempFile);
+    }
+
+    @Override
+    public String getTestCollectionName() {
+        return "C1";
+    }
+
+    @Override
+    public List<Runner> getRunners() {
+        return Arrays.asList(
+                new Runner(new AttributeUpdateAction(XmldbURI.LOCAL_DB + "/C1", "R1.xml", wordList), 20, 0, 0)
+                //new Runner(new XQueryAction(getUri + "/C1", "R1.xml", QUERY), 100, 100, 30);
+        );
     }
 }
 

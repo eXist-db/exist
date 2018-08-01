@@ -26,6 +26,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
 /**
@@ -33,39 +34,29 @@ import org.xmldb.api.modules.XMLResource;
  */
 public class XQueryAction extends Action {
 	
-	private String xquery;
+	private final String xquery;
 	private long runningTime = 0;
 	private int called = 0;
-	
-	/**
-     * 
-     * 
-     * @param collectionPath 
-     * @param resourceName 
-     * @param xquery 
-     */
-	public XQueryAction(String collectionPath, String resourceName, String xquery) {
+
+	public XQueryAction(final String collectionPath, final String resourceName, final String xquery) {
 		super(collectionPath, resourceName);
 		this.xquery = xquery;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xmldb.test.concurrent.Action#execute()
-	 */
-	public boolean execute() throws Exception {
-	    long start = System.currentTimeMillis();
+	@Override
+	public boolean execute() throws XMLDBException {
+	    final long start = System.currentTimeMillis();
 	    
-		Collection col = DatabaseManager.getCollection(collectionPath);
+		final Collection col = DatabaseManager.getCollection(collectionPath);
 		
-		EXistXPathQueryService service = (EXistXPathQueryService)
-			col.getService("XPathQueryService", "1.0");
+		final EXistXPathQueryService service = (EXistXPathQueryService) col.getService("XPathQueryService", "1.0");
 		
 //		service.beginProtected();
-		ResourceSet result = service.query(xquery);
+		final ResourceSet result = service.query(xquery);
 		
-		DefaultHandler handler = new DefaultHandler();
+		final DefaultHandler handler = new DefaultHandler();
 		for (int i = 0; i < result.getSize(); i++) {
-			XMLResource next = (XMLResource) result.getResource((long)i);
+			final XMLResource next = (XMLResource) result.getResource((long)i);
 			next.getContentAsSAX(handler);
 		}
 //		service.endProtected();
@@ -73,13 +64,13 @@ public class XQueryAction extends Action {
 		runningTime += (System.currentTimeMillis() - start);
 		called++;
 
-		return false;
+		return true;
 	}
-	
+
 	public String getQuery() {
 	    return xquery;
 	}
-	
+
 	public long avgExecTime() {
 	    return called == 0 ? 0 : runningTime / called;
 	}
