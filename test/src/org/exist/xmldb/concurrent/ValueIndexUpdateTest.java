@@ -24,18 +24,17 @@ package org.exist.xmldb.concurrent;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.ValueAppendAction;
-import org.junit.After;
 import org.junit.Before;
-import org.xmldb.api.base.XMLDBException;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author wolf
  */
 public class ValueIndexUpdateTest extends ConcurrentTestBase {
-
-    private final static String URI = XmldbURI.LOCAL_DB;
     
-    private final static String XCONF =
+    private static final String XCONF =
         "<exist:collection xmlns:exist=\"http://exist-db.org/collection-config/1.0\">" +
 	        "<exist:index doctype=\"items\" xmlns:x=\"http://www.foo.com\">" +
 		        "<exist:create path=\"//item/@id\" type=\"xs:integer\"/>" +
@@ -43,23 +42,22 @@ public class ValueIndexUpdateTest extends ConcurrentTestBase {
 		        "<exist:create path=\"//item/value\" type=\"xs:double\"/>" +
 	        "</exist:index>" +
         "</exist:collection>";
-	
-    public ValueIndexUpdateTest() {
-        super(URI, "C1");
-    }
 
 	@Before
-	@Override
     public void setUp() throws Exception {
-		super.setUp();
 		DBUtils.addXMLResource(getTestCollection(), CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE, XCONF);
 		DBUtils.addXMLResource(getTestCollection(), "R1.xml", "<items/>");
-		addAction(new ValueAppendAction(URI + "/C1", "R1.xml"), 50, 0, 500);
 	}
 
-	@After
 	@Override
-	public void tearDown() throws XMLDBException {
-		super.tearDown();
+	public String getTestCollectionName() {
+		return "C1";
+	}
+
+	@Override
+	public List<Runner> getRunners() {
+		return Arrays.asList(
+				new Runner(new ValueAppendAction(XmldbURI.LOCAL_DB + "/C1", "R1.xml"), 50, 0, 500)
+		);
 	}
 }

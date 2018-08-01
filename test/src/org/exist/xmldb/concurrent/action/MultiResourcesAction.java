@@ -38,32 +38,20 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class MultiResourcesAction extends Action {
     
-    private String dirPath;
-    
-    /**
-     * 
-     * 
-     * @param dirPath 
-     * @param collectionPath 
-     */
-    public MultiResourcesAction(String dirPath, String collectionPath) {
+    private final String dirPath;
+
+    public MultiResourcesAction(final String dirPath, final String collectionPath) {
         super(collectionPath, "");
         this.dirPath = dirPath;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xmldb.test.concurrent.Action#execute()
-     */
-    public boolean execute() throws Exception {
-        Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
+    @Override
+    public boolean execute() throws XMLDBException, IOException {
+        final Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
         addFiles(col);
-        return false;
+        return true;
     }
 
-	/**
-	 * @param col
-	 * @throws XMLDBException
-	 */
     private void addFiles(final Collection col) throws XMLDBException, IOException {
         final Path d = Paths.get(dirPath);
         if(!(Files.isReadable(d) && Files.isDirectory(d))) {
@@ -77,5 +65,4 @@ public class MultiResourcesAction extends Action {
             }
         }
     }
-
 }
