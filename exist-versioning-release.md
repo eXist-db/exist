@@ -175,12 +175,12 @@ Once development on a new stable version is complete, the following steps will p
         ```
         $ git checkout eXist-3.1.0
         $ ./build.sh jnlp-unsign-all all jnlp-sign-exist jnlp-sign-core jnlp-sign-exist-extensions
-        $ ./build.sh installer app-signed dist-war
+        $ ./build.sh installer app-signed dist-war dist-bz2
         ```
 
 #### Publishing the Product Release
 
-1. Login to https://bintray.com/existdb/ and create a new "Version", then upload the files `$EXIST_HOME/installer/eXist-db-setup-3.2.0.jar`, `$EXIST_HOME/dist/eXist-db-3.2.0.dmg` and `$EXIST_HOME/dist/exist-3.1.0.war`. Once the files have uploaded, make sure to click "Publish" to publish them to the version. Once published, you need to go to the "Files" section of the version, and click "Actions"->"Show in downloads list" for each file.
+1. Login to https://bintray.com/existdb/ and create a new "Version", then upload the files `$EXIST_HOME/installer/eXist-db-setup-3.2.0.jar`, `$EXIST_HOME/dist/eXist-db-3.2.0.dmg`, `$EXIST_HOME/dist/exist-3.1.0.war`, and `$EXIST_HOME/dist/exist-3.1.0.tar.bz2`. Once the files have uploaded, make sure to click "Publish" to publish them to the version. Once published, you need to go to the "Files" section of the version, and click "Actions"->"Show in downloads list" for each file.
 
 2. Update and publish the latest Maven artifacts as described here: https://github.com/exist-db/mvn-repo
 
