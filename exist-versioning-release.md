@@ -180,11 +180,14 @@ Once development on a new stable version is complete, the following steps will p
 
 #### Publishing the Product Release
 
-1. Login to https://bintray.com/existdb/ and create a new "Version", then upload the files `$EXIST_HOME/installer/eXist-db-setup-3.2.0.jar`, `$EXIST_HOME/dist/eXist-db-3.2.0.dmg`, `$EXIST_HOME/dist/exist-3.1.0.war`, and `$EXIST_HOME/dist/exist-3.1.0.tar.bz2`. Once the files have uploaded, make sure to click "Publish" to publish them to the version. Once published, you need to go to the "Files" section of the version, and click "Actions"->"Show in downloads list" for each file.
+1. Login to https://bintray.com/existdb/ and create a new "Version", then upload the files `$EXIST_HOME/installer/eXist-db-setup-3.1.0.jar`, `$EXIST_HOME/dist/eXist-db-3.1.0.dmg`, `$EXIST_HOME/dist/exist-3.1.0.war`, and `$EXIST_HOME/dist/exist-3.1.0.tar.bz2`. Once the files have uploaded, make sure to click "Publish" to publish them to the version. Once published, you need to go to the "Files" section of the version, and click "Actions"->"Show in downloads list" for each file.
 
 2. Update and publish the latest Maven artifacts as described here: https://github.com/exist-db/mvn-repo
 
-3. Ask [Evolved Binary](http://www.evolvedbinary.com) to build and upload new Docker Images for the latest release.
+3. Use the [docker-existdb](https://www.github.com/eXist-db/docker-exist) to build and upload new Docker Images for the latest release. Run the following commands inside a clone of docker-existdb:
+
+    1. `docker build --build-arg BRANCH=eXist-3.1.0 --tag existdb/existdb:3.1.0 .`
+    2. `docker push existdb/existdb:3.1.0`
 
 4. Update the Mac HomeBrew for eXist-db, see: [Releasing to Homebrew](https://github.com/eXist-db/exist/blob/develop/exist-versioning-release.md#releasing-to-homebrew).
 
