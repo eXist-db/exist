@@ -39,11 +39,11 @@ import static org.exist.storage.lock.LockTable.LockAction.Action.*;
 /**
  * The Lock Table holds the details of
  * threads awaiting to acquire a Lock
- * and threads that have acquired a lock
+ * and threads that have acquired a lock.
  *
  * It is arranged by the id of the lock
  * which is typically an indicator of the
- * lock subject
+ * lock subject.
  *
  * @author Adam Retter <adam@evolvedbinary.com>
  */
@@ -93,10 +93,11 @@ public class LockTable {
      * {@link QueueConsumer} to ensure serializability of locking events and monitoring
      */
     private final TransferQueue<Either<ListenerAction, LockAction>> queue = new LinkedTransferQueue<>();
+    private final ExecutorService executorService;
     private final Future<?> queueConsumer;
 
-    private LockTable() {
-        final ExecutorService executorService = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "exist-lockTable.processor"));
+    LockTable() {
+        this.executorService = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "exist-lockTable.processor"));
         this.queueConsumer = executorService.submit(new QueueConsumer(queue, attempting, acquired));
 
         // add a log listener if trace level logging is enabled
@@ -105,8 +106,16 @@ public class LockTable {
         }
     }
 
-    public static LockTable getInstance() {
-        return instance;
+    /**
+     * Shuts down the lock table processor.
+     *
+     * After calling this, no further lock
+     * events will be reported.
+     */
+    public void shutdown() {
+        if (!executorService.isShutdown()) {
+            executorService.shutdownNow();
+        }
     }
 
     /**
@@ -293,19 +302,20 @@ public class LockTable {
 
         @Override
         public void run() {
-            while (true) {
-                try {
+            try {
+                while (true) {
                     final Either<ListenerAction, LockAction> event = queue.take();
 
-                    if(event.isLeft()) {
+                    if (event.isLeft()) {
                         processListenerAction(event.left().get());
                     } else {
                         processLockAction(event.right().get());
                     }
-
-                } catch (final InterruptedException e) {
-                    LOG.fatal("LockTable.QueueConsumer was interrupted");
                 }
+            } catch (final InterruptedException e) {
+                LOG.warn("LockTable.QueueConsumer was interrupted. LockTable will no longer report lock events!");
+                // Restore the interrupted status
+                Thread.currentThread().interrupt();
             }
         }
 

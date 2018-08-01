@@ -25,10 +25,11 @@ package org.exist.xmldb.concurrent;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.MultiResourcesAction;
 import org.exist.xmldb.concurrent.action.XQueryAction;
-import org.junit.After;
 import org.junit.Before;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.XMLDBException;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -37,29 +38,25 @@ import static org.junit.Assert.assertNotNull;
  */
 public class ConcurrentResourceTest3 extends ConcurrentTestBase {
 	
-	private final static String FILES_DIR = "/home/wolf/xml/movies";
-	
-	private final static String QUERY0 = "collection('" + XmldbURI.ROOT_COLLECTION + "')/movie";
-	
-	private final static String URI = XmldbURI.LOCAL_DB;
-	
-	public ConcurrentResourceTest3() {
-		super(URI, "C1");
-	}
+	private static final String FILES_DIR = "/home/wolf/xml/movies";
+	private static final String QUERY0 = "collection('" + XmldbURI.ROOT_COLLECTION + "')/movie";
 
 	@Before
-	@Override
-    public void setUp() throws Exception {
-		super.setUp();
-		Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
+	public void setUp() throws Exception {
+		final Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
 		assertNotNull(c1);
-		addAction(new MultiResourcesAction(FILES_DIR, URI + "/C1/C1-C2"), 1, 0, 0);
-		addAction(new XQueryAction(URI + "/C1/C1-C2", "R1.xml", QUERY0), 1500, 200, 250);
-    }
+	}
 
-	@After
 	@Override
-	public void tearDown() throws XMLDBException {
-		super.tearDown();
+	public String getTestCollectionName() {
+		return "C1";
+	}
+
+	@Override
+	public List<Runner> getRunners() {
+		return Arrays.asList(
+				new Runner(new MultiResourcesAction(FILES_DIR, XmldbURI.LOCAL_DB + "/C1/C1-C2"), 1, 0, 0),
+				new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C1/C1-C2", "R1.xml", QUERY0), 1500, 200, 250)
+		);
 	}
 }

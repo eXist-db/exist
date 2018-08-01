@@ -20,25 +20,30 @@
  */
 package org.exist.xmldb.concurrent;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.*;
 
 import org.exist.TestUtils;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.concurrent.action.Action;
 import org.exist.xmldb.IndexQueryService;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * Abstract base class for concurrent tests.
  * 
  * @author wolf
+ * @author aretter
  */
 public abstract class ConcurrentTestBase {
 
@@ -51,87 +56,138 @@ public abstract class ConcurrentTestBase {
         "	</index>" +
     	"</collection>";
 
-    protected String rootColURI;
-
-    protected Collection rootCol;
-
-    protected String testColName;
-
     protected Collection testCol;
 
-    protected List<Runner> actions = new ArrayList<>(5);
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    protected volatile boolean failed = false;
+    @Before
+    public final void startupDb() throws Exception {
+        final Collection rootCol = existXmldbEmbeddedServer.getRoot();
+        assertNotNull(rootCol);
+        final IndexQueryService idxConf = (IndexQueryService) rootCol.getService("IndexQueryService", "1.0");
+        idxConf.configureCollection(COLLECTION_CONFIG);
+        testCol = rootCol.getChildCollection(getTestCollectionName());
+        if (testCol != null) {
+            CollectionManagementService mgr = DBUtils.getCollectionManagementService(rootCol);
+            mgr.removeCollection(getTestCollectionName());
+        }
+        testCol = DBUtils.addCollection(rootCol, getTestCollectionName());
+        assertNotNull(testCol);
+        DBUtils.addXMLResource(rootCol, "biblio.rdf", TestUtils.resolveSample("biblio.rdf"));
+    }
 
-    /**
-     * @param uri the XMLDB getUri of the root collection.
-     * @param testCollection the name of the collection that will be created for the test.
-     */
-    public ConcurrentTestBase(String uri, String testCollection) {
-        this.rootColURI = uri;
-        this.testColName = testCollection;
+    @After
+    public final void tearDownDb() throws XMLDBException {
+        final Collection rootCol = existXmldbEmbeddedServer.getRoot();
+        final Resource res = rootCol.getResource("biblio.rdf");
+        assertNotNull(res);
+        rootCol.removeResource(res);
+        DBUtils.removeCollection(rootCol, getTestCollectionName());
+
+        testCol = null;
     }
 
     /**
-     * Add an {@link Action} to the list of actions that will be processed
-     * concurrently. Should be called after {@link #setUp()}.
-     * 
-     * @param action the action.
-     * @param repeat number of times the actions should be repeated.
+     * Get the name of the test collection.
+     *
+     * @return the name of the test collection.
      */
-    public void addAction(Action action, int repeat, long delayBeforeStart, long delay) {
-        actions.add(new Runner(action, repeat, delayBeforeStart, delay));
-    }
+    public abstract String getTestCollectionName();
+
+    /**
+     * Get the runners for the test
+     *
+     * @return the runners for the test.
+     */
+    public abstract List<Runner> getRunners();
 
     public Collection getTestCollection() {
         return testCol;
     }
 
     @Test
-    public void concurrent() {
+    public void concurrent() throws Exception {
+
+        // make a copy of the actions
+        final List<Runner> runners = Collections.unmodifiableList(getRunners());
+
         // start all threads
-        for (Thread t : actions) {
-            t.start();
+        final ExecutorService executorService = Executors.newFixedThreadPool(runners.size());
+        final List<Future<Boolean>> futures = new ArrayList<>();
+        for (final Runner runner : runners) {
+            futures.add(executorService.submit(runner));
         }
 
-        // wait for threads to finish
-        try {
-            for (Thread t : actions) {
-                t.join();
+        // await first error, or all results
+        boolean failed = false;
+        Exception failedException = null;
+        while (true) {
+
+            if (futures.isEmpty()) {
+                break;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            failed = true;
+
+            Future<Boolean> completedFuture = null;
+            for (final Future<Boolean> future : futures) {
+                if (future.isDone()) {
+                    completedFuture = future;
+                    break;  // exit for-loop
+                }
+            }
+
+            if (completedFuture != null) {
+                // remove the completed future from the list of futures
+                futures.remove(completedFuture);
+
+                try {
+                    final boolean success = completedFuture.get();
+                    if (!success) {
+                        failed = true;
+                        break;  // exit while-loop
+                    }
+                } catch (final InterruptedException | ExecutionException e) {
+                    if (e instanceof InterruptedException) {
+                        // Restore the interrupted status
+                        Thread.currentThread().interrupt();
+                    }
+                    failed = true;
+                    failedException = e;
+                    break;  // exit while-loop
+                }
+            } else {
+                // sleep, repeat...
+                try {
+                    Thread.sleep(50);
+                } catch (final InterruptedException e) {
+                    failed = true;
+                    failedException = e;
+                    break;  // exit while-loop
+                }
+            }
+        }  // repeat while-loop
+
+
+        if (failed) {
+            executorService.shutdownNow();
+
+            if (failedException != null) {
+                throw failedException;
+            } else {
+                assertFalse(failed);
+            }
         }
 
-        assertFalse(failed);
+        assertAdditional();
     }
 
-    public void setUp() throws Exception {
-        rootCol = DBUtils.setupDB(rootColURI);
-        assertNotNull(rootCol);
-        IndexQueryService idxConf = (IndexQueryService) rootCol.getService("IndexQueryService", "1.0");
-        idxConf.configureCollection(COLLECTION_CONFIG);
-        testCol = rootCol.getChildCollection(testColName);
-        if (testCol != null) {
-            CollectionManagementService mgr = DBUtils.getCollectionManagementService(rootCol);
-            mgr.removeCollection(testColName);
-        }
-        testCol = DBUtils.addCollection(rootCol, testColName);
-        assertNotNull(testCol);
-
-        DBUtils.addXMLResource(rootCol, "biblio.rdf", TestUtils.resolveSample("biblio.rdf"));
-    }
-
-    public void tearDown() throws XMLDBException {
-        Resource res = rootCol.getResource("biblio.rdf");
-        assertNotNull(res);
-        rootCol.removeResource(res);
-        DBUtils.removeCollection(rootCol, testColName);
-        DBUtils.shutdownDB(rootColURI);
-
-        rootCol = null;
-        testCol = null;
+    /**
+     * Override this if you need to make
+     * additional assertions after the {@link #concurrent()}
+     * test has completed.
+     */
+    protected void assertAdditional() throws XMLDBException {
+        // no-op
     }
 
     /**
@@ -139,54 +195,64 @@ public abstract class ConcurrentTestBase {
      * 
      * @author wolf
      */
-    class Runner extends Thread {
+    class Runner implements Callable<Boolean> {
+        private final Action action;
+        private final int repeat;
+        private final long delayBeforeStart;
+        private final long delay;
 
-        private Action action;
-
-        private int repeat;
-
-        private long delay = 0;
-
-        private long delayBeforeStart = 0;
-
-        public Runner(Action action, int repeat, long delayBeforeStart, long delay) {
+        public Runner(final Action action, final int repeat, final long delayBeforeStart, final long delay) {
             super();
             this.action = action;
             this.repeat = repeat;
-            this.delay = delay;
             this.delayBeforeStart = delayBeforeStart;
+            this.delay = delay;
         }
 
+        /**
+         * Returns true if execution completes.
+         *
+         * @return true if execution completes, false otherwise
+         */
         @Override
-        public void run() {
+        public Boolean call() throws XMLDBException, IOException {
             if (delayBeforeStart > 0) {
-                synchronized (this) {
-                    try {
-                        wait(delayBeforeStart);
-                    } catch (InterruptedException e) {
-                        System.err.println("Action failed in Thread " + getName() + ": "
-                                + e.getMessage());
-                        e.printStackTrace();
-                        failed = true;
+                if (!sleep(delayBeforeStart)) {
+                    return false;
+                }
+            }
+
+            for (int i = 0; i < repeat; i++) {
+
+                if (!action.execute()) {
+                    return false;
+                }
+
+                if (delay > 0) {
+                    if (!sleep(delay)) {
+                        return false;
                     }
                 }
             }
-            try {
-                for (int i = 0; i < repeat; i++) {
-                    if (failed) {
-                        break;
-                    }
 
-                    failed = action.execute();
-                    if (delay > 0)
-                        synchronized (this) {
-                            wait(delay);
-                        }
-                }
-            } catch (Exception e) {
-                System.err.println("Action failed in Thread " + getName() + ": " + e.getMessage());
-                e.printStackTrace();
-                failed = true;
+            return true;
+        }
+
+        /**
+         * Sleeps the current thread for a period of time.
+         *
+         * @param period the period to sleep for.
+         *
+         * @return true if the thread slept for the period and was not interrupted
+         */
+        private boolean sleep(final long period) {
+            try {
+                Thread.sleep(period);
+                return true;
+            } catch (final InterruptedException e) {
+                // Restore the interrupted status
+                Thread.currentThread().interrupt();
+                return false;
             }
         }
     }

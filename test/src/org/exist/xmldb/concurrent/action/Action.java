@@ -21,6 +21,10 @@
 package org.exist.xmldb.concurrent.action;
 
 
+import org.xmldb.api.base.XMLDBException;
+
+import java.io.IOException;
+
 /**
  * Abstract base class for an action to be tested.
  * 
@@ -28,13 +32,18 @@ package org.exist.xmldb.concurrent.action;
  */
 public abstract class Action {
 	
-	protected String collectionPath;
-	protected String resourceName;
+	protected final String collectionPath;
+	protected final String resourceName;
 	
-	public Action(String collectionPath, String resourceName) {
+	public Action(final String collectionPath, final String resourceName) {
 		this.collectionPath = collectionPath;
 		this.resourceName = resourceName;
 	}
-	
-	abstract public boolean execute() throws Exception;
+
+	/**
+	 * Returns true if execution compled successfully.
+	 *
+	 * @return true if execution completed successfully, false otherwise.
+	 */
+	abstract public boolean execute() throws XMLDBException, IOException;
 }
