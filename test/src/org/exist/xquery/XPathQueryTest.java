@@ -498,7 +498,7 @@ public class XPathQueryTest {
     }
 
     @Test
-    public void precedingSiblingAxis() throws XMLDBException, IOException, SAXException {
+    public void precedingSiblingAxis_persistent() throws XMLDBException, IOException, SAXException {
         final XQueryService service =
                 storeXMLStringAndGetQueryService("siblings.xml", siblings);
         service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
@@ -506,18 +506,36 @@ public class XPathQueryTest {
 
         ResourceSet result = queryResource(service, "siblings.xml", "//a[preceding-sibling::*[1]/s = 'B']", 1);
         assertXMLEqual("<a> <s>Z</s> <n>4</n> </a>", result.getResource(0).getContent().toString());
+
         result = queryResource(service, "siblings.xml", "//a[preceding-sibling::a[1]/s = 'B']", 1);
         assertXMLEqual("<a> <s>Z</s> <n>4</n> </a>", result.getResource(0).getContent().toString());
+
         result = queryResource(service, "siblings.xml", "//a[preceding-sibling::*[2]/s = 'B']", 1);
         assertXMLEqual("<a> <s>C</s> <n>5</n> </a>", result.getResource(0).getContent().toString());
+
         result = queryResource(service, "siblings.xml", "//a[preceding-sibling::a[2]/s = 'B']", 1);
         assertXMLEqual("<a> <s>C</s> <n>5</n> </a>", result.getResource(0).getContent().toString());
-
-        queryResource(service, "siblings.xml", "(<a/>, <b/>, <c/>)/following-sibling::*", 0);
     }
 
     @Test
-    public void followingSiblingAxis() throws XMLDBException, IOException, SAXException {
+    public void precedingSiblingAxis_memtree() throws XMLDBException, IOException, SAXException {
+        final XQueryService service = getQueryService();
+        service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        service.setProperty(OutputKeys.INDENT, "no");
+
+        ResourceSet rs = service.query("(<a/>, <b/>, <c/>)/preceding-sibling::*");
+        assertEquals(0, rs.getSize());
+
+        rs = service.query("let $doc := <doc><div id='1'/><div id='2'><div id='3'/></div><div id='4'/><div id='5'><div id='6'/></div></doc> " +
+                "return $doc/div/preceding-sibling::div");
+        assertEquals(3, rs.getSize());
+        assertXMLEqual("<div id='1'/>", rs.getResource(0).getContent().toString());
+        assertXMLEqual("<div id='2'><div id='3'/></div>", rs.getResource(1).getContent().toString());
+        assertXMLEqual("<div id='4'/>", rs.getResource(2).getContent().toString());
+    }
+
+    @Test
+    public void followingSiblingAxis_persistent() throws XMLDBException, IOException, SAXException {
         final XQueryService service =
                 storeXMLStringAndGetQueryService("siblings.xml", siblings);
         service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
@@ -525,30 +543,30 @@ public class XPathQueryTest {
 
         ResourceSet result = queryResource(service, "siblings.xml", "//a[following-sibling::*[1]/s = 'B']", 1);
         assertXMLEqual("<a> <s>Z</s> <n>2</n> </a>", result.getResource(0).getContent().toString());
+
         result = queryResource(service, "siblings.xml", "//a[following-sibling::a[1]/s = 'B']", 1);
         assertXMLEqual("<a> <s>Z</s> <n>2</n> </a>", result.getResource(0).getContent().toString());
+
         result = queryResource(service, "siblings.xml", "//a[following-sibling::*[2]/s = 'B']", 1);
         assertXMLEqual("<a> <s>A</s> <n>1</n> </a>", result.getResource(0).getContent().toString());
+
         result = queryResource(service, "siblings.xml", "//a[following-sibling::a[2]/s = 'B']", 1);
         assertXMLEqual("<a> <s>A</s> <n>1</n> </a>", result.getResource(0).getContent().toString());
+    }
 
-        queryResource(service, "siblings.xml", "(<a/>, <b/>, <c/>)/following-sibling::*", 0);
-
+    @Test
+    public void followingSiblingAxis_memtree() throws XMLDBException, IOException, SAXException {
+        final XQueryService service = getQueryService();
         service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         service.setProperty(OutputKeys.INDENT, "no");
-        ResourceSet rs = service.query("let $doc := <doc><div id='1'><div id='2'/></div><div id='3'/></doc> " +
+
+        ResourceSet rs = service.query("(<a/>, <b/>, <c/>)/following-sibling::*");
+        assertEquals(0, rs.getSize());
+
+        rs = service.query("let $doc := <doc><div id='1'><div id='2'/></div><div id='3'/></doc> " +
                 "return $doc/div[1]/following-sibling::div");
         assertEquals(1, rs.getSize());
         assertXMLEqual("<div id='3'/>", rs.getResource(0).getContent().toString());
-
-        service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        service.setProperty(OutputKeys.INDENT, "no");
-        rs = service.query("let $doc := <doc><div id='1'/><div id='2'><div id='3'/></div><div id='4'/><div id='5'><div id='6'/></div></doc> " +
-                "return $doc/div/preceding-sibling::div");
-        assertEquals(3, rs.getSize());
-        assertXMLEqual("<div id='1'/>", rs.getResource(0).getContent().toString());
-        assertXMLEqual("<div id='2'><div id='3'/></div>", rs.getResource(1).getContent().toString());
-        assertXMLEqual("<div id='4'/>", rs.getResource(2).getContent().toString());
     }
 
     @Test
