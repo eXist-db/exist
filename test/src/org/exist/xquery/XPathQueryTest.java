@@ -9,6 +9,7 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -40,7 +41,7 @@ import static org.junit.Assert.assertTrue;
 public class XPathQueryTest {
 
     @ClassRule
-    public static final ExistWebServer existWebServer = new ExistWebServer(true, true, true);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, true, true, true);
     private static final String PORT_PLACEHOLDER = "${PORT}";
 
     @Parameterized.Parameters(name = "{0}")
@@ -117,6 +118,7 @@ public class XPathQueryTest {
             "</test>";
     
     private final static String siblings =
+            "<!-- 1 --><!-- 2 -->" +
             "<test>" +
             "   <a> <s>A</s> <n>1</n> </a>" +
             "   <a> <s>Z</s> <n>2</n> </a>" +
@@ -124,7 +126,8 @@ public class XPathQueryTest {
             "   <a> <s>Z</s> <n>4</n> </a>" +
             "   <a> <s>C</s> <n>5</n> </a>" +
             "   <a> <s>Z</s> <n>6</n> </a>" +
-            "</test>";
+            "</test>" +
+            "<!-- 3 -->";
 
     private final static String ids_content =
             "<test xml:space=\"preserve\">" +
@@ -515,6 +518,30 @@ public class XPathQueryTest {
 
         result = queryResource(service, "siblings.xml", "//a[preceding-sibling::a[2]/s = 'B']", 1);
         assertXMLEqual("<a> <s>C</s> <n>5</n> </a>", result.getResource(0).getContent().toString());
+
+        result = queryResource(service, "siblings.xml", "/test/preceding-sibling::node()", 2);
+        assertEquals("<!-- 1 -->", result.getResource(0).getContent().toString());
+        assertEquals("<!-- 2 -->", result.getResource(1).getContent().toString());
+
+        queryResource(service, "siblings.xml", "/node()[1]/preceding-sibling::node()", 0);
+
+        result = queryResource(service, "siblings.xml", "/node()[2]/preceding-sibling::node()", 1);
+        assertEquals("<!-- 1 -->", result.getResource(0).getContent().toString());
+
+        result = queryResource(service, "siblings.xml", "/node()[3]/preceding-sibling::node()", 2);
+        assertEquals("<!-- 1 -->", result.getResource(0).getContent().toString());
+        assertEquals("<!-- 2 -->", result.getResource(1).getContent().toString());
+
+        queryResource(service, "siblings.xml", "/comment()[1]/preceding-sibling::comment()", 0);
+
+        result = queryResource(service, "siblings.xml", "/comment()[2]/preceding-sibling::comment()[1]", 1);
+        assertEquals("<!-- 1 -->", result.getResource(0).getContent().toString());
+
+        result = queryResource(service, "siblings.xml", "/comment()[3]/preceding-sibling::comment()[1]", 1);
+        assertEquals("<!-- 2 -->", result.getResource(0).getContent().toString());
+
+        result = queryResource(service, "siblings.xml", "/comment()[3]/preceding-sibling::comment()[2]", 1);
+        assertEquals("<!-- 1 -->", result.getResource(0).getContent().toString());
     }
 
     @Test
@@ -532,6 +559,33 @@ public class XPathQueryTest {
         assertXMLEqual("<div id='1'/>", rs.getResource(0).getContent().toString());
         assertXMLEqual("<div id='2'><div id='3'/></div>", rs.getResource(1).getContent().toString());
         assertXMLEqual("<div id='4'/>", rs.getResource(2).getContent().toString());
+
+        rs = service.query("let $doc := document { <!-- 1 -->,<!-- 2 -->,<test/>,<!-- 3 --> } return $doc/node()[1]/preceding-sibling::node()");
+        assertEquals(0, rs.getSize());
+
+        rs = service.query("let $doc := document { <!-- 1 -->,<!-- 2 -->,<test/>,<!-- 3 --> } return $doc/node()[2]/preceding-sibling::node()");
+        assertEquals(1, rs.getSize());
+        assertEquals("<!-- 1 -->", rs.getResource(0).getContent().toString());
+
+        rs = service.query("let $doc := document { <!-- 1 -->,<!-- 2 -->,<test/>,<!-- 3 --> } return $doc/node()[3]/preceding-sibling::node()");
+        assertEquals(2, rs.getSize());
+        assertEquals("<!-- 1 -->", rs.getResource(0).getContent().toString());
+        assertEquals("<!-- 2 -->", rs.getResource(1).getContent().toString());
+
+        rs = service.query("let $doc := document { <!-- 1 -->,<!-- 2 -->,<test/>,<!-- 3 --> } return $doc/comment()[1]/preceding-sibling::comment()");
+        assertEquals(0, rs.getSize());
+
+        rs = service.query("let $doc := document { <!-- 1 -->,<!-- 2 -->,<test/>,<!-- 3 --> } return $doc/comment()[2]/preceding-sibling::comment()[1]");
+        assertEquals(1, rs.getSize());
+        assertEquals("<!-- 1 -->", rs.getResource(0).getContent().toString());
+
+        rs = service.query("let $doc := document { <!-- 1 -->,<!-- 2 -->,<test/>,<!-- 3 --> } return $doc/comment()[3]/preceding-sibling::comment()[1]");
+        assertEquals(1, rs.getSize());
+        assertEquals("<!-- 2 -->", rs.getResource(0).getContent().toString());
+
+        rs = service.query("let $doc := document { <!-- 1 -->,<!-- 2 -->,<test/>,<!-- 3 --> } return $doc/comment()[3]/preceding-sibling::comment()[2]");
+        assertEquals(1, rs.getSize());
+        assertEquals("<!-- 1 -->", rs.getResource(0).getContent().toString());
     }
 
     @Test
@@ -552,6 +606,22 @@ public class XPathQueryTest {
 
         result = queryResource(service, "siblings.xml", "//a[following-sibling::a[2]/s = 'B']", 1);
         assertXMLEqual("<a> <s>A</s> <n>1</n> </a>", result.getResource(0).getContent().toString());
+
+        result = queryResource(service, "siblings.xml", "/test/following-sibling::node()", 1);
+        assertEquals("<!-- 3 -->", result.getResource(0).getContent().toString());
+
+        result = queryResource(service, "siblings.xml", "/node()[1]/following-sibling::node()", 3);
+        assertEquals("<!-- 2 -->", result.getResource(0).getContent().toString());
+        final Node testElem = ((XMLResource)result.getResource(1)).getContentAsDOM();
+        assertTrue(testElem instanceof Element);
+        assertEquals("test", testElem.getNodeName());
+        assertEquals("<!-- 3 -->", result.getResource(2).getContent().toString());
+
+        result = queryResource(service, "siblings.xml", "/comment()[1]/following-sibling::comment()[1]", 1);
+        assertEquals("<!-- 2 -->", result.getResource(0).getContent().toString());
+
+        result = queryResource(service, "siblings.xml", "/comment()[1]/following-sibling::comment()[2]", 1);
+        assertEquals("<!-- 3 -->", result.getResource(0).getContent().toString());
     }
 
     @Test
@@ -567,6 +637,24 @@ public class XPathQueryTest {
                 "return $doc/div[1]/following-sibling::div");
         assertEquals(1, rs.getSize());
         assertXMLEqual("<div id='3'/>", rs.getResource(0).getContent().toString());
+
+        rs = service.query("let $doc := document { <!-- 1 -->,<!-- 2 -->,<test/>,<!-- 3 --> } return $doc/test/following-sibling::node()");
+        assertEquals(1, rs.getSize());
+        assertEquals("<!-- 3 -->", rs.getResource(0).getContent().toString());
+
+        rs = service.query("let $doc := document { <!-- 1 -->,<!-- 2 -->,<test/>,<!-- 3 --> } return $doc/node()[1]/following-sibling::node()");
+        assertEquals(3, rs.getSize());
+        assertEquals("<!-- 2 -->", rs.getResource(0).getContent().toString());
+        assertXMLEqual("<test/>", rs.getResource(1).getContent().toString());
+        assertEquals("<!-- 3 -->", rs.getResource(2).getContent().toString());
+
+        rs = service.query("let $doc := document { <!-- 1 -->,<!-- 2 -->,<test/>,<!-- 3 --> } return $doc/comment()[1]/following-sibling::comment()[1]");
+        assertEquals(1, rs.getSize());
+        assertEquals("<!-- 2 -->", rs.getResource(0).getContent().toString());
+
+        rs = service.query("let $doc := document { <!-- 1 -->,<!-- 2 -->,<test/>,<!-- 3 --> } return $doc/comment()[1]/following-sibling::comment()[2]");
+        assertEquals(1, rs.getSize());
+        assertEquals("<!-- 3 -->", rs.getResource(0).getContent().toString());
     }
 
     @Test
