@@ -28,6 +28,7 @@ import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeHandle;
+import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -51,6 +52,7 @@ import java.util.*;
 import java.util.function.Function;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
+import static org.exist.stax.ExtendedXMLStreamReader.PROPERTY_NODE_ID;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.exist.stax.EmbeddedXMLStreamReaderTest.NamedEvent.*;
@@ -141,7 +143,8 @@ public class EmbeddedXMLStreamReaderTest {
                 END_ELEMENT         // </x>
         };
 
-        assertNodesIn(expected, document -> (NodeHandle)document.getDocumentElement());
+        final Function<Document, NodeHandle> docElementFun = document -> (NodeHandle)document.getDocumentElement();
+        assertNodesIn(expected, docElementFun, Optional.of(docElementFun));
     }
 
     /**
@@ -158,7 +161,8 @@ public class EmbeddedXMLStreamReaderTest {
                 END_ELEMENT         // </y1>
         };
 
-        assertNodesIn(expected, document -> (NodeHandle)document.getDocumentElement().getElementsByTagName("y1").item(0));
+        final Function<Document, NodeHandle> y1Fun = document -> (NodeHandle)document.getDocumentElement().getElementsByTagName("y1").item(0);
+        assertNodesIn(expected, y1Fun, Optional.of(y1Fun));
     }
 
     /**
@@ -175,7 +179,8 @@ public class EmbeddedXMLStreamReaderTest {
                 END_ELEMENT         // </y2>
         };
 
-        assertNodesIn(expected, document -> (NodeHandle)document.getDocumentElement().getElementsByTagName("y2").item(0));
+        final Function<Document, NodeHandle> y2Fun = document -> (NodeHandle)document.getDocumentElement().getElementsByTagName("y2").item(0);
+        assertNodesIn(expected, y2Fun, Optional.of(y2Fun));
     }
 
     /**
@@ -188,7 +193,8 @@ public class EmbeddedXMLStreamReaderTest {
                 END_ELEMENT         // </z1>
         };
 
-        assertNodesIn(expected, document -> (NodeHandle)document.getDocumentElement().getElementsByTagName("z1").item(0));
+        final Function<Document, NodeHandle> z1Fun = document -> (NodeHandle)document.getDocumentElement().getElementsByTagName("z1").item(0);
+        assertNodesIn(expected, z1Fun, Optional.of(z1Fun));
     }
 
     /**
@@ -197,11 +203,12 @@ public class EmbeddedXMLStreamReaderTest {
     @Test
     public void allNodesInZ2Element() throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
         final NamedEvent[] expected = {
-                START_ELEMENT,      // <z1>
-                END_ELEMENT         // </z1>
+                START_ELEMENT,      // <z2>
+                END_ELEMENT         // </z2>
         };
 
-        assertNodesIn(expected, document -> (NodeHandle)document.getDocumentElement().getElementsByTagName("z1").item(0));
+        final Function<Document, NodeHandle> z2Fun = document -> (NodeHandle)document.getDocumentElement().getElementsByTagName("z2").item(0);
+        assertNodesIn(expected, z2Fun, Optional.of(z2Fun));
     }
 
     /**
@@ -233,7 +240,7 @@ public class EmbeddedXMLStreamReaderTest {
                 CHARACTERS          // "\n"
         };
 
-        assertNodesIn(expected, document -> (NodeHandle)document.getDocumentElement().getFirstChild());
+        assertNodesIn(expected, document -> (NodeHandle)document.getDocumentElement().getFirstChild(), Optional.of(document -> (NodeHandle)document.getDocumentElement()));
     }
 
     /**
@@ -262,10 +269,14 @@ public class EmbeddedXMLStreamReaderTest {
                 CHARACTERS          // "\n"
         };
 
-        assertNodesIn(expected, document -> (NodeHandle)document.getDocumentElement().getElementsByTagName("y1").item(0));
+        assertNodesIn(expected, document -> (NodeHandle)document.getDocumentElement().getElementsByTagName("y1").item(0), Optional.of(document -> (NodeHandle)document.getDocumentElement()));
     }
 
     public void assertNodesIn(final NamedEvent[] expected, final Function<Document, NodeHandle> initialNodeFun) throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
+        assertNodesIn(expected, initialNodeFun, Optional.empty());
+    }
+
+    public void assertNodesIn(final NamedEvent[] expected, final Function<Document, NodeHandle> initialNodeFun, final Optional<Function<Document, NodeHandle>> containerFun) throws EXistException, PermissionDeniedException, IOException, XMLStreamException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -276,9 +287,11 @@ public class EmbeddedXMLStreamReaderTest {
                 assertNotNull(document);
 
                 final NodeHandle initialNode = initialNodeFun.apply(document);
+                final Document doc = document;
+                final Optional<NodeHandle> maybeContainerNode = containerFun.map(f -> f.apply(doc));
                 final IEmbeddedXMLStreamReader xmlStreamReader = broker.getXMLStreamReader(initialNode, false);
 
-                final NamedEvent[] actual = readAllEvents(xmlStreamReader);
+                final NamedEvent[] actual = readAllEvents(maybeContainerNode, xmlStreamReader);
 
                 assertArrayEquals(formatExpectedActual(expected, actual), expected, actual);
             } finally {
@@ -354,12 +367,24 @@ public class EmbeddedXMLStreamReaderTest {
         return len;
     }
 
-    private NamedEvent[] readAllEvents(final IEmbeddedXMLStreamReader xmlStreamReader) throws XMLStreamException {
+    private NamedEvent[] readAllEvents(final Optional<NodeHandle> maybeContainerNode, final IEmbeddedXMLStreamReader xmlStreamReader) throws XMLStreamException {
         final List<NamedEvent> events = new ArrayList<>();
+
         while (xmlStreamReader.hasNext()) {
-            events.add(NamedEvent.fromEvent(xmlStreamReader.next()));
+            final NamedEvent namedEvent = NamedEvent.fromEvent(xmlStreamReader.next());
+            // filter for descendant-or-self if specified
+            if(maybeContainerNode.isPresent() && !descendantOrSelf(maybeContainerNode.get(), xmlStreamReader)) {
+                break;  // exit-while
+            }
+            events.add(namedEvent);
         }
+
         return events.toArray(new NamedEvent[events.size()]);
+    }
+
+    private boolean descendantOrSelf(final NodeHandle root, final IEmbeddedXMLStreamReader xmlStreamReader) {
+        final NodeId other = (NodeId)xmlStreamReader.getProperty(PROPERTY_NODE_ID);
+        return other.isDescendantOrSelfOf(root.getNodeId());
     }
 
     @BeforeClass
