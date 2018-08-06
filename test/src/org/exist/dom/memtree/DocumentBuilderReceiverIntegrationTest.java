@@ -85,8 +85,8 @@ public class DocumentBuilderReceiverIntegrationTest {
         final Source expectedSource = Input.fromString(expectedResult).build();
         final Source actualSource = Input.fromNode(((XMLResource)resource).getContentAsDOM()).build();
 
-        final Diff diff = DiffBuilder.compare(actualSource)
-                .withTest(expectedSource)
+        final Diff diff = DiffBuilder.compare(expectedSource)
+                .withTest(actualSource)
                 .checkForSimilar()
                 .ignoreWhitespace()
                 .build();

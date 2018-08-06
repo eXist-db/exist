@@ -112,8 +112,8 @@ public class ExtDocTest {
         final Source expectedSource = Input.fromString(docContent).build();
         final Source actualSource = Input.fromNode(((XMLResource)resource).getContentAsDOM()).build();
 
-        final Diff diff = DiffBuilder.compare(actualSource)
-                .withTest(expectedSource)
+        final Diff diff = DiffBuilder.compare(expectedSource)
+                .withTest(actualSource)
                 .checkForSimilar()
                 .build();
 
