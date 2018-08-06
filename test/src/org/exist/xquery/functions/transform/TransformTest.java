@@ -19,6 +19,7 @@
  */
 package org.exist.xquery.functions.transform;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -43,23 +44,22 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.util.Optional;
 
-import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
 /**
- * @see https://github.com/eXist-db/exist/issues/1506
- *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class TransformTest {
 
     @ClassRule
-    public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private static final XmldbURI TEST_COLLECTION = XmldbURI.create("/db/transform-test");
+    private static final XmldbURI TEST_IDS_COLLECTION = XmldbURI.create("/db/transform-ids-test");
 
-    private static final XmldbURI INPUT_XML_NAME = XmldbURI.create("inputListOps.xml");
+    private static final XmldbURI INPUT_LIST_XML_NAME = XmldbURI.create("inputListOps.xml");
 
     private static final String INPUT_XML =
             "<listOps>\n" +
@@ -120,9 +120,9 @@ public class TransformTest {
             "xquery version \"3.0\";\n" +
             "\n" +
             "(:Read document with xsl:for-each and look for key in the dictionary document :)\n" +
-            "declare variable $xsltPath as xs:string := '" + TEST_COLLECTION.getCollectionPath() + "';\n" +
-            "declare variable $listOpsFileUri as xs:string := '" + TEST_COLLECTION.getCollectionPath()+ "/listOpsErr.xml';\n" +
-            "declare variable $inputFileUri as xs:string := '" + TEST_COLLECTION.getCollectionPath() + "/inputListOps.xml';\n" +
+            "declare variable $xsltPath as xs:string := '" + TEST_IDS_COLLECTION.getCollectionPath() + "';\n" +
+            "declare variable $listOpsFileUri as xs:string := '" + TEST_IDS_COLLECTION.getCollectionPath()+ "/listOpsErr.xml';\n" +
+            "declare variable $inputFileUri as xs:string := '" + TEST_IDS_COLLECTION.getCollectionPath() + "/inputListOps.xml';\n" +
             "\n" +
             "let $params :=  <parameters>\n" +
             "                    <param name=\"listOpsFileUri\" value=\"{$listOpsFileUri}\" />\n" +
@@ -136,8 +136,7 @@ public class TransformTest {
     public void keys() throws EXistException, PermissionDeniedException, XPathException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final XQuery xquery = pool.getXQueryService();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-            /*final Txn transaction = existEmbeddedServer.getBrokerPool().getTransactionManager().beginTransaction() */) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             final Sequence sequence = xquery.execute(broker, LIST_OPS_XQUERY, null);
             assertNotNull(sequence);
@@ -157,30 +156,53 @@ public class TransformTest {
         }
     }
 
+    @BeforeClass
+    public static void storeResources() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+
+            createCollection(broker, transaction, TEST_IDS_COLLECTION,
+                    Tuple(LIST_OPS_XSLT_NAME, LIST_OPS_XSLT),
+                    Tuple(INPUT_LIST_XML_NAME, INPUT_XML),
+                    Tuple(DICTIONARY_XML_NAME, DICTIONARY_XML)
+            );
+
+            transaction.commit();
+        }
+    }
+
+    @SafeVarargs
+    private static void createCollection(final DBBroker broker, final Txn transaction, final XmldbURI collectionUri, final Tuple2<XmldbURI, String>... docs) throws PermissionDeniedException, IOException, SAXException, LockException, EXistException {
+
+        final Collection collection = broker.getOrCreateCollection(transaction, collectionUri);
+        try {
+            collection.getLock().acquire(Lock.LockMode.WRITE_LOCK);
+            broker.saveCollection(transaction, collection);
+            for (final Tuple2<XmldbURI, String> doc : docs) {
+                storeXml(broker, transaction, collection, doc._1, doc._2);
+            }
+        } finally {
+            collection.getLock().release(Lock.LockMode.WRITE_LOCK);
+        }
+    }
+
     private static void storeXml(final DBBroker broker, final Txn transaction, final Collection collection, final XmldbURI name, final String xml) throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
         final IndexInfo indexInfo = collection.validateXMLResource(transaction, broker, name, xml);
         collection.store(transaction, broker, indexInfo, xml);
     }
 
-    @BeforeClass
-    public static void storeResources() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-            final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-            final Collection testCollection = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
-            try {
-                testCollection.getLock().acquire(Lock.LockMode.WRITE_LOCK);
-
-                storeXml(broker, transaction, testCollection, LIST_OPS_XSLT_NAME, LIST_OPS_XSLT);
-                storeXml(broker, transaction, testCollection, INPUT_XML_NAME, INPUT_XML);
-                storeXml(broker, transaction, testCollection, DICTIONARY_XML_NAME, DICTIONARY_XML);
-
-                broker.saveCollection(transaction, testCollection);
-            } finally {
-                testCollection.getLock().acquire(Lock.LockMode.WRITE_LOCK);
+    private static void deleteCollection(final DBBroker broker, final Txn transaction, final XmldbURI collectionUri) throws PermissionDeniedException, IOException, TriggerException {
+        Collection collection = null;
+        try {
+            collection = broker.openCollection(collectionUri, Lock.LockMode.WRITE_LOCK);
+            if (collection != null) {
+                broker.removeCollection(transaction, collection);
             }
-
-            transaction.commit();
+        } finally {
+            if (collection != null) {
+                collection.getLock().release(Lock.LockMode.WRITE_LOCK);
+            }
         }
     }
 
@@ -189,18 +211,8 @@ public class TransformTest {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-            Collection testCollection = null;
-            try {
-                testCollection = broker.openCollection(TEST_COLLECTION, Lock.LockMode.WRITE_LOCK);
 
-                if (testCollection != null) {
-                    broker.removeCollection(transaction, testCollection);
-                }
-            } finally {
-                if(testCollection != null) {
-                    testCollection.getLock().release(Lock.LockMode.WRITE_LOCK);
-                }
-            }
+            deleteCollection(broker, transaction, TEST_IDS_COLLECTION);
 
             transaction.commit();
         }
