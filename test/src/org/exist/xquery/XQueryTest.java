@@ -1154,7 +1154,8 @@ public class XQueryTest {
 
                 final Source expected = Input.fromString("<echo>" + timestamp + "</echo>").build();
                 final Source actual = Input.fromNode((Node)item).build();
-                final Diff diff = DiffBuilder.compare(expected).withTest(actual)
+                final Diff diff = DiffBuilder.compare(expected)
+                        .withTest(actual)
                         .checkForSimilar()
                         .build();
                 assertFalse(diff.toString(), diff.hasDifferences());
@@ -1193,7 +1194,8 @@ public class XQueryTest {
         final Resource resource = resourceSet.getResource(0);
         final Source expected = Input.fromString("<echo>" + timestamp + "</echo>").build();
         final Source actual = Input.fromString(resource.getContent().toString()).build();
-        final Diff diff = DiffBuilder.compare(expected).withTest(actual)
+        final Diff diff = DiffBuilder.compare(expected)
+                .withTest(actual)
                 .checkForIdentical()
                 .build();
         assertFalse(diff.toString(), diff.hasDifferences());

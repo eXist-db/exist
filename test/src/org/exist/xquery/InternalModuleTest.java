@@ -122,8 +122,8 @@ public class InternalModuleTest {
         final javax.xml.transform.Source expected = Input.fromString("<vars><request>XPDY0002</request><session>XPDY0002</session><response>XPDY0002</response></vars>").build();
         final javax.xml.transform.Source actual = Input.fromNode(actualDoc).build();
 
-        final Diff diff = DiffBuilder.compare(actual)
-                .withTest(expected)
+        final Diff diff = DiffBuilder.compare(expected)
+                .withTest(actual)
                 .checkForSimilar()
                 .build();
 
@@ -155,8 +155,8 @@ public class InternalModuleTest {
         final javax.xml.transform.Source expected = Input.fromString("<variables><var1>" + expectedCount + "</var1></variables>").build();
         final javax.xml.transform.Source actual = Input.fromNode(actualDoc).build();
 
-        final Diff diff = DiffBuilder.compare(actual)
-                .withTest(expected)
+        final Diff diff = DiffBuilder.compare(expected)
+                .withTest(actual)
                 .checkForSimilar()
                 .build();
 
