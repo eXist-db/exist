@@ -282,17 +282,26 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
         final StoredNode parent = getParentStoredNode();
         if(parent != null && parent.isDirty()) {
             try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
-                final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
+                final int parentLevel = parent.getNodeId().getTreeLevel();
                 final int level = nodeId.getTreeLevel();
+
+                final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
+
                 IStoredNode last = null;
                 while(reader.hasNext()) {
                     final int status = reader.next();
                     final NodeId currentId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
-                    if(status != XMLStreamConstants.END_ELEMENT && currentId.getTreeLevel() == level) {
-                        if(currentId.equals(nodeId)) {
-                            return last;
+
+                    if(status != XMLStreamConstants.END_ELEMENT) {
+                        if (currentId.getTreeLevel() == level) {
+                            if (currentId.equals(nodeId)) {
+                                return last;
+                            }
+                            last = reader.getNode();
                         }
-                        last = reader.getNode();
+                    } else if (currentId.getTreeLevel() == parentLevel) {
+                        // reached the end of the parent element
+                        break;  // exit while loop
                     }
                 }
             } catch(final IOException | XMLStreamException | EXistException e) {
@@ -332,15 +341,22 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
         final StoredNode parent = getParentStoredNode();
         if(parent != null && parent.isDirty()) {
             try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
-                final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
+                final int parentLevel = parent.getNodeId().getTreeLevel();
                 final int level = nodeId.getTreeLevel();
+
+                final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
+
                 while(reader.hasNext()) {
                     final int status = reader.next();
                     final NodeId currentId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+
                     if(status != XMLStreamConstants.END_ELEMENT
                             && currentId.getTreeLevel() == level
                             && currentId.compareTo(nodeId) > 0) {
                         return reader.getNode();
+                    } else if(currentId.getTreeLevel() == parentLevel) {
+                        // reached the end of the parent element
+                        break;  // exit while loop
                     }
                 }
             } catch(final IOException | XMLStreamException | EXistException e) {
@@ -356,14 +372,35 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
     }
 
     protected IStoredNode getLastNode(final IStoredNode node) {
+
+        // only applicable to elements with children or attributes
         if(!(node.hasChildNodes() || node.hasAttributes())) {
             return node;
         }
-        try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
+
+        try (final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
+            final int thisLevel = node.getNodeId().getTreeLevel();
+            final int childLevel = thisLevel + 1;
+
             final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(node, true);
-            while(reader.hasNext()) {
-                reader.next();
+            while (reader.hasNext()) {
+                final int status = reader.next();
+                final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+                final int otherLevel = otherId.getTreeLevel();
+
+                //NOTE(AR): The order of the checks below has been carefully chosen to optimize non-empty children, which is likely the most common case!
+
+                // skip descendants
+                if (otherLevel > childLevel) {
+                    continue;
+                }
+
+                if (status == XMLStreamConstants.END_ELEMENT && otherLevel == thisLevel) {
+                    // we have finished scanning the children of the element...
+                    break;  // exit-while
+                }
             }
+
             return reader.getPreviousNode();
         } catch(final IOException | XMLStreamException | EXistException e) {
             LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);

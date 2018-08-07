@@ -716,18 +716,26 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             if (ancestors != null && !ancestors.isEmpty()) {
                 for (final NodeProxy p : ancestors) {
+
+                    final int thisLevel = p.getNodeId().getTreeLevel();
+
                     int startOffset = 0;
                     try {
                         final XMLStreamReader reader = broker.getXMLStreamReader(p, false);
                         while (reader.hasNext()) {
                             final int ev = reader.next();
 
-                            final NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
-                            if (nodeId.equals(proxy.getNodeId())) {
+                            final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+                            if (otherId.equals(proxy.getNodeId())) {
                                 break;
                             }
+                            final int otherLevel = otherId.getTreeLevel();
+
                             if (ev == XMLStreamConstants.CHARACTERS) {
                                 startOffset += reader.getText().length();
+                            } else if (ev == XMLStreamConstants.END_ELEMENT && otherLevel == thisLevel) {
+                                // finished element...
+                                break;  // exit-while
                             }
                         }
                     } catch (final IOException | XMLStreamException e) {

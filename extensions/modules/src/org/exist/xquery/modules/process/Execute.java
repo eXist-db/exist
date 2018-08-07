@@ -3,6 +3,8 @@ package org.exist.xquery.modules.process;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.ElementImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.numbering.NodeId;
+import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.util.FileUtils;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -58,7 +60,9 @@ public class Execute extends BasicFunction {
         Map<String, String> environment = null;
         if (!args[1].isEmpty()) {
             try {
-                XMLStreamReader reader = context.getXMLStreamReader((NodeValue) args[1].itemAt(0));
+                final NodeValue options = (NodeValue) args[1].itemAt(0);
+                final int thisLevel = options.getNodeId().getTreeLevel();
+                final XMLStreamReader reader = context.getXMLStreamReader(options);
                 reader.next();
                 while (reader.hasNext()) {
                     int status = reader.next();
@@ -77,6 +81,13 @@ public class Execute extends BasicFunction {
                             String value = reader.getAttributeValue(null, "value");
                             if (key != null && value != null)
                                 environment.put(key, value);
+                        }
+                    } else if (status == XMLStreamReader.END_ELEMENT) {
+                        final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+                        final int otherLevel = otherId.getTreeLevel();
+                        if (otherLevel == thisLevel) {
+                            // finished `optRoot` element...
+                            break;  // exit-while
                         }
                     }
                 }

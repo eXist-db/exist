@@ -64,26 +64,37 @@ public class AddMatch extends BasicFunction {
 	}
 
 	@Override
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
+	public Sequence eval(final Sequence[] args, final Sequence contextSequence)
 			throws XPathException {
-		if (args[0].isEmpty())
+		if (args[0].isEmpty()) {
 			return args[0];
+		}
 		
-		NodeValue nv = (NodeValue) args[0].itemAt(0);
-		if (!nv.isPersistentSet())
+		final NodeValue nv = (NodeValue) args[0].itemAt(0);
+		if (!nv.isPersistentSet()) {
 			return nv;
-		NodeProxy node = (NodeProxy) nv;
+		}
+		final NodeProxy node = (NodeProxy) nv;
+		final int thisLevel = node.getNodeId().getTreeLevel();
 		
 		String matchStr = null;
 		NodeId nodeId = null;
 		try {
 			for (final XMLStreamReader reader = context.getBroker().getXMLStreamReader(node, true); reader.hasNext(); ) {
-			    int status = reader.next();
+			    final int status = reader.next();
 			    if (status == XMLStreamConstants.CHARACTERS) {
 			    	matchStr = reader.getText();
 			    	nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
 			    	break;
 			    }
+
+				final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+				final int otherLevel = otherId.getTreeLevel();
+
+				if (status == XMLStreamConstants.END_ELEMENT && otherLevel == thisLevel) {
+					// finished the level...
+					break;  // exit-for
+				}
 			}
 		} catch (IOException e) {
 			throw new XPathException(this, ErrorCodes.FOER0000, "Exception caught while reading document");
