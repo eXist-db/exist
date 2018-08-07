@@ -182,6 +182,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
             while (reader.hasNext()) {
                 final int ev = reader.next();
                 switch (ev) {
+
                     case XMLStreamConstants.END_ELEMENT:
                         if (--level < 0) {
                             break;

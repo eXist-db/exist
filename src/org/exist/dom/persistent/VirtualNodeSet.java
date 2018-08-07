@@ -24,8 +24,8 @@ package org.exist.dom.persistent;
 import org.exist.collections.Collection;
 import org.exist.indexing.StructuralIndex;
 import org.exist.numbering.NodeId;
-import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.stax.ExtendedXMLStreamReader;
+import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.dom.INodeIterator;
@@ -472,43 +472,28 @@ public class VirtualNodeSet extends AbstractNodeSet {
         try {
             final EmbeddedXMLStreamReader reader = (EmbeddedXMLStreamReader)broker.getXMLStreamReader(contextNode, true);
             int status = reader.next();
+            if (status != XMLStreamConstants.START_ELEMENT) {
+                return;
+            }
+
             int level = 0;
-            if(status == XMLStreamConstants.START_ELEMENT) {
-                while(reader.hasNext()) {
-                    status = reader.next();
-                    if(axis == Constants.ATTRIBUTE_AXIS && status != XMLStreamConstants.ATTRIBUTE) {
+            while(reader.hasNext()) {
+                status = reader.next();
+                if(axis == Constants.ATTRIBUTE_AXIS && status != XMLStreamConstants.ATTRIBUTE) {
+                    break;
+                }
+                switch(status) {
+                    case XMLStreamConstants.END_ELEMENT:
+                        if(--level < 0) {
+                            return;
+                        }
                         break;
-                    }
-                    switch(status) {
-                        case XMLStreamConstants.END_ELEMENT:
-                            if(--level < 0) {
-                                return;
-                            }
-                            break;
-                        case XMLStreamConstants.ATTRIBUTE:
-                            if((axis == Constants.ATTRIBUTE_AXIS && level == 0) ||
-                                axis == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
-                                final AttrImpl attr = (AttrImpl) reader.getNode();
-                                if(test.matches(attr)) {
-                                    final NodeProxy p = new NodeProxy(attr);
-                                    p.deepCopyContext(contextNode);
-                                    if(useSelfAsContext && inPredicate) {
-                                        p.addContextNode(contextId, p);
-                                    } else if(inPredicate) {
-                                        p.addContextNode(contextId, contextNode);
-                                    }
-                                    result.add(p);
-                                }
-                            }
-                            break;
-                        default:
-                            if(((axis == Constants.CHILD_AXIS && level == 0) ||
-                                axis == Constants.DESCENDANT_AXIS ||
-                                axis == Constants.DESCENDANT_SELF_AXIS) &&
-                                test.matches(reader)) {
-                                final NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
-                                final NodeProxy p = new NodeProxy(contextNode.getOwnerDocument(), nodeId,
-                                    reader.getNodeType(), reader.getCurrentPosition());
+                    case XMLStreamConstants.ATTRIBUTE:
+                        if((axis == Constants.ATTRIBUTE_AXIS && level == 0) ||
+                            axis == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+                            final AttrImpl attr = (AttrImpl) reader.getNode();
+                            if(test.matches(attr)) {
+                                final NodeProxy p = new NodeProxy(attr);
                                 p.deepCopyContext(contextNode);
                                 if(useSelfAsContext && inPredicate) {
                                     p.addContextNode(contextId, p);
@@ -517,11 +502,28 @@ public class VirtualNodeSet extends AbstractNodeSet {
                                 }
                                 result.add(p);
                             }
-                            break;
-                    }
-                    if(status == XMLStreamConstants.START_ELEMENT) {
-                        ++level;
-                    }
+                        }
+                        break;
+                    default:
+                        if(((axis == Constants.CHILD_AXIS && level == 0) ||
+                            axis == Constants.DESCENDANT_AXIS ||
+                            axis == Constants.DESCENDANT_SELF_AXIS) &&
+                            test.matches(reader)) {
+                            final NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+                            final NodeProxy p = new NodeProxy(contextNode.getOwnerDocument(), nodeId,
+                                reader.getNodeType(), reader.getCurrentPosition());
+                            p.deepCopyContext(contextNode);
+                            if(useSelfAsContext && inPredicate) {
+                                p.addContextNode(contextId, p);
+                            } else if(inPredicate) {
+                                p.addContextNode(contextId, contextNode);
+                            }
+                            result.add(p);
+                        }
+                        break;
+                }
+                if(status == XMLStreamConstants.START_ELEMENT) {
+                    ++level;
                 }
             }
         } catch(final IOException e) {
