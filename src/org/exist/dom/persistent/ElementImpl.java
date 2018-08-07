@@ -937,17 +937,10 @@ public class ElementImpl extends NamedNode implements Element {
 
     @Override
     public NodeList getChildNodes() {
-        final org.exist.dom.NodeListImpl childList = new org.exist.dom.NodeListImpl(children);
-        try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
-            for(final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, false);
-                reader.hasNext(); ) {
-                final int status = reader.next();
-                if(status != XMLStreamConstants.END_ELEMENT && ((NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID)).isChildOf(nodeId)) {
-                    childList.add(reader.getNode());
-                }
-            }
-        } catch(final IOException | XMLStreamException | EXistException e) {
-            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+        final int childNodesLen = children - attributes;
+        final org.exist.dom.NodeListImpl childList = new org.exist.dom.NodeListImpl(childNodesLen);
+        if (childNodesLen > 0) {
+            getChildren(false, childList);
         }
         return childList;
     }
@@ -959,18 +952,44 @@ public class ElementImpl extends NamedNode implements Element {
      */
     private NodeList getAttrsAndChildNodes() {
         final org.exist.dom.NodeListImpl childList = new org.exist.dom.NodeListImpl(children);
-        try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
-            for(final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, true);
-                reader.hasNext(); ) {
+        if (children > 0) {
+            getChildren(true, childList);
+        }
+        return childList;
+    }
+
+    private void getChildren(final boolean includeAttributes, final org.exist.dom.NodeListImpl childList) {
+        try (final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
+            final int thisLevel = nodeId.getTreeLevel();
+            final int childLevel = thisLevel + 1;
+            for (final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, includeAttributes); reader.hasNext(); ) {
                 final int status = reader.next();
-                if(status != XMLStreamConstants.END_ELEMENT && ((NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID)).isChildOf(nodeId)) {
-                    childList.add(reader.getNode());
+                final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+                final int otherLevel = otherId.getTreeLevel();
+
+                //NOTE(AR): The order of the checks below has been carefully chosen to optimize non-empty children, which is likely the most common case!
+
+                // skip descendants
+                if (otherLevel > childLevel) {
+                    continue;
+                }
+
+                if (status == XMLStreamConstants.END_ELEMENT) {
+                    if (otherLevel == thisLevel) {
+                        // finished `this` element...
+                        break;  // exit-for
+                    }
+                    // skip over any other END_ELEMENT(s)
+                } else {
+                    if (otherLevel == childLevel) {
+                        // child
+                        childList.add(reader.getNode());
+                    }
                 }
             }
         } catch(final IOException | XMLStreamException | EXistException e) {
             LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
         }
-        return childList;
     }
 
     @Override

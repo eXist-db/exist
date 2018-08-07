@@ -1,6 +1,8 @@
 package org.exist.xquery.util;
 
 import org.exist.Namespaces;
+import org.exist.numbering.NodeId;
+import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.ErrorCodes;
@@ -86,6 +88,8 @@ public class SerializerUtils {
                 throw new XPathException(parent, FnModule.SENR0001, "serialization parameter elements should be in the output namespace");
             }
 
+            final int thisLevel = ((NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID)).getTreeLevel();
+
             while (reader.hasNext()) {
                 final int status = reader.next();
                 if (status == XMLStreamReader.START_ELEMENT) {
@@ -99,6 +103,13 @@ public class SerializerUtils {
                         value = reader.getElementText();
                     }
                     properties.put(key, value);
+                } else if(status == XMLStreamReader.END_ELEMENT) {
+                    final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+                    final int otherLevel = otherId.getTreeLevel();
+                    if (otherLevel == thisLevel) {
+                        // finished `optRoot` element...
+                        break;  // exit-while
+                    }
                 }
             }
         } catch (final XMLStreamException | IOException e) {
