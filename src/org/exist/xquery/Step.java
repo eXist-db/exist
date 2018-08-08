@@ -86,7 +86,7 @@ public abstract class Step extends AbstractExpression {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         if (test != null && test.getName() != null &&
                 test.getName().getPrefix() != null &&
-                !"".equals(test.getName().getPrefix()) && context.inScopePrefixes !=  null &&
+                (!test.getName().getPrefix().isEmpty()) && context.getInScopePrefixes() !=  null &&
                 context.getURIForPrefix(test.getName().getPrefix()) == null)
             {throw new XPathException(this, ErrorCodes.XPST0081, "undeclared prefix '"
                 + test.getName().getPrefix() + "'");}
