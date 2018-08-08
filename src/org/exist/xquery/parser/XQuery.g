@@ -75,10 +75,10 @@ options {
 }
 
 {
-	protected ArrayList exceptions= new ArrayList(2);
-	protected boolean foundError= false;
-	protected Stack globalStack= new Stack();
-	protected Stack elementStack= new Stack();
+	protected List<Exception> exceptions = new ArrayList<>(2);
+	protected boolean foundError = false;
+	protected Stack globalStack = new Stack();
+	protected Stack elementStack = new Stack();
 	protected XQueryLexer lexer;
 
 	public XQueryParser(XQueryLexer lexer) {
