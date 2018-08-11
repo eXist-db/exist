@@ -21,13 +21,7 @@
  */
 package org.exist.collections.triggers;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Stack;
+import java.util.*;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import org.exist.collections.Collection;
@@ -245,9 +239,9 @@ public class CSVExtractingTrigger extends FilteringTrigger {
     }
 
     private static class NodePath {
-        private Stack<QName> pathSegments = new Stack<QName>();
+        private Deque<QName> pathSegments = new ArrayDeque<>();
 
-        public void add(String namespaceUri, String localName) {
+        public void add(final String namespaceUri, final String localName) {
             pathSegments.push(new QName(namespaceUri, localName));
         }
 
@@ -263,11 +257,13 @@ public class CSVExtractingTrigger extends FilteringTrigger {
         public String toLocalPath() {
             final StringBuilder localPath = new StringBuilder();
             localPath.append("/");
-            for(int i = 0; i < pathSegments.size(); i++) {
-                localPath.append(pathSegments.get(i).getLocalPart());
+            int i = 0;
+            for (final Iterator<QName> it = pathSegments.descendingIterator(); it.hasNext(); ) {
+                localPath.append(it.next());
                 if(i + 1 < pathSegments.size()) {
                     localPath.append("/");
                 }
+                i++;
             }
 
             return localPath.toString();

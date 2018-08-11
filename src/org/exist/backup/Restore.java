@@ -21,14 +21,14 @@
  */
 package org.exist.backup;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Properties;
-import java.util.Stack;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -65,7 +65,7 @@ public class Restore {
         }
 
         //get the backup descriptors, can be more than one if it was an incremental backup
-        final Stack<BackupDescriptor> descriptors = getBackupDescriptors(f);
+        final Deque<BackupDescriptor> descriptors = getBackupDescriptors(f);
         
         final SAXParserFactory saxFactory = SAXParserFactory.newInstance();
         saxFactory.setNamespaceAware(true);
@@ -92,9 +92,9 @@ public class Restore {
         }
     }
     
-    private Stack<BackupDescriptor> getBackupDescriptors(Path contents) throws XMLDBException, IOException {
+    private Deque<BackupDescriptor> getBackupDescriptors(Path contents) throws XMLDBException, IOException {
         
-        final Stack<BackupDescriptor> descriptors = new Stack<>();
+        final Deque<BackupDescriptor> descriptors = new ArrayDeque<>();
         
         do {
 

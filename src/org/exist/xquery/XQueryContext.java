@@ -29,6 +29,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -37,6 +40,9 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.stream.XMLStreamException;
 
+import antlr.RecognitionException;
+import antlr.TokenStreamException;
+import antlr.collections.AST;
 import com.ibm.icu.text.Collator;
 import net.jcip.annotations.Immutable;
 import org.apache.logging.log4j.LogManager;
@@ -81,15 +87,7 @@ import org.exist.xquery.parser.*;
 import org.exist.xquery.pragmas.*;
 import org.exist.xquery.update.Modification;
 import org.exist.xquery.value.*;
-
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
-import antlr.collections.AST;
 import org.w3c.dom.Node;
-
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.lang.invoke.MethodType.methodType;
 import static javax.xml.XMLConstants.XMLNS_ATTRIBUTE;
@@ -162,7 +160,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     private boolean inheritNamespaces = true;
 
     // Local namespace stack
-    private Stack<Map<String, String>> namespaceStack = new Stack<>();
+    private Deque<Map<String, String>> namespaceStack = new ArrayDeque<>();
 
     // Known user defined functions in the local module
     private TreeMap<FunctionId, UserDefinedFunction> declaredFunctions = new TreeMap<>();
@@ -173,9 +171,9 @@ public class XQueryContext implements BinaryValueManager, Context {
     // The last element in the linked list of local in-scope variables
     private LocalVariable lastVar = null;
 
-    private Stack<LocalVariable> contextStack = new Stack<>();
+    private Deque<LocalVariable> contextStack = new ArrayDeque<>();
 
-    private Stack<FunctionSignature> callStack = new Stack<>();
+    private Deque<FunctionSignature> callStack = new ArrayDeque<>();
 
     // The current size of the variable stack
     private int variableStackSize = 0;
@@ -304,7 +302,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * Stack for temporary document fragments.
      */
-    private Stack<MemTreeBuilder> fragmentStack = new Stack<>();
+    private Deque<MemTreeBuilder> fragmentStack = new ArrayDeque<>();
 
     /**
      * The root of the expression tree.
@@ -1242,7 +1240,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         closures.forEach(func -> func.setClosureVariables(null));
         closures.clear();
 
-        fragmentStack = new Stack<>();
+        fragmentStack = new ArrayDeque<>();
         callStack.clear();
         protectedDocuments = null;
 
@@ -1688,7 +1686,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     protected Variable resolveLocalVariable(final QName qname) throws XPathException {
-        final LocalVariable end = contextStack.isEmpty() ? null : contextStack.peek();
+        final LocalVariable end = contextStack.peek();
         for (LocalVariable var = lastVar; var != null; var = var.before) {
             if (var == end) {
                 return null;
@@ -1714,7 +1712,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public Map<QName, Variable> getVariables() {
         final Map<QName, Variable> variables = new HashMap<>(globalVariables);
-        LocalVariable end = contextStack.isEmpty() ? null : contextStack.peek();
+        LocalVariable end = contextStack.peek();
         for (LocalVariable var = lastVar; var != null; var = var.before) {
             if (var == end) {
                 break;
@@ -1727,7 +1725,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public Map<QName, Variable> getLocalVariables() {
         final Map<QName, Variable> variables = new HashMap<>();
-        LocalVariable end = contextStack.isEmpty() ? null : contextStack.peek();
+        LocalVariable end = contextStack.peek();
         for (LocalVariable var = lastVar; var != null; var = var.before) {
             if (var == end) {
                 break;
@@ -1745,7 +1743,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      */
     public List<ClosureVariable> getLocalStack() {
         List<ClosureVariable> closure = null;
-        final LocalVariable end = contextStack.isEmpty() ? null : contextStack.peek();
+        final LocalVariable end = contextStack.peek();
         for (LocalVariable var = lastVar; var != null; var = var.before) {
 
             if (var == end) {
