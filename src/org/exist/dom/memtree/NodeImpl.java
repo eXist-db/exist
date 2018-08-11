@@ -829,30 +829,13 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     public void selectFollowingSiblings(final NodeTest test, final Sequence result)
         throws XPathException {
         final int parent = document.getParentNodeFor(nodeNumber);
-        if(parent == 0) {
-            // parent is the document node
-            if(getNodeType() == Node.ELEMENT_NODE) {
-                return;
+        int nextNode = document.getFirstChildFor(parent);
+        while(nextNode > parent) {
+            final NodeImpl n = document.getNode(nextNode);
+            if((nextNode > nodeNumber) && test.matches(n)) {
+                result.add(n);
             }
-            NodeImpl next = (NodeImpl) getNextSibling();
-            while(next != null) {
-                if(test.matches(next)) {
-                    result.add(next);
-                }
-                if(next.getNodeType() == Node.ELEMENT_NODE) {
-                    break;
-                }
-                next = (NodeImpl) next.getNextSibling();
-            }
-        } else {
-            int nextNode = document.getFirstChildFor(parent);
-            while(nextNode > parent) {
-                final NodeImpl n = document.getNode(nextNode);
-                if((nextNode > nodeNumber) && test.matches(n)) {
-                    result.add(n);
-                }
-                nextNode = document.next[nextNode];
-            }
+            nextNode = document.next[nextNode];
         }
     }
 
