@@ -78,6 +78,7 @@ public class RemoteXMLResource
     private XMLReader xmlReader = null;
 
     private final Optional<String> id;
+    private final Optional<String> type;
     private final int handle;
     private int pos = -1;
     private String content = null;
@@ -85,9 +86,32 @@ public class RemoteXMLResource
     private Properties outputProperties = null;
     private LexicalHandler lexicalHandler = null;
 
+    /**
+     * @deprecated Use {@link #RemoteXMLResource(Leasable.Lease, RemoteCollection, XmldbURI, Optional, Optional)}.
+     */
+    @Deprecated
     public RemoteXMLResource(final Leasable<XmlRpcClient>.Lease xmlRpcClientLease, final RemoteCollection parent, final XmldbURI docId, final Optional<String> id)
             throws XMLDBException {
-        this(xmlRpcClientLease, parent, -1, -1, docId, id);
+        this(xmlRpcClientLease, parent, -1, -1, docId, id, Optional.empty());
+    }
+
+    public RemoteXMLResource(final Leasable<XmlRpcClient>.Lease xmlRpcClientLease, final RemoteCollection parent, final XmldbURI docId, final Optional<String> id, final Optional<String> type)
+            throws XMLDBException {
+        this(xmlRpcClientLease, parent, -1, -1, docId, id, type);
+    }
+
+    /**
+     * @deprecared Use {@link #RemoteXMLResource(Leasable.Lease, RemoteCollection, int, int, XmldbURI, Optional, Optional)}.
+     */
+    @Deprecated
+    public RemoteXMLResource(
+            final Leasable<XmlRpcClient>.Lease xmlRpcClientLease,
+            final RemoteCollection parent,
+            final int handle,
+            final int pos,
+            final XmldbURI docId,
+            final Optional<String> id) throws XMLDBException {
+        this(xmlRpcClientLease, parent, handle, pos, docId, id, Optional.empty());
     }
 
     public RemoteXMLResource(
@@ -96,12 +120,14 @@ public class RemoteXMLResource
             final int handle,
             final int pos,
             final XmldbURI docId,
-            final Optional<String> id)
+            final Optional<String> id,
+            final Optional<String> type)
             throws XMLDBException {
         super(xmlRpcClientLease, parent, docId, MimeType.XML_TYPE.getName());
         this.handle = handle;
         this.pos = pos;
         this.id = id;
+        this.type = type;
     }
 
     @Override
@@ -164,8 +190,13 @@ public class RemoteXMLResource
             factory.setValidating(false);
             final DocumentBuilder builder = factory.newDocumentBuilder();
             final Document doc = builder.parse(is);
-            // <frederic.glorieux@ajlsm.com> return a full DOM doc, with root PI and comments
-            return doc;
+
+            final boolean isDocumentNode = type.map(t -> t.equals("document-node()")).orElse(true);
+            if (isDocumentNode) {
+                return doc;
+            } else {
+                return doc.getFirstChild();
+            }
         } catch (final SAXException | IOException | ParserConfigurationException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } finally {
