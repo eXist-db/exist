@@ -55,9 +55,20 @@ public class ReindexTest {
 
     private static final String DOCUMENT_WITH_CHILD_NODES_XML =
             "<?some-pi?>\n" +
-            "<!-- 1 --><!-- 2 -->\n" +
-            "<n/>\n" +
-            "<!-- 3 -->";
+                    "<!-- 1 --><!-- 2 -->\n" +
+                    "<n/>\n" +
+                    "<!-- 3 -->";
+
+    private static final XmldbURI ELEMENT_WITH_CHILD_NODES_COLLECTION = XmldbURI.create("/db/reindex-element-child-nodes-test");
+    private static final XmldbURI ELEMENT_WITH_CHILD_NODES_NAME = XmldbURI.create("elem-child-nodes.xml");
+
+    private static final String ELEMENT_WITH_CHILD_NODES_XML =
+            "<n>" +
+                "<?some-pi?>" +
+                "<!-- 1 --><!-- 2 -->" +
+                "<nn/>" +
+                "<!-- 3 -->" +
+            "</n>";
 
     @Test
     public void reindexDocumentChildNodes() throws IOException, EXistException, PermissionDeniedException, SAXException, LockException {
@@ -66,6 +77,15 @@ public class ReindexTest {
         reindex(DOCUMENT_WITH_CHILD_NODES_COLLECTION);
 
         reindexDocumentChildNodes_checkNodes();
+    }
+
+    @Test
+    public void reindexElementChildren() throws EXistException, PermissionDeniedException, IOException, LockException {
+        reindexElementChildren_checkNodes();
+
+        reindex(ELEMENT_WITH_CHILD_NODES_COLLECTION);
+
+        reindexElementChildren_checkNodes();
     }
 
     private void reindexDocumentChildNodes_checkNodes() throws EXistException, PermissionDeniedException {
@@ -108,6 +128,61 @@ public class ReindexTest {
             transaction.commit();
         }
     }
+
+    private void reindexElementChildren_checkNodes() throws EXistException, PermissionDeniedException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+            final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+
+            final Document doc = broker.getXMLResource(ELEMENT_WITH_CHILD_NODES_COLLECTION.append(ELEMENT_WITH_CHILD_NODES_NAME));
+            assertNotNull(doc);
+
+            // navigate by child nodes
+            final NodeList children = doc.getChildNodes();
+            assertNotNull(children);
+            assertEquals(1, children.getLength());
+            final Node elem = children.item(0);
+            assertNotNull(elem);
+            assertEquals(Node.ELEMENT_NODE, elem.getNodeType());
+            assertEquals("n", elem.getNodeName());
+
+            final NodeList elemChildren = elem.getChildNodes();
+            assertNotNull(elemChildren);
+            assertEquals(5, elemChildren.getLength());
+            assertEquals(Node.PROCESSING_INSTRUCTION_NODE, elemChildren.item(0).getNodeType());
+            assertEquals(Node.COMMENT_NODE, elemChildren.item(1).getNodeType());
+            assertEquals(Node.COMMENT_NODE, elemChildren.item(2).getNodeType());
+            assertEquals(Node.ELEMENT_NODE, elemChildren.item(3).getNodeType());
+            assertEquals("nn", elemChildren.item(3).getNodeName());
+            assertEquals(Node.COMMENT_NODE, elemChildren.item(4).getNodeType());
+
+            // navigate by next sibling
+            final Node first = doc.getFirstChild();
+            assertNotNull(first);
+            assertEquals(Node.ELEMENT_NODE, first.getNodeType());
+            assertEquals("n", first.getNodeName());
+
+            final Node elemFirst = first.getFirstChild();
+            assertNotNull(elemFirst);
+            assertEquals(Node.PROCESSING_INSTRUCTION_NODE, elemFirst.getNodeType());
+            final Node elemSecond = elemFirst.getNextSibling();
+            assertNotNull(elemSecond);
+            assertEquals(Node.COMMENT_NODE, elemSecond.getNodeType());
+            final Node elemThird = elemSecond.getNextSibling();
+            assertNotNull(elemThird);
+            assertEquals(Node.COMMENT_NODE, elemThird.getNodeType());
+            final Node elemFourth = elemThird.getNextSibling();
+            assertNotNull(elemFourth);
+            assertEquals("nn", elemFourth.getNodeName());
+            assertEquals(Node.ELEMENT_NODE, elemFourth.getNodeType());
+            final Node elemFifth = elemFourth.getNextSibling();
+            assertNotNull(elemFifth);
+            assertEquals(Node.COMMENT_NODE, elemFifth.getNodeType());
+
+            transaction.commit();
+        }
+    }
+
     private static void reindex(final XmldbURI collectionUri) throws EXistException, PermissionDeniedException, IOException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -118,7 +193,7 @@ public class ReindexTest {
     }
 
     private static void storeDocument(final XmldbURI collectionUri,
-            final XmldbURI docName, final String doc)
+                                      final XmldbURI docName, final String doc)
             throws PermissionDeniedException, IOException, SAXException, EXistException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -139,8 +214,8 @@ public class ReindexTest {
     private static void removeCollection(final XmldbURI collectionUri) throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-                final Txn transaction = pool.getTransactionManager().beginTransaction();
-                final Collection collection = broker.openCollection(collectionUri, Lock.LockMode.WRITE_LOCK)) {
+             final Txn transaction = pool.getTransactionManager().beginTransaction();
+             final Collection collection = broker.openCollection(collectionUri, Lock.LockMode.WRITE_LOCK)) {
 
             if (collection != null) {
                 broker.removeCollection(transaction, collection);
@@ -153,10 +228,12 @@ public class ReindexTest {
     @BeforeClass
     public static void setup() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
         storeDocument(DOCUMENT_WITH_CHILD_NODES_COLLECTION, DOCUMENT_WITH_CHILD_NODES_NAME, DOCUMENT_WITH_CHILD_NODES_XML);
+        storeDocument(ELEMENT_WITH_CHILD_NODES_COLLECTION, ELEMENT_WITH_CHILD_NODES_NAME, ELEMENT_WITH_CHILD_NODES_XML);
     }
 
     @AfterClass
     public static void cleanup() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+        removeCollection(ELEMENT_WITH_CHILD_NODES_COLLECTION);
         removeCollection(DOCUMENT_WITH_CHILD_NODES_COLLECTION);
     }
 }
