@@ -594,11 +594,12 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             final int end = low + documentLengths[docIdx];
             int mid = low;
             int cmp;
-            NodeProxy p;
+            NodeProxy p = null;
             while(low <= high) {
                 mid = (low + high) / 2;
                 p = nodes[mid];
-                if(p.getNodeId().isDescendantOf(parentId)) {
+                if(p.getNodeId().isDescendantOf(parentId)
+                        || (parentId.equals(NodeId.DOCUMENT_NODE) && p.getNodeId().getTreeLevel() == 1)) {
                     break;    // found a child node, break out.
                 }
                 cmp = p.getNodeId().compareTo(parentId);
@@ -615,11 +616,17 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             while(mid < end && nodes[mid].getNodeId().isDescendantOf(parentId)) {
                 ++mid;
             }
+
+            if (mid == 0 && parentId.equals(NodeId.DOCUMENT_NODE)) {
+                mid = getLength();
+            }
+
             --mid;
+
             final NodeId refId = reference.getNodeId();
             for(int i = mid; i >= documentOffsets[docIdx]; i--) {
                 final NodeId currentId = nodes[i].getNodeId();
-                if(!currentId.isDescendantOf(parentId)) {
+                if(!(currentId.isDescendantOf(parentId) || (p != null && parentId.equals(NodeId.DOCUMENT_NODE) && p.getNodeId().getTreeLevel() == 1))) {
                     break;
                 }
                 if(currentId.getTreeLevel() == refId.getTreeLevel() && currentId.compareTo(refId) < 0) {
