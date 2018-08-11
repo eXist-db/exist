@@ -49,12 +49,13 @@ import static org.exist.storage.lock.LockTable.LockAction.Action.*;
  */
 public class LockTable {
 
-    public final static String PROP_DISABLE = "exist.locktable.disable";
-    public final static String PROP_SANITY_CHECK = "exist.locktable.sanity.check";
-    public final static String PROP_TRACE_STACK_DEPTH = "exist.locktable.trace.stack.depth";
+    public static final String PROP_DISABLE = "exist.locktable.disable";
+    public static final String PROP_SANITY_CHECK = "exist.locktable.sanity.check";
+    public static final String PROP_TRACE_STACK_DEPTH = "exist.locktable.trace.stack.depth";
 
-    private final static Logger LOG = LogManager.getLogger(LockTable.class);
-    private final static LockTable instance = new LockTable();
+    private static final Logger LOG = LogManager.getLogger(LockTable.class);
+    private static final LockTable instance = new LockTable();
+    private static final String THIS_CLASS_NAME = LockTable.class.getName();
 
     /**
      * Set to false to disable all events
@@ -95,6 +96,12 @@ public class LockTable {
     private final TransferQueue<Either<ListenerAction, LockAction>> queue = new LinkedTransferQueue<>();
     private final ExecutorService executorService;
     private final Future<?> queueConsumer;
+
+    /**
+     * Holds a count of READ and WRITE locks by {@link LockAction#id}
+     * Only used for debugging, see {@link #sanityCheckLockLifecycles(LockAction)}.
+     */
+    private final Map<String, Tuple2<Long, Long>> lockCounts = new HashMap<>();
 
     LockTable() {
         this.executorService = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "exist-lockTable.processor"));
@@ -223,8 +230,6 @@ public class LockTable {
             return Arrays.copyOfRange(stackTrace, from, to);
         }
     }
-
-    private static final String THIS_CLASS_NAME = LockTable.class.getName();
 
     private int findFirstExternalFrame(final StackTraceElement[] stackTrace) {
         // we start with i = 1 to avoid Thread#getStackTrace() frame
@@ -558,6 +563,10 @@ public class LockTable {
     }
 
     public static class LockAction {
+        private static final String NATIVE_BROKER_CLASS_NAME = NativeBroker.class.getName();
+        private static final String COLLECTION_STORE_CLASS_NAME = NativeBroker.class.getName();
+        private static final String TXN_CLASS_NAME = Txn.class.getName();
+
         public enum Action {
             Attempt,
             AttemptFailed,
@@ -636,10 +645,6 @@ public class LockTable {
             return builder.toString();
         }
 
-        private static final String NATIVE_BROKER_CLASS_NAME = NativeBroker.class.getName();
-        private static final String COLLECTION_STORE_CLASS_NAME = NativeBroker.class.getName();
-        private static final String TXN_CLASS_NAME = Txn.class.getName();
-
         @Nullable
         public String getSimpleStackReason() {
             for (final StackTraceElement stackTraceElement : stackTrace) {
@@ -657,12 +662,6 @@ public class LockTable {
     }
 
     /** debugging tools below **/
-
-
-    /**
-     * Holds a count of READ and WRITE locks by {@link LockAction#id}
-     */
-    private final Map<String, Tuple2<Long, Long>> lockCounts = new HashMap<>();
 
     /**
      * Checks that there are not more releases that there are acquires
@@ -705,5 +704,4 @@ public class LockTable {
             lockCounts.put(lockAction.id, new Tuple2<>(read, write));
         }
     }
-
 }

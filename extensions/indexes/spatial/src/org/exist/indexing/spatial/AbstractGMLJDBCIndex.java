@@ -82,10 +82,6 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
 
     protected int max_docs_in_context_to_refine_query = 10;
 
-    public AbstractGMLJDBCIndex() {
-        //Nothing to do here
-    }
-
     @Override
     public void configure(BrokerPool pool, Path dataDir, Element config) throws DatabaseConfigurationException {
         super.configure(pool, dataDir, config);

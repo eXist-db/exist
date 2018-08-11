@@ -29,13 +29,6 @@ import org.apache.commons.pool.BaseKeyedPoolableObjectFactory;
  */
 public class SerializerObjectFactory extends BaseKeyedPoolableObjectFactory {
 
-    /**
-     * 
-     */
-    public SerializerObjectFactory() {
-        super();
-    }
-
     public Object makeObject(Object key) throws Exception {
         if (key == SAXSerializer.class)
             {return new SAXSerializer();}

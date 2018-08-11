@@ -607,7 +607,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
             return uri;
         }
 
-        if (!(prepend.charAt(prepend.length() - 1) == '/') && !(toAppend.charAt(0) == '/')) {
+        if (prepend.charAt(prepend.length() - 1) != '/' && toAppend.charAt(0) != '/') {
             return XmldbURI.create(prepend + "/" + toAppend, hadXmldbPrefix);
         } else {
             return XmldbURI.create(prepend + toAppend, hadXmldbPrefix);

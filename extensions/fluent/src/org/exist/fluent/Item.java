@@ -52,7 +52,8 @@ public class Item extends Resource {
 		Item that = (Item) o;
 		if (this.item == that.item) return true;
 		if (this.item instanceof AtomicValue && that.item instanceof AtomicValue) {
-			AtomicValue thisValue = (AtomicValue) this.item, thatValue = (AtomicValue) that.item;
+			AtomicValue thisValue = (AtomicValue) this.item;
+			AtomicValue thatValue = (AtomicValue) that.item;
 			try {
 				return
 						thisValue.getType() == thatValue.getType()

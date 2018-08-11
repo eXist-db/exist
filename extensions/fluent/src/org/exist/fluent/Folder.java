@@ -311,6 +311,38 @@ public class Folder extends NamedResource implements Cloneable {
 			}
 		}
 
+		public class DocumentsFacetIterator implements Iterator<Document> {
+			private Iterator<DocumentImpl> delegate;
+			private Document last;
+
+			public DocumentsFacetIterator() {
+				acquire(LockMode.READ_LOCK);
+				try {
+					delegate = handle.iterator(broker);
+				} catch(PermissionDeniedException | LockException e) {
+					throw new DatabaseException(e.getMessage(), e);
+				} finally {
+					release();
+				}
+			}
+
+			public void remove() {
+				staleMarker.check();
+				if (last == null) throw new IllegalStateException("no document to remove");
+				last.delete();
+				last = null;
+			}
+			public boolean hasNext() {
+				staleMarker.check();
+				return delegate.hasNext();
+			}
+			public Document next() {
+				staleMarker.check();
+				last = Document.newInstance(delegate.next(), Folder.this);
+				return last;
+			}
+		}
+
 		private DocumentsFacet() {
 			super(Folder.this.namespaceBindings, Folder.this.db);
 		}
@@ -572,38 +604,10 @@ public class Folder extends NamedResource implements Cloneable {
 		 * 
 		 * @return an iterator over the folder's immediate documents
 		 */
+		@Override
 		public Iterator<Document> iterator() {
-			return new Iterator<Document>() {
-				private Iterator<DocumentImpl> delegate;
-				private Document last;
-				{
-					acquire(LockMode.READ_LOCK);
-					try {
-						delegate = handle.iterator(broker);
-					} catch(PermissionDeniedException | LockException e) {
-						throw new DatabaseException(e.getMessage(), e);
-					} finally {
-						release();
-					}
-				}
-				public void remove() {
-					staleMarker.check();
-					if (last == null) throw new IllegalStateException("no document to remove");
-					last.delete();
-					last = null;
-				}
-				public boolean hasNext() {
-					staleMarker.check();
-					return delegate.hasNext();
-				}
-				public Document next() {
-					staleMarker.check();
-					last = Document.newInstance(delegate.next(), Folder.this);
-					return last;
-				}
-			};
+			return new DocumentsFacetIterator();
 		}
-		
 	}
 	
 	/**

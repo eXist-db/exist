@@ -129,8 +129,9 @@ public class GlobToRegex {
      *         pattern.
      */
     public static String globToRegexp(CharSequence pattern) {
-        @SuppressWarnings("unused")
-		boolean inCharSet, starCannotMatchNull = false, questionMatchesZero;
+		boolean inCharSet;
+//        boolean starCannotMatchNull = false;
+//        boolean questionMatchesZero;
         int ch;
         StringBuilder buffer;
 

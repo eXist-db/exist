@@ -115,7 +115,8 @@ public class Compile extends BasicFunction {
 		
 		String error = null;
 		ErrorCodes.ErrorCode code = null;
-		int line = -1, column = -1;
+		int line = -1;
+		int column = -1;
 		
 		final XQueryContext pContext = 
 			new XQueryContext(context.getBroker().getBrokerPool());

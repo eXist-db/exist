@@ -358,17 +358,20 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
-    public NodeSet search(final int contextId, final DocumentSet docs, List<QName> qnames, final String query,
-                          final String ngram, final XQueryContext context, final NodeSet contextSet, final int axis)
+    public NodeSet search(final int contextId, final DocumentSet docs, final List<QName> qnames, final String query,
+            final String ngram, final XQueryContext context, final NodeSet contextSet, final int axis)
             throws XPathException {
+        final List<QName> searchQnames;
         if (qnames == null || qnames.isEmpty()) {
-            qnames = getDefinedIndexes(context.getBroker(), docs);
+            searchQnames = getDefinedIndexes(context.getBroker(), docs);
+        } else {
+            searchQnames = qnames;
         }
 
         final NodeSet result = new ExtArrayNodeSet(docs.getDocumentCount(), 250);
-        for (final Iterator<org.exist.collections.Collection> iter = docs.getCollectionIterator(); iter.hasNext(); ) {
+        for (final Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext(); ) {
             final int collectionId = iter.next().getId();
-            for (final QName qname : qnames) {
+            for (final QName qname : searchQnames) {
                 final NGramQNameKey key = new NGramQNameKey(collectionId, qname, index.getBrokerPool().getSymbols(), query);
                 try (final ManagedLock<ReentrantLock> dbLock = lockManager.acquireBtreeReadLock(index.db.getLockName())) {
                     final SearchCallback cb = new SearchCallback(contextId, query, ngram, docs, contextSet, context, result, axis == NodeSet.ANCESTOR);
@@ -630,10 +633,6 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private class NGramStreamListener extends AbstractStreamListener {
 
-        NGramStreamListener() {
-            //Nothing to do
-        }
-
         @Override
         public void startElement(final Txn transaction, final ElementImpl element, final NodePath path) {
             if (config != null && config.get(element.getQName()) != null) {
@@ -686,7 +685,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         @SuppressWarnings("unused")
         private NodeProxy root;
 
-        NGramMatchListener(final DBBroker broker, final NodeProxy proxy) {
+        private NGramMatchListener(final DBBroker broker, final NodeProxy proxy) {
             reset(broker, proxy);
         }
 
@@ -849,24 +848,24 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     private static class NodeOffset {
-        final NodeId nodeId;
-        int offset;
+        private final NodeId nodeId;
+        private int offset;
 
-        NodeOffset(final NodeId nodeId) {
+        private NodeOffset(final NodeId nodeId) {
             this(nodeId, 0);
         }
 
-        NodeOffset(final NodeId nodeId, final int offset) {
+        private NodeOffset(final NodeId nodeId, final int offset) {
             this.nodeId = nodeId;
             this.offset = offset;
         }
     }
 
     private static class QNameTerm implements Comparable<QNameTerm> {
-        final QName qname;
-        final String term;
+        private final QName qname;
+        private final String term;
 
-        QNameTerm(final QName qname, final String term) {
+        private QNameTerm(final QName qname, final String term) {
             this.qname = qname;
             this.term = term;
         }

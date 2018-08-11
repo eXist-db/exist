@@ -102,7 +102,8 @@ public class DigestAuthenticator implements Authenticator {
 	private static void parseCredentials(Digest digest, String credentials) {
 		credentials = credentials.substring("Digest ".length());
 		final StringBuilder current = new StringBuilder();
-		String name = null, value;
+		String name = null;
+		String value;
 		boolean inQuotedString = false;
 		for (int i = 0; i < credentials.length(); i++) {
 			final char ch = credentials.charAt(i);

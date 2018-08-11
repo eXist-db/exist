@@ -84,6 +84,12 @@ public class DocumentAsValueTest {
     private static DocumentImpl doc1 = null;
     private static DocumentImpl doc2 = null;
 
+    private static Properties contentsOutputProps = new Properties();
+    static {
+        contentsOutputProps.setProperty(OutputKeys.INDENT, "yes");
+        contentsOutputProps.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
+    }
+
     @Test
 	public void test_00() throws Exception {
     	startDB();
@@ -106,11 +112,6 @@ public class DocumentAsValueTest {
         }
     }
 
-    public Properties contentsOutputProps = new Properties();
-    {
-        contentsOutputProps.setProperty( OutputKeys.INDENT, "yes" );
-        contentsOutputProps.setProperty( EXistOutputKeys.OUTPUT_DOCTYPE, "yes" );
-    }
     private String serializer(DBBroker broker, DocumentImpl document) throws SAXException {
 		Serializer serializer = broker.getSerializer();
 		serializer.setUser(broker.getCurrentSubject());

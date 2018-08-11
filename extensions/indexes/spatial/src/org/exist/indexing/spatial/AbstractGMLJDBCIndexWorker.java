@@ -704,8 +704,8 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 
     private class GMLStreamListener extends AbstractStreamListener {
 
-        Deque<String> srsNamesStack = new ArrayDeque<String>();
-        ElementImpl deferredElement;
+        private final Deque<String> srsNamesStack = new ArrayDeque<String>();
+        private ElementImpl deferredElement;
 
         @Override
         public IndexWorker getWorker() {

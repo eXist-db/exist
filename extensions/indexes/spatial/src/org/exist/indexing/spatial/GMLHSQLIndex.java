@@ -58,10 +58,6 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
     private DBBroker connectionOwner = null;
     private long connectionTimeout = 100000L;
     
-    public GMLHSQLIndex() {
-        //Nothing to do ;-)
-    }
-    
     @Override
     public void configure(BrokerPool pool, Path dataDir, Element config) throws DatabaseConfigurationException {
         super.configure(pool, dataDir, config);

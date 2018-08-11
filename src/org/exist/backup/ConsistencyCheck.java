@@ -471,20 +471,20 @@ public class ConsistencyCheck {
     }
 
     private static class ElementNode {
-        final ElementImpl elem;
-        int childCount = 0;
-        NodeId prevSibling = null;
+        private final ElementImpl elem;
+        private int childCount = 0;
+        private NodeId prevSibling = null;
 
-        ElementNode(final ElementImpl element) {
+        private ElementNode(final ElementImpl element) {
             this.elem = element;
         }
     }
 
     private class DocumentCallback implements BTreeCallback {
         @Nullable
-        final private List<ErrorReport> errors;
+        private final List<ErrorReport> errors;
         @Nullable
-        final private ProgressCallback progress;
+        private final ProgressCallback progress;
         private final boolean checkDocs;
 
         private int docCount = 0;

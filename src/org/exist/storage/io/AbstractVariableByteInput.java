@@ -32,10 +32,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public abstract class AbstractVariableByteInput implements VariableByteInput {
 
-    public AbstractVariableByteInput() {
-        //Nothing to do
-    }
-
     @Override
     public byte readByte() throws IOException {
         final int i = read();

@@ -20,10 +20,7 @@
 package org.exist.security.internal;
 
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -93,9 +90,7 @@ public class RealmImpl extends AbstractRealm {
 
         //DBA group
         GROUP_DBA = new GroupImpl(broker, this, DBA_GROUP_ID, SecurityManager.DBA_GROUP);
-        GROUP_DBA.setManagers(new ArrayList<Reference<SecurityManager, Account>>(){
-            { add(new ReferenceImpl<>(sm, "getAccount", SecurityManager.DBA_USER)); }
-        });
+        GROUP_DBA.setManagers(new ArrayList<>(Arrays.asList(new ReferenceImpl<>(sm, "getAccount", SecurityManager.DBA_USER))));
         GROUP_DBA.setMetadataValue(EXistSchemaType.DESCRIPTION, "Database Administrators");
         sm.registerGroup(GROUP_DBA);
         registerGroup(GROUP_DBA);
