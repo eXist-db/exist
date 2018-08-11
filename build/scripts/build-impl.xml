@@ -167,9 +167,6 @@
         <filter token="version" value="${project.version}"/>
         <filter token="database" value="native"/>
 
-        <copy file="${src.webapp}/xqts/config.xml.tmpl" tofile="${src.webapp}/xqts/config.xml"
-            filtering="true" failonerror="false"/>
-
         <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/conf.xml" filtering="true">
             <filterset>
                 <filter token="dataDir" value="${config.dataDir}"/>
@@ -746,12 +743,6 @@
 
         <delete failonerror="no" dir="${dist}"/>
 
-        <!-- XQTS files -->
-        <delete failonerror="no">
-            <fileset dir="${junit.reports}/external" includes="*.zip"/>
-        </delete>
-        <delete failonerror="no" dir="cat"/>
-
         <ant antfile="build.xml" dir="extensions/betterform" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/modules" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/security/activedirectory"  target="clean" inheritall="false"/>
@@ -803,7 +794,6 @@
         <delete failonerror="no">
             <fileset dir="installer" includes="install.xml"/>
             <fileset dir="webapp" includes="header.xml"/>
-            <fileset dir="webapp/xqts" includes="config.xml"/>
         </delete>
 
         <!-- more files -->
@@ -813,11 +803,6 @@
         <!-- autodeploy -->
         <delete failonerror="no" dir="autodeploy"/>
 
-        <!-- XQTS files -->
-        <delete failonerror="no">
-            <fileset dir="${junit.reports}/src/org/exist/xquery/xqts" includes="*" excludes="QT3TS_case.java,QT3TS_To_junit.java,XQTS_case.java,XQTS_To_junit.java,config.xml,hacked-tests.xml,xqts.xql"/>
-            <fileset dir="${junit.reports}/external" includes="*"/>
-        </delete>
         <delete failonerror="no">
             <fileset dir="${jetty.dir}/tmp">
                 <exclude name=".DO_NOT_DELETE"/>
