@@ -49,10 +49,6 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
 	protected BFile db;
     private int gramSize = 3;
     private Path dataFile = null;
-    
-    public NGramIndex() {
-        //Nothing to do
-    }
 
     @Override
     public void configure(BrokerPool pool, Path dataDir, Element config) throws DatabaseConfigurationException {

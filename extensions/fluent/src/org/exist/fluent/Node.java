@@ -123,10 +123,13 @@ public class Node extends Item {
 	 */
 	public NamespaceMap inScopeNamespaces() {
 		NamespaceMap namespaceMap = new NamespaceMap();
-		for (Iterator<String> it = query().all(
+		for (final Iterator<String> it = query().all(
 				"for $prefix in in-scope-prefixes($_1) return ($prefix, namespace-uri-for-prefix($prefix, $_1))", this).values().iterator(); it.hasNext(); ) {
-			String prefix = it.next(), namespace = it.next();
-			if (!NamespaceMap.isReservedPrefix(prefix)) namespaceMap.put(prefix, namespace);
+			final String prefix = it.next();
+			final String namespace = it.next();
+			if (!NamespaceMap.isReservedPrefix(prefix)) {
+				namespaceMap.put(prefix, namespace);
+			}
 		}
 		return namespaceMap;
 	}
@@ -141,11 +144,13 @@ public class Node extends Item {
 	 */
 	public int compareDocumentOrderTo(Node node) {
 		if (this.item == node.item) return 0;
-		NodeValue nv1 = (NodeValue) this.item, nv2 = (NodeValue) node.item;
+		NodeValue nv1 = (NodeValue) this.item;
+		NodeValue nv2 = (NodeValue) node.item;
 		if (nv1.getImplementationType() != nv2.getImplementationType())
 			throw new DatabaseException("can't compare different node types, since they can never be in the same document");
 		if (nv1.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-			NodeProxy n1 = (NodeProxy) item, n2 = (NodeProxy) node.item;
+			NodeProxy n1 = (NodeProxy) item;
+			NodeProxy n2 = (NodeProxy) node.item;
 			if (n1.getOwnerDocument().getDocId() != n2.getOwnerDocument().getDocId()) 
 				throw new DatabaseException("can't compare document order of nodes in disparate documents:  this node is in " + document() + " and the argument node in " + node.document());
 			if (n1.getNodeId().equals(n2.getNodeId())) return 0;
@@ -155,7 +160,8 @@ public class Node extends Item {
 				throw new DatabaseException("unable to compare nodes", e);
 			}
 		} else if (nv1.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
-			org.exist.dom.memtree.NodeImpl n1 = (org.exist.dom.memtree.NodeImpl) nv1, n2 = (org.exist.dom.memtree.NodeImpl) nv2;
+			org.exist.dom.memtree.NodeImpl n1 = (org.exist.dom.memtree.NodeImpl) nv1;
+			org.exist.dom.memtree.NodeImpl n2 = (org.exist.dom.memtree.NodeImpl) nv2;
 			final org.exist.dom.memtree.DocumentImpl n1Doc = n1.getNodeType() == org.w3c.dom.Node.DOCUMENT_NODE ? (org.exist.dom.memtree.DocumentImpl)n1 : n1.getOwnerDocument();
 			final org.exist.dom.memtree.DocumentImpl n2Doc = n2.getNodeType() == org.w3c.dom.Node.DOCUMENT_NODE ? (org.exist.dom.memtree.DocumentImpl)n2 : n2.getOwnerDocument();
 

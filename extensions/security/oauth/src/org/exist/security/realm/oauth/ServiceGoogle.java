@@ -74,8 +74,7 @@ public class ServiceGoogle  {
 		if (semicolonPos > 0) {
 			String _charset = contentType.substring(semicolonPos + 1).trim();
 			if (_charset.startsWith("charset")) {
-				//charset = 
-				_charset.substring(_charset.indexOf('=') + 1);
+				//charset = _charset.substring(_charset.indexOf('=') + 1);
 			}
 			contentType = contentType.substring(0, semicolonPos);
 		}

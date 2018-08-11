@@ -70,7 +70,8 @@ public class DLNBase {
     private static int[] initComponents() {
         final int size[] = new int[10];
         size[0] = 7;  // = Math.pow(2, 3) - 1;
-        int components, numBits;
+        int components;
+        int numBits;
         for (int i = 1; i < size.length; i++) {
             components = i + 1;
             numBits = components * BITS_PER_UNIT - components;

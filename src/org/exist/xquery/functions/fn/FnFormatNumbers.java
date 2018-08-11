@@ -228,7 +228,8 @@ public class FnFormatNumbers extends BasicFunction {
                         "A sub-picture must contain at least one character that is an optional-digit-sign or a member of the decimal-digit-family.");
             }
 
-            int bmg = -1, bfg = -1;
+            int bmg = -1;
+            int bfg = -1;
 
             ParsePhase phase = ParsePhase.BEGINNING_PASSIVE_CHARS;
 

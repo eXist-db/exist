@@ -458,7 +458,7 @@ public class GetFragmentBetween extends BasicFunction {
             final Node attr = attrs.item(i);
             final String fullNodeName = getFullNodeName(attr);
             final String attrNodeValue = attr.getNodeValue();
-            if (!"".equals(fullNodeName) && (!(fullNodeName == null))) {
+            if (fullNodeName != null && !fullNodeName.isEmpty()) {
                 xpath.append("[@").append(fullNodeName).append(" eq \"").append(attrNodeValue).append("\"]");
             }
         }

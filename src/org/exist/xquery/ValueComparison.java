@@ -69,9 +69,8 @@ public class ValueComparison extends GeneralComparison {
 		if(ls.isEmpty() || rs.isEmpty())
 			{return Sequence.EMPTY_SEQUENCE;}
 		if (ls.hasOne() && rs.hasOne()) {
-            AtomicValue lv, rv;
-			lv = ls.itemAt(0).atomize();
-			rv = rs.itemAt(0).atomize();
+			final AtomicValue lv = ls.itemAt(0).atomize();
+			final AtomicValue rv = rs.itemAt(0).atomize();
             final Collator collator = getCollator(contextSequence);
 			return BooleanValue.valueOf(compareAtomic(collator, lv, rv, StringTruncationOperator.NONE, relation));
 		} 

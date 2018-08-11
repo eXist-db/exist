@@ -52,7 +52,7 @@ import org.xml.sax.helpers.AttributesImpl;
  *
  */
 public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
-	
+
     protected final static Logger LOG = LogManager.getLogger(MDStorageManager.class);
 
     public final static String PREFIX = "md";
@@ -63,7 +63,7 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	public final static String KEY = "key";
 	public final static String VALUE = "value";
 	public final static String VALUE_IS_DOCUMENT = "value-is-document";
-	
+
 	public final static String PREFIX_UUID = PREFIX+":"+UUID;
 	public final static String PREFIX_KEY = PREFIX+":"+KEY;
 	public final static String PREFIX_META = PREFIX+":"+META;
@@ -71,15 +71,18 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	public final static String PREFIX_VALUE_IS_DOCUMENT = PREFIX+":"+VALUE_IS_DOCUMENT;
 
 	protected static MDStorageManager inst = null;
-	
+
+	private Metas collectionMetas = null;
+	private Metas currentMetas = null;
+
 	MetaData md;
-	
+
 	public MDStorageManager(PluginsManager manager) throws PermissionDeniedException {
 		try {
 			@SuppressWarnings("unchecked")
-			Class<? extends MetaData> backend = 
+			Class<? extends MetaData> backend =
 				(Class<? extends MetaData>) Class.forName("org.exist.storage.md.MetaDataImpl");
-		
+
 			Constructor<? extends MetaData> ctor = backend.getConstructor(Database.class);
 			md = ctor.newInstance(manager.getDatabase());
 		} catch (Exception e) {
@@ -88,20 +91,20 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 		}
 
 		inst = this;
-		
+
 		Database db = manager.getDatabase();
-		
+
 		inject(db, md);
 
         db.registerDocumentTrigger(DocumentEvents.class);
         db.registerCollectionTrigger(CollectionEvents.class);
-		
+
 		Map<String, Class<?>> map = (Map<String, Class<?>>) db.getConfiguration().getProperty(XQueryContext.PROPERTY_BUILT_IN_MODULES);
         map.put(
-    		NAMESPACE_URI, 
+    		NAMESPACE_URI,
     		MetadataModule.class);
 	}
-	
+
 	private void inject(Database db, MetaStorage md) {
 	    try {
             Field field = db.getClass().getDeclaredField("metaStorage");
@@ -116,9 +119,9 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-	    
+
 	}
-	
+
 
 	@Override
 	public void start(DBBroker broker) throws EXistException {
@@ -146,16 +149,16 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 			AttributesImpl attr = new AttributesImpl();
 	        attr.addAttribute(NAMESPACE_URI, UUID, PREFIX_UUID, "CDATA", m.getUUID());
 	        attr.addAttribute(NAMESPACE_URI, KEY, PREFIX_KEY, "CDATA", m.getKey());
-	        
+
 	        Object value = m.getValue();
 	        if (value instanceof DocumentImpl) {
 				DocumentImpl doc = (DocumentImpl) value;
-				
+
 		        attr.addAttribute(NAMESPACE_URI, VALUE, PREFIX_VALUE, "CDATA", doc.getURI().toString());
 		        attr.addAttribute(NAMESPACE_URI, VALUE_IS_DOCUMENT, PREFIX_VALUE_IS_DOCUMENT, "CDATA", "true");
-			
+
 	        } else {
-				
+
 	        	attr.addAttribute(NAMESPACE_URI, VALUE, PREFIX_VALUE, "CDATA", value.toString());
 			}
 
@@ -175,7 +178,7 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 			LOG.warn("No metadata found to backup for collection: "  + collection.getURI());
 			return;
 		}
-	    
+
 //		System.out.println("backup collection "+colection.getURI());
 		backup(ms, attrs);
 	}
@@ -229,23 +232,31 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	}
 
 	//restore methods
-	private Metas collectionMetas = null;
-	private Metas currentMetas = null;
 
 	@Override
-	public void setDocumentLocator(Locator locator) {}
+	public void setDocumentLocator(Locator locator) {
+		//no-op
+	}
 
 	@Override
-	public void startDocument() throws SAXException {}
+	public void startDocument() throws SAXException {
+		//no-op
+	}
 
 	@Override
-	public void endDocument() throws SAXException {}
+	public void endDocument() throws SAXException {
+		//no-op
+	}
 
 	@Override
-	public void startPrefixMapping(String prefix, String uri) throws SAXException {}
+	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+		//no-op
+	}
 
 	@Override
-	public void endPrefixMapping(String prefix) throws SAXException {}
+	public void endPrefixMapping(String prefix) throws SAXException {
+		//no-op
+	}
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
@@ -253,7 +264,7 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 			String uuid = atts.getValue(NAMESPACE_URI, UUID);
 			String key = atts.getValue(NAMESPACE_URI, KEY);
 			String value = atts.getValue(NAMESPACE_URI, VALUE);
-			
+
 			if (currentMetas == null) {
 				md._addMeta(collectionMetas, uuid, key, value);
 			} else {
@@ -272,28 +283,36 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	}
 
 	@Override
-	public void characters(char[] ch, int start, int length) throws SAXException {}
+	public void characters(char[] ch, int start, int length) throws SAXException {
+		//no-op
+	}
 
 	@Override
-	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {}
+	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+		//no-op
+	}
 
 	@Override
-	public void processingInstruction(String target, String data) throws SAXException {}
+	public void processingInstruction(String target, String data) throws SAXException {
+		//no-op
+	}
 
 	@Override
-	public void skippedEntity(String name) throws SAXException {}
+	public void skippedEntity(String name) throws SAXException {
+		//no-op
+	}
 
 	@Override
 	public void startCollectionRestore(Collection collection, Attributes atts) {
 	    if (collection == null)
 	        return;
-	    
+
 //		System.out.println("startCollectionRestore "+colection.getURI());
 		String uuid = atts.getValue(NAMESPACE_URI, UUID);
 		if (uuid != null)
 			collectionMetas = md.replaceMetas(collection.getURI(), uuid);
 		else
-			collectionMetas = md.addMetas(collection); 
+			collectionMetas = md.addMetas(collection);
 	}
 
 	@Override
@@ -305,13 +324,13 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	public void startDocumentRestore(Document document, Attributes atts) {
 	    if (document == null)
 	        return;
-	    
+
 //		System.out.println("startDocument "+document.getURI());
 		String uuid = atts.getValue(NAMESPACE_URI, UUID);
 		if (uuid != null)
 			currentMetas = md.replaceMetas(document instanceof DocumentImpl ? ((DocumentImpl)document).getURI() : null, uuid);
 		else
-			currentMetas = md.addMetas(document); 
+			currentMetas = md.addMetas(document);
 	}
 
 	@Override

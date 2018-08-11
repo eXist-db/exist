@@ -189,6 +189,7 @@ public class IndexStatisticsWorker implements IndexWorker {
 
     @Override
     public void removeCollection(final Collection collection, final DBBroker broker, final boolean reindex) {
+        //no-op
     }
 
     @Override

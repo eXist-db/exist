@@ -133,16 +133,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public final static String INDEX_CASE_SENSITIVE_ATTRIBUTE = "caseSensitive";
     public final static String PROPERTY_INDEX_CASE_SENSITIVE = "indexer.case-sensitive";
 
-    public enum IndexType {
-        GENERIC((byte)0x0),
-        QNAME((byte)0x1);
-        final byte val;
-
-        IndexType(final byte val) {
-            this.val = val;
-        }
-    }
-
     /**
      * The broker that is using this value index.
      */
@@ -153,15 +143,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
      */
     @GuardedBy("dbValues#getLock()") final BFile dbValues;
     private final Configuration config;
-
-    private static class PendingChanges<K> {
-        final IndexType indexType;
-        final Map<K, List<NodeId>> changes = new TreeMap<>();
-
-        PendingChanges(final IndexType indexType) {
-            this.indexType = indexType;
-        }
-    }
 
     /**
      * A collection of key-value pairs that pending modifications for this value index.
@@ -348,10 +329,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
     @Override
     public void storeText(final TextImpl node, final NodePath currentPath) {
+        //no-op
     }
 
     @Override
     public void removeNode(final NodeHandle node, final NodePath currentPath, final String content) {
+        //no-op
     }
 
     @Override
@@ -1666,6 +1649,25 @@ public class NativeValueIndex implements ContentLoadingObserver {
         @Override
         public IndexWorker getWorker() {
             return null;
+        }
+    }
+
+    public enum IndexType {
+        GENERIC((byte)0x0),
+        QNAME((byte)0x1);
+        final byte val;
+
+        IndexType(final byte val) {
+            this.val = val;
+        }
+    }
+
+    private static class PendingChanges<K> {
+        final IndexType indexType;
+        final Map<K, List<NodeId>> changes = new TreeMap<>();
+
+        PendingChanges(final IndexType indexType) {
+            this.indexType = indexType;
         }
     }
 }

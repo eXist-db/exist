@@ -64,7 +64,7 @@ public abstract class DeferrableFilteringTrigger extends FilteringTrigger {
      * @param defer Should we defer the processing of events?
      */
     public void defer(final boolean defer) throws SAXException {
-        if(this.defer && defer == false) {
+        if(this.defer && !defer) {
             applyDeferredEvents();
         }
         this.defer = defer;

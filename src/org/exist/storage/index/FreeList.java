@@ -52,10 +52,6 @@ public class FreeList {
     protected FreeSpace last = null;
     protected int size = 0;
 
-    public FreeList() {
-        //Nothing to do
-    }
-
     /**
      * Append a new {@link FreeSpace} object to the list,
      * describing the amount of free space available on a page.

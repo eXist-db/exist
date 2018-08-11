@@ -432,10 +432,10 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     @Override
     public NodeSet intersection(final NodeSet other) {
         final AVLTreeNodeSet r = new AVLTreeNodeSet();
-        NodeProxy l, p;
         for(final Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
-            l = i.next();
-            if((p = other.get(l)) != null) {
+            final NodeProxy l = i.next();
+            final NodeProxy p = other.get(l);
+            if(p != null) {
                 l.addMatches(p);
                 r.add(l);
             }
@@ -446,20 +446,22 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     @Override
     public NodeSet deepIntersection(final NodeSet other) {
         final AVLTreeNodeSet r = new AVLTreeNodeSet();
-        NodeProxy l, p, q;
-        for(final Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
-            l = i.next();
-            if((p = other.parentWithChild(l, false, true, NodeProxy.UNKNOWN_NODE_LEVEL)) != null) {
-                if(p.getNodeId().equals(l.getNodeId())) {
+        for (final Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
+            final NodeProxy l = i.next();
+            final NodeProxy p = other.parentWithChild(l, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+            if (p != null) {
+                if (p.getNodeId().equals(l.getNodeId())) {
                     p.addMatches(l);
                 }
                 r.add(p);
             }
         }
-        for(final Iterator<NodeProxy> i = other.iterator(); i.hasNext(); ) {
-            l = i.next();
-            if((q = parentWithChild(l, false, true, NodeProxy.UNKNOWN_NODE_LEVEL)) != null) {
-                if((p = r.get(q)) != null) {
+        for (final Iterator<NodeProxy> i = other.iterator(); i.hasNext(); ) {
+            final NodeProxy l = i.next();
+            final NodeProxy q = parentWithChild(l, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+            if (q != null) {
+                final NodeProxy p = r.get(q);
+                if(p != null) {
                     p.addMatches(l);
                 } else {
                     r.add(l);
@@ -519,10 +521,10 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         } else {
             final NewArrayNodeSet result = new NewArrayNodeSet();
             result.addAll(other);
-            NodeProxy p, c;
             for(final Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
-                p = i.next();
-                if((c = other.get(p)) != null) {
+                final NodeProxy p = i.next();
+                final NodeProxy c = other.get(p);
+                if(c != null) {
                     c.addMatches(p);
                 } else {
                     result.add(p);
@@ -542,16 +544,14 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      */
     @Override
     public NodeSet getContextNodes(final int contextId) {
-        NodeProxy current, context;
-        ContextItem contextNode;
         final NewArrayNodeSet result = new NewArrayNodeSet();
         DocumentImpl lastDoc = null;
         for(final Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
-            current = i.next();
-            contextNode = current.getContext();
+            final NodeProxy current = i.next();
+            ContextItem contextNode = current.getContext();
             while(contextNode != null) {
                 if(contextNode.getContextId() == contextId) {
-                    context = contextNode.getNode();
+                    final NodeProxy context = contextNode.getNode();
                     context.addMatches(current);
                     if(Expression.NO_CONTEXT_ID != contextId) {
                         context.addContextNode(contextId, context);

@@ -172,9 +172,8 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     }
 
     private void balance(final Node node) {
-        Node currentNode, currentParent;
-        currentNode = node;
-        currentParent = node.parent;
+        Node currentNode = node;
+        Node currentParent = node.parent;
         while(currentNode != root) {
             final int h = currentParent.height;
             currentParent.setHeight();

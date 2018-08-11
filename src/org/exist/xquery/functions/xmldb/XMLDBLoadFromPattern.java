@@ -151,7 +151,8 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                 logger.debug("Found: " + files.size());
 
                 Collection col = collection;
-                String relDir, prevDir = null;
+                String relDir;
+                String prevDir = null;
 
                 for (final Path file : files) {
                     try {

@@ -59,9 +59,6 @@ public class IndexStatistics extends AbstractIndex implements RawBackupSupport {
 
     private Path dataFile;
     private DataGuide dataGuide = new DataGuide();
-    
-    public IndexStatistics() {
-    }
 
     public String getIndexId() {
         return ID;

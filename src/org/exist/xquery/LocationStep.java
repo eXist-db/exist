@@ -1192,6 +1192,7 @@ public class LocationStep extends Step {
 
                 @Override
                 public void nodeMoved(final NodeId oldNodeId, final NodeHandle newNode) {
+                    //no-op
                 }
 
                 @Override

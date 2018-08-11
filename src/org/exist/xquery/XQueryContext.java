@@ -518,8 +518,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         this.httpContext = from.httpContext;
     }
 
-
-    void copyFields(final XQueryContext ctx) {
+    protected void copyFields(final XQueryContext ctx) {
         ctx.calendar = this.calendar;
         ctx.implicitTimeZone = this.implicitTimeZone;
         ctx.baseURI = this.baseURI;
@@ -966,7 +965,6 @@ public class XQueryContext implements BinaryValueManager, Context {
         staticDocuments = set;
     }
 
-
     @Override
     public void setCalendar(final XMLGregorianCalendar newCalendar) {
         this.calendar = (XMLGregorianCalendar) newCalendar.clone();
@@ -1374,7 +1372,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         allModules.put(namespaceURI, module);
     }
 
-    void setModulesChanged() {
+    protected void setModulesChanged() {
         this.modulesChanged = true;
     }
 
@@ -2850,10 +2848,9 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         if (staticOptions != null) {
             for (final Option option : staticOptions) {
-                if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())) {
-                    if (!properties.containsKey(option.getQName().getLocalPart())) {
-                        properties.put(option.getQName().getLocalPart(), option.getContents());
-                    }
+                if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())
+                        && !properties.containsKey(option.getQName().getLocalPart())) {
+                    properties.put(option.getQName().getLocalPart(), option.getContents());
                 }
             }
         }
@@ -3027,7 +3024,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     private static class ContextUpdateListener implements UpdateListener {
         private final List<UpdateListener> listeners = new ArrayList<>();
 
-        void addListener(final UpdateListener listener) {
+        private void addListener(final UpdateListener listener) {
             listeners.add(listener);
         }
 

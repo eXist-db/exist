@@ -77,11 +77,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     private static final String JETTY_PROPETIES_FILENAME = "jetty.properties";
     private static final Logger logger = LogManager.getLogger(JettyStart.class);
 
-    public static void main(final String[] args) {
-        final JettyStart start = new JettyStart();
-        start.run(args, null);
-    }
-
     public final static String SIGNAL_STARTING = "jetty starting";
     public final static String SIGNAL_STARTED = "jetty started";
     public final static String SIGNAL_ERROR = "error";
@@ -94,6 +89,12 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     @GuardedBy("this") private int status = STATUS_STOPPED;
     @GuardedBy("this") private Optional<Thread> shutdownHook = Optional.empty();
     @GuardedBy("this") private int primaryPort = 8080;
+
+
+    public static void main(final String[] args) {
+        final JettyStart start = new JettyStart();
+        start.run(args, null);
+    }
 
     public JettyStart() {
         // Additional checks XML libs @@@@

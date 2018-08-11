@@ -144,33 +144,33 @@ public class FolderTest extends DatabaseTestCase {
 
 	@Test public void getChild5() {
 		db.createFolder("/top/nested");
-		Folder c1 = db.getFolder("/top");
+		final Folder c1 = db.getFolder("/top");
 		c1.namespaceBindings().put("foo", "http://www.ideanest.com/");
-		Folder c2 = c1.children().get("nested");
+		final Folder c2 = c1.children().get("nested");
 		assertEquals("http://www.ideanest.com/", c2.namespaceBindings().get("foo"));
 	}
 
 	@Test public void namespace1() {
-		Folder c1 = db.getFolder("/");
+		final Folder c1 = db.getFolder("/");
 		c1.namespaceBindings().put("foo", "http://www.ideanest.com/");
 		assertEquals("http://www.ideanest.com/", c1.namespaceBindings().get("foo"));
 	}
 
 	@Test public void namespace2() {
-		Folder c1 = db.getFolder("/");
+		final Folder c1 = db.getFolder("/");
 		c1.namespaceBindings().put("", "http://www.ideanest.com/");
 		assertEquals("http://www.ideanest.com/", c1.namespaceBindings().get(""));
 	}
 
 	@Test public void namespace3() {
-		Folder c1 = db.getFolder("/");
+		final Folder c1 = db.getFolder("/");
 		c1.namespaceBindings().put("foo", "http://www.ideanest.com/");
 		c1.namespaceBindings().remove("foo");
 		assertNull(c1.namespaceBindings().get("foo"));
 	}
 
 	@Test public void namespace4() {
-		Folder c1 = db.getFolder("/");
+		final Folder c1 = db.getFolder("/");
 		c1.namespaceBindings().put("foo", "http://www.ideanest.com/");
 		c1.namespaceBindings().put("bar", "urn:blah");
 		c1.namespaceBindings().remove("foo");
@@ -179,7 +179,7 @@ public class FolderTest extends DatabaseTestCase {
 	}
 
 	@Test public void namespace5() {
-		Folder c1 = db.getFolder("/");
+		final Folder c1 = db.getFolder("/");
 		c1.namespaceBindings().put("foo", "http://www.ideanest.com/");
 		c1.namespaceBindings().put("bar", "urn:blah");
 		c1.namespaceBindings().clear();
@@ -188,13 +188,13 @@ public class FolderTest extends DatabaseTestCase {
 	}
 
 	@Test public void buildDocument1() {
-		Folder c1 = db.createFolder("/top");
+		final Folder c1 = db.createFolder("/top");
 		c1.documents().build(Name.create(db, "doc1")).elem("test").end("test").commit();
 		assertEquals(1, c1.documents().size());
 	}
 
 	@Test public void buildDocument2() {
-		Folder c1 = db.createFolder("/top");
+		final Folder c1 = db.createFolder("/top");
 		c1.documents().build(Name.create(db, "doc1")).elem("test1").end("test1").commit();
 		c1.documents().build(Name.overwrite(db, "doc1")).elem("test2").end("test2").commit();
 		assertEquals(1, c1.documents().size());
@@ -202,26 +202,26 @@ public class FolderTest extends DatabaseTestCase {
 
 	@Test(expected = DatabaseException.class)
 	public void buildDocument3() {
-		Folder c1 = db.createFolder("/top");
+		final Folder c1 = db.createFolder("/top");
 		c1.documents().build(Name.create(db, "doc1")).elem("test1").end("test1").commit();
 		c1.documents().build(Name.create(db, "doc1")).elem("test2").end("test2").commit();
 	}
 
 	@Test public void buildDocument4() {
-		Folder c1 = db.createFolder("/top");
+		final Folder c1 = db.createFolder("/top");
 		c1.documents().build(Name.generate(db)).elem("test").end("test").commit();
 		assertEquals(1, c1.documents().size());
 	}
 
 	@Test public void buildDocument5() {
-		Folder c1 = db.createFolder("/top");
+		final Folder c1 = db.createFolder("/top");
 		c1.documents().build(Name.generate(db)).elem("test").end("test").commit();
 		c1.documents().build(Name.generate(db)).elem("test").end("test").commit();
 		assertEquals(2, c1.documents().size());
 	}
 
 	@Test public void buildDocument6() {
-		Folder c1 = db.createFolder("/top");
+		final Folder c1 = db.createFolder("/top");
 		c1.documents().build(Name.create(db, "child/doc1")).elem("test").end("test").commit();
 		assertEquals(0, c1.documents().size());
 		assertEquals(1, db.getFolder("/top/child").documents().size());
@@ -232,7 +232,7 @@ public class FolderTest extends DatabaseTestCase {
 	}
 
 	@Test public void size2() {
-		Folder c1 = db.createFolder("/top/nested");
+		final Folder c1 = db.createFolder("/top/nested");
 		c1.documents().build(Name.generate(db)).elem("test").end("test").commit();
 		c1.documents().build(Name.generate(db)).elem("test").end("test").commit();
 		c1.documents().build(Name.create(db, "doc1")).elem("test").end("test").commit();
@@ -241,21 +241,21 @@ public class FolderTest extends DatabaseTestCase {
 	}
 
 	@Test public void childrenSize1() {
-		Folder c1 = db.createFolder("/top");
+		final Folder c1 = db.createFolder("/top");
 		assertEquals(0, c1.children().size());
 	}
 
 	@Test public void childrenSize2() {
 		db.createFolder("/top/nested1");
 		db.createFolder("/top/nested2");
-		Folder c1 = db.getFolder("/top");
+		final Folder c1 = db.getFolder("/top");
 		assertEquals(2, c1.children().size());
 	}
 
 	@Test public void childrenSize3() {
 		db.createFolder("/top/nested1");
 		db.createFolder("/top/nested2").documents().build(Name.generate(db)).elem("test").end("test").commit();
-		Folder c1 = db.getFolder("/top");
+		final Folder c1 = db.getFolder("/top");
 		c1.documents().build(Name.generate(db)).elem("test").end("test").commit();
 		assertEquals(2, c1.children().size());
 	}
@@ -263,21 +263,21 @@ public class FolderTest extends DatabaseTestCase {
 	@Test public void iterateChildren1() {
 		db.createFolder("/top1");
 		db.createFolder("/top2");
-		Collection<Folder> children = new ArrayList<Folder>();
-		for (Folder child : db.getFolder("/").children()) {
+		final Collection<Folder> children = new ArrayList<>();
+		for (final Folder child : db.getFolder("/").children()) {
 			children.add(child);
 		}
 		assertEquals(3, children.size());
 	}
 
 	@Test public void clear1() {
-		Folder c1 = db.createFolder("/top");
+		final Folder c1 = db.createFolder("/top");
 		c1.clear();
 		assertEquals(0, c1.documents().size());
 	}
 
 	@Test public void clear2() {
-		Folder c1 = db.createFolder("/top");
+		final Folder c1 = db.createFolder("/top");
 		c1.documents().build(Name.generate(db)).elem("test").end("test").commit();
 		c1.documents().build(Name.generate(db)).elem("test").end("test").commit();
 		c1.clear();
@@ -287,7 +287,7 @@ public class FolderTest extends DatabaseTestCase {
 	@Test public void clear3() {
 		db.createFolder("/top/nested1");
 		db.createFolder("/top/nested2");
-		Folder c1 = db.getFolder("/top");
+		final Folder c1 = db.getFolder("/top");
 		c1.clear();
 		assertEquals(0, c1.children().size());
 	}
@@ -296,7 +296,7 @@ public class FolderTest extends DatabaseTestCase {
 		db.createFolder("/top/nested1");
 		db.createFolder("/top/nested1/more");
 		db.createFolder("/top/nested2");
-		Folder c1 = db.getFolder("/top");
+		final Folder c1 = db.getFolder("/top");
 		c1.documents().build(Name.generate(db)).elem("test").end("test").commit();
 		c1.documents().build(Name.generate(db)).elem("test").end("test").commit();
 		c1.clear();
@@ -305,7 +305,7 @@ public class FolderTest extends DatabaseTestCase {
 	}
 
 	@Test public void delete1() {
-		Folder c1 = db.createFolder("/top/nested");
+		final Folder c1 = db.createFolder("/top/nested");
 		db.getFolder("/top/nested");
 		c1.delete();
 		try {
@@ -318,7 +318,7 @@ public class FolderTest extends DatabaseTestCase {
 	@Test(expected = DatabaseException.class)
 	public void delete2() {
 		db.createFolder("/top/nested/more");
-		Folder c1 = db.getFolder("/top/nested");
+		final Folder c1 = db.getFolder("/top/nested");
 		db.getFolder("/top/nested/more");
 		c1.delete();
 		db.getFolder("/top/nested/more");
@@ -346,61 +346,62 @@ public class FolderTest extends DatabaseTestCase {
 	}
 
 	@Test public void getDocument1() {
-		Folder c1 = db.createFolder("/c1");
+		final Folder c1 = db.createFolder("/c1");
 		c1.documents().build(Name.create(db, "original")).elem("test").end("test").commit();
-		Document d = c1.documents().get("original");
+		final Document d = c1.documents().get("original");
 		assertNotNull(d);
 	}
 
 	@Test public void getDocument2() {
-		Folder c1 = db.createFolder("/c1");
-		Folder c2 = db.createFolder("/c1/c2");
+		final Folder c1 = db.createFolder("/c1");
+		final Folder c2 = db.createFolder("/c1/c2");
 		c2.documents().build(Name.create(db, "original")).elem("test").end("test").commit();
-		Document d = c1.documents().get("c2/original");
+		final Document d = c1.documents().get("c2/original");
 		assertNotNull(d);
 	}
 
 	@Test public void containsDocument1() {
-		Folder c1 = db.createFolder("/c1");
+		final Folder c1 = db.createFolder("/c1");
 		c1.documents().build(Name.create(db, "original")).elem("test").end("test").commit();
 		assertTrue(c1.documents().contains("original"));
 	}
 
 	@Test public void containsDocument2() {
-		Folder c1 = db.createFolder("/c1");
-		Folder c2 = db.createFolder("/c1/c2");
+		final Folder c1 = db.createFolder("/c1");
+		final Folder c2 = db.createFolder("/c1/c2");
 		c2.documents().build(Name.create(db, "original")).elem("test").end("test").commit();
 		assertTrue(c1.documents().contains("c2/original"));
 	}
 
 	@Test public void query1() {
-		Folder c1 = db.createFolder("/c1");
+		final Folder c1 = db.createFolder("/c1");
 		c1.documents().build(Name.create(db, "original")).elem("test").end("test").commit();
 		c1.query().single("/test");
 	}
 
 	@Test public void query2() {
-		Folder c1 = db.createFolder("/c1");
+		final Folder c1 = db.createFolder("/c1");
 		c1.namespaceBindings().put("", "http://example.com");
 		c1.documents().build(Name.create(db, "original")).elem("test").end("test").commit();
 		c1.query().single("/test");
 	}
 	
 	@Test public void queryGetFreshService() {
-		Folder c1 = db.createFolder("/c1");
+		final Folder c1 = db.createFolder("/c1");
 		c1.documents().build(Name.create(db, "original")).namespace("", "foo").elem("test").end("test").commit();
 		c1.query().namespace("", "foo").single("/test");
 		assertFalse(c1.query().exists("/test"));	// namespace bindings not propagated from previous query
 	}
 
 	@Test public void queryBaseUri() {
-		Folder c1 = db.createFolder("/c1");
+		final Folder c1 = db.createFolder("/c1");
 		c1.documents().build(Name.create(db, "original")).elem("test").end("test").commit();
 		assertTrue(c1.query().single("doc-available('original')").booleanValue());
 	}
 
 	@Test public void convertToSequence() {
-		Folder c1 = db.createFolder("/c1"), c2 = db.createFolder("/c2");
+		final Folder c1 = db.createFolder("/c1");
+		final Folder c2 = db.createFolder("/c2");
 		c1.documents().build(Name.create(db, "one")).elem("test").end("test").commit();
 		c1.children().create("sub").documents().build(Name.create(db, "another"))	.elem("test").end("test").commit();
 		assertEquals(0, c2.query().all("/test").size());
@@ -409,7 +410,8 @@ public class FolderTest extends DatabaseTestCase {
 	}
 
 	@Test public void convertDocumentsToSequence() {
-		Folder c1 = db.createFolder("/c1"), c2 = db.createFolder("/c2");
+		final Folder c1 = db.createFolder("/c1");
+		final Folder c2 = db.createFolder("/c2");
 		c1.documents().build(Name.create(db, "one")).elem("test").end("test").commit();
 		c1.children().create("sub").documents().build(Name.create(db, "another")).elem("test").end("test").commit();
 		assertEquals(0, c2.query().all("/test").size());
@@ -417,33 +419,36 @@ public class FolderTest extends DatabaseTestCase {
 	}
 
 	@Test public void move1() {
-		Folder c1 = db.createFolder("/c1"), c2 = db.createFolder("/c2");
-		Folder f = c1.children().create("f");
+		final Folder c1 = db.createFolder("/c1");
+		final Folder c2 = db.createFolder("/c2");
+		final Folder f = c1.children().create("f");
 		f.move(c2, Name.keepCreate(db));
 		assertEquals("/c2/f", f.path());
 		assertEquals(c2, f.parent());
 	}
 
 	@Test public void move2() {
-		Folder c1 = db.createFolder("/c1"), c2 = db.createFolder("/c2");
-		Folder f = c1.children().create("f");
+		final Folder c1 = db.createFolder("/c1");
+		final Folder c2 = db.createFolder("/c2");
+		final Folder f = c1.children().create("f");
 		f.move(c2, Name.create(db, "g"));
 		assertEquals("/c2/g", f.path());
 		assertEquals(c2, f.parent());
 	}
 
 	@Test public void move3() {
-		Folder c1 = db.createFolder("/c1");
-		Folder f = c1.children().create("f");
+		final Folder c1 = db.createFolder("/c1");
+		final Folder f = c1.children().create("f");
 		f.move(f.parent(), Name.create(db, "g"));
 		assertEquals("/c1/g", f.path());
 		assertEquals(c1, f.parent());
 	}
 
 	@Test public void copy1() {
-		Folder c1 = db.createFolder("/c1"), c2 = db.createFolder("/c2");
-		Folder f1 = c1.children().create("f");
-		Folder f2 = f1.copy(c2, Name.keepCreate(db));
+		final Folder c1 = db.createFolder("/c1");
+		final Folder c2 = db.createFolder("/c2");
+		final Folder f1 = c1.children().create("f");
+		final Folder f2 = f1.copy(c2, Name.keepCreate(db));
 		assertEquals("/c1/f", f1.path());
 		assertEquals(c1, f1.parent());
 		assertEquals("/c2/f", f2.path());
@@ -451,9 +456,9 @@ public class FolderTest extends DatabaseTestCase {
 	}
 
 	@Test public void copy2() {
-		Folder c1 = db.createFolder("/c1");
-		Folder f1 = c1.children().create("f1");
-		Folder f2 = f1.copy(f1.parent(), Name.create(db, "f2"));
+		final Folder c1 = db.createFolder("/c1");
+		final Folder f1 = c1.children().create("f1");
+		final Folder f2 = f1.copy(f1.parent(), Name.create(db, "f2"));
 		assertEquals("/c1/f1", f1.path());
 		assertEquals(c1, f1.parent());
 		assertEquals("/c1/f2", f2.path());

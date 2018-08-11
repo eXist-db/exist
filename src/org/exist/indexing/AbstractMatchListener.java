@@ -49,7 +49,8 @@ public class AbstractMatchListener implements MatchListener {
 
     @Override
     public Receiver getLastInChain() {
-        Receiver last = this, next = getNextInChain();
+        Receiver last = this;
+        Receiver next = getNextInChain();
         while (next != null) {
             last = next;
             next = ((MatchListener)next).getNextInChain();

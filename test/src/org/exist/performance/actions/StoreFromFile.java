@@ -74,7 +74,8 @@ public class StoreFromFile extends AbstractAction {
         try {
             final List<Path> files = DirectoryScanner.scanDir(baseDir, includes);
             Collection col = collection;
-            String relDir, prevDir = null;
+            String relDir;
+            String prevDir = null;
             for (final Path file : files) {
                 String relPath = file.toString().substring(baseDir.toString().length());
                 int p = relPath.lastIndexOf(java.io.File.separatorChar);
@@ -112,7 +113,8 @@ public class StoreFromFile extends AbstractAction {
     private Collection makeColl(Collection parentColl, String relPath)
     throws XMLDBException {
         CollectionManagementService mgtService;
-        Collection current = parentColl, c;
+        Collection current = parentColl;
+        Collection c;
         String token;
         StringTokenizer tok = new StringTokenizer(relPath, "/");
         while (tok.hasMoreTokens()) {

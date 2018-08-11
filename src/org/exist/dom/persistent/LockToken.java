@@ -70,13 +70,6 @@ public class LockToken {
     private long timeout = -1L;
     private String token = null;
 
-    /**
-     * Creates a new instance of LockToken
-     */
-    public LockToken() {
-        // Left empty intentionally
-    }
-
     // Getters and setters
 
     /**

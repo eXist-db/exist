@@ -37,9 +37,6 @@ public class CodecFactory implements ProtocolCodecFactory {
 
 	private Map<IoSession, ProtocolEncoder> encoders = new HashMap<IoSession, ProtocolEncoder>();
 	private Map<IoSession, ProtocolDecoder> decoders = new HashMap<IoSession, ProtocolDecoder>();
-
-	public CodecFactory() {
-	}
 	
 	public ProtocolDecoder getDecoder(IoSession ioSession) throws Exception {
 		synchronized (decoders) {//TODO: rewrite???

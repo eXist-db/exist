@@ -21,6 +21,7 @@ package org.exist.config;
 
 import java.util.*;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -42,6 +43,8 @@ import org.exist.xmldb.XmldbURI;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
 /**
  * Amongst other things, this trigger defers immediate updates to Principals
@@ -420,28 +423,27 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
      * with Accounts or Groups
      */
     private enum PrincipalType {
-        ACCOUNT("account", new HashMap<Integer, Integer>() {
-            {
-                put(-1, RealmImpl.UNKNOWN_ACCOUNT_ID);
-                put(0, RealmImpl.SYSTEM_ACCOUNT_ID);
-                put(1, RealmImpl.ADMIN_ACCOUNT_ID);
-                put(2, RealmImpl.GUEST_ACCOUNT_ID);
-            }
-        }),
-        GROUP("group", new HashMap<Integer, Integer>() {
-            {
-                put(-1, RealmImpl.UNKNOWN_GROUP_ID);
-                put(1, RealmImpl.DBA_GROUP_ID);
-                put(2, RealmImpl.GUEST_GROUP_ID);
-            }
-        });
+        ACCOUNT("account",
+                Tuple(-1, RealmImpl.UNKNOWN_ACCOUNT_ID),
+                Tuple(0, RealmImpl.SYSTEM_ACCOUNT_ID),
+                Tuple(1, RealmImpl.ADMIN_ACCOUNT_ID),
+                Tuple(2, RealmImpl.GUEST_ACCOUNT_ID)
+        ),
+        GROUP("group",
+                Tuple(-1, RealmImpl.UNKNOWN_GROUP_ID),
+                Tuple(1, RealmImpl.DBA_GROUP_ID),
+                Tuple(2, RealmImpl.GUEST_GROUP_ID)
+        );
 
         private final String elementName;
         private final Map<Integer, Integer> idMigration;
 
-        PrincipalType(final String elementName, final Map<Integer, Integer> idMigration) {
+        PrincipalType(final String elementName, final Tuple2<Integer, Integer>... idMigrations) {
             this.elementName = elementName;
-            this.idMigration = idMigration;
+            this.idMigration = new HashMap<>();
+            for (final Tuple2<Integer, Integer> idMigration : idMigrations) {
+                this.idMigration.put(idMigration._1, idMigration._2);
+            }
         }
 
         /**

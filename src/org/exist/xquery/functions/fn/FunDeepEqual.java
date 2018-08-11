@@ -202,7 +202,8 @@ public class FunDeepEqual extends CollatingFunction {
             }
             if (a.getType() != b.getType())
                 {return false;}
-            NodeValue nva = (NodeValue) a, nvb = (NodeValue) b;
+            final NodeValue nva = (NodeValue) a;
+            final NodeValue nvb = (NodeValue) b;
             if (nva == nvb) {return true;}
             try {
                 //Don't use this shortcut for in-memory nodes
@@ -213,7 +214,8 @@ public class FunDeepEqual extends CollatingFunction {
             } catch (final XPathException e) {
                 // apparently incompatible values, do manual comparison
             }
-            Node na, nb;
+            final Node na;
+            final Node nb;
             switch(a.getType()) {
             case Type.DOCUMENT:
                 // NodeValue.getNode() doesn't seem to work for document nodes

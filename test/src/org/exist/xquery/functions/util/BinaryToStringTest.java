@@ -47,7 +47,8 @@ public class BinaryToStringTest {
         public MockXQueryContext() {
             super();
         }
-        
+
+        @Override
         public String getCacheClass() {
         	return "org.exist.util.io.FileFilterInputStreamCache";
 	        //return "org.exist.util.io.MemoryMappedFileFilterInputStreamCache";

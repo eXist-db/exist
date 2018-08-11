@@ -358,7 +358,7 @@ public class DebuggerTest implements ResponseListener {
 			// jetty.port.jetty
 			debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/logo.jpg");
 
-			assertTrue("This point should not be reached", false);
+			fail("This point should not be reached");
 
 		} catch (IOException e) {
 			exception = e;
@@ -372,7 +372,7 @@ public class DebuggerTest implements ResponseListener {
 			// jetty.port.jetty
 			debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/notExist/fibo.xql");
 
-			assertTrue("This point should not be reached", false);
+			fail("This point should not be reached");
 
 		} catch (IOException e) {
 			exception = e;

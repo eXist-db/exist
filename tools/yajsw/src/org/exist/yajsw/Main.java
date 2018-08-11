@@ -15,9 +15,6 @@ public class Main implements Observer, Comparable {
 
     public static final int WAIT_HINT_UPDATE = 10000;
 
-    public Main() {
-    }
-
     public void start(String[] args) {
         try {
             // use the bootstrap loader to autodetect EXIST_HOME and

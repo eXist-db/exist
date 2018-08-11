@@ -218,7 +218,8 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         }
         int low = documentOffsets[docIdx];
         int high = low + (documentLengths[docIdx] - 1);
-        int mid, cmp;
+        int mid;
+        int cmp;
         NodeProxy p;
         while(low <= high) {
             mid = (low + high) / 2;
