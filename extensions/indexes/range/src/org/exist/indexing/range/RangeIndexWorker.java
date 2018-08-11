@@ -101,7 +101,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private Set<NodeId> nodesToRemove = null;
     private RangeIndexConfig config = null;
     private RangeIndexListener listener = new RangeIndexListener();
-    private Stack<TextCollector> contentStack = null;
+    private Deque<TextCollector> contentStack = null;
     private int cachedNodesSize = 0;
 
     private int maxCachedNodesSize = 4096 * 1024;
@@ -797,14 +797,16 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         @Override
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
             if (mode == ReindexMode.STORE && config != null) {
-                if (contentStack != null && !contentStack.isEmpty()) {
-                    for (TextCollector extractor : contentStack) {
+                if (contentStack != null) {
+                    for (final TextCollector extractor : contentStack) {
                         extractor.startElement(element.getQName(), path);
                     }
                 }
                 Iterator<RangeIndexConfigElement> configIter = config.getConfig(path);
                 if (configIter != null) {
-                    if (contentStack == null) contentStack = new Stack<TextCollector>();
+                    if (contentStack == null) {
+                        contentStack = new ArrayDeque<>();
+                    }
                     while (configIter.hasNext()) {
                         RangeIndexConfigElement configuration = configIter.next();
                         if (configuration.match(path)) {
@@ -821,8 +823,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         @Override
         public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
             path.addComponent(attrib.getQName());
-            if (contentStack != null && !contentStack.isEmpty()) {
-                for (TextCollector collector : contentStack) {
+            if (contentStack != null) {
+                for (final TextCollector collector : contentStack) {
                     collector.attribute(attrib, path);
                 }
             }
@@ -849,8 +851,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         @Override
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null) {
-                if (mode == ReindexMode.STORE && contentStack != null && !contentStack.isEmpty()) {
-                    for (TextCollector extractor : contentStack) {
+                if (mode == ReindexMode.STORE && contentStack != null) {
+                    for (final TextCollector extractor : contentStack) {
                         extractor.endElement(element.getQName(), path);
                     }
                 }
@@ -863,7 +865,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             RangeIndexConfigElement configuration = configIter.next();
                             boolean match = configuration.match(path);
                             if (match) {
-                                TextCollector collector = contentStack.pop();
+                                final TextCollector collector = contentStack.pop();
                                 match = collector instanceof ComplexTextCollector
                                         ? match && ((ComplexTextCollector)collector).getConfig().matchConditions(element)
                                         : match;
@@ -878,8 +880,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         @Override
         public void characters(Txn transaction, AbstractCharacterData text, NodePath path) {
-            if (contentStack != null && !contentStack.isEmpty()) {
-                for (TextCollector collector : contentStack) {
+            if (contentStack != null) {
+                for (final TextCollector collector : contentStack) {
                     collector.characters(text, path);
                 }
             }

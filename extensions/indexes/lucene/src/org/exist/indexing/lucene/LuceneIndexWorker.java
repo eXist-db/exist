@@ -108,7 +108,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private ReindexMode mode = ReindexMode.STORE;
     
     private LuceneConfig config;
-    private Stack<TextExtractor> contentStack = null;
+    private Deque<TextExtractor> contentStack = null;
     private Set<NodeId> nodesToRemove = null;
     private List<PendingDoc> nodesToWrite = null;
     private Document pendingDoc = null;
@@ -1332,17 +1332,17 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             currentElement = element;
 
             if (mode == ReindexMode.STORE && config != null) {
-                if (contentStack != null && !contentStack.isEmpty()) {
-                    for (TextExtractor extractor : contentStack) {
+                if (contentStack != null) {
+                    for (final TextExtractor extractor : contentStack) {
                         extractor.startElement(element.getQName());
                     }
                 }
 
-		Iterator<LuceneIndexConfig> configIter = config.getConfig(path);
+                Iterator<LuceneIndexConfig> configIter = config.getConfig(path);
                 if (configIter != null) {
                     if (contentStack == null) {
-			contentStack = new Stack<>();
-		    }
+                        contentStack = new ArrayDeque<>();
+                    }
                     while (configIter.hasNext()) {
                         LuceneIndexConfig configuration = configIter.next();
                         if (configuration.match(path)) {
@@ -1359,8 +1359,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         @Override
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null) {
-                if (mode == ReindexMode.STORE && contentStack != null && !contentStack.isEmpty()) {
-                    for (TextExtractor extractor : contentStack) {
+                if (mode == ReindexMode.STORE && contentStack != null) {
+                    for (final TextExtractor extractor : contentStack) {
                         extractor.endElement(element.getQName());
                     }
                 }
@@ -1446,8 +1446,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         @Override
         public void characters(Txn transaction, AbstractCharacterData text, NodePath path) {
-            if (contentStack != null && !contentStack.isEmpty()) {
-                for (TextExtractor extractor : contentStack) {
+            if (contentStack != null) {
+                for (final TextExtractor extractor : contentStack) {
                 	extractor.beforeCharacters();
                     extractor.characters(text.getXMLString());
                 }

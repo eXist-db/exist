@@ -86,9 +86,10 @@ import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Stack;
 import java.util.TreeMap;
 
 public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
@@ -703,7 +704,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 
     private class GMLStreamListener extends AbstractStreamListener {
 
-        Stack<String> srsNamesStack = new Stack<String>();
+        Deque<String> srsNamesStack = new ArrayDeque<String>();
         ElementImpl deferredElement;
 
         @Override
