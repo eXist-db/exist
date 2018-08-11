@@ -29,6 +29,7 @@ import org.junit.runners.Suite;
         NodePathTest.class,
         RemoveCollectionTest.class,
         ReindexTest.class,
+        ReindexRecoveryTest.class,
         ShutdownTest.class,
         CollectionTest.class,
         CopyResourceTest.class,

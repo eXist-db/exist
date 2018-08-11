@@ -1,136 +1,162 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2018 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
 package org.exist.storage;
 
 import org.exist.EXistException;
-import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock.LockMode;
-import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.test.TestConstants;
-import org.exist.util.*;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import static org.junit.Assert.*;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
-import org.xml.sax.InputSource;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
 import java.util.Optional;
 
-/**
- * Test crash recovery after reindexing a collection.
- */
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 public class ReindexTest {
 
-    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    @ClassRule
+    public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private static Path dir = TestUtils.shakespeareSamples();
+    private static final XmldbURI DOCUMENT_WITH_CHILD_NODES_COLLECTION = XmldbURI.create("/db/reindex-document-child-nodes-test");
+    private static final XmldbURI DOCUMENT_WITH_CHILD_NODES_NAME = XmldbURI.create("doc-child-nodes.xml");
+
+    private static final String DOCUMENT_WITH_CHILD_NODES_XML =
+            "<?some-pi?>\n" +
+            "<!-- 1 --><!-- 2 -->\n" +
+            "<n/>\n" +
+            "<!-- 3 -->";
 
     @Test
-    public void reindexTests() throws EXistException, PermissionDeniedException, IOException, DatabaseConfigurationException, LockException, TriggerException {
-        BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = startDb();
-        storeDocuments(pool);
+    public void reindexDocumentChildNodes() throws IOException, EXistException, PermissionDeniedException, SAXException, LockException {
+        reindexDocumentChildNodes_checkNodes();
 
-        stopDb();
+        reindex(DOCUMENT_WITH_CHILD_NODES_COLLECTION);
 
-        BrokerPool.FORCE_CORRUPTION = false;
-        pool = startDb();
-        removeCollection(pool);
-
-        stopDb();
-
-        restart();
+        reindexDocumentChildNodes_checkNodes();
     }
 
-    /**
-     * Store some documents, reindex the collection and crash without commit.
-     */
-    public void storeDocuments(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
-        final TransactionManager transact = pool.getTransactionManager();
+    private void reindexDocumentChildNodes_checkNodes() throws EXistException, PermissionDeniedException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+            final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+            final Document doc = broker.getXMLResource(DOCUMENT_WITH_CHILD_NODES_COLLECTION.append(DOCUMENT_WITH_CHILD_NODES_NAME));
+            assertNotNull(doc);
 
+            // navigate by child nodes
+            final NodeList children = doc.getChildNodes();
+            assertNotNull(children);
+            assertEquals(5, children.getLength());
+            assertEquals(Node.PROCESSING_INSTRUCTION_NODE, children.item(0).getNodeType());
+            assertEquals(Node.COMMENT_NODE, children.item(1).getNodeType());
+            assertEquals(Node.COMMENT_NODE, children.item(2).getNodeType());
+            assertEquals(Node.ELEMENT_NODE, children.item(3).getNodeType());
+            assertEquals("n", children.item(3).getNodeName());
+            assertEquals(Node.COMMENT_NODE, children.item(4).getNodeType());
 
-            try(final Txn transaction = transact.beginTransaction()) {
-                assertNotNull(transaction);
+            // navigate by next sibling
+            final Node first = doc.getFirstChild();
+            assertNotNull(first);
+            assertEquals(Node.PROCESSING_INSTRUCTION_NODE, first.getNodeType());
+            final Node second = first.getNextSibling();
+            assertNotNull(second);
+            assertEquals(Node.COMMENT_NODE, second.getNodeType());
+            final Node third = second.getNextSibling();
+            assertNotNull(third);
+            assertEquals(Node.COMMENT_NODE, third.getNodeType());
+            final Node fourth = third.getNextSibling();
+            assertNotNull(fourth);
+            assertEquals(Node.ELEMENT_NODE, fourth.getNodeType());
+            assertEquals("n", fourth.getNodeName());
+            final Node fifth = fourth.getNextSibling();
+            assertNotNull(fifth);
+            assertEquals(Node.COMMENT_NODE, fifth.getNodeType());
 
-                Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-                assertNotNull(root);
-                broker.saveCollection(transaction, root);
+            transaction.commit();
+        }
+    }
+    private static void reindex(final XmldbURI collectionUri) throws EXistException, PermissionDeniedException, IOException, LockException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+            final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+            broker.reindexCollection(transaction, collectionUri);
+            transaction.commit();
+        }
+    }
 
-                final List<Path> files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
-                for (final Path f : files) {
-                    try {
-                        final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
-                        assertNotNull(info);
-                        root.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
-                    } catch (SAXException e) {
-                        fail("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
-                    }
-                }
-                transact.commit(transaction);
+    private static void storeDocument(final XmldbURI collectionUri,
+            final XmldbURI docName, final String doc)
+            throws PermissionDeniedException, IOException, SAXException, EXistException, LockException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+            final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+
+            final Collection collection = broker.getOrCreateCollection(transaction, collectionUri);
+            assertNotNull(collection);
+            broker.saveCollection(transaction, collection);
+
+            final IndexInfo info = collection.validateXMLResource(transaction, broker, docName, doc);
+            assertNotNull(info);
+            collection.store(transaction, broker, info, doc);
+
+            transaction.commit();
+        }
+    }
+
+    private static void removeCollection(final XmldbURI collectionUri) throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Txn transaction = pool.getTransactionManager().beginTransaction();
+                final Collection collection = broker.openCollection(collectionUri, Lock.LockMode.WRITE_LOCK)) {
+
+            if (collection != null) {
+                broker.removeCollection(transaction, collection);
             }
 
-            final Txn transaction = transact.beginTransaction();
-            broker.reindexCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-
-            //NOTE: do not commit the transaction
-
-            pool.getJournalManager().get().flush(true, false);
+            transaction.commit();
         }
     }
 
-    /**
-     * Recover, remove the collection, then crash after commit.
-     */
-    public void removeCollection(final BrokerPool pool) {
-        final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-                final Txn transaction = transact.beginTransaction();) {
-
-            BrokerPool.FORCE_CORRUPTION = true;
-
-            try(final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
-                assertNotNull(root);
-                transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(root.getURI()));
-                broker.removeCollection(transaction, root);
-                pool.getJournalManager().get().flush(true, false);
-            }
-            transact.commit(transaction);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
+    @BeforeClass
+    public static void setup() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
+        storeDocument(DOCUMENT_WITH_CHILD_NODES_COLLECTION, DOCUMENT_WITH_CHILD_NODES_NAME, DOCUMENT_WITH_CHILD_NODES_XML);
     }
 
-    /**
-     * Just recover.
-     */
-    public void restart() throws EXistException, PermissionDeniedException, IOException, DatabaseConfigurationException {
-        BrokerPool.FORCE_CORRUPTION = false;
-        final BrokerPool pool = startDb();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-                final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.READ_LOCK)) {
-            assertNull("Removed collection does still exist", root);
-        }
-    }
-
-    private BrokerPool startDb() throws EXistException, IOException, DatabaseConfigurationException {
-        existEmbeddedServer.startDb();
-        return existEmbeddedServer.getBrokerPool();
-    }
-
-    @After
-    public void stopDb() {
-        existEmbeddedServer.stopDb();
+    @AfterClass
+    public static void cleanup() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+        removeCollection(DOCUMENT_WITH_CHILD_NODES_COLLECTION);
     }
 }
