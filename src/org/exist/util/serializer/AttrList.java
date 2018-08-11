@@ -40,13 +40,6 @@ public class AttrList {
 	protected String values[] = new String[4];
     protected int type[] = new int[4];
     protected int size = 0;
-	
-	/**
-	 * 
-	 */
-	public AttrList() {
-		super();
-	}
 
     public void addAttribute(QName name, String value) {
         addAttribute(name, value, AttrImpl.CDATA);

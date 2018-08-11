@@ -27,15 +27,9 @@ import javax.swing.filechooser.FileFilter;
 public class ZipFilter extends FileFilter {
     @Override
     public boolean accept(final File f) {
-        if (f.getName().toLowerCase().endsWith(".zip")) {
-            return true;
-        }
-        
-        if(f.isDirectory()) {
-            return true;
-        }
-        
-        return false;
+        return f.getName().toLowerCase().endsWith(".zip")
+                || f.isDirectory();
+
     }
     
     @Override

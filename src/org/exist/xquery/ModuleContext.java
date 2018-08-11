@@ -91,7 +91,8 @@ public class ModuleContext extends XQueryContext {
         this.moduleNamespace = namespaceURI;
     }
 
-    void setModulesChanged() {
+    @Override
+    protected void setModulesChanged() {
         parentContext.setModulesChanged();
     }
 

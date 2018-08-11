@@ -162,7 +162,8 @@ public class PreorderedValueSequence extends AbstractSequence {
          */
         public int compare(OrderedNodeProxy p1, OrderedNodeProxy p2) {
             int cmp = 0;
-            AtomicValue a, b;
+            AtomicValue a;
+            AtomicValue b;
             for (int i = 0; i < p1.values.length; i++) {
                 try {
                     a = p1.values[i];

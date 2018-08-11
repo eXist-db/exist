@@ -34,9 +34,6 @@ public class OrderedLinkedList {
 		Node next = null;
 		Node prev = null;
 
-		public Node() {
-		}
-        
 		public Node getNextNode() { return next; }
 		public Node getPrevNode() { return prev; }
 
@@ -70,8 +67,6 @@ public class OrderedLinkedList {
     
 	private int size = 0;
 
-	public OrderedLinkedList() {
-	}
 	
 	public Node add(Node newNode) {
 		newNode.next = null;
@@ -232,26 +227,5 @@ public class OrderedLinkedList {
 		public void remove() {
 			throw new RuntimeException("not implemented");
 		}
-	}
-
-	public static void main(String args[]) {
-		final OrderedLinkedList list = new OrderedLinkedList();
-		list.add(new SimpleNode("Adam"));
-		list.add(new SimpleNode("Sabine"));
-		list.add(new SimpleNode("Georg"));
-		list.add(new SimpleNode("Henry"));
-		list.add(new SimpleNode("Achim"));
-		list.add(new SimpleNode("Franz"));
-		list.add(new SimpleNode("Doris"));
-		list.add(new SimpleNode("Rudi"));
-		list.add(new SimpleNode("Hermann"));
-		list.add(new SimpleNode("Lisa"));
-		list.add(new SimpleNode("Xaver"));
-		list.add(new SimpleNode("Reinhard"));
-		list.add(new SimpleNode("Ludwig"));
-		list.remove(new SimpleNode("Lisa"));
-		list.remove(new SimpleNode("Henry"));
-		for(int i = 0; i < list.size(); i++)
-			System.out.println(((SimpleNode)list.get(i)).data);
 	}
 }

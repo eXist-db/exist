@@ -56,7 +56,9 @@ import org.xml.sax.*;
  * @version 1.1
  */
 public class ModuleUtils {
-	protected final static Logger LOG = LogManager.getLogger(ModuleUtils.class);
+    private static final Logger LOG = LogManager.getLogger(ModuleUtils.class);
+    private static final ContextMapLocks contextMapLocks = new ContextMapLocks();
+    private static final Random random = new Random();
 
 	/**
 	 * Takes a String of XML and Creates an XML Node from it using SAX in the
@@ -295,9 +297,7 @@ public class ModuleUtils {
             }
             return lock;
         }
-    }    
-    
-    private final static ContextMapLocks contextMapLocks = new ContextMapLocks();
+    }
     
     /**
      * Retrieves a previously stored Object from the Context of an XQuery.
@@ -390,8 +390,6 @@ public class ModuleUtils {
             return (uid);
         }
     }
-    
-    private final static Random random = new Random();
     
     private static long getUID() {
         final BigInteger bi = new BigInteger(64, random);

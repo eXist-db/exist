@@ -307,7 +307,7 @@ public abstract class Function extends PathExpr {
                 if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
                     expr = new Atomize(context, expr);
                 }
-                if (!(type.getPrimaryType() == Type.ATOMIC)) {
+                if (type.getPrimaryType() != Type.ATOMIC) {
                     expr = new UntypedValueCheck(context, type.getPrimaryType(),
                             expr, new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
                 }

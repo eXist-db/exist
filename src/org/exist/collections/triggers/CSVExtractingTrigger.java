@@ -85,7 +85,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
     private String separator;
 
     //key is the xpath to extract for, and value is the extractions to make from the value at that path
-    private Map<String, Extraction> extractions = new HashMap<String, Extraction>();
+    private Map<String, Extraction> extractions = new HashMap<>();
 
     //the current node path of the SAX stream
     private NodePath currentNodePath = new NodePath();
@@ -94,8 +94,9 @@ public class CSVExtractingTrigger extends FilteringTrigger {
     private StringBuilder charactersBuf = new StringBuilder(); //buffer for character data, which will then be parsed to extract csv values
 
 
+    @SuppressWarnings("unchecked")
     @Override
-    public void configure(DBBroker broker, Txn transaction, Collection parent, Map<String, List<?>> parameters) throws TriggerException {
+    public void configure(final DBBroker broker, final Txn transaction, final Collection parent, final Map<String, List<?>> parameters) throws TriggerException {
         super.configure(broker, transaction, parent, parameters);
 
         //get the separator
@@ -116,9 +117,9 @@ public class CSVExtractingTrigger extends FilteringTrigger {
                 //split out the path and preficate (if present) from the xpath
                 String pathExpr;
                 String attrPredicate = null;
-                if(xpath.indexOf("[") > -1) {
+                if(xpath.contains("[")) {
                     pathExpr = xpath.substring(0, xpath.indexOf("["));
-                    if(xpath.indexOf("[@") > -1) {
+                    if(xpath.contains("[@")) {
                         attrPredicate = xpath.substring(xpath.indexOf("[@")+2, xpath.indexOf("]"));
                     }
                 } else {
@@ -148,10 +149,10 @@ public class CSVExtractingTrigger extends FilteringTrigger {
     }
 
     @Override
-    public void startElement(String namespaceURI, String localName, String qname, Attributes attributes) throws SAXException {
+    public void startElement(final String namespaceURI, final String localName, final String qname, final Attributes attributes) throws SAXException {
         //skips nested elements or already extracted nodes (i.e. during update events)
         //TODO needs through testing during update phase
-        if(capture == true) {
+        if(capture) {
             capture = false;
             charactersBuf.delete(0, charactersBuf.length());
         }
@@ -180,7 +181,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
     }
 
     @Override
-    public void characters(char[] ch, int start, int length) throws SAXException {
+    public void characters(final char[] ch, final int start, final int length) throws SAXException {
         if(capture){
             charactersBuf.append(ch, start, length);
         } else {
@@ -189,7 +190,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
     }
 
     @Override
-    public void endElement(String namespaceURI, String localName, String qname) throws SAXException {
+    public void endElement(final String namespaceURI, final String localName, final String qname) throws SAXException {
         if(capture) {
             extractCSVValuesToElements();
 
@@ -239,7 +240,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
     }
 
     private static class NodePath {
-        private Deque<QName> pathSegments = new ArrayDeque<>();
+        private final Deque<QName> pathSegments = new ArrayDeque<>();
 
         public void add(final String namespaceUri, final String localName) {
             pathSegments.push(new QName(namespaceUri, localName));
@@ -273,7 +274,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
     /*** configuration data classes ***/
     private static class Extraction {
 
-        private List<ExtractEntry> extractEntries = new ArrayList<ExtractEntry>();
+        private final List<ExtractEntry> extractEntries = new ArrayList<>();
 
         private String matchAttrName;
         private String matchAttrValue;
@@ -282,7 +283,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
             return extractEntries;
         }
 
-        public void setMatchAttribute(String attrName, String attrValue) {
+        public void setMatchAttribute(final String attrName, final String attrValue) {
             this.matchAttrName = attrName.trim();
             this.matchAttrValue = attrValue.replaceAll("\"", "").trim();
         }
@@ -291,7 +292,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
             return(this.matchAttrName != null && this.matchAttrValue != null);
         }
 
-        public boolean matchesAttribute(String attrName, String attrValue) {
+        public boolean matchesAttribute(final String attrName, final String attrValue) {
 
             //if there is no matching then return true
             if(!mustMatchAttribute()) {
@@ -307,7 +308,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
         private final int index;
         private final String elementName;
 
-        public ExtractEntry(int index, String elementName) {
+        public ExtractEntry(final int index, final String elementName) {
             this.index = index;
             this.elementName = elementName;
         }
@@ -321,7 +322,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
         }
 
         @Override
-        public int compareTo(ExtractEntry other) {
+        public int compareTo(final ExtractEntry other) {
             if(other == null) {
                 return -1;
             } else {
@@ -338,107 +339,119 @@ public class CSVExtractingTrigger extends FilteringTrigger {
         }
 
         @Override
-        public String getURI(int index) {
+        public String getURI(final int index) {
             return null;
         }
 
         @Override
-        public String getLocalName(int index) {
+        public String getLocalName(final int index) {
             return null;
         }
 
         @Override
-        public String getQName(int index) {
+        public String getQName(final int index) {
             return null;
         }
 
         @Override
-        public String getType(int index) {
+        public String getType(final int index) {
             return null;
         }
 
         @Override
-        public String getValue(int index) {
+        public String getValue(final int index) {
             return null;
         }
 
         @Override
-        public int getIndex(String uri, String localName) {
+        public int getIndex(final String uri, final String localName) {
             return -1;
         }
 
         @Override
-        public int getIndex(String qName) {
+        public int getIndex(final String qName) {
             return -1;
         }
 
         @Override
-        public String getType(String uri, String localName) {
+        public String getType(final String uri, final String localName) {
             return null;
         }
 
         @Override
-        public String getType(String qName) {
+        public String getType(final String qName) {
             return null;
         }
 
         @Override
-        public String getValue(String uri, String localName) {
+        public String getValue(final String uri, final String localName) {
             return null;
         }
 
         @Override
-        public String getValue(String qName) {
+        public String getValue(final String qName) {
             return null;
         }
 
     }
 
 	@Override
-	public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
+	public void beforeCreateDocument(final DBBroker broker, final Txn txn, final XmldbURI uri) {
+        //no-op
 	}
 
 	@Override
-	public void afterCreateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+	public void afterCreateDocument(final DBBroker broker, final Txn txn, final DocumentImpl document) {
+        //no-op
 	}
 
 	@Override
-	public void beforeUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+	public void beforeUpdateDocument(final DBBroker broker, final Txn txn, final DocumentImpl document) {
+        //no-op
 	}
 
 	@Override
-	public void afterUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+	public void afterUpdateDocument(final DBBroker broker, final Txn txn, final DocumentImpl document) {
+        //no-op
 	}
 
 	@Override
-	public void beforeCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	public void beforeCopyDocument(final DBBroker broker, final Txn txn, final DocumentImpl document, final XmldbURI newUri) {
+        //no-op
 	}
 
 	@Override
-	public void afterCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	public void afterCopyDocument(final DBBroker broker, final Txn txn, final DocumentImpl document, final XmldbURI newUri) {
+        //no-op
 	}
 
 	@Override
-	public void beforeMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	public void beforeMoveDocument(final DBBroker broker, final Txn txn, final DocumentImpl document, final XmldbURI newUri) {
+        //no-op
 	}
 
 	@Override
-	public void afterMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	public void afterMoveDocument(final DBBroker broker, final Txn txn, final DocumentImpl document, final XmldbURI newUri) {
+        //no-op
 	}
 
 	@Override
-	public void beforeDeleteDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+	public void beforeDeleteDocument(final DBBroker broker, final Txn txn, final DocumentImpl document) {
+        //no-op
 	}
 
 	@Override
-	public void afterDeleteDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
+	public void afterDeleteDocument(final DBBroker broker, final Txn txn, final XmldbURI uri) {
+        //no-op
 	}
 
 	@Override
-	public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+	public void beforeUpdateDocumentMetadata(final DBBroker broker, final Txn txn, final DocumentImpl document) {
+        //no-op
 	}
 
 	@Override
-	public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+	public void afterUpdateDocumentMetadata(final DBBroker broker, final Txn txn, final DocumentImpl document) {
+        //no-op
 	}
 }

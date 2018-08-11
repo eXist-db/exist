@@ -350,7 +350,8 @@ public class OrderedValueSequence extends AbstractSequence {
          */
         public int compareTo(Entry other) {
             int cmp = 0;
-            AtomicValue a, b;
+            AtomicValue a;
+            AtomicValue b;
             for (int i = 0; i < values.length; i++) {
                 try {
                     a = values[i];

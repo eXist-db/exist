@@ -237,7 +237,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * <p>
      * {@see https://www.w3.org/TR/xpath-31/#dt-available-docs}.
      */
-    private Map<String, TriFunctionE<DBBroker, Txn, String, Either<org.exist.dom.memtree.DocumentImpl, org.exist.dom.persistent.DocumentImpl>, XPathException>> dynamicDocuments = null;
+    private Map<String, TriFunctionE<DBBroker, Txn, String, Either<org.exist.dom.memtree.DocumentImpl, DocumentImpl>, XPathException>> dynamicDocuments = null;
 
     /**
      * The available test resources of the dynamic context.
@@ -540,7 +540,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         this.httpContext = from.httpContext;
     }
 
-    void copyFields(final XQueryContext ctx) {
+    protected void copyFields(final XQueryContext ctx) {
         ctx.calendar = this.calendar;
         ctx.implicitTimeZone = this.implicitTimeZone;
         ctx.baseURI = this.baseURI;
@@ -991,7 +991,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     public void addDynamicallyAvailableDocument(final String uri,
-                                                final TriFunctionE<DBBroker, Txn, String, Either<org.exist.dom.memtree.DocumentImpl, org.exist.dom.persistent.DocumentImpl>, XPathException> supplier) {
+            final TriFunctionE<DBBroker, Txn, String, Either<org.exist.dom.memtree.DocumentImpl, DocumentImpl>, XPathException> supplier) {
         if (dynamicDocuments == null) {
             dynamicDocuments = new HashMap<>();
         }
@@ -1478,7 +1478,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         allModules.put(namespaceURI, module);
     }
 
-    void setModulesChanged() {
+    protected void setModulesChanged() {
         this.modulesChanged = true;
     }
 
@@ -2948,10 +2948,9 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         if (staticOptions != null) {
             for (final Option option : staticOptions) {
-                if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())) {
-                    if (!properties.containsKey(option.getQName().getLocalPart())) {
-                        properties.put(option.getQName().getLocalPart(), option.getContents());
-                    }
+                if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())
+                        && !properties.containsKey(option.getQName().getLocalPart())) {
+                    properties.put(option.getQName().getLocalPart(), option.getContents());
                 }
             }
         }
@@ -3125,7 +3124,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     private static class ContextUpdateListener implements UpdateListener {
         private final List<UpdateListener> listeners = new ArrayList<>();
 
-        void addListener(final UpdateListener listener) {
+        private void addListener(final UpdateListener listener) {
             listeners.add(listener);
         }
 

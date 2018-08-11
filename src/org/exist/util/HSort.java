@@ -278,13 +278,11 @@ public final class HSort {
 	private static <C extends Comparable<? super C>> void siftdown(C[] a, int n, int vacant, C missing, int drop)
 	{
 		final int memo=vacant;
-		int child, parent;
-		int count, next_peek;
 
-		count=0;
-		next_peek=(drop+1)/2;
+		int count = 0;
+		int next_peek = (drop+1)/2;
 
-		child=2*(vacant+1);
+		int child = 2*(vacant+1);
 		while(child<n) {
 			if(a[child].compareTo(a[child-1])<0)
 				{child--;}
@@ -306,7 +304,7 @@ public final class HSort {
 			vacant=n-1;
 		}
 
-		parent=(vacant-1)/2;
+		int parent=(vacant-1)/2;
 		while(vacant>memo) {
 			if(a[parent].compareTo(missing)<0) {
 				a[vacant]=a[parent];

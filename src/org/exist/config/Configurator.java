@@ -130,7 +130,7 @@ public class Configurator {
         try {
             final String methodName = ("get" + property).toLowerCase();
             for (final Method method : clazz.getMethods()) {
-                if (method.getName().toLowerCase().equals(methodName)) {
+                if (method.getName().equalsIgnoreCase(methodName)) {
                     return method;
                 }
             }
@@ -152,7 +152,7 @@ public class Configurator {
         try {
             final String methodName = ("set" + field.getName()).toLowerCase();
             for (final Method method : clazz.getMethods()) {
-                if (method.getName().toLowerCase().equals(methodName)) {
+                if (method.getName().equalsIgnoreCase(methodName)) {
                     return method;
                 }
             }
@@ -174,7 +174,7 @@ public class Configurator {
         try {
             final String methodName = ("add" + property).toLowerCase();
             for (final Method method : clazz.getMethods()) {
-                if (method.getName().toLowerCase().equals(methodName)
+                if (method.getName().equalsIgnoreCase(methodName)
                         && method.getParameterTypes().length == 1
                         && String.class.getName().equals(method.getParameterTypes()[0].getName())) {
                     return method;
@@ -190,7 +190,7 @@ public class Configurator {
         try {
             final String methodName = ("insert" + property).toLowerCase();
             for (final Method method : clazz.getMethods()) {
-                if (method.getName().toLowerCase().equals(methodName)
+                if (method.getName().equalsIgnoreCase(methodName)
                         && method.getParameterTypes().length == 2
                         && int.class.getName().equals(method.getParameterTypes()[0].getName())
                         && String.class.getName().equals(method.getParameterTypes()[1].getName())) {

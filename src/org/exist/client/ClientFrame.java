@@ -98,8 +98,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
     private final static SimpleAttributeSet promptAttrs = new SimpleAttributeSet();
     private final static SimpleAttributeSet defaultAttrs = new SimpleAttributeSet();
-
-    {
+    static {
         StyleConstants.setForeground(promptAttrs, Color.blue);
         StyleConstants.setBold(promptAttrs, true);
         StyleConstants.setForeground(defaultAttrs, Color.black);

@@ -54,9 +54,6 @@ public class DataGuide {
     // the (virtual) root of the tree whose name will always be null.
     private NodeStats root = new NodeStatsRoot();
 
-    public DataGuide() {
-    }
-
     public int getSize() {
         return root.getSize();
     }

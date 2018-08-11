@@ -47,13 +47,13 @@ public class JMXAgent implements Agent {
     private static final Logger LOG = LogManager.getLogger(JMXAgent.class);
     private static final JMXAgent instance = new JMXAgent();
 
-    public static Agent getInstance() {
-        return instance;
-    }
-
     private final MBeanServer server;
     private final Map<String, Deque<ObjectName>> registeredMBeans = new HashMap<>();
     private final Map<ObjectName, Object> beanInstances = new HashMap<>();
+
+    public static Agent getInstance() {
+        return instance;
+    }
 
     private JMXAgent() {
         if (LOG.isDebugEnabled()) {

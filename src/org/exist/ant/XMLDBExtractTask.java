@@ -191,13 +191,13 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                         subdir = childCol;
                     }
 
-                    if (!dir.exists() && (createdirectories == true)) {
+                    if (!dir.exists() && createdirectories) {
                         dir.mkdirs();
                     }
 
                     extractResources(col, subdir);
 
-                    if (subcollections == true) {
+                    if (subcollections) {
                         extractSubCollections(col, subdir);
                     }
                 }
@@ -230,14 +230,14 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
      * @throws XMLDBException DOCUMENT ME!
      */
     private void writeXMLResource(final XMLResource res, final File dest) throws IOException, XMLDBException {
-        if (createdirectories == true) {
+        if (createdirectories) {
             final File parentDir = new File(dest.getParent());
             if (!parentDir.exists()) {
                 parentDir.mkdirs();
             }
         }
 
-        if (dest != null || overwrite == true) {
+        if (dest != null || overwrite) {
             final Properties outputProperties = new Properties();
             outputProperties.setProperty(OutputKeys.INDENT, "yes");
             final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);

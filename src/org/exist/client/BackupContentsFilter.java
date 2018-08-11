@@ -27,15 +27,9 @@ import javax.swing.filechooser.FileFilter;
 public class BackupContentsFilter extends FileFilter {
     @Override
     public boolean accept(final File f) {
-        if (f.getName().toLowerCase().equals(Messages.getString("ClientFrame.167"))) {
-            return true;
-        }
-        
-        if(f.isDirectory()) {
-            return true;
-        }
-        
-        return false;
+        return f.getName().equalsIgnoreCase(Messages.getString("ClientFrame.167"))
+                || f.isDirectory();
+
     }
     
     @Override

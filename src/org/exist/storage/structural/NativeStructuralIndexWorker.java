@@ -189,7 +189,8 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                 final DocumentImpl doc = ancestor.getOwnerDocument();
                 final NodeId ancestorId = ancestor.getNodeId();
                 callback.setAncestor(doc, ancestor);
-                byte[] fromKey, toKey;
+                final byte[] fromKey;
+                final byte[] toKey;
                 if (ancestorId == NodeId.DOCUMENT_NODE) {
                     fromKey = computeKey(type, qname, doc.getDocId());
                     toKey = computeKey(type, qname, doc.getDocId() + 1);

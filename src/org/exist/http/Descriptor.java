@@ -331,11 +331,7 @@ public class Descriptor implements ErrorHandler {
      * @return The boolean value true or false indicating whether it is permissible to Log Requests
      */
     public boolean allowRequestLogging() {
-        if (bufWriteReplayLog == null) {
-            return (false);
-        } else {
-            return (true);
-        }
+        return bufWriteReplayLog != null;
     }
 
     /**

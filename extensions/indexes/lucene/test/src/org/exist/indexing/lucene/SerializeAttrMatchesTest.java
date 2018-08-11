@@ -55,6 +55,9 @@ import static org.junit.Assert.assertTrue;
 
 public class SerializeAttrMatchesTest {
 
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+
     private static final String COLLECTION_CONFIG =
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
                     "	<index>" +
@@ -117,9 +120,6 @@ public class SerializeAttrMatchesTest {
 
         return docs;
     }
-
-    @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
     @Before
     public void setup() throws EXistException, PermissionDeniedException, IOException, TriggerException {

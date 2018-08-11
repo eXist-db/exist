@@ -499,8 +499,6 @@ public class MetaDataImpl extends MetaData {
 //		delMetas(ms);
 //		
 //		MetasImpl newMs = new MetasImpl((MetasImpl)ms, uri);
-
-		return;
 	}
 
 //	public void updateMetas(XmldbURI oldD, DocumentImpl newD) {

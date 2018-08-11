@@ -31,6 +31,9 @@ import static org.junit.Assert.assertNull;
  */
 public class NodeTest {
 
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+
 	private static final String XML =
 		"<!-- doc starts here -->" +
         "<test xmlns:ns=\"http://foo.org\">" +
@@ -204,9 +207,6 @@ public class NodeTest {
             rootNode.accept(visitor);
         }
     }
-
-    @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
 	@BeforeClass
     public static void setUp() throws Exception {

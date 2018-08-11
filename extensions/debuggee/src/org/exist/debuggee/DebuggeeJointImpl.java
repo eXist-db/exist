@@ -77,9 +77,6 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	private CompiledXQuery compiledXQuery;
 
     private boolean inProlog = false;
-
-	public DebuggeeJointImpl() {
-	}
 	
 	protected void setCompiledScript(CompiledXQuery compiledXQuery) {
 		this.compiledXQuery = compiledXQuery;

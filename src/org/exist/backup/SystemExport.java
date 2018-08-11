@@ -117,44 +117,41 @@ public class SystemExport {
 
     private int collectionCount = -1;
 
-    public Properties defaultOutputProperties = new Properties();
-
-    public Properties contentsOutputProps = new Properties();
+    private final Properties defaultOutputProperties = new Properties();
+    private final Properties contentsOutputProps = new Properties();
 
     private DBBroker broker;
     private StatusCallback callback = null;
     private boolean directAccess = false;
     private ProcessMonitor.Monitor monitor = null;
     private BackupHandler bh = null;
-
-    {
-        defaultOutputProperties.setProperty(OutputKeys.INDENT, "no");
-        defaultOutputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
-        defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-        defaultOutputProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
-        defaultOutputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
-    }
-
-    {
-        contentsOutputProps.setProperty(OutputKeys.INDENT, "yes");
-    }
-
     private ChainOfReceiversFactory chainFactory;
 
-    public SystemExport(DBBroker broker, StatusCallback callback, ProcessMonitor.Monitor monitor, boolean direct, ChainOfReceiversFactory chainFactory) {
+    public SystemExport(final DBBroker broker, final StatusCallback callback, final ProcessMonitor.Monitor monitor,
+            final boolean direct, final ChainOfReceiversFactory chainFactory) {
         this.broker = broker;
         this.callback = callback;
         this.monitor = monitor;
         this.directAccess = direct;
         this.chainFactory = chainFactory;
 
+        defaultOutputProperties.setProperty(OutputKeys.INDENT, "no");
+        defaultOutputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+        defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        defaultOutputProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+        defaultOutputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
+
+        contentsOutputProps.setProperty(OutputKeys.INDENT, "yes");
+
         bh = broker.getDatabase().getPluginsManager().getBackupHandler(LOG);
     }
 
-    public SystemExport(DBBroker broker, StatusCallback callback, ProcessMonitor.Monitor monitor, boolean direct) {
+    @SuppressWarnings("unchecked")
+    public SystemExport(final DBBroker broker, final StatusCallback callback, final ProcessMonitor.Monitor monitor,
+            final boolean direct) {
         this(broker, callback, monitor, direct, null);
 
-        List<String> list = (List<String>) broker.getConfiguration().getProperty(CONFIG_FILTERS);
+        final List<String> list = (List<String>) broker.getConfiguration().getProperty(CONFIG_FILTERS);
         if (list != null) {
             chainFactory = new ChainOfReceiversFactory(list);
         }
