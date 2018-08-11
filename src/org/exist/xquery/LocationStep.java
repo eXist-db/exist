@@ -822,20 +822,30 @@ public class LocationStep extends Step {
             final NewArrayNodeSet result = new NewArrayNodeSet();
             try {
                 for (final NodeProxy current : contextSet) {
-                    //ignore document elements to avoid NPE at getXMLStreamReader
-                    if (NodeId.ROOT_NODE.equals(current.getNodeId())) {
+                    // document-node() does not have any preceding or following elements
+                    if (NodeId.DOCUMENT_NODE.equals(current.getNodeId())) {
                         continue;
                     }
 
-                    final NodeProxy parent = new NodeProxy(current.getOwnerDocument(),
-                            current.getNodeId().getParentId());
+                    final IEmbeddedXMLStreamReader reader;
                     final StreamFilter filter;
                     if (axis == Constants.PRECEDING_SIBLING_AXIS) {
-                        filter = new PrecedingSiblingFilter(test, parent, current, result, contextId);
+                        final NodeId startNodeId;
+                        if (NodeId.DOCUMENT_NODE.equals(current.getNodeId().getParentId())) {
+                            // parent would be document-node(), start from document-node()/node()[1]
+                            startNodeId = NodeId.ROOT_NODE;
+                        } else {
+                            startNodeId = current.getNodeId().getParentId().getChild(1);
+                        }
+                        final NodeProxy startNode = new NodeProxy(current.getOwnerDocument(), startNodeId);
+
+                        reader = context.getBroker().getXMLStreamReader(startNode, false);
+                        filter = new PrecedingSiblingFilter(test, startNode, current, result, contextId);
                     } else {
-                        filter = new FollowingSiblingFilter(test, parent, current, result, contextId);
+                        reader = context.getBroker().getXMLStreamReader(current, false);
+                        filter = new FollowingSiblingFilter(test, current, result, contextId);
                     }
-                    final IEmbeddedXMLStreamReader reader = context.getBroker().getXMLStreamReader(parent, false);
+
                     reader.filter(filter);
                 }
             } catch (final IOException | XMLStreamException e) {
@@ -1241,17 +1251,17 @@ public class LocationStep extends Step {
 
     private static class FollowingSiblingFilter implements StreamFilter {
         private final NodeTest test;
-        private final NodeProxy root;
-        private final NodeProxy referenceNode;
+        private final NodeProxy start;
+        private final int level;
         private final NodeSet result;
         private final int contextId;
-        private boolean isAfter = false;
+        private boolean sibling = false;
 
-        private FollowingSiblingFilter(final NodeTest test, final NodeProxy root, final NodeProxy referenceNode, final NodeSet result,
+        private FollowingSiblingFilter(final NodeTest test, final NodeProxy start, final NodeSet result,
                 final int contextId) {
             this.test = test;
-            this.root = root;
-            this.referenceNode = referenceNode;
+            this.start = start;
+            this.level = start.getNodeId().getTreeLevel();
             this.result = result;
             this.contextId = contextId;
         }
@@ -1259,53 +1269,51 @@ public class LocationStep extends Step {
         @Override
         public boolean accept(final XMLStreamReader reader) {
             final NodeId currentId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+            final int currentLevel = currentId.getTreeLevel();
 
-            if (reader.getEventType() == XMLStreamReader.END_ELEMENT) {
-                if (currentId.getTreeLevel() == root.getNodeId().getTreeLevel()) {
-                    // exited the root element, so  stop filtering
-                    return false;
-                }
+            if (!sibling) {
+                // skip over the start node to the first sibling
+                sibling = currentId.equals(start.getNodeId());
 
-                return true;
-            }
-
-            final NodeId refId = referenceNode.getNodeId();
-
-            if (!isAfter) {
-                isAfter = currentId.equals(refId);
-            } else if (currentId.getTreeLevel() == refId.getTreeLevel() && test.matches(reader)) {
-                NodeProxy sibling = result.get(referenceNode.getOwnerDocument(), currentId);
+            } else if (currentLevel == level && !reader.isEndElement() && test.matches(reader)) {
+                // sibling which matches the test
+                NodeProxy sibling = result.get(start.getOwnerDocument(), currentId);
                 if (sibling == null) {
-                    sibling = new NodeProxy(referenceNode.getOwnerDocument(), currentId,
+                    sibling = new NodeProxy(start.getOwnerDocument(), currentId,
                             StaXUtil.streamType2DOM(reader.getEventType()), ((EmbeddedXMLStreamReader) reader).getCurrentPosition());
 
                     if (Expression.IGNORE_CONTEXT != contextId) {
                         if (Expression.NO_CONTEXT_ID == contextId) {
-                            sibling.copyContext(referenceNode);
+                            sibling.copyContext(start);
                         } else {
-                            sibling.addContextNode(contextId, referenceNode);
+                            sibling.addContextNode(contextId, start);
                         }
                     }
                     result.add(sibling);
                 } else if (Expression.NO_CONTEXT_ID != contextId) {
-                    sibling.addContextNode(contextId, referenceNode);
+                    sibling.addContextNode(contextId, start);
                 }
+
+            } else if (currentLevel < level) {
+                // exited the parent node, so stop filtering
+                return false;
             }
+
             return true;
         }
     }
 
     private static class PrecedingSiblingFilter implements StreamFilter {
         private final NodeTest test;
-        private final NodeProxy root;
+        private final int level;
         private final NodeProxy referenceNode;
         private final NodeSet result;
         private final int contextId;
 
-        private PrecedingSiblingFilter(final NodeTest test, final NodeProxy root, final NodeProxy referenceNode, final NodeSet result,
-                final int contextId) {
+        private PrecedingSiblingFilter(final NodeTest test, final NodeProxy start, final NodeProxy referenceNode,
+                final NodeSet result, final int contextId) {
             this.test = test;
-            this.root = root;
+            this.level = start.getNodeId().getTreeLevel();
             this.referenceNode = referenceNode;
             this.result = result;
             this.contextId = contextId;
@@ -1315,20 +1323,14 @@ public class LocationStep extends Step {
         public boolean accept(final XMLStreamReader reader) {
             final NodeId currentId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
 
-            if (reader.getEventType() == XMLStreamReader.END_ELEMENT) {
-                if (currentId.getTreeLevel() == root.getNodeId().getTreeLevel()) {
-                    // exited the root element, so  stop filtering
-                    return false;
-                }
-
-                return true;
+            final NodeId refId = referenceNode.getNodeId();
+            if (currentId.equals(refId)) {
+                // reached the reference node
+                return false;
             }
 
-            final NodeId refId = referenceNode.getNodeId();
-
-            if (currentId.equals(refId)) {
-                return false;
-            } else if (currentId.getTreeLevel() == refId.getTreeLevel() && test.matches(reader)) {
+            if (currentId.getTreeLevel() == level && !reader.isEndElement() && test.matches(reader)) {
+                // sibling which matches the test
                 NodeProxy sibling = result.get(referenceNode.getOwnerDocument(), currentId);
                 if (sibling == null) {
                     sibling = new NodeProxy(referenceNode.getOwnerDocument(), currentId,
@@ -1344,8 +1346,8 @@ public class LocationStep extends Step {
                 } else if (Expression.NO_CONTEXT_ID != contextId) {
                     sibling.addContextNode(contextId, referenceNode);
                 }
-
             }
+
             return true;
         }
     }
