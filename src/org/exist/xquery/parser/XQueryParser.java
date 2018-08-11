@@ -6,10 +6,11 @@
 	import java.io.StringReader;
 	import java.io.BufferedReader;
 	import java.io.InputStreamReader;
+	import java.util.ArrayDeque;
 	import java.util.ArrayList;
+	import java.util.Deque;
 	import java.util.List;
 	import java.util.Iterator;
-	import java.util.Stack;
 	import org.exist.storage.BrokerPool;
 	import org.exist.storage.DBBroker;
 	import org.exist.EXistException;
@@ -67,10 +68,10 @@ http://www.antlr.org/doc/index.html .
 public class XQueryParser extends antlr.LLkParser       implements XQueryTokenTypes
  {
 
-	protected ArrayList exceptions= new ArrayList(2);
-	protected boolean foundError= false;
-	protected Stack globalStack= new Stack();
-	protected Stack elementStack= new Stack();
+	protected List<Exception> exceptions = new ArrayList<>(2);
+	protected boolean foundError = false;
+	protected Deque<Deque<String>> globalStack = new ArrayDeque<>();
+	protected Deque<String> elementStack = new ArrayDeque<>();
 	protected XQueryLexer lexer;
 
 	public XQueryParser(XQueryLexer lexer) {
@@ -14437,7 +14438,7 @@ inputState.guessing--;
 		if ( inputState.guessing==0 ) {
 			
 					globalStack.push(elementStack);
-					elementStack= new Stack();
+					elementStack = new ArrayDeque<>();
 					lexer.inElementContent= false;
 				
 		}
@@ -14446,7 +14447,7 @@ inputState.guessing--;
 		match(RCURLY);
 		if ( inputState.guessing==0 ) {
 			
-					elementStack= (Stack) globalStack.pop();
+					elementStack = (Deque) globalStack.pop();
 					lexer.inElementContent= true;
 				
 		}
