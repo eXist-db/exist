@@ -87,7 +87,7 @@ public class RestoreHandler extends DefaultHandler {
     //handler state
     private int version = 0;
     private EXistCollection currentCollection;
-    private Stack<DeferredPermission> deferredPermissions = new Stack<DeferredPermission>();
+    private Deque<DeferredPermission> deferredPermissions = new ArrayDeque<DeferredPermission>();
     
     
     public RestoreHandler(final RestoreListener listener, final String dbBaseUri, final String dbUsername, final String dbPassword, final BackupDescriptor descriptor) {

@@ -3543,7 +3543,7 @@ public class NativeBroker extends DBBroker {
         try(final INodeIterator iterator = getNodeIterator(node)) {
             iterator.next();
 
-            final Stack<RemovedNode> stack = new Stack<>();
+            final Deque<RemovedNode> stack = new ArrayDeque<>();
             collectNodesForRemoval(transaction, stack, iterator, listener, node, currentPath);
             while(!stack.isEmpty()) {
                 final RemovedNode next = stack.pop();
@@ -3554,7 +3554,7 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    private <T extends IStoredNode> void collectNodesForRemoval(final Txn transaction, final Stack<RemovedNode> stack,
+    private <T extends IStoredNode> void collectNodesForRemoval(final Txn transaction, final Deque<RemovedNode> stack,
             final INodeIterator iterator, final StreamListener listener, final IStoredNode<T> node, final NodePath currentPath) {
         RemovedNode removed;
         switch(node.getNodeType()) {

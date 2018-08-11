@@ -26,8 +26,9 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Iterator;
-import java.util.Stack;
 
 public class AVLTreeNodeSet extends AbstractNodeSet {
 
@@ -422,7 +423,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 
     class InorderTraversal implements NodeSetIterator, SequenceIterator {
 
-        private final Stack<Node> nodes = new Stack<>();
+        private final Deque<Node> nodes = new ArrayDeque<>();
 
         public InorderTraversal() {
             if(root != null) {
@@ -436,19 +437,15 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 
         @Override
         public boolean hasNext() {
-            if(nodes.size() == 0) {
-                return false;
-            }
-            return true;
+            return !nodes.isEmpty();
         }
 
         @Override
         public NodeProxy next() {
-            if(nodes.isEmpty()) {
+            final Node currentNode = nodes.poll();
+            if (currentNode == null) {
                 return null;
             }
-            final Node currentNode = nodes.peek();
-            nodes.pop();
             if(currentNode.hasRightChild()) {
                 Node tempNode = currentNode.rightChild;
                 do {
@@ -461,10 +458,10 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 
         @Override
         public NodeProxy peekNode() {
-            if(nodes.isEmpty()) {
+            final Node currentNode = nodes.peek();
+            if (currentNode == null) {
                 return null;
             }
-            final Node currentNode = nodes.peek();
             return currentNode.getData();
         }
 
@@ -488,11 +485,10 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 
         @Override
         public Item nextItem() {
-            if(nodes.isEmpty()) {
+            final Node currentNode = nodes.poll();
+            if (currentNode == null) {
                 return null;
             }
-            final Node currentNode = nodes.peek();
-            nodes.pop();
             if(currentNode.hasRightChild()) {
                 Node tempNode = currentNode.rightChild;
                 do {
