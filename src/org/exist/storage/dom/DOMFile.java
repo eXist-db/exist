@@ -1277,14 +1277,12 @@ public class DOMFile extends BTree implements Lockable {
             do {
                 nodeID = nodeID.getParentId();
                 if (nodeID == null) {
-                    SanityCheck.TRACE("Node " + node.getOwnerDocument().getDocId() + ":" +
-                        nodeID + " not found.");
+                    SanityCheck.TRACE("Node " + node.getOwnerDocument().getDocId() + ":" + nodeID + " not found.");
                     throw new BTreeException("Node not found.");
                 }
                 if (nodeID == NodeId.DOCUMENT_NODE) {
-                    SanityCheck.TRACE("Node " + node.getOwnerDocument().getDocId() + ":" +
-                            nodeID + " not found.");
-                    throw new BTreeException("Node " + nodeID + " not found.");
+                    SanityCheck.TRACE("Node " + node.getOwnerDocument().getDocId() + ":" + nodeID + " not found.");
+                    return KEY_NOT_FOUND;
                 }
                 final NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc.getDocId(), nodeID);
                 try {
