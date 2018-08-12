@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.InvalidPreferencesFormatException;
@@ -42,6 +43,8 @@ import javax.swing.SwingUtilities;
  * @author Adam Retter <adam.retter@googlemail.com>
  */
 public class ConnectionDialog extends javax.swing.JDialog implements DialogWithResponse<Connection> {
+
+    private static final String PROVIDED_PASSWORD_PLACEHOLDER = "__PROVIDED__PASSWORD__";
 
     private ComboBoxModel connectionTypeModel = null;
     private DefaultListModel favouritesModel = null;
@@ -244,6 +247,10 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         cmbConnectionType.addActionListener(this::cmbConnectionTypeActionPerformed);
 
         txtUsername.setText(getDefaultConnectionSettings().getUsername());
+        if (getDefaultConnectionSettings().getPassword() != null
+                && !getDefaultConnectionSettings().getPassword().isEmpty()) {
+            txtPassword.setText(PROVIDED_PASSWORD_PLACEHOLDER);
+        }
 
         tpConnectionType.setTabPlacement(javax.swing.JTabbedPane.RIGHT);
 
@@ -433,11 +440,12 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
 
     private void btnConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConnectActionPerformed
 
+        final String password = Arrays.equals(txtPassword.getPassword(), PROVIDED_PASSWORD_PLACEHOLDER.toCharArray()) ? getDefaultConnectionSettings().getPassword() : new String(txtPassword.getPassword());
         final Connection connection;
         if (cmbConnectionType.getSelectedItem() == ConnectionType.Remote) {
-            connection = new Connection(txtUsername.getText(), new String(txtPassword.getPassword()), txtServerUri.getText(), chkSsl.isSelected());
+            connection = new Connection(txtUsername.getText(), password, txtServerUri.getText(), chkSsl.isSelected());
         } else {
-            connection = new Connection(txtUsername.getText(), new String(txtPassword.getPassword()), txtConfiguration.getText());
+            connection = new Connection(txtUsername.getText(), password, txtConfiguration.getText());
         }
 
         for (final DialogCompleteWithResponse<Connection> callback : getDialogCompleteWithResponseCallbacks()) {
