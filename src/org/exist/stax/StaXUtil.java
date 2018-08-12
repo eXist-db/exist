@@ -29,52 +29,86 @@ import org.w3c.dom.Node;
 
 public class StaXUtil {
 
-    public static int streamType2Type(int type) {
+    public static int streamType2Type(final int type) {
         int xpathType;
         switch (type) {
             case XMLStreamConstants.START_ELEMENT :
                 xpathType = Type.ELEMENT;
                 break;
-            case XMLStreamConstants.ATTRIBUTE :
-                xpathType = Type.ATTRIBUTE;
-                break;
-            case XMLStreamConstants.CHARACTERS :
-            case XMLStreamConstants.CDATA :
-                xpathType = Type.TEXT;
-                break;
-            case XMLStreamConstants.COMMENT :
-                xpathType = Type.COMMENT;
-                break;
+
             case XMLStreamConstants.PROCESSING_INSTRUCTION :
                 xpathType = Type.PROCESSING_INSTRUCTION;
                 break;
+
+            case XMLStreamConstants.CHARACTERS :
+                xpathType = Type.TEXT;
+                break;
+
+            case XMLStreamConstants.COMMENT :
+                xpathType = Type.COMMENT;
+                break;
+
+            case XMLStreamConstants.START_DOCUMENT:
+                xpathType = Type.DOCUMENT;
+                break;
+
+            case XMLStreamConstants.ATTRIBUTE:
+                xpathType = Type.ATTRIBUTE;
+                break;
+
+            case XMLStreamConstants.CDATA:
+                xpathType = Type.TEXT;
+                break;
+
             default:
                 xpathType = Type.UNTYPED;
         }
         return xpathType;
     }
 
-    public static short streamType2DOM(int type) {
+    public static short streamType2DOM(final int type) {
         short domType;
         switch (type) {
-            case XMLStreamConstants.START_ELEMENT :
+            case XMLStreamConstants.START_ELEMENT:
                 domType = Node.ELEMENT_NODE;
                 break;
-            case XMLStreamConstants.ATTRIBUTE :
-                domType = Node.ATTRIBUTE_NODE;
-                break;
-            case XMLStreamConstants.CHARACTERS :
-                domType = Node.TEXT_NODE;
-                break;
-            case XMLStreamConstants.CDATA :
-                domType = Node.CDATA_SECTION_NODE;
-                break;
-            case XMLStreamConstants.COMMENT :
-                domType = Node.COMMENT_NODE;
-                break;
-            case XMLStreamConstants.PROCESSING_INSTRUCTION :
+
+            case XMLStreamConstants.PROCESSING_INSTRUCTION:
                 domType = Node.PROCESSING_INSTRUCTION_NODE;
                 break;
+
+            case XMLStreamConstants.CHARACTERS:
+                domType = Node.TEXT_NODE;
+                break;
+
+            case XMLStreamConstants.COMMENT:
+                domType = Node.COMMENT_NODE;
+                break;
+
+            case XMLStreamConstants.START_DOCUMENT:
+                domType = Node.DOCUMENT_NODE;
+                break;
+
+            case XMLStreamConstants.ENTITY_REFERENCE:
+                domType = Node.ENTITY_REFERENCE_NODE;
+                break;
+
+            case XMLStreamConstants.ATTRIBUTE:
+                domType = Node.ATTRIBUTE_NODE;
+                break;
+
+            case XMLStreamConstants.DTD:
+                domType = Node.DOCUMENT_TYPE_NODE;
+                break;
+
+            case XMLStreamConstants.CDATA:
+                domType = Node.CDATA_SECTION_NODE;
+                break;
+
+            case XMLStreamConstants.ENTITY_DECLARATION:
+                domType = Node.ENTITY_NODE;
+                break;
+
             default:
                 domType = -1;
         }
