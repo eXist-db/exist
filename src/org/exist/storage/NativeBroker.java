@@ -4130,7 +4130,8 @@ public class NativeBroker extends DBBroker {
          */
         public void store() {
             final DocumentImpl doc = node.getOwnerDocument();
-            if(indexMode == IndexMode.STORE && node.getNodeType() == Node.ELEMENT_NODE && level <= defaultIndexDepth) {
+            // we store all nodes at level 1 (see - https://github.com/eXist-db/exist/issues/1691), and only element nodes after!
+            if(indexMode == IndexMode.STORE && (level == 1 || (node.getNodeType() == Node.ELEMENT_NODE && level <= defaultIndexDepth))) {
                 //TODO : used to be this, but NativeBroker.this avoids an owner change
                 new DOMTransaction(NativeBroker.this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
                     @Override
