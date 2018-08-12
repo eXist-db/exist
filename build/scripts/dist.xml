@@ -284,7 +284,6 @@
         <copy todir="${dist.dir}/webapp">
             <fileset dir="webapp">
                 <exclude name="api/"/>
-                <exclude name="xqts/"/>
                 <exclude name="WEB-INF/"/>
             </fileset>
         </copy>

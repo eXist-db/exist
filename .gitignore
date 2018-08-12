@@ -46,7 +46,6 @@ nbproject/private/
 start.jar
 test/external/
 test/junit/
-test/src/org/exist/xquery/xqts/
 test/temp/
 tools/jetty/logs/
 tools/jetty/tmp/
@@ -71,7 +70,6 @@ webapp/WEB-INF/dwr20.dtd
 webapp/WEB-INF/logs/*.log
 webapp/WEB-INF/logs/*.log.*
 webapp/WEB-INF/web.xml
-webapp/xqts/config.xml
 tools/yajsw/logs/wrapper.log
 tools/yajsw/logs/wrapper.log.lck
 Project_Default.xml
