@@ -129,6 +129,8 @@ public class XPathQueryTest {
             "</test>" +
             "<!-- 3 -->";
 
+    private final static String siblings_attr = "<a b='c' bb='cc'/>";
+
     private final static String ids_content =
             "<test xml:space=\"preserve\">" +
             "<a ref=\"id1\"/>" +
@@ -502,7 +504,7 @@ public class XPathQueryTest {
 
     @Test
     public void precedingSiblingAxis_persistent() throws XMLDBException, IOException, SAXException {
-        final XQueryService service =
+        XQueryService service =
                 storeXMLStringAndGetQueryService("siblings.xml", siblings);
         service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         service.setProperty(OutputKeys.INDENT, "no");
@@ -542,6 +544,12 @@ public class XPathQueryTest {
 
         result = queryResource(service, "siblings.xml", "/comment()[3]/preceding-sibling::comment()[2]", 1);
         assertEquals("<!-- 1 -->", result.getResource(0).getContent().toString());
+
+        service = storeXMLStringAndGetQueryService("siblings_attr.xml", siblings_attr);
+        service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        service.setProperty(OutputKeys.INDENT, "no");
+
+        queryResource(service, "siblings_attr.xml", "/a/@bb/preceding-sibling::*", 0);
     }
 
     @Test
@@ -586,6 +594,9 @@ public class XPathQueryTest {
         rs = service.query("let $doc := document { <!-- 1 -->,<!-- 2 -->,<test/>,<!-- 3 --> } return $doc/comment()[3]/preceding-sibling::comment()[2]");
         assertEquals(1, rs.getSize());
         assertEquals("<!-- 1 -->", rs.getResource(0).getContent().toString());
+
+        rs = service.query("let $elem := <a b='c' bb='cc'/> return $elem/@bb/preceding-sibling::*");
+        assertEquals(0, rs.getSize());
     }
 
     @Test
@@ -622,6 +633,12 @@ public class XPathQueryTest {
 
         result = queryResource(service, "siblings.xml", "/comment()[1]/following-sibling::comment()[2]", 1);
         assertEquals("<!-- 3 -->", result.getResource(0).getContent().toString());
+
+        service = storeXMLStringAndGetQueryService("siblings_attr.xml", siblings_attr);
+        service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        service.setProperty(OutputKeys.INDENT, "no");
+
+        queryResource(service, "siblings_attr.xml", "/a/@b/following-sibling::*", 0);
     }
 
     @Test
@@ -655,6 +672,9 @@ public class XPathQueryTest {
         rs = service.query("let $doc := document { <!-- 1 -->,<!-- 2 -->,<test/>,<!-- 3 --> } return $doc/comment()[1]/following-sibling::comment()[2]");
         assertEquals(1, rs.getSize());
         assertEquals("<!-- 3 -->", rs.getResource(0).getContent().toString());
+
+        rs = service.query("let $elem := <a b='c' bb='cc'/> return $elem/@b/following-sibling::*");
+        assertEquals(0, rs.getSize());
     }
 
     @Test
