@@ -171,7 +171,6 @@
                 <exclude name="**/*.lck*"/>
                 <exclude name="**/*.registry*"/>
                 <exclude name="api/**"/>
-                <!--exclude name="xqts/**"/-->
                 <exclude name="**/.svn/"/>
                 <exclude name="**/*~"/>
                 <exclude name="WEB-INF/logs/**"/>
