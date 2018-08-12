@@ -21,6 +21,7 @@
  */
 package org.exist.backup;
 
+import org.exist.dom.persistent.*;
 import org.exist.security.Account;
 import org.exist.security.Group;
 import org.exist.security.Permission;
@@ -28,10 +29,6 @@ import org.exist.storage.StorageAddress;
 import org.w3c.dom.Node;
 
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.IStoredNode;
 import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
 import org.exist.numbering.NodeId;
@@ -322,8 +319,8 @@ public class ConsistencyCheck
                     public Object start() {
                         EmbeddedXMLStreamReader reader = null;
                         try {
-                            final ElementImpl             root            = (ElementImpl)doc.getDocumentElement();
-                            reader = (EmbeddedXMLStreamReader)broker.getXMLStreamReader( root, true );
+                            final Node              root            = doc.getFirstChild();
+                            reader = (EmbeddedXMLStreamReader)broker.getXMLStreamReader((NodeHandle)root, true );
                             NodeId                  nodeId;
                             boolean                 attribsAllowed  = false;
                             int                     expectedAttribs = 0;
