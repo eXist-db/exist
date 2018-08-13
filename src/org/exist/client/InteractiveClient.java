@@ -2155,17 +2155,18 @@ public class InteractiveClient {
         }
 
         // prompt for password if needed
-        if (interactive && options.startGUI) {
+        if (!hasLoginDetails(options)) {
+            if (interactive && options.startGUI) {
+                final boolean haveLoginData = getGuiLoginData(properties);
+                if (!haveLoginData) {
+                    return false;
+                }
 
-            final boolean haveLoginData = getGuiLoginData(properties);
-            if (!haveLoginData) {
-                return false;
-            }
-
-        } else if (options.username.isPresent() && !options.password.isPresent()) {
-            try {
-                properties.setProperty(PASSWORD, console.readLine("password: ", Character.valueOf('*')));
-            } catch (final Exception e) {
+            } else if (options.username.isPresent() && !options.password.isPresent()) {
+                try {
+                    properties.setProperty(PASSWORD, console.readLine("password: ", Character.valueOf('*')));
+                } catch (final Exception e) {
+                }
             }
         }
 
@@ -2302,6 +2303,12 @@ public class InteractiveClient {
             shutdown(false);
         }
         return true;
+    }
+
+    private boolean hasLoginDetails(final CommandlineOptions options) {
+        return options.username.isPresent()
+                && options.password.isPresent()
+                && (options.embedded || options.options.containsKey("uri"));
     }
 
     public static String getExceptionMessage(Throwable e) {
