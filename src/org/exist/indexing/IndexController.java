@@ -269,7 +269,8 @@ public class IndexController {
      * @return the top-most root node to be re-indexed
      */
     public IStoredNode getReindexRoot(final IStoredNode node, final NodePath path, final boolean insert, final boolean includeSelf) {
-        IStoredNode next, top = null;
+        IStoredNode next;
+        IStoredNode top = null;
         for (final IndexWorker indexWorker : indexWorkers.values()) {
             next = indexWorker.getReindexRoot(node, path, insert, includeSelf);
             if (next != null && (top == null || top.getNodeId().isDescendantOf(next.getNodeId()))) {

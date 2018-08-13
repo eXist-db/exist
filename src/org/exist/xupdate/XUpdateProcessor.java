@@ -73,13 +73,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Main class to pre-process an XUpdate request. XUpdateProcessor
@@ -139,7 +133,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
      * Stack to maintain xml:space settings. The items on the
      * stack are strings, containing either "default" or "preserve".
      */
-    private Stack<String> spaceStack = null;
+    private Deque<String> spaceStack = null;
 
     /**
      * The modification we are currently processing.
@@ -153,7 +147,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
     private Document doc;
 
     /** The current element stack. Contains the last elements processed. */
-    private Stack<Element> stack = new Stack<Element>();
+    private Deque<Element> stack = new ArrayDeque<>();
 
     /** The last node that has been created */
     private Node currentNode = null;
@@ -190,7 +184,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
     /**
      * Stack used to track conditionals.
      */
-    private Stack<Conditional> conditionals = new Stack<Conditional>();
+    private Deque<Conditional> conditionals = new ArrayDeque<>();
 
 	/**
 	 * Constructor for XUpdateProcessor.
@@ -260,7 +254,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	public void startDocument() throws SAXException {
         // The default...
         this.preserveWhitespace = preserveWhitespaceTemp;
-        this.spaceStack = new Stack<String>();
+        this.spaceStack = new ArrayDeque<>();
         this.spaceStack.push("default");
 	}
 
@@ -302,11 +296,11 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 
 			if (normalized.length() > 0) {
 				final Text text = doc.createTextNode(charBuf.toString());
-				if (stack.isEmpty()) {
+				final Element last = stack.peek();
+				if (last == null) {
 					//LOG.debug("appending text to fragment: " + text.getData());
 					contents.add(text);
 				} else {
-					final Element last = stack.peek();
 					last.appendChild(text);
 				}
 			}
@@ -420,14 +414,16 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				}
 				else
 					{elem = doc.createElement(name);}
-			
-				if (stack.isEmpty()) {
+
+				final Element last = stack.peek();
+				if (last == null) {
 					contents.add(elem);
 				} else {
-					final Element last = stack.peek();
 					last.appendChild(elem);
 				}
-				this.setWhitespaceHandling((Element) stack.push(elem));
+
+				stack.push(elem);
+				this.setWhitespaceHandling(elem);
 			} else if (ATTRIBUTE.equals(localName)) {
 				final String name = atts.getValue("name");
 				if (name == null)
@@ -465,7 +461,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					}
 					contents.add(attrib);
 				} else {
-					final Element last = (Element) stack.peek();
+					final Element last = stack.peek();
 					if(namespace != null && last.hasAttributeNS(namespace, name) ||
 					   namespace == null && last.hasAttribute(name))
 						{throw new SAXException("The attribute " + attrib.getNodeName() + " cannot be specified " +
@@ -492,10 +488,10 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 						item = i.nextItem();
 						if(Type.subTypeOf(item.getType(), Type.NODE)) { 
 							final Node node = NodeSetHelper.copyNode(doc, ((NodeValue)item).getNode());
-							if (stack.isEmpty())
-								{contents.add(node);}
-							else {
-								final Element last = (Element) stack.peek();
+							final Element last = stack.peek();
+							if (last == null) {
+								contents.add(node);
+							} else {
 								last.appendChild(node);
 							}
 						} else {
@@ -528,13 +524,15 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
                       {elem.setAttributeNode(a);}
                 }
 			}
-			if (stack.isEmpty()) {
+			final Element last = stack.peek();
+			if (last == null) {
 				contents.add(elem);
 			} else {
-				final Element last = (Element) stack.peek();
 				last.appendChild(elem);
 			}
-            this.setWhitespaceHandling((Element) stack.push(elem));
+
+			stack.push(elem);
+            this.setWhitespaceHandling(elem);
 		}
 	}
 
@@ -572,10 +570,10 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
 			if (normalized.length() > 0) {
 				final Text text = doc.createTextNode(charBuf.toString());
-				if (stack.isEmpty()) {
+				final Element last = stack.peek();
+				if (last == null) {
 					contents.add(text);
 				} else {
-					final Element last = stack.peek();
 					last.appendChild(text);
 				}
 			}
@@ -598,8 +596,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				|| localName.equals(INSERT_AFTER)) {
 				inModification = false;
 				modification.setContent(contents);
-				if(!conditionals.isEmpty()) {
-					final Conditional cond = conditionals.peek();
+				final Conditional cond = conditionals.peek();
+				if(cond != null) {
 					cond.addModification(modification);
 				} else {
 					modifications.add(modification);
@@ -670,7 +668,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
         if ("preserve".equals(wsSetting) || "default".equals(wsSetting)) {
             // Since an opinion was expressed, restore what was previously set:
             this.spaceStack.pop();
-            if (0 == this.spaceStack.size()) {
+            if (this.spaceStack.isEmpty()) {
                 // This is the default...
                 this.preserveWhitespace = preserveWhitespaceTemp;
             } else {
@@ -689,14 +687,13 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
 			if (normalized.length() > 0) {
 				final Text text = doc.createTextNode(normalized);
-				if (stack.isEmpty()) {
-					
-					if (LOG.isDebugEnabled())
-						{LOG.debug("appending text to fragment: " + text.getData());}
-					
+				final Element last = stack.peek();
+				if (last == null) {
+					if (LOG.isDebugEnabled()) {
+						LOG.debug("appending text to fragment: " + text.getData());
+					}
 					contents.add(text);
 				} else {
-					final Element last = stack.peek();
 					last.appendChild(text);
 				}
 			}
@@ -705,10 +702,10 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		if (inModification) {
 			final ProcessingInstruction pi =
 				doc.createProcessingInstruction(target, data);
-			if (stack.isEmpty()) {
+			final Element last = stack.peek();
+			if (last == null) {
 				contents.add(pi);
 			} else {
-				final Element last = stack.peek();
 				last.appendChild(pi);
 			}
 		}
@@ -795,11 +792,11 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
 			if (normalized.length() > 0) {
 				final Text text = doc.createTextNode(normalized);
-				if (stack.isEmpty()) {
+				final Element last = stack.peek();
+				if (last == null) {
 					//LOG.debug("appending text to fragment: " + text.getData());
 					contents.add(text);
 				} else {
-					final Element last = stack.peek();
 					last.appendChild(text);
 				}
 			}
@@ -807,10 +804,10 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		}
 		if (inModification) {
 			final Comment comment = doc.createComment(new String(ch, start, length));
-			if (stack.isEmpty()) {
+			final Element last = stack.peek();
+			if (last == null) {
 				contents.add(comment);
 			} else {
-				final Element last = stack.peek();
 				last.appendChild(comment);
 			}
 		}

@@ -163,8 +163,8 @@ public class DocTest {
 
             final Source expectedSource = Input.fromString(doc).build();
             final Source actualSource = Input.fromNode((Node)result.itemAt(0)).build();
-            final Diff diff = DiffBuilder.compare(actualSource)
-                    .withTest(expectedSource)
+            final Diff diff = DiffBuilder.compare(expectedSource)
+                    .withTest(actualSource)
                     .checkForIdentical()
                     .checkForSimilar()
                     .build();
@@ -197,8 +197,8 @@ public class DocTest {
 
             final Source expectedSource = Input.fromString(doc).build();
             final Source actualSource = Input.fromNode((Node)result.itemAt(0)).build();
-            final Diff diff = DiffBuilder.compare(actualSource)
-                    .withTest(expectedSource)
+            final Diff diff = DiffBuilder.compare(expectedSource)
+                    .withTest(actualSource)
                     .checkForIdentical()
                     .checkForSimilar()
                     .build();

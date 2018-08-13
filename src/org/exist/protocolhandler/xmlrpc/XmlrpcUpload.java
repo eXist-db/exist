@@ -105,7 +105,7 @@ public class XmlrpcUpload {
             params.clear();
             params.add(handle);
             params.add(xmldbURL.getCollectionPath() );
-            params.add(Boolean.valueOf(true));
+            params.add(Boolean.TRUE);
             params.add(contentType);
             final Boolean result =(Boolean)client.execute("parseLocal", params);
             

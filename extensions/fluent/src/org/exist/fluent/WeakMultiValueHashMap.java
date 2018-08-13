@@ -10,15 +10,11 @@ class WeakMultiValueHashMap<K,V> {
 	 */
 	private static final int SWEEP_COUNT = 100;
 	
-	private final Map<K, Collection<WeakReference<V>>> map = new HashMap<K, Collection<WeakReference<V>>>();
+	private final Map<K, Collection<WeakReference<V>>> map = new HashMap<>();
 	private int putCounter;
 	
 	public synchronized void put(K key, V value) {
-		Collection<WeakReference<V>> list = map.get(key);
-		if (list == null) {
-			list = new LinkedList<WeakReference<V>>();
-			map.put(key, list);
-		}
+		final Collection<WeakReference<V>> list = map.computeIfAbsent(key, k -> new LinkedList<>());
 		list.add(new WeakReference<V>(value));
 		putCounter = (putCounter + 1) % SWEEP_COUNT;
 		if (putCounter == 0) SWEEPER.clean(this);
@@ -42,39 +38,48 @@ class WeakMultiValueHashMap<K,V> {
 	@SuppressWarnings("unchecked")
 	public synchronized Iterable<V> get(final K key) {
 		final Collection<WeakReference<V>> list = map.get(key);
-		if (list == null) return Database.EMPTY_ITERABLE;
-		
-		return new Iterable<V>() {
-			public java.util.Iterator<V> iterator() {
-				return new Iterator<V>() {
-					private final Iterator<WeakReference<V>> it = list.iterator();
-					private V nextItem;		{advance();}
-					private void advance() {
-						synchronized(WeakMultiValueHashMap.this) {
-							while(nextItem == null && it.hasNext()) {
-								nextItem = it.next().get();
-								if (nextItem == null) it.remove();
-							}
-							if (!it.hasNext() && list.isEmpty()) map.remove(key); 
-						}
-					}
-					public boolean hasNext() {
-						advance();
-						return nextItem != null;
-					}
-					public V next() {
-						advance();
-						if (nextItem == null) throw new NoSuchElementException();
-						V item = nextItem;
-						nextItem = null;
-						return item;
-					}
-					public void remove() {
-						throw new UnsupportedOperationException();
-					}
-				};
+		if (list == null) {
+			return Database.EMPTY_ITERABLE;
+		}
+		return () -> new WeakMultiValueHashMapIterator(key, list);
+	}
+
+	private class WeakMultiValueHashMapIterator implements Iterator<V> {
+		private final K key;
+		private final Collection<WeakReference<V>> list;
+		private final Iterator<WeakReference<V>> it;
+		private V nextItem;
+
+		public WeakMultiValueHashMapIterator(final K key, final Collection<WeakReference<V>> list) {
+			this.key = key;
+			this.list = list;
+			this.it = list.iterator();
+			advance();
+		}
+
+		private void advance() {
+			synchronized(WeakMultiValueHashMap.this) {
+				while(nextItem == null && it.hasNext()) {
+					nextItem = it.next().get();
+					if (nextItem == null) it.remove();
+				}
+				if (!it.hasNext() && list.isEmpty()) map.remove(key);
 			}
-		};
+		}
+		public boolean hasNext() {
+			advance();
+			return nextItem != null;
+		}
+		public V next() {
+			advance();
+			if (nextItem == null) throw new NoSuchElementException();
+			V item = nextItem;
+			nextItem = null;
+			return item;
+		}
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
 	}
 	
 	private static final Sweeper SWEEPER = new Sweeper();

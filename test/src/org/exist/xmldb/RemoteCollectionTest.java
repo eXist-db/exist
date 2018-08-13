@@ -95,8 +95,8 @@ public class RemoteCollectionTest extends RemoteDBTest {
         final Source expected = Input.fromString(xml).build();
         final Source actual = Input.fromString(result).build();
 
-        final Diff diff = DiffBuilder.compare(actual)
-                .withTest(expected)
+        final Diff diff = DiffBuilder.compare(expected)
+                .withTest(actual)
                 .checkForSimilar()
                 .build();
 

@@ -187,7 +187,7 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 	 *         succeeded, or false otherwise.
 	 */
 	public boolean commit() throws LoginException {
-		if (succeeded == false) {
+		if (!succeeded) {
 			return false;
 		} else {
 			// add a Principal (authenticated identity)
@@ -228,7 +228,7 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 	public boolean abort() throws LoginException {
 		if (succeeded == false) {
 			return false;
-		} else if (succeeded == true && commitSucceeded == false) {
+		} else if (succeeded && !commitSucceeded) {
 			// login succeeded but overall authentication failed
 			succeeded = false;
 			userPrincipal = null;

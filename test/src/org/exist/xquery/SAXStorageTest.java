@@ -72,7 +72,7 @@ public class SAXStorageTest {
 			(XPathQueryService) testCollection.getService(
 					"XPathQueryService", 	"1.0");
 		ResourceSet result = null;
-		if ( xquery != "") {
+		if (!xquery.isEmpty()) {
 			// xquery = "/*/*[2]";
 			long t0 = System.currentTimeMillis();
 			result = service.queryResource( "big.xml", xquery );
@@ -143,7 +143,7 @@ public class SAXStorageTest {
 		tester.storeSAXEvents(dataSource);
 		System.out.println("Stored tabular data, " +lines+" lines, "+columns+" columns");
 
-        if ( xquery != "" ) {
+        if (!xquery.isEmpty()) {
             ResourceSet result = tester.querySingleLine(xquery, "testQueryBigDocument" );
             System.out.println("result size: " + result.getSize() );
         }

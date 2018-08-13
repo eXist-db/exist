@@ -561,15 +561,17 @@ public class XMLChar {
      * @param name string to check
      * @return true if name is a valid Name
      */
-    public static boolean isValidName(String name) {
-        if (name.length() == 0)
-            {return false;}
+    public static boolean isValidName(final String name) {
+        if (name.length() == 0) {
+            return false;
+        }
         char ch = name.charAt(0);
-        if( isNameStart(ch) == false)
-           {return false;}
+        if(!isNameStart(ch)) {
+            return false;
+        }
         for (int i = 1; i < name.length(); i++ ) {
            ch = name.charAt(i);
-           if( isName( ch ) == false ){
+           if (!isName(ch)) {
               return false;
            }
         }
@@ -588,15 +590,17 @@ public class XMLChar {
      * @param ncName string to check
      * @return true if name is a valid NCName
      */
-    public static boolean isValidNCName(String ncName) {
-        if (ncName.length() == 0)
-            {return false;}
+    public static boolean isValidNCName(final String ncName) {
+        if (ncName.isEmpty()) {
+            return false;
+        }
         char ch = ncName.charAt(0);
-        if( isNCNameStart(ch) == false)
-           {return false;}
+        if (!isNCNameStart(ch)) {
+            return false;
+        }
         for (int i = 1; i < ncName.length(); i++ ) {
            ch = ncName.charAt(i);
-           if( isNCName( ch ) == false ){
+           if (!isNCName(ch)){
               return false;
            }
         }

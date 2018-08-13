@@ -72,10 +72,10 @@ options {
 	private XQueryContext staticContext;
 	private XQueryContext context;
 	private ExternalModule myModule = null;
-	protected ArrayList exceptions= new ArrayList(2);
-	protected boolean foundError= false;
-	protected Map declaredNamespaces = new HashMap();
-	protected Set declaredGlobalVars = new TreeSet();
+	protected List<Exception> exceptions = new ArrayList<>(2);
+	protected boolean foundError = false;
+	protected Map<String, String> declaredNamespaces = new HashMap<>();
+	protected Set<QName> declaredGlobalVars = new TreeSet<>();
 
 	public XQueryTreeParser(XQueryContext context) {
         this(context, null);

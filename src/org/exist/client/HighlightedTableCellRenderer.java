@@ -59,7 +59,8 @@ public class HighlightedTableCellRenderer<T extends AbstractTableModel> extends 
             ((JLabel)renderer).setOpaque(true);
         }
 
-        final Color foreground, background;
+        final Color foreground;
+        final Color background;
         final T resources = (T)table.getModel();
         if (isSelected) {
             foreground = highForeground;

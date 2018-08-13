@@ -108,7 +108,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private ReindexMode mode = ReindexMode.STORE;
     
     private LuceneConfig config;
-    private Stack<TextExtractor> contentStack = null;
+    private Deque<TextExtractor> contentStack = null;
     private Set<NodeId> nodesToRemove = null;
     private List<PendingDoc> nodesToWrite = null;
     private Document pendingDoc = null;
@@ -123,6 +123,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public static final String FIELD_DOC_URI = "docUri";
 
     private boolean isReindexing;
+
+    private final StreamListener listener = new LuceneStreamListener();
 
     public LuceneIndexWorker(LuceneIndex parent, DBBroker broker) {
         this.index = parent;
@@ -278,8 +280,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
         return null;
     }
-
-    private StreamListener listener = new LuceneStreamListener();
 
     @Override
     public StreamListener getListener() {
@@ -1045,7 +1045,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             List<QName> qnames = hints == null ? null : (List<QName>)hints.get(QNAMES_KEY);
             qnames = getDefinedIndexes(qnames);
             //Expects a StringValue
-            String start = null, end = null;
+            String start = null;
+            String end = null;
             long max = Long.MAX_VALUE;
             if (hints != null) {
                 Object vstart = hints.get(START_VALUE);
@@ -1176,15 +1177,18 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     private static class PendingDoc {
-        NodeId nodeId;
-        CharSequence text;
-        QName qname;
-        LuceneIndexConfig idxConf;
-        float boost;
+        private final NodeId nodeId;
+        private final QName qname;
+        private final NodePath path;
+        private final CharSequence text;
+        private final float boost;
+        private final LuceneIndexConfig idxConf;
 
-        private PendingDoc(NodeId nodeId, QName qname, NodePath path, CharSequence text, float boost, LuceneIndexConfig idxConf) {
+        private PendingDoc(final NodeId nodeId, final QName qname, final NodePath path, final CharSequence text,
+                final float boost, final LuceneIndexConfig idxConf) {
             this.nodeId = nodeId;
             this.qname = qname;
+            this.path = path;
             this.text = text;
             this.idxConf = idxConf;
             this.boost = boost;
@@ -1192,11 +1196,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     private static class PendingAttr {
-	AttrImpl attr;
-	LuceneIndexConfig conf;
-	NodePath path;
+	    private final AttrImpl attr;
+	    private final LuceneIndexConfig conf;
+	    private final NodePath path;
 
-        public PendingAttr(AttrImpl attr, NodePath path, LuceneIndexConfig conf) {
+        public PendingAttr(final AttrImpl attr, final NodePath path, final LuceneIndexConfig conf) {
             this.attr = attr;
             this.conf = conf;
             this.path = path;
@@ -1332,17 +1336,17 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             currentElement = element;
 
             if (mode == ReindexMode.STORE && config != null) {
-                if (contentStack != null && !contentStack.isEmpty()) {
-                    for (TextExtractor extractor : contentStack) {
+                if (contentStack != null) {
+                    for (final TextExtractor extractor : contentStack) {
                         extractor.startElement(element.getQName());
                     }
                 }
 
-		Iterator<LuceneIndexConfig> configIter = config.getConfig(path);
+                Iterator<LuceneIndexConfig> configIter = config.getConfig(path);
                 if (configIter != null) {
                     if (contentStack == null) {
-			contentStack = new Stack<>();
-		    }
+                        contentStack = new ArrayDeque<>();
+                    }
                     while (configIter.hasNext()) {
                         LuceneIndexConfig configuration = configIter.next();
                         if (configuration.match(path)) {
@@ -1359,8 +1363,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         @Override
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null) {
-                if (mode == ReindexMode.STORE && contentStack != null && !contentStack.isEmpty()) {
-                    for (TextExtractor extractor : contentStack) {
+                if (mode == ReindexMode.STORE && contentStack != null) {
+                    for (final TextExtractor extractor : contentStack) {
                         extractor.endElement(element.getQName());
                     }
                 }
@@ -1446,8 +1450,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         @Override
         public void characters(Txn transaction, AbstractCharacterData text, NodePath path) {
-            if (contentStack != null && !contentStack.isEmpty()) {
-                for (TextExtractor extractor : contentStack) {
+            if (contentStack != null) {
+                for (final TextExtractor extractor : contentStack) {
                 	extractor.beforeCharacters();
                     extractor.characters(text.getXMLString());
                 }

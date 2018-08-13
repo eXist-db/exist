@@ -105,8 +105,8 @@ public class XMLDBBackupTest {
         assertNotNull(doc1);
         final Source expected = Input.fromString(doc1Content).build();
         final Source actual = Input.fromString(doc1.getContent().toString()).build();
-        final Diff diff = DiffBuilder.compare(actual)
-                .withTest(expected)
+        final Diff diff = DiffBuilder.compare(expected)
+                .withTest(actual)
                 .checkForIdentical()
                 .build();
         assertFalse(diff.toString(), diff.hasDifferences());

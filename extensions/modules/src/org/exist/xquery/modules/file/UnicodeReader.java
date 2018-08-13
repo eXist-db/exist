@@ -124,7 +124,8 @@ public class UnicodeReader extends Reader
 		
 			String encoding;
 			byte bom[] = new byte[BOM_SIZE];
-			int n, unread;
+			int n;
+			int unread;
 			n = internalIn.read( bom, 0, bom.length );
 			
 			if( (bom[0] == (byte)0x00) && (bom[1] == (byte)0x00) && (bom[2] == (byte)0xFE) && (bom[3] == (byte)0xFF) ) {
