@@ -39,9 +39,6 @@ public class SortIndex extends AbstractIndex implements RawBackupSupport {
     protected static final Logger LOG = LogManager.getLogger(SortIndex.class);
     protected BTreeStore btree;
 
-    public SortIndex() {
-    }
-
     @Override
     public void open() throws DatabaseConfigurationException {
         final Path file = getDataDir().resolve(FILE_NAME);

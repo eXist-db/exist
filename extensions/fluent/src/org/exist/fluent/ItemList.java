@@ -16,7 +16,12 @@ import org.exist.xquery.value.*;
  * @version $Revision: 1.17 $ ($Date: 2006/08/14 23:18:22 $)
  */
 public class ItemList extends Resource implements Iterable<Item> {
-	
+
+	private Sequence seq;
+	private List<Item> items, modifiableItems;
+	private ValuesFacet values;
+	private NodesFacet nodes;
+
 	/**
 	 * A facet that treats each item in the list as its effective string value.  Atomic values
 	 * are converted to strings, while nodes are converted to the concatenation of all their
@@ -193,12 +198,6 @@ public class ItemList extends Resource implements Iterable<Item> {
 			return buf.toString();
 		}
 	}
-
-	
-	private Sequence seq;
-	private List<Item> items, modifiableItems;
-	private ValuesFacet values;
-	private NodesFacet nodes;
 
 	private ItemList() {
 		super(null, null);

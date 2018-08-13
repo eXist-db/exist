@@ -47,10 +47,7 @@ import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.DateTimeValue;
 
 import java.net.URISyntaxException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Optional;
-import java.util.Stack;
+import java.util.*;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -95,7 +92,7 @@ public class SystemImportHandler extends DefaultHandler {
     //handler state
     private int version = 0;
     private Collection currentCollection;
-    private Stack<DeferredPermission> deferredPermissions = new Stack<DeferredPermission>();
+    private Deque<DeferredPermission> deferredPermissions = new ArrayDeque<>();
     
     public SystemImportHandler(DBBroker broker, RestoreListener listener, String dbBaseUri, BackupDescriptor descriptor) {
         this.broker = broker;

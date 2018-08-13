@@ -16,7 +16,8 @@ import org.exist.util.*;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Path;
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -37,8 +38,8 @@ public class CollectionStore extends BFile {
     public final static byte KEY_TYPE_COLLECTION = 0;
     public final static byte KEY_TYPE_DOCUMENT = 1;
 
-    private Stack<Integer> freeResourceIds = new Stack<>();
-    private Stack<Integer> freeCollectionIds = new Stack<>();
+    private Deque<Integer> freeResourceIds = new ArrayDeque<>();
+    private Deque<Integer> freeCollectionIds = new ArrayDeque<>();
 
     /**
      * @param pool

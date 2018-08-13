@@ -86,8 +86,8 @@ public class CollectionStoreTest {
                     if (lockedDoc != null) {
                         final Source expected = Input.fromString(TEST_XML_DOC).build();
                         final Source actual = Input.fromDocument(lockedDoc.getDocument()).build();
-                        final Diff diff = DiffBuilder.compare(actual)
-                                .withTest(expected)
+                        final Diff diff = DiffBuilder.compare(expected)
+                                .withTest(actual)
                                 .checkForSimilar()
                                 .build();
 

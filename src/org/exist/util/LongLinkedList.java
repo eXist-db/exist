@@ -12,7 +12,7 @@ public class LongLinkedList {
 		
 		public ListItem next = null;
 		public ListItem prev = null;
-        
+
 		public ListItem() {
 		}
 		
@@ -46,9 +46,6 @@ public class LongLinkedList {
 	protected ListItem first = null;
 	protected ListItem last = null;
 	protected int count = 0;
-	
-	public LongLinkedList() {
-	}
 	
 	public void add( long l ) {
 		if(first == null) {

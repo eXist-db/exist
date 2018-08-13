@@ -82,7 +82,8 @@ public class LRDCache<T extends Cacheable> extends GClockCache<T> {
 	@Override
 	protected T removeOne(final T item) {
 		T old;
-		double rd = 0, minRd = -1;
+		double rd = 0;
+		double minRd = -1;
 		int bucket = -1;
         final int len = items.length;
 		for (int i = 0; i < len; i++) {

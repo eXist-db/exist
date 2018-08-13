@@ -70,8 +70,8 @@ public class MemtreeBuilderTest {
 
         final Source expectedSource = Input.fromString(doc).build();
         final Source actualSource = Input.fromNode(parsedDoc).build();
-        final Diff diff = DiffBuilder.compare(actualSource)
-                .withTest(expectedSource)
+        final Diff diff = DiffBuilder.compare(expectedSource)
+                .withTest(actualSource)
                 .checkForIdentical()
                 .checkForSimilar()
                 .build();

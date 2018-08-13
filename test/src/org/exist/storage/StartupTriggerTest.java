@@ -46,10 +46,6 @@ public class StartupTriggerTest {
 
     public static class TestStartupTrigger implements StartupTrigger {
 
-        public TestStartupTrigger() {
-            super();
-        }
-
         @Override
         public void execute(final DBBroker sysBroker, final Txn transaction, final Map<String, List<? extends Object>> params) {
             final SecurityManager secman = sysBroker.getBrokerPool().getSecurityManager();

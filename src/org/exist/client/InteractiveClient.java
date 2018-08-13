@@ -122,10 +122,11 @@ public class InteractiveClient {
     protected static final String NO_EMBED_MODE_DEFAULT = "FALSE";
     protected static final String USER_DEFAULT = SecurityManager.DBA_USER;
 
-    // Set
-    protected final static Properties defaultProps = new Properties();
+    protected static final String driver = "org.exist.xmldb.DatabaseImpl";
 
-    {
+    // Set
+    private final static Properties defaultProps = new Properties();
+    static {
         defaultProps.setProperty(DRIVER, driver);
         defaultProps.setProperty(URI, URI_DEFAULT);
         defaultProps.setProperty(USER, USER_DEFAULT);
@@ -140,7 +141,6 @@ public class InteractiveClient {
 
     protected static final int colSizes[] = new int[]{10, 10, 10, -1};
 
-    protected static final String driver = "org.exist.xmldb.DatabaseImpl";
     protected static String configuration = null;
 
     protected final TreeSet<String> completitions = new TreeSet<>();
@@ -564,7 +564,8 @@ public class InteractiveClient {
                     messageln("cp requires two arguments.");
                     return true;
                 }
-                final XmldbURI src, dest;
+                final XmldbURI src;
+                final XmldbURI dest;
                 try {
                     src = XmldbURI.xmldbUriFor(args[1]);
                     dest = XmldbURI.xmldbUriFor(args[2]);

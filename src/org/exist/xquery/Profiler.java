@@ -21,7 +21,8 @@
  */
 package org.exist.xquery;
 
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -65,7 +66,7 @@ public class Profiler {
      */
     private Logger log = LogManager.getLogger("xquery.profiling");
     
-    private Stack<ProfiledExpr> stack = new Stack<ProfiledExpr>();
+    private Deque<ProfiledExpr> stack = new ArrayDeque<>();
     
     private final StringBuilder buf = new StringBuilder(64);
     
@@ -222,13 +223,14 @@ public class Profiler {
         if (!enabled)
             {return;}
         
-        if (stack.size() == 0) {
+        if (stack.isEmpty()) {
             log.debug("QUERY START");                
         }
         
         buf.setLength(0); 
-    	for (int i = 0; i < stack.size(); i++)
-    		buf.append('\t');             
+    	for (int i = 0; i < stack.size(); i++) {
+            buf.append('\t');
+        }
         
         final ProfiledExpr e = new ProfiledExpr(expr);
     	stack.push(e);
@@ -240,8 +242,9 @@ public class Profiler {
 
         if (message != null && !"".equals(message)) {           
             buf.setLength(0);
-	    	for (int i = 0; i < stack.size(); i++)
-	    		buf.append('\t');	            
+	    	for (int i = 0; i < stack.size(); i++) {
+                buf.append('\t');
+            }
             buf.append("MSG\t");
             buf.append(message);
             buf.append("\t");
@@ -275,8 +278,9 @@ public class Profiler {
             
             if (message != null && !"".equals(message)) {                
                 buf.setLength(0);
-    	    	for (int i = 0; i < stack.size(); i++)
-    	    		buf.append('\t');	
+    	    	for (int i = 0; i < stack.size(); i++) {
+                    buf.append('\t');
+                }
     	    	buf.append("MSG\t");
                 buf.append(message);
                 buf.append("\t");
@@ -287,8 +291,9 @@ public class Profiler {
             
             if (verbosity > START_SEQUENCES) {
                 buf.setLength(0);
-    	    	for (int i = 0; i < stack.size(); i++)
-    	    		buf.append('\t');	            	
+    	    	for (int i = 0; i < stack.size(); i++) {
+                    buf.append('\t');
+                }
                 buf.append("RESULT\t");               
                 /* if (verbosity >= SEQUENCE_DUMP) 
                     buf.append(result.toString());               
@@ -305,8 +310,9 @@ public class Profiler {
             
             if (verbosity >= TIME) {   
                 buf.setLength(0);
-    	    	for (int i = 0; i < stack.size(); i++)
-    	    		buf.append('\t');	            	
+    	    	for (int i = 0; i < stack.size(); i++) {
+                    buf.append('\t');
+                }
                 buf.append("TIME\t");                
                 buf.append(elapsed).append(" ms");
                 buf.append("\t");     
@@ -316,8 +322,9 @@ public class Profiler {
             }
 			
             buf.setLength(0);
-            for (int i = 0; i < stack.size(); i++)
-	    		buf.append('\t');	                    
+            for (int i = 0; i < stack.size(); i++) {
+                buf.append('\t');
+            }
             buf.append("END\t");
             printPosition(e.expr);            
             buf.append(expr.toString()); 
@@ -348,8 +355,9 @@ public class Profiler {
             {return;}
     	
     	buf.setLength(0);  
-    	for (int i = 0; i < stack.size() - 1; i++)
-    		buf.append('\t');
+    	for (int i = 0; i < stack.size() - 1; i++) {
+            buf.append('\t');
+        }
         if (title != null && !"".equals(title))
             {buf.append(title);}
         else
@@ -374,8 +382,9 @@ public class Profiler {
             {return;}        
         
         buf.setLength(0);
-    	for (int i = 0; i < stack.size() - 1; i++)
-    		buf.append('\t');        
+    	for (int i = 0; i < stack.size() - 1; i++) {
+            buf.append('\t');
+        }
         if (title != null && !"".equals(title))
             {buf.append(title);}
         else
@@ -391,8 +400,9 @@ public class Profiler {
     }    
     
     public void reset() {
-        if (stack.size() > 0)
-            {log.debug("QUERY RESET");}  
+        if (!stack.isEmpty()) {
+            log.debug("QUERY RESET");
+        }
         stack.clear();
         if (stats.isEnabled() && stats.hasData()) {
             save();

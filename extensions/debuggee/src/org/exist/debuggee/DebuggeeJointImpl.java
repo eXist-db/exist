@@ -62,8 +62,8 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	private int stackDepth = 0;
 	
 	private CommandContinuation command = null;
-	private Stack<CommandContinuation> commands = new Stack<CommandContinuation>();
-	
+	private Deque<CommandContinuation> commands = new ArrayDeque<CommandContinuation>();
+
 	private int breakpointNo = 0;
 	//<fileName, Map<line, breakpoint>>
 	private Map<String, Map<Integer, Breakpoint>> filesBreakpoints = 
@@ -77,9 +77,6 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	private CompiledXQuery compiledXQuery;
 
     private boolean inProlog = false;
-
-	public DebuggeeJointImpl() {
-	}
 	
 	protected void setCompiledScript(CompiledXQuery compiledXQuery) {
 		this.compiledXQuery = compiledXQuery;
@@ -246,7 +243,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	}
 	
 	private synchronized void waitCommand() {
-		if (commands.size() != 0 && command.isStatus(BREAK)) {
+		if (!commands.isEmpty() && command.isStatus(BREAK)) {
 			command = commands.pop();
 			
 			((AbstractCommandContinuation)command).setCallStackDepth(stackDepth);
@@ -297,7 +294,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		
 			this.command = command;
 		} else {
-			commands.add(command);
+			commands.push(command);
 		}
 
 		notifyAll();

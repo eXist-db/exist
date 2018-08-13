@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2018 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -42,7 +42,6 @@ import org.exist.storage.btree.Value;
 import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.txn.Txn;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
 import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.TerminatedException;
@@ -52,61 +51,64 @@ import org.w3c.dom.NodeList;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Map;
-import java.util.Stack;
 
 /**
  */
 public class IndexStatisticsWorker implements IndexWorker {
-
-    private IndexStatistics index;
+    private final IndexStatistics index;
+    private final StatisticsListener listener = new StatisticsListener();
 
     private DataGuide perDocGuide = null;
-
     private ReindexMode mode = ReindexMode.STORE;
     private DocumentImpl currentDoc = null;
 
-    private StatisticsListener listener = new StatisticsListener();
-    
-    public IndexStatisticsWorker(IndexStatistics index) {
+    public IndexStatisticsWorker(final IndexStatistics index) {
         this.index = index;
     }
 
+    @Override
     public String getIndexId() {
         return index.getIndexId();
     }
 
+    @Override
     public String getIndexName() {
         return index.getIndexName();
     }
 
     @Override
-    public QueryRewriter getQueryRewriter(XQueryContext context) {
-        return null;
-    }
-
-    public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
+    public QueryRewriter getQueryRewriter(final XQueryContext context) {
         return null;
     }
 
     @Override
-    public void setDocument(DocumentImpl doc) {
+    public Object configure(final IndexController controller, final NodeList configNodes,
+                            final Map<String, String> namespaces) {
+        return null;
+    }
+
+    @Override
+    public void setDocument(final DocumentImpl doc) {
         setDocument(doc, ReindexMode.UNKNOWN);
     }
 
     @Override
-    public void setDocument(DocumentImpl doc, ReindexMode mode) {
-        perDocGuide = new DataGuide();
+    public void setDocument(final DocumentImpl doc, final ReindexMode mode) {
+        this.perDocGuide = new DataGuide();
         this.currentDoc = doc;
         this.mode = mode;
     }
 
     @Override
-    public void setMode(ReindexMode mode) {
+    public void setMode(final ReindexMode mode) {
         perDocGuide = new DataGuide();
         this.mode = mode;
     }
 
+    @Override
     public DocumentImpl getDocument() {
         return currentDoc;
     }
@@ -116,21 +118,26 @@ public class IndexStatisticsWorker implements IndexWorker {
         return mode;
     }
 
-    public <T extends IStoredNode> IStoredNode getReindexRoot(IStoredNode<T> node, NodePath path, boolean insert, boolean includeSelf) {
+    @Override
+    public <T extends IStoredNode> IStoredNode getReindexRoot(final IStoredNode<T> node, final NodePath path,
+                                                              final boolean insert, final boolean includeSelf) {
         return null;
     }
 
     @Override
     public StreamListener getListener() {
-        if (mode == ReindexMode.STORE)
-            {return listener;}
+        if (mode == ReindexMode.STORE) {
+            return listener;
+        }
         return null;
     }
 
-    public MatchListener getMatchListener(DBBroker broker, NodeProxy proxy) {
+    @Override
+    public MatchListener getMatchListener(final DBBroker broker, final NodeProxy proxy) {
         return null;
     }
 
+    @Override
     public void flush() {
         if (perDocGuide != null) {
             index.mergeStats(perDocGuide);
@@ -139,7 +146,7 @@ public class IndexStatisticsWorker implements IndexWorker {
         perDocGuide = new DataGuide();
     }
 
-    public void updateIndex(DBBroker broker) {
+    public void updateIndex(final DBBroker broker) {
         perDocGuide = new DataGuide();
         final DocumentCallback cb = new DocumentCallback(broker);
         try {
@@ -150,22 +157,20 @@ public class IndexStatisticsWorker implements IndexWorker {
         index.updateStats(perDocGuide);
     }
 
-    private void updateDocument(DBBroker broker, DocumentImpl doc) {
+    private void updateDocument(final DBBroker broker, final DocumentImpl doc) {
         final ElementImpl root = (ElementImpl) doc.getDocumentElement();
         try {
             final NodePath path = new NodePath();
-            final Stack<NodeStats> stack = new Stack<NodeStats>();
-            QName qname;
+            final Deque<NodeStats> stack = new ArrayDeque<>();
             final ExtendedXMLStreamReader reader = broker.getXMLStreamReader(root, false);
             while (reader.hasNext()) {
                 final int status = reader.next();
                 switch (status) {
                     case XMLStreamReader.START_ELEMENT:
-                        for (int i = 0; i < stack.size(); i++) {
-                            final NodeStats next = stack.elementAt(i);
+                        for (final NodeStats next : stack) {
                             next.incDepth();
                         }
-                        qname = reader.getQName();
+                        final QName qname = reader.getQName();
                         path.addComponent(qname);
                         final NodeStats nodeStats = perDocGuide.add(path);
                         stack.push(nodeStats);
@@ -177,33 +182,35 @@ public class IndexStatisticsWorker implements IndexWorker {
                         break;
                 }
             }
-        } catch (final IOException e) {
-            e.printStackTrace();
-        } catch (final XMLStreamException e) {
+        } catch (final IOException | XMLStreamException e) {
             e.printStackTrace();
         }
     }
 
-    public void removeCollection(Collection collection, DBBroker broker, boolean reindex) {
+    @Override
+    public void removeCollection(final Collection collection, final DBBroker broker, final boolean reindex) {
+        //no-op
     }
 
-    public boolean checkIndex(DBBroker broker) {
+    @Override
+    public boolean checkIndex(final DBBroker broker) {
         return false;
     }
 
-    public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints) {
+    @Override
+    public Occurrences[] scanIndex(final XQueryContext context, final DocumentSet docs, final NodeSet contextSet,
+                                   final Map hints) {
         return new Occurrences[0];
     }
 
     private class StatisticsListener extends AbstractStreamListener {
+        private final Deque<NodeStats> stack = new ArrayDeque<>();
 
-        private Stack<NodeStats> stack = new Stack<NodeStats>();
-        
-        public void startElement(Txn transaction, ElementImpl element, NodePath path) {
+        @Override
+        public void startElement(final Txn transaction, final ElementImpl element, final NodePath path) {
             super.startElement(transaction, element, path);
             if (perDocGuide != null) {
-                for (int i = 0; i < stack.size(); i++) {
-                    final NodeStats next = stack.elementAt(i);
+                for (final NodeStats next : stack) {
                     next.incDepth();
                 }
                 final NodeStats nodeStats = perDocGuide.add(path);
@@ -211,35 +218,36 @@ public class IndexStatisticsWorker implements IndexWorker {
             }
         }
 
-        public void endElement(Txn transaction, ElementImpl element, NodePath path) {
+        @Override
+        public void endElement(final Txn transaction, final ElementImpl element, final NodePath path) {
             super.endElement(transaction, element, path);
             if (perDocGuide != null) {
-                final NodeStats stats = (NodeStats) stack.pop();
+                final NodeStats stats = stack.pop();
                 stats.updateMaxDepth();
             }
         }
 
+        @Override
         public IndexWorker getWorker() {
             return IndexStatisticsWorker.this;
         }
     }
 
     private class DocumentCallback implements BTreeCallback {
+        private final DBBroker broker;
 
-        private DBBroker broker;
-
-        private DocumentCallback(DBBroker broker) {
+        private DocumentCallback(final DBBroker broker) {
             this.broker = broker;
         }
 
-        public boolean indexInfo(Value key, long pointer) throws TerminatedException {
-            final CollectionStore store = (CollectionStore) ((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
+        @Override
+        public boolean indexInfo(final Value key, final long pointer) throws TerminatedException {
+            final CollectionStore store = (CollectionStore) ((NativeBroker) broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             try {
                 final byte type = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + DocumentImpl.LENGTH_DOCUMENT_TYPE];
                 final VariableByteInput istream = store.getAsStream(pointer);
-                DocumentImpl doc = null;
                 if (type == DocumentImpl.XML_FILE) {
-                    doc = new DocumentImpl(broker.getBrokerPool());
+                    final DocumentImpl doc = new DocumentImpl(broker.getBrokerPool());
                     doc.read(istream);
                     updateDocument(broker, doc);
                 }

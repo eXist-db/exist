@@ -162,13 +162,9 @@ public class GetScheduledJobs extends BasicFunction {
 
         final Calendar aCal2 = Calendar.getInstance();
 
-        if( ( aCal1.get( Calendar.DATE ) == aCal2.get( Calendar.DATE ) ) &&
-            ( aCal1.get( Calendar.YEAR ) == aCal2.get( Calendar.YEAR ) ) &&
-			( aCal1.get( Calendar.MONTH ) == aCal2.get( Calendar.MONTH ) ) ) {
-            return( true );
-        } else {
-            return( false );
-        }
+        return aCal1.get(Calendar.DATE) == aCal2.get(Calendar.DATE) &&
+                aCal1.get(Calendar.YEAR) == aCal2.get(Calendar.YEAR) &&
+                aCal1.get(Calendar.MONTH) == aCal2.get(Calendar.MONTH);
     }
 
 }

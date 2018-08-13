@@ -61,6 +61,7 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 
 import javax.xml.transform.OutputKeys;
@@ -79,41 +80,34 @@ public class Backup
     private String           user;
     private String           pass;
 
-    public Properties        defaultOutputProperties = new Properties();
+    private final Properties defaultOutputProperties = new Properties();
+    private final Properties contentsOutputProps = new Properties();
 
-    public Properties        contentsOutputProps     = new Properties();
-
-    {
-        defaultOutputProperties.setProperty( OutputKeys.INDENT, "no" );
-        defaultOutputProperties.setProperty( OutputKeys.ENCODING, "UTF-8" );
-        defaultOutputProperties.setProperty( OutputKeys.OMIT_XML_DECLARATION, "no" );
-        defaultOutputProperties.setProperty( EXistOutputKeys.EXPAND_XINCLUDES, "no" );
-        defaultOutputProperties.setProperty( EXistOutputKeys.PROCESS_XSL_PI, "no" );
+    public Backup(final String user, final String pass, final Path target) {
+        this(user, pass, target, XmldbURI.LOCAL_DB_URI);
     }
 
-    {
-        contentsOutputProps.setProperty( OutputKeys.INDENT, "yes" );
+    public Backup(final String user, final String pass, final Path target, final XmldbURI rootCollection ) {
+        this(user, pass, target, rootCollection, null);
     }
 
-    public Backup( String user, String pass, final Path target, XmldbURI rootCollection )
-    {
+    public Backup(final String user, final String pass, final Path target, final XmldbURI rootCollection,
+            @Nullable final Properties properties ) {
         this.user = user;
         this.pass = pass;
         this.target = target;
         this.rootCollection = rootCollection;
-    }
 
+        defaultOutputProperties.setProperty(OutputKeys.INDENT, "no");
+        defaultOutputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+        defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        defaultOutputProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+        defaultOutputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
 
-    public Backup( String user, String pass, final Path target )
-    {
-        this(user, pass, target, XmldbURI.LOCAL_DB_URI);
-    }
-
-
-    public Backup( String user, String pass, final Path target, XmldbURI rootCollection, Properties property )
-    {
-        this( user, pass, target, rootCollection );
-        this.defaultOutputProperties.setProperty( OutputKeys.INDENT, property.getProperty( "indent", "no" ) );
+        if (properties != null) {
+            this.defaultOutputProperties.setProperty(OutputKeys.INDENT, properties.getProperty("indent", "no"));
+        }
+        this.contentsOutputProps.setProperty(OutputKeys.INDENT, "yes");
     }
 
     public static String encode( String enco )

@@ -194,7 +194,7 @@ public abstract class Command implements Packet {
 
 	public static String getFileuri(org.exist.source.Source fileuri) {
 //		System.out.println("getFileuri dbgp:"+fileuri.getType()+"://"+fileuri.getKey());
-		if (fileuri.type().toLowerCase().equals("file")) {
+		if (fileuri.type().equalsIgnoreCase("file")) {
 			try {
 				return new java.io.File(fileuri.path()).toURI().toURL().toString();
 			} catch (MalformedURLException e) {

@@ -9,17 +9,7 @@ import java.util.Iterator;
  */
 public class OrderedLongLinkedList extends LongLinkedList {
 
-    
-	/**
-	 * Constructor for OrderedLongLinkedList.
-	 */
-	public OrderedLongLinkedList() {
-		super();
-	}
-
-	/**
-	 * @see org.exist.util.LongLinkedList#add(long)
-	 */
+	@Override
 	public void add(long l) {
 		if (first == null) {
 			first = createListItem(l);
@@ -52,21 +42,4 @@ public class OrderedLongLinkedList extends LongLinkedList {
             ++count;
 		}
 	}
-
-    public static void main(String[] args) {
-        final OrderedLongLinkedList list = new OrderedLongLinkedList();
-        list.add(7);
-        list.add(44);
-        list.add(4);
-        list.add(-43);
-        list.add(60);
-        list.add(-122);
-        list.add(1);
-        System.out.println("size: " + list.getSize());
-        for(final Iterator i = list.iterator(); i.hasNext(); ) {
-            final OrderedLongLinkedList.ListItem item =
-                (OrderedLongLinkedList.ListItem)i.next();
-            System.out.println(item.l);
-        }
-    }
 }
