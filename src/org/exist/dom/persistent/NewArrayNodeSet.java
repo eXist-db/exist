@@ -694,7 +694,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             for(int i = mid; i < end; i++) {
                 final NodeId currentId = nodes[i].getNodeId();
                 if(!(currentId.isDescendantOf(parentId) || (p != null && parentId.equals(NodeId.DOCUMENT_NODE) && p.getNodeId().getTreeLevel() == 1))) {
-                    break;
+                    continue;
                 }
                 if(currentId.getTreeLevel() == refId.getTreeLevel() && currentId.compareTo(refId) > 0) {
                     if(Expression.IGNORE_CONTEXT != contextId) {
