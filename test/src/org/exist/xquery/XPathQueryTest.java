@@ -480,8 +480,26 @@ public class XPathQueryTest {
         final XQueryService service =
                 storeXMLStringAndGetQueryService("self.xml", self);
 
+        queryResource(service, "self.xml", "/test-self/self::document-node()", 0);
+        queryResource(service, "self.xml", "/test-self/self::node()", 1);
+        queryResource(service, "self.xml", "/test-self/self::attribute()", 0);
+        queryResource(service, "self.xml", "/test-self/self::element()", 1);
+        queryResource(service, "self.xml", "/test-self/self::comment()", 0);
+        queryResource(service, "self.xml", "/test-self/self::processing-instruction()", 0);
+        queryResource(service, "self.xml", "/test-self/self::text()", 0);
+        queryResource(service, "self.xml", "/test-self/self::namespace-node()", 0);
+
         queryResource(service, "self.xml", "/test-self/*[not(self::a)]", 1);
         queryResource(service, "self.xml", "/test-self/*[self::a]", 1);
+
+        queryResource(service, "self.xml", "/self::document-node()", 1);
+        queryResource(service, "self.xml", "/self::node()", 1);
+        queryResource(service, "self.xml", "/self::attribute()", 0);
+        queryResource(service, "self.xml", "/self::element()", 0);
+        queryResource(service, "self.xml", "/self::comment()", 0);
+        queryResource(service, "self.xml", "/self::processing-instruction()", 0);
+        queryResource(service, "self.xml", "/self::text()", 0);
+        queryResource(service, "self.xml", "/self::namespace-node()", 0);
     }
 
     @Test
