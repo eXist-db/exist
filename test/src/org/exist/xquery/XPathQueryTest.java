@@ -131,6 +131,20 @@ public class XPathQueryTest {
 
     private final static String siblings_attr = "<a b='c' bb='cc'/>";
 
+    private final static String siblings_named1 =
+            "<x>\n" +
+            "    <y n=\"1\"/>\n" +
+            "    <y n=\"2\"/>\n" +
+            "    <y n=\"3\"/>\n" +
+            "</x>";
+
+    private final static String siblings_named2 =
+            "<y>\n" +
+            "    <y n=\"1\"/>\n" +
+            "    <y n=\"2\"/>\n" +
+            "    <y n=\"3\"/>\n" +
+            "</y>";
+
     private final static String ids_content =
             "<test xml:space=\"preserve\">" +
             "<a ref=\"id1\"/>" +
@@ -550,6 +564,20 @@ public class XPathQueryTest {
         service.setProperty(OutputKeys.INDENT, "no");
 
         queryResource(service, "siblings_attr.xml", "/a/@bb/preceding-sibling::*", 0);
+
+        service = storeXMLStringAndGetQueryService("siblings_named1.xml", siblings_named1);
+        service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        service.setProperty(OutputKeys.INDENT, "no");
+
+        queryResource(service, "siblings_named1.xml", "//y[@n eq '2']/preceding-sibling::*:y", 1);
+        queryResource(service, "siblings_named1.xml", "//y[@n eq '2']/preceding-sibling::y", 1);
+
+        service = storeXMLStringAndGetQueryService("siblings_named2.xml", siblings_named2);
+        service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        service.setProperty(OutputKeys.INDENT, "no");
+
+        queryResource(service, "siblings_named2.xml", "//y[@n eq '2']/preceding-sibling::*:y", 1);
+        queryResource(service, "siblings_named2.xml", "//y[@n eq '2']/preceding-sibling::y", 1);
     }
 
     @Test
@@ -597,12 +625,21 @@ public class XPathQueryTest {
 
         rs = service.query("let $elem := <a b='c' bb='cc'/> return $elem/@bb/preceding-sibling::*");
         assertEquals(0, rs.getSize());
+
+        rs = service.query("let $doc := document { <x><y n=\"1\"/><y n=\"2\"/><y n=\"3\"/></x> } return $doc //y[@n eq '2']/preceding-sibling::*:y");
+        assertEquals(1, rs.getSize());
+        rs = service.query("let $doc := document { <x><y n=\"1\"/><y n=\"2\"/><y n=\"3\"/></x> } return $doc //y[@n eq '2']/preceding-sibling::y");
+        assertEquals(1, rs.getSize());
+
+        rs = service.query("let $doc := document { <y><y n=\"1\"/><y n=\"2\"/><y n=\"3\"/></y> } return $doc //y[@n eq '2']/preceding-sibling::*:y");
+        assertEquals(1, rs.getSize());
+        rs = service.query("let $doc := document { <y><y n=\"1\"/><y n=\"2\"/><y n=\"3\"/></y> } return $doc //y[@n eq '2']/preceding-sibling::y");
+        assertEquals(1, rs.getSize());
     }
 
     @Test
     public void followingSiblingAxis_persistent() throws XMLDBException, IOException, SAXException {
-        final XQueryService service =
-                storeXMLStringAndGetQueryService("siblings.xml", siblings);
+        XQueryService service = storeXMLStringAndGetQueryService("siblings.xml", siblings);
         service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         service.setProperty(OutputKeys.INDENT, "no");
 
@@ -639,6 +676,20 @@ public class XPathQueryTest {
         service.setProperty(OutputKeys.INDENT, "no");
 
         queryResource(service, "siblings_attr.xml", "/a/@b/following-sibling::*", 0);
+
+        service = storeXMLStringAndGetQueryService("siblings_named1.xml", siblings_named1);
+        service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        service.setProperty(OutputKeys.INDENT, "no");
+
+        queryResource(service, "siblings_named1.xml", "//y[@n eq '2']/following-sibling::*:y", 1);
+        queryResource(service, "siblings_named1.xml", "//y[@n eq '2']/following-sibling::y", 1);
+
+        service = storeXMLStringAndGetQueryService("siblings_named2.xml", siblings_named2);
+        service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        service.setProperty(OutputKeys.INDENT, "no");
+
+        queryResource(service, "siblings_named2.xml", "//y[@n eq '2']/following-sibling::*:y", 1);
+        queryResource(service, "siblings_named2.xml", "//y[@n eq '2']/following-sibling::y", 1);
     }
 
     @Test
@@ -675,6 +726,16 @@ public class XPathQueryTest {
 
         rs = service.query("let $elem := <a b='c' bb='cc'/> return $elem/@b/following-sibling::*");
         assertEquals(0, rs.getSize());
+
+        rs = service.query("let $doc := document { <x><y n=\"1\"/><y n=\"2\"/><y n=\"3\"/></x> } return $doc //y[@n eq '2']/following-sibling::*:y");
+        assertEquals(1, rs.getSize());
+        rs = service.query("let $doc := document { <x><y n=\"1\"/><y n=\"2\"/><y n=\"3\"/></x> } return $doc //y[@n eq '2']/following-sibling::y");
+        assertEquals(1, rs.getSize());
+
+        rs = service.query("let $doc := document { <y><y n=\"1\"/><y n=\"2\"/><y n=\"3\"/></y> } return $doc //y[@n eq '2']/following-sibling::*:y");
+        assertEquals(1, rs.getSize());
+        rs = service.query("let $doc := document { <y><y n=\"1\"/><y n=\"2\"/><y n=\"3\"/></y> } return $doc //y[@n eq '2']/following-sibling::y");
+        assertEquals(1, rs.getSize());
     }
 
     @Test
