@@ -514,11 +514,11 @@ public class LocationStep extends Step {
         }
 
         final NodeSet contextSet = contextSequence.toNodeSet();
-        if (test.getType() == Type.PROCESSING_INSTRUCTION) {
-            final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId, contextSet);
-            vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
-            return vset;
-        }
+//        if (test.getType() == Type.PROCESSING_INSTRUCTION) {
+//            final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId, contextSet);
+//            vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
+//            return vset;
+//        }
 
         if (test.isWildcardTest()) {
             if (nodeTestType == null) {
@@ -538,8 +538,16 @@ public class LocationStep extends Step {
                             }
                         }
                     }
+                    return contextSet;
+                } else {
+                    final NewArrayNodeSet results = new NewArrayNodeSet();
+                    for (final NodeProxy p : contextSet) {
+                        if(test.matches(p)) {
+                            results.add(p);
+                        }
+                    }
+                    return results;
                 }
-                return contextSet;
             } else {
                 final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId, contextSet);
                 vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
