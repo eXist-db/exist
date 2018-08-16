@@ -192,6 +192,7 @@ public class NativeBroker extends DBBroker {
     private NodeProcessor nodeProcessor = new NodeProcessor();
 
     private IEmbeddedXMLStreamReader streamReader = null;
+    private IEmbeddedXMLStreamReader streamReaderNG = null;
 
     private final Optional<JournalManager> logManager;
 
@@ -562,19 +563,19 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public IEmbeddedXMLStreamReader getXMLStreamReader(final NodeHandle node, final boolean reportAttributes)
-        throws IOException, XMLStreamException {
-        if(streamReader == null) {
+            throws IOException, XMLStreamException {
+        if(streamReaderNG == null) {
             final RawNodeIterator iterator = new RawNodeIterator(this, domDb, node);
-            streamReader = new EmbeddedXMLStreamReader(this, node.getOwnerDocument(), iterator, node, reportAttributes);
+            streamReaderNG = new EmbeddedXMLStreamReader(this, node.getOwnerDocument(), iterator, node, reportAttributes);
         } else {
-            streamReader.reposition(this, node, reportAttributes);
+            streamReaderNG.reposition(this, node, reportAttributes);
         }
-        return streamReader;
+        return streamReaderNG;
     }
 
     @Override
     public IEmbeddedXMLStreamReader newXMLStreamReader(final NodeHandle node, final boolean reportAttributes)
-        throws IOException, XMLStreamException {
+            throws IOException, XMLStreamException {
         final RawNodeIterator iterator = new RawNodeIterator(this, domDb, node);
         return new EmbeddedXMLStreamReader(this, node.getOwnerDocument(), iterator, null, reportAttributes);
     }
@@ -3893,7 +3894,8 @@ public class NativeBroker extends DBBroker {
          */
         public void store() {
             final DocumentImpl doc = node.getOwnerDocument();
-            if(indexMode == IndexMode.STORE && node.getNodeType() == Node.ELEMENT_NODE && level <= defaultIndexDepth) {
+            // we store all nodes at level 1 (see - https://github.com/eXist-db/exist/issues/1691), and only element nodes after!
+            if(indexMode == IndexMode.STORE && (level == 1 || (node.getNodeType() == Node.ELEMENT_NODE && level <= defaultIndexDepth))) {
                 //TODO : used to be this, but NativeBroker.this avoids an owner change
                 new DOMTransaction(NativeBroker.this, domDb, LockMode.WRITE_LOCK) {
                     @Override

@@ -35,6 +35,8 @@ import org.exist.dom.QName;
 import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
+import org.exist.numbering.NodeId;
+import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.ElementValue;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -316,13 +318,21 @@ public class Query extends Function implements Optimizable {
         Sequence optSeq = getArgument(2).eval(contextSequence, contextItem);
         NodeValue optRoot = (NodeValue) optSeq.itemAt(0);
         try {
-            XMLStreamReader reader = context.getXMLStreamReader(optRoot);
+            final int thisLevel = optRoot.getNodeId().getTreeLevel();
+            final XMLStreamReader reader = context.getXMLStreamReader(optRoot);
             reader.next();
-             reader.next();
+            reader.next();
             while (reader.hasNext()) {
                 int status = reader.next();
                 if (status == XMLStreamReader.START_ELEMENT) {
                     options.put(reader.getLocalName(), reader.getElementText());
+                } else if (status == XMLStreamReader.END_ELEMENT) {
+                    final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+                    final int otherLevel = otherId.getTreeLevel();
+                    if (otherLevel == thisLevel) {
+                        // finished `optRoot` element...
+                        break;  // exit-while
+                    }
                 }
             }
             return options;

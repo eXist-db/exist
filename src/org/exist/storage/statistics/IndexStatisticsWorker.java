@@ -33,6 +33,7 @@ import org.exist.indexing.IndexWorker;
 import org.exist.indexing.MatchListener;
 import org.exist.indexing.StreamListener;
 import org.exist.indexing.StreamListener.ReindexMode;
+import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
@@ -159,13 +160,16 @@ public class IndexStatisticsWorker implements IndexWorker {
 
     private void updateDocument(final DBBroker broker, final DocumentImpl doc) {
         final ElementImpl root = (ElementImpl) doc.getDocumentElement();
+        final int rootLevel = root.getNodeId().getTreeLevel();
         try {
             final NodePath path = new NodePath();
             final Deque<NodeStats> stack = new ArrayDeque<>();
             final ExtendedXMLStreamReader reader = broker.getXMLStreamReader(root, false);
             while (reader.hasNext()) {
                 final int status = reader.next();
+
                 switch (status) {
+
                     case XMLStreamReader.START_ELEMENT:
                         for (final NodeStats next : stack) {
                             next.incDepth();
@@ -175,10 +179,18 @@ public class IndexStatisticsWorker implements IndexWorker {
                         final NodeStats nodeStats = perDocGuide.add(path);
                         stack.push(nodeStats);
                         break;
+
                     case XMLStreamReader.END_ELEMENT:
                         path.removeLastComponent();
                         final NodeStats stats = stack.pop();
                         stats.updateMaxDepth();
+
+                        final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+                        final int otherLevel = otherId.getTreeLevel();
+                        if (otherLevel == rootLevel) {
+                            // finished `root element...
+                            break;  // exit-while
+                        }
                         break;
                 }
             }
