@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -43,6 +44,7 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.StoredNode;
 import org.exist.numbering.DLNBase;
 import org.exist.numbering.NodeId;
+import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
@@ -1275,14 +1277,12 @@ public class DOMFile extends BTree implements Lockable {
             do {
                 nodeID = nodeID.getParentId();
                 if (nodeID == null) {
-                    SanityCheck.TRACE("Node " + node.getOwnerDocument().getDocId() + ":" +
-                        nodeID + " not found.");
+                    SanityCheck.TRACE("Node " + node.getOwnerDocument().getDocId() + ":" + nodeID + " not found.");
                     throw new BTreeException("Node not found.");
                 }
                 if (nodeID == NodeId.DOCUMENT_NODE) {
-                    SanityCheck.TRACE("Node " + node.getOwnerDocument().getDocId() + ":" +
-                            nodeID + " not found.");
-                    throw new BTreeException("Node " + nodeID + " not found.");
+                    SanityCheck.TRACE("Node " + node.getOwnerDocument().getDocId() + ":" + nodeID + " not found.");
+                    return KEY_NOT_FOUND;
                 }
                 final NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc.getDocId(), nodeID);
                 try {
@@ -1292,17 +1292,37 @@ public class DOMFile extends BTree implements Lockable {
                 }
             } while (parentPointer == KEY_NOT_FOUND);
             try {
+
+                final int thisLevel = nodeID.getTreeLevel();
+                Integer childLevel = null; // lazily initialized below
+
                 final NodeProxy parent = new NodeProxy(doc, nodeID, parentPointer);
-                final EmbeddedXMLStreamReader cursor = (EmbeddedXMLStreamReader)broker.getXMLStreamReader(parent, true);
-                while(cursor.hasNext()) {
-                    final int status = cursor.next();
+                final EmbeddedXMLStreamReader reader = (EmbeddedXMLStreamReader)broker.getXMLStreamReader(parent, true);
+
+                while (reader.hasNext()) {
+                    final int status = reader.next();
+
                     if (status != XMLStreamReader.END_ELEMENT) {
-                        final NodeId nextId = (NodeId) cursor.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
-                        if (nextId.equals(node.getNodeId())) {
-                            return cursor.getCurrentPosition();
+                        if (childLevel == null) {
+                            childLevel = reader.getNode().getNodeType() == Node.ELEMENT_NODE ? thisLevel + 1 : thisLevel;
+                        }
+
+                        final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+                        if (otherId.equals(node.getNodeId())) {
+                            return reader.getCurrentPosition();
+                        }
+                    }
+
+                    if (status == XMLStreamConstants.END_ELEMENT) {
+                        final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+                        final int otherLevel = otherId.getTreeLevel();
+                        if (childLevel != null && childLevel != otherLevel && otherLevel == thisLevel) {
+                            // finished `this` element...
+                            break;  // exit-while
                         }
                     }
                 }
+
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Node " + node.getNodeId() + " could not be found. Giving up. This is usually not an error.");
                 }

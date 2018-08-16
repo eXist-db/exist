@@ -222,6 +222,7 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
     private RemoteXMLResource getResourceNode(final int pos, final Map<String, String> nodeDetail) throws XMLDBException {
         final String doc = nodeDetail.get("docUri");
         final Optional<String> s_id =  Optional.ofNullable(nodeDetail.get("nodeId"));
+        final Optional<String> s_type = Optional.ofNullable(nodeDetail.get("type"));
         final XmldbURI docUri;
         try {
             docUri = XmldbURI.xmldbUriFor(doc);
@@ -239,7 +240,8 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
 
 
         parent.setProperties(outputProperties);
-        final RemoteXMLResource res = new RemoteXMLResource(leasableXmlRpcClient.lease(), parent, handle, pos, docUri, s_id);
+        final RemoteXMLResource res = new RemoteXMLResource(leasableXmlRpcClient.lease(), parent, handle, pos, docUri,
+                s_id, s_type);
         res.setProperties(outputProperties);
         return res;
     }
