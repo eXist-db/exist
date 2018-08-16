@@ -44,6 +44,14 @@ declare variable $axes:in-mem-doc2 :=
         </root>
     };
 
+declare variable $axes:in-mem-doc3 :=
+    document {
+        <a>
+            <a/>
+            <a/>
+        </a>
+    };
+
 declare variable $axes:pi-doc :=
     document {
         <?testpi?>,
@@ -57,6 +65,7 @@ function axes:setup() {
     xmldb:store("/db/axes-test", "test.xml", $axes:NESTED_DIVS),
     xmldb:store("/db/axes-test", "doc1.xml", $axes:in-mem-doc1),
     xmldb:store("/db/axes-test", "doc2.xml", $axes:in-mem-doc2),
+    xmldb:store("/db/axes-test", "doc3.xml", $axes:in-mem-doc3),
     xmldb:store("/db/axes-test", "pi.xml", $axes:pi-doc)
 };
 
@@ -135,6 +144,14 @@ function axes:following-sibling-stored() {
         $stored-tests//a/following-sibling::b
 };
 
+declare
+    %test:assertEquals("<a/>")
+    %test:pending
+function axes:following-sibling-stored-parent-child-same-name() {
+    let $stored-test := doc("/db/axes-test/doc3.xml")/a
+    return
+        $stored-test/a[1]/following-sibling::a
+};
 
 declare
 %test:assertError("err:XPDY0002")
