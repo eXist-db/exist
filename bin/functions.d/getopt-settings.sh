@@ -42,27 +42,27 @@ is_integer() {
 }
 
 is_jmx_switch() {
-    if substring "${JMX_OPTS}" "|$1|"; then
-	JMX_ENABLED=1;
-	return 0;
-    elif substring "|$1|" "$JMX_SHORT_EQUAL"; then
-	JMX_ENABLED=1;
-	JMX_PORT="${1#${JMX_SHORT_EQUAL}}" && is_integer "${JMX_PORT}";
-	return 0;
-    elif substring "|$1|" "${JMX_LONG_EQUAL}"; then
-	JMX_ENABLED=1;
-	JMX_PORT="${1#${JMX_LONG_EQUAL}}" && is_integer "${JMX_PORT}";
-	return 0;
-    elif substring "|$1|" "${JMX_SHORT}"; then
-	JMX_ENABLED=1;
-	JMX_PORT="${1#${JMX_SHORT}}" && is_integer "${JMX_PORT}";
-	return 0;
-    elif substring "|$1|" "${JMX_LONG}"; then
-	JMX_ENABLED=1;
-	JMX_PORT="${1#${JMX_LONG}}" && is_integer "${JMX_PORT}";
-	return 0;
-    fi
-    return 1;
+	if substring "${JMX_OPTS}" "|$1|"; then
+		JMX_ENABLED=1;
+		return 0;
+	elif substring "|X$1|" "X$JMX_SHORT_EQUAL"; then
+		JMX_ENABLED=1;
+		JMX_PORT="${1#${JMX_SHORT_EQUAL}}" && is_integer "${JMX_PORT}";
+		return 0;
+	elif substring "|X$1|" "X${JMX_LONG_EQUAL}"; then
+		JMX_ENABLED=1;
+		JMX_PORT="${1#${JMX_LONG_EQUAL}}" && is_integer "${JMX_PORT}";
+		return 0;
+	elif substring "|X$1|" "X${JMX_SHORT}"; then
+		JMX_ENABLED=1;
+		JMX_PORT="${1#${JMX_SHORT}}" && is_integer "${JMX_PORT}";
+		return 0;
+	elif substring "|X$1|" "X${JMX_LONG}"; then
+		JMX_ENABLED=1;
+		JMX_PORT="${1#${JMX_LONG}}" && is_integer "${JMX_PORT}";
+		return 0;
+	fi
+	return 1;
 }
 
 check_quiet_switch() {
