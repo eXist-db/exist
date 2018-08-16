@@ -28,100 +28,98 @@ declare -a JAVA_OPTS
 declare -a CLIENT_PROPS
 
 substring() {
-    [ "${1#*$2*}" = "$1" ] && return 1
-    return 0
+	[ "${1#*$2*}" = "$1" ] && return 1
+	return 0
 }
 
 is_integer() {
-    [ $1 -eq 1 ] 2> /dev/null;
-    if [ $? -eq 2 ]; then
-	echo "Port need to be an integer" > /dev/stderr;
-	exit 1
-    fi
-    return 0
+	[ $1 -eq 1 ] 2> /dev/null;
+	if [ $? -eq 2 ]; then
+		echo "Port need to be an integer" > /dev/stderr;
+		exit 1
+	fi
+	return 0
 }
 
 is_jmx_switch() {
-    if substring "${JMX_OPTS}" "|$1|"; then
-	JMX_ENABLED=1;
-	return 0;
-    elif substring "|$1|" "$JMX_SHORT_EQUAL"; then
-	JMX_ENABLED=1;
-	JMX_PORT="${1#${JMX_SHORT_EQUAL}}" && is_integer "${JMX_PORT}";
-	return 0;
-    elif substring "|$1|" "${JMX_LONG_EQUAL}"; then
-	JMX_ENABLED=1;
-	JMX_PORT="${1#${JMX_LONG_EQUAL}}" && is_integer "${JMX_PORT}";
-	return 0;
-    elif substring "|$1|" "${JMX_SHORT}"; then
-	JMX_ENABLED=1;
-	JMX_PORT="${1#${JMX_SHORT}}" && is_integer "${JMX_PORT}";
-	return 0;
-    elif substring "|$1|" "${JMX_LONG}"; then
-	JMX_ENABLED=1;
-	JMX_PORT="${1#${JMX_LONG}}" && is_integer "${JMX_PORT}";
-	return 0;
-    fi
-    return 1;
+	if substring "${JMX_OPTS}" "|$1|"; then
+		JMX_ENABLED=1;
+		return 0;
+	elif substring "|$1|" "$JMX_SHORT_EQUAL"; then
+		JMX_ENABLED=1;
+		JMX_PORT="${1#${JMX_SHORT_EQUAL}}" && is_integer "${JMX_PORT}";
+		return 0;
+	elif substring "|$1|" "${JMX_LONG_EQUAL}"; then
+		JMX_ENABLED=1;
+		JMX_PORT="${1#${JMX_LONG_EQUAL}}" && is_integer "${JMX_PORT}";
+		return 0;
+	elif substring "|$1|" "${JMX_SHORT}"; then
+		JMX_ENABLED=1;
+		JMX_PORT="${1#${JMX_SHORT}}" && is_integer "${JMX_PORT}";
+		return 0;
+	elif substring "|$1|" "${JMX_LONG}"; then
+		JMX_ENABLED=1;
+		JMX_PORT="${1#${JMX_LONG}}" && is_integer "${JMX_PORT}";
+		return 0;
+	fi
+	return 1;
 }
 
 check_quiet_switch() {
-    if substring "${QUIET_OPTS}" "|$1|"; then
-	QUIET_ENABLED=1;
-    fi
+	if substring "${QUIET_OPTS}" "|$1|"; then
+		QUIET_ENABLED=1;
+	fi
 }
 
 get_opts() {
-    local -a ALL_OPTS=( "$@" )
-    local found_jmx_opt
-    local found_pidfile_opt
+	local -a ALL_OPTS=( "$@" )
+	local found_jmx_opt
+	local found_pidfile_opt
 
-    for OPT in "${ALL_OPTS[@]}" ; do
-	    if [ -n "$found_jmx_opt" ] ; then
-	      unset found_jmx_opt
-	      local found_jmx_opt
-	      if ! substring "${OPT}" $"-" && is_integer "${OPT}"; then
-          JMX_PORT="$OPT"
-          continue
-	      fi
-      elif [ -n "$found_pidfile_opt" ]; then
-        unset found_pidfile_opt
-        PIDFILE=$OPT
-        continue
-	    fi
+	for OPT in "${ALL_OPTS[@]}" ; do
+		if [ -n "$found_jmx_opt" ] ; then
+			unset found_jmx_opt
+			local found_jmx_opt
+			if ! substring "${OPT}" $"-" && is_integer "${OPT}"; then
+				JMX_PORT="$OPT"
+				continue
+			fi
+		elif [ -n "$found_pidfile_opt" ]; then
+			unset found_pidfile_opt
+			PIDFILE=$OPT
+			continue
+		fi
 
-      if [ $OPT == "--forking" ]; then
-        FORKING=1
-        continue
-      fi
+		if [ $OPT == "--forking" ]; then
+			FORKING=1
+			continue
+		fi
 
-      if is_jmx_switch "$OPT"; then
-        found_jmx_opt=1
-      elif [ $OPT == "--pidfile" ]; then
-        found_pidfile_opt=1
-      else
-        check_quiet_switch "$OPT";
-        JAVA_OPTS[${NR_JAVA_OPTS}]="$OPT";
-        let "NR_JAVA_OPTS += 1";
-      	fi
-    done
+		if is_jmx_switch "$OPT"; then
+			found_jmx_opt=1
+		elif [ $OPT == "--pidfile" ]; then
+			found_pidfile_opt=1
+		else
+			check_quiet_switch "$OPT";
+			JAVA_OPTS[${NR_JAVA_OPTS}]="$OPT";
+			let "NR_JAVA_OPTS += 1";
+		fi
+	done
 
-    if [ "${QUIET_ENABLED}" -eq 0 ]; then
-        echo "${JAVA_OPTS[@]}";
-    fi
+	if [ "${QUIET_ENABLED}" -eq 0 ]; then
+		echo "${JAVA_OPTS[@]}";
+	fi
 }
 
 get_client_props() {
-    shopt -s extglob
-    while IFS="=" read -r key value
-    do
-	case "${key}" in
-	    \#* ) ;;
-            * )
-                #echo "Read client properties key: ${key}, value: ${value}"
-		CLIENT_PROPS["${key}"]="${value}"
-		;;
-  esac
-done < ${EXIST_HOME}/client.properties
-
+	shopt -s extglob
+	while IFS="=" read -r key value; do
+		case "${key}" in
+			\#* ) ;;
+			* )
+				#echo "Read client properties key: ${key}, value: ${value}"
+				CLIENT_PROPS["${key}"]="${value}"
+				;;
+		esac
+	done < ${EXIST_HOME}/client.properties
 }
