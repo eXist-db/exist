@@ -50,7 +50,7 @@ public class XMLDBListTask extends AbstractXMLDBTask
             throw( new BuildException( "You have to specify an XMLDB collection URI" ) );
         }
 
-        if( ( hasCollections == false ) && ( hasResources == false ) ) {
+        if(!hasCollections && !hasResources) {
             throw( new BuildException( "You have at least one of collections or resources or both" ) );
         }
 

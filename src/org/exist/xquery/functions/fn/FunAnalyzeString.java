@@ -133,14 +133,13 @@ public class FunAnalyzeString extends BasicFunction {
     }
     
     private static class GroupPosition {
+        public int groupNumber;
+        public int position;
 
         public GroupPosition(final int groupNumber, final int position) {
             this.groupNumber = groupNumber;
             this.position = position;
         }
-        
-        public int groupNumber;
-        public int position;
     }
     
     private GroupPosition match(final MemTreeBuilder builder, final Matcher matcher, final String input, final int group) {

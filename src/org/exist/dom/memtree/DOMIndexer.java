@@ -45,15 +45,13 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
 import javax.xml.XMLConstants;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 /**
  * Helper class to make a in-memory document fragment persistent. The class
  * directly accesses the in-memory document structure and writes it into a
  * temporary doc on the database. This is much faster than first serializing
- * the document tree to SAX and passing it to {@link org.exist.collections.Collection#store(org.exist.storage.txn.Txn, org.exist.storage.DBBroker, org.exist.collections.IndexInfo, org.xml.sax.InputSource, boolean)}.
+ * the document tree to SAX and passing it to {@link org.exist.collections.Collection#store(org.exist.storage.txn.Txn, org.exist.storage.DBBroker, org.exist.collections.IndexInfo, org.xml.sax.InputSource)}.
  * <p/>
  * <p>As the in-memory document fragment may not be a well-formed XML doc (having more than one root element), a wrapper element is put around the
  * content nodes.</p>
@@ -71,7 +69,7 @@ public class DOMIndexer {
     private final org.exist.dom.persistent.DocumentImpl targetDoc;
     private final IndexSpec indexSpec;
 
-    private final Stack<ElementImpl> stack = new Stack<>();
+    private final Deque<ElementImpl> stack = new ArrayDeque<>();
     private StoredNode prevNode = null;
 
     private final TextImpl text = new TextImpl();
@@ -171,7 +169,7 @@ public class DOMIndexer {
 
             case Node.ELEMENT_NODE: {
                 final ElementImpl elem = (ElementImpl) NodePool.getInstance().borrowNode(Node.ELEMENT_NODE);
-                if(stack.empty()) {
+                if(stack.isEmpty()) {
                     elem.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
                     initElement(nodeNr, elem);
                     stack.push(elem);
@@ -219,7 +217,7 @@ public class DOMIndexer {
             case Node.COMMENT_NODE: {
                 comment.setData(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]);
                 comment.setOwnerDocument(targetDoc);
-                if(stack.empty()) {
+                if(stack.isEmpty()) {
                     comment.setNodeId(NodeId.DOCUMENT_NODE);
                     targetDoc.appendChild((NodeHandle) comment);
                     broker.storeNode(transaction, comment, null, indexSpec);
@@ -237,7 +235,7 @@ public class DOMIndexer {
                 pi.setTarget(qn.getLocalPart());
                 pi.setData(new String(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]));
                 pi.setOwnerDocument(targetDoc);
-                if(stack.empty()) {
+                if(stack.isEmpty()) {
                     pi.setNodeId(NodeId.DOCUMENT_NODE);
                     targetDoc.appendChild((NodeHandle) pi);
                 } else {

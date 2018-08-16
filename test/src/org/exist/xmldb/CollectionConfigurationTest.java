@@ -57,7 +57,7 @@ public class CollectionConfigurationTest {
     
 
     private static final XmldbURI TEST_CONFIG_NAME_1 = XmldbURI.create("test1.xconf");
-    private static final XmldbURI TEST_CONFIG_NAME_2 = XmldbURI.create(TestConstants.SPECIAL_NAME.toString()+".xconf");
+    private static final XmldbURI TEST_CONFIG_NAME_2 = XmldbURI.create(TestConstants.SPECIAL_NAME + ".xconf");
 
     private final static String DOCUMENT_CONTENT = "<test>" + "<a>001</a>"
     + "<a>01</a>" + "<a>1</a>" + "<b>001</b>" + "<b>01</b>"
@@ -178,7 +178,7 @@ public class CollectionConfigurationTest {
     @After
     public void tearDown() throws XMLDBException {
         final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
-        service.removeCollection(TEST_COLLECTION.toString());
+        service.removeCollection(TEST_COLLECTION);
         service.removeCollection(CONF_COLL_URI.toString()); //Removes the collection config collection *manually*
     }
 

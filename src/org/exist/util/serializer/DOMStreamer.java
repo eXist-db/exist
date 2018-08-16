@@ -211,7 +211,8 @@ public class DOMStreamer {
                 stack.push(info);
                 // output attributes
                 final AttributesImpl saxAttrs = new AttributesImpl();
-                String attrNS, attrLocalName;
+                String attrNS;
+                String attrLocalName;
                 for (int i = 0; i < attrs.getLength(); i++) {
                     nextAttr = (Attr) attrs.item(i);
                     attrNS = nextAttr.getNamespaceURI();

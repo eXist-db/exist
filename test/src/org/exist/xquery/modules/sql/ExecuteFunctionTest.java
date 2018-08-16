@@ -168,10 +168,10 @@ public class ExecuteFunctionTest {
             super();
         }
 
+        @Override
         public String getCacheClass() {
             return org.exist.util.io.FileFilterInputStreamCache.class.getName();
         }
-
     }
 
 

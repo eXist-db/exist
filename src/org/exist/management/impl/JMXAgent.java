@@ -36,10 +36,7 @@ import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 /**
  * Real implementation of interface {@link org.exist.management.Agent}
@@ -51,6 +48,10 @@ public class JMXAgent implements Agent {
 
     private static volatile Agent agent = null;
 
+    private final MBeanServer server;
+    private final Map<String, Deque<ObjectName>> registeredMBeans = new HashMap<>();
+    private final Map<ObjectName, Object> beanInstances = new HashMap<>();
+
     public static Agent getInstance() {
         if (agent == null) {
             agent = new JMXAgent();
@@ -58,13 +59,10 @@ public class JMXAgent implements Agent {
         return agent;
     }
 
-    private MBeanServer server;
-    private Map<String, Stack<ObjectName>> registeredMBeans = new HashMap<>();
-    private Map<ObjectName, Object> beanInstances = new HashMap<>();
-    
-    public JMXAgent() {
-        if (LOG.isDebugEnabled())
-            {LOG.debug("Creating the JMX MBeanServer.");}
+    private JMXAgent() {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Creating the JMX MBeanServer.");
+        }
 
         final ArrayList<MBeanServer> servers = MBeanServerFactory.findMBeanServer(null);
         if (servers.size() > 0)
@@ -121,12 +119,15 @@ public class JMXAgent implements Agent {
     @Override
     public synchronized void closeDBInstance(BrokerPool instance) {
         try {
-            final Stack<ObjectName> stack = registeredMBeans.get(instance.getId());
+            final Deque<ObjectName> stack = registeredMBeans.get(instance.getId());
             while (!stack.isEmpty()) {
-                final ObjectName on = (ObjectName) stack.pop();
-                LOG.debug("deregistering JMX MBean: " + on);
-                if (server.isRegistered(on))
-                    {server.unregisterMBean(on);}
+                final ObjectName on = stack.pop();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("deregistering JMX MBean: " + on);
+                }
+                if (server.isRegistered(on)) {
+                    server.unregisterMBean(on);
+                }
             }
         } catch (final InstanceNotFoundException | MBeanRegistrationException e) {
             LOG.warn("Problem found while unregistering JMX", e);
@@ -139,9 +140,9 @@ public class JMXAgent implements Agent {
             final ObjectName on = new ObjectName(name);
             addMBean(on, mbean);
             if (dbInstance != null) {
-                Stack<ObjectName> stack = registeredMBeans.get(dbInstance);
+                Deque<ObjectName> stack = registeredMBeans.get(dbInstance);
                 if (stack == null) {
-                    stack = new Stack<>();
+                    stack = new ArrayDeque<>();
                     registeredMBeans.put(dbInstance, stack);
                 }
                 stack.push(on);

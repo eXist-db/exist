@@ -6,10 +6,11 @@
 	import java.io.StringReader;
 	import java.io.BufferedReader;
 	import java.io.InputStreamReader;
+	import java.util.ArrayDeque;
 	import java.util.ArrayList;
+	import java.util.Deque;
 	import java.util.List;
 	import java.util.Iterator;
-	import java.util.Stack;
 	import org.exist.storage.BrokerPool;
 	import org.exist.storage.DBBroker;
 	import org.exist.EXistException;

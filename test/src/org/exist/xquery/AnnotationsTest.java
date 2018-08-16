@@ -42,9 +42,6 @@ public class AnnotationsTest {
     @ClassRule
     public final static ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
-    public AnnotationsTest() {
-    }
-
     @BeforeClass
     public static void setUp() throws XMLDBException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");

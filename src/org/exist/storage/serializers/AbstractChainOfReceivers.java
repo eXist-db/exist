@@ -49,7 +49,8 @@ public class AbstractChainOfReceivers implements ChainOfReceivers {
 
     @Override
     public Receiver getLastInChain() {
-        Receiver last = this, next = getNextInChain();
+        Receiver last = this;
+        Receiver next = getNextInChain();
         while (next != null) {
             last = next;
             next = ((ChainOfReceivers)next).getNextInChain();

@@ -23,11 +23,7 @@ package org.exist.backup.restore;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Observable;
-import java.util.Stack;
+import java.util.*;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -85,7 +81,7 @@ public class RestoreHandler extends DefaultHandler {
     //handler state
     private int version = 0;
     private EXistCollection currentCollection;
-    private Stack<DeferredPermission> deferredPermissions = new Stack<DeferredPermission>();
+    private Deque<DeferredPermission> deferredPermissions = new ArrayDeque<>();
     
     
     public RestoreHandler(final RestoreListener listener, final String dbBaseUri, final String dbUsername, final String dbPassword, final BackupDescriptor descriptor) {

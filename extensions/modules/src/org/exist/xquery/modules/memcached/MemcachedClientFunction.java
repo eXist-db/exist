@@ -85,7 +85,7 @@ public class MemcachedClientFunction extends BasicFunction
 			ialist.add(ia);
 		} while (i.hasNext());
 		
-		boolean isbinary = args[1].isEmpty() ? false : new Boolean(args[1].itemAt(0).getStringValue());
+		final boolean isbinary = args[1].isEmpty() ? false : Boolean.valueOf(args[1].itemAt(0).getStringValue());
 		
 		MemcachedClient client;
 		try {

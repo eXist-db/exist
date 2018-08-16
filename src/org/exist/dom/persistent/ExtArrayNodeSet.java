@@ -660,7 +660,8 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
         NodeProxy get(final NodeId nodeId) {
             int low = 0;
             int high = length - 1;
-            int mid, cmp;
+            int mid;
+            int cmp;
             NodeProxy p;
             while(low <= high) {
                 mid = (low + high) / 2;

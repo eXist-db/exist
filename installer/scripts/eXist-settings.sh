@@ -1,6 +1,8 @@
-# -*-Shell-script-*-
+#!/usr/bin/env bash
+
+##
 # Common eXist script functions and settings
-# $Id:eXist-settings.sh 7231 2008-01-14 22:33:35Z wolfgang_m $
+##
 
 get_exist_home() {
 	case "$1" in

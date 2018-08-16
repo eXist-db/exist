@@ -43,7 +43,8 @@ public class NodeTest extends DatabaseTestCase {
 	public void equals1() {
 		XMLDocument doc = db.createFolder("/test").documents().build(Name.create(db,"foo"))
 				.elem("top").elem("child").end("child").end("top").commit();
-		Object o1 = doc.query().single("//child"), o2 = doc.query().single("//child");
+		final Object o1 = doc.query().single("//child");
+		final Object o2 = doc.query().single("//child");
 		assertTrue(o1.equals(o2));
 		assertEquals(o1.hashCode(), o2.hashCode());
 	}
@@ -52,7 +53,8 @@ public class NodeTest extends DatabaseTestCase {
 	public void equals2() {
 		XMLDocument doc = db.createFolder("/test").documents().build(Name.create(db,"foo"))
 				.elem("top").elem("child").end("child").end("top").commit();
-		Object o1 = doc.query().single("//child"), o2 = doc.query().single("//top");
+		final Object o1 = doc.query().single("//child");
+		final Object o2 = doc.query().single("//top");
 		assertFalse(o1.equals(o2));
 		// can't assert unequal hashCodes, they're allowed to be the same
 	}
@@ -64,17 +66,24 @@ public class NodeTest extends DatabaseTestCase {
 				.elem("top").elem("child").end("child").end("top").commit();
 		XMLDocument doc2 = folder.documents().build(Name.create(db,"foo2"))
 				.elem("top").elem("child").end("child").end("top").commit();
-		Object o1 = doc1.query().single("//top"), o2 = doc2.query().single("//top");
+		final Object o1 = doc1.query().single("//top");
+		final Object o2 = doc2.query().single("//top");
 		assertFalse(o1.equals(o2));
 	}
 	
 	@Test
 	public void compareDocumentOrderTo1() {
-		Node root = db.getFolder("/").documents().load(Name.generate(db), Source.xml(
+		final Node root = db.getFolder("/").documents().load(Name.generate(db), Source.xml(
 				"<root><a><aa/></a><b><bb/></b><c><cc/></c></root>")).root();
-		Node a = root.query().single("//a").node(), aa = root.query().single("//aa").node();
-		Node b = root.query().single("//b").node(), bb = root.query().single("//bb").node();
-		Node c = root.query().single("//c").node(), cc = root.query().single("//cc").node();
+		final Node a = root.query().single("//a").node();
+		final Node aa = root.query().single("//aa").node();
+
+		final Node b = root.query().single("//b").node();
+		final Node bb = root.query().single("//bb").node();
+
+		final Node c = root.query().single("//c").node();
+		final Node cc = root.query().single("//cc").node();
+
 		assertEquals(0, a.compareDocumentOrderTo(a));
 		assertEquals(0, a.compareDocumentOrderTo(root.query().single("//a").node()));
 		assertThat(a.compareDocumentOrderTo(b), lessThan(0));
@@ -86,11 +95,18 @@ public class NodeTest extends DatabaseTestCase {
 	
 	@Test
 	public void compareDocumentOrderTo2() {
-		ItemList nodes = db.query().all("let $x := <root><a><aa/></a><b><bb/></b><c><cc/></c></root> return ($x//a, $x//aa, $x//b, $x//bb, $x//c, $x//cc, $x)");
-		Node root = nodes.get(6).node();
-		Node a = nodes.get(0).node(), aa = nodes.get(1).node();
-		Node b = nodes.get(2).node(), bb = nodes.get(3).node();
-		Node c = nodes.get(4).node(), cc = nodes.get(5).node();
+		final ItemList nodes = db.query().all("let $x := <root><a><aa/></a><b><bb/></b><c><cc/></c></root> return ($x//a, $x//aa, $x//b, $x//bb, $x//c, $x//cc, $x)");
+		final Node root = nodes.get(6).node();
+
+		final Node a = nodes.get(0).node();
+		final Node aa = nodes.get(1).node();
+
+		final Node b = nodes.get(2).node();
+		final Node bb = nodes.get(3).node();
+
+		final Node c = nodes.get(4).node();
+		final Node cc = nodes.get(5).node();
+
 		assertEquals(0, a.compareDocumentOrderTo(a));
 		assertThat(a.compareDocumentOrderTo(b), lessThan(0));
 		assertThat(c.compareDocumentOrderTo(b), greaterThan(0));

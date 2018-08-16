@@ -1,6 +1,8 @@
-# -*-Shell-script-*-
-# Common eXist script functions and settings for getopt
-# $Id$
+#!/usr/bin/env bash
+
+##
+# Common eXist-db script functions and settings for getopt
+##
 
 CLIENT_OPTS="|-u|--user|-P|--password|-p|--parse|-C|--config|-r|--remove|-c|--collection|-f|--resource|-g|--get|-m|--mkcol|-R|--rmcol|-x|--xpath|-n|--howmany|-o|--option|-O|--output|-F|--file|-t|--threads|-X|--xupdate|-T|--trace|"
 

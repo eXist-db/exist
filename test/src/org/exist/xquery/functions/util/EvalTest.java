@@ -35,9 +35,6 @@ public class EvalTest {
     private final static String INVOKABLE_QUERY_FILENAME = "invokable.xql";
     private final static String INVOKABLE_QUERY_EXTERNAL_VAR_NAME = "some-value";
 
-    public EvalTest() {
-    }
-
     @BeforeClass
     public static void setUp() throws Exception {
         invokableQuery = existEmbeddedServer.getRoot().createResource(INVOKABLE_QUERY_FILENAME, "BinaryResource");
