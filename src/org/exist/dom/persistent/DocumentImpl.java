@@ -478,9 +478,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      * @return a <code>Node</code> value
      */
     public Node getNode(final NodeId nodeId) {
-        if(nodeId.getTreeLevel() == 1) {
-            return getDocumentElement();
-        }
         try(final DBBroker broker = pool.getBroker()) {
             return broker.objectWith(this, nodeId);
         } catch(final EXistException e) {

@@ -53,7 +53,7 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
 
         final BrokerPool pool = BrokerPool.getInstance();
 
-        expect(worker.getIndexId()).andStubReturn("TestIndex");
+        expect(worker.getIndexId()).andReturn("TestIndex").anyTimes();
 
         control.replay();
 
@@ -89,6 +89,7 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
         }
 
     }
+
     @Test
     public void insertElement() throws Exception {
 

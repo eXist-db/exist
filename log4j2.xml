@@ -38,7 +38,6 @@
             <PatternLayout pattern="%d %-5p - %m %n"/>
         </RollingRandomAccessFile>
 
-
         <RollingRandomAccessFile name="exist.xmldb" filePattern="${logs}/xmldb.${rollover.file.pattern}.log.gz" fileName="${logs}/xmldb.log">
             <Policies>
                 <SizeBasedTriggeringPolicy size="${rollover.max.size}"/>
@@ -153,6 +152,10 @@
 
         <Logger name="org.exist.storage.lock.EnsureLockingAspect" additivity="false" level="trace">
             <AppenderRef ref="exist.ensurelocking"/>
+        </Logger>
+
+        <Logger name="org.exist.util.sanity.SanityCheck" additivity="false" level="info">    <!-- set to level="trace" to enable all sanity check logging -->
+            <AppenderRef ref="exist.core"/>
         </Logger>
 
         <Logger name="org.exist.jetty.JettyStart" additivity="false" level="trace">

@@ -657,13 +657,18 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         return nodes;
     }
 
-    public Sequence getPrecedingSiblings(NodeTest test) throws XPathException {
+    @Override
+    public Sequence getPrecedingSiblings(final NodeTest test) throws XPathException {
         sortInDocumentOrder();
         final ValueSequence nodes = new ValueSequence(true);
         nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
             final NodeImpl node = (NodeImpl) values[i];
-            node.selectPrecedingSiblings(test, nodes);
+
+            // if the context node is an attribute or namespace node, the preceding-sibling axis is empty
+            if (node.getNodeType() != Node.ATTRIBUTE_NODE) {
+                node.selectPrecedingSiblings(test, nodes);
+            }
         }
         return nodes;
     }
@@ -679,13 +684,17 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         return nodes;
     }
 
-    public Sequence getFollowingSiblings(NodeTest test) throws XPathException {
+    @Override
+    public Sequence getFollowingSiblings(final NodeTest test) throws XPathException {
         sortInDocumentOrder();
         final ValueSequence nodes = new ValueSequence(true);
         nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
             final NodeImpl node = (NodeImpl) values[i];
-            node.selectFollowingSiblings(test, nodes);
+            // if the context node is an attribute or namespace node, the following-sibling axis is empty
+            if (node.getNodeType() != Node.ATTRIBUTE_NODE) {
+                node.selectFollowingSiblings(test, nodes);
+            }
         }
         return nodes;
     }
