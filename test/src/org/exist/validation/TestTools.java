@@ -31,7 +31,6 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
-import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -60,15 +59,6 @@ public class TestTools {
     public final static String VALIDATION_XSD_COLLECTION = "xsd";
     public final static String VALIDATION_TMP_COLLECTION = "tmp";
     
-    // Transfer bytes from in to out
-    public static void copyStream(final InputStream is, final OutputStream os) throws IOException {
-        final byte[] buf = new byte[4096];
-        int len = -1;
-        while ((len = is.read(buf)) > -1) {
-            os.write(buf, 0, len);
-        }
-    }
-    
     /**
      *
      * @param file     File to be uploaded
@@ -78,28 +68,16 @@ public class TestTools {
     public static void insertDocumentToURL(final Path file, final String target) throws IOException {
         final URL url = new URL(target);
         final URLConnection connection = url.openConnection();
-        try(final OutputStream os = connection.getOutputStream()) {
+        try (final OutputStream os = connection.getOutputStream()) {
             Files.copy(file, os);
         }
     }
 
-    public static void insertDocumentToURL(byte[] data, String target) throws IOException {
+    public static void insertDocumentToURL(final byte[] data, final String target) throws IOException {
         final URL url = new URL(target);
         final URLConnection connection = url.openConnection();
-        InputStream is = null;
-        OutputStream os = null;
-        try {
-            is = new FastByteArrayInputStream(data);
-            os = connection.getOutputStream();
-            TestTools.copyStream(is, os);
-            os.flush();
-         } finally {
-            if(is != null){
-                is.close();
-            }
-            if(os != null) {
-                os.close();
-            }
+        try (final OutputStream os = connection.getOutputStream()) {
+            os.write(data);
         }
     }
 
