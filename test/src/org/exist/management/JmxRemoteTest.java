@@ -20,6 +20,8 @@
 
 package org.exist.management;
 
+import org.apache.commons.lang3.JavaVersion;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.fluent.Request;
@@ -55,7 +57,11 @@ public class JmxRemoteTest {
         prefix2Uri.put("jmx", "http://exist-db.org/jmx");
 
         // Java GC
-        assertThat(jmxXML, hasXPath("//jmx:GarbageCollectorImpl").withNamespaceContext(prefix2Uri));
+        if(SystemUtils.IS_JAVA_1_8) {
+            assertThat(jmxXML, hasXPath("//jmx:GarbageCollectorImpl").withNamespaceContext(prefix2Uri));
+        } else {
+            assertThat(jmxXML, hasXPath("//jmx:GarbageCollectorExtImpl").withNamespaceContext(prefix2Uri));
+        }
 
         // Jetty
         assertThat(jmxXML, hasXPath("//jmx:WebAppContext").withNamespaceContext(prefix2Uri));
