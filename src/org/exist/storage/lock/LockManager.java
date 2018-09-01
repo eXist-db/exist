@@ -117,7 +117,7 @@ public class LockManager {
      * will be Striped by the collectionPath
      */
     private static MultiLock createCollectionLock(final String collectionPath) {
-        return new MultiLock(null);
+        return new MultiLock();
     }
 
     /**
@@ -208,20 +208,26 @@ public class LockManager {
     private boolean lock(final MultiLock lock, final Lock.LockMode lockMode) {
         switch(lockMode) {
             case INTENTION_READ:
-                return lock.lockIntentionRead();
+                lock.intentionReadLock();
+                break;
 
             case INTENTION_WRITE:
-                return lock.lockIntentionWrite();
+                lock.intentionWriteLock();
+                break;
 
             case READ_LOCK:
-                return lock.lockRead();
+                lock.readLock();
+                break;
 
             case WRITE_LOCK:
-                return lock.lockWrite();
+                lock.writeLock();
+                break;
 
             default:
                 throw new UnsupportedOperationException(); // TODO(AR) implement the other modes
         }
+
+        return true;  //TODO(AR) switch to lock interruptibly above!
     }
 
     /**
