@@ -2,6 +2,7 @@ package org.exist.storage.lock;
 
 import com.evolvedbinary.j8fu.function.RunnableE;
 import net.jcip.annotations.ThreadSafe;
+import org.exist.storage.lock.LockManager.DocumentLock;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
@@ -559,19 +560,19 @@ public class LockManagerTest {
     public void getDocumentLock_isStripedByPath() {
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
 
-        final ReentrantReadWriteLock doc1Lock1 = lockManager.getDocumentLock("/db/1.xml");
+        final DocumentLock doc1Lock1 = lockManager.getDocumentLock("/db/1.xml");
         assertNotNull(doc1Lock1);
 
-        final ReentrantReadWriteLock doc1Lock2 = lockManager.getDocumentLock("/db/1.xml");
+        final DocumentLock doc1Lock2 = lockManager.getDocumentLock("/db/1.xml");
         assertNotNull(doc1Lock2);
 
         assertTrue(doc1Lock1 == doc1Lock2);
 
-        final ReentrantReadWriteLock doc2Lock = lockManager.getDocumentLock("/db/a/b/c/2.xml");
+        final DocumentLock doc2Lock = lockManager.getDocumentLock("/db/a/b/c/2.xml");
         assertNotNull(doc2Lock);
         assertFalse(doc1Lock1 == doc2Lock);
 
-        final ReentrantReadWriteLock doc3Lock = lockManager.getDocumentLock("/db/d/e/f/3.xml");
+        final DocumentLock doc3Lock = lockManager.getDocumentLock("/db/d/e/f/3.xml");
         assertNotNull(doc3Lock);
         assertFalse(doc1Lock1 == doc3Lock);
 
