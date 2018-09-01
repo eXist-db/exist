@@ -66,9 +66,11 @@ public class LockManager {
     public final static String PROP_ENABLE_COLLECTIONS_MULTI_WRITER = "exist.lockmanager.collections.multiwriter";
     public final static String PROP_UPGRADE_CHECK = "exist.lockmanager.upgrade.check";
     public final static String PROP_WARN_WAIT_ON_READ_FOR_WRITE = "exist.lockmanager.warn.waitonreadforwrite";
+    public final static String PROP_USE_MULTILOCK_FOR_DOCUMENTS = "exist.lockmanager.documents.multilock";
 
     private static final Logger LOG = LogManager.getLogger(LockManager.class);
     private static final boolean USE_FAIR_SCHEDULER = true;  //Java's ReentrantReadWriteLock must use the Fair Scheduler to get FIFO like ordering
+    private static final boolean USE_MULTILOCK_FOR_DOCUMENTS = Boolean.getBoolean(PROP_USE_MULTILOCK_FOR_DOCUMENTS);
 
     /**
      * Set to true to enable Multi-Writer/Multi-Reader semantics for
@@ -91,7 +93,7 @@ public class LockManager {
 
     private final LockTable lockTable;
     private final WeakLazyStripes<String, MultiLock> collectionLocks;
-    private final WeakLazyStripes<String, ReentrantReadWriteLock> documentLocks;
+    private final WeakLazyStripes<String, DocumentLock> documentLocks;
     private final WeakLazyStripes<String, ReentrantLock> btreeLocks;
 
 
@@ -124,8 +126,12 @@ public class LockManager {
      * Creates a new lock for a Document
      * will be Striped by the collectionPath
      */
-    private static ReentrantReadWriteLock createDocumentLock(final String documentPath) {
-        return new ReentrantReadWriteLock();
+    private static DocumentLock createDocumentLock(final String documentPath) {
+        if (USE_MULTILOCK_FOR_DOCUMENTS) {
+            return new MultiLockDocumentLockAdapter(new MultiLock());
+        } else {
+            return new ReentrantReadWriteLockDocumentLockAdapter(new ReentrantReadWriteLock());
+        }
     }
 
     /**
@@ -389,7 +395,7 @@ public class LockManager {
      *
      * @return A lock for the Document
      */
-    ReentrantReadWriteLock getDocumentLock(final String documentPath) {
+    DocumentLock getDocumentLock(final String documentPath) {
         return documentLocks.get(documentPath);
     }
 
@@ -406,7 +412,7 @@ public class LockManager {
         final long groupId = System.nanoTime();
         final String path = documentPath.toString();
 
-        final ReentrantReadWriteLock lock = getDocumentLock(path);
+        final DocumentLock lock = getDocumentLock(path);
         try {
             lockTable.attempt(groupId, path, LockType.DOCUMENT, Lock.LockMode.READ_LOCK);
 
@@ -437,7 +443,7 @@ public class LockManager {
         final long groupId = System.nanoTime();
         final String path = documentPath.toString();
 
-        final ReentrantReadWriteLock lock = getDocumentLock(path);
+        final DocumentLock lock = getDocumentLock(path);
         try {
             lockTable.attempt(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
 
@@ -463,7 +469,7 @@ public class LockManager {
      * @return true if a WRITE_LOCK is held
      */
     public boolean isDocumentLockedForWrite(final XmldbURI documentPath) {
-        final ReentrantReadWriteLock existingLock = getDocumentLock(documentPath.toString());
+        final DocumentLock existingLock = getDocumentLock(documentPath.toString());
         return existingLock.isWriteLocked();
     }
 
@@ -475,7 +481,7 @@ public class LockManager {
      * @return true if a READ_LOCK is held
      */
     public boolean isDocumentLockedForRead(final XmldbURI documentPath) {
-        final ReentrantReadWriteLock existingLock = getDocumentLock(documentPath.toString());
+        final DocumentLock existingLock = getDocumentLock(documentPath.toString());
         return existingLock.getReadLockCount() > 0;
     }
 
@@ -581,4 +587,88 @@ public class LockManager {
         return isBtreeLocked(btreeFileName);
     }
 
+    /**
+     * Simple interface which describes
+     * the minimum methods needed by LockManager
+     * on a Document Lock.
+     */
+    interface DocumentLock {
+        java.util.concurrent.locks.Lock readLock();
+        java.util.concurrent.locks.Lock writeLock();
+        boolean isWriteLocked();
+        int getReadLockCount();
+        boolean hasQueuedThreads();
+    }
+
+    /**
+     * Adapts {@link MultiLock} to a {@link DocumentLock}.
+     */
+    private static class MultiLockDocumentLockAdapter implements DocumentLock {
+        private final MultiLock multiLock;
+
+        public MultiLockDocumentLockAdapter(final MultiLock multiLock) {
+            this.multiLock = multiLock;
+        }
+
+        @Override
+        public java.util.concurrent.locks.Lock readLock() {
+            return multiLock.asReadLock();
+        }
+
+        @Override
+        public java.util.concurrent.locks.Lock writeLock() {
+            return multiLock.asWriteLock();
+        }
+
+        @Override
+        public boolean isWriteLocked() {
+            return multiLock.getWriteLockCount() > 0;
+        }
+
+        @Override
+        public int getReadLockCount() {
+            return multiLock.getReadLockCount();
+        }
+
+        @Override
+        public boolean hasQueuedThreads() {
+            return multiLock.hasQueuedThreads();
+        }
+    }
+
+    /**
+     * Adapts {@link ReentrantReadWriteLock} to a {@link DocumentLock}.
+     */
+    private static class ReentrantReadWriteLockDocumentLockAdapter implements DocumentLock {
+        private final ReentrantReadWriteLock reentrantReadWriteLock;
+
+        private ReentrantReadWriteLockDocumentLockAdapter(final ReentrantReadWriteLock reentrantReadWriteLock) {
+            this.reentrantReadWriteLock = reentrantReadWriteLock;
+        }
+
+        @Override
+        public java.util.concurrent.locks.Lock readLock() {
+            return reentrantReadWriteLock.readLock();
+        }
+
+        @Override
+        public java.util.concurrent.locks.Lock writeLock() {
+            return reentrantReadWriteLock.writeLock();
+        }
+
+        @Override
+        public boolean isWriteLocked() {
+            return reentrantReadWriteLock.isWriteLocked();
+        }
+
+        @Override
+        public int getReadLockCount() {
+            return reentrantReadWriteLock.getReadLockCount();
+        }
+
+        @Override
+        public boolean hasQueuedThreads() {
+            return reentrantReadWriteLock.hasQueuedThreads();
+        }
+    }
 }
