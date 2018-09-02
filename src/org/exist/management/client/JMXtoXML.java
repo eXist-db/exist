@@ -67,14 +67,18 @@ public class JMXtoXML {
     private final static Logger LOG = LogManager.getLogger(JMXtoXML.class);
 
     private final static Map<String, ObjectName[]> CATEGORIES = new TreeMap<>();
+
     private static void putCategory(final String categoryName, final String... objectNames) {
-        for (final String objectName : objectNames) {
-            try {
-                CATEGORIES.put(categoryName, new ObjectName[]{ new ObjectName(objectName) });
-            } catch (final MalformedObjectNameException | NullPointerException e) {
-                LOG.warn("Error in initialization: " + e.getMessage(), e);
+        final ObjectName[] aryObjectNames = new ObjectName[objectNames.length];
+        try {
+            for (int i = 0; i < aryObjectNames.length; i++) {
+                aryObjectNames[i] = new ObjectName(objectNames[i]);
             }
+        } catch (final MalformedObjectNameException | NullPointerException e) {
+            LOG.warn("Error in initialization: " + e.getMessage(), e);
         }
+
+        CATEGORIES.put(categoryName, aryObjectNames);
     }
     static {
         // Java
