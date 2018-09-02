@@ -117,16 +117,26 @@ public class CropFunction extends BasicFunction {
         int y1 = 0;
         int x2 = MAXHEIGHT;
         int y2 = MAXWIDTH;
-
+        int width = 0;
+        int height = 0;
         if(!args[1].isEmpty()) {
             x1 = ((IntegerValue) args[1].itemAt(0)).getInt();
             if(args[1].hasMany()) {
                 y1 = ((IntegerValue) args[1].itemAt(1)).getInt();
                 x2 = ((IntegerValue) args[1].itemAt(2)).getInt();
                 y2 = ((IntegerValue) args[1].itemAt(3)).getInt();
+                width = x2 - x1;
+                height = y2 - y1;
             }
         }
-
+            if(width < 1 ) {
+                logger.error("cropping error: x2 value must be greater than x1");
+                return Sequence.EMPTY_SEQUENCE;
+            }
+           if(height < 1) {
+                logger.error("cropping error: y2 must be greater than y1");
+                return Sequence.EMPTY_SEQUENCE;
+           }
         //get the mime-type
         String mimeType = args[2].itemAt(0).getStringValue();
         String formatName = mimeType.substring(mimeType.indexOf("/")+1);
@@ -146,14 +156,14 @@ public class CropFunction extends BasicFunction {
             }
 			
             //crop the image
-            Image cropImage = Toolkit.getDefaultToolkit().createImage(new FilteredImageSource(image.getSource(), new CropImageFilter(x1, y1, x2, y2)));
+            Image cropImage = Toolkit.getDefaultToolkit().createImage(new FilteredImageSource(image.getSource(), new CropImageFilter(x1, y1, width, height)));
             if(cropImage instanceof BufferedImage) {
                 // just in case cropImage is allready an BufferedImage
                 bImage = (BufferedImage)cropImage;
 
             } else {
-                bImage = new BufferedImage(cropImage.getHeight(null),
-                cropImage.getWidth(null),BufferedImage.TYPE_INT_RGB);
+                bImage = new BufferedImage(cropImage.getWidth(null),
+                cropImage.getHeight(null),BufferedImage.TYPE_INT_RGB);
                 Graphics2D g = bImage.createGraphics(); // Paint the image onto the buffered image
                 g.drawImage(cropImage, 0, 0, null);
                 g.dispose();
