@@ -17,10 +17,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
 package org.exist.management;
 
-import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -31,8 +29,12 @@ import org.exist.test.ExistWebServer;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
+import static org.exist.management.client.JMXtoXML.JMX_NAMESPACE;
+import static org.exist.management.client.JMXtoXML.JMX_PREFIX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.xmlunit.matchers.HasXPathMatcher.hasXPath;
@@ -47,44 +49,42 @@ public class JmxRemoteTest {
     }
 
     @Test
-    public void checkContent() throws Exception {
-
+    public void checkContent() throws IOException {
         // Get content
-        String jmxXML = Request.Get(getServerUri()).execute().returnContent().asString();
+        final String jmxXml = Request.Get(getServerUri()).execute().returnContent().asString();
 
         // Prepare XPath validation
-        HashMap<String, String> prefix2Uri = new HashMap<String, String>();
-        prefix2Uri.put("jmx", "http://exist-db.org/jmx");
+        final Map<String, String> prefix2Uri = new HashMap<>();
+        prefix2Uri.put(JMX_PREFIX, JMX_NAMESPACE);
 
         // Java GC
-        if(SystemUtils.IS_JAVA_1_8) {
-            assertThat(jmxXML, hasXPath("//jmx:GarbageCollectorImpl").withNamespaceContext(prefix2Uri));
+        if (SystemUtils.IS_JAVA_1_8) {
+            assertThat(jmxXml, hasXPath("//jmx:GarbageCollectorImpl").withNamespaceContext(prefix2Uri));
         } else {
-            assertThat(jmxXML, hasXPath("//jmx:GarbageCollectorExtImpl").withNamespaceContext(prefix2Uri));
+            assertThat(jmxXml, hasXPath("//jmx:GarbageCollectorExtImpl").withNamespaceContext(prefix2Uri));
         }
 
         // Jetty
-        assertThat(jmxXML, hasXPath("//jmx:WebAppContext").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:WebAppContext").withNamespaceContext(prefix2Uri));
 
         // eXist-db
-        assertThat(jmxXML, hasXPath("//jmx:ProcessReport").withNamespaceContext(prefix2Uri));
-        assertThat(jmxXML, hasXPath("//jmx:Cache").withNamespaceContext(prefix2Uri));
-        assertThat(jmxXML, hasXPath("//jmx:SystemInfo").withNamespaceContext(prefix2Uri));
-        assertThat(jmxXML, hasXPath("//jmx:CacheManager").withNamespaceContext(prefix2Uri));
-        assertThat(jmxXML, hasXPath("//jmx:LockManager").withNamespaceContext(prefix2Uri));
-        assertThat(jmxXML, hasXPath("//jmx:SanityReport").withNamespaceContext(prefix2Uri));
-        assertThat(jmxXML, hasXPath("//jmx:Database").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:ProcessReport").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:Cache").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:SystemInfo").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:CacheManager").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:CollectionCache").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:LockTable").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:SanityReport").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:Database").withNamespaceContext(prefix2Uri));
     }
 
     @Test
-    public void checkBasicRequest() throws Exception {
-
-        HttpResponse response = Request.Get(getServerUri())
+    public void checkBasicRequest() throws IOException {
+        final HttpResponse response = Request.Get(getServerUri())
                 .addHeader(new BasicHeader("Accept", ContentType.APPLICATION_XML.toString()))
                 .execute().returnResponse();
 
         assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
         assertEquals("application/xml", response.getEntity().getContentType().getValue());
     }
-
 }
