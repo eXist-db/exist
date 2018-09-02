@@ -55,7 +55,7 @@ public class JMXAgent implements Agent {
         return instance;
     }
 
-    public JMXAgent() {
+    private JMXAgent() {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Creating the JMX MBeanServer.");
         }
