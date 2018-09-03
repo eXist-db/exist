@@ -621,10 +621,10 @@ public class VirtualNodeSet extends AbstractNodeSet {
     }
 
     @Override
-    public int getItemCount() {
+    public long getItemCountLong() {
         //TODO : evaluate both semantics
         realize();
-        return realSet.getItemCount();
+        return realSet.getItemCountLong();
     }
 
     @Override

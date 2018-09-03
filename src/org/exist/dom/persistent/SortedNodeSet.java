@@ -175,9 +175,8 @@ public class SortedNodeSet extends AbstractNodeSet {
         return list.size();
     }
 
-    //TODO : evaluate both semantics (length/item count)
     @Override
-    public int getItemCount() {
+    public long getItemCountLong() {
         return list.size();
     }
 
@@ -200,12 +199,12 @@ public class SortedNodeSet extends AbstractNodeSet {
     }
 
     @Override
-    public SequenceIterator iterate() throws XPathException {
+    public SequenceIterator iterate() {
         return new SortedNodeSetIterator(list.iterator());
     }
 
     @Override
-    public SequenceIterator unorderedIterator() throws XPathException {
+    public SequenceIterator unorderedIterator() {
         return new SortedNodeSetIterator(list.iterator());
     }
 
