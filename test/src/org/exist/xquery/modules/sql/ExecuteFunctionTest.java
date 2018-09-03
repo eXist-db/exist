@@ -3,10 +3,13 @@ package org.exist.xquery.modules.sql;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.mock;
 import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
 
 import org.exist.EXistException;
 import org.exist.dom.QName;
+import org.exist.dom.memtree.ElementImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -44,6 +47,8 @@ public class ExecuteFunctionTest {
         ResultSet rs = mock(ResultSet.class);
         ResultSetMetaData rsmd = mock(ResultSetMetaData.class);
 
+        Object[] mocks = new Object[] { connection, stmt, rs, rsmd };
+
         // mock behavior
 
         expect(connection.createStatement()).andReturn(stmt);
@@ -63,7 +68,7 @@ public class ExecuteFunctionTest {
         expect(rsmd.getColumnTypeName(1)).andStubReturn("VARCHAR(100)");
         expect(rsmd.getColumnType(1)).andStubReturn(Types.VARCHAR);
 
-        replay(connection, stmt, rs, rsmd);
+        replay(mocks);
 
         // register mocked connection
         final long connId = SQLModule.storeConnection( context, connection );
@@ -79,6 +84,8 @@ public class ExecuteFunctionTest {
 
         // assert expectations
 
+        verify(mocks);
+
         assertEquals(1, res.getItemCount());
         assertEquals(Type.ELEMENT, res.getItemType());
 
@@ -91,6 +98,109 @@ public class ExecuteFunctionTest {
         Node col = row.getFirstChild();
         assertEquals("sql:field", col.getNodeName());
         assertEquals(testValue, col.getTextContent());
+
+    }
+
+    @Test
+    public void testEmptyStringParameterWithException() throws SQLException, XPathException {
+
+        // mocks a simple SQL prepared statement with one parameter that fails on execution
+        // and verifies the error message
+
+        XQueryContext context = new XQueryContextStub();
+        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.signatures, functionName, 3));
+
+
+        final String sql = "SELECT ?";
+        final String test_message = "SQL ERROR";
+        final String test_sqlState = "SQL STATE";
+
+        // create mock objects
+
+        Connection connection = mock(Connection.class);
+        PreparedStatement preparedStatement = mock(PreparedStatement.class);
+
+        Object[] mocks = new Object[] { connection, preparedStatement };
+
+        // register mocked connection and prepared statement
+        final long connId = SQLModule.storeConnection( context, connection );
+        final long stmtId = SQLModule.storePreparedStatement( context, new PreparedStatementWithSQL(sql, preparedStatement));
+
+        // mock behavior
+
+        preparedStatement.setObject(1, null, Types.VARCHAR);
+        expect(preparedStatement.execute()).andThrow(new SQLException(test_message, test_sqlState));
+
+        replay(mocks);
+
+        // execute function
+
+        MemTreeBuilder paramBuilder = new MemTreeBuilder(context);
+
+        paramBuilder.startDocument();
+
+        paramBuilder.startElement(new QName("parameters", SQLModule.NAMESPACE_URI), null);
+        paramBuilder.startElement(new QName("param", SQLModule.NAMESPACE_URI), null);
+        paramBuilder.addAttribute(new QName("type", SQLModule.NAMESPACE_URI), "varchar");
+        paramBuilder.endElement();
+        paramBuilder.endElement();
+
+        paramBuilder.endDocument();
+
+        final ElementImpl sqlParams = (ElementImpl) paramBuilder.getDocument().getFirstChild();
+
+        Sequence res = execute.eval(new Sequence[] {
+                new IntegerValue(connId),
+                new IntegerValue(stmtId),
+                sqlParams,
+                new BooleanValue(false)
+            }, Sequence.EMPTY_SEQUENCE);
+
+
+        // assert expectations
+
+        verify(mocks);
+
+        assertEquals(1, res.getItemCount());
+        assertEquals(Type.ELEMENT, res.getItemType());
+
+        Node root = ((NodeValue) res.itemAt(0)).getNode();
+        assertEquals("sql:exception", root.getNodeName());
+
+        assertEquals(6, root.getChildNodes().getLength());
+
+        Node node = root.getFirstChild();
+
+        Node state = node;
+        assertEquals("sql:state", state.getNodeName());
+        assertEquals(test_sqlState, state.getTextContent());
+
+        node = node.getNextSibling();
+        Node message = node;
+        assertEquals("sql:message", message.getNodeName());
+        assertEquals(test_message, message.getTextContent());
+
+        node = node.getNextSibling();
+        Node stackTrace = node;
+        assertEquals("sql:stack-trace", stackTrace.getNodeName());
+
+        node = node.getNextSibling();
+        Node sqlErr = node;
+        assertEquals("sql:sql", sqlErr.getNodeName());
+        assertEquals(sql, sqlErr.getTextContent());
+
+        node = node.getNextSibling();
+        Node parameters = node;
+        assertEquals("sql:parameters", parameters.getNodeName());
+
+        Node param1 = parameters.getFirstChild();
+        assertEquals("sql:param", param1.getNodeName());
+        assertEquals("varchar", param1.getAttributes().getNamedItemNS(SQLModule.NAMESPACE_URI, "type").getTextContent());
+        assertEquals("", param1.getTextContent());
+
+        node = node.getNextSibling();
+        Node xquery = node;
+        assertEquals("sql:xquery", xquery.getNodeName());
 
     }
 
@@ -113,13 +223,15 @@ public class ExecuteFunctionTest {
         Connection connection = mock(Connection.class);
         Statement stmt = mock(Statement.class);
 
+        Object[] mocks = new Object[] { connection, stmt };
+
         // mock behavior
 
         expect(connection.createStatement()).andReturn(stmt);
         expect(stmt.execute(query)).andStubThrow(new SQLException(testMessage));
         stmt.close();
 
-        replay(connection, stmt);
+        replay(mocks);
 
         // register mocked connection
         final long connId = SQLModule.storeConnection( context, connection );
@@ -134,6 +246,8 @@ public class ExecuteFunctionTest {
 
 
         // assert expectations
+
+        verify(mocks);
 
         // <sql:exception><sql:state/><sql:message/><sql:stack-trace/><sql:sql/></sql:exception>
 
