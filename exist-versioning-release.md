@@ -246,11 +246,13 @@ Once development on a new stable version is complete, the following steps will p
 
 9. Tweet about it using the `existdb` twitter account.
 
-10. Submit a news item to XML.com - https://www.xml.com/news/submit-news-item/.
+10. Post it to the LinkedIn eXist-db group: https://www.linkedin.com/groups/35624
 
-11. Update the Wikipedia page with the new version details - https://en.wikipedia.org/wiki/EXist.
+11. Submit a news item to XML.com - https://www.xml.com/news/submit-news-item/.
 
-12. Go to GitHub and move all issues and PRs which are still open for the release milestone to the next release milestone. Close the release milestone.
+12. Update the Wikipedia page with the new version details - https://en.wikipedia.org/wiki/EXist.
+
+13. Go to GitHub and move all issues and PRs which are still open for the release milestone to the next release milestone. Close the release milestone.
 
 
 ### Preparing a Patch Release
