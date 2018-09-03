@@ -273,6 +273,21 @@ declare %private function test:test($func as function(*), $meta as element(funct
                 let $assertResult := test:check-assertions($assertions, $result)
                 return
                     if ($assertError) then
+                    (
+                        if(not(empty($test-failure-function))) then
+                            $test-failure-function(test:get-test-name($meta),
+                                    (: expected :)
+                                    map {
+                                        "error": $assertError/value/string()
+                                    },
+                                    (: actual :)
+                                    map {
+                                        "error": map {
+                                            "value": $result
+                                        }
+                                    }
+                            )
+                        else (),
                         test:print-result($meta, $result,
                             <report>
                                 <failure message="Expected error {$assertError/value/string()}."
@@ -280,15 +295,33 @@ declare %private function test:test($func as function(*), $meta as element(funct
                                 <output>{ $result }</output>
                             </report>
                         )
-                    else
+                    ) else (
+                        if ($assertResult[failure] and not(empty($test-failure-function))) then
+                            $test-failure-function(test:get-test-name($meta),
+                                    (: expected :)
+                                    map {
+                                        "value": test:expected-strings($assertResult)
+                                    },
+                                    (: actual :)
+                                    map {
+                                        "result": test:actual-strings($assertResult)
+                                    }
+                            )
+                        else(),
                         test:print-result($meta, $result, $assertResult)
+                    )
             } catch * {
                 if ($assertError) then
                     if ($assertError/value and not(contains($err:code, $assertError/value/string())
                             or matches($err:description, $assertError/value/string())))then
                     (
                         if(not(empty($test-failure-function))) then
-                            $test-failure-function(test:get-test-name($meta), map { "error": $assertError/value/string() },
+                            $test-failure-function(test:get-test-name($meta),
+                                    (: expected :)
+                                    map {
+                                        "error": $assertError/value/string()
+                                    },
+                                    (: actual :)
                                     map {
                                         "error": map {
                                             "code": $err:code,
@@ -343,6 +376,20 @@ declare %private function test:test($func as function(*), $meta as element(funct
         )
         else
             ()
+};
+
+declare function test:expected-strings($report as element(report)+) {
+    string-join(
+        for $report-failure in $report/failure
+        return
+            string-join($report-failure/text(), ", ") || " (" || $report-failure/@message || ")"
+    , ", ")
+};
+
+declare function test:actual-strings($report as element(report)+) {
+    string-join(
+        string-join($report[failure]/output/text(), ", ")
+    , ", ")
 };
 
 declare function test:enable-tracing($meta as element(function)) {
