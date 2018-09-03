@@ -34,9 +34,35 @@ public interface SequenceIterator {
     boolean hasNext();
 
     /**
-     * Retrieves the next item from the Sequence
+     * Retrieves the next item from the Sequence.
+     *
+     * If you do not care about the actual value and
+     * are just trying to advance the iterator, you
+     * should consider calling {@link #skip(long)} instead.
      *
      * @return The item, or null if there are no more items
      */
     Item nextItem();
+
+    /**
+     * Returns the number of the items in the sequence
+     * that may be skipped over from the current position.
+     *
+     * @return The number of items that may be skipped with {@link #skip(long)},
+     *     or -1 if no items may be skipped.
+     */
+    default long skippable() {
+        return -1;
+    }
+
+    /**
+     * Skip forward over {@code n} items from the current position.
+     *
+     * @return the number of items actually skipped over, zero
+     *     if no items could be skipped, or -1 if this sequence
+     *     does not support skipping.
+     */
+    default long skip(final long n) {
+        return -1;
+    }
 }

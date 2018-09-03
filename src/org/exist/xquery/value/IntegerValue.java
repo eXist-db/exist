@@ -7,16 +7,16 @@
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
+ *
  *  $Id$
  */
 package org.exist.xquery.value;
@@ -40,7 +40,7 @@ public class IntegerValue extends NumericValue {
     //TODO this class should be split into numerous sub classes for each xs: type with proper
     //inheritance as defined by http://www.w3.org/TR/xmlschema-2/#built-in-datatypes
 
-    public final static IntegerValue ZERO = new IntegerValue(0);
+    public static final IntegerValue ZERO = new IntegerValue(0);
 
     private static final BigInteger ZERO_BIGINTEGER = new BigInteger("0");
     private static final BigInteger ONE_BIGINTEGER = new BigInteger("1");
@@ -66,66 +66,58 @@ public class IntegerValue extends NumericValue {
 
     private static final BigInteger LARGEST_UNSIGNED_BYTE = new BigInteger("255");
 
-    private BigInteger value;
+    private final BigInteger value;
     // 	private long value;
 
     //should default type be NUMBER or LONG ? -shabanovd
-    private int type = Type.INTEGER;
+    private final int type;
 
-    public IntegerValue(long value) {
-        this.value = BigInteger.valueOf(value); // new BigInteger(value);
+    public IntegerValue(final BigInteger value, final int requiredType) {
+        this.value = value;
+        this.type = requiredType;
     }
 
-    public IntegerValue(long value, int type) throws XPathException {
-        this(value);
-        this.type = type;
+    public IntegerValue(final BigInteger integer) {
+        this(integer, Type.INTEGER);
+    }
+
+    public IntegerValue(final long value) {
+        this(BigInteger.valueOf(value));
+    }
+
+    public IntegerValue(final long value, final int type) throws XPathException {
+        this(BigInteger.valueOf(value), type);
         if (!checkType(value, type)) {
             throw new XPathException(
                     "Value is not a valid integer for type " + Type.getTypeName(type));
         }
     }
 
-    public IntegerValue(String stringValue) throws XPathException {
+    public IntegerValue(final String stringValue) throws XPathException {
         try {
-            value = new BigInteger(StringValue.trimWhitespace(stringValue)); // Long.parseLong(stringValue);
+            this.value = new BigInteger(StringValue.trimWhitespace(stringValue));
+            this.type = Type.INTEGER;
         } catch (final NumberFormatException e) {
             throw new XPathException(ErrorCodes.FORG0001,
                     "failed to convert '" + stringValue + "' to an integer: " + e.getMessage(), e);
-//			}
         }
     }
 
-    public IntegerValue(String stringValue, int requiredType) throws XPathException {
-        this.type = requiredType;
+    public IntegerValue(final String stringValue, final int requiredType) throws XPathException {
         try {
-            value = new BigInteger(StringValue.trimWhitespace(stringValue)); // Long.parseLong(stringValue);
-            if (!(checkType(value, type))) {
+            this.value = new BigInteger(StringValue.trimWhitespace(stringValue));
+            this.type = requiredType;
+            if (!(checkType())) {
                 throw new XPathException(ErrorCodes.FORG0001, "can not convert '" +
                         stringValue + "' to " + Type.getTypeName(type));
             }
         } catch (final NumberFormatException e) {
             throw new XPathException(ErrorCodes.FORG0001, "can not convert '" +
-                    stringValue + "' to " + Type.getTypeName(type));
+                    stringValue + "' to " + Type.getTypeName(requiredType));
         }
     }
 
-    /**
-     * @param value
-     * @param requiredType
-     */
-    public IntegerValue(BigInteger value, int requiredType) {
-        this.value = value;
-        type = requiredType;
-    }
-
-    /**
-     * @param integer
-     */
-    public IntegerValue(BigInteger integer) {
-        this.value = integer;
-    }
-
-    private final static boolean checkType(long value, int type) throws XPathException {
+    private static boolean checkType(final long value, final int type) throws XPathException {
         switch (type) {
             case Type.LONG:
             case Type.INTEGER:
@@ -157,12 +149,7 @@ public class IntegerValue extends NumericValue {
         throw new XPathException("Unknown type: " + Type.getTypeName(type));
     }
 
-    /**
-     * @param value2
-     * @param type2
-     * @throws XPathException
-     */
-    private boolean checkType(BigInteger value2, int type2) throws XPathException {
+    private boolean checkType() throws XPathException {
         switch (type) {
 
             case Type.LONG:
@@ -216,18 +203,18 @@ public class IntegerValue extends NumericValue {
         throw new XPathException("Unknown type: " + Type.getTypeName(type));
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AtomicValue#getType()
-     */
+    @Override
     public int getType() {
         return type;
     }
 
+    @Override
     public boolean hasFractionalPart() {
         return false;
     }
 
-    public Item itemAt(int pos) {
+    @Override
+    public Item itemAt(final int pos) {
         return pos == 0 ? this : null;
     }
 
@@ -235,43 +222,40 @@ public class IntegerValue extends NumericValue {
         return value.longValue();
     }
 
-    public void setValue(long value) {
-        this.value = BigInteger.valueOf(value);
-    }
-
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#getStringValue()
-     */
+    @Override
     public String getStringValue() {
         return // Long.toString(value);
                 value.toString();
     }
 
+    @Override
     public boolean isNaN() {
         return false;
     }
 
+    @Override
     public boolean isInfinite() {
         return false;
     }
 
+    @Override
     public boolean isZero() {
         return value.signum() == 0;
         //return value.compareTo(ZERO_BIGINTEGER) == Constants.EQUAL;
     }
 
+    @Override
     public boolean isNegative() {
         return value.signum() < 0;
     }
 
+    @Override
     public boolean isPositive() {
         return value.signum() > 0;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AtomicValue#convertTo(int)
-     */
-    public AtomicValue convertTo(int requiredType) throws XPathException {
+    @Override
+    public AtomicValue convertTo(final int requiredType) throws XPathException {
         if (this.type == requiredType) {
             return this;
         }
@@ -318,52 +302,38 @@ public class IntegerValue extends NumericValue {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#getInt()
-     */
-    public int getInt() throws XPathException {
-        return value.intValue(); // (int) value;
+    @Override
+    public int getInt() {
+        return value.intValue();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#getLong()
-     */
-    public long getLong() throws XPathException {
+    @Override
+    public long getLong() {
         return value.longValue();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#getDouble()
-     */
-    public double getDouble() throws XPathException {
-        return value.doubleValue(); // (double) value;
+    @Override
+    public double getDouble() {
+        return value.doubleValue();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#ceiling()
-     */
-    public NumericValue ceiling() throws XPathException {
+    @Override
+    public NumericValue ceiling() {
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#floor()
-     */
-    public NumericValue floor() throws XPathException {
+    @Override
+    public NumericValue floor() {
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#round()
-     */
-    public NumericValue round() throws XPathException {
+    @Override
+    public NumericValue round() {
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#round(org.exist.xquery.IntegerValue)
-     */
-    public NumericValue round(IntegerValue precision) throws XPathException {
+    @Override
+    public NumericValue round(final IntegerValue precision) throws XPathException {
         if (precision == null) {
             return round();
         }
@@ -375,10 +345,8 @@ public class IntegerValue extends NumericValue {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#minus(org.exist.xquery.value.NumericValue)
-     */
-    public ComputableValue minus(ComputableValue other) throws XPathException {
+    @Override
+    public ComputableValue minus(final ComputableValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.INTEGER))
         // return new IntegerValue(value - ((IntegerValue) other).value, type);
         {
@@ -388,10 +356,8 @@ public class IntegerValue extends NumericValue {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#plus(org.exist.xquery.value.NumericValue)
-     */
-    public ComputableValue plus(ComputableValue other) throws XPathException {
+    @Override
+    public ComputableValue plus(final ComputableValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.INTEGER))
         // return new IntegerValue(value + ((IntegerValue) other).value, type);
         {
@@ -401,10 +367,8 @@ public class IntegerValue extends NumericValue {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#mult(org.exist.xquery.value.NumericValue)
-     */
-    public ComputableValue mult(ComputableValue other) throws XPathException {
+    @Override
+    public ComputableValue mult(final ComputableValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.INTEGER)) {
             return new IntegerValue(value.multiply(((IntegerValue) other).value), type);
         } else if (Type.subTypeOf(other.getType(), Type.DURATION)) {
@@ -419,7 +383,8 @@ public class IntegerValue extends NumericValue {
      *
      * @see org.exist.xquery.value.NumericValue#idiv(org.exist.xquery.value.NumericValue)
      */
-    public ComputableValue div(ComputableValue other) throws XPathException {
+    @Override
+    public ComputableValue div(final ComputableValue other) throws XPathException {
         if (other instanceof IntegerValue) {
             if (((IntegerValue) other).isZero()) {
                 throw new XPathException(ErrorCodes.FOAR0001, "division by zero");
@@ -429,14 +394,14 @@ public class IntegerValue extends NumericValue {
             final BigDecimal od = new BigDecimal(((IntegerValue) other).value);
             final int scale = Math.max(18, Math.max(d.scale(), od.scale()));
             return new DecimalValue(d.divide(od, scale, BigDecimal.ROUND_HALF_DOWN));
-        } else
-        //TODO : review type promotion
-        {
+        } else {
+            //TODO : review type promotion
             return ((ComputableValue) convertTo(other.getType())).div(other);
         }
     }
 
-    public IntegerValue idiv(NumericValue other) throws XPathException {
+    @Override
+    public IntegerValue idiv(final NumericValue other) throws XPathException {
         if (other.isZero())
         //If the divisor is (positive or negative) zero, then an error is raised [err:FOAR0001]
         {
@@ -446,10 +411,8 @@ public class IntegerValue extends NumericValue {
         return new IntegerValue(((IntegerValue) result.convertTo(Type.INTEGER)).getLong());
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#mod(org.exist.xquery.value.NumericValue)
-     */
-    public NumericValue mod(NumericValue other) throws XPathException {
+    @Override
+    public NumericValue mod(final NumericValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.INTEGER)) {
             if (other.isZero()) {
                 throw new XPathException(ErrorCodes.FOAR0001, "division by zero");
@@ -463,25 +426,18 @@ public class IntegerValue extends NumericValue {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#unaryMinus()
-     */
-    public NumericValue negate() throws XPathException {
+    @Override
+    public NumericValue negate() {
         return new IntegerValue(value.negate());
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#abs()
-     */
-    public NumericValue abs() throws XPathException {
-        // return new IntegerValue(Math.abs(value), type);
+    @Override
+    public NumericValue abs() {
         return new IntegerValue(value.abs(), type);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#max(org.exist.xquery.value.AtomicValue)
-     */
-    public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
+    @Override
+    public AtomicValue max(final Collator collator, final AtomicValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.INTEGER)) {
             return new IntegerValue(value.max(((IntegerValue) other).value));
         } else {
@@ -489,7 +445,8 @@ public class IntegerValue extends NumericValue {
         }
     }
 
-    public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
+    @Override
+    public AtomicValue min(final Collator collator, final AtomicValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.INTEGER)) {
             return new IntegerValue(value.min(((IntegerValue) other).value));
         } else {
@@ -497,10 +454,8 @@ public class IntegerValue extends NumericValue {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
-     */
-    public int conversionPreference(Class<?> javaClass) {
+    @Override
+    public int conversionPreference(final Class<?> javaClass) {
         if (javaClass.isAssignableFrom(IntegerValue.class)) {
             return 0;
         }
@@ -535,10 +490,8 @@ public class IntegerValue extends NumericValue {
         return Integer.MAX_VALUE;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
-     */
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T toJavaObject(final Class<T> target) throws XPathException {
         if (target.isAssignableFrom(IntegerValue.class)) {
             return (T) this;
@@ -574,10 +527,8 @@ public class IntegerValue extends NumericValue {
                 " to Java object of type " + target.getName());
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
-    public int compareTo(Object o) {
+    @Override
+    public int compareTo(final Object o) {
         final AtomicValue other = (AtomicValue) o;
         if (Type.subTypeOf(other.getType(), Type.INTEGER)) {
             return value.compareTo(((IntegerValue) other).value);

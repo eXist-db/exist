@@ -104,12 +104,32 @@ public interface Sequence {
 
     /**
      * Returns the number of items contained in the sequence.
-     * Call this method <strong>only</strong> when necessary,
-     * since it can be resource consuming.
      *
-     * @return The number of items in the sequence
+     * NOTE: this is just a legacy convenience
+     *     for {@link #getItemCountLong()}.
+     *
+     * If the sequence has more items than {@link Integer#MAX_VALUE}
+     * then this function will likely return a negative value,
+     * at which point you should consider instead
+     * using {@link #getItemCountLong()}.
+     *
+     * @return The number of items in the sequence.
      */
-    int getItemCount();
+    default int getItemCount() {
+        return (int) getItemCountLong();
+    }
+
+    /**
+     * Returns the number of items contained in the sequence.
+     *
+     * Thought should be given before calling this method,
+     * as for some sequence types this can be a
+     * <strong>very</strong> expensive operation, whereas
+     * for others it may be almost free!
+     *
+     * @return The number of items in the sequence.
+     */
+    long getItemCountLong();
 
     /**
      * Returns whether the sequence is empty or not.
@@ -133,7 +153,7 @@ public interface Sequence {
     boolean hasMany();
 
     /**
-     * Explicitely remove all duplicate nodes from this sequence.
+     * Explicitly remove all duplicate nodes from this sequence.
      */
     void removeDuplicates();
 
@@ -262,7 +282,7 @@ public interface Sequence {
      * @param newNode
      * @see org.exist.storage.UpdateListener
      */
-    void nodeMoved(NodeId oldNodeId, NodeHandle newNode);  //TODO why is this here, it only pertains to Peristent nodes and NOT also in-memory nodes
+    void nodeMoved(NodeId oldNodeId, NodeHandle newNode);  //TODO why is this here, it only pertains to Persistent nodes and NOT also in-memory nodes
 
     boolean isCacheable();
 

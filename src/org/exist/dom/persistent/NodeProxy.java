@@ -828,7 +828,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     }
 
     @Override
-    public SequenceIterator iterate() throws XPathException {
+    public SequenceIterator iterate() {
         return new SingleNodeIterator(this);
     }
 
@@ -892,9 +892,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         return 1;
     }
 
-    //TODO : evaluate both semantics
     @Override
-    public int getItemCount() {
+    public long getItemCountLong() {
         return 1;
     }
 
@@ -1301,6 +1300,23 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
                 hasNext = false;
                 return node;
             }
+        }
+
+        @Override
+        public long skippable() {
+            if (hasNext) {
+                return 1;
+            }
+            return 0;
+        }
+
+        @Override
+        public long skip(final long n) {
+            final long skip = Math.min(n, hasNext ? 1 : 0);
+            if(skip == 1) {
+                hasNext = false;
+            }
+            return skip;
         }
 
         @Override
