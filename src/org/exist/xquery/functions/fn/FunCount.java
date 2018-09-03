@@ -7,16 +7,16 @@
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
+ *
  *  $Id$
  */
 package org.exist.xquery.functions.fn;
@@ -40,25 +40,27 @@ import org.exist.xquery.value.Type;
 public class FunCount extends Function {
 
     public final static FunctionSignature signature =
-        new FunctionSignature(
-            new QName("count", Function.BUILTIN_FUNCTION_NS),
-            "Returns the number of items in the argument sequence, $items.",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("items", Type.ITEM,
-                    Cardinality.ZERO_OR_MORE, "The items") 
-            },
-            new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ONE,
-                "The number of items in the argument sequence")
-        );
+            new FunctionSignature(
+                    new QName("count", Function.BUILTIN_FUNCTION_NS),
+                    "Returns the number of items in the argument sequence, $items.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("items", Type.ITEM,
+                                    Cardinality.ZERO_OR_MORE, "The items")
+                    },
+                    new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ONE,
+                            "The number of items in the argument sequence")
+            );
 
-    public FunCount(XQueryContext context) {
+    public FunCount(final XQueryContext context) {
         super(context, signature);
     }
 
+    @Override
     public int returnsType() {
         return Type.INTEGER;
     }
 
+    @Override
     public int getDependencies() {
         if (getArgumentCount() == 0) {
             return Dependency.CONTEXT_SET;
@@ -66,27 +68,38 @@ public class FunCount extends Function {
         return getArgument(0).getDependencies();
     }
 
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    @Override
+    public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
-                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT ITEM", contextItem.toSequence());}
+                    "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT ITEM", contextItem.toSequence());
+            }
         }
-        if (contextItem != null)
-            {contextSequence = contextItem.toSequence();}
-        Sequence result;
-        if (getArgumentCount() == 0)
-            {result = IntegerValue.ZERO;}
-        else
-            {result = new IntegerValue(getArgument(0).eval(contextSequence).getItemCount());}
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", result);}
+
+        if (contextItem != null) {
+            contextSequence = contextItem.toSequence();
+        }
+
+        final Sequence result;
+        if (getArgumentCount() == 0) {
+            result = IntegerValue.ZERO;
+        } else {
+            final Sequence seq = getArgument(0).eval(contextSequence);
+            result = new IntegerValue(seq.getItemCountLong());
+        }
+
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", result);
+        }
+
         return result;
     }
 }

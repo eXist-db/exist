@@ -55,18 +55,14 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
     /**
      * An empty atomic value
      */
-    public final static AtomicValue EMPTY_VALUE = new EmptyValue();
+    public static final AtomicValue EMPTY_VALUE = new EmptyValue();
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#getType()
-     */
+    @Override
     public int getType() {
         return Type.ATOMIC;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#getStringValue()
-     */
+    @Override
     public abstract String getStringValue() throws XPathException;
 
     @Override
@@ -74,26 +70,24 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
         return Sequence.EMPTY_SEQUENCE;
     }
 
-    public abstract AtomicValue convertTo(int requiredType) throws XPathException;
-
-    public abstract boolean compareTo(Collator collator, Comparison operator, AtomicValue other)
+    public abstract boolean compareTo(final Collator collator, final Comparison operator, final AtomicValue other)
             throws XPathException;
 
-    public abstract int compareTo(Collator collator, AtomicValue other) throws XPathException;
+    public abstract int compareTo(final Collator collator, final AtomicValue other) throws XPathException;
 
-    public abstract AtomicValue max(Collator collator, AtomicValue other) throws XPathException;
+    public abstract AtomicValue max(final Collator collator, final AtomicValue other) throws XPathException;
 
-    public abstract AtomicValue min(Collator collator, AtomicValue other) throws XPathException;
+    public abstract AtomicValue min(final Collator collator, final AtomicValue other) throws XPathException;
 
     /**
      * Compares this atomic value to another. Returns true if the current value is of type string
      * and its value starts with the string value of the other value.
      *
      * @param collator Collator used for string comparison.
-     * @param other
+     * @param other the other value.
      * @throws XPathException if this is not a string.
      */
-    public boolean startsWith(Collator collator, AtomicValue other) throws XPathException {
+    public boolean startsWith(final Collator collator, final AtomicValue other) throws XPathException {
         throw new XPathException("Cannot call starts-with on value of type " +
                 Type.getTypeName(getType()));
     }
@@ -103,10 +97,10 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
      * and its value ends with the string value of the other value.
      *
      * @param collator Collator used for string comparison.
-     * @param other
+     * @param other the other value.
      * @throws XPathException if this is not a string.
      */
-    public boolean endsWith(Collator collator, AtomicValue other) throws XPathException {
+    public boolean endsWith(final Collator collator, final AtomicValue other) throws XPathException {
         throw new XPathException("Cannot call ends-with on value of type " +
                 Type.getTypeName(getType()));
     }
@@ -116,7 +110,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
      * and its value contains the string value of the other value.
      *
      * @param collator Collator used for string comparison.
-     * @param other
+     * @param other the other value.
      * @throws XPathException if this is not a string.
      */
     public boolean contains(final Collator collator, final AtomicValue other) throws XPathException {
@@ -124,57 +118,48 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
                 Type.getTypeName(getType()));
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#getLength()
-     */
-    public int getItemCount() {
+    @Override
+    public long getItemCountLong() {
         return 1;
     }
 
+    @Override
     public int getCardinality() {
         return Cardinality.EXACTLY_ONE;
     }
 
+    @Override
     public void removeDuplicates() {
         // this is a single value, so there are no duplicates to remove
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#iterate()
-     */
-    public SequenceIterator iterate() throws XPathException {
+    @Override
+    public SequenceIterator iterate() {
         return new SingleItemIterator(this);
     }
 
-    public SequenceIterator unorderedIterator() throws XPathException {
+    @Override
+    public SequenceIterator unorderedIterator() {
         return new SingleItemIterator(this);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#getItemType()
-     */
+    @Override
     public int getItemType() {
         return getType();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#itemAt(int)
-     */
-    public Item itemAt(int pos) {
+    @Override
+    public Item itemAt(final int pos) {
         return pos > 0 ? null : this;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#toSequence()
-     */
+    @Override
     public Sequence toSequence() {
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#toSAX(org.exist.storage.DBBroker, org.xml.sax.ContentHandler)
-     */
-    public void toSAX(DBBroker broker, ContentHandler handler, Properties properties) throws SAXException {
+    @Override
+    public void toSAX(final DBBroker broker, final ContentHandler handler, final Properties properties) throws SAXException {
         try {
             final String s = getStringValue();
             handler.characters(s.toCharArray(), 0, s.length());
@@ -183,10 +168,8 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#copyTo(org.exist.storage.DBBroker, org.exist.dom.memtree.DocumentBuilderReceiver)
-     */
-    public void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException {
+    @Override
+    public void copyTo(final DBBroker broker, final DocumentBuilderReceiver receiver) throws SAXException {
         try {
             final String s = getStringValue();
             receiver.characters(s);
@@ -195,45 +178,35 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
         }
     }
 
+    @Override
     public boolean isEmpty() {
         return false;
     }
 
+    @Override
     public boolean hasOne() {
         return true;
     }
 
+    @Override
     public boolean hasMany() {
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
-     */
-    public void add(Item item) throws XPathException {
+    @Override
+    public void add(final Item item) {
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#addAll(org.exist.xquery.value.Sequence)
-     */
-    public void addAll(Sequence other) throws XPathException {
+    @Override
+    public void addAll(final Sequence other) {
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#atomize()
-     */
+    @Override
     public AtomicValue atomize() throws XPathException {
         return this;
     }
 
-    /* (non-Javadoc)
-         * @see org.exist.xquery.value.Item#effectiveBooleanValue()
-         */
-    public abstract boolean effectiveBooleanValue() throws XPathException;
-
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#toNodeSet()
-     */
+    @Override
     public NodeSet toNodeSet() throws XPathException {
         //TODO : solution that may be worth to investigate
         /*
@@ -245,24 +218,24 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
                         + " to a node set");
     }
 
+    @Override
     public MemoryNodeSet toMemNodeSet() throws XPathException {
         throw new XPathException(
                 "cannot convert " + Type.getTypeName(getType()) + "('" + getStringValue() + "')"
                         + " to a node set");
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#getDocumentSet()
-     */
+    @Override
     public DocumentSet getDocumentSet() {
         return DocumentSet.EMPTY_DOCUMENT_SET;
     }
 
+    @Override
     public Iterator<Collection> getCollectionIterator() {
         return EmptyNodeSet.EMPTY_COLLECTION_ITERATOR;
     }
 
-    public AtomicValue promote(AtomicValue otherValue) throws XPathException {
+    public AtomicValue promote(final AtomicValue otherValue) throws XPathException {
         if (getType() != otherValue.getType()) {
             if (Type.subTypeOf(getType(), Type.DECIMAL) &&
                     (Type.subTypeOf(otherValue.getType(), Type.DOUBLE)
@@ -287,25 +260,20 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
      * Dump a string representation of this value to the given
      * ExpressionDumper.
      *
-     * @param dumper
+     * @param dumper the expression dumper
      */
-    public void dump(ExpressionDumper dumper) {
+    public void dump(final ExpressionDumper dumper) {
         try {
             dumper.display(getStringValue());
         } catch (final XPathException e) {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
-     */
-    public int conversionPreference(Class<?> javaClass) {
+    @Override
+    public int conversionPreference(final Class<?> javaClass) {
         return Integer.MAX_VALUE;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
-     */
     @Override
     public <T> T toJavaObject(final Class<T> target) throws XPathException {
         throw new XPathException(
@@ -315,6 +283,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
                         + target.getName());
     }
 
+    @Override
     public String toString() {
         try {
             return getStringValue();
@@ -323,95 +292,63 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#isCached()
-     */
+    @Override
     public boolean isCached() {
         // always returns false by default
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#setIsCached(boolean)
-     */
-    public void setIsCached(boolean cached) {
+    @Override
+    public void setIsCached(final boolean cached) {
         // ignore
     }
 
-    public void clearContext(int contextId) throws XPathException {
+    @Override
+    public void clearContext(final int contextId) {
         // ignore
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#setSelfAsContext()
-     */
-    public void setSelfAsContext(int contextId) throws XPathException {
+    @Override
+    public void setSelfAsContext(final int contextId) {
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#isPersistentSet()
-     */
+    @Override
     public boolean isPersistentSet() {
         return false;
     }
 
     @Override
-    public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
+    public void nodeMoved(final NodeId oldNodeId, final NodeHandle newNode) {
     }
-	
-        /*
-	public byte[] serialize(short collectionId)	throws EXistException {	
-		//TODO : pass the factory as an argument
-		return ValueIndexFactory.serialize(this, collectionId);
-	}
-	*/	
 
-
-	/* (non-Javadoc)
-	 * @deprecated
-	 * @see org.exist.storage.Indexable#serialize(short, boolean)
-	 */
-	/*
-	public byte[] serialize(short collectionId, boolean caseSensitive)	throws EXistException {	
-		//TODO : pass the factory as an argument
-		return ValueIndexFactory.serialize(this, collectionId, caseSensitive);
-	}	
-	*/
-
-    public byte[] serializeValue(int offset) throws EXistException {
+    @Override
+    public byte[] serializeValue(final int offset) throws EXistException {
         //TODO : pass the factory as an argument
         return ValueIndexFactory.serialize(this, offset);
     }
-	
-	/* (non-Javadoc)
-	 * @deprecated
-	 * @see org.exist.storage.Indexable#serializeValue(int, boolean)
-	 */
-	/*
-	public byte[] serializeValue(int offset, boolean caseSensitive)	throws EXistException {		
-		//TODO : pass the factory as an argument
-		return ValueIndexFactory.serialize(this, offset, caseSensitive);
-	}
-	*/
 
-    public int compareTo(Object other) {
+    @Override
+    public int compareTo(final Object other) {
         throw new IllegalArgumentException("Invalid call to compareTo by " + Type.getTypeName(this.getItemType()));
     }
 
+    @Override
     public int getState() {
         return 0;
     }
 
-    public boolean hasChanged(int previousState) {
+    @Override
+    public boolean hasChanged(final int previousState) {
         return false; // never changes
     }
 
+    @Override
     public boolean isCacheable() {
         return true;
     }
 
     @Override
-    public void destroy(XQueryContext context, Sequence contextSequence) {
+    public void destroy(final XQueryContext context, final Sequence contextSequence) {
         // nothing to be done by default
     }
 
@@ -433,7 +370,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
         }
 
         @Override
-        public AtomicValue convertTo(int requiredType) throws XPathException {
+        public AtomicValue convertTo(final int requiredType) throws XPathException {
             switch (requiredType) {
                 case Type.ATOMIC:
                 case Type.ITEM:
@@ -508,12 +445,12 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
         }
 
         @Override
-        public boolean effectiveBooleanValue() throws XPathException {
+        public boolean effectiveBooleanValue() {
             return false;
         }
 
         @Override
-        public int compareTo(Collator collator, AtomicValue other) throws XPathException {
+        public int compareTo(final Collator collator, final AtomicValue other) {
             if (other instanceof EmptyValue) {
                 return Constants.EQUAL;
             } else {
@@ -522,12 +459,12 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
         }
 
         @Override
-        public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
+        public boolean compareTo(final Collator collator, final Comparison operator, final AtomicValue other) {
             return false;
         }
 
         @Override
-        public Item itemAt(int pos) {
+        public Item itemAt(final int pos) {
             return null;
         }
 
@@ -537,21 +474,21 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
         }
 
         @Override
-        public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
+        public AtomicValue max(final Collator collator, final AtomicValue other) {
             return this;
         }
 
         @Override
-        public void add(Item item) throws XPathException {
+        public void add(final Item item) {
         }
 
         @Override
-        public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
+        public AtomicValue min(final Collator collator, final AtomicValue other) {
             return this;
         }
 
         @Override
-        public int conversionPreference(Class<?> javaClass) {
+        public int conversionPreference(final Class<?> javaClass) {
             return Integer.MAX_VALUE;
         }
 

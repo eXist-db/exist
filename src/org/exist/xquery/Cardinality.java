@@ -44,15 +44,21 @@ public class Cardinality {
     public final static String toString(int cardinality) {
         switch(cardinality) {
             case EMPTY:
-                return "empty()";
+                return "empty-sequence()";
+
             case EXACTLY_ONE:
                 return ""; 
+
+            case MANY:
             case ONE_OR_MORE:
                 return "+";
+
             case ZERO_OR_MORE:
                 return "*";
+
             case ZERO_OR_ONE:
                 return "?";
+
             default:
                 // impossible
                 throw new IllegalArgumentException("unknown cardinality: " + cardinality);

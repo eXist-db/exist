@@ -7,16 +7,16 @@
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
+ *
  *  $Id$
  */
 package org.exist.xquery.value;
@@ -34,22 +34,22 @@ public class DoubleValue extends NumericValue {
     // m × 2^e, where m is an integer whose absolute value is less than 2^53,
     // and e is an integer between -1075 and 970, inclusive.
     // In addition also -INF, +INF and NaN.
-    public final static DoubleValue ZERO = new DoubleValue(0.0E0);
-    public final static DoubleValue POSITIVE_INFINITY = new DoubleValue(Double.POSITIVE_INFINITY);
-    public final static DoubleValue NEGATIVE_INFINITY = new DoubleValue(Double.NEGATIVE_INFINITY);
-    public final static DoubleValue NaN = new DoubleValue(Double.NaN);
+    public static final DoubleValue ZERO = new DoubleValue(0.0E0);
+    public static final DoubleValue POSITIVE_INFINITY = new DoubleValue(Double.POSITIVE_INFINITY);
+    public static final DoubleValue NEGATIVE_INFINITY = new DoubleValue(Double.NEGATIVE_INFINITY);
+    public static final DoubleValue NaN = new DoubleValue(Double.NaN);
 
-    private double value;
+    private final double value;
 
-    public DoubleValue(double value) {
+    public DoubleValue(final double value) {
         this.value = value;
     }
 
-    public DoubleValue(AtomicValue otherValue) throws XPathException {
+    public DoubleValue(final AtomicValue otherValue) throws XPathException {
         this(otherValue.getStringValue());
     }
 
-    public DoubleValue(String stringValue) throws XPathException {
+    public DoubleValue(final String stringValue) throws XPathException {
         try {
             if ("INF".equals(stringValue)) {
                 value = Double.POSITIVE_INFINITY;
@@ -66,13 +66,12 @@ public class DoubleValue extends NumericValue {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AtomicValue#getType()
-     */
+    @Override
     public int getType() {
         return Type.DOUBLE;
     }
 
+    @Override
     public String getStringValue() {
         final FastStringBuffer sb = new FastStringBuffer(20);
         //0 is a dummy parameter
@@ -84,10 +83,7 @@ public class DoubleValue extends NumericValue {
         return value;
     }
 
-    public void setValue(double val) {
-        value = val;
-    }
-
+    @Override
     public boolean hasFractionalPart() {
         if (isNaN()) {
             return false;
@@ -98,37 +94,38 @@ public class DoubleValue extends NumericValue {
         return new DecimalValue(new BigDecimal(value)).hasFractionalPart();
     }
 
-    public Item itemAt(int pos) {
+    @Override
+    public Item itemAt(final int pos) {
         return pos == 0 ? this : null;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#isNaN()
-     */
+    @Override
     public boolean isNaN() {
         return Double.isNaN(value);
     }
 
+    @Override
     public boolean isInfinite() {
         return Double.isInfinite(value);
     }
 
+    @Override
     public boolean isZero() {
         return Double.compare(Math.abs(value), 0.0) == Constants.EQUAL;
     }
 
+    @Override
     public boolean isNegative() {
         return (Double.compare(value, 0.0) < Constants.EQUAL);
     }
 
+    @Override
     public boolean isPositive() {
         return (Double.compare(value, 0.0) > Constants.EQUAL);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AtomicValue#convertTo(int)
-     */
-    public AtomicValue convertTo(int requiredType) throws XPathException {
+    @Override
+    public AtomicValue convertTo(final int requiredType) throws XPathException {
         switch (requiredType) {
             case Type.ATOMIC:
             case Type.ITEM:
@@ -189,10 +186,10 @@ public class DoubleValue extends NumericValue {
                             + "') to "
                             + Type.getTypeName(requiredType));
                 }
-                if (value > Integer.MAX_VALUE) {
-                    throw new XPathException(ErrorCodes.FOCA0003, "Value is out of range for type xs:integer");
+                if (requiredType != Type.INTEGER && value > Integer.MAX_VALUE) {
+                    throw new XPathException(ErrorCodes.FOCA0003, "Value is out of range for type " + Type.getTypeName(requiredType));
                 }
-                return new IntegerValue((long) value, requiredType);
+                return new IntegerValue(Double.valueOf(value).longValue(), requiredType);
             case Type.BOOLEAN:
                 return new BooleanValue(this.effectiveBooleanValue());
             default:
@@ -205,46 +202,33 @@ public class DoubleValue extends NumericValue {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#getDouble()
-     */
-    public double getDouble() throws XPathException {
+    @Override
+    public double getDouble() {
         return value;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#getInt()
-     */
-    public int getInt() throws XPathException {
-        return (int) Math.round(value);
+    @Override
+    public int getInt() {
+        return Long.valueOf(Math.round(value)).intValue();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#getLong()
-     */
-    public long getLong() throws XPathException {
+    @Override
+    public long getLong() {
         return Math.round(value);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#ceiling()
-     */
-    public NumericValue ceiling() throws XPathException {
+    @Override
+    public NumericValue ceiling() {
         return new DoubleValue(Math.ceil(value));
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#floor()
-     */
-    public NumericValue floor() throws XPathException {
+    @Override
+    public NumericValue floor() {
         return new DoubleValue(Math.floor(value));
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#round()
-     */
-    public NumericValue round() throws XPathException {
-
+    @Override
+    public NumericValue round() {
         if (Double.isNaN(value) || Double.isInfinite(value) || value == 0.0) {
             return this;
         }
@@ -261,10 +245,8 @@ public class DoubleValue extends NumericValue {
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#round(org.exist.xquery.value.IntegerValue)
-     */
-    public NumericValue round(IntegerValue precision) throws XPathException {
+    @Override
+    public NumericValue round(final IntegerValue precision) throws XPathException {
         if (precision == null) {
             return round();
         }
@@ -273,15 +255,13 @@ public class DoubleValue extends NumericValue {
             return this;
         }
 
-		/* use the decimal rounding method */
+        /* use the decimal rounding method */
         return (DoubleValue) ((DecimalValue) convertTo(Type.DECIMAL)).round(precision).convertTo(Type.DOUBLE);
     }
 
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#minus(org.exist.xquery.value.NumericValue)
-     */
-    public ComputableValue minus(ComputableValue other) throws XPathException {
+    @Override
+    public ComputableValue minus(final ComputableValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
             return new DoubleValue(value - ((DoubleValue) other).value);
         } else {
@@ -289,10 +269,8 @@ public class DoubleValue extends NumericValue {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#plus(org.exist.xquery.value.NumericValue)
-     */
-    public ComputableValue plus(ComputableValue other) throws XPathException {
+    @Override
+    public ComputableValue plus(final ComputableValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
             return new DoubleValue(value + ((DoubleValue) other).value);
         } else {
@@ -300,10 +278,8 @@ public class DoubleValue extends NumericValue {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#mult(org.exist.xquery.value.NumericValue)
-     */
-    public ComputableValue mult(ComputableValue other) throws XPathException {
+    @Override
+    public ComputableValue mult(final ComputableValue other) throws XPathException {
         switch (other.getType()) {
             case Type.DOUBLE:
                 return new DoubleValue(value * ((DoubleValue) other).value);
@@ -315,10 +291,8 @@ public class DoubleValue extends NumericValue {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#div(org.exist.xquery.value.NumericValue)
-     */
-    public ComputableValue div(ComputableValue other) throws XPathException {
+    @Override
+    public ComputableValue div(final ComputableValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.NUMBER)) {
             //Positive or negative zero divided by positive or negative zero returns NaN.
             if (this.isZero() && ((NumericValue) other).isZero()) {
@@ -361,7 +335,8 @@ public class DoubleValue extends NumericValue {
         }
     }
 
-    public IntegerValue idiv(NumericValue other) throws XPathException {
+    @Override
+    public IntegerValue idiv(final NumericValue other) throws XPathException {
         final ComputableValue result = div(other);
         return new IntegerValue(((IntegerValue) result.convertTo(Type.INTEGER)).getLong());
 		/*
@@ -375,10 +350,8 @@ public class DoubleValue extends NumericValue {
 		*/
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#mod(org.exist.xquery.value.NumericValue)
-     */
-    public NumericValue mod(NumericValue other) throws XPathException {
+    @Override
+    public NumericValue mod(final NumericValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
             return new DoubleValue(value % ((DoubleValue) other).value);
         } else {
@@ -386,24 +359,18 @@ public class DoubleValue extends NumericValue {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#negate()
-     */
-    public NumericValue negate() throws XPathException {
+    @Override
+    public NumericValue negate() {
         return new DoubleValue(-value);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#abs()
-     */
-    public NumericValue abs() throws XPathException {
+    @Override
+    public NumericValue abs() {
         return new DoubleValue(Math.abs(value));
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#max(org.exist.xquery.value.AtomicValue)
-     */
-    public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
+    @Override
+    public AtomicValue max(final Collator collator, final AtomicValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
             return new DoubleValue(Math.max(value, ((DoubleValue) other).value));
         } else {
@@ -412,7 +379,8 @@ public class DoubleValue extends NumericValue {
         }
     }
 
-    public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
+    @Override
+    public AtomicValue min(final Collator collator, final AtomicValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
             return new DoubleValue(Math.min(value, ((DoubleValue) other).value));
         } else {
@@ -421,10 +389,8 @@ public class DoubleValue extends NumericValue {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
-     */
-    public int conversionPreference(Class<?> javaClass) {
+    @Override
+    public int conversionPreference(final Class<?> javaClass) {
         if (javaClass.isAssignableFrom(DoubleValue.class)) {
             return 0;
         }
@@ -459,9 +425,7 @@ public class DoubleValue extends NumericValue {
         return Integer.MAX_VALUE;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
-     */
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T toJavaObject(final Class<T> target) throws XPathException {
         if (target.isAssignableFrom(DoubleValue.class)) {
@@ -501,10 +465,8 @@ public class DoubleValue extends NumericValue {
         return 1 + 8;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
-    public int compareTo(Object o) {
+    @Override
+    public int compareTo(final Object o) {
         final AtomicValue other = (AtomicValue) o;
         if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
             return Double.compare(value, ((DoubleValue) other).value);
