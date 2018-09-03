@@ -8,7 +8,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.ElementImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
@@ -31,7 +30,7 @@ public class ExecuteFunctionTest {
 
 
     @Test
-    public void testStringEncoding() throws ClassNotFoundException, SQLException, EXistException, XPathException {
+    public void testStringEncoding() throws SQLException, XPathException {
 
         // mocks a simple SQL query returning a single string and checks the result
 
@@ -176,7 +175,7 @@ public class ExecuteFunctionTest {
 
         final ElementImpl sqlParams = (ElementImpl) paramBuilder.getDocument().getFirstChild();
 
-        Sequence res = execute.eval(new Sequence[] {
+        execute.eval(new Sequence[] {
                 new IntegerValue(connId),
                 new IntegerValue(stmtId),
                 sqlParams,
@@ -191,10 +190,12 @@ public class ExecuteFunctionTest {
     }
 
     @Test
-    public void testEmptyStringParameterWithException() throws SQLException, XPathException {
+    public void testSQLException() throws SQLException, XPathException {
 
         // mocks a simple SQL prepared statement with one parameter that fails on execution
         // and verifies the error message
+
+        // the parameter is filled with an empty sql:param element
 
         XQueryContext context = new XQueryContextStub();
         ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.signatures, functionName, 3));
@@ -294,7 +295,7 @@ public class ExecuteFunctionTest {
     }
 
     @Test
-    public void testMissingParamType() throws SQLException, XPathException {
+    public void testMissingParamType() {
 
         // mocks a simple SQL prepared statement with one parameter that lacks a type attribute.
         // This should throw an informative error.
@@ -304,7 +305,6 @@ public class ExecuteFunctionTest {
 
 
         final String sql = "SELECT ?";
-        final String testValue = "abc";
 
         // create mock objects
 
@@ -339,7 +339,7 @@ public class ExecuteFunctionTest {
         final ElementImpl sqlParams = (ElementImpl) paramBuilder.getDocument().getFirstChild();
 
         try {
-            Sequence res = execute.eval(new Sequence[] {
+            execute.eval(new Sequence[] {
                     new IntegerValue(connId),
                     new IntegerValue(stmtId),
                     sqlParams,
