@@ -35,6 +35,7 @@ import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -377,7 +378,8 @@ public class ExecuteFunction extends BasicFunction
 
                     for( int i = 0; i < paramElements.getLength(); i++ ) {
                         Element param = ( (Element)paramElements.item( i ) );
-                        String  value = param.getFirstChild().getNodeValue();
+                        final Node valueNode = param.getFirstChild();
+                        String  value = valueNode != null ? valueNode.getNodeValue() : null;
                         String  type  = param.getAttributeNS( SQLModule.NAMESPACE_URI, TYPE_ATTRIBUTE_NAME );
 
                         builder.startElement( new QName( PARAM_ELEMENT_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );
@@ -439,6 +441,8 @@ public class ExecuteFunction extends BasicFunction
             for (int i = 0; i < paramElements.getLength(); i++) {
                 Element param = ((Element) paramElements.item(i));
                 Node child = param.getFirstChild();
+                String value;
+                int sqlType;
 
                 // Prevent NPE
                 if (child != null) {
@@ -446,18 +450,26 @@ public class ExecuteFunction extends BasicFunction
                         child = ((ReferenceNode) child).getReference().getNode();
                     }
 
-                    final String value = child.getNodeValue();
-                    final String type = param.getAttributeNS(SQLModule.NAMESPACE_URI, TYPE_ATTRIBUTE_NAME);
-                    final int sqlType = SQLUtils.sqlTypeFromString(type);
+                    value = child.getNodeValue();
+                } else {
+                    // TODO for VARCHAR, either null or "" could be appropriate (an empty sql:param element is ambiguous)
+                    value = null;
+                }
 
-                    if (sqlType == Types.TIMESTAMP) {
-                        final DateTimeValue dv = new DateTimeValue(value);
-                        final Timestamp timestampValue = new Timestamp(dv.getDate().getTime());
-                        ((PreparedStatement) stmt).setTimestamp(i + 1, timestampValue);
-                        
-                    } else {
-                        ((PreparedStatement) stmt).setObject(i + 1, value, sqlType);
-                    }
+                final String type = param.getAttributeNS(SQLModule.NAMESPACE_URI, TYPE_ATTRIBUTE_NAME);
+                if (type != null) {
+                    sqlType = SQLUtils.sqlTypeFromString(type);
+                } else {
+                    throw new XPathException(ErrorCodes.ERROR, "<sql:param> must contain attribute sql:type");
+                }
+
+                if (sqlType == Types.TIMESTAMP) {
+                    final DateTimeValue dv = new DateTimeValue(value);
+                    final Timestamp timestampValue = new Timestamp(dv.getDate().getTime());
+                    ((PreparedStatement) stmt).setTimestamp(i + 1, timestampValue);
+
+                } else {
+                    ((PreparedStatement) stmt).setObject(i + 1, value, sqlType);
                 }
 
             }
