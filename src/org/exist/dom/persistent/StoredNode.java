@@ -28,6 +28,7 @@ import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.stax.IEmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
+import org.exist.storage.NodePath2;
 import org.exist.storage.Signatures;
 import org.exist.storage.dom.INodeIterator;
 import org.exist.util.pool.NodePool;
@@ -425,22 +426,25 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
 
     @Override
     public NodePath getPath() {
-        final NodePath path = new NodePath();
+        final NodePath2 path = new NodePath2();
         if(getNodeType() == Node.ELEMENT_NODE) {
-            path.addComponent(getQName());
+            path.addNode(this);
         }
 
-        NodeImpl parent;
+        Node parent;
         if(getNodeType() == Node.ATTRIBUTE_NODE) {
-            parent = (NodeImpl) ((Attr)this).getOwnerElement();
+            parent = ((Attr)this).getOwnerElement();
         } else {
-            parent = (NodeImpl) getParentNode();
+            parent = getParentNode();
         }
 
         while(parent != null && parent.getNodeType() != Node.DOCUMENT_NODE) {
-            path.addComponentAtStart(parent.getQName());
-            parent = (NodeImpl) parent.getParentNode();
+            path.addNode(parent);
+            parent = parent.getParentNode();
         }
+
+        path.reverseNodes();
+
         return path;
     }
 
