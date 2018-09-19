@@ -124,7 +124,7 @@ public class LuceneConfig {
     public Analyzer getAnalyzer(QName qname) {
         LuceneIndexConfig idxConf = paths.get(qname);
         while (idxConf != null) {
-            if (!idxConf.isNamed() && idxConf.getNodePath().match(qname))
+            if (!idxConf.isNamed() && idxConf.getNodePathPattern().match(qname))
                 break;
             idxConf = idxConf.getNext();
         }
@@ -274,12 +274,12 @@ public class LuceneConfig {
                                 if (config.getName() != null) {
                                     namedIndexes.put(config.getName(), config);
                                 }       // register index either by QName or path
-                                if (config.getNodePath().hasWildcard()) {
+                                if (config.getNodePathPattern().hasWildcard()) {
                                     wildcardPaths.add(config);
                                 } else {
-                                    LuceneIndexConfig idxConf = paths.get(config.getNodePath().getLastComponent());
+                                    LuceneIndexConfig idxConf = paths.get(config.getNodePathPattern().getLastComponent());
                                     if (idxConf == null) {
-                                        paths.put(config.getNodePath().getLastComponent(), config);
+                                        paths.put(config.getNodePathPattern().getLastComponent(), config);
                                     } else {
                                         idxConf.add(config);
                                     }

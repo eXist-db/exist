@@ -2837,7 +2837,7 @@ public class NativeBroker extends DBBroker {
             final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
             try(final INodeIterator iterator = getNodeIterator(node)) {
                 iterator.next();
-                scanNodes(transaction, iterator, node, new NodePath(), IndexMode.REMOVE, listener);
+                scanNodes(transaction, iterator, node, new NodePath2(), IndexMode.REMOVE, listener);
             } catch(final IOException ioe) {
                 LOG.error("Unable to close node iterator", ioe);
             }
@@ -2982,7 +2982,7 @@ public class NativeBroker extends DBBroker {
                 final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
                 try (final INodeIterator iterator = getNodeIterator(node)) {
                     iterator.next();
-                    scanNodes(transaction, iterator, node, new NodePath(), mode, listener);
+                    scanNodes(transaction, iterator, node, new NodePath2(), mode, listener);
                 } catch (final IOException ioe) {
                     LOG.error("Unable to close node iterator", ioe);
                 }
@@ -3532,9 +3532,9 @@ public class NativeBroker extends DBBroker {
      * @param currentPath
      */
     private void scanNodes(final Txn transaction, final INodeIterator iterator, final IStoredNode node,
-                           final NodePath currentPath, final IndexMode mode, final StreamListener listener) {
+                           final NodePath2 currentPath, final IndexMode mode, final StreamListener listener) {
         if(node.getNodeType() == Node.ELEMENT_NODE) {
-            currentPath.addComponent(node.getQName());
+            currentPath.addNode(node);
         }
         indexNode(transaction, node, currentPath, mode);
         if(listener != null) {
@@ -3573,7 +3573,7 @@ public class NativeBroker extends DBBroker {
             if(listener != null) {
                 listener.endElement(transaction, (ElementImpl) node, currentPath);
             }
-            currentPath.removeLastComponent();
+            currentPath.removeLastNode();
         }
     }
 

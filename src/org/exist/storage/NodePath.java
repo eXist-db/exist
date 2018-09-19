@@ -101,17 +101,12 @@ public class NodePath implements Comparable<NodePath> {
         components[pos++] = component;
     }
 
-    public void addComponentAtStart(final QName component) {
-        if (pos == components.length) {
-            final QName[] t = new QName[pos + 1];
-            System.arraycopy(components, 0, t, 1, pos);
-            components = t;
-            components[0] = component;
-        } else {
-            System.arraycopy(components, 0, components, 1, pos);
-            components[0] = component;
+    protected void reverseComponents() {
+        for (int i = 0; i < pos / 2; ++i) {
+            QName tmp = components[i];
+            components[i] = components[pos - 1 - i];
+            components[pos - 1 - i] = tmp;
         }
-        pos++;
     }
 
     public void removeLastComponent() {
@@ -213,7 +208,8 @@ public class NodePath implements Comparable<NodePath> {
         return buf.toString();
     }
 
-    private void addComponent(final Map<String, String> namespaces, String component) {
+    public void addComponent(final Map<String, String> namespaces, final String origComponent) {
+        String component = origComponent;
         boolean isAttribute = false;
         if (component.startsWith("@")) {
             isAttribute = true;
