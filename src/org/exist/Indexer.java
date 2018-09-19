@@ -39,7 +39,7 @@ import org.exist.indexing.StreamListener;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
-import org.exist.storage.NodePath;
+import org.exist.storage.NodePath2;
 import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
@@ -93,7 +93,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     private XMLString charBuf = new XMLString();
     private boolean inCDATASection = false;
     private int currentLine = 0;
-    private final NodePath currentPath = new NodePath();
+    private final NodePath2 currentPath = new NodePath2();
 
     private DocumentImpl document = null;
     private IndexSpec indexSpec = null;
@@ -420,7 +420,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
                     indexListener.endElement(transaction, last, currentPath);
                 }
             }
-            currentPath.removeLastComponent();
+            currentPath.removeLastNode();
             setPrevious(last);
             level--;
     }
@@ -587,7 +587,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
                 nsMappings.clear();
             }
             stack.push(node);
-            currentPath.addComponent(qn);
+            currentPath.addNode(node, attributes);
             node.setPosition(elementCnt++);
             if (!validate) {
                 if (childCnt != null) {
@@ -611,7 +611,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
                 nsMappings.clear();
             }
             stack.push(node);
-            currentPath.addComponent(qn);
+            currentPath.addNode(node, attributes);
             node.setPosition(elementCnt++);
             if (!validate) {
                 if (childCnt != null) {
