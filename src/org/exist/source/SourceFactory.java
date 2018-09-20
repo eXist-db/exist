@@ -91,13 +91,22 @@ public class SourceFactory {
         if (source == null
                 && (location.startsWith(XmldbURI.XMLDB_URI_PREFIX)
                 || (contextPath != null && contextPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)))) {
-            final XmldbURI pathUri;
-            if (contextPath == null) {
-                pathUri = XmldbURI.create(location);
-            } else {
-                pathUri = XmldbURI.create(contextPath).append(location);
+
+            XmldbURI pathUri;
+            try {
+                if (contextPath == null) {
+                    pathUri = XmldbURI.create(location);
+                } else {
+                    pathUri = XmldbURI.create(contextPath).append(location);
+                }
+            } catch (final IllegalArgumentException e) {
+                // this is allowed if the location is already an absolute URI, below we will try using other schemes
+                pathUri = null;
             }
-            source = getSource_fromDb(broker, pathUri);
+
+            if (pathUri != null) {
+                source = getSource_fromDb(broker, pathUri);
+            }
         }
 
         /* /db */
