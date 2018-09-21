@@ -242,6 +242,7 @@
                 <include name="*.bat"/>
                 <include name="*.sh"/>
                 <include name="conf.xml"/>
+                <include name="*.tmpl"/>
                 <include name="server.xml"/>
                 <include name="descriptor.xml"/>
                 <include name="build.xml"/>
@@ -264,6 +265,9 @@
         </copy>
         <copy todir="${dist.dir}/src">
             <fileset dir="src"/>
+        </copy>
+        <copy todir="${dist.dir}/test/src">
+            <fileset dir="test/src"/>
         </copy>
         <copy todir="${dist.dir}/lib">
             <fileset dir="lib"/>
