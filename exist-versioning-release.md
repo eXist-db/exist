@@ -174,7 +174,7 @@ Once development on a new stable version is complete, the following steps will p
     4. Perform the build of the tag:
         ```
         $ git checkout eXist-3.1.0
-        $ ./build.sh jnlp-unsign-all all jnlp-sign-exist jnlp-sign-core jnlp-sign-exist-extensions
+        $ ./build.sh clean clean-all jnlp-unsign-all all jnlp-sign-exist jnlp-sign-core jnlp-sign-exist-extensions
         $ ./build.sh installer app-signed dist-war dist-bz2
         ```
 
