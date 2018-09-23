@@ -32,9 +32,7 @@ import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.util.LockException;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import java.util.Iterator;
 
@@ -68,7 +66,31 @@ public class RootNode extends Step {
             if (contextItem != null)
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
-        
+
+        // first check if a context item is declared
+        final ContextItemDeclaration decl = context.getContextItemDeclartion();
+        if (decl != null) {
+            final Sequence seq = decl.eval(null, null);
+            if (!seq.isEmpty()) {
+                final Item item = seq.itemAt(0);
+                // context item must be a node
+                if (!Type.subTypeOf(item.getType(), Type.NODE)) {
+                    throw new XPathException(this, ErrorCodes.XPTY0020, "Context item is not a node");
+                }
+                final NodeValue node = (NodeValue)item;
+                // return fn:root(self::node()) treat as document-node()
+                if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                    return new NodeProxy(((NodeProxy)item).getOwnerDocument());
+                } else {
+                    if (node.getType() == Type.DOCUMENT) {
+                        return node;
+                    }
+                    return (org.exist.dom.memtree.DocumentImpl) node.getOwnerDocument();
+                }
+            }
+            return Sequence.EMPTY_SEQUENCE;
+        }
+
         // get statically known documents from the context
         DocumentSet ds = context.getStaticallyKnownDocuments();
         if (ds == null || ds.getDocumentCount() == 0) {return Sequence.EMPTY_SEQUENCE;}
