@@ -2,8 +2,7 @@ package org.exist.util;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
-import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
+import org.exist.collections.*;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
@@ -19,6 +18,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -28,6 +28,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -51,6 +52,8 @@ public class XMLReaderSecurityTest {
     private final static int SECRET_LENGTH = 100;
 
     private final static XmldbURI TEST_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("test");
+
+    private final static String FEATURE_EXTERNAL_GENERAL_ENTITIES = "http://xml.org/sax/features/external-general-entities";
 
     private final static String EXTERNAL_FILE_PLACEHOLDER = "file:///topsecret";
 
@@ -107,7 +110,7 @@ public class XMLReaderSecurityTest {
     public void expandExternalEntities() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, TransformerException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final Map<String, Boolean> parserConfig = new HashMap<>();
-        parserConfig.put("http://xml.org/sax/features/external-general-entities", true);
+        parserConfig.put(FEATURE_EXTERNAL_GENERAL_ENTITIES, true);
         brokerPool.getConfiguration().setProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY, parserConfig);
 
         // create a temporary file on disk that contains secret info
@@ -121,6 +124,8 @@ public class XMLReaderSecurityTest {
 
             try (final Collection testCollection = broker.openCollection(TEST_COLLECTION, Lock.LockMode.WRITE_LOCK)) {
 
+                debugReader("expandExternalEntities", broker, testCollection);
+
                 final String docContent = EXPANSION_DOC.replace(EXTERNAL_FILE_PLACEHOLDER, secret._2.toUri().toString());
                 final IndexInfo indexInfo = testCollection.validateXMLResource(transaction, broker, docName, docContent);
                 testCollection.store(transaction, broker, indexInfo, docContent);
@@ -129,7 +134,7 @@ public class XMLReaderSecurityTest {
             transaction.commit();
         }
 
-        // read back the document, to confirm that it does not contain the secret
+        // read back the document, to confirm that it does contain the secret
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
@@ -154,7 +159,7 @@ public class XMLReaderSecurityTest {
     public void cannotExpandExternalEntitiesWhenDisabled() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, TransformerException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final Map<String, Boolean> parserConfig = new HashMap<>();
-        parserConfig.put("http://xml.org/sax/features/external-general-entities", false);
+        parserConfig.put(FEATURE_EXTERNAL_GENERAL_ENTITIES, false);
         brokerPool.getConfiguration().setProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY, parserConfig);
 
         // create a temporary file on disk that contains secret info
@@ -167,6 +172,8 @@ public class XMLReaderSecurityTest {
              final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
             try (final Collection testCollection = broker.openCollection(TEST_COLLECTION, Lock.LockMode.WRITE_LOCK);){
+
+                debugReader("cannotExpandExternalEntitiesWhenDisabled", broker, testCollection);
 
                 final String docContent = EXPANSION_DOC.replace(EXTERNAL_FILE_PLACEHOLDER, secret._2.toUri().toString());
                 final IndexInfo indexInfo = testCollection.validateXMLResource(transaction, broker, docName, docContent);
@@ -226,5 +233,20 @@ public class XMLReaderSecurityTest {
             chars[i] = c;
         }
         return String.valueOf(chars);
+    }
+
+    private void debugReader(final String label, final DBBroker broker, final Collection collection) {
+        try {
+            final Method method = MutableCollection.class.getDeclaredMethod("getReader", DBBroker.class, boolean.class, CollectionConfiguration.class);
+            method.setAccessible(true);
+
+            final XMLReader reader = (XMLReader)method.invoke(LockedCollection.unwrapLocked(collection), broker, false, collection.getConfiguration(broker));
+
+            System.out.println(label + ": READER: " + reader.getClass().getName());
+            System.out.println(label + ": " + FEATURE_EXTERNAL_GENERAL_ENTITIES + "=" + reader.getFeature(FEATURE_EXTERNAL_GENERAL_ENTITIES));
+
+        } catch (final Throwable e) {
+            e.printStackTrace();
+        }
     }
 }
