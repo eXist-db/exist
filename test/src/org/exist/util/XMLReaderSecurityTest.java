@@ -38,6 +38,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 /**
@@ -63,9 +64,9 @@ public class XMLReaderSecurityTest {
                     "<!ENTITY xxe SYSTEM \"" + EXTERNAL_FILE_PLACEHOLDER + "\" >]>\n" +
                     "<foo>&xxe;</foo>";
 
-    private final static String EXPECTED_EXPANSION_DISABLED_DOC = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><foo/>\n";
+    private final static String EXPECTED_EXPANSION_DISABLED_DOC = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><foo/>";
 
-    private final static String EXPECTED_EXPANDED_DOC = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><foo>" + EXTERNAL_FILE_PLACEHOLDER + "</foo>\n";
+    private final static String EXPECTED_EXPANDED_DOC = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><foo>" + EXTERNAL_FILE_PLACEHOLDER + "</foo>";
 
     @ClassRule
     public final static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
@@ -150,8 +151,11 @@ public class XMLReaderSecurityTest {
                 try {
                     testDoc = testCollection.getDocumentWithLock(broker, docName, Lock.LockMode.READ_LOCK);
 
+                    assertNotNull(testDoc);
                     final String expected = EXPECTED_EXPANDED_DOC.replace(EXTERNAL_FILE_PLACEHOLDER, secret._1);
-                    assertEquals(expected, serialize(testDoc));
+                    final String actual = serialize(testDoc);
+
+                    assertEquals(expected, actual);
 
                 } finally {
                     if(testDoc != null) {
@@ -214,7 +218,12 @@ public class XMLReaderSecurityTest {
                 try {
                     testDoc = testCollection.getDocumentWithLock(broker, docName, Lock.LockMode.READ_LOCK);
 
-                    assertEquals(EXPECTED_EXPANSION_DISABLED_DOC, serialize(testDoc));
+                    assertNotNull(testDoc);
+
+                    final String expected = EXPECTED_EXPANSION_DISABLED_DOC;
+                    final String actual = serialize(testDoc);
+
+                    assertEquals(expected, actual);
 
                 } finally {
                     if(testDoc != null) {
@@ -234,7 +243,7 @@ public class XMLReaderSecurityTest {
 
     private String serialize(final Document doc) throws TransformerException, IOException {
         final Transformer transformer = TransformerFactory.newInstance().newTransformer();
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.setOutputProperty(OutputKeys.INDENT, "no");
         transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
 
         try(final StringWriter writer = new StringWriter()) {
@@ -244,7 +253,6 @@ public class XMLReaderSecurityTest {
             return writer.toString();
         }
     }
-
 
     /**
      * @return A tuple whose first item is the secret, and the second which is the path to a temporary file containing the secret
