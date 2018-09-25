@@ -124,7 +124,7 @@ public class XMLReaderSecurityTest {
 
             try (final Collection testCollection = broker.openCollection(TEST_COLLECTION, Lock.LockMode.WRITE_LOCK)) {
 
-                debugReader("expandExternalEntities", broker, testCollection);
+                //debugReader("expandExternalEntities", broker, testCollection);
 
                 final String docContent = EXPANSION_DOC.replace(EXTERNAL_FILE_PLACEHOLDER, secret._2.toUri().toString());
                 final IndexInfo indexInfo = testCollection.validateXMLResource(transaction, broker, docName, docContent);
@@ -173,7 +173,7 @@ public class XMLReaderSecurityTest {
 
             try (final Collection testCollection = broker.openCollection(TEST_COLLECTION, Lock.LockMode.WRITE_LOCK);){
 
-                debugReader("cannotExpandExternalEntitiesWhenDisabled", broker, testCollection);
+                //debugReader("cannotExpandExternalEntitiesWhenDisabled", broker, testCollection);
 
                 final String docContent = EXPANSION_DOC.replace(EXTERNAL_FILE_PLACEHOLDER, secret._2.toUri().toString());
                 final IndexInfo indexInfo = testCollection.validateXMLResource(transaction, broker, docName, docContent);
@@ -235,18 +235,18 @@ public class XMLReaderSecurityTest {
         return String.valueOf(chars);
     }
 
-    private void debugReader(final String label, final DBBroker broker, final Collection collection) {
-        try {
-            final Method method = MutableCollection.class.getDeclaredMethod("getReader", DBBroker.class, boolean.class, CollectionConfiguration.class);
-            method.setAccessible(true);
-
-            final XMLReader reader = (XMLReader)method.invoke(LockedCollection.unwrapLocked(collection), broker, false, collection.getConfiguration(broker));
-
-            System.out.println(label + ": READER: " + reader.getClass().getName());
-            System.out.println(label + ": " + FEATURE_EXTERNAL_GENERAL_ENTITIES + "=" + reader.getFeature(FEATURE_EXTERNAL_GENERAL_ENTITIES));
-
-        } catch (final Throwable e) {
-            e.printStackTrace();
-        }
-    }
+//    private void debugReader(final String label, final DBBroker broker, final Collection collection) {
+//        try {
+//            final Method method = MutableCollection.class.getDeclaredMethod("getReader", DBBroker.class, boolean.class, CollectionConfiguration.class);
+//            method.setAccessible(true);
+//
+//            final XMLReader reader = (XMLReader)method.invoke(LockedCollection.unwrapLocked(collection), broker, false, collection.getConfiguration(broker));
+//
+//            System.out.println(label + ": READER: " + reader.getClass().getName());
+//            System.out.println(label + ": " + FEATURE_EXTERNAL_GENERAL_ENTITIES + "=" + reader.getFeature(FEATURE_EXTERNAL_GENERAL_ENTITIES));
+//
+//        } catch (final Throwable e) {
+//            e.printStackTrace();
+//        }
+//    }
 }
