@@ -18,7 +18,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -28,7 +27,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
