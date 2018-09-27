@@ -52,6 +52,8 @@ import org.xmldb.api.modules.XUpdateQueryService;
 
 public class ConcurrencyTest {
 
+    private static final long TIMEOUT_TERMINATION = 1000 * 60 * 3; // 3 minutes (in milliseconds)
+
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
@@ -79,7 +81,7 @@ public class ConcurrencyTest {
                 try {
                     storeRemoveDocs(name);
                 } catch(final XMLDBException | IOException e) {
-                    e.printStackTrace();;
+                    e.printStackTrace();
                     fail(e.getMessage());
                 }
             };
@@ -89,7 +91,7 @@ public class ConcurrencyTest {
         executor.shutdown();
 		boolean terminated = false;
 		try {
-			terminated = executor.awaitTermination(60 * 60, TimeUnit.SECONDS);
+			terminated = executor.awaitTermination(TIMEOUT_TERMINATION, TimeUnit.MILLISECONDS);
 		} catch (final InterruptedException e) {
 		    //Nothing to do
 		}
@@ -116,7 +118,7 @@ public class ConcurrencyTest {
         executor.shutdown();
 		boolean terminated = false;
 		try {
-			terminated = executor.awaitTermination(60 * 60, TimeUnit.SECONDS);
+			terminated = executor.awaitTermination(TIMEOUT_TERMINATION, TimeUnit.MILLISECONDS);
 		} catch (final InterruptedException e) {
 		    //Nothing to do
 		}
