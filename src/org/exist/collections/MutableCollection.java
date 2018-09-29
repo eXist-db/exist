@@ -1651,13 +1651,24 @@ public void removeXMLResource(final Txn transaction, final DBBroker broker, fina
             }
 
             if (oldDoc != null) {
-                LOG.debug("removing old document " + oldDoc.getFileURI());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("removing old document db entry" + oldDoc.getFileURI());
+                }
+
                 if (!broker.preserveOnCopy(preserve)) {
                     updateModificationTime(blob);
                 }
-                broker.removeResource(transaction, oldDoc);
+
+                broker.removeResourceMetadata(transaction, oldDoc);
+
+                broker.getIndexController().setDocument(oldDoc, StreamListener.ReindexMode.REMOVE_BINARY);
+                broker.getIndexController().flush();
+
+                // NOTE(AR): the actual binary file on disk will be removed/overwritten in broker#storeBinaryResource below
+                //broker.removeResource(transaction, oldDoc);
             }
 
+            // store the binary content (create/replace)
             broker.storeBinaryResource(transaction, blob, is);
             addDocument(transaction, broker, blob, oldDoc);
 
