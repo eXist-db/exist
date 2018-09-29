@@ -9,6 +9,7 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FileUtils;
 import org.junit.rules.ExternalResource;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -66,7 +67,7 @@ public class ExistEmbeddedServer extends ExternalResource {
         this(instanceName, configFile, configProperties, false, false);
     }
 
-    public ExistEmbeddedServer(final String instanceName, final Path configFile, final Properties configProperties, final boolean disableAutoDeploy, final boolean useTemporaryStorage) {
+    public ExistEmbeddedServer(@Nullable final String instanceName, @Nullable final Path configFile, @Nullable final Properties configProperties, @Nullable final boolean disableAutoDeploy, @Nullable final boolean useTemporaryStorage) {
         this.instanceName = Optional.ofNullable(instanceName);
         this.configFile = Optional.ofNullable(configFile);
         this.configProperties = Optional.ofNullable(configProperties);
@@ -117,7 +118,7 @@ public class ExistEmbeddedServer extends ExternalResource {
                 System.out.println("Using temporary storage location: " + temporaryStorage.get().toAbsolutePath().toString());
             }
 
-            BrokerPool.configure(name,1, 5, config, Optional.empty());
+            BrokerPool.configure(name, 1, 5, config, Optional.empty());
             this.pool = BrokerPool.getInstance(name);
         } else {
             throw new IllegalStateException("ExistEmbeddedServer already running");

@@ -63,8 +63,8 @@ import static org.junit.Assert.assertNull;
  */
 public abstract class AbstractJournalTest {
 
-    private static boolean COMMIT = true;
-    private static boolean NO_COMMIT = false;
+    private static final boolean COMMIT = true;
+    private static final boolean NO_COMMIT = false;
 
     /**
      * We set useTemporaryStorage=true for ExistEmbeddedServer

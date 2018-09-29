@@ -55,11 +55,11 @@ import static org.junit.Assert.*;
  */
 public abstract class AbstractRecoverTest {
 
-    private static boolean COMMIT = true;
-    private static boolean NO_COMMIT = false;
+    private static final boolean COMMIT = true;
+    private static final boolean NO_COMMIT = false;
 
-    private static boolean MUST_EXIST = true;
-    private static boolean MUST_NOT_EXIST = false;
+    private static final boolean MUST_EXIST = true;
+    private static final boolean MUST_NOT_EXIST = false;
 
     /**
      * We set useTemporaryStorage=true for ExistEmbeddedServer
