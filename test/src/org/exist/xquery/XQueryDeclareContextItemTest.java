@@ -120,6 +120,26 @@ public class XQueryDeclareContextItemTest {
         }
     }
 
+    /**
+     * See issue https://github.com/eXist-db/exist/issues/2156
+     */
+    @Test
+    public void declareContextItemIsDocument() throws EXistException, PermissionDeniedException, XPathException {
+        final String query =
+                "xquery version \"3.0\";\n" +
+                "declare context item := document { <root><item>foo</item><item>baz</item></root> }; \n" +
+                "(/) instance of document-node()";
+
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final XQuery xquery = pool.getXQueryService();
+
+        try(final DBBroker broker = pool.getBroker()) {
+            final Sequence result = xquery.execute(broker, query, null);
+            assertEquals(1, result.getItemCount());
+            assertEquals(true, result.effectiveBooleanValue());
+        }
+    }
+
     @Test
     public void declareContextItemTyped() throws EXistException, PermissionDeniedException, XPathException {
         final String query =
