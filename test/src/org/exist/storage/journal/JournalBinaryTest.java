@@ -68,7 +68,7 @@ public class JournalBinaryTest extends AbstractJournalTest {
                 Commit(storedTxnId),
 
                 Start(deletedTxnId),
-                RenameBinary(deletedTxnId, deletedDbPath),     // this is a delete!
+                DeleteBinary(deletedTxnId, deletedDbPath),
                 Commit(deletedTxnId)
         );
     }
@@ -80,7 +80,7 @@ public class JournalBinaryTest extends AbstractJournalTest {
                 CreateBinary(storedTxnId, storedDbPath),
 
                 Start(deletedTxnId),
-                RenameBinary(deletedTxnId, deletedDbPath),     // this is a delete!
+                DeleteBinary(deletedTxnId, deletedDbPath),
                 Commit(deletedTxnId)
         );
     }
@@ -93,7 +93,7 @@ public class JournalBinaryTest extends AbstractJournalTest {
                 Commit(storedTxnId),
 
                 Start(deletedTxnId),
-                RenameBinary(deletedTxnId, deletedDbPath)     // this is a delete!
+                DeleteBinary(deletedTxnId, deletedDbPath)
         );
     }
 
@@ -104,7 +104,7 @@ public class JournalBinaryTest extends AbstractJournalTest {
                 CreateBinary(storedTxnId, storedDbPath),
 
                 Start(deletedTxnId),
-                RenameBinary(deletedTxnId, deletedDbPath)     // this is a delete!
+                DeleteBinary(deletedTxnId, deletedDbPath)
         );
     }
 
@@ -112,7 +112,7 @@ public class JournalBinaryTest extends AbstractJournalTest {
     protected List<ExpectedLoggable> delete_expected(final long deletedTxnId, final String deletedDbPath) {
         return Arrays.asList(
                 Start(deletedTxnId),
-                RenameBinary(deletedTxnId, deletedDbPath),     // this is a delete!
+                DeleteBinary(deletedTxnId, deletedDbPath),
                 Commit(deletedTxnId)
         );
     }
@@ -121,7 +121,7 @@ public class JournalBinaryTest extends AbstractJournalTest {
     protected List<ExpectedLoggable> deleteWithoutCommit_expected(final long deletedTxnId, final String deletedDbPath) {
         return Arrays.asList(
                 Start(deletedTxnId),
-                RenameBinary(deletedTxnId, deletedDbPath)     // this is a delete!
+                DeleteBinary(deletedTxnId, deletedDbPath)
         );
     }
 
@@ -129,9 +129,7 @@ public class JournalBinaryTest extends AbstractJournalTest {
     protected List<ExpectedLoggable> replace_expected(final long replacedTxnId, final String replacedDbPath) {
         return Arrays.asList(
                 Start(replacedTxnId),
-//                ReplaceBinary(replacedTxnId, replacedDbPath),
-                RenameBinary(replacedTxnId, replacedDbPath),
-                CreateBinary(replacedTxnId, replacedDbPath),
+                ReplaceBinary(replacedTxnId, replacedDbPath),
                 Commit(replacedTxnId)
         );
     }
@@ -141,9 +139,7 @@ public class JournalBinaryTest extends AbstractJournalTest {
     protected List<ExpectedLoggable> replaceWithoutCommit_expected(final long replacedTxnId, final String replacedDbPath) {
         return Arrays.asList(
                 Start(replacedTxnId),
-//                ReplaceBinary(replacedTxnId, replacedDbPath)
-                RenameBinary(replacedTxnId, replacedDbPath),
-                CreateBinary(replacedTxnId, replacedDbPath)
+                ReplaceBinary(replacedTxnId, replacedDbPath)
         );
     }
 
@@ -151,13 +147,11 @@ public class JournalBinaryTest extends AbstractJournalTest {
     protected List<ExpectedLoggable> replaceThenDelete_expected(final long replacedTxnId, final String replacedDbPath, final long deletedTxnId, final String deletedDbPath) {
         return Arrays.asList(
                 Start(replacedTxnId),
-//                ReplaceBinary(replacedTxnId, replacedDbPath),
-                RenameBinary(replacedTxnId, replacedDbPath),
-                CreateBinary(replacedTxnId, replacedDbPath),
+                ReplaceBinary(replacedTxnId, replacedDbPath),
                 Commit(replacedTxnId),
 
                 Start(deletedTxnId),
-                RenameBinary(deletedTxnId, deletedDbPath),     // this is a delete!
+                DeleteBinary(deletedTxnId, deletedDbPath),
                 Commit(deletedTxnId)
         );
     }
@@ -166,12 +160,10 @@ public class JournalBinaryTest extends AbstractJournalTest {
     protected List<ExpectedLoggable> replaceWithoutCommitThenDelete_expected(final long replacedTxnId, final String replacedDbPath, final long deletedTxnId, final String deletedDbPath) {
         return Arrays.asList(
                 Start(replacedTxnId),
-//                ReplaceBinary(replacedTxnId, replacedDbPath),
-                RenameBinary(replacedTxnId, replacedDbPath),
-                CreateBinary(replacedTxnId, replacedDbPath),
+                ReplaceBinary(replacedTxnId, replacedDbPath),
 
                 Start(deletedTxnId),
-                RenameBinary(deletedTxnId, deletedDbPath),     // this is a delete!
+                DeleteBinary(deletedTxnId, deletedDbPath),
                 Commit(deletedTxnId)
         );
     }
@@ -180,13 +172,11 @@ public class JournalBinaryTest extends AbstractJournalTest {
     protected List<ExpectedLoggable> replaceThenDeleteWithoutCommit_expected(final long replacedTxnId, final String replacedDbPath, final long deletedTxnId, final String deletedDbPath) {
         return Arrays.asList(
                 Start(replacedTxnId),
-//                ReplaceBinary(replacedTxnId, replacedDbPath),
-                RenameBinary(replacedTxnId, replacedDbPath),
-                CreateBinary(replacedTxnId, replacedDbPath),
+                ReplaceBinary(replacedTxnId, replacedDbPath),
                 Commit(replacedTxnId),
 
                 Start(deletedTxnId),
-                RenameBinary(deletedTxnId, deletedDbPath)     // this is a delete!
+                DeleteBinary(deletedTxnId, deletedDbPath)
         );
     }
 
@@ -194,12 +184,10 @@ public class JournalBinaryTest extends AbstractJournalTest {
     protected List<ExpectedLoggable> replaceWithoutCommitThenDeleteWithoutCommit_expected(final long replacedTxnId, final String replacedDbPath, final long deletedTxnId, final String deletedDbPath) {
         return Arrays.asList(
                 Start(replacedTxnId),
-//                ReplaceBinary(replacedTxnId, replacedDbPath),
-                RenameBinary(replacedTxnId, replacedDbPath),
-                CreateBinary(replacedTxnId, replacedDbPath),
+                ReplaceBinary(replacedTxnId, replacedDbPath),
 
                 Start(deletedTxnId),
-                RenameBinary(deletedTxnId, deletedDbPath)     // this is a delete!
+                DeleteBinary(deletedTxnId, deletedDbPath)
         );
     }
 
@@ -260,6 +248,14 @@ public class JournalBinaryTest extends AbstractJournalTest {
         return new ExpectedRenameBinary(transactionId, renamedDbFile);
     }
 
+    private ExpectedReplaceBinary ReplaceBinary(final long transactionId, final String replacedDbFile) {
+        return new ExpectedReplaceBinary(transactionId, replacedDbFile);
+    }
+
+    private ExpectedDeleteBinary DeleteBinary(final long transactionId, final String deletedDbFile) {
+        return new ExpectedDeleteBinary(transactionId, deletedDbFile);
+    }
+
     private class ExpectedCreateBinary extends ExpectedLoggable {
         private final String createdDbFile;
         private final Path dataDir;
@@ -279,7 +275,7 @@ public class JournalBinaryTest extends AbstractJournalTest {
 
             final CreateBinaryLoggable that = (CreateBinaryLoggable) o;
             return that.transactionId == transactionId
-                    && that.getCreatedFile().equals(createdFile);
+                    && that.getCreateFile().equals(createdFile);
         }
 
         public String toString() {
@@ -306,38 +302,65 @@ public class JournalBinaryTest extends AbstractJournalTest {
 
             final RenameBinaryLoggable that = (RenameBinaryLoggable) o;
             return that.transactionId == transactionId
-                    && that.getRenamedFile().equals(renamedFile);
+                    && that.getSourceFile().equals(renamedFile);
         }
 
         public String toString() {
-            return "RENAMED BINARY T-" + transactionId + " v=null" + " w=" + dataDir.resolve(FS_SUBDIR).resolve(renamedDbFile);
+            return "RENAMED BINARY T-" + transactionId + " v=" + dataDir.resolve(FS_SUBDIR).resolve(renamedDbFile) + " w=<unknown>";
         }
     }
 
-//    private class ExpectedDeleteBinary extends ExpectedLoggable {
-//        private final String deletedDbFile;
-//        private final Path dataDir;
-//
-//        public ExpectedDeleteBinary(final long transactionId, final String deletedDbFile) {
-//            super(transactionId);
-//            this.deletedDbFile = deletedDbFile;
-//            this.dataDir = (Path)existEmbeddedServer.getBrokerPool().getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR);
-//        }
-//
-//        @Override
-//        public boolean equals(final Object o) {
-//            if (this == o) return true;
-//            if (o == null || o.getClass() != DeleteBinaryLoggable.class) return false;
-//
-//            final Path deletedFile = dataDir.resolve(FS_SUBDIR + deletedDbFile);
-//
-//            final DeleteBinaryLoggable that = (DeleteBinaryLoggable) o;
-//            return that.transactionId == transactionId
-//                    && that.getDeletedFile().equals(deletedFile);
-//        }
-//
-//        public String toString() {
-//            return "CREATE BINARY T-" + transactionId + " v=null" + " w=" + dataDir.resolve(FS_SUBDIR).resolve(deletedDbFile);
-//        }
-//    }
+    private class ExpectedReplaceBinary extends ExpectedLoggable {
+        private final String replacedDbFile;
+        private final Path dataDir;
+
+        public ExpectedReplaceBinary(final long transactionId, final String replacedDbFile) {
+            super(transactionId);
+            this.replacedDbFile = replacedDbFile;
+            this.dataDir = (Path)existEmbeddedServer.getBrokerPool().getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR);
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || o.getClass() != ReplaceBinaryLoggable.class) return false;
+
+            final Path replacedFile = dataDir.resolve(FS_SUBDIR + replacedDbFile);
+
+            final ReplaceBinaryLoggable that = (ReplaceBinaryLoggable) o;
+            return that.transactionId == transactionId
+                    && that.getReplaceFile().equals(replacedFile);
+        }
+
+        public String toString() {
+            return "REPLACED BINARY T-" + transactionId + " v=" + dataDir.resolve(FS_SUBDIR).resolve(replacedDbFile) + " w=<unknown>";
+        }
+    }
+
+    private class ExpectedDeleteBinary extends ExpectedLoggable {
+        private final String deletedDbFile;
+        private final Path dataDir;
+
+        public ExpectedDeleteBinary(final long transactionId, final String deletedDbFile) {
+            super(transactionId);
+            this.deletedDbFile = deletedDbFile;
+            this.dataDir = (Path)existEmbeddedServer.getBrokerPool().getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR);
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || o.getClass() != DeleteBinaryLoggable.class) return false;
+
+            final Path deletedFile = dataDir.resolve(FS_SUBDIR + deletedDbFile);
+
+            final DeleteBinaryLoggable that = (DeleteBinaryLoggable) o;
+            return that.transactionId == transactionId
+                    && that.getDeleteFile().equals(deletedFile);
+        }
+
+        public String toString() {
+            return "CREATE BINARY T-" + transactionId + " v=" + dataDir.resolve(FS_SUBDIR).resolve(deletedDbFile) + " w=null";
+        }
+    }
 }
