@@ -114,7 +114,7 @@ public class ServiceManager {
     }
 
     void installAsService() {
-        launcher.showTrayMessage("Installing service and starting eXistdb ...", TrayIcon.MessageType.INFO);
+        launcher.showTrayMessage("Installing service and starting eXist-db ...", TrayIcon.MessageType.INFO);
 
         if (canUseServices) {
             runWrapperCmd("install", (code, output) -> {
