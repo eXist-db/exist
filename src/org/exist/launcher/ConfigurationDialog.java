@@ -255,7 +255,7 @@ public class ConfigurationDialog extends JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         getContentPane().add(collectionCache, gridBagConstraints);
 
-        jLabel8.setText("<html><p>Memory settings only become effective after restart and only apply when eXist is started via the system tray launcher.</p></html>");
+        jLabel8.setText("<html><p>Memory settings only become effective after restart and only apply when eXist-db is started via the system tray launcher.</p></html>");
         jLabel8.setPreferredSize(new java.awt.Dimension(280, 48));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -277,7 +277,7 @@ public class ConfigurationDialog extends JDialog {
         getContentPane().add(lbCurrentUsage, gridBagConstraints);
 
         lbStartupMsg.setFont(lbStartupMsg.getFont().deriveFont(lbStartupMsg.getFont().getStyle() & ~java.awt.Font.BOLD));
-        lbStartupMsg.setText("<html><p>It seems you are starting eXist for the first time. Please configure your memory settings below.</p></html>");
+        lbStartupMsg.setText("<html><p>It seems you are starting eXist-db for the first time. Please configure your memory settings below.</p></html>");
         lbStartupMsg.setMinimumSize(new java.awt.Dimension(60, 64));
         lbStartupMsg.setPreferredSize(new java.awt.Dimension(300, 32));
         gridBagConstraints = new java.awt.GridBagConstraints();
