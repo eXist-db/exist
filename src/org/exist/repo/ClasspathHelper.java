@@ -106,7 +106,7 @@ public class ClasspathHelper implements BrokerPoolService {
     }
 
     private static boolean isCompatible(Package pkg) throws PackageException {
-        // determine the eXistdb version this package is compatible with
+        // determine the eXist-db version this package is compatible with
         final Collection<ProcessorDependency> processorDeps = pkg.getProcessorDeps();
         final String procVersion = SystemProperties.getInstance().getSystemProperty("product-version", "1.0");
         PackageLoader.Version processorVersion = DEFAULT_VERSION;
