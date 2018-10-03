@@ -13,7 +13,7 @@
     <import file="git-support.xml"/>
 
     <property name="dist" value="${basedir}/dist"/>
-    <property name="app.dir" value="${dist}/eXist-db.app"/>
+    <property name="app.dir" value="${dist}/${project.name}.app"/>
     <property name="app.resources" value="${app.dir}/Contents/Resources"/>
     <property name="app.exist" value="${app.resources}/eXist-db"/>
     <property name="app.icon" value="installer/scripts/icon.icns"/>
