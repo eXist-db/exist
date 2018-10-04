@@ -287,7 +287,7 @@ public class Deployment {
 
         final DependencyVersion depVersion = version.getDependencyVersion();
         if (!depVersion.isCompatible(procVersion)) {
-            throw new PackageException("Package requires eXistdb version " + version.toString() + ". " +
+            throw new PackageException("Package requires eXist-db version " + version.toString() + ". " +
                 "Installed version is " + procVersion);
         }
     }

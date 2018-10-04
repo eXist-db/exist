@@ -233,11 +233,11 @@ public class Launcher extends Observable implements Observer {
                 serviceLock.lock();
                 try {
                     if (serviceManager.isInstalled()) {
-                        showTrayMessage("Starting the eXistdb service. Please wait...", TrayIcon.MessageType.INFO);
+                        showTrayMessage("Starting the eXist-db service. Please wait...", TrayIcon.MessageType.INFO);
                         if (serviceManager.start()) {
-                            showTrayMessage("eXistdb service started", TrayIcon.MessageType.INFO);
+                            showTrayMessage("eXist-db service started", TrayIcon.MessageType.INFO);
                         } else {
-                            showTrayMessage("Starting eXistdb service failed", TrayIcon.MessageType.ERROR);
+                            showTrayMessage("Starting eXist-db service failed", TrayIcon.MessageType.ERROR);
                         }
                     } else if (jetty.isPresent()) {
                         jetty.ifPresent(server -> {
@@ -271,9 +271,9 @@ public class Launcher extends Observable implements Observer {
                         showTrayMessage("eXist-db stopped", TrayIcon.MessageType.INFO);
                     } else if (serviceManager.isRunning()) {
                         if (serviceManager.stop()) {
-                            showTrayMessage("eXistdb service stopped", TrayIcon.MessageType.INFO);
+                            showTrayMessage("eXist-db service stopped", TrayIcon.MessageType.INFO);
                         } else {
-                            showTrayMessage("Stopping eXistdb service failed", TrayIcon.MessageType.ERROR);
+                            showTrayMessage("Stopping eXist-db service failed", TrayIcon.MessageType.ERROR);
                         }
                     }
                 } finally {
@@ -374,7 +374,7 @@ public class Launcher extends Observable implements Observer {
         try {
             jetty.ifPresent(server -> {
                 if (server.isStarted()) {
-                    showTrayMessage("Stopping eXistdb...", TrayIcon.MessageType.INFO);
+                    showTrayMessage("Stopping eXist-db...", TrayIcon.MessageType.INFO);
                     server.shutdown();
                 }
             });
@@ -532,9 +532,9 @@ public class Launcher extends Observable implements Observer {
         if (SystemUtils.IS_OS_WINDOWS && !isInstallingService && !serviceManager.isInstalled()) {
             isInstallingService = true;
             SwingUtilities.invokeLater(() -> {
-                if (JOptionPane.showConfirmDialog(splash, "It is recommended to run eXist as a service on " +
+                if (JOptionPane.showConfirmDialog(splash, "It is recommended to run eXist-db as a service on " +
                                 "Windows.\nNot doing so may lead to data loss if you shut down the computer before " +
-                                "eXist.\n\nWould you like to install the service?", "Install as Service?",
+                                "eXist-db.\n\nWould you like to install the service?", "Install as Service?",
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
                     SwingUtilities.invokeLater(() -> installAsService());
                 }
