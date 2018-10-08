@@ -297,7 +297,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
             final boolean allowMixedNodesInReturn;
             if(prev != null) {
-                allowMixedNodesInReturn = prev.allowMixedNodesInReturn() | expr.allowMixedNodesInReturn();
+                allowMixedNodesInReturn = prev.allowMixedNodesInReturn() /*| expr.allowMixedNodesInReturn()*/;
             } else {
                 allowMixedNodesInReturn = expr.allowMixedNodesInReturn();
             }
