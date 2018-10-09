@@ -15,7 +15,7 @@ set EXIST_HOME=$INSTALL_PATH
 
 :gotExistHome
 set ANT_HOME=%EXIST_HOME%\tools\ant
-set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher-1.10.5.jar;%EXIST_HOME%\lib\test\junit-4.12.jar;%JAVA_HOME%\lib\tools.jar
+set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher-1.10.6alpha.jar;%EXIST_HOME%\lib\test\junit-4.12.jar;%JAVA_HOME%\lib\tools.jar
 
 set _JAVA_OPTS=-Xms512m -Xmx512m -Dant.home="%ANT_HOME%" -Dexist.home="%EXIST_HOME%" -Djavax.xml.transform.TransformerFactory="net.sf.saxon.TransformerFactoryImpl" %JAVA_OPTS%
 

@@ -12,7 +12,7 @@ fi
 
 ANT_HOME="$EXIST_HOME/tools/ant"
 
-LOCALCLASSPATH=$CLASSPATH:$ANT_HOME/lib/ant-launcher-1.10.5.jar:$EXIST_HOME/lib/test/junit-4.12.jar
+LOCALCLASSPATH=$CLASSPATH:$ANT_HOME/lib/ant-launcher-1.10.6alpha.jar:$EXIST_HOME/lib/test/junit-4.12.jar
 
 JAVA_OPTS="-Dant.home=$ANT_HOME -Dexist.home=$EXIST_HOME -Djavax.xml.transform.TransformerFactory=net.sf.saxon.TransformerFactoryImpl $JAVA_OPTS"
 
