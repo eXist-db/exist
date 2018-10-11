@@ -52,6 +52,9 @@ public class MapExpr extends AbstractExpression {
             }
             final AtomicValue atomic = key.itemAt(0).atomize();
             final Sequence value = mapping.value.eval(contextSequence);
+            if (map.contains(atomic)) {
+                throw new XPathException(this, ErrorCodes.XQDY0137, "Key \"" + atomic.getStringValue() + "\" already exists in map.");
+            }
             map.add(atomic, value);
         }
         return map;
