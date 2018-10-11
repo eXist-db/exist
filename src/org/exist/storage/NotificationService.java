@@ -21,12 +21,15 @@
  */
 package org.exist.storage;
 
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.numbering.NodeId;
 
 import java.util.IdentityHashMap;
+import java.util.Map;
+
 import org.exist.dom.persistent.IStoredNode;
 
 /**
@@ -37,11 +40,13 @@ import org.exist.dom.persistent.IStoredNode;
  * @author wolf
  *
  */
-public class NotificationService extends IdentityHashMap<UpdateListener, Object> implements BrokerPoolService {
+@ThreadSafe
+public class NotificationService implements BrokerPoolService {
 
 	private static final long serialVersionUID = -3629584664969740903L;
+	private static final Logger LOG = LogManager.getLogger(NotificationService.class);
 
-	private final static Logger LOG = LogManager.getLogger(NotificationService.class);
+	private final Map<UpdateListener, Object> listeners = new IdentityHashMap<>();
 	
 	public NotificationService() {
 		super();
@@ -52,8 +57,8 @@ public class NotificationService extends IdentityHashMap<UpdateListener, Object>
 	 * 
 	 * @param listener
 	 */
-	public synchronized void subscribe(UpdateListener listener) {
-		put(listener, new Object());
+	public synchronized void subscribe(final UpdateListener listener) {
+		listeners.put(listener, new Object());
 	}
 	
 	/**
@@ -61,10 +66,11 @@ public class NotificationService extends IdentityHashMap<UpdateListener, Object>
 	 * 
 	 * @param listener
 	 */
-	public synchronized void unsubscribe(UpdateListener listener) {
-		final Object i = remove(listener);
-		if (i == null)
-			{throw new RuntimeException(hashCode() + " listener not found: " + listener.hashCode());}
+	public synchronized void unsubscribe(final UpdateListener listener) {
+		final Object i = listeners.remove(listener);
+		if (i == null) {
+			throw new RuntimeException(hashCode() + " listener not found: " + listener.hashCode());
+		}
         listener.unsubscribe();
     }
 
@@ -75,26 +81,22 @@ public class NotificationService extends IdentityHashMap<UpdateListener, Object>
 	 * @param document
 	 * @param event
 	 */
-	public synchronized void notifyUpdate(DocumentImpl document, int event) {
-		for (final UpdateListener listener : keySet()) {
-	        listener.documentUpdated(document, event);
-		}
+	public synchronized void notifyUpdate(final DocumentImpl document, final int event) {
+		listeners.keySet().forEach(listener -> listener.documentUpdated(document, event));
 	}
 
     /**
 	 * Notify all subscribers that a node has been moved. Nodes may be moved during a
      * defragmentation run.
 	 */
-	public synchronized void notifyMove(NodeId oldNodeId, IStoredNode newNode) {
-		for (final UpdateListener listener : keySet()) {
-	        listener.nodeMoved(oldNodeId, newNode);
-		}
+	public synchronized void notifyMove(final NodeId oldNodeId, final IStoredNode newNode) {
+		listeners.keySet().forEach(listener -> listener.nodeMoved(oldNodeId, newNode));
 	}
 
-    public void debug() {
-		LOG.debug("Registered UpdateListeners:");
-		for (final UpdateListener listener : keySet()) {
-	        listener.debug();
+    public synchronized void debug() {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Registered UpdateListeners:");
 		}
+		listeners.keySet().forEach(UpdateListener::debug);
 	}
 }
