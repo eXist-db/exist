@@ -23,7 +23,6 @@ package org.expath.exist;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -170,7 +169,7 @@ public class SendRequestFunction extends BasicFunction {
             HttpConnection conn = null;
             try {
                 conn = new ApacheHttpConnection(uri);
-                final HttpResponse response = request.send(result, conn, parser.getSendAuth() ? parser.getCredentials() : null);
+                final HttpResponse response = request.send(result, conn, parser.getCredentials());
                 if(response.getStatus() == HttpStatus.SC_UNAUTHORIZED && parser.getCredentials() != null) {
                     // requires authorization, try again with auth
                     result = new EXistResult(getContext());
