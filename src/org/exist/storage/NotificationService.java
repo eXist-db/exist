@@ -36,67 +36,66 @@ import org.exist.dom.persistent.IStoredNode;
  * Global notification service for document updates. Other classes
  * can subscribe to this service to be notified of document modifications,
  * removals or additions.
- * 
- * @author wolf
  *
+ * @author wolf
  */
 @ThreadSafe
 public class NotificationService implements BrokerPoolService {
 
-	private static final long serialVersionUID = -3629584664969740903L;
-	private static final Logger LOG = LogManager.getLogger(NotificationService.class);
+    private static final long serialVersionUID = -3629584664969740903L;
+    private static final Logger LOG = LogManager.getLogger(NotificationService.class);
 
-	private final Map<UpdateListener, Object> listeners = new IdentityHashMap<>();
-	
-	public NotificationService() {
-		super();
-	}
-	
-	/**
-	 * Subscribe an {@link UpdateListener} to receive notifications.
-	 * 
-	 * @param listener
-	 */
-	public synchronized void subscribe(final UpdateListener listener) {
-		listeners.put(listener, new Object());
-	}
-	
-	/**
-	 * Unsubscribe an {@link UpdateListener}.
-	 * 
-	 * @param listener
-	 */
-	public synchronized void unsubscribe(final UpdateListener listener) {
-		final Object i = listeners.remove(listener);
-		if (i == null) {
-			throw new RuntimeException(hashCode() + " listener not found: " + listener.hashCode());
-		}
+    private final Map<UpdateListener, Object> listeners = new IdentityHashMap<>();
+
+    public NotificationService() {
+        super();
+    }
+
+    /**
+     * Subscribe an {@link UpdateListener} to receive notifications.
+     *
+     * @param listener
+     */
+    public synchronized void subscribe(final UpdateListener listener) {
+        listeners.put(listener, new Object());
+    }
+
+    /**
+     * Unsubscribe an {@link UpdateListener}.
+     *
+     * @param listener
+     */
+    public synchronized void unsubscribe(final UpdateListener listener) {
+        final Object i = listeners.remove(listener);
+        if (i == null) {
+            throw new RuntimeException(hashCode() + " listener not found: " + listener.hashCode());
+        }
         listener.unsubscribe();
     }
 
-	/**
-	 * Notify all subscribers that a document has been updated/removed or
-	 * a new document has been added.
-	 * 
-	 * @param document
-	 * @param event
-	 */
-	public synchronized void notifyUpdate(final DocumentImpl document, final int event) {
-		listeners.keySet().forEach(listener -> listener.documentUpdated(document, event));
-	}
+    /**
+     * Notify all subscribers that a document has been updated/removed or
+     * a new document has been added.
+     *
+     * @param document
+     * @param event
+     */
+    public synchronized void notifyUpdate(final DocumentImpl document, final int event) {
+        listeners.keySet().forEach(listener -> listener.documentUpdated(document, event));
+    }
 
     /**
-	 * Notify all subscribers that a node has been moved. Nodes may be moved during a
+     * Notify all subscribers that a node has been moved. Nodes may be moved during a
      * defragmentation run.
-	 */
-	public synchronized void notifyMove(final NodeId oldNodeId, final IStoredNode newNode) {
-		listeners.keySet().forEach(listener -> listener.nodeMoved(oldNodeId, newNode));
-	}
+     */
+    public synchronized void notifyMove(final NodeId oldNodeId, final IStoredNode newNode) {
+        listeners.keySet().forEach(listener -> listener.nodeMoved(oldNodeId, newNode));
+    }
 
     public synchronized void debug() {
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Registered UpdateListeners:");
-		}
-		listeners.keySet().forEach(UpdateListener::debug);
-	}
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Registered UpdateListeners:");
+        }
+        listeners.keySet().forEach(UpdateListener::debug);
+    }
 }
