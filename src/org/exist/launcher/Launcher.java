@@ -52,6 +52,8 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.exist.util.ThreadUtils.newGlobalThread;
+
 /**
  * A launcher for the eXist-db server integrated with the desktop.
  * Shows a splash screen during startup and registers a tray icon
@@ -157,7 +159,7 @@ public class Launcher extends Observable implements Observer {
     }
 
     void startJetty() {
-        new Thread(() -> {
+        final Runnable runnable = () -> {
             serviceLock.lock();
             try {
                 if (!jetty.isPresent()) {
@@ -170,7 +172,8 @@ public class Launcher extends Observable implements Observer {
             } finally {
                 serviceLock.unlock();
             }
-        }).start();
+        };
+        newGlobalThread("launcher.startJetty", runnable).start();
     }
 
     boolean isSystemTraySupported() {

@@ -42,8 +42,8 @@ import org.w3c.dom.ls.LSResourceResolver;
  * @author Dizzzz (dizzzz@exist-db.org)
  */
 public class eXistLSResourceResolver implements LSResourceResolver {
-
-    private final static Logger LOG = LogManager.getLogger(eXistLSResourceResolver.class);
+    private static final Logger LOG = LogManager.getLogger(eXistLSResourceResolver.class);
+    private static final ThreadGroup threadGroup = new ThreadGroup("exist.ls-resolver");
 
     public LSInput resolveResource(String type, String namespaceURI,
             String publicId, String systemId, String baseURI) {
@@ -79,7 +79,7 @@ public class eXistLSResourceResolver implements LSResourceResolver {
                 is = new EmbeddedInputStream(xmldbURL);
 
             } else {
-                is = new XmlrpcInputStream(xmldbURL);
+                is = new XmlrpcInputStream(threadGroup, xmldbURL);
             }
 
         } else {

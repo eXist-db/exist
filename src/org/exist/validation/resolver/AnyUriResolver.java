@@ -43,7 +43,8 @@ import org.exist.protocolhandler.xmlrpc.XmlrpcInputStream;
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class AnyUriResolver implements XMLEntityResolver {
-    private final static Logger LOG = LogManager.getLogger(AnyUriResolver.class);
+    private static final Logger LOG = LogManager.getLogger(AnyUriResolver.class);
+    private static final ThreadGroup threadGroup = new ThreadGroup("exist.xml-entity-resolver");
     
     private String docPath;
     private final String parentURI;
@@ -110,7 +111,7 @@ public class AnyUriResolver implements XMLEntityResolver {
                 is = new EmbeddedInputStream(xmldbURL);
 
             } else {
-                is = new XmlrpcInputStream(xmldbURL);
+                is = new XmlrpcInputStream(threadGroup, xmldbURL);
             }
 
         } else {

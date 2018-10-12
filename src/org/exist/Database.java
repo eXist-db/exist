@@ -58,6 +58,8 @@ public interface Database {
 
     public String getId();
 
+    ThreadGroup getThreadGroup();
+
     /**
      * 
      * @return SecurityManager

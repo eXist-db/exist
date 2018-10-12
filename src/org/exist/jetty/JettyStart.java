@@ -63,6 +63,8 @@ import org.exist.xmldb.ShutdownListener;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 
+import static org.exist.util.ThreadUtils.newGlobalThread;
+
 /**
  * This class provides a main method to start Jetty with eXist. It registers shutdown
  * handlers to cleanly shut down the database and the webserver.
@@ -87,7 +89,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     private final static int STATUS_STOPPED = 3;
 
     @GuardedBy("this") private int status = STATUS_STOPPED;
-    @GuardedBy("this") private Optional<Thread> shutdownHook = Optional.empty();
+    @GuardedBy("this") private Optional<Thread> shutdownHookThread = Optional.empty();
     @GuardedBy("this") private int primaryPort = 8080;
 
 
@@ -501,8 +503,9 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 // register a shutdown hook for the server
                 final BrokerPoolAndJettyShutdownHook brokerPoolAndJettyShutdownHook =
                         new BrokerPoolAndJettyShutdownHook(_server);
-                Runtime.getRuntime().addShutdownHook(brokerPoolAndJettyShutdownHook);
-                this.shutdownHook = Optional.of(brokerPoolAndJettyShutdownHook);
+                final Thread shutdownHookThread = newGlobalThread("BrokerPoolsAndJetty.ShutdownHook", brokerPoolAndJettyShutdownHook);
+                this.shutdownHookThread = Optional.of(shutdownHookThread);
+                Runtime.getRuntime().addShutdownHook(shutdownHookThread);
 
                 server = Optional.of(_server);
             }
@@ -569,7 +572,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     }
 
     public synchronized void shutdown() {
-        shutdownHook.ifPresent(Runtime.getRuntime()::removeShutdownHook);
+        shutdownHookThread.ifPresent(Runtime.getRuntime()::removeShutdownHook);
         
         BrokerPool.stopAll(false);
         
@@ -616,11 +619,10 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         }
     }
 
-    private static class BrokerPoolAndJettyShutdownHook extends Thread {
+    private static class BrokerPoolAndJettyShutdownHook implements Runnable {
         private final Server server;
 
         BrokerPoolAndJettyShutdownHook(final Server server) {
-            super("exist-jettyStart-shutdownHook");
             this.server = server;
         }
 
@@ -636,7 +638,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             } catch (final Exception e) {
                 e.printStackTrace();
             }
-
         }
     }
 

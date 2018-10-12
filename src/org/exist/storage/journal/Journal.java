@@ -44,6 +44,8 @@ import org.exist.util.FileUtils;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.sanity.SanityCheck;
 
+import static org.exist.util.ThreadUtils.newInstanceThread;
+
 /**
  * Manages the journalling log. The database uses one central journal for
  * all data files. If the journal exceeds the predefined maximum size, a new file is created.
@@ -124,7 +126,8 @@ public final class Journal {
     private FileChannel channel;
 
     /** Synching the journal is done by a background thread */
-    private final FileSyncThread syncThread;
+    private final FileSyncRunnable fileSyncRunnable;
+    private final Thread fileSyncThread;
 
     /** latch used to synchronize writes to the channel */
     private final Object latch = new Object();
@@ -172,10 +175,11 @@ public final class Journal {
         this.pool = pool;
         this.fsJournalDir = directory.resolve("fs.journal");
         // we use a 1 megabyte buffer:
-        currentBuffer = ByteBuffer.allocateDirect(1024 * 1024);
+        this.currentBuffer = ByteBuffer.allocateDirect(1024 * 1024);
 
-        syncThread = new FileSyncThread(latch);
-        syncThread.start(); //this makes us to use class as a final only - no inheritance allowed
+        this.fileSyncRunnable = new FileSyncRunnable(latch);
+        this.fileSyncThread = newInstanceThread(pool, "file-sync-thread", fileSyncRunnable);
+        fileSyncThread.start(); //this makes us to use class as a final only - no inheritance allowed
 
         this.syncOnCommit = pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SYNC_ON_COMMIT, DEFAULT_SYNC_ON_COMMIT);
         if (LOG.isDebugEnabled()) {
@@ -295,7 +299,7 @@ public final class Journal {
         }
         flushBuffer();
         if (forceSync || (fsync && syncOnCommit && currentLsn > lastSyncLsn)) {
-            syncThread.triggerSync();
+            fileSyncRunnable.triggerSync();
             lastSyncLsn = currentLsn;
         }
         try {
@@ -356,13 +360,15 @@ public final class Journal {
         try {
             if (switchLogFiles && channel != null && channel.position() > journalSizeMin) {
                 final Path oldFile = getFile(currentFile);
-                final RemoveThread rt = new RemoveThread(channel, oldFile);
+                final RemoveRunnable removeRunnable = new RemoveRunnable(channel, oldFile);
                 try {
                     switchFiles();
                 } catch (final LogException e) {
                     LOG.warn("Failed to create new journal: " + e.getMessage(), e);
                 }
-                rt.start();
+
+                final Thread removeThread = newInstanceThread(pool, "remove-journal", removeRunnable);
+                removeThread.start();
             }
             clearBackupFiles();
         } catch (final IOException e) {
@@ -429,8 +435,8 @@ public final class Journal {
                 //RandomAccessFile raf = new RandomAccessFile(file, "rw");
                 os = new FileOutputStream(file.toFile(), true);
                 channel = os.getChannel();
-                
-                syncThread.setChannel(channel);
+
+                fileSyncRunnable.setChannel(channel);
             } catch (final FileNotFoundException e) {
                 throw new LogException("Failed to open new journal: " + file.toAbsolutePath().toString(), e);
             }
@@ -523,9 +529,10 @@ public final class Journal {
             flushBuffer();
         }
         fileLock.release();
-        syncThread.shutdown();
+        fileSyncRunnable.shutdown();
+        fileSyncThread.interrupt();
         try {
-            syncThread.join();
+            fileSyncThread.join();
         } catch (final InterruptedException e) {
             //Nothing to do
         }
@@ -554,12 +561,11 @@ public final class Journal {
         return hex + '.' + LOG_FILE_SUFFIX;
     }
 
-    private static class RemoveThread extends Thread {
-        final FileChannel channel;
-        final Path path;
+    private static class RemoveRunnable implements Runnable {
+        private final FileChannel channel;
+        private final Path path;
 
-        RemoveThread(final FileChannel channel, final Path path) {
-            super("exist-removeJournalThread");
+        RemoveRunnable(final FileChannel channel, final Path path) {
             this.channel = channel;
             this.path = path;
         }
