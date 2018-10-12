@@ -29,7 +29,6 @@ import org.exist.xmldb.XmldbURI;
 import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
@@ -97,8 +96,8 @@ public class LockManager {
     private final WeakLazyStripes<String, ReentrantLock> btreeLocks;
 
 
-    public LockManager(final int concurrencyLevel) {
-        this.lockTable = new LockTable();
+    public LockManager(final String brokerPoolId, final ThreadGroup threadGroup, final int concurrencyLevel) {
+        this.lockTable = new LockTable(brokerPoolId, threadGroup);
         this.collectionLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createCollectionLock);
         this.documentLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createDocumentLock);
         this.btreeLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createBtreeLock);

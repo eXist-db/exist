@@ -23,6 +23,7 @@ package org.exist.backup;
 
 import org.exist.util.FileUtils;
 import com.evolvedbinary.j8fu.function.FunctionE;
+import org.exist.util.NamedThreadGroupFactory;
 import org.exist.util.SystemExitCodes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -74,6 +75,10 @@ public class Backup
 	private static final String	EXIST_GENERATED_FILENAME_DOTDOT_FILENAME = "_eXist_generated_backup_filename_dotdot_file_";
 	
     private static final int 	currVersion             = 1;
+
+    private static final AtomicInteger backupThreadId = new AtomicInteger();
+    private static final NamedThreadGroupFactory backupThreadGroupFactory = new NamedThreadGroupFactory("java-backup-tool");
+    private final ThreadGroup backupThreadGroup = backupThreadGroupFactory.newThreadGroup(null);
 
     private Path           target;
     private XmldbURI         rootCollection;
@@ -193,13 +198,17 @@ public class Backup
             final BackupDialog dialog = new BackupDialog( parent, false );
             dialog.setSize( new Dimension( 350, 150 ) );
             dialog.setVisible( true );
-            final BackupThread thread = new BackupThread( current, dialog, this );
-            thread.start();
+            final BackupRunnable backupRunnable = new BackupRunnable(current, dialog, this);
+            final Thread backupThread = newBackupThread("backup-" + backupThreadId.getAndIncrement(), backupRunnable);
+            backupThread.start();
+
+
+            //super("exist-backupThread-" + backupThreadId.getAndIncrement());
 
             if( parent == null ) {
 
                 // if backup runs as a single dialog, wait for it (or app will terminate)
-                while( thread.isAlive() ) {
+                while( backupThread.isAlive() ) {
 
                     synchronized( this ) {
 
@@ -486,15 +495,24 @@ public class Backup
         serializer.endElement(Namespaces.EXIST_NS, "acl", "acl");
     }
 
-    private static class BackupThread extends Thread {
+    /**
+     * Create a new thread for this backup instance.
+     *
+     * @param threadName the name of the thread
+     * @param runnable the function to execute on the thread
+     *
+     * @return the thread
+     */
+    private Thread newBackupThread(final String threadName, final Runnable runnable) {
+        return new Thread(backupThreadGroup, runnable, backupThreadGroup.getName() + "." + threadName);
+    }
+
+    private static class BackupRunnable implements Runnable {
         private final Collection collection;
         private final BackupDialog dialog;
         private final Backup backup;
 
-        private static final AtomicInteger backupThreadId = new AtomicInteger();
-
-        public BackupThread(final Collection collection, final BackupDialog dialog, final Backup backup) {
-            super("exist-backupThread-" + backupThreadId.getAndIncrement());
+        public BackupRunnable(final Collection collection, final BackupDialog dialog, final Backup backup) {
             this.collection = collection;
             this.dialog = dialog;
             this.backup = backup;

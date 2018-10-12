@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
@@ -97,7 +98,7 @@ public class QueryDialog extends JFrame {
     private JProgressBar progress;
     private JButton submitButton;
     private JButton killButton;
-    private QueryThread q = null;
+    private QueryRunnable queryRunnable = null;
     private Resource resource = null;
 
     private QueryDialog(final InteractiveClient client, final Collection collection, final Properties properties, boolean loadedFromDb) {
@@ -212,7 +213,7 @@ public class QueryDialog extends JFrame {
             if (collection instanceof LocalCollection) {
                 killButton.setEnabled(true);
             }
-            q = doQuery();
+            queryRunnable = doQuery();
         });
 
         toolbar.addSeparator();
@@ -222,11 +223,11 @@ public class QueryDialog extends JFrame {
         toolbar.add(killButton);
         killButton.setEnabled(false);
         killButton.addActionListener(e -> {
-            if (q != null) {
-                q.killQuery();
+            if (queryRunnable != null) {
+                queryRunnable.killQuery();
                 killButton.setEnabled(false);
 
-                q = null;
+                queryRunnable = null;
             }
         });
 
@@ -455,15 +456,19 @@ public class QueryDialog extends JFrame {
         }
     }
 
-    private QueryThread doQuery() {
+    private static final AtomicInteger queryThreadId = new AtomicInteger();
+
+    private QueryRunnable doQuery() {
         final String xpath = query.getText();
         if (xpath.length() == 0) {
             return null;
         }
         resultDisplay.setText("");
-        final QueryThread q = new QueryThread(xpath);
-        q.start();
-        return q;
+
+        final QueryRunnable queryRunnable = new QueryRunnable(xpath);
+        final Thread queryThread = client.newClientThread("query-" + queryThreadId.getAndIncrement(), queryRunnable);
+        queryThread.start();
+        return queryRunnable;
     }
 
 
@@ -510,26 +515,23 @@ public class QueryDialog extends JFrame {
         }
     }
 
-    private static AtomicInteger queryThreadId = new AtomicInteger();
-
-    private class QueryThread extends Thread {
+    private class QueryRunnable implements Runnable {
         private final String xpath;
-        private XQueryContext context;
+        private final AtomicReference<XQueryContext> runningContext = new AtomicReference<>();
 
-        public QueryThread(final String query) {
-            super("exist-queryThread-" + queryThreadId.getAndIncrement());
+        public QueryRunnable(final String query) {
             this.xpath = query;
-            this.context = null;
         }
 
         public boolean killQuery() {
-            if (context != null) {
-                final XQueryWatchDog xwd = context.getWatchDog();
+            final XQueryContext contextRef = runningContext.get();
+            if (contextRef != null) {
+                final XQueryWatchDog xwd = contextRef.getWatchDog();
                 final boolean retval = !xwd.isTerminating();
                 if (retval) {
                     xwd.kill(0);
                 }
-                context = null;
+                runningContext.compareAndSet(contextRef, null);
 
                 return retval;
             }
@@ -546,6 +548,7 @@ public class QueryDialog extends JFrame {
             long tResult = 0;
             long tCompiled = 0;
             ResourceSet result = null;
+            XQueryContext context = null;
             try {
                 final EXistXQueryService service = (EXistXQueryService) collection.getService("XQueryService", "1.0");
                 service.setProperty(OutputKeys.INDENT, properties.getProperty(OutputKeys.INDENT, "yes"));
@@ -560,6 +563,7 @@ public class QueryDialog extends JFrame {
                 // Check could also be collection instanceof LocalCollection
                 if (compiled instanceof CompiledXQuery) {
                     context = ((CompiledXQuery) compiled).getContext();
+                    runningContext.set(context);
                 }
                 tCompiled = t1 - t0;
 
@@ -569,8 +573,8 @@ public class QueryDialog extends JFrame {
                 exprDisplay.setText(writer.toString());
 
                 result = service.execute(compiled);
-                context = null;
                 tResult = System.currentTimeMillis() - t1;
+                runningContext.set(null);
 
                 // jmfg: Is this still needed? I don't think so
                 writer = new StringWriter();
@@ -606,7 +610,7 @@ public class QueryDialog extends JFrame {
                 resultDisplay.setCaretPosition(0);
                 statusMessage.setText(Messages.getString("QueryDialog.Found") + " " + result.getSize() + " " + Messages.getString("QueryDialog.items") + "." +
                         " " + Messages.getString("QueryDialog.Compilation") + ": " + tCompiled + "ms, " + Messages.getString("QueryDialog.Execution") + ": " + tResult + "ms");
-            } catch (final Throwable e) {
+            } catch (final XMLDBException e) {
                 statusMessage.setText(Messages.getString("QueryDialog.Error") + ": " + InteractiveClient.getExceptionMessage(e) + ". " + Messages.getString("QueryDialog.Compilation") + ": " + tCompiled + "ms, " + Messages.getString("QueryDialog.Execution") + ": " + tResult + "ms");
                 progress.setVisible(false);
 
@@ -625,7 +629,7 @@ public class QueryDialog extends JFrame {
                     } catch (final XMLDBException e) {
                     }
             }
-            if (client.queryHistory.isEmpty() || !((String) client.queryHistory.getLast()).equals(xpath)) {
+            if (client.queryHistory.isEmpty() || !client.queryHistory.getLast().equals(xpath)) {
                 client.addToHistory(xpath);
                 client.writeQueryHistory();
                 addQuery(xpath);

@@ -73,10 +73,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.*;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
@@ -113,7 +110,8 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     private final ResourceTableModel resources = new ResourceTableModel();
     private JTextPane shell;
     private JPopupMenu shellPopup;
-    private final ProcessThread process = new ProcessThread();
+    private final ProcessRunnable processRunnable;
+    private final Thread processThread;
     private Preferences preferences;
 
     private XmldbURI path = null;
@@ -128,6 +126,8 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         this.path = path;
         this.properties = properties;
         this.client = client;
+        this.processRunnable = new ProcessRunnable();
+        this.processThread = client.newClientThread("process", processRunnable);
 
         this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
 
@@ -140,7 +140,8 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         });
         pack();
 
-        process.start();
+        processThread.start();
+
         shell.requestFocus();
 
         preferences = Preferences.userNodeForPackage(ClientFrame.class);
@@ -433,7 +434,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         item = new JMenuItem(Messages.getString("ClientFrame.66"), KeyEvent.VK_S); //$NON-NLS-1$
         item.addActionListener(e -> {
             display(Messages.getString("ClientFrame.67")); //$NON-NLS-1$
-            process.setAction("shutdown"); //$NON-NLS-1$
+            processRunnable.setAction("shutdown"); //$NON-NLS-1$
         });
         connectMenu.add(item);
 
@@ -662,7 +663,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
     private void goUpAction(final ActionEvent ev) {
         display(Messages.getString("ClientFrame.94")); //$NON-NLS-1$
-        process.setAction("cd .."); //$NON-NLS-1$
+        processRunnable.setAction("cd .."); //$NON-NLS-1$
     }
 
     private void newCollectionAction(final ActionEvent ev) {
@@ -670,7 +671,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         if (newCol != null) {
             final String command = "mkcol \"" + newCol + '"'; //$NON-NLS-1$
             display(command + "\n"); //$NON-NLS-1$
-            process.setAction(command);
+            processRunnable.setAction(command);
         }
     }
 
@@ -740,7 +741,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     showErrorMessage(e.getMessage(), e);
                 }
             };
-            new Thread(removeTask).start();
+            client.newClientThread("remove", removeTask).start();
         }
     }
 
@@ -785,7 +786,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             }
             setStatus(Messages.getString("ClientFrame.118")); //$NON-NLS-1$
         };
-        new Thread(moveTask).start();
+        client.newClientThread("move", moveTask).start();
     }
 
     private void renameAction(final ActionEvent ev) {
@@ -827,7 +828,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             }
             setStatus(Messages.getString("ClientFrame.127")); //$NON-NLS-1$
         };
-        new Thread(renameTask).start();
+        client.newClientThread("rename", renameTask).start();
     }
 
     private void copyAction(final ActionEvent ev) {
@@ -882,7 +883,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             }
             setStatus(Messages.getString("ClientFrame.135")); //$NON-NLS-1$
         };
-        new Thread(moveTask).start();
+        client.newClientThread("move", moveTask).start();
     }
 
     private ArrayList<PrettyXmldbURI> getCollections(final Collection root, final ArrayList<PrettyXmldbURI> collectionsList) throws XMLDBException {
@@ -951,7 +952,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 }
                 ClientFrame.this.setCursor(Cursor.getDefaultCursor());
             };
-            new Thread(reindexThread).start();
+            client.newClientThread("reindex", reindexThread).start();
         }
     }
 
@@ -972,18 +973,16 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
     private void uploadFiles(final List<Path> files) {
         if (files != null && !files.isEmpty()) {
-            new Thread() {
-                @Override
-                public void run() {
-                    final UploadDialog upload = new UploadDialog();
-                    try {
-                        client.parse(files, upload);
-                        client.getResources();
-                    } catch (final XMLDBException e) {
-                        showErrorMessage(Messages.getString("ClientFrame.147") + e.getMessage(), e);
-                    }
+            final Runnable uploadTask = () -> {
+                final UploadDialog upload = new UploadDialog();
+                try {
+                    client.parse(files, upload);
+                    client.getResources();
+                } catch (final XMLDBException e) {
+                    showErrorMessage(Messages.getString("ClientFrame.147") + e.getMessage(), e);
                 }
-            }.start();
+            };
+            client.newClientThread("upload", uploadTask).start();
         }
     }
 
@@ -1089,8 +1088,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
     private void doRestore(final GuiRestoreListener listener, final String username, final String password, final String dbaPassword, final Path f, final String uri) {
 
-        final Callable<Void> callable = () -> {
-
+        final Runnable restoreTask = () -> {
             final Restore restore = new Restore();
 
             try {
@@ -1123,12 +1121,9 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     showErrorMessage(Messages.getString("ClientFrame.181") + listener.warningsAndErrorsAsString(), null);
                 }
             }
-
-            return null;
         };
 
-        final ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(callable);
+        client.newClientThread("restore", restoreTask).start();
     }
 
     public static void repairRepository(Collection collection) throws XMLDBException {
@@ -1313,7 +1308,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             commandStart = end;
             doc.insertString(commandStart++, "\n", defaultAttrs); //$NON-NLS-1$
             if (command != null) {
-                process.setAction(command);
+                processRunnable.setAction(command);
                 client.console.getHistory().addToHistory(command);
             }
         } catch (final BadLocationException e) {
@@ -1353,15 +1348,8 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     private void close() {
         setVisible(false);
         dispose();
-        process.terminate();
+        processThread.interrupt();
         System.exit(SystemExitCodes.OK_EXIT_CODE);
-    }
-
-    private void actionFinished() {
-        if (!process.getStatus()) {
-            close();
-        }
-        displayPrompt();
     }
 
     private void AboutAction() {
@@ -1379,7 +1367,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     // cd into collection
                     final String command = "cd " + '"' + resource.getName() + '"'; //$NON-NLS-1$
                     display(command + "\n"); //$NON-NLS-1$
-                    process.setAction(command);
+                    processRunnable.setAction(command);
                 } else {
                     // open a document for editing
                     ClientFrame.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -1424,67 +1412,33 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         }
     }
 
-    private static final AtomicInteger processThreadInitNumber = new AtomicInteger();
-    class ProcessThread extends Thread {
-        private String action = null;
-        private boolean terminate = false;
-        private boolean status = false;
+    private class ProcessRunnable implements Runnable {
+        private final TransferQueue<String> queue = new LinkedTransferQueue<>();
 
-        public ProcessThread() {
-            super("exist-ClientFrame.ProcessThread-" + processThreadInitNumber.getAndIncrement());
+        public void setAction(final String action) {
+            queue.add(action);
         }
 
-        synchronized public void setAction(final String action) {
-            while (this.action != null) {
-                try {
-                    wait();
-                } catch (final InterruptedException e) {
-                    //TODO report error?
-                }
-            }
-            this.action = action;
-            notify();
-        }
-
-        synchronized public void terminate() {
-            terminate = true;
-            notify();
-        }
-
-        synchronized public boolean getStatus() {
-            return status;
-        }
-
-        public boolean isReady() {
-            return action == null;
-        }
-
-        /*
-         * (non-Javadoc)
-         *
-         * @see java.lang.Runnable#run()
-         */
         @Override
         public void run() {
-            while (!terminate) {
-                while (action == null) {
-                    try {
-                        synchronized (this) {
-                            wait();
-                        }
-                    } catch (final InterruptedException e) {
-                        //TODO report error?
-                    }
+            while (true) {
+                final String action;
+                try {
+                    action = queue.take();
+                } catch (final InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
                 }
-                status = client.process(action);
-                synchronized (this) {
-                    action = null;
-                    actionFinished();
-                    notify();
+
+                final boolean status = client.process(action);
+                displayPrompt();
+
+                if (!status) {
+                    close();
+                    break;
                 }
             }
         }
-
     }
 
     static class ResourceTableModel extends AbstractTableModel {

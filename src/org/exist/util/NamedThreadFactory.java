@@ -20,10 +20,15 @@
 
 package org.exist.util;
 
+import org.exist.Database;
+
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static org.exist.util.ThreadUtils.nameGlobalThread;
+import static org.exist.util.ThreadUtils.nameInstanceThread;
 
 /**
  * A simple thread factory that provides a standard naming convention
@@ -33,33 +38,64 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class NamedThreadFactory implements ThreadFactory {
 
-    private static final String DEFAULT_THREAD_NAME_PREFIX = "exist";
-
+    private final ThreadGroup threadGroup;
+    @Nullable private final String instanceId;
+    private final String nameBase;
     private final AtomicLong threadId = new AtomicLong();
-    private final String threadNamePrefix;
 
     /**
-     * A factory who will produce threads names "exist-${nameBase}-${id}".
+     * A factory who will produce threads named like either:
+     *     "instance.${instanceId}.${nameBase}-${id}".
      *
+     * @param instanceId the id of the database instance
      * @param nameBase The name base for the thread name
+     *
+     * @deprecated use {@link #NamedThreadFactory(Database, String)}.
      */
-    public NamedThreadFactory(final String nameBase) {
-        this(DEFAULT_THREAD_NAME_PREFIX, nameBase);
+    @Deprecated
+    public NamedThreadFactory(final String instanceId, final String nameBase) {
+        this(null, instanceId, nameBase);
     }
 
     /**
-     * A factory who will produce threads names "${prefix}-${nameBase}-${id}".
+     * A factory who will produce threads named like either:
+     *     "instance.${instanceId}.${nameBase}-${id}".
      *
-     * @param prefix A common prefix for the thread names
+     * @param database the database instance which the threads are created for
      * @param nameBase The name base for the thread name
+     *
+     * @deprecated use {@link #NamedThreadFactory(Database, String)}.
      */
-    public NamedThreadFactory(@Nullable final String prefix, final String nameBase) {
+    public NamedThreadFactory(final Database database, final String nameBase) {
+        this(database.getThreadGroup(), database.getId(), nameBase);
+    }
+
+    /**
+     * A factory who will produce threads named like either:
+     *
+     *    1. "instance.${instanceId}.${nameBase}-${id}".
+     *    2. "global.${nameBase}-${id}".
+     *
+     * @param threadGroup The thread group for the created threads, or null
+     *     to use the same group as the calling thread.
+     * @param instanceId the id of the database instance, or null if the
+     *     thread is a global thread i.e. shared between instances.
+     * @param nameBase The name base for the thread name.
+     */
+    public NamedThreadFactory(@Nullable final ThreadGroup threadGroup, @Nullable final String instanceId, final String nameBase) {
         Objects.requireNonNull(nameBase);
-        this.threadNamePrefix = (prefix == null ? "" : prefix + "-") + nameBase + "-";
+        this.threadGroup = threadGroup;
+        this.instanceId = instanceId;
+        this.nameBase = nameBase;
     }
 
     @Override
     public Thread newThread(final Runnable runnable) {
-        return new Thread(runnable, threadNamePrefix + threadId.getAndIncrement());
+        final String localName = nameBase + "-" + threadId.getAndIncrement();
+        if (instanceId == null) {
+            return new Thread(threadGroup, runnable, nameGlobalThread(localName));
+        } else {
+            return new Thread(threadGroup, runnable, nameInstanceThread(instanceId, localName));
+        }
     }
 }

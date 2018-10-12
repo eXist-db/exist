@@ -37,14 +37,15 @@ import org.exist.protocolhandler.xmlrpc.XmlrpcOutputStream;
  * resource stream.
  */
 public class InMemoryURLConnection extends URLConnection {
-
-    private final static Logger LOG = LogManager.getLogger(InMemoryURLConnection.class);
+    private static final Logger LOG = LogManager.getLogger(InMemoryURLConnection.class);
+    private final ThreadGroup threadGroup;
 
     /**
      * Constructs a URL connection to the specified URL.
       */
-    protected InMemoryURLConnection(final URL url) {
+    protected InMemoryURLConnection(final ThreadGroup threadGroup, final URL url) {
         super(url);
+        this.threadGroup = threadGroup;
 
         setDoInput(true);
         setDoOutput(true);
@@ -64,7 +65,7 @@ public class InMemoryURLConnection extends URLConnection {
         if(xmldbURL.isEmbedded()){
             return InMemoryInputStream.stream( xmldbURL );
         } else {
-            return new XmlrpcInputStream( xmldbURL );
+            return new XmlrpcInputStream(threadGroup, xmldbURL );
         }
     }
 
@@ -75,7 +76,7 @@ public class InMemoryURLConnection extends URLConnection {
         if(xmldbURL.isEmbedded()){
             return new InMemoryOutputStream( xmldbURL );
         } else {
-            return new XmlrpcOutputStream( xmldbURL );
+            return new XmlrpcOutputStream(threadGroup, xmldbURL );
         }
     }
 }

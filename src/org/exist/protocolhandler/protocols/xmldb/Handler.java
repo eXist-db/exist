@@ -40,7 +40,8 @@ import org.exist.protocolhandler.Mode;
  */
 public class Handler extends URLStreamHandler {
     
-    private final static Logger LOG = LogManager.getLogger(Handler.class);
+    private static final Logger LOG = LogManager.getLogger(Handler.class);
+    private static final ThreadGroup threadGroup = new ThreadGroup("exist.url-stream-handler");
     
     public static final String XMLDB_EXIST  = "xmldb:exist:";
     public static final String XMLDB        = "xmldb:";
@@ -107,9 +108,9 @@ public class Handler extends URLStreamHandler {
         switch (mode) {
             case THREADS:
             case DISK:
-                return new EmbeddedURLConnection(u);
+                return new EmbeddedURLConnection(threadGroup, u);
             case MEMORY:
-                return new InMemoryURLConnection(u);
+                return new InMemoryURLConnection(threadGroup, u);
         }
         throw new IOException("unsupported mode "+mode);
     }

@@ -20,6 +20,8 @@
 package org.exist.storage.journal;
 
 import net.jcip.annotations.GuardedBy;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -36,7 +38,9 @@ import java.nio.channels.FileChannel;
  *
  * @author wolf
  */
-public class FileSyncThread extends Thread {
+public class FileSyncRunnable implements Runnable {
+
+    private static final Logger LOG = LogManager.getLogger(FileSyncRunnable.class);
 
     @GuardedBy("latch") private FileChannel endOfLog;
     private final Object latch;
@@ -51,10 +55,10 @@ public class FileSyncThread extends Thread {
      * Create a new FileSyncThread, using the specified latch
      * to synchronize on.
      *
-     * @param latch The object to synchronize on
+     * @param latch The object to synchronize on for
+     *    accessing the file channel in {@link #setChannel(FileChannel)}.
      */
-    public FileSyncThread(final Object latch) {
-        super("exist-fileSyncThread");
+    public FileSyncRunnable(final Object latch) {
         this.latch = latch;
     }
 
@@ -75,18 +79,21 @@ public class FileSyncThread extends Thread {
      * Trigger a sync on the journal. If a sync is already in progress,
      * the method will just wait until the sync has completed.
      */
-    public synchronized void triggerSync() {
-        // trigger a sync
-        syncTriggered = true;
-        notifyAll();
+    public void triggerSync() {
+        synchronized (this) {
+            syncTriggered = true;
+            notifyAll();
+        }
     }
 
     /**
-     * Shutdown the sync thread.
+     * Request to shutdown the sync runnable.
+     *
+     * NOTE: calling thread should call Thread#interrupt() on
+     * the thread running the FileSyncRunnable.
      */
     public void shutdown() {
         shutdown = true;
-        interrupt();
     }
 
     /**
@@ -99,13 +106,14 @@ public class FileSyncThread extends Thread {
                     endOfLog.close();
                 } catch (final IOException e) {
                     // may occur during shutdown
+                    LOG.error(e);
                 }
             }
         }
     }
 
     /**
-     * Wait for a sync event or shutdown.
+     * Process sync events, or shutdown.
      */
     @Override
     public void run() {
@@ -114,15 +122,29 @@ public class FileSyncThread extends Thread {
                 try {
                     wait();
                 } catch (final InterruptedException e) {
-                    //Nothing to do
+                    // likely (but not definitely) caused by request to {@link #shutdown()}
+
+                    // restore interrupted status
+                    Thread.currentThread().interrupt();
+
+                    if (shutdown) {
+                        // avoid double sync on shutdown
+                        break;
+                    }
                 }
+
                 if (syncTriggered) {
                     sync();
+                    syncTriggered = false;
                 }
             }
         }
-        // shutdown: sync the file and close it
-        sync();
+
+        // shutdown... always sync the file and close it
+        synchronized(this) {
+            sync();
+            syncTriggered = false;
+        }
         closeChannel();
     }
 
@@ -134,9 +156,9 @@ public class FileSyncThread extends Thread {
                     endOfLog.force(false);
                 } catch (final IOException e) {
                     // may occur during shutdown
+                    LOG.error(e);
                 }
             }
-            syncTriggered = false;
         }
     }
 }

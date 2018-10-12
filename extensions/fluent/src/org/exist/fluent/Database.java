@@ -30,6 +30,8 @@ import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.*;
 
+import static org.exist.util.ThreadUtils.newInstanceThread;
+
 /**
  * <p>The global entry point to an embedded instance of the <a href='http://exist-db.org'>eXist </a>database.
  * The static methods on this class control the lifecycle of the database connection.  It follows that
@@ -561,7 +563,7 @@ public class Database {
 		
 		public void start() {
 			if (thread != null) return;
-			thread = new Thread(this, "Database defragmenter");
+			thread = newInstanceThread(pool, "fluent.database-defragmenter", this);
 			thread.setPriority(Thread.NORM_PRIORITY-3);
 			thread.setDaemon(true);
 			thread.start();

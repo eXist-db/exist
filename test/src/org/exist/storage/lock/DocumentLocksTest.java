@@ -42,6 +42,9 @@ public class DocumentLocksTest {
 
     private static final int CONCURRENCY_LEVEL = Runtime.getRuntime().availableProcessors() * 3;
 
+    private final String instanceId = "test.document-locks-test";
+    private final ThreadGroup threadGroup = new ThreadGroup("document-locks-test");
+
     /**
      * This test makes sure that there can be multiple reader locks
      * held by different threads on the same Document at the same time
@@ -54,7 +57,7 @@ public class DocumentLocksTest {
         final int numberOfThreads = CONCURRENCY_LEVEL;
         final XmldbURI docUri = XmldbURI.create("/db/x/y/z/1.xml");
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final CountDownLatch continueLatch = new CountDownLatch(numberOfThreads);
 
         // thread definition
@@ -98,7 +101,7 @@ public class DocumentLocksTest {
         final int numberOfThreads = CONCURRENCY_LEVEL;
         final XmldbURI docUri = XmldbURI.create("/db/x/y/z/1.xml");
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final CountDownLatch thread2StartLatch = new CountDownLatch(1);
         final AtomicReference firstWriteHolder = new AtomicReference();
         final AtomicReference lastWriteHolder = new AtomicReference();

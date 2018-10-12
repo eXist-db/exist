@@ -47,6 +47,7 @@ import javax.swing.filechooser.FileFilter;
 import org.exist.security.PermissionDeniedException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.util.ThreadUtils.newInstanceThread;
 
 
 /**
@@ -337,7 +338,7 @@ public class ExportGUI extends javax.swing.JFrame {
                 closeLog();
             }
         };
-        new Thread(checkRun).start();
+        newInstanceThread(pool, "export-gui.check-run", checkRun).start();
     } // GEN-LAST:event_startBtncheck
 
 
@@ -358,7 +359,7 @@ public class ExportGUI extends javax.swing.JFrame {
                 closeLog();
             }
         };
-        new Thread(th).start();
+        newInstanceThread(pool, "export-gui.export", th).start();
     } // GEN-LAST:event_exportBtnActionPerformed
 
 
