@@ -30,6 +30,8 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -50,6 +52,7 @@ import com.evolvedbinary.j8fu.function.QuadFunctionE;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import com.ibm.icu.text.Collator;
 import net.jcip.annotations.Immutable;
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
@@ -3121,38 +3124,57 @@ public class XQueryContext implements BinaryValueManager, Context {
         this.source = source;
     }
 
+    /**
+     * NOTE: the {@link #unsubscribe()} method can be called
+     * from {@link org.exist.storage.NotificationService#unsubscribe(UpdateListener)}
+     * by another thread, so this class needs to be thread-safe.
+     */
+    @ThreadSafe
     private static class ContextUpdateListener implements UpdateListener {
-        private final List<UpdateListener> listeners = new ArrayList<>();
+        /*
+         * We use Concurrent safe data structures here, so that we don't have
+         * to block any calling threads.
+         *
+         * The AtomicReference enables us to quickly clear the listeners
+         * in #unsubscribe() and maintain happens-before integrity whilst
+         * unsubcribing them. The CopyOnWriteArrayList allows
+         * us to add listeners whilst iterating over a snapshot
+         * of existing iterators in other methods.
+         */
+        private final AtomicReference<List<UpdateListener>> listeners = new AtomicReference<>(new CopyOnWriteArrayList<>());
 
         private void addListener(final UpdateListener listener) {
-            listeners.add(listener);
+            listeners.get().add(listener);
         }
 
         @Override
         public void documentUpdated(final DocumentImpl document, final int event) {
-            listeners.forEach(listener -> listener.documentUpdated(document, event));
+            listeners.get().forEach(listener -> listener.documentUpdated(document, event));
         }
 
         @Override
         public void unsubscribe() {
-            listeners.forEach(UpdateListener::unsubscribe);
-            listeners.clear();
+            List<UpdateListener> prev = listeners.get();
+            while (!listeners.compareAndSet(prev, new CopyOnWriteArrayList<>())) {
+                prev = listeners.get();
+            }
+
+            prev.forEach(UpdateListener::unsubscribe);
         }
 
         @Override
         public void nodeMoved(final NodeId oldNodeId, final NodeHandle newNode) {
-            listeners.forEach(listener -> listener.nodeMoved(oldNodeId, newNode));
+            listeners.get().forEach(listener -> listener.nodeMoved(oldNodeId, newNode));
         }
 
         @Override
         public void debug() {
             if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("XQueryContext: %s document update listeners", listeners.size()));
+                LOG.debug(String.format("XQueryContext: %s document update listeners", listeners.get().size()));
             }
 
-            listeners.forEach(UpdateListener::debug);
+            listeners.get().forEach(UpdateListener::debug);
         }
-
     }
 
     private final List<CleanupTask> cleanupTasks = new ArrayList<>();
