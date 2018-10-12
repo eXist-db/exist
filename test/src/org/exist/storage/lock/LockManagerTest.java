@@ -30,6 +30,9 @@ public class LockManagerTest {
     private static String previousLockEventsState = null;
     private static String previousCollectionsMultiWriterState = null;
 
+    private final String instanceId = "test.lock-manager-test";
+    private final ThreadGroup threadGroup = new ThreadGroup("lock-manager-test");
+
     @Parameterized.Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
@@ -66,7 +69,7 @@ public class LockManagerTest {
 
     @Test
     public void getCollectionLock_isStripedByPath() {
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
 
         final MultiLock dbLock1 = lockManager.getCollectionLock("/db");
         assertNotNull(dbLock1);
@@ -94,7 +97,7 @@ public class LockManagerTest {
      */
     @Test
     public void acquireCollectionReadLock_root() throws LockException {
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             try(final ManagedCollectionLock rootLock
                         = lockManager.acquireCollectionReadLock(XmldbURI.ROOT_COLLECTION_URI)) {
@@ -132,7 +135,7 @@ public class LockManagerTest {
     public void acquireCollectionReadLock_depth2() throws LockException {
         final String collectionPath = "/db/colA";
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedCollectionLock colALock
                          = lockManager.acquireCollectionReadLock(XmldbURI.create(collectionPath))) {
@@ -188,7 +191,7 @@ public class LockManagerTest {
         final String collectionAPath = "/db/colA";
         final String collectionBPath = collectionAPath + "/colB";
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedCollectionLock colBLock
                          = lockManager.acquireCollectionReadLock(XmldbURI.create(collectionBPath))) {
@@ -270,7 +273,7 @@ public class LockManagerTest {
     }
 
     private void acquireCollectionWriteLock_root(final boolean lockParent) throws LockException {
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedCollectionLock rootLock
                          = lockManager.acquireCollectionWriteLock(XmldbURI.ROOT_COLLECTION_URI, lockParent)) {
@@ -307,7 +310,7 @@ public class LockManagerTest {
     public void acquireCollectionWriteLock_depth2_withoutLockParent() throws LockException {
         final String collectionPath = "/db/colA";
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             final boolean lockParent = false;
             try (final ManagedCollectionLock colALock
@@ -363,7 +366,7 @@ public class LockManagerTest {
     public void acquireCollectionWriteLock_depth2_withLockParent() throws LockException {
         final String collectionPath = "/db/colA";
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             final boolean lockParent = true;
             try (final ManagedCollectionLock colALock
@@ -418,7 +421,7 @@ public class LockManagerTest {
         final String collectionAPath = "/db/colA";
         final String collectionBPath = collectionAPath + "/colB";
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             final boolean lockParent = false;
             try (final ManagedCollectionLock colBLock
@@ -493,7 +496,7 @@ public class LockManagerTest {
         final String collectionAPath = "/db/colA";
         final String collectionBPath = collectionAPath + "/colB";
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             final boolean lockParent = true;
             try (final ManagedCollectionLock colBLock
@@ -558,7 +561,7 @@ public class LockManagerTest {
 
     @Test
     public void getDocumentLock_isStripedByPath() {
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
 
         final DocumentLock doc1Lock1 = lockManager.getDocumentLock("/db/1.xml");
         assertNotNull(doc1Lock1);
@@ -588,7 +591,7 @@ public class LockManagerTest {
     public void acquireDocumentReadLock() throws LockException {
         final XmldbURI docUri = XmldbURI.create("/db/a/b/c/1.xml");
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedDocumentLock doc1Lock
                          = lockManager.acquireDocumentReadLock(docUri)) {
@@ -624,7 +627,7 @@ public class LockManagerTest {
     public void acquireDocumentWriteLock() throws LockException {
         final XmldbURI docUri = XmldbURI.create("/db/a/b/c/1.xml");
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedDocumentLock doc1Lock
                          = lockManager.acquireDocumentWriteLock(docUri)) {
@@ -653,7 +656,7 @@ public class LockManagerTest {
 
     @Test
     public void getBtreeLock_isStripedByPath() {
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
 
         final ReentrantLock btree1Lock1 = lockManager.getBTreeLock("btree1.dbx");
         assertNotNull(btree1Lock1);
@@ -683,7 +686,7 @@ public class LockManagerTest {
     public void acquireBTreeReadLock() throws LockException {
         final String btree1Name = "btree1.dbx";
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedLock<ReentrantLock> btree1Lock
                          = lockManager.acquireBtreeReadLock(btree1Name)) {
@@ -719,7 +722,7 @@ public class LockManagerTest {
     public void acquireBTreeWriteLock() throws LockException {
         final String btree1Name = "btree1.dbx";
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedLock<ReentrantLock> btree1Lock
                          = lockManager.acquireBtreeWriteLock(btree1Name)) {

@@ -25,72 +25,67 @@ package org.exist.protocolhandler.xmlrpc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.storage.io.BlockingInputStream;
-import org.exist.storage.io.BlockingOutputStream;
 
 /**
  * Read document from remote database (using xmlrpc) as a input stream.
  *
  * @author Dannes Wessels
  */
-public class XmlrpcInputStream  extends InputStream {
-    
-    private final static Logger logger = LogManager.getLogger(XmlrpcInputStream.class);
-    private BlockingInputStream bis;
-    private BlockingOutputStream bos;
-    private XmlrpcDownloadThread rt;
-    
+public class XmlrpcInputStream extends InputStream {
+    private static final AtomicInteger downloadThreadId = new AtomicInteger();
+    private final BlockingInputStream bis;
+
     /**
-     *  Constructor of XmlrpcInputStream.
+     * Constructor of XmlrpcInputStream.
      *
-     * @param xmldbURL Location of document in database.
-     * @throws MalformedURLException Thrown for illegalillegal URLs.
+     * @param threadGroup the group for the threads created by this stream.
+     * @param url         Location of document in database.
+     * @throws MalformedURLException Thrown for illegal URLs.
      */
-    public XmlrpcInputStream(XmldbURL xmldbURL) {
-        
-        logger.debug("Initializing ResourceInputStream");
-        
-        bis = new BlockingInputStream();
-        bos = bis.getOutputStream();
-        
-        rt = new XmlrpcDownloadThread(xmldbURL , bos);
-        
-        rt.start();
-        
-        logger.debug("Initializing ResourceInputStream done");
-        
+    public XmlrpcInputStream(final ThreadGroup threadGroup, final XmldbURL url) {
+        this.bis = new BlockingInputStream();
+
+        final Runnable runnable = new XmlrpcDownloadRunnable(url, bis.getOutputStream());
+        final Thread thread = new Thread(threadGroup, runnable, threadGroup.getName() + ".xmlrpc.download-" + downloadThreadId.getAndIncrement());
+        thread.start();
     }
-    
-    public int read(byte[] b, int off, int len) throws IOException {
+
+    @Override
+    public int read(final byte[] b, final int off, final int len) throws IOException {
         return bis.read(b, off, len);
     }
-    
-    public int read(byte[] b) throws IOException {
+
+    @Override
+    public int read(final byte[] b) throws IOException {
         return bis.read(b, 0, b.length);
     }
-       
-    public long skip(long n) throws IOException {
+
+    @Override
+    public long skip(final long n) throws IOException {
         return bis.skip(n);
     }
-    
+
+    @Override
     public void reset() throws IOException {
         bis.reset();
     }
-    
+
+    @Override
     public int read() throws IOException {
         return bis.read();
     }
-    
+
+    @Override
     public void close() throws IOException {
         bis.close();
     }
-    
+
+    @Override
     public int available() throws IOException {
         return bis.available();
     }
-    
 }

@@ -17,55 +17,60 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id: XmlrpcUploadThread.java 223 2007-04-21 22:13:05Z dizzzz $
+ * $Id: XmlrpcDownloadThread.java 223 2007-04-21 22:13:05Z dizzzz $
  */
 
 package org.exist.protocolhandler.xmlrpc;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.protocolhandler.xmldb.XmldbURL;
-import org.exist.storage.io.BlockingInputStream;
+import org.exist.storage.io.BlockingOutputStream;
 
 /**
- *  Wrap XmlrpcUpload class into a thread for XmlrpcOutputStream.
+ * Wrap XmlrpcDownload class into a runnable for XmlrpcInputStream.
  *
  * @author Dannes Wessels
  */
-public class XmlrpcUploadThread extends Thread {
-    
-    private final static Logger logger = LogManager.getLogger(XmlrpcUploadThread.class);
-    private XmldbURL xmldbURL;
-    private BlockingInputStream bis;
+public class XmlrpcDownloadRunnable implements Runnable {
 
-    private static final AtomicInteger threadInitNumber = new AtomicInteger();
-    
-    public XmlrpcUploadThread(XmldbURL url, BlockingInputStream bis) {
-        super("exist-xmlrpcUploadThread-" + threadInitNumber.getAndIncrement());
-        xmldbURL=url;
-        this.bis=bis;
-    }
-    
+    private static final Logger logger = LogManager.getLogger(XmlrpcDownloadRunnable.class);
+    private final XmldbURL url;
+    private final BlockingOutputStream bos;
+
     /**
-     * Start Thread.
+     * Constructor of XmlrpcDownloadThread.
+     *
+     * @param url Document location in database.
+     * @param bos Stream to which the document is written.
      */
+    public XmlrpcDownloadRunnable(final XmldbURL url, final BlockingOutputStream bos) {
+        this.url = url;
+        this.bos = bos;
+    }
+
+    /**
+     * Write resource to the output stream.
+     */
+    @Override
     public void run() {
-        logger.debug("Thread started." );
-        Exception exception=null;
+        IOException exception = null;
         try {
-            final XmlrpcUpload uploader = new XmlrpcUpload();
-            uploader.stream(xmldbURL, bis);
-            
-        } catch (IOException ex) {
+            final XmlrpcDownload xuc = new XmlrpcDownload();
+            xuc.stream(url, bos);
+
+        } catch (final IOException ex) {
             logger.error(ex);
             exception = ex;
-            
+
         } finally {
-            bis.close(exception);
-            logger.debug("Thread stopped." );
+            try { // NEEDED!
+                bos.close(exception);
+            } catch (final IOException ex) {
+                logger.warn(ex);
+            }
         }
     }
 }

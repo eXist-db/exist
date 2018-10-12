@@ -50,6 +50,8 @@ import java.util.function.Function;
 import static com.evolvedbinary.j8fu.Either.Left;
 import static com.evolvedbinary.j8fu.Either.Right;
 import static org.exist.dom.persistent.DocumentImpl.XML_FILE;
+import static org.exist.util.ThreadUtils.nameInstanceThread;
+import static org.exist.util.ThreadUtils.newInstanceSubThreadGroup;
 
 /**
  * A DSL for describing a schedule of
@@ -480,10 +482,10 @@ public interface TransactionTestDSL {
             Objects.requireNonNull(brokerPool);
             Objects.requireNonNull(executionListener);
 
-            final ThreadGroup transactionsThreadGroup = new ThreadGroup("Transactions Thread Group");
+            final ThreadGroup transactionsThreadGroup = newInstanceSubThreadGroup(brokerPool, "transactionTestDSL");
 
             // submit t1
-            final ExecutorService t1ExecutorService = Executors.newSingleThreadExecutor(r -> new Thread(transactionsThreadGroup, r, "Transaction-1 Schedule"));
+            final ExecutorService t1ExecutorService = Executors.newSingleThreadExecutor(r -> new Thread(transactionsThreadGroup, r, nameInstanceThread(brokerPool, "transaction-test-dsl.transaction-1-schedule")));
             final Future<U1> t1Result = t1ExecutorService.submit(() -> {
                 try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
                      final Txn txn = brokerPool.getTransactionManager().beginTransaction()) {
@@ -494,7 +496,7 @@ public interface TransactionTestDSL {
             });
 
             // submit t2
-            final ExecutorService t2ExecutorService = Executors.newSingleThreadExecutor(r -> new Thread(transactionsThreadGroup, r, "Transaction-2 Schedule"));
+            final ExecutorService t2ExecutorService = Executors.newSingleThreadExecutor(r -> new Thread(transactionsThreadGroup, r, nameInstanceThread(brokerPool, "transaction-test-dsl.transaction-2-schedule")));
             final Future<U2> t2Result = t2ExecutorService.submit(() -> {
                 try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
                      final Txn txn = brokerPool.getTransactionManager().beginTransaction()) {

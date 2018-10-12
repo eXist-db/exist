@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
+import org.exist.util.NamedThreadFactory;
 import org.exist.util.SystemExitCodes;
 import org.xml.sax.SAXException;
 
@@ -361,7 +362,7 @@ public class Main {
             }
         };
 
-        final ExecutorService executor = Executors.newSingleThreadExecutor();
+        final ExecutorService executor = Executors.newSingleThreadExecutor(new NamedThreadFactory(null, null, "backup.restore-with-gui"));
         final Future<Void> future = executor.submit(callable);
 
         while (!future.isDone() && !future.isCancelled()) {

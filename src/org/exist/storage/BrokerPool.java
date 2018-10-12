@@ -86,6 +86,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.evolvedbinary.j8fu.fsm.TransitionTable.transitionTable;
+import static org.exist.util.ThreadUtils.nameInstanceThreadGroup;
+import static org.exist.util.ThreadUtils.newInstanceThread;
 
 /**
  * This class controls all available instances of the database.
@@ -133,6 +135,12 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
     private final int concurrencyLevel;
     private LockManager lockManager;
+
+    /**
+     * Root thread group for all threads related
+     * to this instance.
+     */
+    private final ThreadGroup instanceThreadGroup;
 
     /**
      * State of the BrokerPool instance
@@ -375,6 +383,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
         this.classLoader = Thread.currentThread().getContextClassLoader();
         this.instanceName = instanceName;
+        this.instanceThreadGroup = new ThreadGroup(nameInstanceThreadGroup(instanceName));
 
         this.maxShutdownWait = conf.getProperty(BrokerPool.PROPERTY_SHUTDOWN_DELAY, DEFAULT_MAX_SHUTDOWN_WAIT);
         LOG.info("database instance '" + instanceName + "' will wait  " + nf.format(this.maxShutdownWait) + " ms during shutdown");
@@ -434,7 +443,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     }
 
     private void _initialize() throws EXistException, DatabaseConfigurationException {
-        this.lockManager = new LockManager(concurrencyLevel);
+        this.lockManager = new LockManager(instanceName, instanceThreadGroup, concurrencyLevel);
 
         //Flag to indicate that we are initializing
         status.process(Event.INITIALIZE);
@@ -521,7 +530,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             statusReporter = new StatusReporter(SIGNAL_STARTUP);
             statusObservers.forEach(statusReporter::addObserver);
 
-            final Thread statusThread = new Thread(statusReporter, "exist-broker-" + getId() + "-initialize-statusReporter");
+            final Thread statusThread = newInstanceThread(this, "startup-status-reporter", statusReporter);
             statusThread.start();
 
             // statusReporter may have to be terminated or the thread can/will hang.
@@ -796,6 +805,11 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     //TODO : rename getInstanceName
     public String getId() {
         return instanceName;
+    }
+
+    @Override
+    public ThreadGroup getThreadGroup() {
+        return instanceThreadGroup;
     }
 
     /**
@@ -1550,7 +1564,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 statusObservers.forEach(statusReporter::addObserver);
 
                 synchronized (this) {
-                    final Thread statusThread = new Thread(statusReporter,  "exist-broker-" + getId() + "-shutdown-statusReporter");
+                    final Thread statusThread = newInstanceThread(this, "shutdown-status-reporter", statusReporter);
                     statusThread.start();
 
                     // release transaction log to allow remaining brokers to complete
@@ -1688,6 +1702,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
                 statusReporter.terminate();
                 statusReporter = null;
+
+//                instanceThreadGroup.destroy();
             }
         } finally {
             status.process(Event.FINISHED_SHUTDOWN);

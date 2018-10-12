@@ -50,6 +50,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
+import static org.exist.util.ThreadUtils.newGlobalThread;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  * 
@@ -117,7 +119,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		sources = new HashMap<String, DebuggingSource>();
 		currentTransactionId = 1;
 		
-		Thread session = new Thread(new HttpSession(this, url));
+		Thread session = newGlobalThread("debuggerHttpSession" new HttpSession(this, url));
 		session.start();
 
 		// 30s timeout

@@ -347,67 +347,65 @@ class DocumentView extends JFrame {
     }
 
     private void save() {
-        new Thread() {
-            public void run() {
+        final Runnable saveTask = () -> {
+            try {
+                statusMessage.setText(Messages.getString("DocumentView.36") + URIUtils.urlDecodeUtf8(resource.getId())); //$NON-NLS-1$
+                if (collection instanceof Observable) {
+                    ((Observable) collection)
+                            .addObserver(new ProgressObserver());
+                }
+                progress.setIndeterminate(true);
+                progress.setVisible(true);
+                resource.setContent(text.getText());
+                collection.storeResource(resource);
+                if (collection instanceof Observable) {
+                    ((Observable) collection).deleteObservers();
+                }
+            } catch (final XMLDBException e) {
+                ClientFrame.showErrorMessage(Messages.getString("DocumentView.37") //$NON-NLS-1$
+                        + e.getMessage(), e);
+            } finally {
+                progress.setVisible(false);
+            }
+        };
+        client.newClientThread("save", saveTask).start();
+    }
+
+    private void saveAs() {
+        final Runnable saveAsTask = () -> {
+
+            //Get the name to save the resource as
+            final String nameres = JOptionPane.showInputDialog(null, Messages.getString("DocumentView.38")); //$NON-NLS-1$
+            if (nameres != null) {
                 try {
-                    statusMessage.setText(Messages.getString("DocumentView.36") + URIUtils.urlDecodeUtf8(resource.getId())); //$NON-NLS-1$
+                    //Change status message and display a progress dialog
+                    statusMessage.setText(Messages.getString("DocumentView.39") + nameres); //$NON-NLS-1$
                     if (collection instanceof Observable) {
-                        ((Observable) collection)
-                                .addObserver(new ProgressObserver());
+                        ((Observable) collection).addObserver(new ProgressObserver());
                     }
                     progress.setIndeterminate(true);
                     progress.setVisible(true);
-                    resource.setContent(text.getText());
-                    collection.storeResource(resource);
+
+                    //Create a new resource as named, set the content, store the resource
+                    XMLResource result = null;
+                    result = (XMLResource) collection.createResource(URIUtils.encodeXmldbUriFor(nameres).toString(), XMLResource.RESOURCE_TYPE);
+                    result.setContent(text.getText());
+                    collection.storeResource(result);
+                    client.reloadCollection();    //reload the client collection
                     if (collection instanceof Observable) {
                         ((Observable) collection).deleteObservers();
                     }
                 } catch (final XMLDBException e) {
-                    ClientFrame.showErrorMessage(Messages.getString("DocumentView.37") //$NON-NLS-1$
-                            + e.getMessage(), e);
+                    ClientFrame.showErrorMessage(Messages.getString("DocumentView.40") + e.getMessage(), e); //$NON-NLS-1$
+                } catch (final URISyntaxException e) {
+                    ClientFrame.showErrorMessage(Messages.getString("DocumentView.41") + e.getMessage(), e); //$NON-NLS-1$
                 } finally {
+                    //hide the progress dialog
                     progress.setVisible(false);
                 }
             }
-        }.start();
-    }
-
-    private void saveAs() {
-        new Thread() {
-            public void run() {
-
-                //Get the name to save the resource as
-                final String nameres = JOptionPane.showInputDialog(null, Messages.getString("DocumentView.38")); //$NON-NLS-1$
-                if (nameres != null) {
-                    try {
-                        //Change status message and display a progress dialog
-                        statusMessage.setText(Messages.getString("DocumentView.39") + nameres); //$NON-NLS-1$
-                        if (collection instanceof Observable) {
-                            ((Observable) collection).addObserver(new ProgressObserver());
-                        }
-                        progress.setIndeterminate(true);
-                        progress.setVisible(true);
-
-                        //Create a new resource as named, set the content, store the resource
-                        XMLResource result = null;
-                        result = (XMLResource) collection.createResource(URIUtils.encodeXmldbUriFor(nameres).toString(), XMLResource.RESOURCE_TYPE);
-                        result.setContent(text.getText());
-                        collection.storeResource(result);
-                        client.reloadCollection();    //reload the client collection
-                        if (collection instanceof Observable) {
-                            ((Observable) collection).deleteObservers();
-                        }
-                    } catch (final XMLDBException e) {
-                        ClientFrame.showErrorMessage(Messages.getString("DocumentView.40") + e.getMessage(), e); //$NON-NLS-1$
-                    } catch (final URISyntaxException e) {
-                        ClientFrame.showErrorMessage(Messages.getString("DocumentView.41") + e.getMessage(), e); //$NON-NLS-1$
-                    } finally {
-                        //hide the progress dialog
-                        progress.setVisible(false);
-                    }
-                }
-            }
-        }.start();
+        };
+        client.newClientThread("save-as", saveAsTask).start();
     }
 
     private void export() throws XMLDBException {
