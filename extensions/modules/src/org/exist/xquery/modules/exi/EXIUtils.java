@@ -50,7 +50,7 @@ public class EXIUtils {
                 Serializer serializer = context.getBroker().newSerializer();
 
                 NodeValue node = (NodeValue) item;
-                return new NodeInputStream(serializer, node);
+                return new NodeInputStream(context.getBroker().getBrokerPool(), serializer, node);
             default:
                 LOG.error("Wrong item type " + Type.getTypeName(item.getType()));
                 throw new XPathException("wrong item type " + Type.getTypeName(item.getType()));

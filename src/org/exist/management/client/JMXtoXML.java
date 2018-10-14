@@ -134,7 +134,6 @@ public class JMXtoXML {
     private final MBeanServerConnection platformConnection = ManagementFactory.getPlatformMBeanServer();
     private MBeanServerConnection connection;
     private JMXServiceURL url;
-    private final ThreadFactory jmxPingFactory = new NamedThreadFactory("jmx-ping");
 
 
     /**
@@ -192,6 +191,7 @@ public class JMXtoXML {
      */
     public long ping(final String instance, final long timeout) {
         final long start = System.currentTimeMillis();
+        final ThreadFactory jmxPingFactory = new NamedThreadFactory(instance, "jmx.ping");
         final ExecutorService executorService = Executors.newSingleThreadExecutor(jmxPingFactory);
         final Future<Long> futurePing = executorService.submit(new Ping(instance, connection));
 

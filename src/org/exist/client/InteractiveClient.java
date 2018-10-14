@@ -188,6 +188,9 @@ public class InteractiveClient {
     protected XmldbURI path = XmldbURI.ROOT_COLLECTION_URI;
     private Optional<Writer> lazyTraceWriter = Optional.empty();
 
+    private static final NamedThreadGroupFactory clientThreadGroupFactory = new NamedThreadGroupFactory("java-admin-client");
+    private final ThreadGroup clientThreadGroup = clientThreadGroupFactory.newThreadGroup(null);
+
     /**
      * Display help on commands
      */
@@ -249,6 +252,18 @@ public class InteractiveClient {
             e.printStackTrace();
             System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE); // return non-zero exit status on exception
         }
+    }
+
+    /**
+     * Create a new thread for this client instance.
+     *
+     * @param threadName the name of the thread
+     * @param runnable the function to execute on the thread
+     *
+     * @return the thread
+     */
+    Thread newClientThread(final String threadName, final Runnable runnable) {
+        return new Thread(clientThreadGroup, runnable, clientThreadGroup.getName() + "." + threadName);
     }
 
     /**

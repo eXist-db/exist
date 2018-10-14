@@ -128,6 +128,10 @@ public class ExistEmbeddedServer extends ExternalResource {
         return pool;
     }
 
+    public Optional<Path> getTemporaryStorage() {
+        return temporaryStorage;
+    }
+
     public void restart() throws EXistException, DatabaseConfigurationException, IOException {
         restart(false);
     }

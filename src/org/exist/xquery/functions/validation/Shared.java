@@ -148,7 +148,7 @@ public class Shared {
             final Serializer serializer = context.getBroker().newSerializer();
 
             final NodeValue node = (NodeValue) item;
-            final InputStream is = new NodeInputStream(serializer, node); 
+            final InputStream is = new NodeInputStream(context.getBroker().getBrokerPool(), serializer, node);
             streamSource.setInputStream(is);
 
         } else if (item.getType() == Type.BASE64_BINARY || item.getType() == Type.HEX_BINARY) {

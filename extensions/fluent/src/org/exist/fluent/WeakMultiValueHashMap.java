@@ -3,6 +3,8 @@ package org.exist.fluent;
 import java.lang.ref.WeakReference;
 import java.util.*;
 
+import static org.exist.util.ThreadUtils.newGlobalThread;
+
 class WeakMultiValueHashMap<K,V> {
 
 	/**
@@ -84,7 +86,7 @@ class WeakMultiValueHashMap<K,V> {
 	
 	private static final Sweeper SWEEPER = new Sweeper();
 	static {
-		Thread thread = new Thread(SWEEPER, "WeakMultiValueHashMap sweeper");
+		Thread thread = newGlobalThread("fluent.weakMultiValueHashMap.sweeper", SWEEPER);
 		thread.setPriority(Thread.NORM_PRIORITY-3);
 		thread.setDaemon(true);
 		thread.start();
