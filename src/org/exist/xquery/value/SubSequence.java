@@ -86,7 +86,7 @@ public class SubSequence extends AbstractSequence {
 
     @Override
     public int getItemType() {
-        return Type.ITEM;
+        return sequence.getItemType();
     }
 
     @Override
