@@ -46,6 +46,9 @@ public class CollectionLocksTest {
     private static final int CONCURRENCY_LEVEL = Runtime.getRuntime().availableProcessors() * 3;
     private static final int TEST_DEADLOCK_TIMEOUT = 4000; // 4 seconds
 
+    private final String instanceId = "test.collection-locks-test";
+    private final ThreadGroup threadGroup = new ThreadGroup("collection-locks-test");
+
     /**
      * In the noDeadlock tests this is the maximum amount of time to wait for the second thread to acquire its lock
      *
@@ -110,7 +113,7 @@ public class CollectionLocksTest {
         final int numberOfThreads = CONCURRENCY_LEVEL;
         final XmldbURI collectionUri = XmldbURI.create("/db/x/y/z");
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final CountDownLatch continueLatch = new CountDownLatch(numberOfThreads);
 
         // thread definition
@@ -181,7 +184,7 @@ public class CollectionLocksTest {
         final int numberOfThreads = CONCURRENCY_LEVEL;
         final XmldbURI collectionUri = XmldbURI.create("/db/x/y/z");
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final CountDownLatch thread2StartLatch = new CountDownLatch(1);
         final AtomicReference firstWriteHolder = new AtomicReference();
         final AtomicReference lastWriteHolder = new AtomicReference();
@@ -437,7 +440,7 @@ public class CollectionLocksTest {
     }
 
     private void noDeadlock_writeWrite(final XmldbURI col1Uri, final XmldbURI col2Uri) throws InterruptedException {
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final Tuple2<Callable<Void>, Callable<Void>> t1t2 = createInterleaved(
                 () -> lockManager.acquireCollectionWriteLock(col1Uri, false),   //t1,1
                 () -> lockManager.acquireCollectionWriteLock(col2Uri, false),   //t2,1
@@ -448,7 +451,7 @@ public class CollectionLocksTest {
     }
 
     private void noDeadlock_writeRead(final XmldbURI col1Uri, final XmldbURI col2Uri) throws InterruptedException {
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final Tuple2<Callable<Void>, Callable<Void>> t1t2 = createInterleaved(
                 () -> lockManager.acquireCollectionWriteLock(col1Uri, false),     //t1,1
                 () -> lockManager.acquireCollectionReadLock(col2Uri),                       //t2,1
@@ -459,7 +462,7 @@ public class CollectionLocksTest {
     }
 
     private void noDeadlock_readRead(final XmldbURI col1Uri, final XmldbURI col2Uri) throws InterruptedException {
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
         final Tuple2<Callable<Void>, Callable<Void>> t1t2 = createInterleaved(
                 () -> lockManager.acquireCollectionReadLock(col1Uri),   //t1,1
                 () -> lockManager.acquireCollectionReadLock(col2Uri),   //t2,1
@@ -536,7 +539,7 @@ public class CollectionLocksTest {
         final XmldbURI col1Uri = XmldbURI.create("/db/x/y");
         final XmldbURI col2Uri = XmldbURI.create("/db/x/y/z");
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
 
         stress_noDeadlock(
                 () -> lockManager.acquireCollectionWriteLock(col1Uri, false),   //t1,1
@@ -554,7 +557,7 @@ public class CollectionLocksTest {
         final XmldbURI col1Uri = XmldbURI.create("/db/a");
         final XmldbURI col2Uri = XmldbURI.create("/db/b");
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
 
         stress_noDeadlock(
                 () -> lockManager.acquireCollectionWriteLock(col1Uri, false),   //t1,1
@@ -572,7 +575,7 @@ public class CollectionLocksTest {
         final XmldbURI col1Uri = XmldbURI.create("/db/x/y");
         final XmldbURI col2Uri = XmldbURI.create("/db/x/y/z");
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
 
         stress_noDeadlock(
                 () -> lockManager.acquireCollectionWriteLock(col1Uri, false),     //t1,1
@@ -590,7 +593,7 @@ public class CollectionLocksTest {
         final XmldbURI col1Uri = XmldbURI.create("/db/a");
         final XmldbURI col2Uri = XmldbURI.create("/db/b");
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
 
         stress_noDeadlock(
                 () -> lockManager.acquireCollectionWriteLock(col1Uri, false),   //t1,1
@@ -608,7 +611,7 @@ public class CollectionLocksTest {
         final XmldbURI col1Uri = XmldbURI.create("/db/x/y");
         final XmldbURI col2Uri = XmldbURI.create("/db/x/y/z");
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
 
         stress_noDeadlock(
                 () -> lockManager.acquireCollectionReadLock(col1Uri),   //t1,1
@@ -626,7 +629,7 @@ public class CollectionLocksTest {
         final XmldbURI col1Uri = XmldbURI.create("/db/a");
         final XmldbURI col2Uri = XmldbURI.create("/db/b");
 
-        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
 
         stress_noDeadlock(
                 () -> lockManager.acquireCollectionReadLock(col1Uri),   //t1,1

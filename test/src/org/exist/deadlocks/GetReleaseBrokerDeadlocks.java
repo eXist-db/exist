@@ -54,7 +54,7 @@ public class GetReleaseBrokerDeadlocks {
 	        
 	        Database db = BrokerPool.getInstance();
 	        
-	        Thread thread = new Thread(new EnterServiceMode());
+	        Thread thread = new Thread(db.getThreadGroup(), new EnterServiceMode());
 
 	        try(final DBBroker broker = db.getBroker()) {
 	        	thread.start();
@@ -106,7 +106,7 @@ public class GetReleaseBrokerDeadlocks {
 	        
 	        Thread thread;
 	        for (int i = 0; i < 1000; i++) {
-	        	thread = new Thread(new GetRelease());
+	        	thread = new Thread(db.getThreadGroup(), new GetRelease());
 	        	thread.start();
 		        Thread.sleep(rd.nextInt(250));
 		        

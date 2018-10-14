@@ -25,9 +25,8 @@ package org.exist.protocolhandler.xmlrpc;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.storage.io.BlockingInputStream;
 import org.exist.storage.io.BlockingOutputStream;
@@ -37,50 +36,47 @@ import org.exist.storage.io.BlockingOutputStream;
  *
  * @author Dannes Wessels
  */
-public class XmlrpcOutputStream  extends OutputStream {
-    
-    
-    private final static Logger logger = LogManager.getLogger(XmlrpcOutputStream.class);
-    private BlockingInputStream bis;
-    private BlockingOutputStream bos;
-    private XmlrpcUploadThread rt; 
-    
+public class XmlrpcOutputStream extends OutputStream {
+    private static final AtomicInteger uploadThreadId = new AtomicInteger();
+    private final BlockingOutputStream bos;
+
     /**
-     *  Constructor of XmlrpcOutputStream. 
-     * 
-     * @param xmldbURL Location of document in database.
-     * @throws MalformedURLException Thrown for illegalillegal URLs.
+     * Constructor of XmlrpcOutputStream.
+     *
+     * @param threadGroup the group for the threads created by this stream.
+     * @param url         Location of document in database.
+     * @throws MalformedURLException Thrown for illegal URLs.
      */
-    public XmlrpcOutputStream(XmldbURL xmldbURL) {
-        
-        logger.debug("Initializing XmlrpcOutputStream");
-        
-        bis = new BlockingInputStream();
-        bos = bis.getOutputStream();
-        
-        rt = new XmlrpcUploadThread(xmldbURL, bis);
-        rt.start();
-        
-        logger.debug("Initializing XmlrpcOutputStream done");
+    public XmlrpcOutputStream(final ThreadGroup threadGroup, final XmldbURL url) {
+        final BlockingInputStream bis = new BlockingInputStream();
+        this.bos = bis.getOutputStream();
+
+        final Runnable runnable = new XmlrpcUploadRunnable(url, bis);
+        final Thread thread = new Thread(threadGroup, runnable, threadGroup.getName() + ".xmlrpc.upload-" + uploadThreadId.getAndIncrement());
+        thread.start();
     }
 
-    
-    public void write(int b) throws IOException {
+    @Override
+    public void write(final int b) throws IOException {
         bos.write(b);
     }
 
-    public void write(byte[] b) throws IOException {
-        bos.write(b,0,b.length);
+    @Override
+    public void write(final byte[] b) throws IOException {
+        bos.write(b, 0, b.length);
     }
 
-    public void write(byte[] b, int off, int len) throws IOException {
-        bos.write(b,off,len);
+    @Override
+    public void write(final byte[] b, final int off, final int len) throws IOException {
+        bos.write(b, off, len);
     }
 
+    @Override
     public void close() throws IOException {
         bos.close();
     }
 
+    @Override
     public void flush() throws IOException {
         bos.flush();
     }

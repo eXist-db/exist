@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/conf.xsd">
+
+    <db-connection cacheSize="256M" checkMaxCacheSize="true" collectionCache="64M" database="native"
+        files="webapp/WEB-INF/data" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
+        doc-ids="default" minDiskSpace="128M">
+
+        <startup>
+            <triggers>
+                <trigger class="org.exist.security.GnuCryptoJceProviderStartupTrigger"/>
+            </triggers>
+        </startup>
+
+        <pool max="20" min="1" sync-period="120000" wait-before-shutdown="120000"/>
+
+        <query-pool max-stack-size="64" size="128" timeout="120000"/>
+
+        <recovery enabled="yes"  group-commit="no"   journal-dir="webapp/WEB-INF/data"
+                  size="100M" sync-on-commit="no"  force-restart="no"  consistency-check="yes"/>
+
+        <watchdog output-size-limit="1000000" query-timeout="-1"/>
+
+    </db-connection>
+
+    <repository root="/db/apps"/>
+
+    <binary-manager>
+        <cache class="org.exist.util.io.FileFilterInputStreamCache"/>
+    </binary-manager>
+
+    <indexer caseSensitive="yes" index-depth="5" preserve-whitespace-mixed-content="no"
+        suppress-whitespace="none">
+
+        <modules/>
+
+        <index/>
+
+    </indexer>
+
+
+    <scheduler/>
+
+    <parser>
+        <xml>
+            <features/>
+        </xml>
+        <html-to-xml class="org.cyberneko.html.parsers.SAXParser">
+            <properties>
+                <property name="http://cyberneko.org/html/properties/names/elems" value="match"/>
+                <property name="http://cyberneko.org/html/properties/names/attrs" value="no-change"/>
+            </properties>
+        </html-to-xml>
+    </parser>
+
+    <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes"
+                enable-xsl="no" indent="yes" match-tagging-attributes="no" 
+                match-tagging-elements="no"/>
+
+    <transformer class="net.sf.saxon.TransformerFactoryImpl" caching="yes">
+        <attribute name="http://saxon.sf.net/feature/version-warning" value="false" type="boolean"/>
+    </transformer>
+
+    <validation mode="no">
+        <entity-resolver>
+            <catalog uri="${WEBAPP_HOME}/WEB-INF/catalog.xml"/>
+        </entity-resolver>
+    </validation>
+
+    <xquery enable-java-binding="no" disable-deprecated-functions="no" 
+            enable-query-rewriting="yes" backwardCompatible="no" 
+            enforce-index-use="always"
+            raise-error-on-failed-retrieval="no">
+        
+        <builtin-modules/>
+    </xquery>
+
+    <xupdate allowed-fragmentation="50000" enable-consistency-checks="no"/>
+
+</exist>

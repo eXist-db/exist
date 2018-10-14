@@ -24,7 +24,6 @@ package org.exist.validation.internal.node;
 
 import java.io.IOException;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicLong;
 import javax.xml.transform.OutputKeys;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,21 +34,18 @@ import org.exist.xquery.value.NodeValue;
 /**
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class NodeSerializerThread extends Thread {
+public class NodeSerializerRunnable implements Runnable {
     
-    private final static Logger logger = LogManager.getLogger(NodeSerializerThread.class);
+    private final static Logger logger = LogManager.getLogger(NodeSerializerRunnable.class);
     
     private final Serializer serializer;
     private final NodeValue node;
     private final BlockingOutputStream bos;
-
-    private static final AtomicLong nodeSerializerThreadId = new AtomicLong();
     
     /**
-     * Creates a new instance of NodeSerializerThread
+     * Creates a new instance of NodeSerializerRunnable
      */
-    public NodeSerializerThread(final Serializer serializer, final NodeValue node,final  BlockingOutputStream bos) {
-        super("exist-nodeSerializerThread-" + nodeSerializerThreadId.getAndIncrement());
+    public NodeSerializerRunnable(final Serializer serializer, final NodeValue node, final  BlockingOutputStream bos) {
         this.serializer = serializer;
         this.node = node;
         this.bos = bos;
@@ -77,10 +73,8 @@ public class NodeSerializerThread extends Thread {
             try { // NEEDED!
                 bos.close(exception);
             } catch (final IOException ex) {
-                logger.debug(ex);
+                logger.warn(ex);
             }
         }
     }
-    
-    
 }
