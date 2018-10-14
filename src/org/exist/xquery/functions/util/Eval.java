@@ -27,17 +27,12 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
-import java.util.Optional;
 import java.util.SimpleTimeZone;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.xml.datatype.Duration;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.exist.EXistException;
 
 import org.exist.Namespaces;
 import org.exist.dom.persistent.BinaryDocument;
@@ -49,18 +44,14 @@ import org.exist.dom.memtree.ReferenceNode;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.Subject;
-import org.exist.security.UUIDGenerator;
 import org.exist.source.DBSource;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.source.StringSource;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock.LockMode;
-import org.exist.util.NamedThreadFactory;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -136,8 +127,6 @@ public class Eval extends BasicFunction {
     protected static final FunctionReturnSequenceType RETURN_THREADID_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The ID of the asynchronously executing thread.");
     protected static final FunctionReturnSequenceType RETURN_ITEM_TYPE = new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the evaluated XPath/XQuery expression");
 
-    private final static ExecutorService asyncExecutorService = Executors.newCachedThreadPool(new NamedThreadFactory("asyncEval"));
-
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("eval", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
@@ -148,7 +137,8 @@ public class Eval extends BasicFunction {
             new QName("eval-async", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Dynamically evaluates an XPath/XQuery expression asynchronously. The ID of the executing thread is returned.",
             new SequenceType[] { EVAL_ARGUMENT },
-            RETURN_NODE_TYPE),
+            RETURN_NODE_TYPE,
+            "The implementation of eval-async was unreliable. eval-async now defers to eval!"),
         new FunctionSignature(
             new QName("eval", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Dynamically evaluates an XPath/XQuery expression. ",
@@ -200,51 +190,8 @@ public class Eval extends BasicFunction {
         if(isEvalDisabled) {
             throw new XPathException("util:eval has been disabled by the eXist administrator in conf.xml");
         }
-        
-        if(isCalledAs("eval-async")) {
 
-            final String uuid = UUIDGenerator.getUUID();
-            final CallableEval asyncEval = new CallableEval(context, contextSequence, args);
-//            final Future<Sequence> f =
-            asyncExecutorService.submit(asyncEval);
-            //context.addAsyncQueryReference(f); //TODO keep a reference, so threads can be interogated/cancelled - perhaps a WeakReference?
-            return new StringValue(uuid);
-        } else {
-            return doEval(context, contextSequence, args);
-        }
-    }
-
-    private class CallableEval implements Callable<Sequence> {
-
-        private final XQueryContext callersContext;
-        private final Sequence contextSequence;
-        private final Sequence args[];
-        private final Subject subject;
-
-        public CallableEval(XQueryContext context, Sequence contextSequence, Sequence args[]) {
-            this.callersContext = context;
-            this.contextSequence = contextSequence;
-            this.args = args;
-            this.subject = callersContext.getSubject();
-        }
-
-        @Override
-        public Sequence call() throws XPathException {
-        	
-        	BrokerPool db = null;
-            
-            try {
-				db = BrokerPool.getInstance();
-
-                final XQueryContext context = callersContext.copyContext(); //make a copy
-                try(final DBBroker broker = db.get(Optional.ofNullable(subject))) {
-                    return doEval(context, contextSequence, args);
-                }
-            } catch(final EXistException ex) {
-                throw new XPathException("Unable to get new broker: " + ex.getMessage(), ex);
-            }
-        }
-
+        return doEval(context, contextSequence, args);
     }
 
     private Sequence doEval(XQueryContext evalContext, Sequence contextSequence, Sequence args[]) throws XPathException {
