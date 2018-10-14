@@ -24,63 +24,64 @@ package org.exist.validation.internal.node;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.exist.Database;
 import org.exist.storage.io.BlockingInputStream;
-import org.exist.storage.io.BlockingOutputStream;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.value.NodeValue;
+
+import static org.exist.util.ThreadUtils.newInstanceThread;
 
 /**
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class NodeInputStream extends InputStream{
-    
-    private final static Logger logger = LogManager.getLogger(NodeInputStream.class);
-    
-    private final BlockingInputStream  bis;
+public class NodeInputStream extends InputStream {
+    private final BlockingInputStream bis;
 
+    private static final AtomicLong nodeSerializerThreadId = new AtomicLong();
 
-    /** Creates a new instance of NodeInputStream */
-    public NodeInputStream(Serializer serializer, NodeValue node) {
-        logger.debug("Initializing NodeInputStream");
-        
-        bis = new BlockingInputStream();
-        BlockingOutputStream bos = bis.getOutputStream();
-
-        NodeSerializerThread rt = new NodeSerializerThread(serializer, node, bos);
-        
-        rt.start();
-        
-        logger.debug("Initializing NodeInputStream done");
+    /**
+     * Creates a new instance of NodeInputStream
+     */
+    public NodeInputStream(final Database database, final Serializer serializer, final NodeValue node) {
+        this.bis = new BlockingInputStream();
+        final Thread thread = newInstanceThread(database, "node-input-stream-serializer-" + nodeSerializerThreadId.getAndIncrement(), new NodeSerializerRunnable(serializer, node, bis.getOutputStream()));
+        thread.start();
     }
 
+    @Override
     public int read(byte[] b, int off, int len) throws IOException {
         return bis.read(b, off, len);
     }
-    
+
+    @Override
     public int read(byte[] b) throws IOException {
         return bis.read(b, 0, b.length);
     }
-    
+
+    @Override
     public long skip(long n) throws IOException {
         return bis.skip(n);
     }
-    
+
+    @Override
     public void reset() throws IOException {
         bis.reset();
     }
-    
+
+    @Override
     public int read() throws IOException {
         return bis.read();
     }
 
+    @Override
     public void close() throws IOException {
         bis.close();
     }
 
+    @Override
     public int available() throws IOException {
         return bis.available();
     }
-    
 }

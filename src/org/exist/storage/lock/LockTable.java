@@ -35,6 +35,7 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import static org.exist.storage.lock.LockTable.LockAction.Action.*;
+import static org.exist.util.ThreadUtils.newInstanceThread;
 
 /**
  * The Lock Table holds the details of
@@ -54,7 +55,6 @@ public class LockTable {
     public static final String PROP_TRACE_STACK_DEPTH = "exist.locktable.trace.stack.depth";
 
     private static final Logger LOG = LogManager.getLogger(LockTable.class);
-    private static final LockTable instance = new LockTable();
     private static final String THIS_CLASS_NAME = LockTable.class.getName();
 
     /**
@@ -103,8 +103,8 @@ public class LockTable {
      */
     private final Map<String, Tuple2<Long, Long>> lockCounts = new HashMap<>();
 
-    LockTable() {
-        this.executorService = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "exist-lockTable.processor"));
+    LockTable(final String brokerPoolId, final ThreadGroup threadGroup) {
+        this.executorService = Executors.newSingleThreadExecutor(runnable -> newInstanceThread(threadGroup, brokerPoolId, "lock-table.processor", runnable));
         this.queueConsumer = executorService.submit(new QueueConsumer(queue, attempting, acquired));
 
         // add a log listener if trace level logging is enabled

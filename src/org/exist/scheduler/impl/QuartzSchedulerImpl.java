@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import com.evolvedbinary.j8fu.Either;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.scheduler.*;
@@ -41,16 +42,22 @@ import org.exist.util.Configuration;
 
 import org.quartz.*;
 
+import static org.exist.util.ThreadUtils.nameInstanceSchedulerThread;
+import static org.exist.util.ThreadUtils.nameInstanceThread;
+import static org.exist.util.ThreadUtils.newInstanceSubThreadGroup;
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 import static org.exist.scheduler.JobDescription.*;
+import static org.quartz.impl.StdSchedulerFactory.*;
 
 import org.quartz.Job;
 import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.impl.matchers.GroupMatcher;
+
+import javax.annotation.Nullable;
 
 /**
  * A Scheduler to trigger Startup, System and User defined jobs.
@@ -79,14 +86,25 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
 
     @Override
     public void prepare(final BrokerPool brokerPool) throws BrokerPoolServiceException {
+
+        // NOTE: we create the scheduler in a separate thread with its own thread-group so that the thread group is used by Quartz
+        final ThreadGroup instanceQuartzThreadGroup = newInstanceSubThreadGroup(brokerPool, "scheduler.quartz-simple-thread-pool");
+        final QuartzSchedulerCreator creator = new QuartzSchedulerCreator();
+        final Thread schedulerCreatorThread = new Thread(instanceQuartzThreadGroup, creator, nameInstanceThread(brokerPool, "prepare-quartz-scheduler"));
+        schedulerCreatorThread.start();
+
         try {
-            final SchedulerFactory schedulerFactory = new StdSchedulerFactory(getQuartzProperties());
-            this.scheduler = schedulerFactory.getScheduler();
-        } catch(final SchedulerException e) {
+            schedulerCreatorThread.join();
+            this.scheduler = creator
+                    .getScheduler()
+                    .valueOrThrow(e -> new BrokerPoolServiceException("Unable to create Scheduler: " + e.getMessage(), e));
+
+        } catch (final InterruptedException e) {
+            // restore interrupted state
+            Thread.currentThread().interrupt();
             throw new BrokerPoolServiceException("Unable to create Scheduler: " + e.getMessage(), e);
         }
     }
-
     @Override
     public void startMultiUser(final BrokerPool brokerPool) throws BrokerPoolServiceException {
         run(); // start running all the defined jobs
@@ -95,16 +113,15 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
     private final static Properties defaultQuartzProperties = new Properties();
 
     static {
-        defaultQuartzProperties.setProperty("org.quartz.scheduler.instanceName", "DefaultQuartzScheduler");
-        defaultQuartzProperties.setProperty("org.quartz.scheduler.rmi.export", "false");
-        defaultQuartzProperties.setProperty("org.quartz.scheduler.rmi.proxy", "false");
-        defaultQuartzProperties.setProperty("org.quartz.scheduler.wrapJobExecutionInUserTransaction", "false");
-        defaultQuartzProperties.setProperty("org.quartz.scheduler.skipUpdateCheck", "true");
-        defaultQuartzProperties.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
+        defaultQuartzProperties.setProperty(PROP_SCHED_RMI_EXPORT, "false");
+        defaultQuartzProperties.setProperty(PROP_SCHED_RMI_PROXY, "false");
+        defaultQuartzProperties.setProperty(PROP_SCHED_WRAP_JOB_IN_USER_TX, "false");
+        defaultQuartzProperties.setProperty(PROP_THREAD_POOL_CLASS, "org.exist.scheduler.impl.ExistQuartzSimpleThreadPool");
         defaultQuartzProperties.setProperty("org.quartz.threadPool.threadCount", "4");
         defaultQuartzProperties.setProperty("org.quartz.threadPool.threadPriority", "5");
+        defaultQuartzProperties.setProperty("org.quartz.threadPool.threadsInheritGroupOfInitializingThread", "true");
         defaultQuartzProperties.setProperty("org.quartz.threadPool.threadsInheritContextClassLoaderOfInitializingThread", "true");
-        defaultQuartzProperties.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore");
+        defaultQuartzProperties.setProperty(PROP_JOB_STORE_CLASS, "org.quartz.simpl.RAMJobStore");
         defaultQuartzProperties.setProperty("org.quartz.jobStore.misfireThreshold", "60000");
     }
 
@@ -125,10 +142,14 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
             LOG.warn("Using default properties for Quartz scheduler");
             properties.putAll(defaultQuartzProperties);
         }
-        if (!properties.containsKey(StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME)) {
-            properties.setProperty(StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME,
-                brokerPool.getId() + "_QuartzScheduler");
-        }
+
+        // always set the scheduler name
+        properties.setProperty(PROP_SCHED_INSTANCE_NAME, nameInstanceSchedulerThread(brokerPool, "quartz-scheduler"));
+
+        // always set the thread prefix for the thread pool
+        final String schedulerThreadNamePrefix = nameInstanceSchedulerThread(brokerPool, "quartz-worker");
+        properties.setProperty(PROP_THREAD_POOL_PREFIX + ".threadNamePrefix", schedulerThreadNamePrefix);
+
         return properties;
     }
 
@@ -561,5 +582,28 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
         }
         //Store the value of the unschedule setting
         jobDataMap.put(UNSCHEDULE, Boolean.valueOf(unschedule));
+    }
+
+    /**
+     * Creates a new Scheduler
+     */
+    private class QuartzSchedulerCreator implements Runnable {
+        @Nullable
+        private volatile Either<SchedulerException, org.quartz.Scheduler> scheduler = null;
+
+        @Nullable
+        public Either<SchedulerException, org.quartz.Scheduler> getScheduler() {
+            return scheduler;
+        }
+
+        @Override
+        public void run() {
+            try {
+                final SchedulerFactory schedulerFactory = new StdSchedulerFactory(getQuartzProperties());
+                this.scheduler = Either.Right(schedulerFactory.getScheduler());
+            } catch(final SchedulerException e) {
+                this.scheduler = Either.Left(e);
+            }
+        }
     }
 }

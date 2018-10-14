@@ -31,6 +31,8 @@ import org.exist.storage.DBBroker;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQuery;
 
+import static org.exist.util.ThreadUtils.nameInstanceThread;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -48,7 +50,7 @@ public class ScriptRunner implements Runnable, Observer {
 		this.session = session;
 		expression = compiled;
 		
-		thread = new Thread(this);
+		thread = newInstanceThread(BrokerPool.getInstance(), "scriptRunner" this);
 		thread.setDaemon(true);
 		thread.setName("Debug session "+compiled.getContext().hashCode());
 	}

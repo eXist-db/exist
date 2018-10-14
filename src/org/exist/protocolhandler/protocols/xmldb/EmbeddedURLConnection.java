@@ -45,18 +45,18 @@ import org.exist.protocolhandler.xmlrpc.XmlrpcOutputStream;
  * @author Dannes Wessels
  */
 public class EmbeddedURLConnection extends URLConnection {
-    
-    private final static Logger LOG = LogManager.getLogger(EmbeddedURLConnection.class);
-    
+    private static final Logger LOG = LogManager.getLogger(EmbeddedURLConnection.class);
+    private final ThreadGroup threadGroup;
+
     /**
      * Constructs a URL connection to the specified URL.
       */
-    protected EmbeddedURLConnection(final URL url) {
+    protected EmbeddedURLConnection(final ThreadGroup threadGroup, final URL url) {
         super(url);
         if (LOG.isDebugEnabled()) {
             LOG.debug(url);
         }
-        
+        this.threadGroup = threadGroup;
         setDoInput(true);
         setDoOutput(true);
     }
@@ -80,7 +80,7 @@ public class EmbeddedURLConnection extends URLConnection {
         if(xmldbURL.isEmbedded()){
             inputstream = new EmbeddedInputStream( xmldbURL );
         } else {
-            inputstream = new XmlrpcInputStream( xmldbURL );
+            inputstream = new XmlrpcInputStream(threadGroup, xmldbURL);
         }
         
         return inputstream;
@@ -98,7 +98,7 @@ public class EmbeddedURLConnection extends URLConnection {
         if(xmldbURL.isEmbedded()){
             outputstream = new EmbeddedOutputStream( xmldbURL );
         } else {
-            outputstream = new XmlrpcOutputStream( xmldbURL );
+            outputstream = new XmlrpcOutputStream(threadGroup, xmldbURL);
         }
         
         return outputstream;

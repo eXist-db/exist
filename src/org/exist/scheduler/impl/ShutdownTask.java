@@ -37,12 +37,6 @@ import java.util.concurrent.Executors;
  */
 public class ShutdownTask implements SystemTask {
 
-    private final ThreadGroup threadGroup;
-
-    public ShutdownTask() {
-        this.threadGroup = Thread.currentThread().getThreadGroup();
-    }
-
     @Override
     public String getName() {
         return "Database Shutdown";
@@ -57,7 +51,7 @@ public class ShutdownTask implements SystemTask {
 
         //NOTE - shutdown must be executed asynchronously from the scheduler, to avoid a deadlock with shutting down the scheduler
         final Callable shutdownCallable = new AsyncShutdown(broker.getBrokerPool());
-        Executors.newSingleThreadExecutor(new NamedThreadFactory("shutdownTask-asyncShutdown")).submit(shutdownCallable);
+        Executors.newSingleThreadExecutor(new NamedThreadFactory(broker.getBrokerPool(), "shutdown-task-async-shutdown")).submit(shutdownCallable);
     }
 
     @Override

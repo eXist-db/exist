@@ -48,6 +48,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.storage.BrokerPool;
 import org.exist.util.serializer.DOMSerializer;
 import org.w3c.dom.Element;
 
@@ -132,7 +133,7 @@ public class JMXServlet extends HttpServlet {
                 }
             }
 
-            final long responseTime = client.ping("exist", timeout);
+            final long responseTime = client.ping(BrokerPool.DEFAULT_INSTANCE_NAME, timeout);
             if (responseTime == JMXtoXML.PING_TIMEOUT) {
                 root = client.generateXMLReport(String.format("no response on ping after %sms", timeout),
                         new String[]{"sanity", "locking", "processes", "instances", "memory"});
