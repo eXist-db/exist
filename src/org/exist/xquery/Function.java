@@ -439,12 +439,6 @@ public abstract class Function extends PathExpr {
     }
 
     @Override
-    public boolean allowMixedNodesInReturn() {
-        final int returnType = mySignature.getReturnType().getPrimaryType();
-        return returnType == Type.ANY_TYPE || returnType == Type.ITEM || returnType == Type.UNTYPED;
-    }
-
-    @Override
     public String toString() {
         final StringBuilder result = new StringBuilder();
         result.append(getName());
