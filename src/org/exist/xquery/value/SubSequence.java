@@ -86,7 +86,7 @@ public class SubSequence extends AbstractSequence {
 
     @Override
     public int getItemType() {
-        return Type.ITEM;
+        return sequence.getItemType();
     }
 
     @Override
@@ -361,7 +361,26 @@ public class SubSequence extends AbstractSequence {
 
     @Override
     public boolean isPersistentSet() {
-        return false;
+        final SequenceIterator iterator;
+        try {
+             iterator = iterate();
+        } catch (final XPathException e) {
+            throw new RuntimeException(e); // should never happen!
+        }
+
+        // needed to guard against returning true for an empty-sequence below
+        if (!iterator.hasNext()) {
+            return false;
+        }
+
+        while (iterator.hasNext()) {
+            final NodeValue item = (NodeValue) iterator.nextItem();
+            if (item.getImplementationType() != NodeValue.PERSISTENT_NODE) {
+                return false;
+            }
+        }
+        // else, all items were persistent
+        return true;
     }
 
     @Override

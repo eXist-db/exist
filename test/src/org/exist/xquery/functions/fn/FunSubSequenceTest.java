@@ -22,11 +22,18 @@ package org.exist.xquery.functions.fn;
 
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.test.TestConstants;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XMLResource;
 
 import static org.junit.Assert.assertEquals;
 
@@ -34,7 +41,11 @@ import static org.junit.Assert.assertEquals;
 public class FunSubSequenceTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(true, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
+
+    private static Collection test = null;
+    private static final String SIMPLE_XML_FILENAME = "simple.xml";
+    private static final String SIMPLE_XML = "<nums><i>1</i><i>2</i><i>3</i><i>4</i></nums>";
 
     @Test
     public void all_arity2() throws XMLDBException {
@@ -166,6 +177,26 @@ public class FunSubSequenceTest {
     public void largeRange_arity3() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery("fn:count(fn:subsequence((1 to 3000000000), 1, 3000000000))");
         assertEquals("(3000000000)", asSequenceStr(result));
+    }
+
+    @Test
+    public void persistentSupsequence_toInMemory() throws XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery("fn:subsequence(doc('" + TestConstants.TEST_COLLECTION_URI.getCollectionPath() + "/" + SIMPLE_XML_FILENAME + "')/nums/i, 2, 2)//text()");
+        assertEquals("(2,3)", asSequenceStr(result));
+    }
+
+    @BeforeClass
+    public static void setup() throws XMLDBException {
+        test = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), TestConstants.TEST_COLLECTION_URI.lastSegment().toString());
+        final Resource resource = test.createResource(SIMPLE_XML_FILENAME, XMLResource.RESOURCE_TYPE);
+        resource.setContent(SIMPLE_XML);
+        test.storeResource(resource);
+    }
+
+    @AfterClass
+    public static void cleanup() throws XMLDBException {
+        final CollectionManagementService collectionManagementService = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        collectionManagementService.removeCollection(test.getName());
     }
 
     private static String asSequenceStr(final ResourceSet result) throws XMLDBException {
