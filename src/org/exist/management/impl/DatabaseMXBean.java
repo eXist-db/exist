@@ -26,6 +26,10 @@ import java.util.List;
 public interface DatabaseMXBean {
 
     String getInstanceId();
+
+    String getStatus();
+
+    void shutdown();
     
     int getMaxBrokers();
 
