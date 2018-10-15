@@ -58,6 +58,16 @@ public class Database implements DatabaseMXBean {
     }
 
     @Override
+    public String getStatus() {
+        return pool.getStatus();
+    }
+
+    @Override
+    public void shutdown() {
+        pool.shutdown();
+    }
+
+    @Override
     public int getMaxBrokers() {
         return pool.getMax();
     }
