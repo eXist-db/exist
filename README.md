@@ -4,7 +4,7 @@
 </a>
 </div>
 
-## eXist Native XML Database
+## eXist-db Native XML Database
 
 [![Build Status](https://travis-ci.com/eXist-db/exist.png?branch=develop)](https://travis-ci.com/eXist-db/exist)
 [![Build status](https://ci.appveyor.com/api/projects/status/27jtt2m7s4qvey11/branch/develop?svg=true)](https://ci.appveyor.com/project/AdamRetter/exist/branch/develop)
@@ -14,7 +14,11 @@
 [![Download](https://api.bintray.com/packages/existdb/releases/exist/images/download.svg)](https://bintray.com/existdb/releases/exist/_latestVersion)
 [![HipChat](https://img.shields.io/badge/hipchat-eXist–db-blue.svg)](https://www.hipchat.com/gEBQ3SNfp)
 
-eXist is a high-performance open source native XML database—a NoSQL document database and application platform built entirely around XML technologies. The main homepage for eXist can be found at [exist-db.org](http://www.exist-db.org "eXist Homepage"). This is the GitHub repository of eXist source code, and this page links to resources for downloading, building, and contributing to eXist, below.
+[![Code of Conduct](https://img.shields.io/badge/code%20of%20conduct-contributor%20covenant-%235e0d73.svg)](http://contributor-covenant.org/version/1/4/)
+
+eXist-db is a high-performance open source native XML database—a NoSQL document database and application platform built entirely around XML technologies. The main homepage for eXist-db can be found at [exist-db.org](http://www.exist-db.org "eXist Homepage"). This is the GitHub repository of eXist source code, and this page links to resources for downloading, building, and contributing to eXist-db, below.
+
+The eXist-db community has adopted the [Contributor Covenant](https://www.contributor-covenant.org/) [Code of Conduct](https://www.contributor-covenant.org/version/1/4/code-of-conduct).
 
 ## Resources 
 
