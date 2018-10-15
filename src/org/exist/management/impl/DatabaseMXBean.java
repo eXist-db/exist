@@ -24,7 +24,11 @@ import java.util.List;
 * $Id$
 */
 public interface DatabaseMXBean extends PerInstanceMBean {
-    
+
+    String getStatus();
+
+    void shutdown();
+
     int getMaxBrokers();
 
     int getAvailableBrokers();
