@@ -99,6 +99,7 @@ public class OrderByClause extends AbstractFLWORClause {
     @Override
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
+        returnExpr.resetState(postOptimization);
         stack.clear();
     }
 }

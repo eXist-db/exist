@@ -4,6 +4,62 @@ module namespace flwor="http://exist-db.org/xquery/test/flwor";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
+declare variable $flwor:COLLECTION_CONFIG :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <fulltext default="none" attributes="false"/>
+            <range>
+                <create qname="place">
+                    <field name="place-id" type="xs:string" match="@xml:id"/>
+                    <field name="place-name" type="xs:string" match="placeName"/>
+                </create>
+            </range>
+        </index>
+    </collection>;
+
+declare variable $flwor:DATA :=
+    <listPlace>
+         <place xml:id="warsaw">
+             <placeName>Warsaw</placeName>
+         </place>
+         <place xml:id="berlin">
+             <placeName>Berlin</placeName>
+         </place>
+    </listPlace>;
+
+declare variable $flwor:COLLECTION_NAME := "flwortest";
+declare variable $flwor:COLLECTION := "/db/" || $flwor:COLLECTION_NAME;
+
+declare
+    %test:setUp
+function flwor:setup() {
+    xmldb:create-collection("/db/system/config/db", $flwor:COLLECTION_NAME),
+    xmldb:store("/db/system/config/db/" || $flwor:COLLECTION_NAME, "collection.xconf", $flwor:COLLECTION_CONFIG),
+    xmldb:create-collection("/db", $flwor:COLLECTION_NAME),
+    xmldb:store($flwor:COLLECTION, "test.xml", $flwor:DATA)
+};
+
+declare
+    %test:tearDown
+function flwor:cleanup() {
+    xmldb:remove($flwor:COLLECTION),
+    xmldb:remove("/db/system/config/db/" || $flwor:COLLECTION_NAME)
+};
+
+declare function flwor:test($a) {
+    collection($flwor:COLLECTION_NAME)//place[placeName = "berlin"]/string()
+};
+
+
+declare
+    %test:assertEquals("Berlin")
+function flwor:order-by-with-range() {
+    for $i in 1 to 2
+    order by $i
+    return
+        flwor:test("Berlin")
+};
+
 (: https://github.com/eXist-db/exist/issues/739#issuecomment-130997865 :)
 declare
     %test:assertEquals(1, 2, 1, 2, 3, 1, 2, 3, 4)
@@ -78,3 +134,4 @@ function flwor:allowing-empty($n as xs:integer) {
     where not($x = 5)
     return concat("[", $x, "]")
 };
+
