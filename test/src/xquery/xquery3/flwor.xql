@@ -46,13 +46,13 @@ function flwor:cleanup() {
     xmldb:remove("/db/system/config/db/" || $flwor:COLLECTION_NAME)
 };
 
-declare function flwor:test($a) {
-    collection($flwor:COLLECTION_NAME)//place[placeName = "berlin"]/string()
+declare function flwor:test($name) {
+    collection($flwor:COLLECTION_NAME)//place[placeName = $name]/string()
 };
 
 
 declare
-    %test:assertEquals("Berlin")
+    %test:assertEquals("Berlin", "Berlin")
 function flwor:order-by-with-range() {
     for $i in 1 to 2
     order by $i
