@@ -32,7 +32,7 @@ import org.xmldb.api.base.XMLDBException;
 
 
 /**
- * an ant task to check for the existance of a collection or resource to be used as a ant condition.
+ * an ant task to check for the existence of a collection or resource to be used as a ant condition.
  *
  * @author  peter.klotz@blue-elephant-systems.com
  */
