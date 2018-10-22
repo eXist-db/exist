@@ -47,7 +47,7 @@ function flwor:cleanup() {
 };
 
 declare function flwor:test($name) {
-    collection($flwor:COLLECTION_NAME)//place[placeName = $name]/string()
+    collection($flwor:COLLECTION)//place[placeName = $name]/string()
 };
 
 
