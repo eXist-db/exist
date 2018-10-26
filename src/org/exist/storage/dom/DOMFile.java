@@ -2190,7 +2190,7 @@ public class DOMFile extends BTree implements Lockable {
         final DOMFilePageHeader newPageHeader = newPage.getPageHeader();
         if (newPageHeader.getLsn() == Lsn.LSN_INVALID || requiresRedo(loggable, newPage)) {
             try {
-                reuseDeleted(newPage.page);
+                dropFreePageList();
                 newPageHeader.setStatus(RECORD);
                 newPageHeader.setDataLength(0);
                 newPageHeader.setNextTupleID(ItemId.UNKNOWN_ID);
@@ -2460,7 +2460,7 @@ public class DOMFile extends BTree implements Lockable {
         try {
             final DOMPage newPage = getDOMPage(loggable.pageNum);
             final DOMFilePageHeader newPageHeader = newPage.getPageHeader();
-            reuseDeleted(newPage.page);
+            dropFreePageList();
             if (loggable.prevPage == Page.NO_PAGE) {
                 newPageHeader.setPrevDataPage(Page.NO_PAGE);
             } else {
@@ -2516,7 +2516,7 @@ public class DOMFile extends BTree implements Lockable {
         try {
             final DOMPage page = getDOMPage(loggable.pageNum);
             final DOMFilePageHeader pageHeader = page.getPageHeader();
-            reuseDeleted(page.page);
+            dropFreePageList();
             pageHeader.setStatus(RECORD);
             pageHeader.setNextDataPage(loggable.nextPage);
             pageHeader.setPrevDataPage(loggable.prevPage);
@@ -2535,12 +2535,12 @@ public class DOMFile extends BTree implements Lockable {
 
     protected void redoWriteOverflow(final WriteOverflowPageLoggable loggable) {
         try {
-        	final Page page = getPage(loggable.pageNum);
-            page.read();
+            final Page page = getPage(loggable.pageNum);
             final PageHeader pageHeader = page.getPageHeader();
-            reuseDeleted(page);
-            pageHeader.setStatus(RECORD);
             if (pageHeader.getLsn() != Lsn.LSN_INVALID && requiresRedo(loggable, page)) {
+
+                dropFreePageList();
+                pageHeader.setStatus(RECORD);
                 if (loggable.nextPage == Page.NO_PAGE) {
                     pageHeader.setNextPage(Page.NO_PAGE);
                 } else {
@@ -2549,9 +2549,10 @@ public class DOMFile extends BTree implements Lockable {
                 pageHeader.setLsn(loggable.getLsn());
                 writeValue(page, loggable.value);
             }
+
         } catch (final IOException e) {
             LOG.warn("Failed to redo " + loggable.dump() + ": " + e.getMessage(), e);
-          //TODO : throw exception ? -pb
+            //TODO : throw exception ? -pb
         }
     }
 
@@ -2585,7 +2586,7 @@ public class DOMFile extends BTree implements Lockable {
             final Page page = getPage(loggable.pageNum);
             page.read();
             final PageHeader pageHeader = page.getPageHeader();
-            reuseDeleted(page);
+            dropFreePageList();
             pageHeader.setStatus(RECORD);
             if (loggable.nextPage == Page.NO_PAGE) {
                 pageHeader.setNextPage(Page.NO_PAGE);
