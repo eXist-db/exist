@@ -19,11 +19,12 @@
  */
 package org.exist.storage.journal;
 
+import com.evolvedbinary.j8fu.function.BiFunction5E;
+import com.evolvedbinary.j8fu.function.Supplier5E;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.collections.Collection;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.numbering.DLN;
@@ -87,11 +88,11 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void store() throws LockException, SAXException, PermissionDeniedException, EXistException,
-            IOException, NoSuchFieldException, IllegalAccessException {
+            IOException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         store(false, 0);
     }
 
-    private void store(final boolean shouldGenerateReplaceEntry, final int offset) throws IllegalAccessException, EXistException, NoSuchFieldException, IOException, LockException, SAXException, PermissionDeniedException {
+    private void store(final boolean shouldGenerateReplaceEntry, final int offset) throws IllegalAccessException, EXistException, NoSuchFieldException, IOException, LockException, SAXException, PermissionDeniedException, InterruptedException {
         checkpointJournalAndSwitchFile();
 
         final Path testFile = getTestFile1();
@@ -122,7 +123,7 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void store_isRepeatable() throws LockException, SAXException, PermissionDeniedException,
-            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         store(false, 0);
         existEmbeddedServer.restart();
 
@@ -136,7 +137,7 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void storeWithoutCommit() throws LockException, SAXException, PermissionDeniedException,
-            EXistException, IOException, NoSuchFieldException, IllegalAccessException {
+            EXistException, IOException, NoSuchFieldException, IllegalAccessException, InterruptedException {
 
         checkpointJournalAndSwitchFile();
 
@@ -160,7 +161,7 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void storeWithoutCommit_isRepeatable() throws LockException, SAXException,
-            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         storeWithoutCommit();
         existEmbeddedServer.restart();
 
@@ -174,12 +175,12 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void storeThenDelete() throws LockException, SAXException, PermissionDeniedException,
-            EXistException, IOException, NoSuchFieldException, IllegalAccessException {
+            EXistException, IOException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         storeThenDelete(0);
     }
 
     private void storeThenDelete(final int offset) throws LockException, SAXException, PermissionDeniedException,
-            EXistException, IOException, NoSuchFieldException, IllegalAccessException {
+            EXistException, IOException, NoSuchFieldException, IllegalAccessException, InterruptedException {
 
         checkpointJournalAndSwitchFile();
 
@@ -204,7 +205,7 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void storeThenDelete_isRepeatable() throws LockException, SAXException, PermissionDeniedException,
-            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         storeThenDelete(0);
         existEmbeddedServer.restart();
 
@@ -218,7 +219,7 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void storeWithoutCommitThenDelete() throws LockException, SAXException, PermissionDeniedException,
-            EXistException, IOException, NoSuchFieldException, IllegalAccessException {
+            EXistException, IOException, NoSuchFieldException, IllegalAccessException, InterruptedException {
 
         checkpointJournalAndSwitchFile();
 
@@ -244,7 +245,7 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void storeWithoutCommitThenDelete_isRepeatable() throws LockException, SAXException,
-            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         storeWithoutCommitThenDelete();
         existEmbeddedServer.restart();
 
@@ -258,12 +259,12 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void storeThenDeleteWithoutCommit() throws LockException, SAXException, PermissionDeniedException,
-            EXistException, IOException, NoSuchFieldException, IllegalAccessException {
+            EXistException, IOException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         storeThenDeleteWithoutCommit(false, 0);
     }
 
     private void storeThenDeleteWithoutCommit(final boolean shouldGenerateReplaceEntry, final int offset) throws LockException, SAXException, PermissionDeniedException,
-            EXistException, IOException, NoSuchFieldException, IllegalAccessException {
+            EXistException, IOException, NoSuchFieldException, IllegalAccessException, InterruptedException {
 
         checkpointJournalAndSwitchFile();
 
@@ -296,7 +297,7 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void storeThenDeleteWithoutCommit_isRepeatable() throws LockException, SAXException,
-            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         storeThenDeleteWithoutCommit(false, 0);
         existEmbeddedServer.restart();
 
@@ -310,7 +311,7 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void storeWithoutCommitThenDeleteWithoutCommit() throws LockException, SAXException,
-            PermissionDeniedException, EXistException, IOException, NoSuchFieldException, IllegalAccessException {
+            PermissionDeniedException, EXistException, IOException, NoSuchFieldException, IllegalAccessException, InterruptedException {
 
         checkpointJournalAndSwitchFile();
 
@@ -335,7 +336,7 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void storeWithoutCommitThenDeleteWithoutCommit_isRepeatable() throws LockException, SAXException,
-            PermissionDeniedException, EXistException, IOException, NoSuchFieldException, IllegalAccessException, DatabaseConfigurationException {
+            PermissionDeniedException, EXistException, IOException, NoSuchFieldException, IllegalAccessException, DatabaseConfigurationException, InterruptedException {
         storeWithoutCommitThenDeleteWithoutCommit();
         existEmbeddedServer.restart();
 
@@ -349,12 +350,12 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void delete() throws LockException, SAXException, PermissionDeniedException, EXistException,
-            IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         delete(0);
     }
 
     private void delete(final int offset) throws LockException, SAXException, PermissionDeniedException, EXistException,
-            IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         checkpointJournalAndSwitchFile();
 
         final Path testFile = getTestFile1();
@@ -391,7 +392,7 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void delete_isRepeatable() throws LockException, SAXException, PermissionDeniedException,
-            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         delete(0);
         existEmbeddedServer.restart();
 
@@ -405,12 +406,12 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void deleteWithoutCommit() throws LockException, SAXException, PermissionDeniedException,
-            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         deleteWithoutCommit(false, 0);
     }
 
     private void deleteWithoutCommit(final boolean shouldGenerateReplaceEntry, final int offset) throws LockException, SAXException, PermissionDeniedException,
-            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
 
         checkpointJournalAndSwitchFile();
 
@@ -456,7 +457,7 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void deleteWithoutCommit_isRepeatable() throws LockException, SAXException,
-            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         deleteWithoutCommit(false, 0);
         existEmbeddedServer.restart();
 
@@ -470,11 +471,11 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void replace() throws LockException, SAXException, PermissionDeniedException, EXistException,
-            IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         replace(false, 0);
     }
 
-    private void replace(final boolean storeShouldGenerateReplaceEntry, final int offset) throws IllegalAccessException, EXistException, NoSuchFieldException, IOException, LockException, SAXException, PermissionDeniedException, DatabaseConfigurationException {
+    private void replace(final boolean storeShouldGenerateReplaceEntry, final int offset) throws IllegalAccessException, EXistException, NoSuchFieldException, IOException, LockException, SAXException, PermissionDeniedException, DatabaseConfigurationException, InterruptedException {
         checkpointJournalAndSwitchFile();
 
         final Path testFile = getTestFile1();
@@ -523,7 +524,7 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void replace_isRepeatable() throws LockException, SAXException, PermissionDeniedException,
-            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         replace(false, 0);
         existEmbeddedServer.restart();
 
@@ -537,11 +538,11 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void replaceWithoutCommit() throws LockException, SAXException, PermissionDeniedException,
-            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         replaceWithoutCommit(false, 0);
     }
 
-    private void replaceWithoutCommit(final boolean storeShouldGenerateReplaceEntry, final int offset) throws IllegalAccessException, EXistException, NoSuchFieldException, IOException, LockException, SAXException, PermissionDeniedException, DatabaseConfigurationException {
+    private void replaceWithoutCommit(final boolean storeShouldGenerateReplaceEntry, final int offset) throws IllegalAccessException, EXistException, NoSuchFieldException, IOException, LockException, SAXException, PermissionDeniedException, DatabaseConfigurationException, InterruptedException {
         checkpointJournalAndSwitchFile();
 
         final Path testFile = getTestFile1();
@@ -590,7 +591,7 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void replaceWithoutCommit_isRepeatable() throws LockException, SAXException,
-            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         replaceWithoutCommit(false, 0);
         existEmbeddedServer.restart();
 
@@ -604,12 +605,12 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void replaceThenDelete() throws LockException, SAXException, PermissionDeniedException,
-            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         replaceThenDelete(0);
     }
 
     private void replaceThenDelete(final int offset) throws LockException, SAXException, PermissionDeniedException,
-            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
 
         checkpointJournalAndSwitchFile();
 
@@ -653,7 +654,7 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void replaceThenDelete_isRepeatable() throws LockException, SAXException,
-            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         replaceThenDelete(0);
         existEmbeddedServer.restart();
 
@@ -674,12 +675,12 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void replaceWithoutCommitThenDelete() throws LockException, SAXException,
-            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         replaceWithoutCommitThenDelete(0);
     }
 
     private void replaceWithoutCommitThenDelete(final int offset) throws LockException, SAXException,
-            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
 
         checkpointJournalAndSwitchFile();
 
@@ -759,7 +760,7 @@ public abstract class AbstractJournalTest {
     @Ignore("Only possible from a single-thread by programming error. Journal is not expected to recover such cases!")
     @Test
     public void replaceWithoutCommitThenDelete_isRepeatable() throws LockException, SAXException,
-            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         replaceWithoutCommitThenDelete(0);
         existEmbeddedServer.restart();
 
@@ -773,12 +774,12 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void replaceThenDeleteWithoutCommit() throws LockException, SAXException,
-            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         replaceThenDeleteWithoutCommit(false, 0);
     }
 
     private void replaceThenDeleteWithoutCommit(final boolean storeShouldGenerateReplaceEntry, final int offset) throws LockException, SAXException,
-            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         checkpointJournalAndSwitchFile();
 
         final Path testFile = getTestFile1();
@@ -828,7 +829,7 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void replaceThenDeleteWithoutCommit_isRepeatable() throws LockException, SAXException,
-            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         replaceThenDeleteWithoutCommit(false, 0);
         existEmbeddedServer.restart();
 
@@ -842,12 +843,12 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void replaceWithoutCommitThenDeleteWithoutCommit() throws LockException, SAXException,
-            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         replaceWithoutCommitThenDeleteWithoutCommit(false, 0);
     }
 
     private void replaceWithoutCommitThenDeleteWithoutCommit(final boolean storeShouldGenerateReplaceEntry, final int offset) throws LockException, SAXException,
-            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         checkpointJournalAndSwitchFile();
 
         final Path testFile = getTestFile1();
@@ -897,7 +898,7 @@ public abstract class AbstractJournalTest {
 
     @Test
     public void replaceWithoutCommitThenDeleteWithoutCommit_isRepeatable() throws LockException,
-            SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+            SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         replaceWithoutCommitThenDeleteWithoutCommit(false, 0);
         existEmbeddedServer.restart();
 
@@ -1024,7 +1025,7 @@ public abstract class AbstractJournalTest {
      *     is the path to the document in the database.
      */
     private Tuple2<Long, String> store(final boolean commitAndClose, final Path file) throws EXistException, PermissionDeniedException,
-            IOException, SAXException, LockException {
+            IOException, SAXException, LockException, InterruptedException {
         return store(commitAndClose, file, FileUtils.fileName(file));
     }
 
@@ -1040,13 +1041,9 @@ public abstract class AbstractJournalTest {
      *     is the path to the document in the database.
      */
     private Tuple2<Long, String> store(final boolean commitAndClose, final Path file, final String dbFilename) throws EXistException,
-            PermissionDeniedException, IOException, SAXException, LockException {
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        final TransactionManager transact = pool.getTransactionManager();
+            PermissionDeniedException, IOException, SAXException, LockException, InterruptedException {
 
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-
-            final Txn transaction = transact.beginTransaction();
+        return runSync(new BrokerTask<>(existEmbeddedServer.getBrokerPool(), (broker, transaction) -> {
 
             final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
@@ -1057,10 +1054,12 @@ public abstract class AbstractJournalTest {
             if(commitAndClose) {
                 transaction.commit();
                 transaction.close();
+            } else {
+                broker.setCurrentTransaction(null);
             }
 
             return new Tuple2<>(transaction.getId(), docDbUri.getRawCollectionPath());
-        }
+        }));
     }
 
     /**
@@ -1136,7 +1135,7 @@ public abstract class AbstractJournalTest {
      *     is the path of the deleted document from the database.
      */
     private Tuple2<Long, String> delete(final boolean commitAndClose, final Path file)
-            throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+            throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, InterruptedException {
         return delete(commitAndClose, FileUtils.fileName(file));
     }
 
@@ -1151,14 +1150,9 @@ public abstract class AbstractJournalTest {
      *     is the path of the deleted document from the database.
      */
     private Tuple2<Long, String> delete(final boolean commitAndClose, final String dbFilename)
-            throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        final TransactionManager transact = pool.getTransactionManager();
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, InterruptedException {
 
-            // the following transaction will not be committed. It will thus be rolled back by recovery
-            final Txn transaction = transact.beginTransaction();
-
+        return runSync(new BrokerTask<>(existEmbeddedServer.getBrokerPool(), (broker, transaction) -> {
             final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
             broker.saveCollection(transaction, root);
@@ -1171,10 +1165,12 @@ public abstract class AbstractJournalTest {
             if(commitAndClose) {
                 transaction.commit();
                 transaction.close();
+            } else {
+                broker.setCurrentTransaction(null);
             }
 
             return new Tuple2<>(transaction.getId(), doc.getURI().getRawCollectionPath());
-        }
+        }));
     }
 
     private void flushJournal() {
@@ -1615,6 +1611,50 @@ public abstract class AbstractJournalTest {
                 super.add(item);
             }
             return this;
+        }
+    }
+
+    private int runSyncId = 0;
+    private <T> T runSync(final BrokerTask<T> brokerTask) throws InterruptedException, LockException, SAXException, PermissionDeniedException, EXistException, IOException {
+        final String brokerTaskName = "AbstractJournalTest#runSync-" + runSyncId++;
+        final Thread thread = new Thread(brokerTask, brokerTaskName);
+        thread.start();
+        thread.join();
+        return brokerTask.resultOrThow();
+    }
+
+    private static class BrokerTask<T> implements Runnable {
+        private final BiFunction5E<DBBroker, Txn, T, EXistException, PermissionDeniedException, IOException, SAXException, LockException> task;
+        private final BrokerPool pool;
+        private volatile Supplier5E<T, EXistException, PermissionDeniedException, IOException, SAXException, LockException> result = null;
+
+        public BrokerTask(final BrokerPool pool, final BiFunction5E<DBBroker, Txn, T, EXistException, PermissionDeniedException, IOException, SAXException, LockException> task) {
+            this.pool = pool;
+            this.task = task;
+        }
+
+        @Override
+        public void run() {
+            final TransactionManager transact = pool.getTransactionManager();
+            try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+                final Txn transaction = transact.beginTransaction();
+
+                final T localResult = task.apply(broker, transaction);
+                this.result = () -> localResult;
+            } catch (final EXistException | PermissionDeniedException | IOException | SAXException | LockException e) {
+                this.result = () -> { throw e; };
+            }
+        }
+
+        /**
+         * Return the result of throw an exception if present
+         */
+        public T resultOrThow() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
+            if (result != null) {
+                return result.get();
+            }
+
+            return null;
         }
     }
 }
