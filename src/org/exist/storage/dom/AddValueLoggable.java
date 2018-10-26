@@ -53,7 +53,7 @@ public class AddValueLoggable extends AbstractLoggable {
 
     protected AddValueLoggable(final byte id, final DBBroker broker, final long transactionId) {
         super(id, transactionId);
-        this.domDb = ((NativeBroker) broker).getDOMFile();
+        this.domDb = broker == null ? null : ((NativeBroker) broker).getDOMFile();
     }
 
     public void clear(final Txn transaction, final long pageNum, final short tid, final byte[] value, final boolean isOverflow) {
@@ -104,5 +104,13 @@ public class AddValueLoggable extends AbstractLoggable {
     @Override
     public String dump() {
         return super.dump() + " - added value; tid = " + tid + " to page " + pageNum;
+    }
+
+    public byte[] getValue() {
+        return value;
+    }
+
+    public long getPageNum() {
+        return pageNum;
     }
 }
