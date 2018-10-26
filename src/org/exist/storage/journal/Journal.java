@@ -39,6 +39,7 @@ import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.lock.FileLock;
 import org.exist.storage.txn.Checkpoint;
+import org.exist.util.ByteConversion;
 import org.exist.util.FileUtils;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.sanity.SanityCheck;
@@ -79,6 +80,15 @@ public final class Journal {
      * Logger for this class
      */
     private static final Logger LOG = LogManager.getLogger(Journal.class);
+
+    /**
+     * The length in bytes of the Header in the Journal file
+     *
+     * 4 bytes for the magic number, and then 2 bytes for the journal version
+     */
+    public static final int JOURNAL_HEADER_LEN = 6;
+    public static final byte[] JOURNAL_MAGIC_NUMBER = {0x0E, 0x0D, 0x0B, 0x01};
+    public static final short JOURNAL_VERSION = 2;
 
     public static final String RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE = "sync-on-commit";
     public static final String RECOVERY_JOURNAL_DIR_ATTRIBUTE = "journal-dir";
@@ -204,6 +214,8 @@ public final class Journal {
     private final boolean syncOnCommit;
 
     private final Path fsJournalDir;
+
+    private volatile boolean initialised = false;
 
     public Journal(final BrokerPool pool, final Path directory) throws EXistException {
         this.pool = pool;
@@ -456,13 +468,13 @@ public final class Journal {
         final Path file = dir.resolve(fname);
         if (Files.exists(file)) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Journal file " + file.toAbsolutePath() + " already exists. Copying it.");
+                LOG.debug("Journal file " + file.toAbsolutePath() + " already exists. Moving it to a backup file.");
             }
 
             try {
                 final Path renamed = Files.move(file, file.resolveSibling(FileUtils.fileName(file) + BAK_FILE_SUFFIX), StandardCopyOption.ATOMIC_MOVE);
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Old file renamed from '" + file.toAbsolutePath().toString() + "' to '" + renamed.toAbsolutePath().toString() + "'");
+                    LOG.debug("Old Journal file renamed from '" + file.toAbsolutePath().toString() + "' to '" + renamed.toAbsolutePath().toString() + "'");
                 }
             } catch (final IOException ioe) {
                 LOG.warn(ioe); //TODO(AR) should probably be an LogException but wasn't previously!
@@ -477,11 +489,28 @@ public final class Journal {
             close();
             try {
                 channel = Files.newByteChannel(file, CREATE_NEW, WRITE);
+                writeJournalHeader(channel);
                 fileSyncRunnable.setChannel((FileChannel) channel);
+                initialised = true;
             } catch (final IOException e) {
                 throw new LogException("Failed to open new journal: " + file.toAbsolutePath().toString(), e);
             }
         }
+    }
+
+    private void writeJournalHeader(final SeekableByteChannel channel) throws IOException {
+        final ByteBuffer buf = ByteBuffer.allocate(JOURNAL_HEADER_LEN);
+
+        // write the magic number
+        buf.put(JOURNAL_MAGIC_NUMBER);
+
+        // write the version of the journal format
+        final byte[] journalVersion = new byte[2];
+        ByteConversion.shortToByteH(JOURNAL_VERSION, journalVersion, 0);
+        buf.put(journalVersion);
+
+        buf.flip();
+        channel.write(buf);
     }
 
     /**
@@ -552,6 +581,11 @@ public final class Journal {
      * @param checkpoint true if a checkpoint should be written before shitdown
      */
     public void shutdown(final long txnId, final boolean checkpoint) {
+        if (!initialised) {
+            // no journal is initialized
+            return;
+        }
+
         if (currentBuffer == null) {
             return; // the db has probably shut down already
         }
