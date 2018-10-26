@@ -22,6 +22,7 @@ package org.exist.storage.journal;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.DBBroker;
+import org.exist.util.ByteConversion;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -31,9 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static java.nio.file.StandardOpenOption.READ;
-import static org.exist.storage.journal.Journal.LOG_ENTRY_BACK_LINK_LEN;
-import static org.exist.storage.journal.Journal.LOG_ENTRY_BASE_LEN;
-import static org.exist.storage.journal.Journal.LOG_ENTRY_HEADER_LEN;
+import static org.exist.storage.journal.Journal.*;
 
 /**
  * Read log entries from the journal file. This class is used during recovery to scan the
@@ -66,9 +65,37 @@ public class JournalReader implements AutoCloseable {
         this.fileNumber = fileNumber;
         try {
             this.fc = Files.newByteChannel(file, READ);
+            validateJournalHeader(file, fc);
         } catch (final IOException e) {
             close();
             throw new LogException("Failed to read journal file " + file.toAbsolutePath().toString(), e);
+        }
+    }
+
+    private void validateJournalHeader(final Path file, final SeekableByteChannel fc) throws IOException, LogException {
+        // read the magic number
+        final ByteBuffer buf = ByteBuffer.allocate(JOURNAL_HEADER_LEN);
+        fc.read(buf);
+        buf.flip();
+
+        // check the magic number
+        final boolean validMagic =
+                buf.get() == JOURNAL_MAGIC_NUMBER[0]
+                && buf.get() == JOURNAL_MAGIC_NUMBER[1]
+                && buf.get() == JOURNAL_MAGIC_NUMBER[2]
+                && buf.get() == JOURNAL_MAGIC_NUMBER[3];
+
+        if (!validMagic) {
+            throw new LogException("File was not recognised as a valid eXist-db journal file: " + file.toAbsolutePath().toString());
+        }
+
+        // check the version of the journal format
+        final short storedVersion = ByteConversion.byteToShortH(new byte[] {buf.get(), buf.get()}, 0);
+        final boolean validVersion =
+                storedVersion == JOURNAL_VERSION;
+
+        if (!validVersion) {
+            throw new LogException("Journal file was version " + storedVersion + ", but required version " + JOURNAL_VERSION + ": " + file.toAbsolutePath().toString());
         }
     }
 
@@ -105,8 +132,8 @@ public class JournalReader implements AutoCloseable {
         try {
             checkOpen();
 
-            // are we at the start of the journal?
-            if (fc.position() == 0) {
+            // is there a previous entry to read?
+            if (fc.position() < JOURNAL_HEADER_LEN + LOG_ENTRY_BASE_LEN) {
                 return null;
             }
 
@@ -143,7 +170,7 @@ public class JournalReader implements AutoCloseable {
     Loggable lastEntry() throws LogException {
         try {
             checkOpen();
-            fc.position(fc.size());
+            positionLast();
             return previousEntry();
         } catch (final IOException e) {
             throw new LogException("Fatal error while reading last journal entry: " + e.getMessage(), e);
@@ -227,6 +254,34 @@ public class JournalReader implements AutoCloseable {
             fc.position((int) Lsn.getOffset(lsn) - 1);
         } catch (final IOException e) {
             throw new LogException("Fatal error while seeking journal: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Re-position the file position so it points to the first entry.
+     *
+     * @throws LogException if the journal file cannot be re-positioned
+     */
+    public void positionFirst() throws LogException {
+        try {
+            checkOpen();
+            fc.position(JOURNAL_HEADER_LEN);
+        } catch (final IOException e) {
+            throw new LogException("Fatal error while seeking first journal entry: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Re-position the file position so it points to the last entry.
+     *
+     * @throws LogException if the journal file cannot be re-positioned
+     */
+    public void positionLast() throws LogException {
+        try {
+            checkOpen();
+            fc.position(fc.size());
+        } catch (final IOException e) {
+            throw new LogException("Fatal error while seeking last journal entry: " + e.getMessage(), e);
         }
     }
 

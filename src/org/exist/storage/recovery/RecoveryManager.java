@@ -113,7 +113,7 @@ public class RecoveryManager {
     			if (!checkpointFound) {
                     LOG.info("Unclean shutdown detected. Scanning journal...");
                     broker.getBrokerPool().reportStatus("Unclean shutdown detected. Scanning log...");
-    				reader.position(1);
+    				reader.positionFirst();
     				final Long2ObjectHashMap<Loggable> txnsStarted = new Long2ObjectHashMap<>();
 	    			Checkpoint lastCheckpoint = null;
 	    			long lastLsn = Lsn.LSN_INVALID;
@@ -149,7 +149,7 @@ public class RecoveryManager {
 	    				LOG.info("Dirty transactions: " + txnsStarted.size());
 	    				// starting recovery: reposition the log reader to the last checkpoint
 						if (lastCheckpoint == null)
-						    {reader.position(1);}
+						    {reader.positionFirst();}
 						else {
 						    reader.position(lastCheckpoint.getLsn());
 						    next = reader.nextEntry();
