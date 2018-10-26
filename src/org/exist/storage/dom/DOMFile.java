@@ -2272,6 +2272,15 @@ public class DOMFile extends BTree implements Lockable {
     protected void undoAddValue(final AddValueLoggable loggable) {
         final DOMPage page = getDOMPage(loggable.pageNum);
         final DOMFilePageHeader pageHeader = page.getPageHeader();
+
+        // is there anything to undo?
+        if (pageHeader.getLsn() == Lsn.LSN_INVALID || pageHeader.getStatus() == UNUSED) {
+            LOG.warn("Nothing to undo, but received: AddValueLoggable(txnId=" + loggable.getTransactionId()
+                    + ", lsn=" + loggable.getLsn() + ", pageNum=" + loggable.pageNum
+                    + ", isOverflow=" + loggable.isOverflow + ")");
+            return;
+        }
+
         final RecordPos pos = page.findRecord(ItemId.getId(loggable.tid));
         SanityCheck.ASSERT(pos != null, "Record not found! isOverflow: " + loggable.isOverflow);
         //TODO : throw exception ? -pb
