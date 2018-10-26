@@ -51,7 +51,7 @@ public class UpdateHeaderLoggable extends AbstractLoggable {
 
     public UpdateHeaderLoggable(final DBBroker broker, final long transactId) {
         super(DOMFile.LOG_UPDATE_HEADER, transactId);
-        this.domDb = ((NativeBroker) broker).getDOMFile();
+        this.domDb = broker == null ? null : ((NativeBroker) broker).getDOMFile();
     }
 
     @Override
