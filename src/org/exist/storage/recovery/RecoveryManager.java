@@ -308,7 +308,7 @@ public class RecoveryManager {
                             "Before starting again, make sure to run a check via the emergency export tool.", e);
                     if (next != null)
                         {LOG.warn("Log entry that caused the exception: " + next.dump());}
-                    throw new LogException("Recovery aborted");
+                    throw new LogException("Recovery aborted", e);
                 }
             }
         } finally {
