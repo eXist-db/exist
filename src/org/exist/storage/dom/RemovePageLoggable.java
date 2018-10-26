@@ -78,7 +78,7 @@ public class RemovePageLoggable extends AbstractLoggable {
         oldTid = in.getShort();
         oldRecCnt = in.getShort();
         oldLen = in.getShort();
-        oldData = new byte[domDb.getFileHeader().getWorkSize()];
+        oldData = new byte[oldLen];
         in.get(oldData, 0, oldLen);
     }
 
