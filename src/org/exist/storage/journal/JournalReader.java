@@ -65,8 +65,9 @@ public class JournalReader implements AutoCloseable {
         this.broker = broker;
         this.fileNumber = fileNumber;
         try {
-            fc = Files.newByteChannel(file, READ);
+            this.fc = Files.newByteChannel(file, READ);
         } catch (final IOException e) {
+            close();
             throw new LogException("Failed to read journal file " + file.toAbsolutePath().toString(), e);
         }
     }
