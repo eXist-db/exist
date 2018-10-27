@@ -87,4 +87,12 @@ public class WriteOverflowPageLoggable extends AbstractLoggable {
     public String dump() {
         return super.dump() + " - writing overflow page " + pageNum + "; next: " + nextPage;
     }
+
+    public long getPageNum() {
+        return pageNum;
+    }
+
+    public Value getValue() {
+        return value;
+    }
 }

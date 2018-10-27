@@ -122,12 +122,18 @@ public final class Journal {
     /**
      * default maximum journal size
      */
-    public static final int DEFAULT_MAX_SIZE = 100; //MB
+    public static final int DEFAULT_MAX_SIZE = 100;  //MB
 
     /**
      * minimal size the journal needs to have to be replaced by a new file during a checkpoint
      */
-    private static final int DEFAULT_MIN_SIZE = 1; // MB
+    private static final int DEFAULT_MIN_SIZE = 1;  // MB
+
+    /**
+     * We use a 1 megabyte buffer.
+     */
+    public static final int BUFFER_SIZE = 1024 * 1024;  // bytes
+
 
     /**
      * Minimum size limit for the journal file before it is replaced by a new file.
@@ -220,8 +226,7 @@ public final class Journal {
     public Journal(final BrokerPool pool, final Path directory) throws EXistException {
         this.pool = pool;
         this.fsJournalDir = directory.resolve("fs.journal");
-        // we use a 1 megabyte buffer:
-        this.currentBuffer = ByteBuffer.allocateDirect(1024 * 1024);
+        this.currentBuffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
 
         this.fileSyncRunnable = new FileSyncRunnable(latch);
         this.fileSyncThread = newInstanceThread(pool, "file-sync-thread", fileSyncRunnable);
@@ -296,6 +301,11 @@ public final class Journal {
 
         SanityCheck.ASSERT(!inRecovery, "Write to log during recovery. Should not happen!");
         final int size = entry.getLogSize();
+
+        if (size > Short.MAX_VALUE) {
+            throw new JournalException("Journal can only write log entries of less that 32KB");
+        }
+
         final int required = size + LOG_ENTRY_BASE_LEN;
         if (required > currentBuffer.remaining()) {
             flushToLog(false);
@@ -315,7 +325,7 @@ public final class Journal {
         try {
             currentBuffer.put(entry.getLogType());
             currentBuffer.putLong(entry.getTransactionId());
-            currentBuffer.putShort((short) entry.getLogSize());
+            currentBuffer.putShort((short) size);
             entry.write(currentBuffer);
             currentBuffer.putShort((short) (size + LOG_ENTRY_HEADER_LEN));
         } catch (final BufferOverflowException e) {

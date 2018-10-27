@@ -29,9 +29,10 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.*;
 import org.exist.storage.txn.Txn;
+import org.exist.util.FileInputSource;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
+import org.xml.sax.InputSource;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -43,6 +44,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test expectations to check that the correct entries
@@ -63,11 +65,6 @@ public class JournalBinaryTest extends AbstractJournalTest {
          * that writing multi-threaded tests.
          */
         System.setProperty(DBBroker.PROP_DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS, "true");
-    }
-
-    @After
-    public void tearDown() {
-        BrokerPool.FORCE_CORRUPTION = false;
     }
 
     @AfterClass
@@ -301,11 +298,14 @@ public class JournalBinaryTest extends AbstractJournalTest {
 
     @Override
     protected XmldbURI storeAndVerify(final DBBroker broker, final Txn transaction, final Collection collection,
-            final Path file, final String dbFilename) throws EXistException, PermissionDeniedException, IOException,
+            final InputSource data, final String dbFilename) throws EXistException, PermissionDeniedException, IOException,
             TriggerException, LockException {
 
-        final byte[] data = Files.readAllBytes(file);
-        final BinaryDocument doc = collection.addBinaryResource(transaction, broker, XmldbURI.create(dbFilename), data, "application/octet-stream");
+        assertTrue(data instanceof FileInputSource);
+        final Path file = ((FileInputSource)data).getFile();
+
+        final byte[] content = Files.readAllBytes(file);
+        final BinaryDocument doc = collection.addBinaryResource(transaction, broker, XmldbURI.create(dbFilename), content, "application/octet-stream");
 
         assertNotNull(doc);
         assertEquals(Files.size(file), doc.getContentLength());
