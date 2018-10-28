@@ -23,6 +23,7 @@ import java.io.*;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -42,6 +43,8 @@ import org.exist.util.FileUtils;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.sanity.SanityCheck;
 
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
+import static java.nio.file.StandardOpenOption.WRITE;
 import static org.exist.util.ThreadUtils.newInstanceThread;
 
 /**
@@ -135,8 +138,7 @@ public final class Journal {
      * the current output channel
      * Only valid after switchFiles() was called at least once!
      */
-    private FileOutputStream os;
-    private FileChannel channel;
+    private SeekableByteChannel channel;
 
     /**
      * Syncing the journal is done by a background thread
@@ -474,12 +476,9 @@ public final class Journal {
         synchronized (latch) {
             close();
             try {
-                //RandomAccessFile raf = new RandomAccessFile(file, "rw");
-                os = new FileOutputStream(file.toFile(), true);
-                channel = os.getChannel();
-
-                fileSyncRunnable.setChannel(channel);
-            } catch (final FileNotFoundException e) {
+                channel = Files.newByteChannel(file, CREATE_NEW, WRITE);
+                fileSyncRunnable.setChannel((FileChannel) channel);
+            } catch (final IOException e) {
                 throw new LogException("Failed to open new journal: " + file.toAbsolutePath().toString(), e);
             }
         }
@@ -494,13 +493,6 @@ public final class Journal {
                 channel.close();
             } catch (final IOException e) {
                 LOG.warn("Failed to close journal channel", e);
-            }
-        }
-        if (os != null) {
-            try {
-                os.close();
-            } catch (final IOException e) {
-                LOG.warn("Failed to close journal output stream", e);
             }
         }
     }
@@ -609,10 +601,10 @@ public final class Journal {
     }
 
     private static class RemoveRunnable implements Runnable {
-        private final FileChannel channel;
+        private final SeekableByteChannel channel;
         private final Path path;
 
-        RemoveRunnable(final FileChannel channel, final Path path) {
+        RemoveRunnable(final SeekableByteChannel channel, final Path path) {
             this.channel = channel;
             this.path = path;
         }
