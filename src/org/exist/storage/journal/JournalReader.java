@@ -113,8 +113,8 @@ public class JournalReader implements AutoCloseable {
             // go back two bytes and read the back-link of the last entry
             fc.position(fc.position() - LOG_ENTRY_BACK_LINK_LEN);
             header.clear().limit(LOG_ENTRY_BACK_LINK_LEN);
-            final int bytes = fc.read(header);
-            if (bytes < LOG_ENTRY_BACK_LINK_LEN) {
+            final int read = fc.read(header);
+            if (read != LOG_ENTRY_BACK_LINK_LEN) {
                 throw new LogException("Unable to read journal entry back-link!");
             }
             header.flip();
@@ -159,17 +159,21 @@ public class JournalReader implements AutoCloseable {
     private @Nullable
     Loggable readEntry() throws LogException {
         try {
-            final long lsn = Lsn.create(fileNumber, (int) fc.position() + 1);
+            final long offset = fc.position();
+            if (offset > Integer.MAX_VALUE) {
+                throw new LogException("Journal can only read log files of less that 2GB");
+            }
+            final long lsn = Lsn.create(fileNumber, ((int)(offset & 0x7FFFFFFF)) + 1);
 
             // read the entry header
             header.clear();
-            int bytes = fc.read(header);
-            if (bytes <= 0) {
+            int read = fc.read(header);
+            if (read <= 0) {
                 return null;
             }
-            if (bytes < LOG_ENTRY_HEADER_LEN) {
+            if (read != LOG_ENTRY_HEADER_LEN) {
                 throw new LogException("Incomplete journal entry header found, expected  "
-                        + LOG_ENTRY_HEADER_LEN + " bytes, but found " + bytes + " bytes");
+                        + LOG_ENTRY_HEADER_LEN + " bytes, but found " + read + " bytes");
             }
             header.flip();
 
@@ -192,8 +196,8 @@ public class JournalReader implements AutoCloseable {
                 payload = ByteBuffer.allocate(size + LOG_ENTRY_BACK_LINK_LEN);
             }
             payload.clear().limit(size + LOG_ENTRY_BACK_LINK_LEN);
-            bytes = fc.read(payload);
-            if (bytes < size + LOG_ENTRY_BACK_LINK_LEN) {
+            read = fc.read(payload);
+            if (read < size + LOG_ENTRY_BACK_LINK_LEN) {
                 throw new LogException("Incomplete log entry found!");
             }
             payload.flip();

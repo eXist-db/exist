@@ -164,11 +164,6 @@ public final class Journal {
     private int currentFile = 0;
 
     /**
-     * used to keep track of the current position in the file
-     */
-    private int inFilePos = 0;
-
-    /**
      * temp buffer
      */
     private ByteBuffer currentBuffer;
@@ -291,8 +286,18 @@ public final class Journal {
         if (required > currentBuffer.remaining()) {
             flushToLog(false);
         }
-        currentLsn = Lsn.create(currentFile, inFilePos + currentBuffer.position() + 1);
+
+        try {
+            final long offset = channel.position();
+            if (offset > Integer.MAX_VALUE) {
+                throw new JournalException("Journal can only write log files of less that 2GB");
+            }
+            currentLsn = Lsn.create(currentFile, ((int)(channel.position() &0x7FFFFFFF)) + currentBuffer.position() + 1);
+        } catch (final IOException e) {
+            throw new JournalException("Unable to create LSN for: " + entry.dump());
+        }
         entry.setLsn(currentLsn);
+
         try {
             currentBuffer.put(entry.getLogType());
             currentBuffer.putLong(entry.getTransactionId());
@@ -365,7 +370,6 @@ public final class Journal {
                         channel.write(currentBuffer);
                     }
 
-                    inFilePos += size;
                     lastLsnWritten = currentLsn;
                 }
             } catch (final IOException e) {
@@ -479,7 +483,6 @@ public final class Journal {
                 throw new LogException("Failed to open new journal: " + file.toAbsolutePath().toString(), e);
             }
         }
-        inFilePos = 0;
     }
 
     /**
