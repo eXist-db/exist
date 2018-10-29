@@ -17,8 +17,8 @@ declare variable $img:testCol := xmldb:create-collection("/db", "test_image");
 declare variable $img:png := 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png';
 declare variable $img:bad-jpg := 'https://commons.wikimedia.org/wiki/File:Felis_silvestris_silvestris.jpg';
 declare variable $img:good-jpg := 'https://i.imgur.com/AD5NOgEm.jpg';
-declare variable $img:bmp := 'https://www.fileformat.info/format/bmp/sample/3636e6411c7e49a59196e6578876dccc/VENUS.BMP';
-declare variable $img:gif := 'http://www.fileformat.info/format/gif/sample/7c2f782d415843e0b4c0980ecac4fa83/WFPC01.GIF';
+declare variable $img:bmp := 'http://www.hlevkin.com/TestImages/baboon.bmp';
+declare variable $img:gif := 'https://www-eng-x.llnl.gov/documents/a_image.gif';
 
 (:~
  : for supported fileytypes in Java8
@@ -69,6 +69,7 @@ declare
  : @see https://stackoverflow.com/questions/2408613/unable-to-read-jpeg-image-using-imageio-readfile-file#16149142
  :)
 declare
+    %test:name('get image width for supported filetypes')
     %test:assumeIntenetAccess("https://www.google.com")
     %test:arg('file', '/db/test_image/image.png')
     %test:assertEquals (272)
@@ -77,9 +78,9 @@ declare
     %test:arg('file', '/db/test_image/RGB.jpg')
     %test:assertEquals (320)
     %test:arg('file', '/db/test_image/image.bmp')
-    %test:assertEquals (300)
+    %test:assertEquals (500)
     %test:arg('file', '/db/test_image/image.gif')
-    %test:assertEquals (640)
+    %test:assertEquals (256)
     function img:width ($file as xs:string*) as item() {
         let $someIMG := util:binary-doc($file)
         return
