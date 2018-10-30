@@ -25,6 +25,8 @@ import java.io.IOException;
 
 import org.exist.security.PermissionFactory;
 import org.exist.storage.lock.*;
+import org.exist.util.ExistSAXParserFactory;
+import org.exist.util.XMLReaderPool;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -49,8 +51,6 @@ import org.exist.xquery.value.DateTimeValue;
 import java.net.URISyntaxException;
 import java.util.*;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.logging.log4j.LogManager;
@@ -74,7 +74,7 @@ import org.xml.sax.XMLReader;
 public class SystemImportHandler extends DefaultHandler {
     
     private final static Logger LOG = LogManager.getLogger(SystemImportHandler.class);
-    private final static SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+    private final static SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
     static {
         saxFactory.setNamespaceAware(true);
         saxFactory.setValidating(false);
@@ -253,12 +253,11 @@ public class SystemImportHandler extends DefaultHandler {
         //parse the sub-collection descriptor and restore
         final BackupDescriptor subDescriptor = descriptor.getChildBackupDescriptor(name);
         if(subDescriptor != null) {
-            
-            final SAXParser sax;
-            try { 
-                sax = saxFactory.newSAXParser();
-            
-                final XMLReader reader = sax.getXMLReader();
+
+            final XMLReaderPool parserPool = broker.getBrokerPool().getParserPool();
+            XMLReader reader = null;
+            try {
+                reader = parserPool.borrowXMLReader();
 
                 final EXistInputSource is = subDescriptor.getInputSource();
                 is.setEncoding( "UTF-8" );
@@ -269,10 +268,12 @@ public class SystemImportHandler extends DefaultHandler {
                 reader.parse(is);
             } catch(final SAXParseException e) {
                 throw new SAXException("Could not process collection: " + descriptor.getSymbolicPath(name, false), e);
-            } catch(final ParserConfigurationException pce) {
-                throw new SAXException("Could not initalise SAXParser for processing sub-collection: " + descriptor.getSymbolicPath(name, false), pce);
             } catch(final IOException ioe) {
                 throw new SAXException("Could not read sub-collection for processing: " + ioe.getMessage(), ioe);
+            } finally {
+                if (reader != null) {
+                    parserPool.returnXMLReader(reader);
+                }
             }
         } else {
             listener.error("Collection " + descriptor.getSymbolicPath(name, false) + " does not exist or is not readable.");

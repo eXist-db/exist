@@ -37,6 +37,7 @@ import org.exist.Namespaces;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.test.ExistWebServer;
 import org.exist.util.Base64Encoder;
+import org.exist.util.ExistSAXParserFactory;
 import org.exist.xmldb.XmldbURI;
 import org.junit.runner.RunWith;
 import org.xml.sax.InputSource;
@@ -866,7 +867,7 @@ try {
     }
 
     private int parseResponse(final String data) throws IOException, SAXException, ParserConfigurationException {
-        final SAXParserFactory factory = SAXParserFactory.newInstance();
+        final SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
         factory.setNamespaceAware(true);
         final InputSource src = new InputSource(new StringReader(data));
         final SAXParser parser = factory.newSAXParser();

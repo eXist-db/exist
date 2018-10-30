@@ -39,6 +39,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.SingleInstanceConfiguration;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -48,6 +49,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
+
+import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 
 /**
  * Webapplication Descriptor
@@ -114,12 +117,17 @@ public class Descriptor implements ErrorHandler {
             // initialize xml parser
             // we use eXist's in-memory DOM implementation to work
             // around a bug in Xerces
-            final SAXParserFactory factory = SAXParserFactory.newInstance();
+            final SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
             factory.setNamespaceAware(true);
 
             final InputSource src = new InputSource(is);
             final SAXParser parser = factory.newSAXParser();
             final XMLReader reader = parser.getXMLReader();
+
+            reader.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            reader.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            reader.setFeature(FEATURE_SECURE_PROCESSING, true);
+
             final SAXAdapter adapter = new SAXAdapter();
             reader.setContentHandler(adapter);
             reader.parse(src);

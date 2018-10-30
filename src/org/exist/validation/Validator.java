@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
+import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.resolver.AnyUriResolver;
 import org.exist.validation.resolver.SearchResourceResolver;
@@ -45,6 +46,8 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+
+import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 
 /**
  *  Validate XML documents with their grammars (DTD's and Schemas).
@@ -260,7 +263,7 @@ public class Validator {
             ErrorHandler errorHandler) throws ParserConfigurationException, SAXException {
 
         // setup sax factory ; be sure just one instance!
-        final SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+        final SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
 
         // Enable validation stuff
         saxFactory.setValidating(true);
@@ -269,6 +272,8 @@ public class Validator {
         // Create xml reader
         final SAXParser saxParser = saxFactory.newSAXParser();
         final XMLReader xmlReader = saxParser.getXMLReader();
+
+        xmlReader.setFeature(FEATURE_SECURE_PROCESSING, true);
 
         // Setup xmlreader
         xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);

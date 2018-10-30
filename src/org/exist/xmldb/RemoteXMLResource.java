@@ -26,6 +26,7 @@ import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.Namespaces;
 import org.exist.dom.persistent.DocumentTypeImpl;
+import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.Leasable;
 import org.exist.util.MimeType;
 import org.exist.util.io.TemporaryFileManager;
@@ -64,6 +65,8 @@ import java.util.List;
 import java.util.Properties;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
+
 import java.util.Optional;
 
 public class RemoteXMLResource
@@ -225,11 +228,12 @@ public class RemoteXMLResource
 
             XMLReader reader = xmlReader;
             if (reader == null) {
-                final SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+                final SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
                 saxFactory.setNamespaceAware(true);
                 saxFactory.setValidating(false);
                 final SAXParser sax = saxFactory.newSAXParser();
                 reader = sax.getXMLReader();
+                reader.setFeature(FEATURE_SECURE_PROCESSING, true);
             }
 
             reader.setContentHandler(handler);

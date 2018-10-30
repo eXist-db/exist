@@ -32,20 +32,17 @@ import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.util.XMLReaderPool;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReadWriteLock;
 
 /**
@@ -158,15 +155,19 @@ public class CollectionConfigurationManager implements BrokerPoolService {
      */
     public void testConfiguration(DBBroker broker, String config) throws CollectionConfigurationException {
         try {
-            final SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            final InputSource src = new InputSource(new StringReader(config));
-            final SAXParser parser = factory.newSAXParser();
-            final XMLReader reader = parser.getXMLReader();
             final SAXAdapter adapter = new SAXAdapter();
-            reader.setContentHandler(adapter);
-            reader.parse(src);
-
+            final InputSource src = new InputSource(new StringReader(config));
+            final XMLReaderPool parserPool = broker.getBrokerPool().getParserPool();
+            XMLReader reader = null;
+            try {
+                reader = parserPool.borrowXMLReader();
+                reader.setContentHandler(adapter);
+                reader.parse(src);
+            } finally {
+                if (reader != null) {
+                    parserPool.returnXMLReader(reader);
+                }
+            }
             final Document doc = adapter.getDocument();
             final CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool());
             conf.read(broker, doc, true, null, null);

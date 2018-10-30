@@ -28,6 +28,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.source.ClassLoaderSource;
 import org.exist.source.Source;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.ExistSAXParserFactory;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.junit.runner.Description;
@@ -46,6 +47,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 
+import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
+
 /**
  * A JUnit test runner which can run the XML formatter XQuery tests
  * of eXist-db using $EXIST_HOME/src/org/exist/xquery/lib/test.xq.
@@ -54,7 +57,7 @@ import java.util.*;
  */
 public class XMLTestRunner extends AbstractTestRunner {
 
-    private static final SAXParserFactory SAX_PARSER_FACTORY = SAXParserFactory.newInstance();
+    private static final SAXParserFactory SAX_PARSER_FACTORY = ExistSAXParserFactory.getSAXParserFactory();
     static {
         SAX_PARSER_FACTORY.setNamespaceAware(true);
     }
@@ -166,6 +169,10 @@ public class XMLTestRunner extends AbstractTestRunner {
         final InputSource src = new InputSource(path.toUri().toASCIIString());
         final SAXParser parser = SAX_PARSER_FACTORY.newSAXParser();
         final XMLReader xr = parser.getXMLReader();
+
+        xr.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        xr.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        xr.setFeature(FEATURE_SECURE_PROCESSING, true);
 
         // we have to use eXist-db's SAXAdapter, otherwise un-referenced namespaces as used by xpath assertions may be stripped by Xerces.
         final SAXAdapter adapter = new SAXAdapter();

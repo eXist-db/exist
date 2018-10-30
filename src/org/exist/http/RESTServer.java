@@ -44,8 +44,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerConfigurationException;
@@ -87,10 +85,7 @@ import org.exist.storage.lock.ManagedCollectionLock;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
-import org.exist.util.LockException;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
+import org.exist.util.*;
 import org.exist.util.io.CachingFilterInputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
@@ -315,13 +310,10 @@ public class RESTServer {
         try {
             if (_var != null) {
                 final NamespaceExtractor nsExtractor = new NamespaceExtractor();
-                variables = parseXML(_var, nsExtractor);
+                variables = parseXML(broker.getBrokerPool(), _var, nsExtractor);
                 namespaces = nsExtractor.getNamespaces();
             }
         } catch (final SAXException e) {
-            final XPathException x = new XPathException(e.toString());
-            writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, "UTF-8", query, path, x);
-        } catch (final ParserConfigurationException e) {
             final XPathException x = new XPathException(e.toString());
             writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, "UTF-8", query, path, x);
         }
@@ -740,7 +732,7 @@ public class RESTServer {
             try {
                 final String content = getRequestContent(request);
                 final NamespaceExtractor nsExtractor = new NamespaceExtractor();
-                final ElementImpl root = parseXML(content, nsExtractor);
+                final ElementImpl root = parseXML(broker.getBrokerPool(), content, nsExtractor);
                 final String rootNS = root.getNamespaceURI();
                 
                 if (rootNS != null && rootNS.equals(Namespaces.EXIST_NS)) {
@@ -953,25 +945,27 @@ public class RESTServer {
         }
     }
 
-    private ElementImpl parseXML(final String content,
+    private ElementImpl parseXML(final BrokerPool pool, final String content,
             final NamespaceExtractor nsExtractor)
-            throws ParserConfigurationException, SAXException, IOException {
-        
-        final SAXParserFactory factory = SAXParserFactory.newInstance();
-        factory.setNamespaceAware(true);
+            throws SAXException, IOException {
         final InputSource src = new InputSource(new StringReader(content));
-        final SAXParser parser = factory.newSAXParser();
-        final XMLReader reader = parser.getXMLReader();
-        final SAXAdapter adapter = new SAXAdapter();
-        //reader.setContentHandler(adapter);
-        //reader.parse(src);
-        nsExtractor.setContentHandler(adapter);
-        nsExtractor.setParent(reader);
-        nsExtractor.parse(src);
+        final XMLReaderPool parserPool = pool.getParserPool();
+        XMLReader reader = null;
+        try {
+            reader = parserPool.borrowXMLReader();
+            final SAXAdapter adapter = new SAXAdapter();
+            nsExtractor.setContentHandler(adapter);
+            nsExtractor.setParent(reader);
+            nsExtractor.parse(src);
 
-        final Document doc = adapter.getDocument();
+            final Document doc = adapter.getDocument();
 
-        return (ElementImpl) doc.getDocumentElement();
+            return (ElementImpl) doc.getDocumentElement();
+        } finally {
+            if (reader != null) {
+                parserPool.returnXMLReader(reader);
+            }
+        }
     }
 
     private class NamespaceExtractor extends XMLFilterImpl {

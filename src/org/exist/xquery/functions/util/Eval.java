@@ -30,9 +30,6 @@ import java.util.Date;
 import java.util.SimpleTimeZone;
 
 import javax.xml.datatype.Duration;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.exist.Namespaces;
 import org.exist.dom.persistent.BinaryDocument;
@@ -52,6 +49,7 @@ import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -551,28 +549,26 @@ public class Eval extends BasicFunction {
 	}
 
     private NodeImpl loadVarFromURI(String uri) throws XPathException {
-		try {
+		XMLReader xr = null;
+        final XMLReaderPool parserPool = context.getBroker().getBrokerPool().getParserPool();
+	    try {
 			final URL url = new URL(uri);
 			final InputStreamReader isr = new InputStreamReader(url.openStream(), "UTF-8");
-            final SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
             final InputSource src = new InputSource(isr);
-            final SAXParser parser = factory.newSAXParser();
-            final XMLReader xr = parser.getXMLReader();
+
+            xr = parserPool.borrowXMLReader();
             final SAXAdapter adapter = new SAXAdapter(context);
             xr.setContentHandler(adapter);
             xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             xr.parse(src);
             isr.close();
-            return (NodeImpl) adapter.getDocument();
-		} catch (final MalformedURLException e) {
+            return adapter.getDocument();
+		} catch (final SAXException | IOException e) {
 			throw new XPathException(this, e);
-		} catch (final IOException e) {
-			throw new XPathException(this, e);
-		} catch (final SAXException e) {
-            throw new XPathException(this, e);
-        } catch (final ParserConfigurationException e) {
-            throw new XPathException(this, e);
+		} finally {
+            if (xr != null) {
+                parserPool.returnXMLReader(xr);
+            }
         }
     }
 }

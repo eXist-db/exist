@@ -16,6 +16,7 @@ import javax.xml.transform.TransformerException;
 
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.dom.QName;
+import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.serializer.DOMSerializer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,7 +46,7 @@ public class DOMTest {
     @Test
     public void documentBuilder() throws ParserConfigurationException, SAXException, IOException, TransformerException {
         DocumentBuilderReceiver receiver = new DocumentBuilderReceiver();
-        SAXParserFactory factory = SAXParserFactory.newInstance();
+        SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
         factory.setNamespaceAware(true);
         XMLReader reader = factory.newSAXParser().getXMLReader();
         reader.setContentHandler(receiver);

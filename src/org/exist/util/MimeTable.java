@@ -45,6 +45,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
+import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
+
 /**
  * Global table of mime types. This singleton class maintains a list
  * of mime types known to the system. It is used to look up the
@@ -273,12 +275,17 @@ public class MimeTable {
      * @throws IOException 
      */
     private void loadMimeTypes(InputStream stream) throws ParserConfigurationException, SAXException, IOException {
-        final SAXParserFactory factory = SAXParserFactory.newInstance();
+        final SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
         factory.setNamespaceAware(true);
         factory.setValidating(false);
 		final InputSource src = new InputSource(stream);
         final SAXParser parser = factory.newSAXParser();
         final XMLReader reader = parser.getXMLReader();
+
+        reader.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        reader.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        reader.setFeature(FEATURE_SECURE_PROCESSING, true);
+
         reader.setContentHandler(new MimeTableHandler());
         reader.parse(src);
     }
