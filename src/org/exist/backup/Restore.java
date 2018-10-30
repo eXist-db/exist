@@ -37,6 +37,7 @@ import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.security.Account;
 import org.exist.security.SecurityManager;
 import org.exist.util.EXistInputSource;
+import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
@@ -67,7 +68,7 @@ public class Restore {
         //get the backup descriptors, can be more than one if it was an incremental backup
         final Deque<BackupDescriptor> descriptors = getBackupDescriptors(f);
         
-        final SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+        final SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
         saxFactory.setNamespaceAware(true);
         saxFactory.setValidating(false);
         final SAXParser sax = saxFactory.newSAXParser();

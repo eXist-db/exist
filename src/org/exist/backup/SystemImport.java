@@ -29,8 +29,6 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Properties;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,6 +42,7 @@ import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
+import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -74,15 +73,13 @@ public class SystemImport {
 	
 	        //get the backup descriptors, can be more than one if it was an incremental backup
 	        final Deque<BackupDescriptor> descriptors = getBackupDescriptors(f);
-	        
-	        final SAXParserFactory saxFactory = SAXParserFactory.newInstance();
-	        saxFactory.setNamespaceAware(true);
-	        saxFactory.setValidating(false);
-	        final SAXParser sax = saxFactory.newSAXParser();
-	        final XMLReader reader = sax.getXMLReader();
-	        
+
+            final XMLReaderPool parserPool = broker.getBrokerPool().getParserPool();
+	        XMLReader reader = null;
 	        try {
-	            listener.restoreStarting();
+                reader = parserPool.borrowXMLReader();
+
+                listener.restoreStarting();
 	
 	            while(!descriptors.isEmpty()) {
 	                final BackupDescriptor descriptor = descriptors.pop();
@@ -96,6 +93,10 @@ public class SystemImport {
 	            }
 	        } finally {
 	            listener.restoreFinished();
+
+                if (reader != null) {
+                    parserPool.returnXMLReader(reader);
+                }
 	        }
         }
     }

@@ -46,6 +46,7 @@ import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.util.ExistSAXParserFactory;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
@@ -203,7 +204,7 @@ public class GMLIndexTest extends TestCase {
             AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker) broker.getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
             //Unplugged
             if (indexWorker != null) {
-                SAXParserFactory factory = SAXParserFactory.newInstance();
+                SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
                 factory.setNamespaceAware(true);
                 InputSource src = new InputSource(new StringReader(IN_MEMORY_GML));
                 SAXParser parser = factory.newSAXParser();

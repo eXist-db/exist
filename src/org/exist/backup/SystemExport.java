@@ -462,7 +462,7 @@ public class SystemExport {
                 final CheckDeletedHandler check = new CheckDeletedHandler(current, serializer);
 
                 try {
-                    prevBackup.parse(check);
+                    prevBackup.parse(broker.getBrokerPool().getParserPool(), check);
                 } catch (final Exception e) {
                     LOG.error("Caught exception while trying to parse previous backup descriptor: " + prevBackup.getSymbolicPath(), e);
                 }
