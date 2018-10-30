@@ -78,8 +78,6 @@ import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.io.StringReader;
@@ -642,15 +640,13 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             gmlString = gmlTransformer.transform(geometry);
         } catch (TransformerException e) {
             throw new SpatialIndexException(e);
-        } 
+        }
 
+        final XMLReaderPool parserPool = pool.getParserPool();
+        XMLReader reader = null;
         try {
-            //Copied from org.exist.xquery.functions.request.getData
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
             InputSource src = new InputSource(new StringReader(gmlString));
-            SAXParser parser = factory.newSAXParser();
-            XMLReader reader = parser.getXMLReader();
+            reader = parserPool.borrowXMLReader();
             reader.setContentHandler((ContentHandler)receiver);
             reader.parse(src);
             Document doc = receiver.getDocument();
@@ -660,7 +656,11 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         } catch (SAXException e) {
             throw new SpatialIndexException(e);
         } catch (IOException e) {
-            throw new SpatialIndexException(e);	
+            throw new SpatialIndexException(e);
+        } finally {
+            if (reader != null) {
+                parserPool.returnXMLReader(reader);
+            }
         }
     }
 

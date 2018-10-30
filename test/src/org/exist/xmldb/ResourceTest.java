@@ -41,6 +41,7 @@ import org.exist.TestUtils;
 import org.exist.dom.QName;
 import org.exist.security.Account;
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.XMLFilenameFilter;
@@ -194,7 +195,7 @@ public class ResourceTest {
                         + "<para>Paragraph2</para>"
                         + "</test>";
         ContentHandler handler = doc.setContentAsSAX();
-        SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+        SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
         saxFactory.setNamespaceAware(true);
         saxFactory.setValidating(false);
         SAXParser sax = saxFactory.newSAXParser();

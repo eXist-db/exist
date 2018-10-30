@@ -24,9 +24,6 @@ package org.exist.debugger;
 import java.io.IOException;
 import java.io.StringReader;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.exist.Namespaces;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.SAXAdapter;
@@ -44,28 +41,30 @@ public class Utils {
     public static NodeImpl nodeFromString(XQueryContext context, String source) throws IOException {
         SAXAdapter adapter = new SAXAdapter(context);
 
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        factory.setNamespaceAware(true);
-        
-        XMLReader xr;
-		try {
-			SAXParser parser = factory.newSAXParser();
-
-			xr = parser.getXMLReader();
-			xr.setContentHandler(adapter);
-			xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
-
-		} catch (Exception e) {
-			throw new IOException(e);
-		}
-        
+        final XMLReaderPool parserPool = context.getBroker().getBrokerPool().getParserPool();
+        XMLReader xr = null;
         try {
-            InputSource src = new InputSource(new StringReader(source));
-            xr.parse(src);
-            
-            return (NodeImpl) adapter.getDocument();
-		} catch (SAXException e) {
-			throw new IOException(e);
+            try {
+                xr = parserPool.borrowXMLReader();
+                xr.setContentHandler(adapter);
+                xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
+
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
+
+            try {
+                InputSource src = new InputSource(new StringReader(source));
+                xr.parse(src);
+
+                return (NodeImpl) adapter.getDocument();
+            } catch (SAXException e) {
+                throw new IOException(e);
+            }
+        } finally {
+            if (xr != null) {
+                parserPool.returnXMLReader(xr);
+            }
         }
     }
 }

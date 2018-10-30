@@ -32,6 +32,7 @@ import org.apache.mina.core.session.IoSession;
 import org.exist.debugger.DebuggerImpl;
 import org.exist.debugger.Response;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.util.ExistSAXParserFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -53,7 +54,7 @@ public class ResponseImpl implements Response {
 	public ResponseImpl(IoSession session, InputStream inputStream) {
 		this.session = session;
 		
-		SAXParserFactory factory = SAXParserFactory.newInstance();
+		SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
 		factory.setNamespaceAware(true);
 		InputSource src = new InputSource(inputStream);
 		SAXParser parser;

@@ -45,6 +45,7 @@ import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
+import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.validation.GrammarPool;
@@ -71,6 +72,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
+
+import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 
 /**
  *   xQuery function for validation of XML instance documents
@@ -310,7 +313,7 @@ public class Jaxp extends BasicFunction {
     private XMLReader getXMLReader() throws ParserConfigurationException, SAXException {
 
         // setup sax factory ; be sure just one instance!
-        final SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+        final SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
 
         // Enable validation stuff
         saxFactory.setValidating(true);
@@ -319,6 +322,8 @@ public class Jaxp extends BasicFunction {
         // Create xml reader
         final SAXParser saxParser = saxFactory.newSAXParser();
         final XMLReader xmlReader = saxParser.getXMLReader();
+
+        xmlReader.setFeature(FEATURE_SECURE_PROCESSING, true);
 
         setXmlReaderFeature(xmlReader, Namespaces.SAX_VALIDATION, true);
         setXmlReaderFeature(xmlReader, Namespaces.SAX_VALIDATION_DYNAMIC, false);

@@ -30,6 +30,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.ExistSAXParserFactory;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -78,7 +79,7 @@ public class DocTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
-    private static SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+    private static SAXParserFactory saxParserFactory = ExistSAXParserFactory.getSAXParserFactory();
     static {
         saxParserFactory.setNamespaceAware(true);
     }

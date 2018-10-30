@@ -36,6 +36,7 @@ import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.XQueryPool;
 import com.evolvedbinary.j8fu.Either;
+import org.exist.util.XMLReaderPool;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.exist.xmldb.XmldbURI;
@@ -45,9 +46,6 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.request.RequestModule;
-import org.exist.xquery.functions.response.ResponseModule;
-import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -60,8 +58,6 @@ import org.xml.sax.XMLReader;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -492,19 +488,22 @@ public class XIncludeFilter implements Receiver {
             }
 
             // we use eXist's in-memory DOM implementation
-            final SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-
+            final XMLReaderPool parserPool = serializer.broker.getBrokerPool().getParserPool();
+            XMLReader reader = null;
             try (final InputStream is = con.getInputStream()) {
                 final InputSource src = new InputSource(is);
-                final SAXParser parser = factory.newSAXParser();
-                final XMLReader reader = parser.getXMLReader();
+
+                reader = parserPool.borrowXMLReader();
                 final SAXAdapter adapter = new SAXAdapter();
                 reader.setContentHandler(adapter);
                 reader.parse(src);
                 final org.exist.dom.memtree.DocumentImpl doc = adapter.getDocument();
                 doc.setDocumentURI(externalUri.toString());
                 return Either.Right(doc);
+            } finally {
+                if (reader != null) {
+                    parserPool.returnXMLReader(reader);
+                }
             }
         } catch (final IOException e) {
             return Either.Left(new ResourceError("XInclude: unable to retrieve and parse document from URI: " + externalUri.toString(), e));

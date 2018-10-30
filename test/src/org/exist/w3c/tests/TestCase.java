@@ -51,6 +51,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.test.ExistEmbeddedServer;
+import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.LocalXMLResource;
@@ -331,7 +332,7 @@ public abstract class TestCase {
     public NodeImpl loadVarFromURI(XQueryContext context, String uri) throws IOException {
         SAXAdapter adapter = new SAXAdapter(context);
 
-        SAXParserFactory factory = SAXParserFactory.newInstance();
+        SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
         factory.setNamespaceAware(true);
         
         XMLReader xr;
@@ -379,7 +380,7 @@ public abstract class TestCase {
     public NodeImpl loadVarFromString(XQueryContext context, String source) throws IOException {
         SAXAdapter adapter = new SAXAdapter(context);
 
-        SAXParserFactory factory = SAXParserFactory.newInstance();
+        SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
         factory.setNamespaceAware(true);
         
         XMLReader xr;
