@@ -52,7 +52,7 @@ public class CreatePageLoggable extends AbstractLoggable {
 
     public CreatePageLoggable(final DBBroker broker, final long transactId) {
         super(DOMFile.LOG_CREATE_PAGE, transactId);
-        this.domDb = ((NativeBroker) broker).getDOMFile();
+        this.domDb = broker == null ? null : ((NativeBroker) broker).getDOMFile();
     }
 
     @Override

@@ -171,7 +171,10 @@ abstract class BrokerPools {
                 return;
             }
 
-            LOG.debug("Configuring database instance '" + instanceName + "'...");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Configuring database instance '" + instanceName + "'...");
+            }
+
             try {
                 //Create the instance
                 final BrokerPool instance = new BrokerPool(instanceName, minBrokers, maxBrokers, config, statusObserver);

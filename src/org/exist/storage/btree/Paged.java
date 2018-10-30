@@ -453,17 +453,47 @@ public abstract class Paged implements AutoCloseable {
         unlinkPages(getPage(pageNum));
     }
 
+    /**
+     * Clears the {@link FileHeader#firstFreePage} and
+     *  {@link FileHeader#lastFreePage}.
+     *
+     * This is needed in recovery, as the free page list
+     * may have become corrupted.
+     *
+     * Unfortunately this means we loose some space
+     * that we will never recover, but it does mean
+     * we are more likely to correctly recover.
+     */
+    protected void dropFreePageList() throws IOException {
+        boolean updated = false;
+        if (fileHeader.getFirstFreePage() != Page.NO_PAGE) {
+            fileHeader.setFirstFreePage(Page.NO_PAGE);
+            updated = true;
+        }
+        if (fileHeader.getLastFreePage() != Page.NO_PAGE) {
+            fileHeader.setLastFreePage(Page.NO_PAGE);
+            updated = true;
+        }
+
+        if (updated) {
+            fileHeader.write();
+        }
+    }
+
     protected void reuseDeleted(final Page page) throws IOException {
         if (page != null && fileHeader.getFirstFreePage() != Page.NO_PAGE) {
+
             long firstFreePageNum = fileHeader.getFirstFreePage();
             if (firstFreePageNum == page.pageNum) {
                 fileHeader.setFirstFreePage(page.header.getNextPage());
                 fileHeader.write();
                 return;
             }
+
             Page firstFreePage = getPage(firstFreePageNum);
             firstFreePage.read();
             firstFreePageNum = firstFreePage.header.getNextPage();
+
             while (firstFreePageNum != Page.NO_PAGE) {
                 if (firstFreePageNum == page.pageNum) {
                     firstFreePage.header.setNextPage(page.header.getNextPage());

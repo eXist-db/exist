@@ -39,7 +39,7 @@ public interface Loggable {
 	 * 
 	 * @return Type id of the log entry
 	 */
-    public byte getLogType();
+    byte getLogType();
     
     /**
      * Returns the transaction id of the transaction to which the
@@ -47,35 +47,35 @@ public interface Loggable {
      * 
      * @return transaction id 
      */
-    public long getTransactionId();
+    long getTransactionId();
     
     /**
      * Returns the {@link Lsn} of the entry.
      * 
-     * @return LSN
+     * @return the Log Sequence Number
      */
-    public long getLsn();
+    long getLsn();
     
     /**
      * Set the {@link Lsn} of the entry.
      * 
-     * @param lsn
+     * @param lsn the Log Sequence Number
      */
-    public void setLsn(long lsn);
+    void setLsn(long lsn);
     
     /**
      * Write this entry to the specified ByteBuffer.
      * 
-     * @param out
+     * @param out the data buffer
      */
-    public void write(ByteBuffer out);
+    void write(ByteBuffer out);
     
     /**
      * Read the entry.
      * 
-     * @param in
+     * @param in the data buffer
      */
-    public void read(ByteBuffer in);
+    void read(ByteBuffer in);
     
     /**
      * Returns the size of the work load of this
@@ -83,28 +83,28 @@ public interface Loggable {
      * 
      * @return size of the work load of this entry.
      */
-    public int getLogSize();
+    int getLogSize();
 	
     /**
      * Redo the underlying operation. This method is
      * called by {@link org.exist.storage.recovery.RecoveryManager}.
      * 
-     * @throws LogException
+     * @throws LogException if the operation cannot be redone
      */
-    public void redo() throws LogException;
+    void redo() throws LogException;
     
     /**
      * Undo, i.e. roll back, the underlying operation. The method
      * is called by {@link org.exist.storage.recovery.RecoveryManager}.
      * 
-     * @throws LogException
+     * @throws LogException if the operation cannot be undone
      */
-    public void undo() throws LogException;
+    void undo() throws LogException;
     
     /**
      * Returns a description of the entry for debugging purposes.
      * 
      * @return description
      */
-	public String dump();
+	String dump();
 }
