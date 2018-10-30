@@ -81,15 +81,6 @@ public class Txn implements Transaction {
         return id;
     }
 
-    /**
-     * @deprecated Moving a Lock to a Txn is error prone and should not be done
-     *   instead use {@link #acquireLock(Lock, LockMode)} to take a second lock
-     */
-    @Deprecated
-    public void registerLock(final Lock lock, final LockMode lockMode) {
-        locksHeld.add(new LockInfo(new Tuple2<>(lock, lockMode), () -> lock.release(lockMode)));
-    }
-
     public void acquireLock(final Lock lock, final LockMode lockMode) throws LockException {
         lock.acquire(lockMode);
         locksHeld.add(new LockInfo(new Tuple2<>(lock, lockMode), () -> lock.release(lockMode)));
