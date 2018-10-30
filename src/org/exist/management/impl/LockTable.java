@@ -24,13 +24,21 @@ import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockType;
+import org.exist.storage.lock.LockTable.LockCountTraces;
 import org.exist.storage.lock.LockTable.LockModeOwner;
 import org.exist.storage.lock.LockTableUtils;
+import org.exist.util.io.FastByteArrayOutputStream;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import javax.xml.stream.XMLStreamException;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.List;
 import java.util.Map;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * JMX MXBean for examining the LockTable
@@ -64,7 +72,7 @@ public class LockTable implements LockTableMXBean {
     }
 
     @Override
-    public Map<String, Map<LockType, Map<Lock.LockMode, Map<String, Integer>>>> getAcquired() {
+    public Map<String, Map<LockType, Map<Lock.LockMode, Map<String, LockCountTraces>>>> getAcquired() {
         return pool.getLockManager().getLockTable().getAcquired();
     }
 
@@ -75,13 +83,63 @@ public class LockTable implements LockTableMXBean {
 
     @Override
     public void dumpToConsole() {
-        System.out.println(LockTableUtils.stateToString(pool.getLockManager().getLockTable()));
+        System.out.println(LockTableUtils.stateToString(pool.getLockManager().getLockTable(), false));
+    }
+
+    @Override
+    public void fullDumpToConsole() {
+        System.out.println(LockTableUtils.stateToString(pool.getLockManager().getLockTable(), true));
+    }
+
+    @Override
+    public void xmlDumpToConsole() {
+        try {
+            LockTableUtils.stateToXml(pool.getLockManager().getLockTable(), false, new OutputStreamWriter(System.out));
+        } catch (final XMLStreamException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void xmlFullDumpToConsole() {
+        try {
+            LockTableUtils.stateToXml(pool.getLockManager().getLockTable(), true, new OutputStreamWriter(System.out));
+        } catch (final XMLStreamException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private final static Logger LOCK_LOG = LogManager.getLogger(org.exist.storage.lock.LockTable.class);
 
     @Override
     public void dumpToLog() {
-        LOCK_LOG.info(LockTableUtils.stateToString(pool.getLockManager().getLockTable()));
+        LOCK_LOG.info(LockTableUtils.stateToString(pool.getLockManager().getLockTable(), false));
+    }
+
+    @Override
+    public void fullDumpToLog() {
+        LOCK_LOG.info(LockTableUtils.stateToString(pool.getLockManager().getLockTable(), true));
+    }
+
+    @Override
+    public void xmlDumpToLog() {
+        try (final FastByteArrayOutputStream bos = new FastByteArrayOutputStream();
+                final Writer writer = new OutputStreamWriter(bos)) {
+            LockTableUtils.stateToXml(pool.getLockManager().getLockTable(), false, writer);
+            LOCK_LOG.info(new String(bos.toByteArray(), UTF_8));
+        } catch (final IOException | XMLStreamException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void xmlFullDumpToLog() {
+        try (final FastByteArrayOutputStream bos = new FastByteArrayOutputStream();
+             final Writer writer = new OutputStreamWriter(bos)) {
+            LockTableUtils.stateToXml(pool.getLockManager().getLockTable(), true, writer);
+            LOCK_LOG.info(new String(bos.toByteArray(), UTF_8));
+        } catch (final IOException | XMLStreamException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
