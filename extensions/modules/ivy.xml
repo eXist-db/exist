@@ -8,18 +8,26 @@
     <info organisation="org.exist.xquery.modules" module="extensions-modules"/>
     <dependencies>
         <dependency org="net.sourceforge.cssparser" name="cssparser" rev="0.9.5" conf="*->*,!sources,!javadoc"/>
-        
+
+        <dependency org="com.twelvemonkeys.imageio" name="common-lang" rev="3.4.1"/>
+        <dependency org="com.twelvemonkeys.imageio" name="common-io" rev="3.4.1"/>
+        <dependency org="com.twelvemonkeys.imageio" name="common-image" rev="3.4.1"/>
+        <dependency org="com.twelvemonkeys.imageio" name="imageio-core" rev="3.4.1"/>
+        <dependency org="com.twelvemonkeys.imageio" name="imageio-metadata" rev="3.4.1"/>
+        <dependency org="com.twelvemonkeys.imageio" name="imageio-jpeg" rev="3.4.1"/>
+        <dependency org="com.twelvemonkeys.imageio" name="imageio-tiff" rev="3.4.1"/>
+
         <!-- <dependency org="org.jfree" name="jfreechart" rev="1.0.14" conf="*->*,!sources,!javadoc">
             <exclude module="itext"/>
             <exclude module="xml-apis"/>
             <exclude module="servlet-api"/>
         </dependency> -->
-        
+
         <!-- <dependency org="org.dspace" name="cql-java" rev="1.1"/> -->
 	<!-- <dependency org="org.z3950.zing" name="cql-java" rev="1.10" conf="*->*,!sources,!javadoc" /> -->
 
         <!-- <dependency org="jivesoftware" name="smack" rev="3.1.0"/> -->
-        
+
         <!-- <dependency org="org.apache.xmlgraphics" name="fop" rev="2.1" conf="*->*,!sources,!javadoc">
                     <exclude module="xalan"/>
                     <exclude module="xml-apis"/>
