@@ -19,8 +19,20 @@
  */
 package org.exist.storage.lock;
 
+import java.io.Writer;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
+import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.Lock.LockType;
+import org.exist.storage.lock.LockTable.LockCountTraces;
+import org.exist.storage.lock.LockTable.LockModeOwner;
+import org.exist.xquery.value.TimeUtils;
+
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  * Utilities for working with the Lock Table
@@ -31,9 +43,9 @@ public class LockTableUtils {
 
     private static final String EOL = System.getProperty("line.separator");
 
-    public static String stateToString(final LockTable lockTable) {
-        final Map<String, Map<Lock.LockType, List<LockTable.LockModeOwner>>> attempting = lockTable.getAttempting();
-        final Map<String, Map<Lock.LockType, Map<Lock.LockMode, Map<String, Integer>>>> acquired = lockTable.getAcquired();
+    public static String stateToString(final LockTable lockTable, final boolean includeStack) {
+        final Map<String, Map<LockType, List<LockModeOwner>>> attempting = lockTable.getAttempting();
+        final Map<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> acquired = lockTable.getAcquired();
 
         final StringBuilder builder = new StringBuilder();
 
@@ -42,23 +54,36 @@ public class LockTableUtils {
                 .append("Acquired Locks").append(EOL)
                 .append("------------------------------------").append(EOL);
 
-        for(final Map.Entry<String, Map<Lock.LockType, Map<Lock.LockMode, Map<String, Integer>>>> acquire : acquired.entrySet()) {
+        for(final Map.Entry<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> acquire : acquired.entrySet()) {
             builder.append(acquire.getKey()).append(EOL);
-            for(final Map.Entry<Lock.LockType, Map<Lock.LockMode, Map<String, Integer>>> type : acquire.getValue().entrySet()) {
+            for(final Map.Entry<LockType, Map<LockMode, Map<String, LockCountTraces>>> type : acquire.getValue().entrySet()) {
                 builder.append('\t').append(type.getKey()).append(EOL);
-                for(final Map.Entry<Lock.LockMode, Map<String, Integer>> lockModeOwners : type.getValue().entrySet()) {
+                for(final Map.Entry<LockMode, Map<String, LockCountTraces>> lockModeOwners : type.getValue().entrySet()) {
                     builder
                             .append("\t\t").append(lockModeOwners.getKey())
                             .append('\t');
 
                     boolean firstOwner = true;
-                    for(final Map.Entry<String, Integer> ownerHoldCount : lockModeOwners.getValue().entrySet()) {
+                    for(final Map.Entry<String, LockCountTraces> ownerHoldCount : lockModeOwners.getValue().entrySet()) {
                         if(!firstOwner) {
                             builder.append(", ");
                         } else {
                             firstOwner = false;
                         }
-                        builder.append(ownerHoldCount.getKey()).append(" (count=").append(ownerHoldCount.getValue()).append(")");
+                        final LockCountTraces holdCount = ownerHoldCount.getValue();
+                        builder.append(ownerHoldCount.getKey())
+                                .append(" (count=").append(holdCount.count).append(")");
+                        if (holdCount.traces != null && includeStack) {
+                            for (int i = 0; i < holdCount.traces.size(); i++) {
+                                 final StackTraceElement[] trace = holdCount.traces.get(i);
+                                 builder
+                                         .append(EOL)
+                                         .append("\t\t\tTrace ").append(i).append(": ").append(EOL);
+                                 for (int j = 0; j < trace.length; j++) {
+                                     builder.append("\t\t\t\t").append(trace[j]).append(EOL);
+                                 }
+                            }
+                        }
                     }
                     builder.append(EOL);
                 }
@@ -85,5 +110,104 @@ public class LockTableUtils {
         }
 
         return builder.toString();
+    }
+
+    public static void stateToXml(final LockTable lockTable, final boolean includeStack, final Writer writer) throws XMLStreamException {
+        final GregorianCalendar cal = new GregorianCalendar();
+
+        final Map<String, Map<LockType, List<LockModeOwner>>> attempting = lockTable.getAttempting();
+        final Map<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> acquired = lockTable.getAcquired();
+
+        final XMLOutputFactory outputFactory = XMLOutputFactory.newFactory();
+        final XMLStreamWriter xmlWriter = outputFactory.createXMLStreamWriter(writer);
+
+        xmlWriter.writeStartDocument();
+        xmlWriter.writeStartElement("lock-table");
+        final XMLGregorianCalendar xmlCal = TimeUtils.getInstance().newXMLGregorianCalendar(cal);
+        xmlWriter.writeAttribute("timestamp", xmlCal.toXMLFormat());
+
+        // acquired locks
+        xmlWriter.writeStartElement("acquired");
+        for(final Map.Entry<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> acquire : acquired.entrySet()) {
+            xmlWriter.writeStartElement("lock");
+            xmlWriter.writeAttribute("id", acquire.getKey());
+
+            for(final Map.Entry<LockType, Map<LockMode, Map<String, LockCountTraces>>> type : acquire.getValue().entrySet()) {
+                xmlWriter.writeStartElement("type");
+                xmlWriter.writeAttribute("id", type.getKey().name());
+
+                for(final Map.Entry<LockMode, Map<String, LockCountTraces>> lockModeOwners : type.getValue().entrySet()) {
+                    xmlWriter.writeStartElement("mode");
+                    xmlWriter.writeAttribute("id", lockModeOwners.getKey().name());
+
+                    for(final Map.Entry<String, LockCountTraces> ownerHoldCount : lockModeOwners.getValue().entrySet()) {
+                        xmlWriter.writeStartElement("thread");
+                        xmlWriter.writeAttribute("id", ownerHoldCount.getKey());
+                        final LockCountTraces holdCount = ownerHoldCount.getValue();
+                        xmlWriter.writeAttribute("hold-count", Integer.toString(holdCount.count));
+
+                        if (holdCount.traces != null && includeStack) {
+                            for (int i = 0; i < holdCount.traces.size(); i++) {
+                                xmlWriter.writeStartElement("stack-trace");
+                                xmlWriter.writeAttribute("index", Integer.toString(i));
+
+                                final StackTraceElement[] trace = holdCount.traces.get(i);
+                                for (int j = 0; j < trace.length; j++) {
+                                    xmlWriter.writeStartElement("call");
+                                    final StackTraceElement call = trace[j];
+                                    xmlWriter.writeAttribute("index", Integer.toString(j));
+                                    xmlWriter.writeAttribute("class", call.getClassName());
+                                    xmlWriter.writeAttribute("method", call.getMethodName());
+                                    xmlWriter.writeAttribute("file", call.getFileName());
+                                    xmlWriter.writeAttribute("line", Integer.toString(call.getLineNumber()));
+                                    xmlWriter.writeCharacters(call.toString());
+                                    xmlWriter.writeEndElement();
+                                }
+
+                                xmlWriter.writeEndElement();
+                            }
+                        }
+                        xmlWriter.writeEndElement();
+                    }
+                    xmlWriter.writeEndElement();
+                }
+                xmlWriter.writeEndElement();
+            }
+            xmlWriter.writeEndElement();
+        }
+        xmlWriter.writeEndElement();
+
+
+        // attempting locks
+        xmlWriter.writeStartElement("attempting");
+        for(final Map.Entry<String, Map<Lock.LockType, List<LockTable.LockModeOwner>>> attempt : attempting.entrySet()) {
+            xmlWriter.writeStartElement("lock");
+            xmlWriter.writeAttribute("id", attempt.getKey());
+
+            for(final Map.Entry<Lock.LockType, List<LockTable.LockModeOwner>> type : attempt.getValue().entrySet()) {
+                xmlWriter.writeStartElement("type");
+                xmlWriter.writeAttribute("id", type.getKey().name());
+
+                for(final LockTable.LockModeOwner lockModeOwner : type.getValue()) {
+                    xmlWriter.writeStartElement("mode");
+                    xmlWriter.writeAttribute("id", lockModeOwner.getLockMode().name());
+
+                    xmlWriter.writeStartElement("thread");
+                    xmlWriter.writeAttribute("id", lockModeOwner.getOwnerThread());
+                    xmlWriter.writeEndElement();
+
+                    xmlWriter.writeEndElement();
+                }
+
+                xmlWriter.writeEndElement();
+            }
+
+            xmlWriter.writeEndElement();
+        }
+
+        xmlWriter.writeEndElement();
+
+        xmlWriter.writeEndElement();
+        xmlWriter.writeEndDocument();
     }
 }

@@ -22,11 +22,11 @@ package org.exist.management.impl;
 
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.LockTable;
+import org.exist.storage.lock.LockTable.LockCountTraces;
 import org.exist.storage.lock.LockTable.LockModeOwner;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * JMX MXBean interface for examining the LockTable
@@ -40,7 +40,7 @@ public interface LockTableMXBean extends PerInstanceMBean {
      *
      * @return information about acquired locks
      */
-    Map<String, Map<Lock.LockType, Map<Lock.LockMode, Map<String, Integer>>>> getAcquired();
+    Map<String, Map<Lock.LockType, Map<Lock.LockMode, Map<String, LockCountTraces>>>> getAcquired();
 
     /**
      * Get information about outstanding attempts to acquire locks
@@ -52,4 +52,16 @@ public interface LockTableMXBean extends PerInstanceMBean {
     void dumpToConsole();
 
     void dumpToLog();
+
+    void xmlDumpToConsole();
+
+    void xmlDumpToLog();
+
+    void fullDumpToConsole();
+
+    void fullDumpToLog();
+
+    void xmlFullDumpToConsole();
+
+    void xmlFullDumpToLog();
 }
