@@ -49,29 +49,49 @@ import static java.nio.file.StandardOpenOption.WRITE;
 import static org.exist.util.ThreadUtils.newInstanceThread;
 
 /**
- * Manages the journalling log. The database uses one central journal for
+ * Manages the journal log. The database uses one central journal for
  * all data files. If the journal exceeds the predefined maximum size, a new file is created.
  * Every journal file has a unique number, which keeps growing during the lifetime of the db.
  * The name of the file corresponds to the file number. The file with the highest
  * number will be used for recovery.
- * <p>
+ *
  * A buffer is used to temporarily buffer journal entries. To guarantee consistency, the buffer will be flushed
- * and the journal is synched after every commit or whenever a db page is written to disk.
- * <p>
- * Each entry has the structure:
+ * and the journal is synced after every commit or whenever a db page is written to disk.
  *
- * <pre>[byte: entryType, long: transactionId, short length, byte[] data, short backLink]</pre>
+ * Each journal file has the following format:
  *
- * <ul>
- * <li>entryType is a unique id that identifies the log record. Entry types are registered via the
- * {@link org.exist.storage.journal.LogEntryTypes} class.</li>
- * <li>transactionId: the id of the transaction that created the record.</li>
- * <li>length: the length of the log entry data.</li>
- * <li>data: the payload data provided by the {@link org.exist.storage.journal.Loggable} object.</li>
- * <li>backLink: offset to the start of the record. Used when scanning the log file backwards.</li>
- * </ul>
+ * <pre>{@code
+ *     [magicNumber, version, entry*]
+ * }</pre>
+ *
+ * {@code magicNumber}  4 bytes with the value {@link #JOURNAL_MAGIC_NUMBER}.
+ * {@code version}      2 bytes (java.lang.short) with the value {@link #JOURNAL_VERSION}.
+ * {@code entry}        one or more variable length journal {@code entry} records.
+ *
+ * Each {@code entry} record has the format:
+ *
+ * <pre>{@code
+ *     [entryHeader, data, backLink]
+ * }</pre>
+ *
+ * {@code entryHeader}      11 bytes describes the entry (see below).
+ * {@code data}             {@code entryHeader->length} bytes of data for the entry.
+ * {@code backLink}         2 bytes (java.lang.short) offset to the start of the entry record, calculated by {@code entryHeader.length + dataLength}.
+ *                              The offset for the start of the entry record can be calculated as {@code endOfRecordOffset - 2 - backLink}.
+ *                              This is used when scanning the log file backwards for recovery.
+ *
+ * The {@code entryHeader} has the format:
+ *
+ * <pre>{@code
+ *     [entryType, transactionId, dataLength]
+ * }</pre>
+ *
+ * {@code entryType}        1 byte indicates the type of the entry.
+ * {@code transactionId}    8 bytes (java.lang.long) the id of the transaction that created the record.
+ * {@code dataLength}       2 bytes (java.lang.short) the length of the log entry {@code data}.
  *
  * @author wolf
+ * @author aretter
  */
 @ConfigurationClass("journal")
 //TODO: conf.xml refactoring <recovery> => <recovery><journal/></recovery>
