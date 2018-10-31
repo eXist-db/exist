@@ -40,7 +40,6 @@ import org.junit.runners.Suite;
         MoveCollectionTest.class,
         MoveCollectionRecoveryTest.class,
         MoveOverwriteCollectionTest.class,
-        RecoverBinaryTest.class,
         RecoverBinaryTest2.class,
         RecoveryTest.class,
         AppendTest.class,

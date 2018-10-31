@@ -103,6 +103,16 @@ public class StoreValueLoggable extends AbstractBFileLoggable {
         getIndexFile().undoStoreValue(this);
     }
 
+    public long getPage() {
+        return page;
+    }
+
+    public byte[] getValue() {
+        final byte[] data = new byte[value.size()];
+        value.copyTo(data, 0);
+        return data;
+    }
+
     @Override
     public String dump() {
         return super.dump() + " - stored value with tid " + tid + " on page " + page;

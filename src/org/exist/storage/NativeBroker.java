@@ -117,12 +117,14 @@ public class NativeBroker extends DBBroker {
 
     public final static byte LOG_RENAME_BINARY = 0x40;
     public final static byte LOG_CREATE_BINARY = 0x41;
-    public final static byte LOG_UPDATE_BINARY = 0x42;
+    public final static byte LOG_REPLACE_BINARY = 0x42;
+    public final static byte LOG_DELETE_BINARY = 0x43;
 
     static {
         LogEntryTypes.addEntryType(LOG_RENAME_BINARY, RenameBinaryLoggable::new);
         LogEntryTypes.addEntryType(LOG_CREATE_BINARY, CreateBinaryLoggable::new);
-        LogEntryTypes.addEntryType(LOG_UPDATE_BINARY, UpdateBinaryLoggable::new);
+        LogEntryTypes.addEntryType(LOG_REPLACE_BINARY, ReplaceBinaryLoggable::new);
+        LogEntryTypes.addEntryType(LOG_DELETE_BINARY, DeleteBinaryLoggable::new);
     }
 
     public static final byte PREPEND_DB_ALWAYS = 0;
@@ -1482,14 +1484,16 @@ public class NativeBroker extends DBBroker {
                 try(final ManagedLocks<ManagedDocumentLock> sourceDocLocks = new ManagedLocks(lockDescendantDocuments(sourceCollection, lockManager::acquireDocumentWriteLock));
                         final ManagedLocks<ManagedDocumentLock> targetDocLocks = new ManagedLocks(lockTargetDocuments(sourceCollectionUri, sourceDocLocks, destinationCollectionUri, lockManager::acquireDocumentWriteLock))) {
 
+                    // sourceDir must be known in advance, because once moveCollectionRecursive
+                    // is called, both collection and destination can point to the same resource
+                    final Path fsSourceDir = getCollectionFile(getFsDir(), sourceCollectionUri, false);
+
                     // Need to move each collection in the source tree individually, so recurse.
                     moveCollectionRecursive(transaction, trigger, sourceCollectionParent, sourceCollection, targetCollection, newName, false);
 
                     // For binary resources, though, just move the top level directory and all descendants come with it.
-                    final Path fsSourceDir = getCollectionFile(getFsDir(), sourceCollectionUri, false);
-                    moveBinaryFork(transaction, fsSourceDir, targetCollection, newName);
+                    moveCollectionBinaries(transaction, fsSourceDir, targetCollection, newName);
                 }
-
                 trigger.afterMoveCollection(this, transaction, sourceCollection, sourceCollectionUri);
             } finally {
                 pool.getProcessMonitor().endJob();
@@ -1590,43 +1594,44 @@ public class NativeBroker extends DBBroker {
      * @param targetCollection The target Collection which the source collection is to be moved to
      * @param newName The name of the source collection in the target Collection
      */
-    private void moveBinaryFork(final Txn transaction, final Path sourceDir,
+    private void moveCollectionBinaries(final Txn transaction, final Path sourceDir,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) final Collection targetCollection, final XmldbURI newName)
             throws IOException {
         final XmldbURI destinationCollectionUri = targetCollection.getURI().append(newName);
-
-        final Path targetDir = getCollectionFile(getFsDir(), destinationCollectionUri, false);
         if(Files.exists(sourceDir)) {
-            if(Files.exists(targetDir)) {
-
-                if(fsJournalDir.isPresent()) {
-                    final Path targetDelDir = getCollectionFile(fsJournalDir.get(), transaction, destinationCollectionUri, true);
-                    Files.createDirectories(targetDelDir);
-                    Files.move(targetDir, targetDelDir, StandardCopyOption.ATOMIC_MOVE);
-
-                    if(logManager.isPresent()) {
-                        final Loggable loggable = new RenameBinaryLoggable(this, transaction, targetDir, targetDelDir);
-                        try {
-                            logManager.get().journal(loggable);
-                        } catch (final JournalException e) {
-                            LOG.error(e.getMessage(), e);
-                        }
-                    }
+            final Path targetDir = getCollectionFile(getFsDir(), destinationCollectionUri, false);
+            if (fsJournalDir.isPresent()) {
+                // note a backup target for the WAL
+                final Path targetBackupDir;
+                if (Files.exists(targetDir)) {
+                    targetBackupDir = getCollectionFile(fsJournalDir.get(), transaction, destinationCollectionUri, true);
                 } else {
-                    FileUtils.delete(targetDir);
+                    targetBackupDir = null;
                 }
-            }
-            Files.createDirectories(targetDir.getParent());
-            Files.move(sourceDir, targetDir, StandardCopyOption.ATOMIC_MOVE);
 
-            if(logManager.isPresent()) {
-                final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceDir, targetDir);
+                // write the WAL entry
+                final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceDir, targetDir, targetBackupDir);
                 try {
                     logManager.get().journal(loggable);
                 } catch (final JournalException e) {
                     LOG.error(e.getMessage(), e);
                 }
+
+                // backup the target dir, needed for undoing the transaction if recovery happens
+                if (targetBackupDir != null) {
+                    Files.createDirectories(targetBackupDir);
+                    Files.move(targetDir, targetBackupDir, StandardCopyOption.ATOMIC_MOVE);
+                }
+            } else {
+                if (Files.exists(targetDir)) {
+                    FileUtils.delete(targetDir);
+                }
             }
+
+            // perform the actual binary file operation
+            // move the binary file/directory to the new location on disk
+            Files.createDirectories(targetDir.getParent());
+            Files.move(sourceDir, targetDir, StandardCopyOption.ATOMIC_MOVE);
         }
     }
 
@@ -1816,19 +1821,16 @@ public class NativeBroker extends DBBroker {
     private void removeCollectionBinaries(final Txn transaction,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) final Collection collection) throws IOException {
         final Path fsSourceDir = getCollectionFile(getFsDir(), collection.getURI(), false);
-        if(fsJournalDir.isPresent()) {
-            final Path fsTargetDir = getCollectionFile(fsJournalDir.get(), transaction, collection.getURI(), true);
+        if (Files.exists(fsSourceDir)) {
+            if (fsJournalDir.isPresent()) {
+                // make a copy for the WAL
+                final Path walCurrentValue = getCollectionFile(fsJournalDir.get(), transaction, collection.getURI(), true);
+                Files.createDirectories(walCurrentValue.getParent());
+                FileUtils.copy(fsSourceDir, walCurrentValue.getParent());
 
-            // remove child binary collections
-            if (Files.exists(fsSourceDir)) {
-                Files.createDirectories(fsTargetDir.getParent());
-
-                //TODO(DS) log first, rename second ???
-                //TODO(DW) not sure a Fatal is required here. Copy and delete maybe?
-                Files.move(fsSourceDir, fsTargetDir, StandardCopyOption.ATOMIC_MOVE);
-
+                // write the WAL entry
                 if (logManager.isPresent()) {
-                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, fsSourceDir, fsTargetDir);
+                    final Loggable loggable = new DeleteBinaryLoggable(this, transaction, fsSourceDir, walCurrentValue);
                     try {
                         logManager.get().journal(loggable);
                     } catch (final JournalException e) {
@@ -1836,7 +1838,9 @@ public class NativeBroker extends DBBroker {
                     }
                 }
             }
-        } else {
+
+            // perform the actual binary file operation
+            // delete the binaries directory from disk
             FileUtils.delete(fsSourceDir);
         }
     }
@@ -2385,29 +2389,37 @@ public class NativeBroker extends DBBroker {
         final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), true);
         final boolean exists = Files.exists(binFile);
 
-        final Optional<Function<Path, Loggable>> fLoggable;
         if(fsJournalDir.isPresent()) {
+            // we must write a copy of the new binary file to disk first, so it can be redone or undone if the transaction needs to be recovered
+            final Path walNewValue = getCollectionFile(fsJournalDir.get(), transaction, blob.getURI(), true);
+            fWriteData.accept(walNewValue);
+
+            final Function<Path, Loggable> fLoggable;
             if (exists) {
-                final Path backupFile = getCollectionFile(fsJournalDir.get(), transaction, blob.getURI(), true);
-                Files.move(binFile, backupFile, StandardCopyOption.ATOMIC_MOVE);
-                fLoggable = Optional.of(original -> new UpdateBinaryLoggable(this, transaction, original, backupFile));
+                final Path currentValue = getCollectionFile(fsJournalDir.get(), transaction, blob.getURI(), true);
+                Files.copy(binFile, currentValue);
+                fLoggable = existing -> new ReplaceBinaryLoggable(this, transaction, walNewValue, existing, currentValue);
             } else {
-                fLoggable = Optional.of(original -> new CreateBinaryLoggable(this, transaction, original));
+                fLoggable = create -> new CreateBinaryLoggable(this, transaction, walNewValue, create);
             }
+
+            // write the WAL entry
+            if (logManager.isPresent() && fLoggable != null) {
+                final Loggable loggable = fLoggable.apply(binFile);
+                try {
+                    logManager.get().journal(loggable);
+                } catch (final JournalException e) {
+                    LOG.error(e.getMessage(), e);
+                }
+            }
+
+            // perform the actual binary file operation
+            // copy the binary file to the real location on disk
+            Files.copy(walNewValue, binFile, StandardCopyOption.REPLACE_EXISTING);
         } else {
+            //no journal, just do the binary operation
             Files.deleteIfExists(binFile);
-            fLoggable = Optional.empty();
-        }
-
-        fWriteData.accept(binFile);
-
-        if(logManager.isPresent() && fLoggable.isPresent()) {
-            final Loggable loggable = fLoggable.get().apply(binFile);
-            try {
-                logManager.get().journal(loggable);
-            } catch (final JournalException e) {
-                LOG.error(e.getMessage(), e);
-            }
+            fWriteData.accept(binFile);
         }
     }
 
@@ -2909,21 +2921,36 @@ public class NativeBroker extends DBBroker {
             final Path fsTargetCollection = getCollectionFile(getFsDir(), targetCollectionUri, true);
             final Path fsDestinationDocument = fsTargetCollection.resolve(newName.lastSegment().toString());
 
-            /* Create required directories */
-            Files.createDirectories(fsTargetCollection);
+            if (fsJournalDir.isPresent()) {
+                // note a backup target for the WAL
+                final Path fsDestinationDocumentBackup;
+                if (Files.exists(fsDestinationDocument)) {
+                    fsDestinationDocumentBackup = getCollectionFile(fsJournalDir.get(), transaction, destinationDocumentUri, true);
+                } else {
+                    fsDestinationDocumentBackup = null;
+                }
 
-            /* Rename original file to new location */
-            Files.move(fsSourceDocument, fsDestinationDocument, StandardCopyOption.ATOMIC_MOVE);
-
-            if(logManager.isPresent()) {
-                final Loggable loggable = new RenameBinaryLoggable(this, transaction, fsSourceDocument, fsDestinationDocument);
+                // write the WAL entry
+                final Loggable loggable = new RenameBinaryLoggable(this, transaction, fsSourceDocument, fsDestinationDocument, fsDestinationDocumentBackup);
                 try {
                     logManager.get().journal(loggable);
                 } catch (final JournalException e) {
                     LOG.error(e.getMessage(), e);
                 }
+
+                // backup the target file, needed for undoing the transaction if recovery happens
+                if (fsDestinationDocumentBackup != null) {
+                    Files.createDirectories(fsDestinationDocumentBackup.getParent());
+                    Files.move(fsDestinationDocument, fsDestinationDocumentBackup, StandardCopyOption.ATOMIC_MOVE);
+                }
             }
+
+            // perform the actual binary file operation
+            // move the binary file to the new location on disk
+            Files.createDirectories(fsDestinationDocument.getParent());
+            Files.move(fsSourceDocument, fsDestinationDocument, StandardCopyOption.ATOMIC_MOVE);
         }
+
         storeXMLResource(transaction, sourceDocument);
         saveCollection(transaction, targetCollection);
 
@@ -3023,32 +3050,34 @@ public class NativeBroker extends DBBroker {
         final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), false);
         if(Files.exists(binFile)) {
             if(fsJournalDir.isPresent()) {
-	            final Path binBackupFile = getCollectionFile(fsJournalDir.get(), transaction, blob.getURI(), true);
-    	        Files.move(binFile, binBackupFile, StandardCopyOption.ATOMIC_MOVE);
 
+                // make a copy for the WAL
+	            final Path walCurrentValue = getCollectionFile(fsJournalDir.get(), transaction, blob.getURI(), true);
+    	        Files.copy(binFile, walCurrentValue);
+
+                // write the WAL entry
                 if (logManager.isPresent()) {
-                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, binFile, binBackupFile);
+                    final Loggable loggable = new DeleteBinaryLoggable(this, transaction, binFile, walCurrentValue);
                     try {
                         logManager.get().journal(loggable);
                     } catch (final JournalException e) {
                         LOG.error(e.getMessage(), e);
                     }
                 }
-            } else {
-                Files.delete(binFile);
             }
-        }
-        removeResourceMetadata(transaction, blob);
 
+            // perform the actual binary file operation, delete the file!
+            Files.delete(binFile);
+        }
+
+        // remove the file from the database metadata and indexes
+        removeResourceMetadata(transaction, blob);
         getIndexController().setDocument(blob, ReindexMode.REMOVE_BINARY);
         getIndexController().flush();
     }
 
-    /**
-     * @param transaction
-     * @param document
-     */
-    private void removeResourceMetadata(final Txn transaction,
+    @Override
+    public void removeResourceMetadata(final Txn transaction,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) final DocumentImpl document) {
         // remove document metadata
         try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
