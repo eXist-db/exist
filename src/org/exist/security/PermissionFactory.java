@@ -34,7 +34,6 @@ import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import com.evolvedbinary.j8fu.function.ConsumerE;
-import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 
@@ -125,8 +124,8 @@ public class PermissionFactory {
                             throw new XPathException("Resource or collection '" + pathUri.toString() + "' does not exist.");
                         }
 
-                        // keep a write lock in the transaction
-                        transaction.acquireLock(doc.getUpdateLock(), LockMode.WRITE_LOCK);
+//                        // keep a write lock in the transaction
+//                        transaction.acquireLock(doc.getUpdateLock(), LockMode.WRITE_LOCK);
 
                         final Permission permissions = doc.getPermissions();
                         permissionModifier.accept(permissions);
@@ -140,8 +139,8 @@ public class PermissionFactory {
                     transact.commit(transaction);
                     broker.flush();
                 } else {
-                    // keep a write lock in the transaction
-                    transaction.acquireLock(collection.getLock(), LockMode.WRITE_LOCK);
+//                    // keep a write lock in the transaction
+//                    transaction.acquireLock(collection.getLock(), LockMode.WRITE_LOCK);
 
                     final Permission permissions = collection.getPermissionsNoLock();
                     permissionModifier.accept(permissions);
@@ -155,7 +154,7 @@ public class PermissionFactory {
                     collection.release(LockMode.WRITE_LOCK);
                 }
             }
-        } catch(final XPathException | PermissionDeniedException | IOException | TriggerException | TransactionException | LockException e) {
+        } catch(final XPathException | PermissionDeniedException | IOException | TriggerException | TransactionException e) {
             throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getCurrentSubject().getName() + "' on '" + pathUri.toString() + "': " + e.getMessage(), e);
         }
     }
