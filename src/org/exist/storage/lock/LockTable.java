@@ -34,6 +34,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.exist.storage.lock.LockTable.LockAction.Action.*;
 import static org.exist.util.ThreadUtils.newInstanceThread;
 
@@ -84,9 +85,9 @@ public class LockTable {
     /**
      * Reference count of acquired locks by id and type
      *
-     * Map<Id, Map<Lock Type, Map<Lock Mode, Map<Owner, HoldCount>>>>
+     * Map<Id, Map<Lock Type, Map<Lock Mode, Map<Owner, LockCountTraces>>>>
      */
-    private final ConcurrentMap<String, Map<LockType, Map<LockMode, Map<String, Integer>>>> acquired = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> acquired = new ConcurrentHashMap<>();
 
     /**
      * The {@link #queue} holds lock events and lock listener events
@@ -269,7 +270,7 @@ public class LockTable {
      *
      * @return acquired lock information
      */
-    public Map<String, Map<LockType, Map<LockMode, Map<String, Integer>>>> getAcquired() {
+    public Map<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> getAcquired() {
         return new HashMap<>(acquired);
     }
 
@@ -291,15 +292,34 @@ public class LockTable {
         }
     }
 
+    public static class LockCountTraces {
+        int count;
+        @Nullable final List<StackTraceElement[]> traces;
+
+        public LockCountTraces(final int count, @Nullable final List<StackTraceElement[]> traces) {
+            this.count = count;
+            this.traces = traces;
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        @Nullable
+        public List<StackTraceElement[]> getTraces() {
+            return traces;
+        }
+    }
+
     private static class QueueConsumer implements Runnable {
         private final TransferQueue<Either<ListenerAction, LockAction>> queue;
         private final ConcurrentMap<String, Map<LockType, List<LockModeOwner>>> attempting;
-        private final ConcurrentMap<String, Map<LockType, Map<LockMode, Map<String, Integer>>>> acquired;
+        private final ConcurrentMap<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> acquired;
         private final List<LockEventListener> listeners = new ArrayList<>();
 
         QueueConsumer(final TransferQueue<Either<ListenerAction, LockAction>> queue,
                       final ConcurrentMap<String, Map<LockType, List<LockModeOwner>>> attempting,
-                      final ConcurrentMap<String, Map<LockType, Map<LockMode, Map<String, Integer>>>> acquired) {
+                      final ConcurrentMap<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> acquired) {
             this.queue = queue;
             this.attempting = attempting;
             this.acquired = acquired;
@@ -458,12 +478,16 @@ public class LockTable {
 
                         ownerHolds.compute(lockAction.threadName, (threadName, holdCount) -> {
                             if(holdCount == null) {
-                                holdCount = 0;
+                                holdCount = new LockCountTraces(1, List(lockAction.stackTrace));
+                            } else {
+                                holdCount = append(holdCount, lockAction.stackTrace);
                             }
-                            return ++holdCount;
+                            return holdCount;
                         });
 
-                        final int lockModeHolds = ownerHolds.values().stream().collect(Collectors.summingInt(Integer::intValue));
+                        final int lockModeHolds = ownerHolds.values().stream()
+                                .map(LockCountTraces::getCount)
+                                .collect(Collectors.summingInt(Integer::intValue));
                         notifyListenersOfAcquire(lockAction, lockModeHolds);
 
                         return ownerHolds;
@@ -474,6 +498,34 @@ public class LockTable {
 
                 return acqu;
             });
+        }
+
+        private static @Nullable <T> List<T> List(@Nullable final T item) {
+            if (item == null) {
+                return null;
+            }
+
+            final List<T> list = new ArrayList<>();
+            list.add(item);
+            return list;
+        }
+
+        private static LockCountTraces append(final LockCountTraces holdCount, @Nullable final StackTraceElement[] trace) {
+            List<StackTraceElement[]> traces = holdCount.traces;
+            if (traces != null) {
+                traces.add(trace);
+            }
+            holdCount.count++;
+            return holdCount;
+        }
+
+        private static LockCountTraces removeLast(final LockCountTraces holdCount) {
+            List<StackTraceElement[]> traces = holdCount.traces;
+            if (traces != null) {
+                traces.remove(traces.size() - 1);
+            }
+            holdCount.count--;
+            return holdCount;
         }
 
         private void decrementAcquired(final LockAction lockAction) {
@@ -498,17 +550,17 @@ public class LockTable {
                                 if(holdCount == null) {
                                     LOG.error("No entry found when trying to decrementAcquired for: id={}, lockType={}, lockMode={}, threadName={}", lockAction.id, lockAction.lockType, lockAction.mode, lockAction.threadName);
                                     return null;
-                                } else if(holdCount == 0) {
+                                } else if(holdCount.count == 0) {
                                     LOG.error("Negative release when trying to decrementAcquired for: id={}, lockType={}, lockMode={}, threadName={}", lockAction.id, lockAction.lockType, lockAction.mode, lockAction.threadName);
                                     return null;
-                                } else if(holdCount == 1) {
+                                } else if(holdCount.count == 1) {
                                     return null;
                                 } else {
-                                    return --holdCount;
+                                    return removeLast(holdCount);
                                 }
                             });
 
-                            final int lockModeHolds = ownerHolds.values().stream().collect(Collectors.summingInt(Integer::intValue));
+                            final int lockModeHolds = ownerHolds.values().stream().map(LockCountTraces::getCount).collect(Collectors.summingInt(Integer::intValue));
 
                             notifyListenersOfRelease(lockAction, lockModeHolds);
 
@@ -701,7 +753,7 @@ public class LockTable {
                 LOG.trace("QUEUE: {} (read={} write={})", lockAction.toString(), read, write);
             }
 
-            lockCounts.put(lockAction.id, new Tuple2<>(read, write));
+            lockCounts.put(lockAction.id, Tuple(read, write));
         }
     }
 }

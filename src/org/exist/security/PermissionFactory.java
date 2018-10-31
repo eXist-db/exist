@@ -39,7 +39,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
 import com.evolvedbinary.j8fu.function.ConsumerE;
-import org.exist.util.LockException;
 import org.exist.util.SyntaxException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
@@ -134,8 +133,8 @@ public class PermissionFactory {
 
                         final DocumentImpl doc = lockedDoc.getDocument();
 
-                        // keep a write lock in the transaction
-                        transaction.acquireDocumentLock(() -> brokerPool.getLockManager().acquireDocumentWriteLock(doc.getURI()));
+//                        // keep a write lock in the transaction
+//                        transaction.acquireDocumentLock(() -> brokerPool.getLockManager().acquireDocumentWriteLock(doc.getURI()));
 
 
                         final Permission permissions = doc.getPermissions();
@@ -144,8 +143,8 @@ public class PermissionFactory {
                         broker.storeXMLResource(transaction, doc);
                     }
                 } else {
-                    // keep a write lock in the transaction
-                    transaction.acquireCollectionLock(() -> brokerPool.getLockManager().acquireCollectionWriteLock(collection.getURI()));
+//                    // keep a write lock in the transaction
+//                    transaction.acquireCollectionLock(() -> brokerPool.getLockManager().acquireCollectionWriteLock(collection.getURI()));
 
                     final Permission permissions = collection.getPermissionsNoLock();
                     permissionModifier.accept(permissions);
@@ -154,7 +153,7 @@ public class PermissionFactory {
                 }
                 broker.flush();
             }
-        } catch(final XPathException | PermissionDeniedException | IOException | LockException e) {
+        } catch(final XPathException | PermissionDeniedException | IOException e) {
             throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getCurrentSubject().getName() + "' on '" + pathUri.toString() + "': " + e.getMessage(), e);
         }
     }
