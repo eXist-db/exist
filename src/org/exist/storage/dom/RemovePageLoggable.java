@@ -56,7 +56,7 @@ public class RemovePageLoggable extends AbstractLoggable {
 
     public RemovePageLoggable(final DBBroker broker, final long transactionId) {
         super(DOMFile.LOG_REMOVE_PAGE, transactionId);
-        this.domDb = ((NativeBroker)broker).getDOMFile();
+        this.domDb = broker == null ? null : ((NativeBroker) broker).getDOMFile();
     }
     
     @Override
@@ -78,7 +78,7 @@ public class RemovePageLoggable extends AbstractLoggable {
         oldTid = in.getShort();
         oldRecCnt = in.getShort();
         oldLen = in.getShort();
-        oldData = new byte[domDb.getFileHeader().getWorkSize()];
+        oldData = new byte[oldLen];
         in.get(oldData, 0, oldLen);
     }
 
@@ -100,5 +100,17 @@ public class RemovePageLoggable extends AbstractLoggable {
     @Override
     public String dump() {
         return super.dump() + " - removed page " + pageNum;
+    }
+
+    public long getPageNum() {
+        return pageNum;
+    }
+
+    public byte[] getOldData() {
+        return oldData;
+    }
+
+    public int getOldLen() {
+        return oldLen;
     }
 }

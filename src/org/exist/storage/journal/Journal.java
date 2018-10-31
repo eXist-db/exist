@@ -1,23 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
- *  http://exist-db.org
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2013 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.storage.journal;
 
@@ -25,6 +23,7 @@ import java.io.*;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -40,10 +39,13 @@ import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.lock.FileLock;
 import org.exist.storage.txn.Checkpoint;
+import org.exist.util.ByteConversion;
 import org.exist.util.FileUtils;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.sanity.SanityCheck;
 
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
+import static java.nio.file.StandardOpenOption.WRITE;
 import static org.exist.util.ThreadUtils.newInstanceThread;
 
 /**
@@ -52,23 +54,23 @@ import static org.exist.util.ThreadUtils.newInstanceThread;
  * Every journal file has a unique number, which keeps growing during the lifetime of the db.
  * The name of the file corresponds to the file number. The file with the highest
  * number will be used for recovery.
- * 
+ * <p>
  * A buffer is used to temporarily buffer journal entries. To guarantee consistency, the buffer will be flushed
  * and the journal is synched after every commit or whenever a db page is written to disk.
- * 
+ * <p>
  * Each entry has the structure:
- * 
+ *
  * <pre>[byte: entryType, long: transactionId, short length, byte[] data, short backLink]</pre>
- * 
+ *
  * <ul>
- *  <li>entryType is a unique id that identifies the log record. Entry types are registered via the 
+ * <li>entryType is a unique id that identifies the log record. Entry types are registered via the
  * {@link org.exist.storage.journal.LogEntryTypes} class.</li>
- *  <li>transactionId: the id of the transaction that created the record.</li>
- *  <li>length: the length of the log entry data.</li>
- *  <li>data: the payload data provided by the {@link org.exist.storage.journal.Loggable} object.</li>
- *  <li>backLink: offset to the start of the record. Used when scanning the log file backwards.</li>
+ * <li>transactionId: the id of the transaction that created the record.</li>
+ * <li>length: the length of the log entry data.</li>
+ * <li>data: the payload data provided by the {@link org.exist.storage.journal.Loggable} object.</li>
+ * <li>backLink: offset to the start of the record. Used when scanning the log file backwards.</li>
  * </ul>
- * 
+ *
  * @author wolf
  */
 @ConfigurationClass("journal")
@@ -79,30 +81,52 @@ public final class Journal {
      */
     private static final Logger LOG = LogManager.getLogger(Journal.class);
 
-    public final static String RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE = "sync-on-commit";
-    public final static String RECOVERY_JOURNAL_DIR_ATTRIBUTE = "journal-dir";
-    public final static String RECOVERY_SIZE_LIMIT_ATTRIBUTE = "size";
+    /**
+     * The length in bytes of the Header in the Journal file
+     *
+     * 4 bytes for the magic number, and then 2 bytes for the journal version
+     */
+    public static final int JOURNAL_HEADER_LEN = 6;
+    public static final byte[] JOURNAL_MAGIC_NUMBER = {0x0E, 0x0D, 0x0B, 0x01};
+    public static final short JOURNAL_VERSION = 2;
 
-    public final static String PROPERTY_RECOVERY_SIZE_MIN = "db-connection.recovery.size-min";
-    public final static String PROPERTY_RECOVERY_SIZE_LIMIT = "db-connection.recovery.size-limit";
-    public final static String PROPERTY_RECOVERY_JOURNAL_DIR = "db-connection.recovery.journal-dir";
-    public final static String PROPERTY_RECOVERY_SYNC_ON_COMMIT = "db-connection.recovery.sync-on-commit";
+    public static final String RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE = "sync-on-commit";
+    public static final String RECOVERY_JOURNAL_DIR_ATTRIBUTE = "journal-dir";
+    public static final String RECOVERY_SIZE_LIMIT_ATTRIBUTE = "size";
 
-    public final static String LOG_FILE_SUFFIX = "log";
-    public final static String BAK_FILE_SUFFIX = ".bak";
+    public static final String PROPERTY_RECOVERY_SIZE_MIN = "db-connection.recovery.size-min";
+    public static final String PROPERTY_RECOVERY_SIZE_LIMIT = "db-connection.recovery.size-limit";
+    public static final String PROPERTY_RECOVERY_JOURNAL_DIR = "db-connection.recovery.journal-dir";
+    public static final String PROPERTY_RECOVERY_SYNC_ON_COMMIT = "db-connection.recovery.sync-on-commit";
 
-    public final static String LCK_FILE = "journal.lck";
-    
-    /** the length of the header of each entry: entryType + transactionId + length */
-    public final static int LOG_ENTRY_HEADER_LEN = 11;
+    public static final String LOG_FILE_SUFFIX = "log";
+    public static final String BAK_FILE_SUFFIX = ".bak";
 
-    /** header length + trailing back link */
-    public final static int LOG_ENTRY_BASE_LEN = LOG_ENTRY_HEADER_LEN + 2;
+    public static final String LCK_FILE = "journal.lck";
 
-    /** default maximum journal size */
-    public final static int DEFAULT_MAX_SIZE = 10; //MB
+    /**
+     * the length of the header of each entry: entryType (1 byte) + transactionId (8 bytes) + length (2 bytes)
+     */
+    public static final int LOG_ENTRY_HEADER_LEN = 11;
 
-    /** minimal size the journal needs to have to be replaced by a new file during a checkpoint */
+    /**
+     * the length of the back-link in a log entry
+     */
+    public static final int LOG_ENTRY_BACK_LINK_LEN = 2;
+
+    /**
+     * header length + trailing back link
+     */
+    public static final int LOG_ENTRY_BASE_LEN = LOG_ENTRY_HEADER_LEN + LOG_ENTRY_BACK_LINK_LEN;
+
+    /**
+     * default maximum journal size
+     */
+    public static final int DEFAULT_MAX_SIZE = 100; //MB
+
+    /**
+     * minimal size the journal needs to have to be replaced by a new file during a checkpoint
+     */
     private static final int DEFAULT_MIN_SIZE = 1; // MB
 
     /**
@@ -112,7 +136,7 @@ public final class Journal {
     //TODO: conf.xml refactoring <recovery minSize=""> => <journal minSize="">
     private final long journalSizeMin;
 
-    /** 
+    /**
      * size limit for the journal file. A checkpoint will be triggered if the file
      * exceeds this size limit.
      */
@@ -120,56 +144,78 @@ public final class Journal {
     //TODO: conf.xml refactoring <recovery size=""> => <journal size="">
     private final long journalSizeLimit;
 
-    /** the current output channel 
-     * Only valid after switchFiles() was called at least once! */
-    private FileOutputStream os;
-    private FileChannel channel;
+    /**
+     * the current output channel
+     * Only valid after switchFiles() was called at least once!
+     */
+    private SeekableByteChannel channel;
 
-    /** Synching the journal is done by a background thread */
+    /**
+     * Syncing the journal is done by a background thread
+     */
     private final FileSyncRunnable fileSyncRunnable;
     private final Thread fileSyncThread;
 
-    /** latch used to synchronize writes to the channel */
+    /**
+     * latch used to synchronize writes to the channel
+     */
     private final Object latch = new Object();
 
-    /** the data directory where journal files are written to */
+    /**
+     * the data directory where journal files are written to
+     */
     @ConfigurationFieldAsAttribute("journal-dir")
     //TODO: conf.xml refactoring <recovery journal-dir=""> => <journal dir="">
     private final Path dir;
 
     private FileLock fileLock;
 
-    /** the current file number */
+    /**
+     * the current file number
+     */
     private int currentFile = 0;
 
-    /** used to keep track of the current position in the file */
-    private int inFilePos = 0;
-
-    /** temp buffer */
+    /**
+     * temp buffer
+     */
     private ByteBuffer currentBuffer;
 
-    /** the last LSN written by the JournalManager */
+    /**
+     * the last LSN written by the JournalManager
+     */
     private long currentLsn = Lsn.LSN_INVALID;
 
-    /** the last LSN actually written to the file */
+    /**
+     * the last LSN actually written to the file
+     */
     private long lastLsnWritten = Lsn.LSN_INVALID;
 
-    /** stores the current LSN of the last file sync on the file */ 
+    /**
+     * stores the current LSN of the last file sync on the file
+     */
     private long lastSyncLsn = Lsn.LSN_INVALID;
 
-    /** set to true while recovery is in progress */
+    /**
+     * set to true while recovery is in progress
+     */
     private boolean inRecovery = false;
 
-    /** the {@link BrokerPool} that created this manager */
+    /**
+     * the {@link BrokerPool} that created this manager
+     */
     private final BrokerPool pool;
 
-    /** if set to true, a sync will be triggered on the log file after every commit */
+    /**
+     * if set to true, a sync will be triggered on the log file after every commit
+     */
     @ConfigurationFieldAsAttribute("sync-on-commit")
     //TODO: conf.xml refactoring <recovery sync-on-commit=""> => <journal sync-on-commit="">
     private final static boolean DEFAULT_SYNC_ON_COMMIT = true;
     private final boolean syncOnCommit;
 
     private final Path fsJournalDir;
+
+    private volatile boolean initialised = false;
 
     public Journal(final BrokerPool pool, final Path directory) throws EXistException {
         this.pool = pool;
@@ -229,47 +275,58 @@ public final class Journal {
         final boolean locked = fileLock.tryLock();
         if (!locked) {
             final String lastHeartbeat =
-                DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM)
-                    .format(fileLock.getLastHeartbeat());
-                    throw new EXistException("The journal log directory seems to be locked by another " +
+                    DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM)
+                            .format(fileLock.getLastHeartbeat());
+            throw new EXistException("The journal log directory seems to be locked by another " +
                     "eXist process. A lock file: " + lck.toAbsolutePath().toString() + " is present in the " +
                     "log directory. Last access to the lock file: " + lastHeartbeat);
         }
     }
 
     /**
-     * Write a log entry to the journalling log.
-     * 
-     * @param loggable
-     * @throws JournalException
+     * Write a log entry to the journal.
+     *
+     * @param entry the journal entry to write
+     * @throws JournalException if the entry could not be written
      */
-    public synchronized void writeToLog(final Loggable loggable) throws JournalException {
+    public synchronized void writeToLog(final Loggable entry) throws JournalException {
         if (currentBuffer == null) {
             throw new JournalException("Database is shut down.");
         }
+
         SanityCheck.ASSERT(!inRecovery, "Write to log during recovery. Should not happen!");
-        final int size = loggable.getLogSize();
+        final int size = entry.getLogSize();
         final int required = size + LOG_ENTRY_BASE_LEN;
         if (required > currentBuffer.remaining()) {
             flushToLog(false);
         }
-        currentLsn = Lsn.create(currentFile, inFilePos + currentBuffer.position() + 1);
-        loggable.setLsn(currentLsn);
+
         try {
-            currentBuffer.put(loggable.getLogType());
-            currentBuffer.putLong(loggable.getTransactionId());
-            currentBuffer.putShort((short) loggable.getLogSize());
-            loggable.write(currentBuffer);
+            final long offset = channel.position();
+            if (offset > Integer.MAX_VALUE) {
+                throw new JournalException("Journal can only write log files of less that 2GB");
+            }
+            currentLsn = Lsn.create(currentFile, ((int)(channel.position() &0x7FFFFFFF)) + currentBuffer.position() + 1);
+        } catch (final IOException e) {
+            throw new JournalException("Unable to create LSN for: " + entry.dump());
+        }
+        entry.setLsn(currentLsn);
+
+        try {
+            currentBuffer.put(entry.getLogType());
+            currentBuffer.putLong(entry.getTransactionId());
+            currentBuffer.putShort((short) entry.getLogSize());
+            entry.write(currentBuffer);
             currentBuffer.putShort((short) (size + LOG_ENTRY_HEADER_LEN));
         } catch (final BufferOverflowException e) {
-            throw new JournalException("Buffer overflow while writing log record: " + loggable.dump(), e);
+            throw new JournalException("Buffer overflow while writing log record: " + entry.dump(), e);
         }
-        pool.getTransactionManager().trackOperation(loggable.getTransactionId());
+        pool.getTransactionManager().trackOperation(entry.getTransactionId());
     }
 
     /**
      * Returns the last LSN physically written to the journal.
-     * 
+     *
      * @return last written LSN
      */
     public long lastWrittenLsn() {
@@ -279,7 +336,7 @@ public final class Journal {
     /**
      * Flush the current buffer to disk. If fsync is true, a sync will
      * be called on the file to force all changes to disk.
-     * 
+     *
      * @param fsync forces all changes to disk if true and syncMode is set to SYNC_ON_COMMIT.
      */
     public void flushToLog(final boolean fsync) {
@@ -289,8 +346,8 @@ public final class Journal {
     /**
      * Flush the current buffer to disk. If fsync is true, a sync will
      * be called on the file to force all changes to disk.
-     * 
-     * @param fsync forces all changes to disk if true and syncMode is set to SYNC_ON_COMMIT.
+     *
+     * @param fsync     forces all changes to disk if true and syncMode is set to SYNC_ON_COMMIT.
      * @param forceSync force changes to disk even if syncMode doesn't require it.
      */
     public synchronized void flushToLog(final boolean fsync, final boolean forceSync) {
@@ -312,7 +369,7 @@ public final class Journal {
     }
 
     /**
-     * 
+     * Flush the buffer to disk.
      */
     private void flushBuffer() {
         if (currentBuffer == null || channel == null) {
@@ -326,8 +383,7 @@ public final class Journal {
                     while (currentBuffer.hasRemaining()) {
                         channel.write(currentBuffer);
                     }
-                    
-                    inFilePos += size;
+
                     lastLsnWritten = currentLsn;
                 }
             } catch (final IOException e) {
@@ -343,9 +399,9 @@ public final class Journal {
      * a new journal will be started, but only if the file is larger than
      * {@link #journalSizeMin}. The old log is removed.
      *
-     * @param txnId The transaction id
+     * @param txnId          The transaction id
      * @param switchLogFiles Indicates whether a new journal file should be started
-     * @throws JournalException
+     * @throws JournalException if the checkpoint could not be written to the journal.
      */
     public void checkpoint(final long txnId, final boolean switchLogFiles) throws JournalException {
         LOG.debug("Checkpoint reached");
@@ -378,7 +434,7 @@ public final class Journal {
 
     /**
      * Set the file number of the last file used.
-     * 
+     *
      * @param fileNum the log file number
      */
     public void setCurrentFileNum(final int fileNum) {
@@ -386,7 +442,7 @@ public final class Journal {
     }
 
     public void clearBackupFiles() {
-        if(Files.exists(fsJournalDir)) {
+        if (Files.exists(fsJournalDir)) {
             try (final Stream<Path> backupFiles = Files.list(fsJournalDir)) {
                 backupFiles.forEach(p -> {
                     LOG.info("Checkpoint deleting: " + p.toAbsolutePath().toString());
@@ -403,8 +459,8 @@ public final class Journal {
     /**
      * Create a new journal with a larger file number
      * than the previous file.
-     * 
-     * @throws LogException
+     *
+     * @throws LogException if the journal files could not be switched
      */
     public void switchFiles() throws LogException {
         ++currentFile;
@@ -412,15 +468,15 @@ public final class Journal {
         final Path file = dir.resolve(fname);
         if (Files.exists(file)) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Journal file " + file.toAbsolutePath() + " already exists. Copying it.");
+                LOG.debug("Journal file " + file.toAbsolutePath() + " already exists. Moving it to a backup file.");
             }
 
             try {
                 final Path renamed = Files.move(file, file.resolveSibling(FileUtils.fileName(file) + BAK_FILE_SUFFIX), StandardCopyOption.ATOMIC_MOVE);
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("Old file renamed from '" + file.toAbsolutePath().toString() + "' to '" + renamed.toAbsolutePath().toString() + "'");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Old Journal file renamed from '" + file.toAbsolutePath().toString() + "' to '" + renamed.toAbsolutePath().toString() + "'");
                 }
-            } catch(final IOException ioe) {
+            } catch (final IOException ioe) {
                 LOG.warn(ioe); //TODO(AR) should probably be an LogException but wasn't previously!
             }
         }
@@ -432,31 +488,40 @@ public final class Journal {
         synchronized (latch) {
             close();
             try {
-                //RandomAccessFile raf = new RandomAccessFile(file, "rw");
-                os = new FileOutputStream(file.toFile(), true);
-                channel = os.getChannel();
-
-                fileSyncRunnable.setChannel(channel);
-            } catch (final FileNotFoundException e) {
+                channel = Files.newByteChannel(file, CREATE_NEW, WRITE);
+                writeJournalHeader(channel);
+                fileSyncRunnable.setChannel((FileChannel) channel);
+                initialised = true;
+            } catch (final IOException e) {
                 throw new LogException("Failed to open new journal: " + file.toAbsolutePath().toString(), e);
             }
         }
-        inFilePos = 0;
     }
 
+    private void writeJournalHeader(final SeekableByteChannel channel) throws IOException {
+        final ByteBuffer buf = ByteBuffer.allocate(JOURNAL_HEADER_LEN);
+
+        // write the magic number
+        buf.put(JOURNAL_MAGIC_NUMBER);
+
+        // write the version of the journal format
+        final byte[] journalVersion = new byte[2];
+        ByteConversion.shortToByteH(JOURNAL_VERSION, journalVersion, 0);
+        buf.put(journalVersion);
+
+        buf.flip();
+        channel.write(buf);
+    }
+
+    /**
+     * Close the journal.
+     */
     public void close() {
         if (channel != null) {
             try {
                 channel.close();
             } catch (final IOException e) {
-                LOG.warn("Failed to close journal", e);
-            }
-        }
-        if (os != null) {
-            try {
-                os.close();
-            } catch (final IOException e) {
-                LOG.warn("Failed to close journal", e);
+                LOG.warn("Failed to close journal channel", e);
             }
         }
     }
@@ -470,10 +535,10 @@ public final class Journal {
 
     /**
      * Find the journal file with the highest file number.
-     * 
-     * @param files
+     *
+     * @param files the journal files to consider.
      */
-    public final static int findLastFile(final Stream<Path> files) {
+    public static int findLastFile(final Stream<Path> files) {
         return files
                 .map(Journal::journalFileNum)
                 .max(Integer::max)
@@ -482,9 +547,10 @@ public final class Journal {
 
     /**
      * Returns a Stream of all journal files found in the data directory.
-     * 
+     *
      * @return A Stream of all journal files. NOTE - This is
      * an I/O Stream and so you are responsible for closing it!
+     * @throws IOException if an I/O error occurs whilst finding journal files.
      */
     public Stream<Path> getFiles() throws IOException {
         final String suffix = '.' + LOG_FILE_SUFFIX;
@@ -499,8 +565,8 @@ public final class Journal {
     /**
      * Returns the file corresponding to the specified
      * file number.
-     * 
-     * @param fileNum
+     *
+     * @param fileNum the journal file number.
      */
     public Path getFile(final int fileNum) {
         return dir.resolve(getFileName(fileNum));
@@ -510,13 +576,20 @@ public final class Journal {
      * Shut down the journal. This will write a checkpoint record
      * to the log, so recovery manager knows the file has been
      * closed in a clean way.
-     * 
-     * @param txnId
+     *
+     * @param txnId      the transaction id.
+     * @param checkpoint true if a checkpoint should be written before shitdown
      */
     public void shutdown(final long txnId, final boolean checkpoint) {
+        if (!initialised) {
+            // no journal is initialized
+            return;
+        }
+
         if (currentBuffer == null) {
             return; // the db has probably shut down already
         }
+
         if (!BrokerPool.FORCE_CORRUPTION) {
             if (checkpoint) {
                 LOG.info("Transaction journal cleanly shutting down with checkpoint...");
@@ -542,17 +615,17 @@ public final class Journal {
     /**
      * Called to signal that the db is currently in
      * recovery phase, so no output should be written.
-     * 
-     * @param value
+     *
+     * @param inRecovery true when the database is in recovery, false otherwise.
      */
-    public void setInRecovery(final boolean value) {
-        inRecovery = value;
+    public void setInRecovery(final boolean inRecovery) {
+        this.inRecovery = inRecovery;
     }
 
     /**
      * Translate a file number into a file name.
-     * 
-     * @param fileNum
+     *
+     * @param fileNum the journal file number
      * @return The file name
      */
     static String getFileName(final int fileNum) {
@@ -562,10 +635,10 @@ public final class Journal {
     }
 
     private static class RemoveRunnable implements Runnable {
-        private final FileChannel channel;
+        private final SeekableByteChannel channel;
         private final Path path;
 
-        RemoveRunnable(final FileChannel channel, final Path path) {
+        RemoveRunnable(final SeekableByteChannel channel, final Path path) {
             this.channel = channel;
             this.path = path;
         }
@@ -573,7 +646,7 @@ public final class Journal {
         @Override
         public void run() {
             try {
-            	if (channel != null) {
+                if (channel != null) {
                     channel.close();
                 }
             } catch (final IOException e) {

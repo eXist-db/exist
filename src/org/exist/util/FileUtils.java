@@ -73,6 +73,31 @@ public class FileUtils {
                 .orElse(Collections.EMPTY_LIST);
     }
 
+    /**
+     * Copies a path within the filesystem
+     *
+     * If the path is a directory its contents
+     * will be recursively copied.
+     *
+     * Note that copying of a directory is not an atomic-operation
+     * and so if an error occurs during copying, some of the directories
+     * descendants may have already been copied.
+     *
+     * @param source the source file or directory
+     * @param destination the destination file or directory
+     *
+     * @throws IOException if an error occurs whilst copying a file or directory
+     */
+    public static void copy(final Path source, final Path destination) throws IOException {
+        if (!Files.isDirectory(source)) {
+            Files.copy(source, destination);
+        } else {
+            if (Files.exists(destination) && !Files.isDirectory(destination)) {
+                throw new IOException("Cannot copy a directory to a file");
+            }
+            Files.walkFileTree(source, copyDirVisitor(source, destination));
+        }
+    }
 
     /**
      * Deletes a path from the filesystem
@@ -84,6 +109,8 @@ public class FileUtils {
      * Note that removal of a directory is not an atomic-operation
      * and so if an error occurs during removal, some of the directories
      * descendants may have already been removed
+     *
+     * @param path the path to delete.
      *
      * @throws IOException if an error occurs whilst removing a file or directory
      */
@@ -123,6 +150,42 @@ public class FileUtils {
         } catch (final IOException ioe) {
             LOG.error("Unable to delete: " + path.toAbsolutePath().toString(), ioe);
             return false;
+        }
+    }
+
+    private final static SimpleFileVisitor<Path> copyDirVisitor(final Path source, final Path destination) throws IOException {
+        if (!Files.isDirectory(source)) {
+            throw new IOException("source must be a directory");
+        }
+        if (!Files.isDirectory(destination)) {
+            throw new IOException("destination must be a directory");
+        }
+        return new CopyDirVisitor(source, destination);
+    }
+
+    private static class CopyDirVisitor extends SimpleFileVisitor<Path> {
+        private final Path source;
+        private final Path destination;
+
+        public CopyDirVisitor(final Path source, final Path destination) {
+            this.source = source;
+            this.destination = destination;
+        }
+
+        @Override
+        public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
+            final Path relSourceDir = source.relativize(dir);
+            final Path targetDir = destination.resolve(relSourceDir);
+            Files.createDirectories(targetDir);
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+            final Path relSourceFile = source.relativize(file);
+            final Path targetFile = destination.resolve(relSourceFile);
+            Files.copy(file, targetFile);
+            return FileVisitResult.CONTINUE;
         }
     }
 

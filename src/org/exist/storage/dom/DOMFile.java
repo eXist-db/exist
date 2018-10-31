@@ -399,7 +399,7 @@ public class DOMFile extends BTree implements Lockable {
         final DOMFilePageHeader currentPageHeader = currentPage.getPageHeader();
         final short tupleID = currentPageHeader.getNextTupleID();
         if (transaction != null && isRecoveryEnabled()) {
-                addValueLog.clear(transaction, currentPage.getPageNum(), tupleID, value);
+                addValueLog.clear(transaction, currentPage.getPageNum(), tupleID, value, overflowPage);
             writeToLog(addValueLog, currentPage.page);
         }
         //Save tuple identifier
@@ -2188,7 +2188,7 @@ public class DOMFile extends BTree implements Lockable {
         final DOMFilePageHeader newPageHeader = newPage.getPageHeader();
         if (newPageHeader.getLsn() == Lsn.LSN_INVALID || requiresRedo(loggable, newPage)) {
             try {
-                reuseDeleted(newPage.page);
+                dropFreePageList();
                 newPageHeader.setStatus(RECORD);
                 newPageHeader.setDataLength(0);
                 newPageHeader.setNextTupleID(ItemId.UNKNOWN_ID);
@@ -2249,7 +2249,7 @@ public class DOMFile extends BTree implements Lockable {
                 // save data length
                 // overflow pages have length 0
                 final short vlen = (short) loggable.value.length;
-                ByteConversion.shortToByte(vlen, page.data, page.len);
+                ByteConversion.shortToByte(loggable.isOverflow ? OVERFLOW : vlen, page.data, page.len);
                 page.len += LENGTH_DATA_LENGTH;
                 // save data
                 System.arraycopy(loggable.value, 0, page.data, page.len, vlen);
@@ -2272,13 +2272,22 @@ public class DOMFile extends BTree implements Lockable {
     protected void undoAddValue(final AddValueLoggable loggable) {
         final DOMPage page = getDOMPage(loggable.pageNum);
         final DOMFilePageHeader pageHeader = page.getPageHeader();
+
+        // is there anything to undo?
+        if (pageHeader.getLsn() == Lsn.LSN_INVALID || pageHeader.getStatus() == UNUSED) {
+            LOG.warn("Nothing to undo, but received: AddValueLoggable(txnId=" + loggable.getTransactionId()
+                    + ", lsn=" + loggable.getLsn() + ", pageNum=" + loggable.pageNum
+                    + ", isOverflow=" + loggable.isOverflow + ")");
+            return;
+        }
+
         final RecordPos pos = page.findRecord(ItemId.getId(loggable.tid));
-        SanityCheck.ASSERT(pos != null, "Record not found!");
+        SanityCheck.ASSERT(pos != null, "Record not found! isOverflow: " + loggable.isOverflow);
         //TODO : throw exception ? -pb
         //Position the stream at the very beginning of the record
         final int startOffset = pos.offset - LENGTH_TID;
         //Get the record length
-        final short vlen = ByteConversion.byteToShort(page.data, pos.offset);
+        final short vlen = loggable.isOverflow ? 8 : ByteConversion.byteToShort(page.data, pos.offset);
         //End offset
         final int end = startOffset + LENGTH_TID + LENGTH_DATA_LENGTH + vlen;
         final int dlen = pageHeader.getDataLength();
@@ -2449,7 +2458,7 @@ public class DOMFile extends BTree implements Lockable {
         try {
             final DOMPage newPage = getDOMPage(loggable.pageNum);
             final DOMFilePageHeader newPageHeader = newPage.getPageHeader();
-            reuseDeleted(newPage.page);
+            dropFreePageList();
             if (loggable.prevPage == Page.NO_PAGE) {
                 newPageHeader.setPrevDataPage(Page.NO_PAGE);
             } else {
@@ -2505,7 +2514,7 @@ public class DOMFile extends BTree implements Lockable {
         try {
             final DOMPage page = getDOMPage(loggable.pageNum);
             final DOMFilePageHeader pageHeader = page.getPageHeader();
-            reuseDeleted(page.page);
+            dropFreePageList();
             pageHeader.setStatus(RECORD);
             pageHeader.setNextDataPage(loggable.nextPage);
             pageHeader.setPrevDataPage(loggable.prevPage);
@@ -2524,12 +2533,12 @@ public class DOMFile extends BTree implements Lockable {
 
     protected void redoWriteOverflow(final WriteOverflowPageLoggable loggable) {
         try {
-        	final Page page = getPage(loggable.pageNum);
-            page.read();
+            final Page page = getPage(loggable.pageNum);
             final PageHeader pageHeader = page.getPageHeader();
-            reuseDeleted(page);
-            pageHeader.setStatus(RECORD);
             if (pageHeader.getLsn() != Lsn.LSN_INVALID && requiresRedo(loggable, page)) {
+
+                dropFreePageList();
+                pageHeader.setStatus(RECORD);
                 if (loggable.nextPage == Page.NO_PAGE) {
                     pageHeader.setNextPage(Page.NO_PAGE);
                 } else {
@@ -2538,9 +2547,10 @@ public class DOMFile extends BTree implements Lockable {
                 pageHeader.setLsn(loggable.getLsn());
                 writeValue(page, loggable.value);
             }
+
         } catch (final IOException e) {
             LOG.warn("Failed to redo " + loggable.dump() + ": " + e.getMessage(), e);
-          //TODO : throw exception ? -pb
+            //TODO : throw exception ? -pb
         }
     }
 
@@ -2574,7 +2584,7 @@ public class DOMFile extends BTree implements Lockable {
             final Page page = getPage(loggable.pageNum);
             page.read();
             final PageHeader pageHeader = page.getPageHeader();
-            reuseDeleted(page);
+            dropFreePageList();
             pageHeader.setStatus(RECORD);
             if (loggable.nextPage == Page.NO_PAGE) {
                 pageHeader.setNextPage(Page.NO_PAGE);

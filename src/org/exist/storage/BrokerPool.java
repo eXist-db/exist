@@ -174,6 +174,10 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             .build()
     );
 
+    public String getStatus() {
+        return status.getCurrentState().name();
+    }
+
     /**
      * The number of brokers for the database instance
      */
@@ -361,7 +365,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     private Optional<ExistRepository> expathRepo = Optional.empty();
 
     private StartupTriggersManager startupTriggersManager;
-
 
     /**
      * Creates and configures the database instance.

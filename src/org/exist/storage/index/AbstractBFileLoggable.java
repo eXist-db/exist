@@ -63,6 +63,10 @@ public abstract class AbstractBFileLoggable extends AbstractLoggable {
         return (BFile) broker.getStorage(fileId);
     }
 
+    public byte getFileId() {
+        return fileId;
+    }
+
     @Override
     public String dump() {
         return super.dump() + " [BFile]";
