@@ -82,6 +82,8 @@ import org.exist.Namespaces;
 import org.exist.scheduler.JobType;
 import org.exist.xquery.Module;
 
+import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
+
 
 public class Configuration implements ErrorHandler
 {
@@ -178,14 +180,19 @@ public class Configuration implements ErrorHandler
             // initialize xml parser
             // we use eXist's in-memory DOM implementation to work
             // around a bug in Xerces
-            final SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware( true );
+            final SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
+            factory.setNamespaceAware(true);
 
 //            factory.setFeature("http://apache.org/xml/features/validation/schema", true);
 //            factory.setFeature("http://apache.org/xml/features/validation/dynamic", true);
             final InputSource src = new InputSource(is);
             final SAXParser parser = factory.newSAXParser();
             final XMLReader reader = parser.getXMLReader();
+
+            reader.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            reader.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            reader.setFeature(FEATURE_SECURE_PROCESSING, true);
+
             final SAXAdapter adapter = new SAXAdapter();
             reader.setContentHandler(adapter);
             reader.parse(src);

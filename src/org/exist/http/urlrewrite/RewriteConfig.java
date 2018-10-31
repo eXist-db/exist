@@ -7,6 +7,7 @@ import org.exist.EXistException;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
@@ -25,8 +26,6 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -219,18 +218,22 @@ public class RewriteConfig {
     }
 
     private Document parseConfig(final Path file) throws ParserConfigurationException, SAXException, IOException {
-        final SAXParserFactory factory = SAXParserFactory.newInstance();
-        factory.setNamespaceAware(true);
-
         try (final InputStream is = Files.newInputStream(file)) {
             final InputSource src = new InputSource(is);
-            final SAXParser parser = factory.newSAXParser();
-            final XMLReader xr = parser.getXMLReader();
-            final SAXAdapter adapter = new SAXAdapter();
-            xr.setContentHandler(adapter);
-            xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
-            xr.parse(src);
-            return adapter.getDocument();
+            final XMLReaderPool parserPool = urlRewrite.getBrokerPool().getParserPool();
+            XMLReader xr = null;
+            try {
+                xr = parserPool.borrowXMLReader();
+                final SAXAdapter adapter = new SAXAdapter();
+                xr.setContentHandler(adapter);
+                xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
+                xr.parse(src);
+                return adapter.getDocument();
+            } finally {
+                if (xr != null) {
+                    parserPool.returnXMLReader(xr);
+                }
+            }
         }
     }
 

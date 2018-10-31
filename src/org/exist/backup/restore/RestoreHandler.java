@@ -41,6 +41,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.util.EXistInputSource;
+import org.exist.util.ExistSAXParserFactory;
 import org.exist.xmldb.EXistCollection;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.EXistResource;
@@ -71,7 +72,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 public class RestoreHandler extends DefaultHandler {
     
     private final static Logger LOG = LogManager.getLogger(RestoreHandler.class);
-    private final static SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+    private final static SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
     static {
         saxFactory.setNamespaceAware(true);
         saxFactory.setValidating(false);

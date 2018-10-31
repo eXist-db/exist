@@ -30,6 +30,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -107,7 +108,7 @@ public class ConfigurableTest {
         // initialize xml parser
         // we use eXist's in-memory DOM implementation to work
         // around a bug in Xerces
-        SAXParserFactory factory = SAXParserFactory.newInstance();
+        SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
         factory.setNamespaceAware(true);
         InputSource src = new InputSource(is);
         SAXParser parser = factory.newSAXParser();
