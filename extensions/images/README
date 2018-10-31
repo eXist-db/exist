@@ -13,7 +13,7 @@ Installation
 
 Get the Java Advanced Imaging jars for your platform from
 
-http://java.sun.com/products/java-media/jai/downloads/download-1_1_2.html
+https://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-client-419417.html 
 
 Please choose the CLASSPATH installation bundle. Open the downloaded archive and 
 copy the contents of the lib/ folder to $EXIST_HOME/lib/user.
