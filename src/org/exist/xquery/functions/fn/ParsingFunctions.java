@@ -29,6 +29,7 @@ import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.util.XMLReaderPool;
 import org.exist.validation.ValidationReport;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.validation.Shared;
@@ -45,9 +46,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.io.StringReader;
 
@@ -105,29 +103,24 @@ public class ParsingFunctions extends BasicFunction {
         Sequence resultSequence;
         final ValidationReport report = new ValidationReport();
         final SAXAdapter adapter = new SAXAdapter(theContext);
+
+        final XMLReaderPool parserPool = context.getBroker().getBrokerPool().getParserPool();
+        XMLReader xr = null;
         try {
-            final SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-                      
-            XMLReader xr = null;
-            
-            if (xr == null) {
-                final SAXParser parser = factory.newSAXParser();
-                xr = parser.getXMLReader();
-            }
-            
+            xr = parserPool.borrowXMLReader();
             xr.setErrorHandler(report);
             xr.setContentHandler(adapter);
             xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             xr.parse(src);
-            
-        } catch (final ParserConfigurationException e) {
-            throw new XPathException(this, ErrorCodes.EXXQDY0002, "Error while constructing XML parser: "  + e.getMessage(), args[0], e);
         } catch (final SAXException e) {
             logger.debug("Error while parsing XML: " + e.getMessage(), e);
         } catch (final IOException e) {
             throw new XPathException(this, ErrorCodes.FODC0006, ErrorCodes.FODC0006.getDescription() + ": " + e.getMessage(),
                     args[0], e);
+        } finally {
+            if (xr != null) {
+                parserPool.returnXMLReader(xr);
+            }
         }
         
         if (report.isValid()) {

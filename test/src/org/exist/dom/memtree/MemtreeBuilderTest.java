@@ -22,6 +22,7 @@ package org.exist.dom.memtree;
 
 import com.googlecode.junittoolbox.ParallelParameterized;
 import org.exist.Namespaces;
+import org.exist.util.ExistSAXParserFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -80,7 +81,7 @@ public class MemtreeBuilderTest {
     }
 
     private DocumentImpl parse(final String xml) throws ParserConfigurationException, SAXException, IOException {
-        final SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+        final SAXParserFactory saxParserFactory = ExistSAXParserFactory.getSAXParserFactory();
         saxParserFactory.setNamespaceAware(namespaceAware);
 
         final SAXAdapter saxAdapter = new SAXAdapter();

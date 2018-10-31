@@ -21,6 +21,7 @@
  */
 package org.exist.backup;
 
+import org.exist.util.XMLReaderPool;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -31,8 +32,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.Properties;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 
 public interface BackupDescriptor
@@ -86,7 +85,8 @@ public interface BackupDescriptor
     boolean before( long timestamp );
 
 
-    void parse( ContentHandler handler ) throws IOException, SAXException, ParserConfigurationException;
+    void parse(XMLReaderPool parserPool, ContentHandler handler)
+            throws IOException, SAXException;
 
     Path getRepoBackup() throws IOException;
 }

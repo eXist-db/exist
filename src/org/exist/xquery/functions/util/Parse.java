@@ -43,9 +43,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Optional;
@@ -100,12 +97,9 @@ public class Parse extends BasicFunction {
         final StringReader reader = new StringReader(xmlContent);
         final ValidationReport report = new ValidationReport();
         final SAXAdapter adapter = new SAXAdapter(context);
+        XMLReader xr = null;
         try {
-            final SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
             final InputSource src = new InputSource(reader);
-
-            final XMLReader xr;
             if (isCalledAs("parse-html")) {
                 final Optional<Either<Throwable, XMLReader>> maybeReaderInst = HtmlToXmlParser.getHtmlToXmlParser(context.getBroker().getConfiguration());
 
@@ -123,20 +117,21 @@ public class Parse extends BasicFunction {
                     throw new XPathException(this, ErrorCodes.EXXQDY0002, "There is no HTML to XML parser configured in conf.xml");
                 }
             } else {
-                final SAXParser parser = factory.newSAXParser();
-                xr = parser.getXMLReader();
+                xr = context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
             }
 
             xr.setErrorHandler(report);
             xr.setContentHandler(adapter);
             xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             xr.parse(src);
-        } catch (final ParserConfigurationException e) {
-            throw new XPathException(this, ErrorCodes.EXXQDY0002, "Error while constructing XML parser: " + e.getMessage(), args[0], e);
         } catch (final SAXException e) {
             logger.debug("Error while parsing XML: " + e.getMessage(), e);
         } catch (final IOException e) {
             throw new XPathException(this, ErrorCodes.EXXQDY0002, "Error while parsing XML: " + e.getMessage(), args[0], e);
+        } finally {
+            if (!isCalledAs("parse-html") && xr != null) {
+                context.getBroker().getBrokerPool().getParserPool().returnXMLReader(xr);
+            }
         }
 
         if (report.isValid()) {

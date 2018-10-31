@@ -65,6 +65,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import com.evolvedbinary.j8fu.function.ConsumerE;
@@ -78,6 +79,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import static java.lang.invoke.MethodType.methodType;
+import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 
 /**
  * This class handle all configuration needs: extracting and saving,
@@ -751,11 +753,16 @@ public class Configurator {
 
     public static Configuration parse(final InputStream is) throws ConfigurationException {
         try {
-            final SAXParserFactory factory = SAXParserFactory.newInstance();
+            final SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
             factory.setNamespaceAware(true);
             final InputSource src = new InputSource(is);
             final SAXParser parser = factory.newSAXParser();
             final XMLReader reader = parser.getXMLReader();
+
+            reader.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            reader.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            reader.setFeature(FEATURE_SECURE_PROCESSING, true);
+
             final SAXAdapter adapter = new SAXAdapter();
             reader.setContentHandler(adapter);
             reader.parse(src);
