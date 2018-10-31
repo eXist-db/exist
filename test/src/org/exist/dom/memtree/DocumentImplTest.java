@@ -25,6 +25,7 @@ import net.sf.saxon.dom.AttrOverNodeInfo;
 import net.sf.saxon.dom.DocumentBuilderImpl;
 import org.apache.xerces.dom.AttrNSImpl;
 import org.exist.Namespaces;
+import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -168,7 +169,7 @@ public class DocumentImplTest {
     }
 
     private DocumentImpl parseExist(final InputStream is) throws ParserConfigurationException, SAXException, IOException {
-        final SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+        final SAXParserFactory saxParserFactory = ExistSAXParserFactory.getSAXParserFactory();
         final SAXParser saxParser  = saxParserFactory.newSAXParser();
         final XMLReader reader = saxParser.getXMLReader();
         final InputSource src = new InputSource(is);

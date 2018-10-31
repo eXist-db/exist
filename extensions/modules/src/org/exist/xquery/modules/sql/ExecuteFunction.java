@@ -25,6 +25,7 @@ package org.exist.xquery.modules.sql;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.exist.util.XMLReaderPool;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -60,8 +61,6 @@ import java.sql.SQLXML;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import org.exist.dom.memtree.AppendingSAXAdapter;
 import org.exist.dom.memtree.ReferenceNode;
 import org.exist.dom.memtree.SAXAdapter;
@@ -263,17 +262,21 @@ public class ExecuteFunction extends BasicFunction
                                         // Add a null indicator attribute if the value was SQL Null
                                         builder.addAttribute( new QName( "null", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), "true" );
                                     } else {
-
-                                        SAXParserFactory factory = SAXParserFactory.newInstance();
-                                        factory.setNamespaceAware(true);
                                         InputSource src = new InputSource(sqlXml.getCharacterStream());
-                                        SAXParser parser = factory.newSAXParser();
-                                        XMLReader xr = parser.getXMLReader();
+                                        final XMLReaderPool parserPool = context.getBroker().getBrokerPool().getParserPool();
+                                        XMLReader reader = null;
+                                        try {
+                                            reader = parserPool.borrowXMLReader();
 
-                                        SAXAdapter adapter = new AppendingSAXAdapter(builder);
-                                        xr.setContentHandler(adapter);
-                                        xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
-                                        xr.parse(src);
+                                            SAXAdapter adapter = new AppendingSAXAdapter(builder);
+                                            reader.setContentHandler(adapter);
+                                            reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
+                                            reader.parse(src);
+                                        } finally {
+                                            if (reader != null) {
+                                                parserPool.returnXMLReader(reader);
+                                            }
+                                        }
                                     }
                                 } catch(Exception e) {
                                     throw new XPathException("Could not parse column of type SQLXML: " + e.getMessage(), e);

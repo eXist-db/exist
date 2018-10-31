@@ -22,6 +22,7 @@
 
 package org.exist.backup;
 
+import org.exist.util.XMLReaderPool;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -33,10 +34,6 @@ import java.io.IOException;
 
 import java.util.Date;
 import java.util.Properties;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 
 public abstract class AbstractBackupDescriptor implements BackupDescriptor
@@ -74,15 +71,18 @@ public abstract class AbstractBackupDescriptor implements BackupDescriptor
         return( timestamp > getDate().getTime() );
     }
 
-
-    public void parse( ContentHandler handler ) throws IOException, SAXException, ParserConfigurationException
+    @Override
+    public void parse(final XMLReaderPool parserPool, final ContentHandler handler ) throws IOException, SAXException
     {
-        final SAXParserFactory saxFactory = SAXParserFactory.newInstance();
-        saxFactory.setNamespaceAware( true );
-        saxFactory.setValidating( false );
-        final SAXParser sax    = saxFactory.newSAXParser();
-        final XMLReader reader = sax.getXMLReader();
-        reader.setContentHandler( handler );
-        reader.parse( getInputSource() );
+        XMLReader reader = null;
+        try {
+            reader = parserPool.borrowXMLReader();
+            reader.setContentHandler(handler);
+            reader.parse(getInputSource());
+        } finally {
+            if (reader != null) {
+                parserPool.returnXMLReader(reader);
+            }
+        }
     }
 }
