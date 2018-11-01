@@ -19,6 +19,8 @@
  */
 package org.exist.storage.journal;
 
+import net.jpountz.xxhash.StreamingXXHash64;
+import net.jpountz.xxhash.XXHashFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.DBBroker;
@@ -52,6 +54,8 @@ public class JournalReader implements AutoCloseable {
     @Nullable
     private SeekableByteChannel fc;
 
+    private final StreamingXXHash64 xxHash64 = XXHashFactory.fastestInstance().newStreamingHash64(Journal.XXHASH64_SEED);
+
     /**
      * Opens the specified file for reading.
      *
@@ -74,7 +78,7 @@ public class JournalReader implements AutoCloseable {
 
     private void validateJournalHeader(final Path file, final SeekableByteChannel fc) throws IOException, LogException {
         // read the magic number
-        final ByteBuffer buf = ByteBuffer.allocate(JOURNAL_HEADER_LEN);
+        final ByteBuffer buf = ByteBuffer.allocateDirect(JOURNAL_HEADER_LEN);
         fc.read(buf);
         buf.flip();
 
@@ -137,18 +141,18 @@ public class JournalReader implements AutoCloseable {
                 return null;
             }
 
-            // go back two bytes and read the back-link of the last entry
-            fc.position(fc.position() - LOG_ENTRY_BACK_LINK_LEN);
+            // go back 8 bytes (checksum length) + 2 bytes (backLink length) and read the backLink (2 bytes) of the last entry
+            fc.position(fc.position() - LOG_ENTRY_CHECKSUM_LEN - LOG_ENTRY_BACK_LINK_LEN);
             header.clear().limit(LOG_ENTRY_BACK_LINK_LEN);
             final int read = fc.read(header);
             if (read != LOG_ENTRY_BACK_LINK_LEN) {
                 throw new LogException("Unable to read journal entry back-link!");
             }
             header.flip();
-            final short prevLink = header.getShort();
+            final short backLink = header.getShort();
 
             // position the channel to the start of the previous entry and mark it
-            final long prevStart = fc.position() - LOG_ENTRY_BACK_LINK_LEN - prevLink;
+            final long prevStart = fc.position() - LOG_ENTRY_BACK_LINK_LEN - backLink;
             fc.position(prevStart);
             final Loggable loggable = readEntry();
 
@@ -204,6 +208,19 @@ public class JournalReader implements AutoCloseable {
             }
             header.flip();
 
+            // prepare the checksum for the header
+            xxHash64.reset();
+            if (header.hasArray()) {
+                xxHash64.update(header.array(), 0, LOG_ENTRY_HEADER_LEN);
+            } else {
+                final int mark = header.position();
+                header.position(0);
+                final byte buf[] = new byte[LOG_ENTRY_HEADER_LEN];
+                header.get(buf);
+                xxHash64.update(buf, 0, LOG_ENTRY_HEADER_LEN);
+                header.position(mark);
+            }
+
             final byte entryType = header.get();
             final long transactId = header.getLong();
             final short size = header.getShort();
@@ -218,23 +235,51 @@ public class JournalReader implements AutoCloseable {
             }
             loggable.setLsn(lsn);
 
-            if (size + LOG_ENTRY_BACK_LINK_LEN > payload.capacity()) {
+            final int remainingEntryBytes = size + LOG_ENTRY_BACK_LINK_LEN + LOG_ENTRY_CHECKSUM_LEN;
+
+            if (remainingEntryBytes > payload.capacity()) {
                 // resize the payload buffer
-                payload = ByteBuffer.allocate(size + LOG_ENTRY_BACK_LINK_LEN);
+                payload = ByteBuffer.allocateDirect(remainingEntryBytes);
             }
-            payload.clear().limit(size + LOG_ENTRY_BACK_LINK_LEN);
+            payload.clear().limit(remainingEntryBytes);
             read = fc.read(payload);
-            if (read < size + LOG_ENTRY_BACK_LINK_LEN) {
+            if (read < remainingEntryBytes) {
                 throw new LogException("Incomplete log entry found!");
             }
             payload.flip();
+
+            // read entry data
             loggable.read(payload);
-            final short prevLink = payload.getShort();
-            if (prevLink != size + LOG_ENTRY_HEADER_LEN) {
-                LOG.error("Bad pointer to previous: prevLink = " + prevLink + "; size = " + size +
+
+            // read entry backLink
+            final short backLink = payload.getShort();
+            if (backLink != size + LOG_ENTRY_HEADER_LEN) {
+                LOG.error("Bad pointer to previous: backLink = " + backLink + "; size = " + size +
                         "; transactId = " + transactId);
                 throw new LogException("Bad pointer to previous in entry: " + loggable.dump());
             }
+
+            // update the checksum for the entry data and backLink
+            if (payload.hasArray()) {
+                xxHash64.update(payload.array(), 0, size + LOG_ENTRY_BACK_LINK_LEN);
+            } else {
+                final int mark = payload.position();
+                payload.position(0);
+                final byte buf[] = new byte[size + LOG_ENTRY_BACK_LINK_LEN];
+                payload.get(buf);
+                xxHash64.update(buf, 0, size + LOG_ENTRY_BACK_LINK_LEN);
+                payload.position(mark);
+            }
+
+            // read the entry checksum
+            final long checksum = payload.getLong();
+
+            // verify the checksum
+            final long calculatedChecksum = xxHash64.getValue();
+            if (checksum != calculatedChecksum) {
+                throw new LogException("Checksum mismatch whilst reading log entry. read=" + checksum + " calculated=" + calculatedChecksum);
+            }
+
             return loggable;
         } catch (final IOException e) {
             throw new LogException(e.getMessage(), e);
