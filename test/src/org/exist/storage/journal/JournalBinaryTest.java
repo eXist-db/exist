@@ -33,8 +33,6 @@ import org.exist.util.FileInputSource;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -57,20 +55,6 @@ import static org.junit.Assert.assertTrue;
  * @author Adam Retter <adam@evolvedbinary.com>
  */
 public class JournalBinaryTest extends AbstractJournalTest {
-
-    @BeforeClass
-    public static void prepare() {
-        /*
-         * NOTE: we `ONLY` disable this so we can write our tests as single-threaded which is much simpler,
-         * that writing multi-threaded tests.
-         */
-        System.setProperty(DBBroker.PROP_DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS, "true");
-    }
-
-    @AfterClass
-    public static void cleanup() {
-        System.clearProperty(DBBroker.PROP_DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS);
-    }
 
     @Override
     protected List<ExpectedLoggable> store_expected(final long storedTxnId, final String storedDbPath, final int offset) {
