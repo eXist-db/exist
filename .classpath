@@ -23,6 +23,7 @@
 	<classpathentry kind="src" path="extensions/webdav/src"/>
 	<classpathentry kind="src" path="extensions/commands/src"/>
 	<classpathentry kind="lib" path="lib/core/j8fu-1.21.jar"/>
+        <classpathentry kind="lib" path="lib/core/lz4-java-1.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/icu4j-59_1.jar"/>
 	<classpathentry kind="lib" path="lib/core/icu4j-localespi-59_1.jar"/>
 	<classpathentry kind="lib" path="lib/core/pkg-java-fork.jar"/>
