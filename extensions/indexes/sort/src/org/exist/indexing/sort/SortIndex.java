@@ -35,6 +35,7 @@ public class SortIndex extends AbstractIndex implements RawBackupSupport {
 
     public static final String ID = SortIndex.class.getName();
     public static final String FILE_NAME = "sort.dbx";
+    public final static short FILE_FORMAT_VERSION_ID = 2;
     public static final byte SORT_INDEX_ID = 0x10;
     protected static final Logger LOG = LogManager.getLogger(SortIndex.class);
     protected BTreeStore btree;
@@ -44,7 +45,7 @@ public class SortIndex extends AbstractIndex implements RawBackupSupport {
         final Path file = getDataDir().resolve(FILE_NAME);
         LOG.debug("Creating '" + FileUtils.fileName(file) + "'...");
         try {
-            btree = new BTreeStore(pool, SORT_INDEX_ID, false,
+            btree = new BTreeStore(pool, SORT_INDEX_ID, FILE_FORMAT_VERSION_ID, false,
                     file, pool.getCacheManager());
         } catch (final DBException e) {
             LOG.error("Failed to initialize structural index: " + e.getMessage(), e);

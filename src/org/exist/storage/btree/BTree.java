@@ -160,9 +160,9 @@ public class BTree extends Paged implements Lockable {
 
     private double splitFactor = -1;
 
-    protected BTree(final BrokerPool pool, final byte fileId, final boolean recoveryEnabled,
+    protected BTree(final BrokerPool pool, final byte fileId, final short fileVersion, final boolean recoveryEnabled,
             final DefaultCacheManager cacheManager) throws DBException {
-        super(pool);
+        super(pool, fileVersion);
         this.pool = pool;
         this.cacheManager = cacheManager;
         this.fileId = fileId;
@@ -180,17 +180,12 @@ public class BTree extends Paged implements Lockable {
         return logManager.isPresent() && pool.isRecoveryEnabled();
     }
 
-    public BTree(final BrokerPool pool, final byte fileId,
+    public BTree(final BrokerPool pool, final byte fileId, final short fileVersion,
                  final boolean recoveryEnabled,
                  final DefaultCacheManager cacheManager, final Path file)
             throws DBException {
-        this(pool, fileId, recoveryEnabled, cacheManager);
+        this(pool, fileId, fileVersion, recoveryEnabled, cacheManager);
         setFile(file);
-    }
-
-    @Override
-    public short getFileVersion() {
-        return -1;
     }
 
     public boolean create(final short fixedKeyLen) throws DBException {

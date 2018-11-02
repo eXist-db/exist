@@ -128,22 +128,22 @@ public abstract class Paged implements AutoCloseable {
 
     protected static int PAGE_SIZE = 4096;
 
-    private RandomAccessFile raf;
-    private Path file;
+    protected final short fileVersion;
     private final FileHeader fileHeader;
-    private boolean readOnly = false;
-    private boolean fileIsNew = false;
-
     private final byte[] tempPageData;
     private final byte[] tempHeaderData;
+
+    private RandomAccessFile raf;
+    private Path file;
+    private boolean readOnly = false;
+    private boolean fileIsNew = false;
 	
-    public Paged(final BrokerPool pool) {
+    public Paged(final BrokerPool pool, final short fileVersion) {
+        this.fileVersion = fileVersion;
         this.fileHeader = createFileHeader(pool.getPageSize());
         this.tempPageData = new byte[fileHeader.pageSize];
         this.tempHeaderData = new byte[fileHeader.pageHeaderSize];
     }
-
-    public abstract short getFileVersion();
 
     public final static void setPageSize(final int pageSize) {
         PAGE_SIZE = pageSize;
@@ -551,7 +551,7 @@ public abstract class Paged implements AutoCloseable {
      * @author Wolfgang Meier <meier@ifs.tu-darmstadt.de>
      */
     public abstract class FileHeader {
-        private short versionId;
+        private short version;
 
         private boolean dirty = false;
         private long firstFreePage = Page.NO_PAGE;
@@ -573,7 +573,7 @@ public abstract class Paged implements AutoCloseable {
             this.pageCount = pageCount;
             this.totalCount = pageCount;
             this.headerSize = (short) pageSize;
-            this.versionId = getFileVersion();
+            this.version = fileVersion;
             this.buf = new byte[headerSize];
             calculateWorkSize();
         }
@@ -681,7 +681,7 @@ public abstract class Paged implements AutoCloseable {
         }
         
         public final short getVersion() {
-            return versionId;
+            return version;
         }
         
         /**
@@ -710,7 +710,7 @@ public abstract class Paged implements AutoCloseable {
         }
 
         public int read(final byte[] buf) throws IOException {
-            versionId = ByteConversion.byteToShort(buf, OFFSET_VERSION_ID);
+            version = ByteConversion.byteToShort(buf, OFFSET_VERSION_ID);
             headerSize = ByteConversion.byteToShort(buf, OFFSET_HEADER_SIZE);
             pageSize = ByteConversion.byteToInt(buf, OFFSET_PAGE_SIZE);
             pageCount = ByteConversion.byteToLong(buf, OFFSET_PAGE_COUNT);
@@ -724,7 +724,7 @@ public abstract class Paged implements AutoCloseable {
         }
 
         public int write(final byte[] buf) throws IOException {
-            ByteConversion.shortToByte(versionId, buf, OFFSET_VERSION_ID);
+            ByteConversion.shortToByte(version, buf, OFFSET_VERSION_ID);
             ByteConversion.shortToByte(headerSize, buf, OFFSET_HEADER_SIZE);
             ByteConversion.intToByte(pageSize, buf, OFFSET_PAGE_SIZE);
             ByteConversion.longToByte(pageCount, buf, OFFSET_PAGE_COUNT);
