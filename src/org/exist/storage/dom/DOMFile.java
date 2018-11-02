@@ -189,7 +189,7 @@ public class DOMFile extends BTree implements Lockable {
     private final AddValueLoggable addValueLog = new AddValueLoggable();
 
     public DOMFile(final BrokerPool pool, final byte id, final Path dataDir, final Configuration config) throws DBException {
-        super(pool, id, true, pool.getCacheManager());
+        super(pool, id, FILE_FORMAT_VERSION_ID, true, pool.getCacheManager());
         lock = new ReentrantReadWriteLock(getFileName());
         fileHeader = (BTreeFileHeader)getFileHeader();
         fileHeader.setPageCount(0);
@@ -291,10 +291,6 @@ public class DOMFile extends BTree implements Lockable {
         return dataCache;
     }
 
-    @Override
-    public short getFileVersion() {
-        return FILE_FORMAT_VERSION_ID;
-    }
 
     @Override
     public boolean create() throws DBException {
