@@ -7,7 +7,7 @@
 
         <startup>
             <triggers>
-                <trigger class="org.exist.security.GnuCryptoJceProviderStartupTrigger"/>
+                <trigger class="org.exist.security.BouncyCastleJceProviderStartupTrigger"/>
             </triggers>
         </startup>
 
