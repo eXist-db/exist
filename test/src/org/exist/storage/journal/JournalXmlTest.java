@@ -20,19 +20,24 @@
 
 package org.exist.storage.journal;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.numbering.DLN;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
-import org.exist.util.FileInputSource;
 import org.exist.util.LockException;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
@@ -44,7 +49,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -61,6 +68,8 @@ import static org.junit.Assert.assertNotNull;
  */
 public class JournalXmlTest extends AbstractJournalTest {
 
+    private static final int TEXT_PAGE_SIZE = 4032;
+
     @ClassRule
     public static final TemporaryFolder temporaryFolder = new TemporaryFolder();
     private static Path testFile1 = null;
@@ -75,19 +84,113 @@ public class JournalXmlTest extends AbstractJournalTest {
         Files.write(testFile2, Arrays.asList("<element2>text2</element2>"), CREATE_NEW);
     }
 
+    @Test
+    public void largeJournalEntry_nonCorrupt() throws IllegalAccessException, EXistException, NoSuchFieldException, LockException, SAXException, PermissionDeniedException, IOException, InterruptedException {
+        checkpointJournalAndSwitchFile();
+
+        // generate a string filled with random a-z characters which is larger than the journal buffer
+        final byte[] buf = new byte[Journal.BUFFER_SIZE * 3]; // 3 * the journal buffer size
+        final Random random = new Random();
+        for (int i = 0; i < buf.length; i++) {
+            final byte singleByteChar = (byte)('a' + random.nextInt('z' - 'a' - 1));
+            buf[i] = singleByteChar;
+        }
+        final String largeText = new String(buf, UTF_8);
+        final String xml = "<large-text>" + largeText + "</large-text>";
+        final InputSource source = new StringInputSource(xml);
+        source.setEncoding("UTF-8");
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        final Tuple2<Long, String> stored = store(COMMIT, source, "large-non-corrupt.xml");
+        flushJournal();
+
+        // shutdown the broker pool (without destroying the data dir)
+        existEmbeddedServer.getBrokerPool().shutdown();
+
+        // check journal entries written for store
+        assertPartialOrdered(
+                store_expected(stored._1, stored._2, 0, largeText),
+                readLatestJournalEntries());
+    }
+
+    @Test
+    public void largeJournalEntry_corrupt() throws IllegalAccessException, EXistException, NoSuchFieldException, LockException, SAXException, PermissionDeniedException, IOException, InterruptedException {
+        checkpointJournalAndSwitchFile();
+
+        // generate a string filled with random a-z characters which is larger than the journal buffer
+        final byte[] buf = new byte[Journal.BUFFER_SIZE * 3]; // 3 * the journal buffer size
+        final Random random = new Random();
+        for (int i = 0; i < buf.length; i++) {
+            final byte singleByteChar = (byte)('a' + random.nextInt('z' - 'a' - 1));
+            buf[i] = singleByteChar;
+        }
+        final String largeText = new String(buf, UTF_8);
+        final String xml = "<large-text>" + largeText + "</large-text>";
+        final InputSource source = new StringInputSource(xml);
+        source.setEncoding("UTF-8");
+
+        BrokerPool.FORCE_CORRUPTION = true;
+        final Tuple2<Long, String> stored = store(COMMIT, source, "large-non-corrupt.xml");
+        flushJournal();
+
+        // shutdown the broker pool (without destroying the data dir)
+        existEmbeddedServer.getBrokerPool().shutdown();
+
+        // reset the corruption flag back to normal
+        BrokerPool.FORCE_CORRUPTION = false;
+
+        // check journal entries written for store
+        assertPartialOrdered(
+                store_expected(stored._1, stored._2, 0, largeText),
+                readLatestJournalEntries());
+    }
+
     @Override
     protected List<ExpectedLoggable> store_expected(final long storedTxnId, final String storedDbPath, final int offset) {
+        return store_expected(storedTxnId, storedDbPath, offset, "text1");
+    }
+
+    private List<ExpectedLoggable> store_expected(final long storedTxnId, final String storedDbPath, final int offset, final String text) {
         final int docId = FIRST_USABLE_DOC_ID + offset;
         final long pageNum = FIRST_USABLE_PAGE + offset;
 
-        return Arrays.asList(
-                Start(storedTxnId),
-                CollectionNextDocId(storedTxnId, 1, docId),
-                StoreElementNode(storedTxnId, pageNum, 1),
-                StoreTextNode(storedTxnId, pageNum, "text1"),
-                CollectionCreateDoc(storedTxnId, 1, docId, storedDbPath),
-                Commit(storedTxnId)
-        );
+        if (text.length() < TEXT_PAGE_SIZE) {
+            return Arrays.asList(
+                    Start(storedTxnId),
+                    CollectionNextDocId(storedTxnId, 1, docId),
+                    StoreElementNode(storedTxnId, pageNum, 1),
+                    StoreTextNode(storedTxnId, pageNum, text),
+                    CollectionCreateDoc(storedTxnId, 1, docId, storedDbPath),
+                    Commit(storedTxnId)
+            );
+        } else {
+            final int textNodeHeaderLen = 5;
+            long textPageNum = pageNum + 1;
+
+            final ExtendedArrayList<ExpectedLoggable> expected = List(
+                    Start(storedTxnId),
+                    CollectionNextDocId(storedTxnId, 1, docId),
+                    StoreElementNode(storedTxnId, pageNum, 1),
+
+                    // first entry for large text node
+                    StartStorePartialTextNode(storedTxnId, textPageNum++, new DLN("1.1"), text.substring(0, TEXT_PAGE_SIZE - textNodeHeaderLen))
+            );
+
+            for (int i = TEXT_PAGE_SIZE - textNodeHeaderLen; i < text.length(); i += TEXT_PAGE_SIZE) {
+                int partialTextEndOffset = i + TEXT_PAGE_SIZE;
+                if (partialTextEndOffset > text.length()) {
+                    partialTextEndOffset = i + (text.length() - i);
+                }
+                final String partialText = text.substring(i, partialTextEndOffset);
+                expected.add(StorePartialTextNode(storedTxnId, textPageNum++, partialText));
+            }
+
+
+            return expected.add(
+                    CollectionCreateDoc(storedTxnId, 1, docId, storedDbPath),
+                    Commit(storedTxnId)
+            );
+        }
     }
 
 
@@ -374,12 +477,11 @@ public class JournalXmlTest extends AbstractJournalTest {
 
     @Override
     protected XmldbURI storeAndVerify(final DBBroker broker, final Txn transaction, final Collection collection,
-            final Path file, final String dbFilename) throws EXistException, PermissionDeniedException, IOException,
+            final InputSource data, final String dbFilename) throws EXistException, PermissionDeniedException, IOException,
             SAXException, LockException {
 
-
-        final IndexInfo indexInfo = collection.validateXMLResource(transaction, broker, XmldbURI.create(dbFilename), new FileInputSource(file));
-        collection.store(transaction, broker, indexInfo, new FileInputSource(file));
+        final IndexInfo indexInfo = collection.validateXMLResource(transaction, broker, XmldbURI.create(dbFilename), data);
+        collection.store(transaction, broker, indexInfo, data);
 
         assertNotNull(collection.getDocument(broker, XmldbURI.create(dbFilename)));
 

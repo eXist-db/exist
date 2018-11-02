@@ -34,19 +34,21 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FileInputSource;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.xml.sax.InputSource;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
-import java.util.concurrent.Executors;
 
 import static org.junit.Assert.*;
 
@@ -55,11 +57,11 @@ import static org.junit.Assert.*;
  */
 public abstract class AbstractRecoverTest {
 
-    private static final boolean COMMIT = true;
-    private static final boolean NO_COMMIT = false;
+    protected static final boolean COMMIT = true;
+    protected static final boolean NO_COMMIT = false;
 
-    private static final boolean MUST_EXIST = true;
-    private static final boolean MUST_NOT_EXIST = false;
+    protected static final boolean MUST_EXIST = true;
+    protected static final boolean MUST_NOT_EXIST = false;
 
     /**
      * We set useTemporaryStorage=true for ExistEmbeddedServer
@@ -68,6 +70,11 @@ public abstract class AbstractRecoverTest {
     @Rule
     public final ExistEmbeddedServer existEmbeddedServer =
             new ExistEmbeddedServer(true, true);
+
+    @After
+    public void tearDown() {
+        BrokerPool.FORCE_CORRUPTION = false;
+    }
 
     @Test
     public void storeAndLoad() throws LockException, TriggerException, PermissionDeniedException, EXistException,
@@ -603,7 +610,7 @@ public abstract class AbstractRecoverTest {
      *      unfinished (i.e. neither committed, aborted, or closed)
      * @param file The file that to store
      */
-    private void store(final boolean commitAndClose, final Path file) throws EXistException, PermissionDeniedException,
+    protected void store(final boolean commitAndClose, final Path file) throws EXistException, PermissionDeniedException,
             IOException, TriggerException, LockException, InterruptedException {
         store(commitAndClose, file, FileUtils.fileName(file));
     }
@@ -618,13 +625,27 @@ public abstract class AbstractRecoverTest {
      */
     private void store(final boolean commitAndClose, final Path file, final String dbFilename) throws EXistException,
             PermissionDeniedException, IOException, TriggerException, LockException, InterruptedException {
+        store(commitAndClose, new FileInputSource(file), dbFilename);
+    }
+
+    /**
+     * Store a document into the database.
+     *
+     * @param commitAndClose true if the transaction should be committed. false will leave the transaction
+     *      unfinished (i.e. neither committed, aborted, or closed)
+     * @param data The data to store in the document
+     * @param dbFilename the name to use when storing the file in the database
+     */
+    protected void store(final boolean commitAndClose, final InputSource data, final String dbFilename) throws EXistException,
+            PermissionDeniedException, IOException, TriggerException, LockException, InterruptedException {
+
 
         runSync(new BrokerTask(existEmbeddedServer.getBrokerPool(), (broker, transaction) -> {
             final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
             broker.saveCollection(transaction, root);
 
-            storeAndVerify(broker, transaction, root, file, dbFilename);
+            storeAndVerify(broker, transaction, root, data, dbFilename);
 
             if(commitAndClose) {
                 transaction.commit();
@@ -641,11 +662,11 @@ public abstract class AbstractRecoverTest {
      * @param broker The database broker
      * @param transaction The database transaction
      * @param collection The Collection into which the document should be stored
-     * @param file The file which holds the content for the document to store in the database
+     * @param data The content for the document to store in the database
      * @param dbFilename The name to store the document as in the database
      */
     protected abstract void storeAndVerify(final DBBroker broker, final Txn transaction, final Collection collection,
-            final Path file, final String dbFilename) throws EXistException, PermissionDeniedException,
+            final InputSource data, final String dbFilename) throws EXistException, PermissionDeniedException,
             IOException, TriggerException, LockException;
 
     /**
@@ -668,6 +689,18 @@ public abstract class AbstractRecoverTest {
      */
     private void read(final boolean shouldExist, final Path file, final String dbFilename)
             throws EXistException, PermissionDeniedException, IOException {
+        read(shouldExist, new FileInputSource(file), dbFilename);
+    }
+
+    /**
+     * Read a document from the database.
+     *
+     * @param shouldExist true if the document should exist in the database, false if the document should not exist
+     * @param data The data that was previously stored
+     * @param dbFilename The name of the file to read from the database
+     */
+    protected void read(final boolean shouldExist, final InputSource data, final String dbFilename)
+            throws EXistException, PermissionDeniedException, IOException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XmldbURI uri = TestConstants.TEST_COLLECTION_URI.append(dbFilename);
@@ -679,7 +712,7 @@ public abstract class AbstractRecoverTest {
                 } else {
                     assertNotNull("Document does not exist in the database: " + uri, doc);
 
-                    readAndVerify(broker, doc.getDocument(), file, dbFilename);
+                    readAndVerify(broker, doc.getDocument(), data, dbFilename);
                 }
             }
         }
@@ -690,11 +723,11 @@ public abstract class AbstractRecoverTest {
      *
      * @param broker The database broker.
      * @param doc The document from the database.
-     * @param file The file that was previously stored
+     * @param data The data that was previously stored
      * @param dbFilename The name of the file read from the database
      */
     protected abstract void readAndVerify(final DBBroker broker, final DocumentImpl doc,
-            final Path file, final String dbFilename) throws EXistException, PermissionDeniedException, IOException;
+            final InputSource data, final String dbFilename) throws EXistException, PermissionDeniedException, IOException;
 
     /**
      * Delete a document from the database.
@@ -737,7 +770,7 @@ public abstract class AbstractRecoverTest {
         }));
     }
 
-    private void flushJournal() {
+    protected void flushJournal() {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         pool.getJournalManager().get().flush(true, false);
     }
