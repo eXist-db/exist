@@ -1639,12 +1639,7 @@ public class NativeBroker extends DBBroker {
                         new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
                             @Override
                             public Object start() {
-                                if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                                    final long page = ((BinaryDocument) doc).getPage();
-                                    if (page > Page.NO_PAGE) {
-                                        domDb.removeOverflowValue(transaction, page);
-                                    }
-                                } else {
+                                if (doc.getResourceType() == DocumentImpl.XML_FILE) {
                                     final NodeHandle node = (NodeHandle) doc.getFirstChild();
                                     domDb.removeAll(transaction, node.getInternalAddress());
                                 }
@@ -2151,7 +2146,6 @@ public class NativeBroker extends DBBroker {
      * @param fWriteData A function that given the destination path, writes the document data to that path
      */
     private void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final ConsumerE<Path, IOException> fWriteData) throws IOException {
-        blob.setPage(Page.NO_PAGE);
         final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), true);
         final boolean exists = Files.exists(binFile);
 
