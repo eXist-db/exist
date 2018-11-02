@@ -25,9 +25,14 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 
 import org.exist.storage.journal.LogException;
 import org.exist.storage.txn.Txn;
+import org.exist.util.FileUtils;
+import org.exist.util.crypto.digest.DigestType;
+import org.exist.util.crypto.digest.MessageDigest;
+import org.exist.util.crypto.digest.StreamableDigest;
 
 import javax.annotation.Nullable;
 
@@ -36,19 +41,27 @@ import javax.annotation.Nullable;
  *
  * Serialized binary format is as follows:
  *
- * [sourcePathLen, sourcePath, destinationPathLen, destinationPath, dataPathLen, dataPath]
+ * [sourcePathLen, sourcePath, sourceDigestType, sourceDigest, destinationPathLen, destinationPath, destinationDigestType, destinationDigest?, dataPathLen, dataPath?]
  *
- * sourcePathLen:       2 bytes, unsigned short
- * sourcePath:          var length bytes, UTF-8 encoded java.lang.String
- * destinationPathLen:  2 bytes, unsigned short
- * destinationPath:     var length bytes, UTF-8 encoded java.lang.String
- * dataPathLen:         2 bytes, unsigned short
- * dataPath:            var length bytes, UTF-8 encoded java.lang.String
+ * sourcePathLen:           2 bytes, unsigned short
+ * sourcePath:              var length bytes, UTF-8 encoded java.lang.String
+ * sourceDigestType:        1 byte
+ * sourceDigest:            n-bytes, where n is deteremined by {@code sourceDigestType}
+ * destinationPathLen:      2 bytes, unsigned short
+ * destinationPath:         var length bytes, UTF-8 encoded java.lang.String
+ * destinationDigestType:   1 byte
+ * destinationDigest:       n-bytes, where n is deteremined by {@code destinationDigestType}
+ * dataPathLen:             2 bytes, unsigned short
+ * dataPath:                var length bytes, UTF-8 encoded java.lang.String
  */
 public class RenameBinaryLoggable extends AbstractBinaryLoggable {
-    private byte[] sourcePath;          // the current path (i.e. the current value)
-    private byte[] destinationPath;     // the new path (i.e. the new value)
-    @Nullable private byte[] dataPath;  // path to a copy of the destinationPath data before the move (i.e. a copy of the current value) - needed for undo
+    private byte[] sourcePath;                      // the current path (i.e. the current value)
+    private MessageDigest sourceDigest;
+
+    private byte[] destinationPath;                 // the new path (i.e. the new value)
+    @Nullable private MessageDigest destinationDigest;
+
+    @Nullable private byte[] dataPath;              // path to a copy of the destinationPath data before the move (i.e. a copy of the current value) - needed for undo
 
     /**
      * Creates a new instance of RenameBinaryLoggable.
@@ -56,15 +69,21 @@ public class RenameBinaryLoggable extends AbstractBinaryLoggable {
      * @param broker The database broker.
      * @param txn The database transaction.
      * @param source the path before the move.
+     * @param sourceDigest digest of the {@code source} content
      * @param destination the path after the move.
+     * @param destinationDigest digest of the {@code destination} content, or null if the destination does not exist
      * @param data a copy of the existing destination data, or null if the destination does not exist
      */
-    public RenameBinaryLoggable(final DBBroker broker, final Txn txn, final Path source, final Path destination, @Nullable final Path data) {
+    public RenameBinaryLoggable(final DBBroker broker, final Txn txn, final Path source,
+            final MessageDigest sourceDigest, final Path destination, @Nullable final MessageDigest destinationDigest,
+            @Nullable final Path data) {
         super(NativeBroker.LOG_RENAME_BINARY, txn.getId());
         this.sourcePath = getPathData(source);
         checkPathLen(getClass().getSimpleName(), "sourcePath", sourcePath);
+        this.sourceDigest = sourceDigest;
         this.destinationPath = getPathData(destination);
         checkPathLen(getClass().getSimpleName(), "destinationPath", destinationPath);
+        this.destinationDigest = destinationDigest;
         this.dataPath = getPathData(data);
         checkPathLen(getClass().getSimpleName(), "dataPath", dataPath);
     }
@@ -85,8 +104,12 @@ public class RenameBinaryLoggable extends AbstractBinaryLoggable {
         return
                 2 +
                 sourcePath.length +
+                1 +
+                sourceDigest.getDigestType().getDigestLengthBytes() +
                 2 +
                 destinationPath.length +
+                1 +
+                (destinationDigest == null ? 0 : destinationDigest.getDigestType().getDigestLengthBytes()) +
                 2 +
                 (dataPath == null ? 0 : dataPath.length);
     }
@@ -95,8 +118,12 @@ public class RenameBinaryLoggable extends AbstractBinaryLoggable {
     public void write(final ByteBuffer out) {
         out.putShort(asUnsignedShort(sourcePath.length));
         out.put(sourcePath);
+        writeMessageDigest(out, sourceDigest);
+
         out.putShort(asUnsignedShort(destinationPath.length));
         out.put(destinationPath);
+        writeMessageDigest(out, destinationDigest);
+
         if (dataPath == null) {
             out.putShort(asUnsignedShort(0));
         } else {
@@ -110,10 +137,12 @@ public class RenameBinaryLoggable extends AbstractBinaryLoggable {
         final int sourcePathLen = asSignedInt(in.getShort());
         this.sourcePath = new byte[sourcePathLen];
         in.get(sourcePath);
+        this.sourceDigest = readMessageDigest(in);
 
         final int destinationPathLen = asSignedInt(in.getShort());
         this.destinationPath = new byte[destinationPathLen];
         in.get(destinationPath);
+        this.destinationDigest = readMessageDigest(in);
 
         final int dataPathLen = asSignedInt(in.getShort());
         if (dataPathLen == 0) {
@@ -134,7 +163,26 @@ public class RenameBinaryLoggable extends AbstractBinaryLoggable {
 
         if (data != null) {
             try {
+                // ensure the integrity of the destination file
+                final StreamableDigest destinationStreamableDigest = destinationDigest.getDigestType().newStreamableDigest();
+                FileUtils.digest(destination, destinationStreamableDigest);
+                if (!Arrays.equals(destinationStreamableDigest.getMessageDigest(), destinationDigest.getValue())) {
+                    throw new LogException("Cannot redo replace of binary resource: "
+                            + destination.toAbsolutePath().toString() + " from "
+                            + source.toAbsolutePath().toString() + ", digest of destination file is invalid");
+                }
+
+                // perform the pre-redo - backup move
                 Files.move(destination, data, StandardCopyOption.ATOMIC_MOVE);
+
+                // ensure the integrity of the move
+                destinationStreamableDigest.reset();
+                FileUtils.digest(data, destinationStreamableDigest);
+                if (!Arrays.equals(destinationStreamableDigest.getMessageDigest(), destinationDigest.getValue())) {
+                    throw new LogException("Cannot redo replace of binary resource: "
+                            + destination.toAbsolutePath().toString() + " from "
+                            + source.toAbsolutePath().toString() + ", digest of new data file is invalid");
+                }
             } catch (final IOException ioe) {
                 throw new LogException("Cannot redo replace of binary resource: move destination="
                         + destination.toAbsolutePath().toString() + " to data=" + destination.toAbsolutePath().toString(), ioe);
@@ -142,7 +190,38 @@ public class RenameBinaryLoggable extends AbstractBinaryLoggable {
         }
 
         try {
+
+            if (destinationDigest != null) {
+                // ensure the integrity of the destination file
+                final StreamableDigest destinationStreamableDigest = destinationDigest.getDigestType().newStreamableDigest();
+                FileUtils.digest(destination, destinationStreamableDigest);
+                if (!Arrays.equals(destinationStreamableDigest.getMessageDigest(), destinationDigest.getValue())) {
+                    throw new LogException("Cannot redo replace of binary resource: move source= "
+                            + source.toAbsolutePath().toString() + " to destination= "
+                            + destination.toAbsolutePath().toString() + ", digest of destination file is invalid");
+                }
+            }
+
+            // ensure the integrity of the source file
+            final StreamableDigest sourceStreamableDigest = sourceDigest.getDigestType().newStreamableDigest();
+            FileUtils.digest(source, sourceStreamableDigest);
+            if (!Arrays.equals(sourceStreamableDigest.getMessageDigest(), sourceDigest.getValue())) {
+                throw new LogException("Cannot redo replace of binary resource: move source= "
+                        + source.toAbsolutePath().toString() + " to destination= "
+                        + destination.toAbsolutePath().toString() + ", digest of source file is invalid");
+            }
+
+            // perform the redo - move
             Files.move(source, destination, StandardCopyOption.ATOMIC_MOVE);
+
+            // ensure the integrity of the move
+            sourceStreamableDigest.reset();
+            FileUtils.digest(destination, sourceStreamableDigest);
+            if (!Arrays.equals(sourceStreamableDigest.getMessageDigest(), sourceDigest.getValue())) {
+                throw new LogException("Cannot redo replace of binary resource: move source= "
+                        + source.toAbsolutePath().toString() + " to destination= "
+                        + destination.toAbsolutePath().toString() + ", digest of new destination file is invalid");
+            }
         } catch (final IOException ioe) {
             throw new LogException("Cannot redo replace of binary resource: move source="
                     + source.toAbsolutePath().toString() + " to destination=" + destination.toAbsolutePath().toString(), ioe);
@@ -160,7 +239,48 @@ public class RenameBinaryLoggable extends AbstractBinaryLoggable {
         final Path data = getPath(dataPath);
 
         try {
+            StreamableDigest destinationStreamableDigest = null;
+            if (destinationDigest != null) {
+                // ensure the integrity of the destination file
+                destinationStreamableDigest = destinationDigest.getDigestType().newStreamableDigest();
+                FileUtils.digest(destination, destinationStreamableDigest);
+                if (!Arrays.equals(destinationStreamableDigest.getMessageDigest(), destinationDigest.getValue())) {
+                    throw new LogException("Cannot undo replace of binary resource: move destination="
+                            + destination.toAbsolutePath().toString()
+                            + " to source=" + source.toAbsolutePath().toString()
+                            + ", digest of destination file is invalid");
+                }
+            }
+
+            // perform the undo - move
             Files.move(destination, source, StandardCopyOption.ATOMIC_MOVE);
+
+            // ensure the integrity of the move
+            if (destinationDigest != null) {
+                destinationStreamableDigest.reset();
+                FileUtils.digest(source, destinationStreamableDigest);
+                if (!Arrays.equals(destinationStreamableDigest.getMessageDigest(), destinationDigest.getValue())) {
+                    throw new LogException("Cannot undo replace of binary resource: move destination="
+                            + destination.toAbsolutePath().toString()
+                            + " to source=" + source.toAbsolutePath().toString()
+                            + ", digest of new source file is invalid");
+                }
+            } else {
+                final DigestType digestType = DigestType.BLAKE_256;
+                final StreamableDigest streamableDigest = digestType.newStreamableDigest();
+                FileUtils.digest(destination, streamableDigest);
+                final byte[] destinationDigest = Arrays.copyOf(streamableDigest.getMessageDigest(), digestType.getDigestLengthBytes());
+
+                streamableDigest.reset();
+                FileUtils.digest(source, streamableDigest);
+
+                if (!Arrays.equals(destinationDigest, streamableDigest.getMessageDigest())) {
+                    throw new LogException("Cannot undo replace of binary resource: move destination="
+                            + destination.toAbsolutePath().toString()
+                            + " to source=" + source.toAbsolutePath().toString()
+                            + ", digest of new source file is invalid");
+                }
+            }
         } catch (final IOException ioe) {
             throw new LogException("Cannot undo replace of binary resource: move destination="
                     + destination.toAbsolutePath().toString() + " to source=" + source.toAbsolutePath().toString(), ioe);
@@ -168,7 +288,28 @@ public class RenameBinaryLoggable extends AbstractBinaryLoggable {
 
         if (data != null) {
             try {
+                // ensure the integrity of the data file
+                final StreamableDigest dataStreamableDigest = destinationDigest.getDigestType().newStreamableDigest();
+                FileUtils.digest(data, dataStreamableDigest);
+                if (!Arrays.equals(dataStreamableDigest.getMessageDigest(), destinationDigest.getValue())) {
+                    throw new LogException("Cannot undo replace of binary resource: "
+                            + destination.toAbsolutePath().toString() + " from "
+                            + source.toAbsolutePath().toString() + ", digest of data file is invalid");
+                }
+
+                // perform the pre-undo - backup move
                 Files.move(data, destination, StandardCopyOption.ATOMIC_MOVE);
+
+                // ensure the integrity of the move
+                dataStreamableDigest.reset();
+                FileUtils.digest(destination, dataStreamableDigest);
+                if (!Arrays.equals(dataStreamableDigest.getMessageDigest(), destinationDigest.getValue())) {
+                    throw new LogException("Cannot undo replace of binary resource: move destination="
+                            + destination.toAbsolutePath().toString()
+                            + " to source=" + source.toAbsolutePath().toString()
+                            + ", digest of new destination file is invalid");
+                }
+
             } catch (final IOException ioe) {
                 throw new LogException("Cannot undo replace of binary resource: move data="
                         + data.toAbsolutePath().toString() + " to destination=" + destination.toAbsolutePath().toString(), ioe);
