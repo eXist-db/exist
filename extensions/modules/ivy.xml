@@ -9,14 +9,16 @@
     <dependencies>
         <dependency org="net.sourceforge.cssparser" name="cssparser" rev="0.9.5" conf="*->*,!sources,!javadoc"/>
 
-        <dependency org="com.twelvemonkeys.imageio" name="common-lang" rev="3.4.1"/>
-        <dependency org="com.twelvemonkeys.imageio" name="common-io" rev="3.4.1"/>
-        <dependency org="com.twelvemonkeys.imageio" name="common-image" rev="3.4.1"/>
-        <dependency org="com.twelvemonkeys.imageio" name="imageio-core" rev="3.4.1"/>
-        <dependency org="com.twelvemonkeys.imageio" name="imageio-metadata" rev="3.4.1"/>
-        <dependency org="com.twelvemonkeys.imageio" name="imageio-jpeg" rev="3.4.1"/>
-        <dependency org="com.twelvemonkeys.imageio" name="imageio-tiff" rev="3.4.1"/>
-        <dependency org="com.twelvemonkeys.imageio" name="servlet" rev="3.4.1"/>
+        <dependency org="com.twelvemonkeys.imageio" name="imageio-core" rev="3.4.1" conf="*->*,!sources,!javadoc">
+          <exclude module="common-lang"/>
+          <exclude module="common-io"/>
+          <exclude module="common-image"/>
+          <exclude module="servlet"/>
+        </dependency>
+        <dependency org="com.twelvemonkeys.imageio" name="imageio-metadata" rev="3.4.1" conf="*->*,!sources,!javadoc"/>
+        <dependency org="com.twelvemonkeys.imageio" name="imageio-jpeg" rev="3.4.1" conf="*->*,!sources,!javadoc"/>
+        <dependency org="com.twelvemonkeys.imageio" name="imageio-tiff" rev="3.4.1" conf="*->*,!sources,!javadoc"/>
+
 
         <!-- <dependency org="org.jfree" name="jfreechart" rev="1.0.14" conf="*->*,!sources,!javadoc">
             <exclude module="itext"/>

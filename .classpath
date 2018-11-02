@@ -144,14 +144,10 @@
 	<classpathentry kind="lib" path="lib/test/xmlunit-legacy-2.6.0.jar"/>
 	<classpathentry kind="lib" path="lib/test/xmlunit-matchers-2.6.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/jcip-annotations-1.0.jar"/>
-	<classpathentry kind="lib" path="twelvemonkeys-common-io-3.4.1.jar"/>
-	<classpathentry kind="lib" path="twelvemonkeys-common-image-3.4.1.jar"/>
-	<classpathentry kind="lib" path="twelvemonkeys-imageio-core-3.4.1.jar"/>
-	<classpathentry kind="lib" path="twelvemonkeys-imageio-metadata-3.4.1.jar"/>
-	<classpathentry kind="lib" path="twelvemonkeys-imageio-jpeg-3.4.1.jar"/>
-	<classpathentry kind="lib" path="twelvemonkeys-imageio-tiff-3.4.1.jar"/>
-	<classpathentry kind="lib" path="twelvemonkeys-imageio-servlet-3.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/images/twelvemonkeys-common-lang-3.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/images/twelvemonkeys-common-io-3.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/images/twelvemonkeys-common-image-3.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/images/twelvemonkeys-imageio-servlet-3.4.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="test/classes"/>
-	<classpathentry kind="lib" path="twelvemonkeys-common-lang-3.4.1.jar"/>
 </classpath>
