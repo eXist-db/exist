@@ -1,9 +1,7 @@
 package org.exist.storage.btree;
 
-import org.easymock.EasyMock;
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.DefaultCacheManager;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.*;
 import org.exist.xquery.TerminatedException;
@@ -28,6 +26,9 @@ import java.util.TreeMap;
  */
 public class BTreeTest {
 
+    private final static byte BTREE_TEST_FILE_ID = 0x7F;
+    private final static short BTREE_TEST_FILE_VERSION = Short.MIN_VALUE;
+
     private Path file = null;
 
     private int count = 0;
@@ -36,7 +37,7 @@ public class BTreeTest {
     @Test
     public void simpleUpdates() throws DBException, IOException, TerminatedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file)) {
+        try(final BTree btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file)) {
             btree.create((short) -1);
 
             String prefixStr = "K";
@@ -72,7 +73,7 @@ public class BTreeTest {
     @Test
     public void strings() throws DBException, IOException, TerminatedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file)) {
+        try(final BTree btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file)) {
             btree.create((short) -1);
 
             String prefixStr = "C";
@@ -130,7 +131,7 @@ public class BTreeTest {
         final Random rand = new Random(System.currentTimeMillis());
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file)) {
+        try(final BTree btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file)) {
             btree.setSplitFactor(0.7);
             btree.create((short) -1);
 
@@ -165,7 +166,7 @@ public class BTreeTest {
     @Test
     public void stringsTruncated() throws DBException, IOException, TerminatedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file)) {
+        try(BTree btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file)) {
             btree.create((short) -1);
 
             char prefix = 'A';
@@ -193,7 +194,7 @@ public class BTreeTest {
     @Test
     public void removeStrings() throws DBException, IOException, TerminatedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file)) {
+        try(final BTree btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file)) {
             btree.create((short) -1);
 
             char prefix = 'A';
@@ -230,7 +231,7 @@ public class BTreeTest {
     @Test
     public void numbers() throws TerminatedException, DBException, EXistException, IOException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file)) {
+        try(final BTree btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file)) {
             btree.create((short) -1);
 
             for (int i = 1; i <= COUNT; i++) {
@@ -269,7 +270,7 @@ public class BTreeTest {
     @Test
     public void numbersWithPrefix() throws DBException, EXistException, IOException, TerminatedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file)) {
+        try(final BTree btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file)) {
             btree.create((short) -1);
 
             for (int i = 1; i <= COUNT; i++) {
