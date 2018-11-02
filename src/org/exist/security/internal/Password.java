@@ -19,14 +19,17 @@
  */
 package org.exist.security.internal;
 
-import gnu.crypto.hash.MD5;
-import gnu.crypto.hash.RipeMD160;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.codec.binary.Base64;
+import org.bouncycastle.crypto.digests.GeneralDigest;
+import org.bouncycastle.crypto.digests.MD5Digest;
+import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.exist.security.Account;
 import org.exist.security.Credential;
 import org.exist.security.MessageDigester;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -34,8 +37,6 @@ import org.exist.security.MessageDigester;
  *
  */
 public class Password implements Credential {
-
-    //TODO switch over to using jBCrypt
     
     public enum Hash {
         MD5,
@@ -108,22 +109,22 @@ public class Password implements Credential {
         }
     }
     
-    final byte[] ripemd160Hash(String p) {
+    final byte[] ripemd160Hash(final String p) {
         //ripemd160 hash
-        final RipeMD160 ripemd160 = new RipeMD160();
-        final byte[] data = p.getBytes();
-        ripemd160.update(data, 0, data.length);
-        final byte[] hash = ripemd160.digest();
-        return hash;
+        return digest(p, new RIPEMD160Digest());
     }
     
-    final byte[] md5Hash(String p) {
-        //md5 hash
-        final MD5 md5 = new MD5();
-        final byte[] data = p.getBytes();
-        md5.update(data, 0, data.length);
-        final byte[] hash = md5.digest();
-        return hash;
+    final byte[] md5Hash(final String p) {
+        return digest(p, new MD5Digest());
+    }
+
+    private static byte[] digest(final String s, final GeneralDigest generalDigest) {
+        final byte[] data = s.getBytes();
+        generalDigest.update(data, 0, data.length);
+
+        final byte[] digest = new byte[generalDigest.getDigestSize()];
+        generalDigest.doFinal(digest, 0);
+        return digest;
     }
     
 

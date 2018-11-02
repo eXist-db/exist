@@ -21,6 +21,7 @@ package org.exist.security;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StartupTrigger;
 import org.exist.storage.txn.Txn;
@@ -29,21 +30,21 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Startup Trigger to register the GNU Crypto JCE Provider
+ * Startup Trigger to register the Bouncy Castle JCE Provider
  *
  * @author Adam Retter <adam@exist-db.org>
  */
-public class GnuCryptoJceProviderStartupTrigger implements StartupTrigger {
+public class BouncyCastleJceProviderStartupTrigger implements StartupTrigger {
 
     private final static Logger LOG = LogManager.getLogger(
-        GnuCryptoJceProviderStartupTrigger.class);
+        BouncyCastleJceProviderStartupTrigger.class);
 
     @Override
     public void execute(final DBBroker sysBroker, final Txn transaction,
-                        final Map<String, List<? extends Object>> params) {
+            final Map<String, List<? extends Object>> params) {
 
-      java.security.Security.addProvider(new gnu.crypto.jce.GnuCrypto());
+      java.security.Security.addProvider(new BouncyCastleProvider());
 
-      LOG.info("Registered JCE Security Provider: gnu.crypto.jce.GnuCrypto");
+      LOG.info("Registered JCE Security Provider: org.bouncycastle.jce.provider.BouncyCastleProvider");
     }
 }
