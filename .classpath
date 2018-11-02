@@ -150,6 +150,7 @@
 	<classpathentry kind="lib" path="twelvemonkeys-imageio-metadata-3.4.1.jar"/>
 	<classpathentry kind="lib" path="twelvemonkeys-imageio-jpeg-3.4.1.jar"/>
 	<classpathentry kind="lib" path="twelvemonkeys-imageio-tiff-3.4.1.jar"/>
+	<classpathentry kind="lib" path="twelvemonkeys-imageio-servlet-3.4.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="test/classes"/>
 	<classpathentry kind="lib" path="twelvemonkeys-common-lang-3.4.1.jar"/>

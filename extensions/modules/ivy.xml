@@ -16,6 +16,7 @@
         <dependency org="com.twelvemonkeys.imageio" name="imageio-metadata" rev="3.4.1"/>
         <dependency org="com.twelvemonkeys.imageio" name="imageio-jpeg" rev="3.4.1"/>
         <dependency org="com.twelvemonkeys.imageio" name="imageio-tiff" rev="3.4.1"/>
+        <dependency org="com.twelvemonkeys.imageio" name="servlet" rev="3.4.1"/>
 
         <!-- <dependency org="org.jfree" name="jfreechart" rev="1.0.14" conf="*->*,!sources,!javadoc">
             <exclude module="itext"/>
