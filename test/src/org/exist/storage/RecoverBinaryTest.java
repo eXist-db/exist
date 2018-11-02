@@ -31,8 +31,10 @@ import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.Txn;
+import org.exist.util.FileInputSource;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
+import org.xml.sax.InputSource;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -54,19 +56,23 @@ public class RecoverBinaryTest extends AbstractRecoverTest {
 
     @Override
     protected void storeAndVerify(final DBBroker broker, final Txn transaction, final Collection collection,
-            final Path file, final String dbFilename) throws EXistException, PermissionDeniedException, IOException,
+            final InputSource data, final String dbFilename) throws EXistException, PermissionDeniedException, IOException,
             TriggerException, LockException {
 
-        final byte[] data = Files.readAllBytes(file);
-        final BinaryDocument doc = collection.addBinaryResource(transaction, broker, XmldbURI.create(dbFilename), data, "application/octet-stream");
+        final Path file = ((FileInputSource)data).getFile();
+
+        final byte[] content = Files.readAllBytes(file);
+        final BinaryDocument doc = collection.addBinaryResource(transaction, broker, XmldbURI.create(dbFilename), content, "application/octet-stream");
 
         assertNotNull(doc);
         assertEquals(Files.size(file), doc.getContentLength());
     }
 
     @Override
-    protected void readAndVerify(final DBBroker broker, final DocumentImpl doc, final Path file,
+    protected void readAndVerify(final DBBroker broker, final DocumentImpl doc, final InputSource data,
             final String dbFilename) throws IOException {
+
+        final Path file = ((FileInputSource)data).getFile();
 
         final BinaryDocument binDoc = (BinaryDocument)doc;
 
@@ -80,8 +86,8 @@ public class RecoverBinaryTest extends AbstractRecoverTest {
             final int read = cis.read(bdata);
             assertEquals(bdata.length, read);
 
-            final String data = new String(bdata);
-            assertNotNull(data);
+            final String content = new String(bdata);
+            assertNotNull(content);
 
             assertEquals(expectedSize, cis.getByteCount());
         }

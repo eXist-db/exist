@@ -29,11 +29,10 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.*;
 import org.exist.storage.txn.Txn;
+import org.exist.util.FileInputSource;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.xml.sax.InputSource;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -43,6 +42,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test expectations to check that the correct entries
@@ -55,25 +55,6 @@ import static org.junit.Assert.assertNotNull;
  * @author Adam Retter <adam@evolvedbinary.com>
  */
 public class JournalBinaryTest extends AbstractJournalTest {
-
-    @BeforeClass
-    public static void prepare() {
-        /*
-         * NOTE: we `ONLY` disable this so we can write our tests as single-threaded which is much simpler,
-         * that writing multi-threaded tests.
-         */
-        System.setProperty(DBBroker.PROP_DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS, "true");
-    }
-
-    @After
-    public void tearDown() {
-        BrokerPool.FORCE_CORRUPTION = false;
-    }
-
-    @AfterClass
-    public static void cleanup() {
-        System.clearProperty(DBBroker.PROP_DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS);
-    }
 
     @Override
     protected List<ExpectedLoggable> store_expected(final long storedTxnId, final String storedDbPath, final int offset) {
@@ -301,11 +282,14 @@ public class JournalBinaryTest extends AbstractJournalTest {
 
     @Override
     protected XmldbURI storeAndVerify(final DBBroker broker, final Txn transaction, final Collection collection,
-            final Path file, final String dbFilename) throws EXistException, PermissionDeniedException, IOException,
+            final InputSource data, final String dbFilename) throws EXistException, PermissionDeniedException, IOException,
             TriggerException, LockException {
 
-        final byte[] data = Files.readAllBytes(file);
-        final BinaryDocument doc = collection.addBinaryResource(transaction, broker, XmldbURI.create(dbFilename), data, "application/octet-stream");
+        assertTrue(data instanceof FileInputSource);
+        final Path file = ((FileInputSource)data).getFile();
+
+        final byte[] content = Files.readAllBytes(file);
+        final BinaryDocument doc = collection.addBinaryResource(transaction, broker, XmldbURI.create(dbFilename), content, "application/octet-stream");
 
         assertNotNull(doc);
         assertEquals(Files.size(file), doc.getContentLength());

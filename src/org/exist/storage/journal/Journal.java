@@ -31,6 +31,8 @@ import java.text.DateFormat;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import net.jpountz.xxhash.XXHash64;
+import net.jpountz.xxhash.XXHashFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -49,29 +51,50 @@ import static java.nio.file.StandardOpenOption.WRITE;
 import static org.exist.util.ThreadUtils.newInstanceThread;
 
 /**
- * Manages the journalling log. The database uses one central journal for
+ * Manages the journal log. The database uses one central journal for
  * all data files. If the journal exceeds the predefined maximum size, a new file is created.
  * Every journal file has a unique number, which keeps growing during the lifetime of the db.
  * The name of the file corresponds to the file number. The file with the highest
  * number will be used for recovery.
- * <p>
+ *
  * A buffer is used to temporarily buffer journal entries. To guarantee consistency, the buffer will be flushed
- * and the journal is synched after every commit or whenever a db page is written to disk.
- * <p>
- * Each entry has the structure:
+ * and the journal is synced after every commit or whenever a db page is written to disk.
  *
- * <pre>[byte: entryType, long: transactionId, short length, byte[] data, short backLink]</pre>
+ * Each journal file has the following format:
  *
- * <ul>
- * <li>entryType is a unique id that identifies the log record. Entry types are registered via the
- * {@link org.exist.storage.journal.LogEntryTypes} class.</li>
- * <li>transactionId: the id of the transaction that created the record.</li>
- * <li>length: the length of the log entry data.</li>
- * <li>data: the payload data provided by the {@link org.exist.storage.journal.Loggable} object.</li>
- * <li>backLink: offset to the start of the record. Used when scanning the log file backwards.</li>
- * </ul>
+ * <pre>{@code
+ *     [magicNumber, version, entry*]
+ * }</pre>
+ *
+ * {@code magicNumber}  4 bytes with the value {@link #JOURNAL_MAGIC_NUMBER}.
+ * {@code version}      2 bytes (java.lang.short) with the value {@link #JOURNAL_VERSION}.
+ * {@code entry}        one or more variable length journal {@code entry} records.
+ *
+ * Each {@code entry} record has the format:
+ *
+ * <pre>{@code
+ *     [entryHeader, data, backLink, checksum]
+ * }</pre>
+ *
+ * {@code entryHeader}      11 bytes describes the entry (see below).
+ * {@code data}             {@code entryHeader->length} bytes of data for the entry.
+ * {@code backLink}         2 bytes (java.lang.short) offset to the start of the entry record, calculated by {@code entryHeader.length + dataLength}.
+ *                              The offset for the start of the entry record can be calculated as {@code endOfRecordOffset - 8 - 2 - backLink}.
+ *                              This is used when scanning the log file backwards for recovery.
+ * {@code checksum}         8 bytes for a 64 bit checksum. The checksum includes the {@code entryHeader}, {@code data}, and {@code backLink}.
+ *
+ * The {@code entryHeader} has the format:
+ *
+ * <pre>{@code
+ *     [entryType, transactionId, dataLength]
+ * }</pre>
+ *
+ * {@code entryType}        1 byte indicates the type of the entry.
+ * {@code transactionId}    8 bytes (java.lang.long) the id of the transaction that created the record.
+ * {@code dataLength}       2 bytes (java.lang.short) the length of the log entry {@code data}.
  *
  * @author wolf
+ * @author aretter
  */
 @ConfigurationClass("journal")
 //TODO: conf.xml refactoring <recovery> => <recovery><journal/></recovery>
@@ -88,7 +111,7 @@ public final class Journal {
      */
     public static final int JOURNAL_HEADER_LEN = 6;
     public static final byte[] JOURNAL_MAGIC_NUMBER = {0x0E, 0x0D, 0x0B, 0x01};
-    public static final short JOURNAL_VERSION = 2;
+    public static final short JOURNAL_VERSION = 3;
 
     public static final String RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE = "sync-on-commit";
     public static final String RECOVERY_JOURNAL_DIR_ATTRIBUTE = "journal-dir";
@@ -115,19 +138,35 @@ public final class Journal {
     public static final int LOG_ENTRY_BACK_LINK_LEN = 2;
 
     /**
-     * header length + trailing back link
+     * the length of the checkum in a log entry
      */
-    public static final int LOG_ENTRY_BASE_LEN = LOG_ENTRY_HEADER_LEN + LOG_ENTRY_BACK_LINK_LEN;
+    public static final int LOG_ENTRY_CHECKSUM_LEN = 8;
+
+    /**
+     * header length + trailing back link length + checksum length
+     */
+    public static final int LOG_ENTRY_BASE_LEN = LOG_ENTRY_HEADER_LEN + LOG_ENTRY_BACK_LINK_LEN + LOG_ENTRY_CHECKSUM_LEN;
 
     /**
      * default maximum journal size
      */
-    public static final int DEFAULT_MAX_SIZE = 100; //MB
+    public static final int DEFAULT_MAX_SIZE = 100;  //MB
 
     /**
      * minimal size the journal needs to have to be replaced by a new file during a checkpoint
      */
-    private static final int DEFAULT_MIN_SIZE = 1; // MB
+    private static final int DEFAULT_MIN_SIZE = 1;  // MB
+
+    /**
+     * We use a 1 megabyte buffer.
+     */
+    public static final int BUFFER_SIZE = 1024 * 1024;  // bytes
+
+    /**
+     * Seed used for xxhash-64 checksums calculated
+     * by the journal.
+     */
+    public static final long XXHASH64_SEED = 0x9747b28c;
 
     /**
      * Minimum size limit for the journal file before it is replaced by a new file.
@@ -217,11 +256,12 @@ public final class Journal {
 
     private volatile boolean initialised = false;
 
+    private final XXHash64 xxHash64 = XXHashFactory.fastestInstance().hash64();
+
     public Journal(final BrokerPool pool, final Path directory) throws EXistException {
         this.pool = pool;
         this.fsJournalDir = directory.resolve("fs.journal");
-        // we use a 1 megabyte buffer:
-        this.currentBuffer = ByteBuffer.allocateDirect(1024 * 1024);
+        this.currentBuffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
 
         this.fileSyncRunnable = new FileSyncRunnable(latch);
         this.fileSyncThread = newInstanceThread(pool, "file-sync-thread", fileSyncRunnable);
@@ -296,6 +336,11 @@ public final class Journal {
 
         SanityCheck.ASSERT(!inRecovery, "Write to log during recovery. Should not happen!");
         final int size = entry.getLogSize();
+
+        if (size > Short.MAX_VALUE) {
+            throw new JournalException("Journal can only write log entries of less that 32KB");
+        }
+
         final int required = size + LOG_ENTRY_BASE_LEN;
         if (required > currentBuffer.remaining()) {
             flushToLog(false);
@@ -313,11 +358,22 @@ public final class Journal {
         entry.setLsn(currentLsn);
 
         try {
+            final int currentBufferEntryOffset = currentBuffer.position();
+
+            // write entryHeader
             currentBuffer.put(entry.getLogType());
             currentBuffer.putLong(entry.getTransactionId());
-            currentBuffer.putShort((short) entry.getLogSize());
+            currentBuffer.putShort((short) size);
+
+            // write entry data
             entry.write(currentBuffer);
+
+            // write backlink
             currentBuffer.putShort((short) (size + LOG_ENTRY_HEADER_LEN));
+
+            // write checksum
+            final long checksum = xxHash64.hash(currentBuffer, currentBufferEntryOffset, currentBuffer.position() - currentBufferEntryOffset, XXHASH64_SEED);
+            currentBuffer.putLong(checksum);
         } catch (final BufferOverflowException e) {
             throw new JournalException("Buffer overflow while writing log record: " + entry.dump(), e);
         }
@@ -499,7 +555,7 @@ public final class Journal {
     }
 
     private void writeJournalHeader(final SeekableByteChannel channel) throws IOException {
-        final ByteBuffer buf = ByteBuffer.allocate(JOURNAL_HEADER_LEN);
+        final ByteBuffer buf = ByteBuffer.allocateDirect(JOURNAL_HEADER_LEN);
 
         // write the magic number
         buf.put(JOURNAL_MAGIC_NUMBER);

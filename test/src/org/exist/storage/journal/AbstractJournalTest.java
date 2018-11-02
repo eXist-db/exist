@@ -35,6 +35,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.Signatures;
 import org.exist.storage.dom.AddValueLoggable;
 import org.exist.storage.dom.RemovePageLoggable;
+import org.exist.storage.dom.WriteOverflowPageLoggable;
 import org.exist.storage.index.StoreValueLoggable;
 import org.exist.storage.io.VariableByteInputStream;
 import org.exist.storage.lock.Lock;
@@ -44,9 +45,11 @@ import org.exist.test.TestConstants;
 import org.exist.util.*;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.xmldb.XmldbURI;
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
@@ -72,8 +75,8 @@ import static org.junit.Assert.assertNull;
  */
 public abstract class AbstractJournalTest {
 
-    private static final boolean COMMIT = true;
-    private static final boolean NO_COMMIT = false;
+    protected static final boolean COMMIT = true;
+    protected static final boolean NO_COMMIT = false;
 
     protected static final int FIRST_USABLE_DOC_ID = 7;
     protected static final int FIRST_USABLE_PAGE = 7;
@@ -85,6 +88,11 @@ public abstract class AbstractJournalTest {
     @Rule
     public final ExistEmbeddedServer existEmbeddedServer =
             new ExistEmbeddedServer(true, true);
+
+    @After
+    public void tearDown() {
+        BrokerPool.FORCE_CORRUPTION = false;
+    }
 
     @Test
     public void store() throws LockException, SAXException, PermissionDeniedException, EXistException,
@@ -911,7 +919,7 @@ public abstract class AbstractJournalTest {
     protected abstract List<ExpectedLoggable> replaceWithoutCommitThenDeleteWithoutCommit_expected(final long replacedTxnId, final String replacedDbPath, final long deletedTxnId, final String deletedDbPath, final int offset);
 
 
-    private void assertPartialOrdered(final List<ExpectedLoggable> expectedPartialOrderedJournalEntries, final List<Loggable> actualJournalEntries) throws AssertionError {
+    protected void assertPartialOrdered(final List<ExpectedLoggable> expectedPartialOrderedJournalEntries, final List<Loggable> actualJournalEntries) throws AssertionError {
         int expectedIdx = 0;
 
         final List<Long> expectedStartedTxns = new ArrayList<>();
@@ -968,7 +976,7 @@ public abstract class AbstractJournalTest {
     /**
      * Check point's the journal, and forces switching to a new journal file.
      */
-    private void checkpointJournalAndSwitchFile() throws NoSuchFieldException, IllegalAccessException, TransactionException {
+    protected void checkpointJournalAndSwitchFile() throws NoSuchFieldException, IllegalAccessException, TransactionException {
 
         //set Journal#journalMinSize = 0, so that switch files will always happen
         final Field fldMinReplace = Journal.class.getDeclaredField("journalSizeMin");
@@ -992,7 +1000,7 @@ public abstract class AbstractJournalTest {
         fldMinReplace.set(journal, existingMinReplaceValue);
     }
 
-    private List<Loggable> readLatestJournalEntries() throws IOException, LogException {
+    protected List<Loggable> readLatestJournalEntries() throws IOException, LogException {
         final Configuration configuration = existEmbeddedServer.getBrokerPool().getConfiguration();
         final Path journalDir = (Path) Optional.ofNullable(configuration.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR))
                 .orElse(configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR));
@@ -1034,13 +1042,29 @@ public abstract class AbstractJournalTest {
      *
      * @param commitAndClose true if the transaction should be committed. false will leave the transaction
      *      unfinished (i.e. neither committed, aborted, or closed)
-     * @param file The file that to store
+     * @param file The file containing the data to store in the document
      * @param dbFilename the name to use when storing the file in the database
      *
      * @return a Tuple2(id, path), where id is of the transaction which stored the document, and path
      *     is the path to the document in the database.
      */
-    private Tuple2<Long, String> store(final boolean commitAndClose, final Path file, final String dbFilename) throws EXistException,
+    protected Tuple2<Long, String> store(final boolean commitAndClose, final Path file, final String dbFilename) throws EXistException,
+            PermissionDeniedException, IOException, SAXException, LockException, InterruptedException {
+        return store(commitAndClose, new FileInputSource(file), dbFilename);
+    }
+
+    /**
+     * Store a document into the database.
+     *
+     * @param commitAndClose true if the transaction should be committed. false will leave the transaction
+     *      unfinished (i.e. neither committed, aborted, or closed)
+     * @param data The data to store in the document
+     * @param dbFilename the name to use when storing the file in the database
+     *
+     * @return a Tuple2(id, path), where id is of the transaction which stored the document, and path
+     *     is the path to the document in the database.
+     */
+    protected Tuple2<Long, String> store(final boolean commitAndClose, final InputSource data, final String dbFilename) throws EXistException,
             PermissionDeniedException, IOException, SAXException, LockException, InterruptedException {
 
         return runSync(new BrokerTask<>(existEmbeddedServer.getBrokerPool(), (broker, transaction) -> {
@@ -1049,7 +1073,7 @@ public abstract class AbstractJournalTest {
             assertNotNull(root);
             broker.saveCollection(transaction, root);
 
-            final XmldbURI docDbUri = storeAndVerify(broker, transaction, root, file, dbFilename);
+            final XmldbURI docDbUri = storeAndVerify(broker, transaction, root, data, dbFilename);
 
             if(commitAndClose) {
                 transaction.commit();
@@ -1068,13 +1092,13 @@ public abstract class AbstractJournalTest {
      * @param broker The database broker
      * @param transaction The database transaction
      * @param collection The Collection into which the document should be stored
-     * @param file The file which holds the content for the document to store in the database
+     * @param data The content for the document to store in the database
      * @param dbFilename The name to store the document as in the database
      *
      * @return the path to the document stored in the database.
      */
     protected abstract XmldbURI storeAndVerify(final DBBroker broker, final Txn transaction, final Collection collection,
-                                           final Path file, final String dbFilename) throws EXistException, PermissionDeniedException,
+            final InputSource data, final String dbFilename) throws EXistException, PermissionDeniedException,
             IOException, SAXException, LockException;
 
     /**
@@ -1173,7 +1197,7 @@ public abstract class AbstractJournalTest {
         }));
     }
 
-    private void flushJournal() {
+    protected void flushJournal() {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         pool.getJournalManager().get().flush(true, false);
     }
@@ -1311,6 +1335,14 @@ public abstract class AbstractJournalTest {
 
     protected ExpectedStoreTextNode StoreTextNode(final long transactionId, final long page, final String text) {
         return new ExpectedStoreTextNode(transactionId, page, text);
+    }
+
+    protected ExpectedStartStorePartialTextNode StartStorePartialTextNode(final long transactionId, final long page, final DLN nodeId, final String partialText) {
+        return new ExpectedStartStorePartialTextNode(transactionId, page, nodeId, partialText);
+    }
+
+    protected ExpectedStorePartialTextNode StorePartialTextNode(final long transactionId, final long page, final String partialText) {
+        return new ExpectedStorePartialTextNode(transactionId, page, partialText);
     }
 
     protected ExpectedDeleteElementNode DeleteElementNode(final long transactionId, final long page, final int children) {
@@ -1541,6 +1573,91 @@ public abstract class AbstractJournalTest {
         @Override
         public String toString() {
             return "ADD VALUE T-" + transactionId + " storeText(txnId=" + transactionId + ", page=" + page + ", text=" + text + ")";
+        }
+    }
+
+    protected abstract static class AbstractExpectedWriteOverflowPage extends ExpectedLoggable {
+        protected final long page;
+
+        public AbstractExpectedWriteOverflowPage(final long transactionId, final long page) {
+            super(transactionId);
+            this.page = page;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || o.getClass() != WriteOverflowPageLoggable.class) return false;
+
+            final WriteOverflowPageLoggable that = (WriteOverflowPageLoggable) o;
+            return that.transactionId == transactionId
+                    && that.getPageNum() == page
+                    && equalsWriteOverflowPage(that);
+        }
+
+        protected abstract boolean equalsWriteOverflowPage(final WriteOverflowPageLoggable o);
+
+        @Override
+        public String toString() {
+            return "WRITE OVERFLOW T-" + transactionId;
+        }
+    }
+
+    protected class ExpectedStartStorePartialTextNode extends AbstractExpectedWriteOverflowPage {
+        private final DLN nodeId;
+        private final String partialText;
+
+        public ExpectedStartStorePartialTextNode(final long transactionId, final long pageId, final DLN nodeId, final String partialText) {
+            super(transactionId, pageId);
+            this.nodeId = nodeId;
+            this.partialText = partialText;
+        }
+
+        @Override
+        protected boolean equalsWriteOverflowPage(final WriteOverflowPageLoggable o) {
+            int pos = 0;
+            final byte[] thatData = o.getValue().getData();
+            final byte thatSignature = thatData[pos++];
+
+            final int thatDlnLen = ByteConversion.byteToShort(thatData, pos);
+            pos += 2;
+            final NodeId thatNodeId = new DLN(thatDlnLen, thatData, pos);
+            pos += thatNodeId.size();
+
+            final String thatPartialText = UTF8.decode(thatData, pos, thatData.length - pos).toString();
+
+            // check it is a TextImpl, the nodeId and the text matches
+            return thatSignature == (Signatures.Char << 0x5)
+                    && thatNodeId.equals(nodeId)
+                    && thatPartialText.equals(partialText);
+        }
+
+        @Override
+        public String toString() {
+            return "WRITE OVERFLOW T-" + transactionId + " storeStartPartialText(txnId=" + transactionId + ", page=" + page + ", nodeId=" + nodeId.toString() + ", partialText=" + partialText + ")";
+        }
+    }
+
+    protected class ExpectedStorePartialTextNode extends AbstractExpectedWriteOverflowPage {
+        private final String partialText;
+
+        public ExpectedStorePartialTextNode(final long transactionId, final long pageId, final String partialText) {
+            super(transactionId, pageId);
+            this.partialText = partialText;
+        }
+
+        @Override
+        protected boolean equalsWriteOverflowPage(final WriteOverflowPageLoggable o) {
+            final byte[] thatData = o.getValue().getData();
+            final String thatPartialText = UTF8.decode(thatData).toString();
+
+            // check the text matches
+            return thatPartialText.equals(partialText);
+        }
+
+        @Override
+        public String toString() {
+            return "WRITE OVERFLOW T-" + transactionId + " storePartialText(txnId=" + transactionId + ", page=" + page + ", partialText=" + partialText + ")";
         }
     }
 
