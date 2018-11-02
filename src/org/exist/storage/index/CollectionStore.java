@@ -27,7 +27,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class CollectionStore extends BFile {
 
-    public static final short FILE_FORMAT_VERSION_ID = 13;
+    public static final short FILE_FORMAT_VERSION_ID = 14;
 
     public static final String FILE_NAME = "collections.dbx";
     public static final String  FILE_KEY_IN_CONFIG = "db-connection.collections";
