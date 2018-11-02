@@ -111,7 +111,7 @@ public final class Journal {
      */
     public static final int JOURNAL_HEADER_LEN = 6;
     public static final byte[] JOURNAL_MAGIC_NUMBER = {0x0E, 0x0D, 0x0B, 0x01};
-    public static final short JOURNAL_VERSION = 3;
+    public static final short JOURNAL_VERSION = 4;
 
     public static final String RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE = "sync-on-commit";
     public static final String RECOVERY_JOURNAL_DIR_ATTRIBUTE = "journal-dir";
