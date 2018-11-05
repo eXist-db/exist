@@ -88,6 +88,13 @@ public class LocalResourceSet extends AbstractLocal implements ResourceSet {
     }
 
     @Override
+    public void addAll(final ResourceSet resourceSet) throws XMLDBException {
+        for (long i = 0; i < resourceSet.getSize(); i++) {
+            addResource(resourceSet.getResource(i));
+        }
+    }
+
+    @Override
     public void clear() throws XMLDBException {
         //cleanup any binary values
         resources.stream().filter((resource) -> (resource instanceof BinaryValue)).forEach((resource) -> {
