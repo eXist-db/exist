@@ -79,6 +79,13 @@ public class MapResourceSet implements ResourceSet
         resourcesVector.add(resource);
     }
 
+    @Override
+    public void addAll(final ResourceSet resourceSet) throws XMLDBException {
+        for (long i = 0; i < resourceSet.getSize(); i++) {
+            addResource(resourceSet.getResource(i));
+        }
+    }
+
     /**
      * Make the container empty
      *

@@ -75,6 +75,13 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
     }
 
     @Override
+    public void addAll(final ResourceSet resourceSet) throws XMLDBException {
+        for (long i = 0; i < resourceSet.getSize(); i++) {
+            addResource(resourceSet.getResource(i));
+        }
+    }
+
+    @Override
     public void clear() throws XMLDBException {
         if (handle < 0) {
             return;
