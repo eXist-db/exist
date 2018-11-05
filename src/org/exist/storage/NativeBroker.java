@@ -1827,6 +1827,16 @@ public class NativeBroker extends DBBroker {
             // 7) remove the documents nodes and binary documents of the Collection from dom.dbx
             removeCollectionsDocumentNodes(transaction, collection);
 
+            // if there was a fs folder for holding binaries for the collection remove the (now empty folder) from disk
+            final Path fsBinCollection = getCollectionBinaryFileFsPath(collectionUri);
+            if (Files.exists(fsBinCollection)) {
+                if (!FileUtils.list(fsBinCollection).isEmpty()) {
+                    LOG.error("Unable to remove non-empty fs folder for Collection binaries: " + fsBinCollection.toAbsolutePath().toString());
+                } else {
+                    FileUtils.delete(fsBinCollection);
+                }
+            }
+
             colTrigger.afterDeleteCollection(this, transaction, collectionUri);
 
             return true;
@@ -1885,12 +1895,12 @@ public class NativeBroker extends DBBroker {
                 }
             }.run();
 
-            docTrigger.afterDeleteDocument(this, transaction, doc.getURI());
-
             // if it is a binary document remove the content from disk
             if (doc instanceof BinaryDocument) {
                 removeCollectionBinary(transaction, (BinaryDocument)doc, streamableDigest);
             }
+
+            docTrigger.afterDeleteDocument(this, transaction, doc.getURI());
 
             //Make doc's id available again
             collectionsDb.freeResourceId(doc.getDocId());
@@ -2411,6 +2421,10 @@ public class NativeBroker extends DBBroker {
             final ConsumerE<Path, IOException> fWriteData) throws IOException {
         final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), true);
         final boolean exists = Files.exists(binFile);
+
+        if (exists && Files.isDirectory(binFile)) {
+            throw new IOException("Cannot overwrite binary fs Collection '" + blob.getURI().getRawCollectionPath() + "' with Document: " + blob.getURI().lastSegment().toString());
+        }
 
         if(fsJournalDir.isPresent()) {
             final StreamableDigest streamableDigest = BINARY_RESOURCE_DIGEST_TYPE.newStreamableDigest();
