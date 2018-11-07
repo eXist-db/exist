@@ -23,8 +23,11 @@ package org.exist.storage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.journal.AbstractLoggable;
+import org.exist.util.crypto.digest.DigestType;
+import org.exist.util.crypto.digest.MessageDigest;
 
 import javax.annotation.Nullable;
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -35,6 +38,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public abstract class AbstractBinaryLoggable extends AbstractLoggable {
     private static final Logger LOG = LogManager.getLogger(AbstractBinaryLoggable.class);
+
+    protected final static byte NO_DIGEST_TYPE = 0x0;
 
     public AbstractBinaryLoggable(final byte type, final long transactionId) {
         super(type, transactionId);
@@ -109,6 +114,40 @@ public abstract class AbstractBinaryLoggable extends AbstractLoggable {
             LOG.error(loggableName + ": " + pathName + " path has a zero length");
         } else if(len > 0xFFFF) {
             LOG.error(loggableName + ": " + pathName + " path needs more than 65,535 bytes. Path will be truncated: " + new String(path, UTF_8));
+        }
+    }
+
+    /**
+     * Writes a message digest to a buffer.
+     *
+     * @param out the buffer to write the message digest to.
+     * @param messageDigest the message digest to write to the buffer.
+     */
+    protected static void writeMessageDigest(final ByteBuffer out, @Nullable final MessageDigest messageDigest) {
+        if (messageDigest == null) {
+            out.put(NO_DIGEST_TYPE);
+        } else {
+            out.put(messageDigest.getDigestType().getId());
+            out.put(messageDigest.getValue(), 0, messageDigest.getDigestType().getDigestLengthBytes());
+        }
+    }
+
+    /**
+     * Reads a message digest from a buffer.
+     *
+     * @param in the buffer to read the message digest from.
+     *
+     * @return the message digest read from the buffer.
+     */
+    protected static @Nullable MessageDigest readMessageDigest(final ByteBuffer in) {
+        final byte digestTypeId = in.get();
+        if (digestTypeId == NO_DIGEST_TYPE) {
+            return null;
+        } else {
+            final DigestType digestType = DigestType.forId(digestTypeId);
+            final byte[] digestValue = new byte[digestType.getDigestLengthBytes()];
+            in.get(digestValue);
+            return new MessageDigest(digestType, digestValue);
         }
     }
 }

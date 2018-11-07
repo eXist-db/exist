@@ -79,7 +79,7 @@
 	<classpathentry kind="lib" path="extensions/webdav/lib/mime-util-2.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/optional/isorelax-20041111.jar"/>
 	<classpathentry kind="lib" path="lib/optional/xqjapi-1.0-fr.jar"/>
-	<classpathentry kind="lib" path="lib/core/gnu-crypto-2.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/core/bcprov-jdk15on-1.60.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/existdb-favicon.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/asm-6.0.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/asm-commons-6.0.jar"/>
