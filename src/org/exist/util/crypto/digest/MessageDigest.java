@@ -19,6 +19,11 @@
  */
 package org.exist.util.crypto.digest;
 
+import java.util.Arrays;
+import java.util.Objects;
+
+import static org.exist.util.HexEncoder.bytesToHex;
+
 /**
  * Message Digest.
  *
@@ -53,5 +58,35 @@ public class MessageDigest {
      */
     public byte[] getValue() {
         return value;
+    }
+
+    /**
+     * Get the hex string of the message digest value.
+     *
+     * @return the hex string of the message digest value;
+     */
+    public String toHexString() {
+        return bytesToHex(value);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MessageDigest that = (MessageDigest) o;
+        return digestType == that.digestType &&
+                Arrays.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(digestType);
+        result = 31 * result + Arrays.hashCode(value);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return digestType +"{" + toHexString() + '}';
     }
 }
