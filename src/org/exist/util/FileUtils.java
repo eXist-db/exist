@@ -24,9 +24,13 @@ import org.apache.logging.log4j.Logger;
 
 import com.evolvedbinary.j8fu.Either;
 import com.evolvedbinary.j8fu.function.FunctionE;
+import org.exist.util.crypto.digest.DigestOutputStream;
+import org.exist.util.crypto.digest.StreamableDigest;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
@@ -34,6 +38,10 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.nio.file.StandardOpenOption.READ;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.nio.file.StandardOpenOption.WRITE;
 
 /**
  * @author Adam Retter <adam.retter@googlemail.com>
@@ -398,4 +406,77 @@ public class FileUtils {
         }
     }
 
+    /**
+     * Copy a file whilst generating a digest of the bytes that are being written.
+     *
+     * Destination file will be overwritten.
+     *
+     * @param src the source file.
+     * @param dst the destination file
+     * @param streamableDigest the digest
+     */
+    public static void copyWithDigest(final Path src, final Path dst, final StreamableDigest streamableDigest) throws IOException {
+        copyWithDigest(src, dst, streamableDigest, WRITE, TRUNCATE_EXISTING);
+    }
+
+    /**
+     * Copy a file whilst generating a digest of the bytes that are being written.
+     *
+     * @param src the source file.
+     * @param dst the destination file
+     * @param streamableDigest the digest
+     */
+    public static void copyWithDigest(final Path src, final Path dst, final StreamableDigest streamableDigest, final OpenOption... dstOptions) throws IOException {
+        try (final InputStream is = Files.newInputStream(src, READ)) {
+            copyWithDigest(is, dst, streamableDigest);
+        }
+    }
+
+    /**
+     * Copy data to a file whilst generating a digest of the bytes that are being written.
+     *
+     * Destination file will be overwritten.
+     *
+     * @param is the source data.
+     * @param dst the destination file
+     * @param streamableDigest the digest
+     */
+    public static void copyWithDigest(final InputStream is, final Path dst, final StreamableDigest streamableDigest) throws IOException {
+        copyWithDigest(is, dst, streamableDigest, WRITE, TRUNCATE_EXISTING);
+    }
+
+    /**
+     * Copy data to a file whilst generating a digest of the bytes that are being written.
+     *
+     * @param is the source data.
+     * @param dst the destination file
+     * @param streamableDigest the digest
+     */
+    public static void copyWithDigest(final InputStream is, final Path dst, final StreamableDigest streamableDigest, final OpenOption... dstOptions) throws IOException {
+        try (final OutputStream os = new DigestOutputStream(Files.newOutputStream(dst, dstOptions), streamableDigest)) {
+
+            final byte[] buf = new byte[8192];
+            int read;
+            while ((read = is.read(buf)) != -1) {
+                os.write(buf, 0, read);
+            }
+        }
+    }
+
+    /**
+     * Calculates the digest for a file.
+     *
+     * @param path the file to calculate the digest for.
+     * @param streamableDigest the digest.
+     */
+    public static void digest(final Path path, final StreamableDigest streamableDigest) throws IOException {
+        try (final InputStream is = Files.newInputStream(path, READ)) {
+            final byte[] buf = new byte[8192];
+
+            int read;
+            while ((read = is.read(buf)) != -1) {
+                streamableDigest.update(buf, 0, read);
+            }
+        }
+    }
 }

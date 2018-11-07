@@ -119,6 +119,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     private final static Logger LOG = LogManager.getLogger(NativeValueIndex.class);
 
     public static final String FILE_NAME = "values.dbx";
+    public static final short FILE_FORMAT_VERSION_ID = 13;
     public static final String FILE_KEY_IN_CONFIG = "db-connection.values";
 
     private static final double DEFAULT_VALUE_CACHE_GROWTH = 1.25;
@@ -180,7 +181,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             //use inheritance
             final Path file = dataDir.resolve(getFileName());
             LOG.debug("Creating '" + FileUtils.fileName(file) + "'...");
-            nativeFile = new BFile(broker.getBrokerPool(), id, false, file,
+            nativeFile = new BFile(broker.getBrokerPool(), id, FILE_FORMAT_VERSION_ID, false, file,
                     broker.getBrokerPool().getCacheManager(), cacheGrowth,
                     cacheValueThresHold);
             config.setProperty(getConfigKeyForFile(), nativeFile);

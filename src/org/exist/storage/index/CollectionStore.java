@@ -27,6 +27,8 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class CollectionStore extends BFile {
 
+    public static final short FILE_FORMAT_VERSION_ID = 14;
+
     public static final String FILE_NAME = "collections.dbx";
     public static final String  FILE_KEY_IN_CONFIG = "db-connection.collections";
     
@@ -49,7 +51,7 @@ public class CollectionStore extends BFile {
      * @throws DBException
      */
     public CollectionStore(BrokerPool pool, byte id, Path dataDir, Configuration config) throws DBException {
-        super(pool, id, true, dataDir.resolve(getFileName()),
+        super(pool, id, FILE_FORMAT_VERSION_ID, true, dataDir.resolve(getFileName()),
                 pool.getCacheManager(), 1.25, 0.03);
         config.setProperty(getConfigKeyForFile(), this);
     }
