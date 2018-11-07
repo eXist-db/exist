@@ -42,6 +42,8 @@ import java.nio.file.Path;
  */
 public class NGramIndex extends AbstractIndex implements RawBackupSupport {
 
+    public static final short FILE_FORMAT_VERSION_ID = 13;
+
     public final static String ID = NGramIndex.class.getName();
 
     private final static Logger LOG = LogManager.getLogger(NGramIndex.class);
@@ -68,7 +70,7 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
     @Override
     public void open() throws DatabaseConfigurationException {
         try {
-            db = new BFile(pool, (byte) 0, false, dataFile, pool.getCacheManager(), 1.4, 0.07);
+            db = new BFile(pool, (byte) 0, FILE_FORMAT_VERSION_ID, false, dataFile, pool.getCacheManager(), 1.4, 0.07);
         } catch (DBException e) {
             throw new DatabaseConfigurationException("Failed to create index file: " + dataFile.toAbsolutePath().toString() + ": " +
                 e.getMessage());

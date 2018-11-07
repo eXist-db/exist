@@ -83,8 +83,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class BFile extends BTree {
 
     protected final static Logger LOGSTATS = LogManager.getLogger( NativeBroker.EXIST_STATISTICS_LOGGER );
-
-    public final static short FILE_FORMAT_VERSION_ID = 13;
     
     public final static long UNKNOWN_ADDRESS = -1;
 
@@ -142,9 +140,9 @@ public class BFile extends BTree {
     protected final int maxValueSize;
 
 
-    public BFile(final BrokerPool pool, final byte fileId, final boolean recoveryEnabled, final Path file, final DefaultCacheManager cacheManager,
+    public BFile(final BrokerPool pool, final byte fileId, final short fileVersion, final boolean recoveryEnabled, final Path file, final DefaultCacheManager cacheManager,
             final double cacheGrowth, final double thresholdData) throws DBException {
-        super(pool, fileId, recoveryEnabled, cacheManager, file);
+        super(pool, fileId, fileVersion, recoveryEnabled, cacheManager, file);
         lockManager = pool.getLockManager();
         fileHeader = (BFileHeader) getFileHeader();
         dataCache = new LRUCache<>(FileUtils.fileName(file), 64, cacheGrowth, thresholdData, Cache.CacheType.DATA);
@@ -153,21 +151,13 @@ public class BFile extends BTree {
         maxValueSize = fileHeader.getWorkSize() / 2;
         
         if(exists()) {
-            open();
+            open(fileVersion);
         } else {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Creating data file: " + FileUtils.fileName(getFile()));
             }
             create();
         }
-    }
-
-    /**
-     * @return file version
-     */
-    @Override
-    public short getFileVersion() {
-        return FILE_FORMAT_VERSION_ID;
     }
 
     /**
@@ -599,10 +589,6 @@ public class BFile extends BTree {
         final FindCallback cb = new FindCallback(FindCallback.VALUES);
         query(query, cb);
         return cb.getValues();
-    }
-
-    public boolean open() throws DBException {
-        return super.open(FILE_FORMAT_VERSION_ID);
     }
 
     /**

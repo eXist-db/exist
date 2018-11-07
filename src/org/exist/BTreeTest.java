@@ -14,6 +14,9 @@ import java.nio.file.Paths;
 
 public class BTreeTest {
 
+    private final static byte BTREE_TEST_FILE_ID = 0x7F;
+    private final static short BTREE_TEST_FILE_VERSION = Short.MIN_VALUE;
+
     private Path file;
 
     private BrokerPool pool = null;
@@ -40,7 +43,7 @@ public class BTreeTest {
         FileUtils.deleteQuietly(file);
         BTree btree = null;
         try {
-            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
+            btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file);
             btree.create((short) -1);
 
             String prefixStr = "KEY";
@@ -65,7 +68,7 @@ public class BTreeTest {
         BTree btree = null;
         try {
             System.out.println("Loading btree ...");
-            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
+            btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file);
             btree.open((short)-1);
 
             System.out.println("Rebuilding ...");
@@ -86,7 +89,7 @@ public class BTreeTest {
         BTree btree = null;
         try {
             System.out.println("Loading btree ...");
-            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
+            btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file);
             btree.open((short)-1);
 
             String prefixStr = "KEY";

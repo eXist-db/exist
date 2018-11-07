@@ -40,8 +40,6 @@ import java.io.IOException;
  * @author wolf
  */
 public class BinaryDocument extends DocumentImpl {
-
-    private long pageNr = Page.NO_PAGE;
     private long realSize = 0L;
 
     public BinaryDocument(final BrokerPool pool) {
@@ -84,14 +82,6 @@ public class BinaryDocument extends DocumentImpl {
         return BINARY_FILE;
     }
 
-    public void setPage(final long page) {
-        this.pageNr = page;
-    }
-
-    public long getPage() {
-        return pageNr;
-    }
-
     @Override
     public long getContentLength() {
         return realSize;
@@ -105,7 +95,6 @@ public class BinaryDocument extends DocumentImpl {
     public void write(final VariableByteOutputStream ostream) throws IOException {
         ostream.writeInt(getDocId());
         ostream.writeUTF(getFileURI().toString());
-        ostream.writeLong(pageNr);
 
         getPermissions().write(ostream);
 
@@ -117,7 +106,6 @@ public class BinaryDocument extends DocumentImpl {
     public void read(final VariableByteInput istream) throws IOException {
         setDocId(istream.readInt());
         setFileURI(XmldbURI.create(istream.readUTF()));
-        this.pageNr = istream.readLong();
 
         getPermissions().read(istream);
 
