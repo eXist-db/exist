@@ -53,7 +53,9 @@ public class ExistSAXParserFactory {
 
         } catch (final ClassNotFoundException ex) {
             // quick escape
-            LOG.debug(className + ": " + ex.getMessage(), ex);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(className + ": " + ex.getMessage(), ex);
+            }
             return null;
         }
 
@@ -63,7 +65,9 @@ public class ExistSAXParserFactory {
             method = clazz.getMethod("newInstance", (Class[]) null);
         } catch (final SecurityException | NoSuchMethodException ex) {
             // quick escape
-            LOG.debug("Method " + className + ".newInstance not found.", ex);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Method " + className + ".newInstance not found.", ex);
+            }
             return null;
         }
 
@@ -74,12 +78,16 @@ public class ExistSAXParserFactory {
 
         } catch (final IllegalAccessException | InvocationTargetException ex) {
             // quick escape
-            LOG.debug("Could not invoke method " + className + ".newInstance.", ex);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Could not invoke method " + className + ".newInstance.", ex);
+            }
             return null;
         }
 
         if (!(result instanceof SAXParserFactory)) {
-            LOG.debug("Could not create instance of SAXParserFactory: " + result.toString());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Could not create instance of SAXParserFactory: " + result.toString());
+            }
             return null;
         }
 
@@ -108,7 +116,9 @@ public class ExistSAXParserFactory {
         // If no factory could be retrieved, create system default property.
         if (factory == null) {
             factory = SAXParserFactory.newInstance();
-            LOG.info(String.format("Using default SAXParserFactory '%s'", factory.getClass().getCanonicalName()));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(String.format("Using default SAXParserFactory '%s'", factory.getClass().getCanonicalName()));
+            }
         }
 
         return factory;
