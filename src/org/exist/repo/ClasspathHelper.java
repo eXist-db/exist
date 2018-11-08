@@ -20,7 +20,8 @@
  */
 package org.exist.repo;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -70,7 +71,7 @@ public class ClasspathHelper implements BrokerPoolService {
             return;
         }
         final FileSystemStorage.FileSystemResolver resolver = (FileSystemStorage.FileSystemResolver) pkg.getResolver();
-        final File packageDir = resolver.resolveResourceAsFile(".");
+        final Path packageDir = resolver.resolveResourceAsFile(".");
         final Classpath cp = new Classpath();
         try {
             scanPackageDir(cp, packageDir);
@@ -92,7 +93,7 @@ public class ClasspathHelper implements BrokerPoolService {
                 } else {
                     try {
                         final FileSystemStorage.FileSystemResolver resolver = (FileSystemStorage.FileSystemResolver) pkg.getResolver();
-                        final File packageDir = resolver.resolveResourceAsFile(".");
+                        final Path packageDir = resolver.resolveResourceAsFile(".");
                         scanPackageDir(classpath, packageDir);
                     } catch (final IOException e) {
                         LOG.warn("An error occurred while updating classpath for package " + pkg.getName(), e);
@@ -125,8 +126,8 @@ public class ClasspathHelper implements BrokerPoolService {
         return processorVersion.getDependencyVersion().isCompatible(procVersion);
     }
 
-    private static void scanPackageDir(Classpath classpath, File module) throws IOException {
-        final Path dotExist =  module.toPath().resolve(".exist");
+    private static void scanPackageDir(Classpath classpath, Path module) throws IOException {
+        final Path dotExist =  module.resolve(".exist");
         if (Files.exists(dotExist)) {
             if (!Files.isDirectory(dotExist)) {
                 throw new IOException("The .exist config dir is not a dir: " + dotExist);

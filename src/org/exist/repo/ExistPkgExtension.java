@@ -135,7 +135,7 @@ public class ExistPkgExtension
         // TODO: FIXME: Bad, BAD design!  But will be resolved naturally by moving the
         // install code within the storage class (because we are writing on disk)...
         final FileSystemResolver res = (FileSystemResolver) pkg.getResolver();
-        final Path classpath = res.resolveResourceAsFile(".exist/classpath.txt").toPath();
+        final Path classpath = res.resolveResourceAsFile(".exist/classpath.txt");
 
         // create [pkg_dir]/.exist/classpath.txt if not already
         final Path exist = classpath.getParent();
