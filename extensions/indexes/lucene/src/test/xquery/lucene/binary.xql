@@ -68,7 +68,7 @@ function luct:check-visibility-collection-pass() {
 };
 
 declare
-    %test:assertEquals("Lorem")
+    %test:assertEquals("/db/lucenetest/test.txt")
 function luct:check-leading-wildcard() {
     system:as-user("admin", "",
         ft:search("/db/lucenetest/", "title:*rem", (), <options><leading-wildcard>yes</leading-wildcard></options>)/search/@uri/string()
