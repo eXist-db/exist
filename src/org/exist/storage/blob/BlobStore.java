@@ -20,6 +20,8 @@ package org.exist.storage.blob;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.backup.RawDataBackup;
 import org.exist.storage.txn.Txn;
+import org.exist.util.crypto.digest.DigestType;
+import org.exist.util.crypto.digest.MessageDigest;
 
 import javax.annotation.Nullable;
 import java.io.Closeable;
@@ -71,6 +73,20 @@ public interface BlobStore extends Closeable {
     @Nullable InputStream get(final Txn transaction, final BlobId blobId) throws IOException;
 
     /**
+     * Get the digest of a BLOB in the BLOB store.
+     *
+     * @param transaction the current database transaction.
+     * @param blobId the identifier representing the blob to be digested.
+     * @param digestType the type of digest to compute
+     *
+     * @return the digest of the BLOB, or null if there is no such BLOB.
+     *
+     * @throws IOException if an error occurs whilst computing the digest of the BLOB.
+     */
+    @Nullable MessageDigest getDigest(final Txn transaction, final BlobId blobId, final DigestType digestType)
+            throws IOException;
+
+    /**
      * Perform an operation with a {@link Path} reference to a BLOB.
      *
      * NOTE: Use of this method should be avoided where possible. It only
@@ -95,6 +111,7 @@ public interface BlobStore extends Closeable {
      * @param blobId the identifier representing the blob to be retrieved.
      * @param <T> the type of the return value
      * @param fnFile a function which performs a read-only operation on the BLOB file.
+     *     The Path will be null if the Blob does not exist in the Blob Store.
      *     If you wish to handle exceptions in your function you should consider
      *     {@link com.evolvedbinary.j8fu.Try} or similar.
      *

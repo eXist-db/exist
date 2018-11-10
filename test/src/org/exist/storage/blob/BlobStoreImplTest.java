@@ -19,6 +19,7 @@ package org.exist.storage.blob;
 
 import com.evolvedbinary.j8fu.Try;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
+import org.exist.Database;
 import org.exist.util.FileUtils;
 import org.exist.util.crypto.digest.DigestInputStream;
 import org.exist.util.crypto.digest.DigestType;
@@ -42,6 +43,9 @@ import java.util.Random;
 import static com.evolvedbinary.j8fu.Try.TaggedTryUnchecked;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.bouncycastle.util.Arrays.reverse;
+import static org.easymock.EasyMock.createNiceMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -54,6 +58,15 @@ public class BlobStoreImplTest {
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
     private final Random random = new Random();
+
+    private static BlobStore newBlobStore(final Path blobDbx, final Path blobDir) {
+        final Database database = createNiceMock(Database.class);
+        expect(database.getThreadGroup()).andReturn(Thread.currentThread().getThreadGroup());
+        expect(database.getId()).andReturn("BlobStoreTest").times(2);
+        replay(database);
+
+        return new BlobStoreImpl(database, blobDbx, blobDir, DIGEST_TYPE);
+    }
 
     @Test
     public void addUnique() throws IOException {
@@ -68,7 +81,7 @@ public class BlobStoreImplTest {
                 generateTestFile()
         );
 
-        try (final BlobStore blobStore = new BlobStoreImpl(blobDbx, blobDir, DIGEST_TYPE)) {
+        try (final BlobStore blobStore = newBlobStore(blobDbx, blobDir)) {
             blobStore.open();
 
             for (final Tuple2<byte[], MessageDigest> testFile : testFiles) {
@@ -90,7 +103,7 @@ public class BlobStoreImplTest {
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
         final Tuple2<byte[], MessageDigest> testFile2 = generateTestFile();
 
-        try (final BlobStore blobStore = new BlobStoreImpl(blobDbx, blobDir, DIGEST_TYPE)) {
+        try (final BlobStore blobStore = newBlobStore(blobDbx, blobDir)) {
             blobStore.open();
 
             addAndVerify(blobStore, testFile1);
@@ -113,7 +126,7 @@ public class BlobStoreImplTest {
 
         final Tuple2<byte[], MessageDigest> testFile = generateTestFile();
 
-        try (final BlobStore blobStore = new BlobStoreImpl(blobDbx, blobDir, DIGEST_TYPE)) {
+        try (final BlobStore blobStore = newBlobStore(blobDbx, blobDir)) {
             blobStore.open();
 
             // store a blob
@@ -134,7 +147,7 @@ public class BlobStoreImplTest {
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
         final Tuple2<byte[], MessageDigest> testFile2 = generateTestFile();
 
-        try (final BlobStore blobStore = new BlobStoreImpl(blobDbx, blobDir, DIGEST_TYPE)) {
+        try (final BlobStore blobStore = newBlobStore(blobDbx, blobDir)) {
             blobStore.open();
 
             final BlobId testFileId1 = addAndVerify(blobStore, testFile1);
@@ -153,7 +166,7 @@ public class BlobStoreImplTest {
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
         final Tuple2<byte[], MessageDigest> testFile2 = generateTestFile();
 
-        try (final BlobStore blobStore = new BlobStoreImpl(blobDbx, blobDir, DIGEST_TYPE)) {
+        try (final BlobStore blobStore = newBlobStore(blobDbx, blobDir)) {
             blobStore.open();
 
             final BlobId testFileId1 = addAndVerify(blobStore, testFile1);
@@ -180,7 +193,7 @@ public class BlobStoreImplTest {
                 generateTestFile()
         );
 
-        try (final BlobStore blobStore = new BlobStoreImpl(blobDbx, blobDir, DIGEST_TYPE)) {
+        try (final BlobStore blobStore = newBlobStore(blobDbx, blobDir)) {
             blobStore.open();
 
             final List<BlobId> addedBlobIds = new ArrayList<>();
@@ -208,7 +221,7 @@ public class BlobStoreImplTest {
         final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
         final Tuple2<byte[], MessageDigest> testFile2 = generateTestFile();
 
-        try (final BlobStore blobStore = new BlobStoreImpl(blobDbx, blobDir, DIGEST_TYPE)) {
+        try (final BlobStore blobStore = newBlobStore(blobDbx, blobDir)) {
             blobStore.open();
 
             BlobId testFile1Id = addAndVerify(blobStore, testFile1);
@@ -245,7 +258,7 @@ public class BlobStoreImplTest {
         final Tuple2<byte[], MessageDigest> testFile2 = generateTestFile();
         final Tuple2<byte[], MessageDigest> testFile3 = generateTestFile();
 
-        try (final BlobStore blobStore = new BlobStoreImpl(blobDbx, blobDir, DIGEST_TYPE)) {
+        try (final BlobStore blobStore = newBlobStore(blobDbx, blobDir)) {
             blobStore.open();
 
             final BlobId testFile1Id = addAndVerify(blobStore, testFile1);
@@ -269,7 +282,7 @@ public class BlobStoreImplTest {
         assertEquals(expectedBlobDbxLen, actualBlobDbxLen);
 
         // reopen and close the blob store, this should call {@link BlobStoreImpl#compactPersistentReferences}
-        try (final BlobStore blobStore = new BlobStoreImpl(blobDbx, blobDir, DIGEST_TYPE)) {
+        try (final BlobStore blobStore = newBlobStore(blobDbx, blobDir)) {
             blobStore.open();
         }
 
@@ -277,6 +290,27 @@ public class BlobStoreImplTest {
         expectedBlobDbxLen = calculateBlobStoreSize(2);
         actualBlobDbxLen = Files.size(blobDbx);
         assertEquals(expectedBlobDbxLen, actualBlobDbxLen);
+    }
+
+    @Test
+    public void copy() throws IOException {
+        final Path blobDbx = temporaryFolder.getRoot().toPath().resolve("blob.dbx");
+        final Path blobDir = temporaryFolder.newFolder("blob").toPath();
+
+        final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
+
+        try (final BlobStore blobStore = newBlobStore(blobDbx, blobDir)) {
+            blobStore.open();
+
+            final BlobId testFile1Id = addAndVerify(blobStore, testFile1);
+
+            // attempt copy
+            try (final InputStream src = blobStore.get(null, testFile1Id)) {
+                final Tuple2<BlobId, Long> copiedTestFileId = blobStore.add(null, src);
+
+                assertArrayEquals(testFile1Id.getId(), copiedTestFileId._1.getId());
+            }
+        }
     }
 
     private long calculateBlobStoreSize(final int numRecords) {
