@@ -1014,7 +1014,7 @@ public abstract class Paged implements AutoCloseable {
         public static final int LENGTH_PAGE_STATUS = 1; //sizeof byte
         public static final int LENGTH_PAGE_DATA_LENGTH = 4; //sizeof int
         public static final int LENGTH_PAGE_NEXT_PAGE = 8; //sizeof long
-        public static final int LENGTH_PAGE_LSN = 8; //sizeof long
+        public static final int LENGTH_PAGE_LSN = Lsn.RAW_LENGTH;
 
         private int dataLen = 0;
         private boolean dirty = false;
@@ -1022,7 +1022,7 @@ public abstract class Paged implements AutoCloseable {
 
         private byte status = UNUSED;
 
-        private long lsn = Lsn.LSN_INVALID;
+        private Lsn lsn = Lsn.LSN_INVALID;
         
         public PageHeader() {
         }
@@ -1081,11 +1081,11 @@ public abstract class Paged implements AutoCloseable {
          * 
          * @return log sequence number of the last operation that modified this page.
          */
-        public final long getLsn() {
+        public final Lsn getLsn() {
             return lsn;
         }
 
-        public final void setLsn(final long lsn) {
+        public final void setLsn(final Lsn lsn) {
             this.lsn = lsn;
         }
 
@@ -1096,7 +1096,7 @@ public abstract class Paged implements AutoCloseable {
             offset += LENGTH_PAGE_DATA_LENGTH;
             nextPage = ByteConversion.byteToLong(data, offset);
             offset += LENGTH_PAGE_NEXT_PAGE;
-            lsn = ByteConversion.byteToLong(data, offset);
+            lsn = Lsn.read(data, offset);
             offset += LENGTH_PAGE_LSN;
         	return offset;
         }
@@ -1108,7 +1108,7 @@ public abstract class Paged implements AutoCloseable {
             offset += LENGTH_PAGE_DATA_LENGTH;
             ByteConversion.longToByte(nextPage, data, offset);
             offset += LENGTH_PAGE_NEXT_PAGE;
-            ByteConversion.longToByte(lsn, data, offset);
+            lsn.write(data, offset);
             offset += LENGTH_PAGE_LSN;
             dirty = false;
             return offset;

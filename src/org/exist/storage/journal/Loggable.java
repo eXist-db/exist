@@ -54,14 +54,14 @@ public interface Loggable {
      * 
      * @return the Log Sequence Number
      */
-    long getLsn();
+    Lsn getLsn();
     
     /**
      * Set the {@link Lsn} of the entry.
      * 
      * @param lsn the Log Sequence Number
      */
-    void setLsn(long lsn);
+    void setLsn(Lsn lsn);
     
     /**
      * Write this entry to the specified ByteBuffer.
