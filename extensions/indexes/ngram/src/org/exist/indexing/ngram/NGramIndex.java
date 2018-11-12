@@ -42,7 +42,7 @@ import java.nio.file.Path;
  */
 public class NGramIndex extends AbstractIndex implements RawBackupSupport {
 
-    public static final short FILE_FORMAT_VERSION_ID = 13;
+    public static final short FILE_FORMAT_VERSION_ID = 14;
 
     public final static String ID = NGramIndex.class.getName();
 

@@ -162,7 +162,7 @@ public class DOMFile extends BTree implements Lockable {
         LogEntryTypes.addEntryType(LOG_UPDATE_LINK, UpdateLinkLoggable::new);
     }
 
-    public final static short FILE_FORMAT_VERSION_ID = 9;
+    public final static short FILE_FORMAT_VERSION_ID = 10;
 
     private final LockManager lockManager;
 
