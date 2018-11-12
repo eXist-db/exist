@@ -38,6 +38,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.stax.IEmbeddedXMLStreamReader;
+import org.exist.storage.blob.BlobId;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.dom.INodeIterator;
 import org.exist.storage.lock.EnsureLocked;
@@ -618,14 +619,71 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     public abstract void getCollectionResources(Collection.InternalAccess collectionInternalAccess);
 
+    /**
+     * @deprecated use {@link #readBinaryResource(Txn, BinaryDocument, OutputStream)}
+     */
+    @Deprecated
     public abstract void readBinaryResource(@EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob,
         final OutputStream os) throws IOException;
 
+    public abstract void readBinaryResource(final Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob,
+        final OutputStream os) throws IOException;
+
+    /**
+     * @deprecated use {@link #withBinaryFile(Txn, BinaryDocument, Function)}
+     */
+    @Deprecated
     public abstract Path getBinaryFile(@EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob) throws IOException;
 
+    /**
+     * Perform an operation with a {@link Path} reference to the BLOB file
+     * backing a Binary Document.
+     *
+     * NOTE: Use of this method should be avoided where possible. It only
+     * exists for integration with tools which can only
+     * work with File Paths and where making a copy of the file is not
+     * necessary.
+     *
+     * WARNING: The provided {@link Path} MUST ONLY be used for
+     * READ operations, any WRITE/DELETE operation will corrupt the
+     * integrity of the blob store.
+     *
+     * Consider if you really need to use this method. It is likely you could
+     * instead use {@link #getBinaryResource(Txn, BinaryDocument)} and make a
+     * copy of the data to a temporary file.
+     *
+     * Note that any resources associated with the BLOB file
+     * may not be released until the {@code fnFile} has finished executing.
+     *
+     * USE WITH CAUTION!
+     *
+     * @param transaction the current database transaction.
+     * @param binaryDocument the binary document to retrieve the backing BLOB file for.
+     * @param <T> the type of the return value
+     * @param fnFile a function which performs a read-only operation on the BLOB file.
+     *     The Path will be null if the Blob does not exist in the Blob Store.
+     *     If you wish to handle exceptions in your function you should consider
+     *     {@link com.evolvedbinary.j8fu.Try} or similar.
+     *
+     * @throws IOException if an error occurs whilst retrieving the BLOB file.
+     */
+    public abstract <T> T withBinaryFile(final Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument binaryDocument,
+            final Function<Path, T> fnFile) throws IOException;
+
+    /**
+     * @deprecated use {@link #getBinaryResource(Txn, BinaryDocument)}
+     */
+    @Deprecated
 	public abstract InputStream getBinaryResource(@EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob)
            throws IOException;
 
+    public abstract InputStream getBinaryResource(final Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob)
+            throws IOException;
+
+    /**
+     * @deprecated use {@link BinaryDocument#getContentLength()}
+     */
+    @Deprecated
     public abstract long getBinaryResourceSize(@EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob)
            throws IOException;
     

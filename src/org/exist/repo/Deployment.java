@@ -154,7 +154,7 @@ public class Deployment {
         }
     }
 
-    public Optional<String> installAndDeploy(final DBBroker broker, final Txn transaction, final Path xar, final PackageLoader loader) throws PackageException, IOException {
+    public Optional<String> installAndDeploy(final DBBroker broker, final Txn transaction, final XarSource xar, final PackageLoader loader) throws PackageException, IOException {
         return installAndDeploy(broker, transaction, xar, loader, true);
     }
 
@@ -169,10 +169,10 @@ public class Deployment {
      * @param enforceDeps when set to true, the method will throw an exception if a dependency could not be resolved
      *                    or an older version of the required dependency is installed and needs to be replaced.
      */
-    public Optional<String> installAndDeploy(final DBBroker broker, final Txn transaction, final Path xar, final PackageLoader loader, boolean enforceDeps) throws PackageException, IOException {
+    public Optional<String> installAndDeploy(final DBBroker broker, final Txn transaction, final XarSource xar, final PackageLoader loader, boolean enforceDeps) throws PackageException, IOException {
         final Optional<DocumentImpl> descriptor = getDescriptor(broker, xar);
         if(!descriptor.isPresent()) {
-            throw new PackageException("Missing descriptor from package: " + xar.toAbsolutePath());
+            throw new PackageException("Missing descriptor from package: " + xar.getURI());
         }
         final DocumentImpl document = descriptor.get();
 
@@ -242,7 +242,7 @@ public class Deployment {
                             }
                         }
                         if (!isInstalled && loader != null) {
-                            final Path depFile = loader.load(pkgName, version);
+                            final XarSource depFile = loader.load(pkgName, version);
                             if (depFile != null) {
                                 installAndDeploy(broker, transaction, depFile, loader);
                             } else {
@@ -257,13 +257,13 @@ public class Deployment {
                     }
                 }
             } catch (final XPathException e) {
-                throw new PackageException("Invalid descriptor found in " + xar.toAbsolutePath().toString());
+                throw new PackageException("Invalid descriptor found in " + xar.getURI());
             }
 
             // installing the xar into the expath repo
-            LOG.info("Installing package " + xar.toAbsolutePath().toString());
+            LOG.info("Installing package " + xar.getURI());
             final UserInteractionStrategy interact = new BatchUserInteraction();
-            final org.expath.pkg.repo.Package pkg = repo.get().getParentRepo().installPackage(new XarFileSource(xar), true, interact);
+            final org.expath.pkg.repo.Package pkg = repo.get().getParentRepo().installPackage(xar, true, interact);
             final ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
             if (info != null && !info.getJars().isEmpty()) {
                 ClasspathHelper.updateClasspath(broker.getBrokerPool(), pkg);
@@ -891,13 +891,13 @@ public class Deployment {
         return setupNodes;
     }
 
-    public Optional<String> getNameFromDescriptor(final DBBroker broker, final Path xar) throws IOException, PackageException {
+    public Optional<String> getNameFromDescriptor(final DBBroker broker, final XarSource xar) throws IOException, PackageException {
         final Optional<DocumentImpl> doc = getDescriptor(broker, xar);
         return doc.map(DocumentImpl::getDocumentElement).map(root -> root.getAttribute("name"));
     }
 
-    public Optional<DocumentImpl> getDescriptor(final DBBroker broker, final Path jar) throws IOException, PackageException {
-        try(final JarInputStream jis = new JarInputStream(Files.newInputStream(jar))) {
+    public Optional<DocumentImpl> getDescriptor(final DBBroker broker, final XarSource xar) throws IOException, PackageException {
+        try(final JarInputStream jis = new JarInputStream(xar.newInputStream())) {
             JarEntry entry;
             while ((entry = jis.getNextJarEntry()) != null) {
                 if (!entry.isDirectory() && "expath-pkg.xml".equals(entry.getName())) {

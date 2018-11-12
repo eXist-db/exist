@@ -207,7 +207,7 @@ public class RecoveryTest {
 
                 final BinaryDocument binDoc = (BinaryDocument)lockedBinDoc.getDocument();
                 try (final InputStream is = broker.getBinaryResource(binDoc)) {
-                    final byte[] bdata = new byte[(int) broker.getBinaryResourceSize(binDoc)];
+                    final byte[] bdata = new byte[(int) binDoc.getContentLength()];
                     is.read(bdata);
                     final String data = new String(bdata);
                     assertNotNull(data);

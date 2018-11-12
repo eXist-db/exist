@@ -26,6 +26,8 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.TransactionException;
+import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 
 import javax.xml.transform.Source;
@@ -38,13 +40,12 @@ import java.lang.reflect.Array;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Path;
 
 /**
  * Implementation of URIResolver which
  * will resolve paths from the eXist database
  *
- * @Deprecated use {@link org.exist.xslt.EXistURIResolver}
+ * @deprecated use {@link org.exist.xslt.EXistURIResolver}
  */
 public class EXistURIResolver implements URIResolver {
     private static final Logger LOG = LogManager.getLogger(EXistURIResolver.class);
@@ -162,16 +163,33 @@ public class EXistURIResolver implements URIResolver {
 
             final Source source;
             if (doc instanceof BinaryDocument) {
-                final Path p = broker.getBinaryFile((BinaryDocument) doc);
-                source = new StreamSource(p.toFile());
-                source.setSystemId(p.toUri().toString());
-                return source;
+
+                /*
+                 * NOTE: this is extremely unpleasant as we let a reference to the blob file
+                 * escape from the closure into the StreamSource. This means that the file could have been deleted
+                 * by time the user comes to access the StreamSource, however this was also
+                 * the case with eXist-db's previous design, and due to the lack of resource
+                 * management of the StreamSource class, there is little we can do to improve
+                 * the situation - AR.
+                 */
+                try (final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
+                    source = broker.withBinaryFile(transaction, (BinaryDocument) doc, p -> {
+                        final StreamSource source1 = new StreamSource(p.toFile());
+                        source1.setSystemId(p.toUri().toString());
+                        return source1;
+                    });
+
+                    transaction.commit();
+
+                    return source;
+                }
+
             } else {
                 source = new DOMSource(doc);
                 source.setSystemId(uri.toASCIIString());
                 return source;
             }
-        } catch (final PermissionDeniedException | IOException e) {
+        } catch (final PermissionDeniedException | TransactionException | IOException e) {
             throw new TransformerException(e.getMessage(), e);
         }
     }

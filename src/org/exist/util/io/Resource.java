@@ -27,6 +27,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.SecureRandom;
 import java.util.*;
 
@@ -54,6 +55,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import static org.exist.security.Permission.*;
@@ -388,6 +390,26 @@ public class Resource extends File {
         }
     }
 
+    private synchronized Path copy(final DBBroker broker, final Txn transaction, final BinaryDocument binaryDocument) throws IOException {
+        if (file != null) {
+            throw new IOException(binaryDocument.getFileURI().toString() + " locked.");
+        }
+
+        try {
+            final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+            file = temporaryFileManager.getTemporaryFile();
+
+            try (final InputStream is = broker.getBinaryResource(transaction, binaryDocument)) {
+                Files.copy(is, file, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            return file;
+
+        } catch (final Exception e) {
+            throw new IOException(e);
+        }
+    }
+
     protected synchronized void freeFile() throws IOException {
 
         if (isXML()) {
@@ -458,18 +480,17 @@ public class Resource extends File {
 
             } else {
                 //convert BINARY to XML
+                try (final InputStream is1 = broker.getBinaryResource(txn, (BinaryDocument)doc)) {
 
-                final Path file = broker.getBinaryFile((BinaryDocument) doc);
+                    final IndexInfo info = destination.validateXMLResource(txn, broker, newName, new InputSource(is1));
+                    info.getDocument().getMetadata().setMimeType(mimeType.getName());
 
-                FileInputSource is = new FileInputSource(file);
+                    try (final InputStream is2 = broker.getBinaryResource(txn, (BinaryDocument)doc)) {
+                        destination.store(txn, broker, info, new InputSource(is2));
+                    }
 
-                final IndexInfo info = destination.validateXMLResource(txn, broker, newName, is);
-                info.getDocument().getMetadata().setMimeType(mimeType.getName());
-
-                is = new FileInputSource(file);
-                destination.store(txn, broker, info, is);
-
-                source.removeBinaryResource(txn, broker, doc);
+                    source.removeBinaryResource(txn, broker, doc);
+                }
             }
         } else {
             if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
@@ -941,13 +962,19 @@ public class Resource extends File {
 
         try {
             final BrokerPool db = BrokerPool.getInstance();
-            try (final DBBroker broker = db.getBroker()) {
-                if (doc instanceof BinaryDocument) {
-                    return broker.getBinaryFile(((BinaryDocument) doc));
+            try (final DBBroker broker = db.getBroker();
+            final Txn transaction = db.getTransactionManager().beginTransaction()) {
 
+                final Path result;
+                if (doc instanceof BinaryDocument) {
+                    result = copy(broker, transaction, (BinaryDocument)doc);
                 } else {
-                    return serialize(broker, doc);
+                    result = serialize(broker, doc);
                 }
+
+                transaction.commit();
+
+                return result;
             }
         } catch (final Exception e) {
             throw new FileNotFoundException(e.getMessage());

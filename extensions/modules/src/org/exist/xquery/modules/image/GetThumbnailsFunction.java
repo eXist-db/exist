@@ -255,8 +255,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 
                                 // get a byte array representing the image
 
-                                try {
-                                    InputStream is = dbbroker.getBinaryResource(binImage);
+                                try (final InputStream is = dbbroker.getBinaryResource(transaction, binImage)) {
                                     image = ImageIO.read(is);
                                 } catch (IOException ioe) {
                                     throw new XPathException(this, ioe.getMessage());
