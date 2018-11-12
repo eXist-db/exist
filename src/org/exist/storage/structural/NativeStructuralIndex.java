@@ -48,7 +48,7 @@ public class NativeStructuralIndex extends AbstractIndex implements RawBackupSup
 
     public final static String ID = NativeStructuralIndex.class.getName();
     public static final String FILE_NAME = "structure.dbx";
-    public final static short FILE_FORMAT_VERSION_ID = 2;
+    public final static short FILE_FORMAT_VERSION_ID = 3;
 
     public static final byte STRUCTURAL_INDEX_ID = 1;
 
