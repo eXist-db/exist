@@ -661,7 +661,7 @@ public class RpcConnection implements RpcAPI {
                 }
             } else {
                 try (final OutputStream os = Files.newOutputStream(tempFile)) {
-                    broker.readBinaryResource((BinaryDocument) document, os);
+                    broker.readBinaryResource(transaction, (BinaryDocument) document, os);
                 }
             }
 
@@ -793,8 +793,8 @@ public class RpcConnection implements RpcAPI {
                 throw new PermissionDeniedException("Insufficient privileges to access resource");
             }
 
-            try (final InputStream is = broker.getBinaryResource((BinaryDocument) document)) {
-                final long resourceSize = broker.getBinaryResourceSize((BinaryDocument) document);
+            try (final InputStream is = broker.getBinaryResource(transaction, (BinaryDocument) document)) {
+                final long resourceSize = document.getContentLength();
                 if (resourceSize > (long) Integer.MAX_VALUE) {
                     throw new EXistException("Resource too big to be read using this method.");
                 }

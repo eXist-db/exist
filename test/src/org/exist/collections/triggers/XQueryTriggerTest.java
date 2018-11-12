@@ -70,8 +70,7 @@ public class XQueryTriggerTest {
         "</exist:collection>";    
 
     private final static String EMPTY_COLLECTION_CONFIG =
-    	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
-        "</exist:collection>";    
+    	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'/>";
     
     private final static String DOCUMENT_NAME = "test.xml";
     
@@ -246,28 +245,10 @@ public class XQueryTriggerTest {
     private final static String documentURI = "[uri/text() = '/db/testXQueryTrigger/test.xml']";
     private final static String binaryURI = "[uri/text() = '/db/testXQueryTrigger/1x1.gif']";
 
-    /** just create the test collection */
-    @BeforeClass
-    public static void createTestCollection() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-        final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot()
-                .getService("CollectionManagementService", "1.0");
-        testCollection = service.createCollection(TEST_COLLECTION);
-        assertNotNull(testCollection);
-
-        TestUtils.cleanupDB();
-    }
-
-    @AfterClass
-    public static void cleanup() throws XMLDBException {
-        TestUtils.cleanupDB();
-        testCollection = null;
-    }
-
     /** create "log" document that will be updated by the trigger,
      * and store the XQuery module implementing the trigger under test */
     @Before
-    public void storePreliminaryDocuments() throws XMLDBException {
-        TestUtils.cleanupDB();
+    public void setup() throws XMLDBException {
         final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot()
                 .getService("CollectionManagementService", "1.0");
         testCollection = service.createCollection(TEST_COLLECTION);
@@ -281,6 +262,15 @@ public class XQueryTriggerTest {
         ((EXistResource)module).setMimeType("application/xquery");
         module.setContent(MODULE.getBytes());
         testCollection.storeResource(module);
+    }
+
+    @After
+    public void cleanup() throws XMLDBException {
+        final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot()
+                .getService("CollectionManagementService", "1.0");
+        service.removeCollection(TEST_COLLECTION);
+
+        testCollection = null;
     }
 
     /** test a trigger fired by storing a new Document  */
@@ -312,7 +302,7 @@ public class XQueryTriggerTest {
 
         //TODO: document itself
 //	        result = service.query(afterCreate+objDocument+documentURI+"/document/test");
-//	        assertEquals(1, result.getSize());	        	        
+//	        assertEquals(1, result.getSize());
 //	        assertXMLEqual(DOCUMENT_CONTENT, ((XMLResource)result.getResource(0)).getContent().toString());
     }
 
@@ -352,11 +342,11 @@ public class XQueryTriggerTest {
 
         result = service.query(EVENTS);
         assertEquals(4, result.getSize());
-	        
-	        //TODO: document itself	        
+
+	        //TODO: document itself
 //	        result = service.query("/events/event[@id = 'trigger2']/document/test");
-//	        assertEquals(2, result.getSize());	        
-//	        assertXMLEqual(DOCUMENT_CONTENT, result.getResource(0).getContent().toString());	        
+//	        assertEquals(2, result.getSize());
+//	        assertXMLEqual(DOCUMENT_CONTENT, result.getResource(0).getContent().toString());
 //	        assertXMLEqual(MODIFIED_DOCUMENT_CONTENT, result.getResource(1).getContent().toString());
     }
 
@@ -432,7 +422,7 @@ public class XQueryTriggerTest {
         result = service.query(EVENTS);
         assertEquals(2, result.getSize());
 
-	        //TODO: document itself	        
+	        //TODO: document itself
 //	        result = service.query("/events/event[@id = 'trigger1'][@type = 'finish'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][event = 'CREATE-DOCUMENT']/document");
 //	        assertEquals(1, result.getSize());
 //	        assertEquals("<document>" + BINARY_DOCUMENT_CONTENT + "</document>", result.getResource(0).getContent().toString());
@@ -475,8 +465,8 @@ public class XQueryTriggerTest {
 
         result = service.query(EVENTS);
         assertEquals(4, result.getSize());
-	        
-	        //TODO: document itself	        
+
+	        //TODO: document itself
 //	        result = service.query("/events/event[@id = 'trigger3'][@type = 'prepare'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][event = 'DELETE-DOCUMENT']/document");
 //	        assertEquals(1, result.getSize());
 //	        assertEquals("<document>" + BINARY_DOCUMENT_CONTENT + "</document>", result.getResource(0).getContent().toString());
@@ -485,7 +475,7 @@ public class XQueryTriggerTest {
     /** test a trigger fired by a Collection manipulations */
     @Test
     public void collectionCreate() throws XMLDBException {
-        final IndexQueryService idxConf = (IndexQueryService) existEmbeddedServer.getRoot().getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
         idxConf.configureCollection(COLLECTION_CONFIG);
 
         final CollectionManagementService service = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
@@ -510,7 +500,7 @@ public class XQueryTriggerTest {
     /** test a trigger fired by a Collection manipulations */
     @Test
     public void collectionCopy() throws XMLDBException, URISyntaxException {
-        final IndexQueryService idxConf = (IndexQueryService) existEmbeddedServer.getRoot().getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
         idxConf.configureCollection(COLLECTION_CONFIG);
 
         final XmldbURI srcURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test");
@@ -553,7 +543,7 @@ public class XQueryTriggerTest {
     /** test a trigger fired by a Collection manipulations */
     @Test
     public void collectionMove() throws XMLDBException, URISyntaxException {
-        final IndexQueryService idxConf = (IndexQueryService) existEmbeddedServer.getRoot().getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
         idxConf.configureCollection(COLLECTION_CONFIG);
 
         final XmldbURI srcURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test");
@@ -634,7 +624,7 @@ public class XQueryTriggerTest {
         // configure the Collection with the trigger under test
         final IndexQueryService idxConf = (IndexQueryService)testCollection.getService("IndexQueryService", "1.0");
         idxConf.configureCollection(COLLECTION_CONFIG);
-        
+
         final int max_store_attempts = 10;
         int count_prepare_exceptions = 0;
         for(int i = 0; i < max_store_attempts; i++) {

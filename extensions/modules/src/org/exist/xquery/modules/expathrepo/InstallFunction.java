@@ -21,11 +21,11 @@ package org.exist.xquery.modules.expathrepo;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.LockedDocument;
@@ -33,8 +33,9 @@ import org.exist.repo.ExistPkgInfo;
 import org.exist.repo.ExistRepository;
 import org.exist.security.PermissionDeniedException;
 import org.exist.repo.ClasspathHelper;
-import org.exist.storage.NativeBroker;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.txn.TransactionException;
+import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -100,12 +101,14 @@ public class InstallFunction extends BasicFunction {
                     repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
                 } else {
                     // .xar is stored as a binary resource
-				    try(final LockedDocument lockedDoc = getBinaryDoc(pkgOrPath);) {
+				    try(final LockedDocument lockedDoc = getBinaryDoc(pkgOrPath);
+                            final Txn transaction = context.getBroker().continueOrBeginTransaction()) {
 					    final DocumentImpl doc = lockedDoc.getDocument();
-					    Path file = ((NativeBroker)context.getBroker()).getCollectionBinaryFileFsPath(doc.getURI());
-					    LOG.debug("Installing file: " + file.toAbsolutePath().toString());
-					    pkg = parent_repo.installPackage(new XarFileSource(file), force, interact);
+                        LOG.debug("Installing file: " + doc.getURI());
+                        pkg = parent_repo.installPackage(new BinaryDocumentXarSource(context.getBroker().getBrokerPool(), transaction, (BinaryDocument)doc), force, interact);
 					    repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
+
+                        transaction.commit();
 				    }
                 }
                 ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
@@ -117,7 +120,7 @@ public class InstallFunction extends BasicFunction {
             } else {
                 throw new XPathException("expath repository not available");
             }
-        } catch (PackageException ex) {
+        } catch (PackageException | TransactionException ex) {
             logger.error(ex.getMessage(), ex);
             return removed;
             // /TODO: _repo.removePackage seems to throw PackageException
