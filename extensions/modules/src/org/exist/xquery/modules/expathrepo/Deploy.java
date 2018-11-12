@@ -31,19 +31,23 @@ import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.SystemProperties;
+import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.repo.Deployment;
 import org.exist.repo.PackageLoader;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.NativeBroker;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.txn.TransactionException;
+import org.exist.storage.txn.Txn;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.expath.pkg.repo.PackageException;
+import org.expath.pkg.repo.XarFileSource;
+import org.expath.pkg.repo.XarSource;
 import org.xml.sax.helpers.AttributesImpl;
 
 public class Deploy extends BasicFunction {
@@ -167,16 +171,21 @@ public class Deploy extends BasicFunction {
                 if (getArgumentCount() == 2) {
                     repoURI = args[1].getStringValue();
                 }
-                target = installAndDeployFromDb(pkgName, repoURI);
+                try (final Txn transaction = context.getBroker().getBrokerPool().getTransactionManager().beginTransaction()) {
+                    target = installAndDeployFromDb(transaction, pkgName, repoURI);
+                    transaction.commit();
+                }
             } else {
                 target = deployment.undeploy(pkgName, context.getRepository());
 	        }
 	        target.orElseThrow(() -> new XPathException("expath repository is not available."));
             return statusReport(target);
         } catch (PackageException e) {
-            throw new XPathException(this, EXPathErrorCode.EXPDY001, e.getMessage());
+            throw new XPathException(this, EXPathErrorCode.EXPDY001, e.getMessage(), args[0], e);
         } catch (IOException e) {
-            throw new XPathException(this, ErrorCodes.FOER0000, "Caught IO error while deploying expath archive");
+            throw new XPathException(this, ErrorCodes.FOER0000, "Caught IO error while deploying expath archive", args[0], e);
+        } catch (TransactionException e) {
+            throw new XPathException(this, ErrorCodes.FOER0000, "Caught transaction error while deploying expath archive", args[0], e);
         }
     }
 
@@ -184,7 +193,7 @@ public class Deploy extends BasicFunction {
         try {
             final RepoPackageLoader loader = new RepoPackageLoader(repoURI);
             final Deployment deployment = new Deployment(context.getBroker());
-            final Path xar = loader.load(pkgName, new PackageLoader.Version(version, false));
+            final XarSource xar = loader.load(pkgName, new PackageLoader.Version(version, false));
             if (xar != null) {
                 return deployment.installAndDeploy(xar, loader);
             }
@@ -197,21 +206,23 @@ public class Deploy extends BasicFunction {
         }
     }
 
-    private Optional<String> installAndDeployFromDb(final String path, final String repoURI) throws XPathException {
+    private Optional<String> installAndDeployFromDb(final Txn transaction, final String path, final String repoURI) throws XPathException {
         final XmldbURI docPath = XmldbURI.createInternal(path);
         DocumentImpl doc = null;
         try {
             doc = context.getBroker().getXMLResource(docPath, LockMode.READ_LOCK);
-            if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
+            if (doc.getResourceType() != DocumentImpl.BINARY_FILE) {
                 throw new XPathException(this, EXPathErrorCode.EXPDY001, path + " is not a valid .xar", new StringValue(path));
+            }
 
-            final Path file = ((NativeBroker)context.getBroker()).getCollectionBinaryFileFsPath(doc.getURI());
             RepoPackageLoader loader = null;
             if (repoURI != null) {
                 loader = new RepoPackageLoader(repoURI);
             }
+
+            final XarSource xarSource =  new BinaryDocumentXarSource(context.getBroker().getBrokerPool(), transaction, (BinaryDocument)doc);
             final Deployment deployment = new Deployment(context.getBroker());
-            return deployment.installAndDeploy(file, loader);
+            return deployment.installAndDeploy(xarSource, loader);
         } catch (PackageException | IOException | PermissionDeniedException e) {
             LOG.error(e.getMessage(), e);
             throw new XPathException(this, EXPathErrorCode.EXPDY007, "Package installation failed: " + e.getMessage(), new StringValue(e.getMessage()));
@@ -255,7 +266,8 @@ public class Deploy extends BasicFunction {
             this.repoURL = repoURL;
         }
 
-        public Path load(final String name, final Version version) throws IOException {
+        @Override
+        public XarSource load(final String name, final Version version) throws IOException {
             String pkgURL = repoURL + "?name=" + URLEncoder.encode(name, "UTF-8") +
                 "&processor=" + SystemProperties.getInstance().getSystemProperty("product-version", "2.2.0");
             if (version != null) {
@@ -281,11 +293,12 @@ public class Deploy extends BasicFunction {
                     "Gecko/20090729 Firefox/3.5.2 (.NET CLR 3.5.30729)");
             connection.connect();
 
+            // TODO(AR) we likely don't need temporary caching here! could just use UriXarSource
             try(final InputStream is = connection.getInputStream()) {
                 final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
                 final Path outFile = temporaryFileManager.getTemporaryFile();
                 Files.copy(is, outFile, StandardCopyOption.REPLACE_EXISTING);
-                return outFile;
+                return new XarFileSource(outFile);
             } catch (IOException e) {
                 throw new IOException("Failed to install dependency from " + pkgURL + ": " + e.getMessage());
             }

@@ -21,7 +21,6 @@ package org.exist.xquery.modules.expathrepo;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
@@ -33,8 +32,9 @@ import org.exist.repo.ExistPkgInfo;
 import org.exist.repo.ExistRepository;
 import org.exist.security.PermissionDeniedException;
 import org.exist.repo.ClasspathHelper;
-import org.exist.storage.NativeBroker;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.txn.TransactionException;
+import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -101,12 +101,13 @@ public class InstallFunction extends BasicFunction {
                 } else {
                     // .xar is stored as a binary resource
                     BinaryDocument doc = null;
-                    try {
+                    try (final Txn transaction = context.getBroker().getBrokerPool().getTransactionManager().beginTransaction()) {
                         doc = _getDocument(pkgOrPath);
-                        Path file = ((NativeBroker) context.getBroker()).getCollectionBinaryFileFsPath(doc.getURI());
-                        LOG.debug("Installing file: " + file.toAbsolutePath().toString());
-                        pkg = parent_repo.installPackage(new XarFileSource(file), force, interact);
+                        LOG.debug("Installing file: " + doc.getURI());
+                        pkg = parent_repo.installPackage(new BinaryDocumentXarSource(context.getBroker().getBrokerPool(), transaction, (BinaryDocument)doc), force, interact);
                         repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
+
+                        transaction.commit();
                     } finally {
                         if (doc != null)
                             doc.getUpdateLock().release(LockMode.READ_LOCK);
@@ -121,7 +122,7 @@ public class InstallFunction extends BasicFunction {
             } else {
                 throw new XPathException("expath repository not available");
             }
-        } catch (PackageException ex) {
+        } catch (PackageException | TransactionException ex) {
             logger.error(ex.getMessage(), ex);
             return removed;
             // /TODO: _repo.removePackage seems to throw PackageException
