@@ -98,7 +98,7 @@ public class RecoveryManager {
                     	final Checkpoint checkpoint = (Checkpoint) lastLog;
                     	// Found a checkpoint. To be sure it is indeed a valid checkpoint
                     	// record, we compare the LSN stored in it with the current LSN.
-                    	if (checkpoint.getStoredLsn() == checkpoint.getLsn()) {
+                    	if (checkpoint.getStoredLsn().equals(checkpoint.getLsn())) {
                     		checkpointFound = true;
                     		LOG.debug("Database is in clean state. Last checkpoint: " + 
                     				checkpoint.getDateString());
@@ -116,13 +116,13 @@ public class RecoveryManager {
     				reader.positionFirst();
     				final Long2ObjectHashMap<Loggable> txnsStarted = new Long2ObjectHashMap<>();
 	    			Checkpoint lastCheckpoint = null;
-	    			long lastLsn = Lsn.LSN_INVALID;
+	    			Lsn lastLsn = Lsn.LSN_INVALID;
 	                Loggable next;
 	                try {
 						final ProgressBar progress = new ProgressBar("Scanning journal ", FileUtils.sizeQuietly(last));
 	        			while ((next = reader.nextEntry()) != null) {
 //	                        LOG.debug(next.dump());
-							progress.set(Lsn.getOffset(next.getLsn()));
+							progress.set(next.getLsn().getOffset());
 							if (next.getLogType() == LogEntryTypes.TXN_START) {
 				                // new transaction starts: add it to the transactions table
 				                txnsStarted.put(next.getTransactionId(), next);
@@ -139,12 +139,12 @@ public class RecoveryManager {
 	                    if (LOG.isDebugEnabled()) {
                             LOG.debug("Caught exception while reading log", e);
                         }
-                        LOG.warn("Last readable journal log entry lsn: " + Lsn.dump(lastLsn));
+                        LOG.warn("Last readable journal log entry lsn: " + lastLsn);
                     }
 
 	    			// if the last checkpoint record is not the last record in the file
 	    			// we need a recovery.
-	    			if ((lastCheckpoint == null || lastCheckpoint.getLsn() != lastLsn) &&
+	    			if ((lastCheckpoint == null || !lastCheckpoint.getLsn().equals(lastLsn)) &&
 	    					txnsStarted.size() > 0) {
 	    				LOG.info("Dirty transactions: " + txnsStarted.size());
 	    				// starting recovery: reposition the log reader to the last checkpoint
@@ -225,7 +225,7 @@ public class RecoveryManager {
      *
      * @throws LogException
      */
-    private void doRecovery(final int txnCount, final Path last, final JournalReader reader, final long lastLsn) throws LogException {
+    private void doRecovery(final int txnCount, final Path last, final JournalReader reader, final Lsn lastLsn) throws LogException {
         if (LOG.isInfoEnabled()) {
             LOG.info("Running recovery ...");
         }
@@ -259,8 +259,8 @@ public class RecoveryManager {
         //            LOG.debug("Redo: " + next.dump());
                     // redo the log entry
                     next.redo();
-                    progress.set(Lsn.getOffset(next.getLsn()));
-                    if (next.getLsn() == lastLsn)
+                    progress.set(next.getLsn().getOffset());
+                    if (next.getLsn().equals(lastLsn))
                         {break;} // last readable entry reached. Stop here.
                 }
             } catch (final Exception e) {

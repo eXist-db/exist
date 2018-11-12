@@ -27,13 +27,17 @@ import java.util.Date;
 import org.exist.storage.DBBroker;
 import org.exist.storage.journal.AbstractLoggable;
 import org.exist.storage.journal.LogEntryTypes;
+import org.exist.storage.journal.Lsn;
 
 /**
  * @author wolf
  */
 public class Checkpoint extends AbstractLoggable {
+
+    private static final int TIMESTAMP_LEN = 8;
+
 	private long timestamp;
-	private long storedLsn;
+	private Lsn storedLsn;
 	
 	private final DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
 	
@@ -48,23 +52,23 @@ public class Checkpoint extends AbstractLoggable {
     
     @Override
     public void write(final ByteBuffer out) {
-    	out.putLong(lsn);
+        lsn.write(out);
 		out.putLong(timestamp);
     }
 
     @Override
     public void read(final ByteBuffer in) {
-    	storedLsn = in.getLong();
+        storedLsn = Lsn.read(in);
 		timestamp = in.getLong();
     }
 
-    public long getStoredLsn() {
+    public Lsn getStoredLsn() {
     	return storedLsn;
     }
     
     @Override
     public int getLogSize() {
-        return 16;
+        return Lsn.RAW_LENGTH + TIMESTAMP_LEN;
     }
 
     public String getDateString() {

@@ -222,17 +222,17 @@ public final class Journal {
     /**
      * the last LSN written by the JournalManager
      */
-    private long currentLsn = Lsn.LSN_INVALID;
+    private Lsn currentLsn = Lsn.LSN_INVALID;
 
     /**
      * the last LSN actually written to the file
      */
-    private long lastLsnWritten = Lsn.LSN_INVALID;
+    private Lsn lastLsnWritten = Lsn.LSN_INVALID;
 
     /**
      * stores the current LSN of the last file sync on the file
      */
-    private long lastSyncLsn = Lsn.LSN_INVALID;
+    private Lsn lastSyncLsn = Lsn.LSN_INVALID;
 
     /**
      * set to true while recovery is in progress
@@ -347,11 +347,10 @@ public final class Journal {
         }
 
         try {
-            final long offset = channel.position();
-            if (offset > Integer.MAX_VALUE) {
-                throw new JournalException("Journal can only write log files of less that 2GB");
+            if (currentFile > Short.MAX_VALUE) {
+                throw new JournalException("Journal can only support " + Short.MAX_VALUE + " log files");
             }
-            currentLsn = Lsn.create(currentFile, ((int)(channel.position() &0x7FFFFFFF)) + currentBuffer.position() + 1);
+            currentLsn = new Lsn((short)currentFile, channel.position() + currentBuffer.position() + 1);
         } catch (final IOException e) {
             throw new JournalException("Unable to create LSN for: " + entry.dump());
         }
@@ -385,7 +384,7 @@ public final class Journal {
      *
      * @return last written LSN
      */
-    public long lastWrittenLsn() {
+    public Lsn lastWrittenLsn() {
         return lastLsnWritten;
     }
 
@@ -411,7 +410,7 @@ public final class Journal {
             return;
         }
         flushBuffer();
-        if (forceSync || (fsync && syncOnCommit && currentLsn > lastSyncLsn)) {
+        if (forceSync || (fsync && syncOnCommit && currentLsn.compareTo(lastSyncLsn) > 0)) {
             fileSyncRunnable.triggerSync();
             lastSyncLsn = currentLsn;
         }
