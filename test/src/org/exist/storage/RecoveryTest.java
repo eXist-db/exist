@@ -215,7 +215,7 @@ public class RecoveryTest {
             final BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(TestConstants.TEST_BINARY_URI), LockMode.READ_LOCK);
             assertNotNull("Binary document is null", binDoc);
             try(final InputStream is = broker.getBinaryResource(binDoc)) {
-                final byte[] bdata = new byte[(int) broker.getBinaryResourceSize(binDoc)];
+                final byte[] bdata = new byte[(int) binDoc.getContentLength()];
                 is.read(bdata);
                 final String data = new String(bdata);
                 assertNotNull(data);

@@ -123,8 +123,8 @@ public class ResourceTest {
                 if(binDoc == null) {
                     fail("Binary document '" + docPath + " does not exist.");
                 } else {
-                    try(final InputStream is = broker.getBinaryResource(binDoc)) {
-                        data = new byte[(int) broker.getBinaryResourceSize(binDoc)];
+                    try(final InputStream is = broker.getBinaryResource(transaction, binDoc)) {
+                        data = new byte[(int) binDoc.getContentLength()];
                         is.read(data);
                     }
                 }
@@ -174,8 +174,8 @@ public class ResourceTest {
                 if(binDoc == null) {
                     fail("Binary document '" + docPath + " does not exist.");
                 } else {
-                    try(final InputStream is = broker.getBinaryResource(binDoc)) {
-                        data = new byte[(int) broker.getBinaryResourceSize(binDoc)];
+                    try(final InputStream is = broker.getBinaryResource(transaction, binDoc)) {
+                        data = new byte[(int) binDoc.getContentLength()];
                         is.read(data);
                     }
                 }

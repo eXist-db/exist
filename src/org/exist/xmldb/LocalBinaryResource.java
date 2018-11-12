@@ -78,7 +78,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
             return binaryValue;
         }
 
-        return read((document, broker, transaction) -> broker.getBinaryResource(((BinaryDocument) document)));
+        return read((document, broker, transaction) -> broker.getBinaryResource(transaction, ((BinaryDocument) document)));
     }
 
     @Override
@@ -150,7 +150,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
         } else if(binaryValue != null) {
             is = binaryValue.getInputStream();
         } else {
-            is = read((document, broker, transaction) -> broker.getBinaryResource(((BinaryDocument) document)));
+            is = read((document, broker, transaction) -> broker.getBinaryResource(transaction, ((BinaryDocument) document)));
         }
 
         return is;
@@ -170,10 +170,10 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
         read((document, broker, transaction) -> {
             if(os instanceof FileOutputStream) {
                 try(final OutputStream bos = new BufferedOutputStream(os, 65536)) {
-                    broker.readBinaryResource((BinaryDocument) document, bos);
+                    broker.readBinaryResource(transaction, (BinaryDocument) document, bos);
                 }
             } else {
-                broker.readBinaryResource((BinaryDocument) document, os);
+                broker.readBinaryResource(transaction, (BinaryDocument) document, os);
             }
             return null;
         });

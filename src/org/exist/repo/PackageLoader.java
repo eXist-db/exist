@@ -22,6 +22,7 @@
 package org.exist.repo;
 
 import org.expath.pkg.repo.PackageException;
+import org.expath.pkg.repo.XarSource;
 import org.expath.pkg.repo.deps.DependencyVersion;
 
 import java.io.IOException;
@@ -101,5 +102,5 @@ public interface PackageLoader {
      * @param version the version to install
      * @return a file containing the package or null if not found
      */
-    public Path load(String name, Version version) throws IOException;
+    XarSource load(String name, Version version) throws IOException;
 }
