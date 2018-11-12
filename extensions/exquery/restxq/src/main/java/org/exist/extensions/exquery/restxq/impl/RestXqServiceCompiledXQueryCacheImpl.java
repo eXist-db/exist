@@ -92,6 +92,7 @@ public class RestXqServiceCompiledXQueryCacheImpl implements RestXqServiceCompil
     @Override
     public void returnCompiledQuery(final URI xqueryLocation, final CompiledXQuery xquery) {
         //reset the query and context
+        xquery.getContext().runCleanupTasks();
         xquery.reset();
         xquery.getContext().reset();
 
