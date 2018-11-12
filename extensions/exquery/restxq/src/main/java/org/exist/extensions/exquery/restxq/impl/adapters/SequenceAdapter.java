@@ -27,6 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.exist.extensions.exquery.restxq.impl.adapters;
 
 import java.util.Iterator;
+
+import com.evolvedbinary.j8fu.function.RunnableE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.NodeProxy;
@@ -37,6 +39,8 @@ import org.exquery.xquery.Sequence;
 import org.exquery.xquery.Type;
 import org.exquery.xquery.TypedValue;
 
+import javax.annotation.Nullable;
+
 /**
  *
  * @author Adam Retter <adam.retter@googlemail.com>
@@ -46,9 +50,15 @@ public class SequenceAdapter implements Sequence<Item> {
     private final static Logger LOG = LogManager.getLogger(SequenceAdapter.class);
     
     private final org.exist.xquery.value.Sequence sequence;
+    @Nullable private final RunnableE<SequenceException> closer;
 
     public SequenceAdapter(final org.exist.xquery.value.Sequence sequence) {
+        this(sequence, null);
+    }
+
+    public SequenceAdapter(final org.exist.xquery.value.Sequence sequence, @Nullable final RunnableE<SequenceException> closer) {
         this.sequence = sequence;
+        this.closer = closer;
     }
     
     @Override
@@ -123,8 +133,15 @@ public class SequenceAdapter implements Sequence<Item> {
             return new SequenceAdapter(org.exist.xquery.value.Sequence.EMPTY_SEQUENCE);
         }
     }
-    
+
+    @Override
+    public void close() throws SequenceException {
+        closer.run();
+    }
+
     public org.exist.xquery.value.Sequence getExistSequence() {
         return sequence;
     }
+
+
 }
