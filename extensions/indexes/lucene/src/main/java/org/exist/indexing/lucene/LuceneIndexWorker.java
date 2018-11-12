@@ -681,7 +681,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 setOptions(options, parser.getConfiguration());
             } catch (ParseException e) {
                 throw new XPathException("Lucene query syntax error: " + e.getMessage());
-            }       final Query query = parser.parse(queryText);
+            }
+            final Query query = parser.parse(queryText);
 
             // extract all used fields from query
             final String[] fields;
