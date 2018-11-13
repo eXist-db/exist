@@ -190,11 +190,11 @@ public class JournalReader implements AutoCloseable {
     private @Nullable
     Loggable readEntry() throws LogException {
         try {
-            final long offset = fc.position();
-            if (offset > Integer.MAX_VALUE) {
-                throw new LogException("Journal can only read log files of less that 2GB");
+            if (fileNumber > Short.MAX_VALUE) {
+                throw new LogException("Journal can only support " + Short.MAX_VALUE + " log files");
             }
-            final long lsn = Lsn.create(fileNumber, ((int)(offset & 0x7FFFFFFF)) + 1);
+
+            final Lsn lsn = new Lsn((short)fileNumber, fc.position() + 1);
 
             // read the entry header
             header.clear();
@@ -230,8 +230,8 @@ public class JournalReader implements AutoCloseable {
 
             final Loggable loggable = LogEntryTypes.create(entryType, broker, transactId);
             if (loggable == null) {
-                throw new LogException("Invalid log entry: " + entryType + "; size: " + size + "; id: " +
-                        transactId + "; at: " + Lsn.dump(lsn));
+                throw new LogException("Invalid log entry: " + entryType + "; size: " + size + "; id: "
+                        + transactId + "; at: " + lsn);
             }
             loggable.setLsn(lsn);
 
@@ -293,10 +293,10 @@ public class JournalReader implements AutoCloseable {
      * @param lsn the log sequence number
      * @throws LogException if the journal file cannot be re-positioned
      */
-    public void position(final long lsn) throws LogException {
+    public void position(final Lsn lsn) throws LogException {
         try {
             checkOpen();
-            fc.position((int) Lsn.getOffset(lsn) - 1);
+            fc.position(lsn.getOffset() - 1);
         } catch (final IOException e) {
             throw new LogException("Fatal error while seeking journal: " + e.getMessage(), e);
         }

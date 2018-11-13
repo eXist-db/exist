@@ -990,11 +990,11 @@ public class BFile extends BTree {
     }
 
     private boolean isUptodate(final Page page, final Loggable loggable) {
-        return page.getPageHeader().getLsn() >= loggable.getLsn();
+        return page.getPageHeader().getLsn().compareTo(loggable.getLsn()) >= 0;
     }
 
     private boolean requiresRedo(final Loggable loggable, final DataPage page) {
-        return loggable.getLsn() > page.getPageHeader().getLsn();
+        return loggable.getLsn().compareTo(page.getPageHeader().getLsn()) > 0;
     }
 
     protected void redoStoreValue(final StoreValueLoggable loggable) {
@@ -1048,7 +1048,7 @@ public class BFile extends BTree {
                 }
                 wp = new SinglePage(page, data, true);
             }
-            if (wp.ph.getLsn() != Page.NO_PAGE && requiresRedo(loggable, wp)) {
+            if (!wp.ph.getLsn().equals(Lsn.LSN_INVALID) && requiresRedo(loggable, wp)) {
                 removeValueHelper(loggable, loggable.tid, wp);
             }
         } catch (final IOException e) {
@@ -1081,7 +1081,7 @@ public class BFile extends BTree {
                 }
                 wp = new SinglePage(page, data, false);
             }
-            if (wp.getPageHeader().getLsn() == Lsn.LSN_INVALID || requiresRedo(loggable, wp)) {
+            if (wp.getPageHeader().getLsn().equals(Lsn.LSN_INVALID) || requiresRedo(loggable, wp)) {
                 fileHeader.removeFreeSpace(fileHeader.getFreeSpace(wp.getPageNum()));
                 dataCache.remove(wp);
                 wp.delete();
@@ -1101,7 +1101,7 @@ public class BFile extends BTree {
             if (firstPage == null) {
                 final Page page = getPage(loggable.pageNum);
                 byte[] data = page.read();
-                if (page.getPageHeader().getLsn() == Lsn.LSN_INVALID || requiresRedo(loggable, page)) {
+                if (page.getPageHeader().getLsn().equals(Lsn.LSN_INVALID) || requiresRedo(loggable, page)) {
                     dropFreePageList();
                     final BFilePageHeader ph = (BFilePageHeader) page.getPageHeader();
                     ph.setStatus(MULTI_PAGE);
@@ -1116,7 +1116,7 @@ public class BFile extends BTree {
                     firstPage = new SinglePage(page, data, false);
                 }
             }
-            if (firstPage.getPageHeader().getLsn() != Page.NO_PAGE && requiresRedo(loggable, firstPage)) {
+            if (!firstPage.getPageHeader().getLsn().equals(Lsn.LSN_INVALID) && requiresRedo(loggable, firstPage)) {
                 firstPage.getPageHeader().setLsn(loggable.getLsn());
                 firstPage.setDirty(true);
             }
@@ -1371,7 +1371,7 @@ public class BFile extends BTree {
             if (dp == null) {
                 final Page page = getPage(newPage);
                 byte[] data = page.read();
-                if (page.getPageHeader().getLsn() == Lsn.LSN_INVALID || (loggable != null && requiresRedo(loggable, page)) ) {
+                if (page.getPageHeader().getLsn().equals(Lsn.LSN_INVALID) || (loggable != null && requiresRedo(loggable, page)) ) {
                     if (reuseDeleted) {
                         reuseDeleted(page);
                     } else {
@@ -1388,7 +1388,7 @@ public class BFile extends BTree {
                     dp = new SinglePage(page, data, true);
                 }
             }
-            if (loggable != null && loggable.getLsn() > dp.getPageHeader().getLsn()) {
+            if (loggable != null && loggable.getLsn().compareTo(dp.getPageHeader().getLsn()) > 0) {
                 dp.getPageHeader().setLsn(loggable.getLsn());
             }
             dp.setDirty(true);
@@ -1626,7 +1626,7 @@ public class BFile extends BTree {
             if (isDirty()) {
                 try {
                     write();
-                    if (isRecoveryEnabled() && syncJournal && logManager.get().lastWrittenLsn() < getPageHeader().getLsn()) {
+                    if (isRecoveryEnabled() && syncJournal && logManager.get().lastWrittenLsn().compareTo(getPageHeader().getLsn()) < 0) {
                         logManager.get().flush(true, false);
                     }
                     return true;
