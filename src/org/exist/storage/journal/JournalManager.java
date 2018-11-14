@@ -153,7 +153,7 @@ public class JournalManager implements BrokerPoolService {
     /**
      * @see Journal#lastWrittenLsn()
      */
-    public long lastWrittenLsn() {
+    public Lsn lastWrittenLsn() {
         return journal.lastWrittenLsn();
     }
 
