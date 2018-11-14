@@ -748,7 +748,7 @@ public class BTree extends Paged implements Lockable {
     }
 
     protected boolean requiresRedo(final Loggable loggable, final Page page) {
-        return loggable.getLsn() > page.getPageHeader().getLsn();
+        return loggable.getLsn().compareTo(page.getPageHeader().getLsn()) > 0;
     }
 
     protected void redoCreateBTNode(final CreateBTNodeLoggable loggable) throws LogException {
@@ -760,7 +760,7 @@ public class BTree extends Paged implements Lockable {
                 page.read();
                 if ((page.getPageHeader().getStatus() == BRANCH ||
                         page.getPageHeader().getStatus() == LEAF) &&
-                        page.getPageHeader().getLsn() != Lsn.LSN_INVALID &&
+                        (!page.getPageHeader().getLsn().equals(Lsn.LSN_INVALID)) &&
                         !requiresRedo(loggable, page)) {
                     // node already found on disk: read it
                     node = new BTreeNode(page, false);
@@ -803,7 +803,7 @@ public class BTree extends Paged implements Lockable {
 
     protected void redoUpdateValue(final UpdateValueLoggable loggable) throws LogException {
         final BTreeNode node = getBTreeNode(loggable.pageNum);
-        if (node.page.getPageHeader().getLsn() != Page.NO_PAGE && requiresRedo(loggable, node.page)) {
+        if (!node.page.getPageHeader().getLsn().equals(Lsn.LSN_INVALID) && requiresRedo(loggable, node.page)) {
             if (loggable.idx > node.ptrs.length) {
                 LOG.warn(node.page.getPageInfo() +
                         "; loggable.idx = " + loggable.idx + "; node.ptrs.length = " + node.ptrs.length);
@@ -833,7 +833,7 @@ public class BTree extends Paged implements Lockable {
 
     protected void redoRemoveValue(final RemoveValueLoggable loggable) throws LogException {
         final BTreeNode node = getBTreeNode(loggable.pageNum);
-        if (node.page.getPageHeader().getLsn() != Page.NO_PAGE && requiresRedo(loggable, node.page)) {
+        if (!node.page.getPageHeader().getLsn().equals(Lsn.LSN_INVALID) && requiresRedo(loggable, node.page)) {
             node.removeKey(loggable.idx);
             node.removePointer(loggable.idx);
             node.recalculateDataLen();

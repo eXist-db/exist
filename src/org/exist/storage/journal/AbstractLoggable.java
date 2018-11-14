@@ -29,7 +29,7 @@ public abstract class AbstractLoggable implements Loggable {
 
     protected final byte type;
     protected long transactionId;
-    protected long lsn;
+    protected Lsn lsn;
 
     public AbstractLoggable(final byte type, final long transactionId) {
         this.type = type;
@@ -51,12 +51,12 @@ public abstract class AbstractLoggable implements Loggable {
     }
 
     @Override
-    public void setLsn(long lsn) {
+    public void setLsn(final Lsn lsn) {
         this.lsn = lsn;
     }
 
     @Override
-    public long getLsn() {
+    public Lsn getLsn() {
         return lsn;
     }
 
@@ -76,6 +76,6 @@ public abstract class AbstractLoggable implements Loggable {
      */
     @Override
     public String dump() {
-        return '[' + Lsn.dump(getLsn()) + "] " + getClass().getName() + ' ';
+        return '[' + getLsn().toString() + "] " + getClass().getName() + ' ';
     }
 }

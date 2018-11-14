@@ -41,6 +41,7 @@ import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.TestDataGenerator;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.xml.sax.InputSource;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -236,5 +237,10 @@ public class RemoveCollectionTest {
     @After
     public void stopDb() {
         existEmbeddedServer.stopDb();
+    }
+
+    @AfterClass
+    public static void cleanup() {
+        BrokerPool.FORCE_CORRUPTION = false;
     }
 }
