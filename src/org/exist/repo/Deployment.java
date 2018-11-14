@@ -126,7 +126,7 @@ public class Deployment {
 
     protected Path getPackageDir(final Package pkg) {
         final FileSystemStorage.FileSystemResolver resolver = (FileSystemStorage.FileSystemResolver) pkg.getResolver();
-        return resolver.resolveResourceAsFile("").toPath();
+        return resolver.resolveResourceAsFile("");
     }
 
     protected Optional<org.expath.pkg.repo.Package> getPackage(final String pkgName, final Optional<ExistRepository> repo) throws PackageException {
@@ -263,7 +263,7 @@ public class Deployment {
             // installing the xar into the expath repo
             LOG.info("Installing package " + xar.toAbsolutePath().toString());
             final UserInteractionStrategy interact = new BatchUserInteraction();
-            final org.expath.pkg.repo.Package pkg = repo.get().getParentRepo().installPackage(xar, true, interact);
+            final org.expath.pkg.repo.Package pkg = repo.get().getParentRepo().installPackage(new XarFileSource(xar), true, interact);
             final ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
             if (info != null && !info.getJars().isEmpty()) {
                 ClasspathHelper.updateClasspath(broker.getBrokerPool(), pkg);
