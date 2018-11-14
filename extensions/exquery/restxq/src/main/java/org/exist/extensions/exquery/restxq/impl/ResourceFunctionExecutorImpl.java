@@ -50,15 +50,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ProcessMonitor;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.AbstractExpression;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.Expression;
-import org.exist.xquery.FunctionCall;
-import org.exist.xquery.UserDefinedFunction;
-import org.exist.xquery.VariableDeclaration;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.AtomicValue;
@@ -175,7 +167,17 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
                 try {
                     effectiveSubject.ifPresent(broker::pushSubject);  //switch to effective user if setUid/setGid
                     final org.exist.xquery.value.Sequence result = fnRef.evalFunction(null, null, fnArgs);
-                    return new SequenceAdapter(result);
+
+                    // copy for closure
+                    final CompiledXQuery xquery1 = xquery;
+
+                    // return a sequence adapter which returns the query when it is finished with the results
+                    return new SequenceAdapter(result, () -> {
+                        if (xquery1 != null) {
+                            //return the compiled query to the pool
+                            cache.returnCompiledQuery(resourceFunction.getXQueryLocation(), xquery1);
+                        }
+                    });
                 } finally {
                     //switch back from effective user if setUid/setGid
                     if (effectiveSubject.isPresent()) {
@@ -185,18 +187,19 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             }
 
         } catch(final URISyntaxException | EXistException | XPathException | PermissionDeniedException use) {
+
+            // if an error occurred we should return the compiled query
+            if(xquery != null) {
+                //return the compiled query to the pool
+                cache.returnCompiledQuery(resourceFunction.getXQueryLocation(), xquery);
+            }
+
             throw new RestXqServiceException(use.getMessage(), use);
         } finally {
-            
             //clear down monitoring
             if(processMonitor != null) {
                 xquery.getContext().getProfiler().traceQueryEnd(xquery.getContext());
                 processMonitor.queryCompleted(xquery.getContext().getWatchDog());
-            }
-
-            if(xquery != null) {
-                //return the compiled query to the pool
-                cache.returnCompiledQuery(resourceFunction.getXQueryLocation(), xquery);
             }
         }
     }
