@@ -105,7 +105,7 @@ public class InstallFunction extends BasicFunction {
 			    doc = _getDocument(pkgOrPath);
 			    Path file = ((NativeBroker)context.getBroker()).getCollectionBinaryFileFsPath(doc.getURI());
 			    LOG.debug("Installing file: " + file.toAbsolutePath().toString());
-			    pkg = parent_repo.installPackage(file, force, interact);
+			    pkg = parent_repo.installPackage(new XarFileSource(file), force, interact);
 			    repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
 			} finally {
 			    if (doc != null)

@@ -85,7 +85,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
         LOG.info("Using directory " + expathDir.toAbsolutePath().toString() + " for expath package repository");
 
         try {
-            final FileSystemStorage storage = new FileSystemStorage(expathDir.toFile());
+            final FileSystemStorage storage = new FileSystemStorage(expathDir);
             storage.setErrorIfNoContentDir(false);
             this.myParent = new Repository(storage);
             myParent.registerExtension(new ExistPkgExtension());
@@ -197,7 +197,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
             if (info != null) {
                 final String f = info.getXQuery(uri);
                 if (f != null) {
-                    return resolver.resolveComponentAsFile(f).toPath();
+                    return resolver.resolveComponentAsFile(f);
                 }
             }
             String sysid = null; // declared here to be used in catch
