@@ -27,7 +27,7 @@ import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
-import org.exist.util.XMLChar;
+import org.exist.util.XMLNames;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.QNameValue;
@@ -298,7 +298,7 @@ public class ElementConstructor extends NodeConstructor {
              }
 
             //Not in the specs but... makes sense
-            if(!XMLChar.isValidName(qn.getLocalPart())) {
+            if(!XMLNames.isName(qn.getLocalPart())) {
                 throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qnitem.getStringValue() + "' is not a valid element name");
             }
 
