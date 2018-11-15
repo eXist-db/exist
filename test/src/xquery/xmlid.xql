@@ -28,7 +28,7 @@ function xid:cleanup() {
 declare
     %test:assertEquals("<item xml:id='nym_Ͷαναξιμοῦς'/>")
 function xid:stored-xml() {
-    xmldb:store($xid:COLLECTION_NAME, "test.xml", $xid:XML),
+    xmldb:store($xid:COLLECTION_NAME, "test.xml", $xid:XML)[2],
     doc($xid:COLLECTION_NAME || "/test.xml")/id("nym_Ͷαναξιμοῦς"),
     (: not a valid ncname and thus ignored, c.f. https://www.w3.org/TR/xpath-functions-31/#func-id :)
     doc($xid:COLLECTION_NAME || "/test.xml")/id("123")

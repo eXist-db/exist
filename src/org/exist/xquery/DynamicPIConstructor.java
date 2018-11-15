@@ -24,7 +24,7 @@ package org.exist.xquery;
 
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.util.XMLChar;
+import org.exist.util.XMLNames;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -100,7 +100,7 @@ public class DynamicPIConstructor extends NodeConstructor {
                         " or a " + Type.getTypeName(Type.NCNAME) +
                         " or a " + Type.getTypeName(Type.UNTYPED_ATOMIC) +
                         ". Got: " + Type.getTypeName(nameItem.getType()));}
-            if(!XMLChar.isValidNCName(nameSeq.getStringValue()))
+            if(!XMLNames.isNCName(nameSeq.getStringValue()))
                 {throw new XPathException(this, ErrorCodes.XQDY0041,
                     nameSeq.getStringValue() + "' is not a valid processing instruction name", nameSeq);}
             if (nameSeq.getStringValue().equalsIgnoreCase("XML"))
