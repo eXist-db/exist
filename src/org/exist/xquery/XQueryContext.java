@@ -410,10 +410,14 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     public XQueryContext(final Database db) {
+        this(db, new Profiler(db));
+    }
+
+    public XQueryContext(final Database db, Profiler profiler) {
         this();
         this.db = db;
         loadDefaults(db.getConfiguration());
-        this.profiler = new Profiler(db);
+        this.profiler = profiler;
     }
 
     public XQueryContext(final XQueryContext copyFrom) {
