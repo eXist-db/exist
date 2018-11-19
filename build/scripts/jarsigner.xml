@@ -133,6 +133,7 @@
             </fileset>
             <fileset dir="lib/core">
                 <include name="*.jar"/>
+                <exclude name="bcprov-*.jar"/>
             </fileset>
             <fileset dir="lib/extensions" erroronmissingdir="false">
                 <include name="*.jar"/>
