@@ -47,10 +47,9 @@ public class SystemTaskManager implements BrokerPoolService {
         this.pool = pool;
     }
 
-    public void triggerSystemTask(final SystemTask task) {
+    public void addSystemTask(final SystemTask task) {
         synchronized (waitingSystemTasks) {
             waitingSystemTasks.push(task);
-            pool.getTransactionManager().processSystemTasks();
         }
     }
 

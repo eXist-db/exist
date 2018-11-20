@@ -1566,22 +1566,13 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             //Shutdown the scheduler
             scheduler.shutdown(true);
 
-            final java.util.concurrent.locks.Lock lock = transactionManager.getLock();
             try {
-                // wait for currently running system tasks before we shutdown
-                // they will have a lock on the transactionManager
-                lock.lock();
-
                 statusReporter = new StatusReporter(SIGNAL_SHUTDOWN);
                 statusObservers.forEach(statusReporter::addObserver);
 
                 synchronized (this) {
                     final Thread statusThread = newInstanceThread(this, "shutdown-status-reporter", statusReporter);
                     statusThread.start();
-
-                    // release transaction log to allow remaining brokers to complete
-                    // their job
-                    lock.unlock();
 
                     // DW: only in debug mode
                     if (LOG.isDebugEnabled()) {

@@ -41,6 +41,7 @@ import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.lock.FileLock;
 import org.exist.storage.txn.Checkpoint;
+import org.exist.storage.txn.TxnStart;
 import org.exist.util.ByteConversion;
 import org.exist.util.FileUtils;
 import org.exist.util.ReadOnlyException;
@@ -366,7 +367,11 @@ public final class Journal implements Closeable {
         } catch (final BufferOverflowException e) {
             throw new JournalException("Buffer overflow while writing log record: " + entry.dump(), e);
         }
-        pool.getTransactionManager().trackOperation(entry.getTransactionId());
+
+        // NOTE: we don't track operations on txnStart or checkpoints!
+        if (!(entry instanceof TxnStart || entry instanceof Checkpoint)) {
+            pool.getTransactionManager().trackOperation(entry.getTransactionId());
+        }
     }
 
     /**
