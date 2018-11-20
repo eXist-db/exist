@@ -1,27 +1,25 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
- *  http://exist-db.org
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2018 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.storage.txn;
 
-import net.jcip.annotations.GuardedBy;
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -29,55 +27,107 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.*;
 import org.exist.storage.journal.JournalException;
 import org.exist.storage.journal.JournalManager;
+import org.exist.storage.sync.Sync;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 
 import java.io.IOException;
-import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * This is the central entry point to the transaction management service.
- * 
- * There's only one TransactionManager per database instance that can be
- * retrieved via {@link BrokerPool#getTransactionManager()}. TransactionManager
- * provides methods to create, commit and rollback a transaction.
- * 
- * @author wolf
+ * The Transaction Manager provides methods to begin, commit, and abort
+ * transactions.
  *
+ * This implementation of the transaction manager is non-blocking lock-free.
+ * It makes use of several CAS variables to ensure thread-safe concurrent
+ * access. The most important of which is {@link #state} which indicates
+ * either:
+ *     1) the number of active transactions
+ *     2) that the Transaction Manager is executing system
+ *         tasks ({@link #STATE_SYSTEM}), during which time no
+ *         other transactions are active.
+ *     3) that the Transaction Manager has (or is)
+ *         been shutdown ({@link #STATE_SHUTDOWN}).
+ *
+ * NOTE: the Transaction Manager may optimistically briefly enter
+ *     the state {@link #STATE_SYSTEM} to block the initiation of
+ *     new transactions and then NOT execute system tasks if it
+ *     detects concurrent active transactions.
+ *
+ * System tasks are mutually exclusive with any other operation
+ * including shutdown. When shutdown is requested, if system tasks
+ * are executing, then the thread will spin until they are finished.
+ * 
+ * There's only one TransactionManager per database instance, it can be
+ * accessed via {@link BrokerPool#getTransactionManager()}.
+ *
+ * @author Adam Retter <adam@evolvedbinary.com>
+ * @author wolf
  */
+@ThreadSafe
 public class TransactionManager implements BrokerPoolService {
 
-    /**
-     * Logger for this class
-     */
     private static final Logger LOG = LogManager.getLogger(TransactionManager.class);
-
-    private long nextTxnId = 0;
 
     private final BrokerPool pool;
     private final Optional<JournalManager> journalManager;
-
     private final SystemTaskManager systemTaskManager;
 
-    private final Map<Long, TxnCounter> transactions = new HashMap<>();
-
-    private final Lock lock = new ReentrantLock();
+    /**
+     * The next transaction id
+     */
+    private final AtomicLong nextTxnId = new AtomicLong();
 
     /**
-     * Initialize the transaction manager using the specified data directory.
+     * Currently active transactions and their operations journal write count.
+     *  Key is the transaction id
+     *  Value is the transaction's operations journal write count.
+     */
+    private final ConcurrentHashMap<Long, TxnCounter> transactions = new ConcurrentHashMap<>();
+
+    /**
+     * State for when the Transaction Manager has been shutdown.
+     */
+    private static final int STATE_SHUTDOWN = -2;
+
+    /**
+     * State for when the Transaction Manager has executing system tasks.
+     */
+    private static final int STATE_SYSTEM = -1;
+
+    /**
+     * State for when the Transaction Manager is idle, i.e. no active transactions.
+     */
+    private static final int STATE_IDLE = 0;
+
+    /**
+     * State of the transaction manager.
+     *
+     * Will be either {@link #STATE_SHUTDOWN}, {@link #STATE_SYSTEM},
+     * {@link #STATE_IDLE} or a non-zero positive integer which
+     * indicates the number of active transactions.
+     */
+    private final AtomicInteger state = new AtomicInteger(STATE_IDLE);
+
+    /**
+     * Id of the thread which is executing system tasks when
+     * the {@link #state} == {@link #STATE_SYSTEM}. This
+     * is used for reentrancy when system tasks need to
+     * make transactional operations.
+     */
+    private final AtomicLong systemThreadId = new AtomicLong(-1);
+
+
+    /**
+     * Constructs a transaction manager for a Broker Pool.
      * 
-     * @param pool
-     * @param journalManager
-     * @param systemTaskManager
-     * @throws EXistException
+     * @param pool the broker pool
+     * @param journalManager the journal manager
+     * @param systemTaskManager the system task manager
      */
     public TransactionManager(final BrokerPool pool, final Optional<JournalManager> journalManager,
             final SystemTaskManager systemTaskManager) {
@@ -86,39 +136,97 @@ public class TransactionManager implements BrokerPoolService {
         this.systemTaskManager = systemTaskManager;
     }
 
+    private static void throwShutdownException() {
+        //TODO(AR) API should be revised in future so that this is a TransactionException
+        throw new RuntimeException("Transaction Manager is shutdown");
+    }
+
     /**
-     * Create a new transaction. Creates a new transaction id that will
-     * be logged to disk immediately. 
+     * Create a new transaction.
+     *
+     * @return the new transaction
      */
     public Txn beginTransaction() {
-        return withLock(broker -> {
-            final long txnId = nextTxnId++;
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Starting new transaction: " + txnId);
-            }
+        try {
+            // CAS loop
+            while (true) {
+                final int localState = state.get();
 
-            if(journalManager.isPresent()) {
-                try {
-                    journalManager.get().journal(new TxnStart(txnId));
-                } catch(final JournalException e) {
-                    LOG.error("Failed to create transaction. Error writing to log file.", e);
-	            }
-            }
+                // can NOT begin transaction when shutdown!
+                if (localState == STATE_SHUTDOWN) {
+                    throwShutdownException();
+                }
 
-            final Txn txn = new Txn(TransactionManager.this, txnId);
-            transactions.put(txn.getId(), new TxnCounter());
+                // must NOT begin transaction when another thread is processing system tasks!
+                if (localState == STATE_SYSTEM) {
+                    final long thisThreadId = Thread.currentThread().getId();
+                    if (systemThreadId.compareAndSet(thisThreadId, thisThreadId)) {
+                        // our thread is executing system tasks, allow reentrancy from our thread!
+                        // done... return from CAS loop!
+                        return doBeginTransaction();
+
+                    } else {
+                        // spin whilst another thread executes the system tasks
+                        // sleep a small time to save CPU
+                        Thread.sleep(10);
+                        continue;
+                    }
+                }
+
+                // if we are operational and are not preempted by another thread, begin transaction
+                if (localState >= STATE_IDLE && state.compareAndSet(localState, localState + 1)) {
+                    // done... return from CAS loop!
+                    return doBeginTransaction();
+                }
+            }
+        } catch (final InterruptedException e) {
+            // thrown by Thread.sleep
+            Thread.currentThread().interrupt();
+            //TODO(AR) API should be revised in future so that this is a TransactionException
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Txn doBeginTransaction() {
+        final long txnId = nextTxnId.getAndIncrement();
+        if (journalManager.isPresent()) {
+            try {
+                journalManager.get().journal(new TxnStart(txnId));
+            } catch (final JournalException e) {
+                LOG.error("Failed to create transaction. Error writing to Journal", e);
+            }
+        }
+
+        /*
+         * NOTE: we call intentionally increment the txn counter
+         *     to set the counter to 1 to represent the TxnStart
+         *     as that will not be done
+         *     by {@link JournalManager#journal(Loggable)} or
+         *     {@link Journal#writeToLog(loggable)}.
+         */
+        transactions.put(txnId, new TxnCounter().increment());
+        final Txn txn = new Txn(this, txnId);
+
+        // TODO(AR) ultimately we should be doing away with DBBroker#setCurrentTransaction
+        try(final DBBroker broker = pool.getBroker()) {
             broker.setCurrentTransaction(txn);
-            return txn;
-        });
+        } catch(final EXistException ee) {
+            LOG.fatal(ee.getMessage(), ee);
+            throw new RuntimeException(ee);
+        }
+
+        return txn;
     }
     
     /**
      * Commit a transaction.
      * 
-     * @param txn
-     * @throws TransactionException
+     * @param txn the transaction to commit.
+     *
+     * @throws TransactionException if the transaction could not be committed.
      */
     public void commit(final Txn txn) throws TransactionException {
+        Objects.requireNonNull(txn);
 
         if(txn instanceof Txn.ReusableTxn) {
             txn.commit();
@@ -131,25 +239,76 @@ public class TransactionManager implements BrokerPoolService {
             return;
         }
 
-        withLock(broker -> {
-            if(journalManager.isPresent()) {
-                try {
-                    journalManager.get().journalGroup(new TxnCommit(txn.getId()));
-                } catch(final JournalException e) {
-                    LOG.error("Failed to write commit record to journal: " + e.getMessage());
+        // CAS loop
+        try {
+            while (true) {
+                final int localState = state.get();
+
+                // can NOT commit transaction when shutdown!
+                if (localState == STATE_SHUTDOWN) {
+                    throwShutdownException();
+                }
+
+                // must NOT commit transaction when another thread is processing system tasks!
+                if (localState == STATE_SYSTEM) {
+                    final long thisThreadId = Thread.currentThread().getId();
+                    if (systemThreadId.compareAndSet(thisThreadId, thisThreadId)) {
+                        // our thread is executing system tasks, allow reentrancy from our thread!
+                        doCommitTransaction(txn);
+
+                        // done... exit CAS loop!
+                        return;
+
+                    } else {
+                        // spin whilst another thread executes the system tasks
+                        // sleep a small time to save CPU
+                        Thread.sleep(10);
+                        continue;
+                    }
+                }
+
+                // if we are have active transactions and are not preempted by another thread, commit transaction
+                if (localState > STATE_IDLE && state.compareAndSet(localState, localState - 1)) {
+                    doCommitTransaction(txn);
+
+                    // done... exit CAS loop!
+                    return;
                 }
             }
-
-            txn.signalCommit();
-            txn.releaseAll();
-            transactions.remove(txn.getId());
-            processSystemTasks();
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Committed transaction: " + txn.getId());
-            }
-        });
+        } catch (final InterruptedException e) {
+            // thrown by Thread.sleep
+            Thread.currentThread().interrupt();
+            //TODO(AR) API should be revised in future so that this is a TransactionException
+            throw new RuntimeException(e);
+        }
     }
-	
+
+    private void doCommitTransaction(final Txn txn) throws TransactionException {
+        if (journalManager.isPresent()) {
+            try {
+                journalManager.get().journalGroup(new TxnCommit(txn.getId()));
+            } catch (final JournalException e) {
+                throw new TransactionException("Failed to write commit record to journal: " + e.getMessage(), e);
+            }
+        }
+
+        txn.signalCommit();
+        txn.releaseAll();
+
+        transactions.remove(txn.getId());
+
+        processSystemTasks();
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Committed transaction: " + txn.getId());
+        }
+    }
+
+    /**
+     * Abort a transaction.
+     *
+     * @param txn the transaction to abort.
+     */
     public void abort(final Txn txn) {
         Objects.requireNonNull(txn);
 
@@ -158,27 +317,78 @@ public class TransactionManager implements BrokerPoolService {
             return;
         }
 
-        withLock(broker -> {
-            transactions.remove(txn.getId());
+        // CAS loop
+        try {
+            while (true) {
+                final int localState = state.get();
 
-            if(journalManager.isPresent()) {
-                try {
-                    journalManager.get().journalGroup(new TxnAbort(txn.getId()));
-                } catch(final JournalException e) {
-                    LOG.error("Failed to write abort record to journal: " + e.getMessage());
+                // can NOT abort transaction when shutdown!
+                if (localState == STATE_SHUTDOWN) {
+                    throwShutdownException();
+                }
+
+                // must NOT abort transaction when another thread is processing system tasks!
+                if (localState == STATE_SYSTEM) {
+                    final long thisThreadId = Thread.currentThread().getId();
+                    if (systemThreadId.compareAndSet(thisThreadId, thisThreadId)) {
+                        // our thread is executing system tasks, allow reentrancy from our thread!
+                        doAbortTransaction(txn);
+
+                        // done... exit CAS loop!
+                        return;
+
+                    } else {
+                        // spin whilst another thread executes the system tasks
+                        // sleep a small time to save CPU
+                        Thread.sleep(10);
+                        continue;
+                    }
+                }
+
+                // if we are have active transactions and are not preempted by another thread, abort transaction
+                if (localState > STATE_IDLE && state.compareAndSet(localState, localState - 1)) {
+                    doAbortTransaction(txn);
+
+                    // done... exit CAS loop!
+                    return;
                 }
             }
+        } catch (final InterruptedException e) {
+            // thrown by Thread.sleep
+            Thread.currentThread().interrupt();
+            //TODO(AR) API should be revised in future so that this is a TransactionException
+            throw new RuntimeException(e);
+        }
+    }
 
-            txn.signalAbort();
-            txn.releaseAll();
-            processSystemTasks();
-        });
+    private void doAbortTransaction(final Txn txn) {
+        if (journalManager.isPresent()) {
+            try {
+                journalManager.get().journalGroup(new TxnAbort(txn.getId()));
+            } catch (final JournalException e) {
+                //TODO(AR) should revise the API in future to throw TransactionException
+                LOG.error("Failed to write abort record to journal: " + e.getMessage(), e);
+            }
+        }
+
+        txn.signalAbort();
+        txn.releaseAll();
+
+        transactions.remove(txn.getId());
+
+        processSystemTasks();
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Aborted transaction: " + txn.getId());
+        }
     }
 
     /**
-     * Make sure the transaction has either been committed or aborted.
+     * Close the transaction.
      *
-     * @param txn
+     * Ensures that the transaction has either been committed or aborted.
+     *
+     * @param txn the transaction to close
      */
     public void close(final Txn txn) {
         Objects.requireNonNull(txn);
@@ -194,6 +404,7 @@ public class TransactionManager implements BrokerPoolService {
                 abort(txn);
             }
 
+            // TODO(AR) ultimately we should be doing away with DBBroker#setCurrentTransaction
             try(final DBBroker broker = pool.getBroker()) {
                 broker.setCurrentTransaction(null);
             } catch(final EXistException ee) {
@@ -209,37 +420,33 @@ public class TransactionManager implements BrokerPoolService {
     /**
      * Keep track of a new operation within the given transaction.
      *
-     * @param txnId
+     * @param txnId the transaction id.
      */
     public void trackOperation(final long txnId) {
-        final TxnCounter count = transactions.get(txnId);
-        // checkpoint operations do not create a transaction, so we have to check for null here
-        if (count != null) {
-            count.increment();
-        }
+        transactions.get(txnId).increment();
     }
 
-    public Lock getLock() {
-        return lock;
-    }
-    
     /**
      * Create a new checkpoint. A checkpoint fixes the current database state. All dirty pages
      * are written to disk and the journal file is cleaned.
      *
      * This method is called from
-     * {@link org.exist.storage.BrokerPool} within pre-defined periods. It
+     * {@link org.exist.storage.BrokerPool#sync(DBBroker, Sync)} within pre-defined periods. It
      * should not be called from somewhere else. The database needs to
      * be in a stable state (all transactions completed, no operations running).
      *
      * @param switchFiles Indicates whether a new journal file should be started
      *
-     * @throws TransactionException
+     * @throws TransactionException if an error occurs whilst writing the checkpoint.
      */
     public void checkpoint(final boolean switchFiles) throws TransactionException {
-	    final long txnId = nextTxnId++;
+        if (state.get() == STATE_SHUTDOWN) {
+            throwShutdownException();
+        }
+
         if(journalManager.isPresent()) {
             try {
+                final long txnId = nextTxnId.getAndIncrement();
                 journalManager.get().checkpoint(txnId, switchFiles);
             } catch(final JournalException e) {
                 throw new TransactionException(e.getMessage(), e);
@@ -248,7 +455,7 @@ public class TransactionManager implements BrokerPoolService {
     }
 
     /**
-     * @Deprecated This mixes concerns and should not be here.
+     * @deprecated This mixes concerns and should not be here!
      */
     @Deprecated
     public void reindex(final DBBroker broker) throws IOException {
@@ -265,94 +472,101 @@ public class TransactionManager implements BrokerPoolService {
 
     @Override
     public void shutdown() {
-        if(LOG.isDebugEnabled()) {
-            LOG.debug("Shutting down transaction manager. Uncommitted transactions: " + transactions.size());
-        }
-        final int uncommitted = uncommittedTransaction();
-        shutdown(uncommitted == 0);
-    }
+        try {
+            while (true) {
+                final int localState = state.get();
 
-    public void shutdown(final boolean checkpoint) {
-        final long txnId = nextTxnId++;
-        if(journalManager.isPresent()) {
-            journalManager.get().shutdown(txnId, checkpoint);
+                if (localState == STATE_SHUTDOWN) {
+                    // already shutdown!
+                    return;
+                }
+
+                // can NOT shutdown whilst system tasks are executing
+                if (localState == STATE_SYSTEM) {
+                    // spin whilst another thread executes the system tasks
+                    // sleep a small time to save CPU
+                    Thread.sleep(10);
+                    continue;
+                }
+
+                if (state.compareAndSet(localState, STATE_SHUTDOWN)) {
+                    // CAS above guarantees that only a single thread will ever enter this block once!
+
+                    final int uncommitted = uncommittedTransaction();
+                    final boolean checkpoint = uncommitted == 0;
+
+                    final long txnId = nextTxnId.getAndIncrement();
+                    if (journalManager.isPresent()) {
+                        journalManager.get().shutdown(txnId, checkpoint);
+                    }
+
+                    transactions.clear();
+
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Shutting down transaction manager. Uncommitted transactions: " + transactions.size());
+                    }
+
+                    // done... exit CAS loop!
+                    return;
+                }
+            }
+        } catch (final InterruptedException e) {
+            // thrown by Thread.sleep
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
         }
-        transactions.clear();
     }
 
     private int uncommittedTransaction() {
-        int count = 0;
-        if (transactions.isEmpty()) {
-            return count;
+        final Integer uncommittedCount = transactions.reduce(1000,
+                (txnId, txnCounter) -> {
+                    if (txnCounter.counter > 0) {
+                        LOG.warn("Found an uncommitted transaction with id " + txnId + ". Pending operations: " + txnCounter.counter);
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                },
+                (a, b) -> a + b
+        );
+
+        if (uncommittedCount == null) {
+           return 0;
         }
-        for (final Map.Entry<Long, TxnCounter> entry : transactions.entrySet()) {
-            if (entry.getValue().counter > 0) {
-                LOG.warn("Found an uncommitted transaction with id " + entry.getKey() + ". Pending operations: " + entry.getValue().counter);
-                count++;
-            }
-        }
-        if (count > 0) {
+
+        if (uncommittedCount > 0) {
             LOG.warn("There are uncommitted transactions. A recovery run may be triggered upon restart.");
         }
-        return count;
+
+        return uncommittedCount;
     }
 
     public void triggerSystemTask(final SystemTask task) {
-        withLock(broker -> {
-            systemTaskManager.triggerSystemTask(task);
-    	});
+        systemTaskManager.addSystemTask(task);
+        processSystemTasks();
     }
 
-    public void processSystemTasks() {
-        withLock(broker -> {
-           if(transactions.isEmpty()) {
-               systemTaskManager.processTasks();
-           }
-        });
-    }
-
-	public void debug(final PrintStream out) {
-		out.println("Active transactions: "+ transactions.size());
-	}
-
-    /**
-     * Run a consumer within a lock on the transaction manager.
-     * Make sure locks are acquired in the right order.
-     *
-     * @param lockedCn A consumer that must be run exclusively
-     *                 with respect to the TransactionManager
-     *                 instance
-     */
-    @GuardedBy("lock")
-    private void withLock(final Consumer<DBBroker> lockedCn) {
-        withLock(broker -> {
-            lockedCn.accept(broker);
-            return null;
-        });
-    }
-
-    /**
-     * Run a function within a lock on the transaction manager.
-     * Make sure locks are acquired in the right order.
-     *
-     * @param lockedFn A function that must be run exclusively
-     *                 with respect to the TransactionManager
-     *                 instance
-     *
-     * @return The result of lockedFn
-     */
-    @GuardedBy("lock")
-    private <T> T withLock(final Function<DBBroker, T> lockedFn) {
-        try(final DBBroker broker = pool.getBroker()) {
+    private void processSystemTasks() {
+        // no new transactions can begin, commit, or abort whilst processing system tasks
+        // only process system tasks if there are no active transactions, i.e. the state == IDLE
+        if (state.compareAndSet(STATE_IDLE, STATE_SYSTEM)) {
+            // CAS above guarantees that only a single thread will ever enter this block at once
             try {
-                lock.lock();
-                return lockedFn.apply(broker);
+                this.systemThreadId.set(Thread.currentThread().getId());
+
+                // we have to check that `transactions` is empty
+                // otherwise we might be in SYSTEM state but `abort` or `commit`
+                // functions are still finishing
+                if (transactions.isEmpty()) {
+                    systemTaskManager.processTasks();
+                }
+
             } finally {
-                lock.unlock();
+                this.systemThreadId.set(-1);
+
+                // restore IDLE state
+                state.set(STATE_IDLE);
             }
-        } catch (final EXistException e) {
-            LOG.error("Transaction manager failed to acquire broker for running system tasks");
-            return null;
         }
     }
 
@@ -361,10 +575,16 @@ public class TransactionManager implements BrokerPoolService {
      * This is used to determine if there are any uncommitted transactions
      * during shutdown.
      */
-    protected final static class TxnCounter {
-        int counter = 0;
-        public void increment() {
+    private static final class TxnCounter {
+        private long counter = 0;
+
+        public TxnCounter increment() {
             counter++;
+            return this;
+        }
+
+        public long getCount() {
+            return counter;
         }
     }
 }
