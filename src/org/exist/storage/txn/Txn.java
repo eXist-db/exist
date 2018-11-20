@@ -22,6 +22,7 @@ package org.exist.storage.txn;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.exist.Transaction;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
@@ -31,6 +32,7 @@ import org.exist.util.LockException;
  * @author wolf
  *
  */
+@NotThreadSafe
 public class Txn implements Transaction {
 
     public enum State { STARTED, ABORTED, COMMITTED, CLOSED }
