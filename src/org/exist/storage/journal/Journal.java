@@ -98,7 +98,7 @@ import static org.exist.util.ThreadUtils.newInstanceThread;
  */
 @ConfigurationClass("journal")
 //TODO: conf.xml refactoring <recovery> => <recovery><journal/></recovery>
-public final class Journal {
+public final class Journal implements Closeable {
     /**
      * Logger for this class
      */
@@ -187,13 +187,7 @@ public final class Journal {
      * the current output channel
      * Only valid after switchFiles() was called at least once!
      */
-    private SeekableByteChannel channel;
-
-    /**
-     * Syncing the journal is done by a background thread
-     */
-    private final FileSyncRunnable fileSyncRunnable;
-    private final Thread fileSyncThread;
+    private FileChannel channel;
 
     /**
      * latch used to synchronize writes to the channel
@@ -262,10 +256,6 @@ public final class Journal {
         this.pool = pool;
         this.fsJournalDir = directory.resolve("fs.journal");
         this.currentBuffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
-
-        this.fileSyncRunnable = new FileSyncRunnable(latch);
-        this.fileSyncThread = newInstanceThread(pool, "file-sync-thread", fileSyncRunnable);
-        fileSyncThread.start(); //this makes us to use class as a final only - no inheritance allowed
 
         this.syncOnCommit = pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SYNC_ON_COMMIT, DEFAULT_SYNC_ON_COMMIT);
         if (LOG.isDebugEnabled()) {
@@ -409,11 +399,18 @@ public final class Journal {
         if (inRecovery) {
             return;
         }
+
         flushBuffer();
-        if (forceSync || (fsync && syncOnCommit && currentLsn.compareTo(lastSyncLsn) > 0)) {
-            fileSyncRunnable.triggerSync();
-            lastSyncLsn = currentLsn;
+
+        try {
+            if (forceSync || (fsync && syncOnCommit && currentLsn.compareTo(lastSyncLsn) > 0)) {
+                sync();
+                lastSyncLsn = currentLsn;
+            }
+        } catch (final IOException e) {
+            LOG.error("Could not sync Journal to disk: " + e.getMessage(), e);
         }
+
         try {
             if (channel != null && channel.size() >= journalSizeLimit) {
                 pool.triggerCheckpoint();
@@ -421,6 +418,10 @@ public final class Journal {
         } catch (final IOException e) {
             LOG.warn("Failed to trigger checkpoint!", e);
         }
+    }
+
+    private void sync() throws IOException {
+        channel.force(true);
     }
 
     /**
@@ -541,11 +542,13 @@ public final class Journal {
         }
 
         synchronized (latch) {
-            close();
             try {
-                channel = Files.newByteChannel(file, CREATE_NEW, WRITE);
+                // close current file
+                close();
+
+                // open new file
+                channel = (FileChannel) Files.newByteChannel(file, CREATE_NEW, WRITE);
                 writeJournalHeader(channel);
-                fileSyncRunnable.setChannel((FileChannel) channel);
                 initialised = true;
             } catch (final IOException e) {
                 throw new LogException("Failed to open new journal: " + file.toAbsolutePath().toString(), e);
@@ -571,13 +574,15 @@ public final class Journal {
     /**
      * Close the journal.
      */
-    public void close() {
+    @Override
+    public void close() throws IOException {
         if (channel != null) {
             try {
-                channel.close();
+                sync();
             } catch (final IOException e) {
-                LOG.warn("Failed to close journal channel", e);
+                LOG.error(e.getMessage(), e);
             }
+            channel.close();
         }
     }
 
@@ -647,23 +652,23 @@ public final class Journal {
 
         if (!BrokerPool.FORCE_CORRUPTION) {
             if (checkpoint) {
-                LOG.info("Transaction journal cleanly shutting down with checkpoint...");
+                LOG.info("Shutting down Journal with checkpoint...");
                 try {
                     writeToLog(new Checkpoint(txnId));
                 } catch (final JournalException e) {
-                    LOG.error("An error occurred while closing the journal file: " + e.getMessage(), e);
+                    LOG.error("An error occurred whilst writing a checkpoint to the Journal: " + e.getMessage(), e);
                 }
             }
             flushBuffer();
         }
-        fileLock.release();
-        fileSyncRunnable.shutdown();
-        fileSyncThread.interrupt();
+
         try {
-            fileSyncThread.join();
-        } catch (final InterruptedException e) {
-            //Nothing to do
+            channel.close();
+        } catch (final IOException e) {
+            LOG.error("Unable to close Journal file: " + e.getMessage(), e);
         }
+        channel = null;
+        fileLock.release();
         currentBuffer = null;
     }
 
