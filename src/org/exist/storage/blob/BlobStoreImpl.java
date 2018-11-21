@@ -26,7 +26,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.backup.RawDataBackup;
+import org.exist.storage.journal.JournalException;
+import org.exist.storage.journal.JournalManager;
+import org.exist.storage.journal.LogEntryTypes;
+import org.exist.storage.journal.LogException;
 import org.exist.storage.txn.Txn;
+import org.exist.storage.txn.TxnListener;
 import org.exist.util.FileUtils;
 import org.exist.util.crypto.digest.DigestInputStream;
 import org.exist.util.crypto.digest.DigestType;
@@ -34,6 +39,7 @@ import org.exist.util.crypto.digest.MessageDigest;
 import org.exist.util.crypto.digest.StreamableDigest;
 
 import javax.annotation.Nullable;
+import java.io.FileNotFoundException;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,9 +48,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -56,6 +60,8 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.nio.file.StandardOpenOption.*;
+import static org.exist.storage.blob.BlobLoggable.LOG_STORE_BLOB_FILE;
+import static org.exist.storage.blob.BlobLoggable.LOG_UPDATE_BLOB_REF_COUNT;
 import static org.exist.storage.blob.BlobStoreImpl.BlobReference.*;
 import static org.exist.util.FileUtils.fileName;
 import static org.exist.util.HexEncoder.bytesToHex;
@@ -74,11 +80,16 @@ import static org.exist.util.ThreadUtils.newInstanceSubThreadGroup;
  * Removing a BLOB decrements its reference count, BLOBs are only removed when
  * their reference count reaches zero, the blob file itself is scheduled for deletion
  * and will only be removed when there are no active readers and its reference is zero.
+ * When the scheduled action for deleting a blob file is realised, if another thread
+ * has meanwhile added a BLOB to the BLOB store where its blob file has the same
+ * checksum, then the BLOB's reference count will have increased from zero,
+ * therefore the schedule will not delete this now again active blob file, we call
+ * this feature "recycling".
  *
  * The Blob Store is backed to disk by a persistent store file which
  * reflects the in-memory state of BlobStore.
  *
- * The persistent store file will grow for each unqiue blob added to
+ * The persistent store file will grow for each unique blob added to
  * the system, space is not reclaimed in the persistent file until
  * {@link #compactPersistentReferences(ByteBuffer, Path)} is called,
  * which typically only happens the next time the blob store is re-opened.
@@ -112,12 +123,79 @@ import static org.exist.util.ThreadUtils.newInstanceSubThreadGroup;
  * makes sure to only delete blob files which have a final
  * blobReferenceCount of zero.
  *
+ * For performance, writing to the persistent store file,
+ * removing staged blob files, and deleting blob files are all
+ * asynchronous actions. To ensure the ability to achieve a consistent
+ * state after a system crash, the BLOB Store writes entries to a
+ * Journal WAL (Write-Ahead-Log) which is flushed to disk before each state
+ * changing operation. If the system restarts after a crash, then a recovery
+ * process will be performed from the entries in the WAL.
+ *
+ * Journal and Recovery of the BLOB Store works as follows:
+ *
+ *  Add Blob:
+ *    Writes two journal entries:
+ *      * StoreBlobFile(blobId, stagedUuid)
+ *      * UpdateBlobReferenceCount(blobId, currentCount, newCount + 1)
+ *
+ *      On crash recovery, firstly:
+ *          the StoreBlobFile will either be:
+ *              1. undone, which copies the blob file from the blob store to to the staging area,
+ *              2. redone, which copies the blob file from the staging area to the blob store,
+ *              3. or both undone and redone.
+ *          This is possible because the blob file in the staging area is ONLY deleted after
+ *          a COMMIT and CHECKPOINT have been written to the Journal, which means
+ *          that the staged file is always available for recovery, and that no
+ *          crash recovery of the staged file itself is needed
+ *
+ *          Deletion of the staged
+ *          file happens on a best effort basis, any files which were not deleted due
+ *          to a system crash, will be deleted upon restart (after recovery) when
+ *          the Blob Store is next opened.
+ *
+ *      Secondly:
+ *          the BlobReferenceCount will either be undone, redone, or both.
+ *
+ *
+ *  Remove Blob:
+ *      Writes a single journal entry:
+ *        *  UpdateBlobReferenceCount(blobId, currentCount, currentCount - 1)
+ *
+ *      On crash recovery the BlobReferenceCount will either be undone, redone,
+ *      or both.
+ *
+ *      It is worth noting that the actual blob file on disk is only ever deleted
+ *      after a COMMIT and CHECKPOINT have been written to the Journal, and then
+ *      only when it has zero references and zero readers. As it is only
+ *      deleted after a CHECKPOINT, there is no need for any crash recovery of the
+ *      disk file itself.
+ *
+ *      Deletion of the blob file happens on a best effort basis, any files which
+ *      were not deleted due to a system crash, will be deleted upon restart
+ *      (after recovery) by the {@link #compactPersistentReferences(ByteBuffer, Path)}
+ *      process when the Blob Store is next opened.
+ *
+ *
  * @author Adam Retter <adam@evolvedbinary.com>
  */
 @ThreadSafe
 public class BlobStoreImpl implements BlobStore {
 
     private static final Logger LOG = LogManager.getLogger(BlobStoreImpl.class);
+
+    /**
+     * Maximum time to wait whilst trying add an
+     * item to the vacuum queue {@link #vacuumQueue}.
+     */
+    private static final long VACUUM_ENQUEUE_TIMEOUT = 5000;  // 5 seconds
+
+    /*
+     * Journal entry types
+     */
+    static {
+        LogEntryTypes.addEntryType(LOG_STORE_BLOB_FILE, StoreBlobFileLoggable::new);
+        LogEntryTypes.addEntryType(LOG_UPDATE_BLOB_REF_COUNT, UpdateBlobRefCountLoggable::new);
+    }
 
     /**
      * Length in bytes of the reference count.
@@ -138,6 +216,9 @@ public class BlobStoreImpl implements BlobStore {
      * File header - blob store version
      */
     public static final short BLOB_STORE_VERSION = 1;
+
+    private ByteBuffer buffer;
+    private SeekableByteChannel channel;
 
     /**
      * In-memory representation of the Blob Store.
@@ -163,8 +244,7 @@ public class BlobStoreImpl implements BlobStore {
      * Holds blob references which are scheduled to have their blob file
      * removed from the blob file store.
      */
-    private final PriorityBlockingQueue<Tuple2<BlobId, BlobReference>> vacuumQueue = new PriorityBlockingQueue<>(11,
-            (br1, br2) -> br2._2.readers.get() - br1._2.readers.get());
+    private final BlockingQueue<BlobVacuum.Request> vacuumQueue = new PriorityBlockingQueue<>();
 
     private final Database database;
     private final Path persistentFile;
@@ -177,10 +257,11 @@ public class BlobStoreImpl implements BlobStore {
      * Blob Store states.
      */
     private enum State {
-        CLOSED,
-        CLOSING,
+        OPENING,
         OPEN,
-        OPENING
+        RECOVERY,
+        CLOSING,
+        CLOSED
     }
 
     /**
@@ -220,27 +301,84 @@ public class BlobStoreImpl implements BlobStore {
 
     @Override
     public void open() throws IOException {
+        openBlobStore(false);
+
+        // thread group for the blob store
+        final ThreadGroup blobStoreThreadGroup = newInstanceSubThreadGroup(database, "blob-store");
+
+        // startup the persistent writer thread
+        this.persistentWriter = new PersistentWriter(persistQueue, buffer, channel,
+                this::abnormalPersistentWriterShutdown);
+        this.persistentWriterThread = new Thread(blobStoreThreadGroup, persistentWriter,
+                nameInstanceThread(database, "blob-store.persistent-writer"));
+        persistentWriterThread.start();
+
+        // startup the blob vacuum thread
+        this.blobVacuum = new BlobVacuum(vacuumQueue);
+        this.blobVacuumThread = new Thread(blobStoreThreadGroup, blobVacuum,
+                nameInstanceThread(database, "blob-store.vacuum"));
+        blobVacuumThread.start();
+
+        // we are now open!
+        state.set(State.OPEN);
+    }
+
+    @Override
+    public void openForRecovery() throws IOException {
+        openBlobStore(true);
+        state.set(State.RECOVERY);
+    }
+
+    /**
+     * Opens the BLOB Store's persistent store file,
+     * and prepares the staging area.
+     *
+     * @param forRecovery true if the Blob Store is being opened for crash recovery, false otherwise
+     *
+     * @throws IOException if an error occurs whilst opening the BLOB Store
+     */
+    private void openBlobStore(final boolean forRecovery) throws IOException {
         if (state.get() == State.OPEN) {
-            return;
+            if (forRecovery) {
+                throw new IOException("BlobStore is already open!");
+            } else {
+                return;
+            }
         }
 
         if (!state.compareAndSet(State.CLOSED, State.OPENING)) {
-            throw new IOException("BlobStore is not open");
+            throw new IOException("BlobStore is not closed");
         }
 
         // size the buffer to hold a complete entry
-        final ByteBuffer buffer = ByteBuffer.allocate(digestType.getDigestLengthBytes() + REFERENCE_COUNT_LEN);
-        SeekableByteChannel channel = null;
+        buffer = ByteBuffer.allocate(digestType.getDigestLengthBytes() + REFERENCE_COUNT_LEN);
         try {
             // open the dbx file
             if (Files.exists(persistentFile)) {
-                // compact existing blob store file and then open
-                this.references = compactPersistentReferences(buffer, persistentFile);
-                channel = Files.newByteChannel(persistentFile, WRITE);
+                if (!forRecovery) {
+                    // compact existing blob store file and then open
+                    this.references = compactPersistentReferences(buffer, persistentFile);
+                    channel = Files.newByteChannel(persistentFile, WRITE);
 
+                    /*
+                     * We are not recovering, so we can delete any staging area left over
+                     * from a previous running database instance
+                     */
+                    FileUtils.deleteQuietly(stagingDir);
+                } else {
+                    // recovery... so open the existing blob store file and just validate its header
+                    channel = Files.newByteChannel(persistentFile, WRITE, READ);
+                    validateFileHeader(buffer, persistentFile, channel);
+                }
             } else {
-                // open existing blob store file
-                this.references = new ConcurrentHashMap<>();
+                // open new blob store file
+                if (forRecovery) {
+                    // we are trying to recover, but there is no existing Blob Store!
+                    throw new FileNotFoundException("No Blob Store found at '"
+                            + persistentFile.toAbsolutePath().toString() + "' to recover!");
+                }
+
+                references = new ConcurrentHashMap<>();
                 channel = Files.newByteChannel(persistentFile, CREATE_NEW, WRITE);
                 writeFileHeader(buffer, channel);
             }
@@ -258,24 +396,129 @@ public class BlobStoreImpl implements BlobStore {
             state.set(State.CLOSED);
             throw e;
         }
+    }
 
-        // thread group for the blob store
-        final ThreadGroup blobStoreThreadGroup = newInstanceSubThreadGroup(database, "blob-store");
+    @Override
+    public void close() throws IOException {
+        // check the blob store is open
+        if (state.get() == State.CLOSED) {
+            return;
+        }
 
-        // startup the persistent writer thread
-        this.persistentWriter = new PersistentWriter(persistQueue, buffer, channel, this::abnormalPersistentWriterShutdown);
-        this.persistentWriterThread = new Thread(blobStoreThreadGroup, persistentWriter,
-                nameInstanceThread(database, "blob-store.persistent-writer"));
-        persistentWriterThread.start();
+        if (state.compareAndSet(State.OPEN, State.CLOSING)) {
 
-        // startup the blob vacuum thread
-        this.blobVacuum = new BlobVacuum();
-        this.blobVacuumThread = new Thread(blobStoreThreadGroup, blobVacuum,
-                nameInstanceThread(database, "blob-store.vacuum"));
-        blobVacuumThread.start();
+            // close up normally
+            normalClose();
 
-        // we are now open!
-        state.set(State.OPEN);
+        } else if (state.compareAndSet(State.RECOVERY, State.CLOSING)) {
+
+            // close up after recovery was attempted
+            closeAfterRecoveryAttempt();
+
+        } else {
+            throw new IOException("BlobStore is not open");
+        }
+    }
+
+    /**
+     * Closes the Blob Store.
+     *
+     * @throws IOException if an error occurs whilst closing the Blob Store
+     */
+    private void normalClose() throws IOException {
+        try {
+            // shutdown the persistent writer
+            if (persistentWriter != null) {
+                persistQueue.put(PersistentWriter.POISON_PILL);
+            }
+            persistentWriterThread.join();
+
+            // shutdown the vacuum
+            if (blobVacuum != null) {
+                blobVacuumThread.interrupt();
+            }
+            blobVacuumThread.join();
+        } catch (final InterruptedException e) {
+            // Restore the interrupted status
+            Thread.currentThread().interrupt();
+            throw new IOException(e);
+        } finally {
+            closeBlobStore();
+
+            // we are now closed!
+            state.set(State.CLOSED);
+        }
+    }
+
+    /**
+     * Closes the Blob Store after it was opened for Recovery.
+     */
+    private void closeAfterRecoveryAttempt() {
+        closeBlobStore();
+
+        // we are now closed!
+        state.set(State.CLOSED);
+    }
+
+    /**
+     * Closes the resources associated
+     * with the Blob Store persistent file.
+     *
+     * Clears the {@link #buffer} and closes the {@link #channel}.
+     */
+    private void closeBlobStore() {
+        if (buffer != null) {
+            buffer.clear();
+            buffer = null;
+        }
+
+        // close the file channel
+        if (channel != null) {
+            try {
+                channel.close();
+                channel = null;
+            } catch (final IOException e) {
+                // non-critical error
+                LOG.error("Error whilst closing blob.dbx: " + e.getMessage(), e);
+            }
+        }
+    }
+
+    /**
+     * Closes the BlobStore if the {@link #persistentWriter} has
+     * to shutdown due to abnormal circumstances.
+     *
+     * Only called when the Blob Store is in the {@link State#OPEN} state!
+     */
+    private void abnormalPersistentWriterShutdown() {
+        // check the blob store is open
+        if (state.get() == State.CLOSED) {
+            return;
+        }
+        if (!state.compareAndSet(State.OPEN, State.CLOSING)) {
+            return;
+        }
+
+        try {
+
+            // NOTE: persistent writer thread will join when this method finishes!
+
+            // shutdown the vacuum
+            if (blobVacuum != null) {
+                blobVacuumThread.interrupt();
+            }
+            blobVacuumThread.join();
+
+        } catch (final InterruptedException e) {
+            // Restore the interrupted status
+            Thread.currentThread().interrupt();
+            LOG.error(e.getMessage(), e);
+        } finally {
+            closeBlobStore();
+
+            // we are now closed!
+            state.set(State.CLOSED);
+        }
     }
 
     /**
@@ -338,7 +581,7 @@ public class BlobStoreImpl implements BlobStore {
 
         // cleanup any orphaned Blob files
         for (final BlobId orphanedBlobFileId : orphanedBlobFileIds) {
-            deleteBlob(orphanedBlobFileId, false);
+            deleteBlob(blobDir, orphanedBlobFileId, false);
         }
 
         // replace the persistent file with the new compact persistent file
@@ -379,7 +622,7 @@ public class BlobStoreImpl implements BlobStore {
     }
 
     /**
-     * Validates a file header.
+     * Validates the persistent file header.
      *
      * @param buffer a byte buffer to use
      * @param file the file containing the header.
@@ -424,7 +667,20 @@ public class BlobStoreImpl implements BlobStore {
             throw new IOException("Blob Store is not open!");
         }
 
+        // stage the BLOB file
         final Tuple3<Path, Long, MessageDigest> staged = stage(is);
+
+        final BlobVacuum.RequestDeleteStagedBlobFile requestDeleteStagedBlobFile =
+                new BlobVacuum.RequestDeleteStagedBlobFile(stagingDir, staged._1.getFileName().toString());
+
+        // register a callback to cleanup the staged BLOB file ONLY after commit+checkpoint
+        final JournalManager journalManager = database.getJournalManager().orElse(null);
+        if (journalManager != null) {
+            final DeleteStagedBlobFile cleanupStagedBlob = new DeleteStagedBlobFile(vacuumQueue, requestDeleteStagedBlobFile);
+            journalManager.listen(cleanupStagedBlob);
+            transaction.registerListener(cleanupStagedBlob);
+        }
+
         final BlobId blobId = new BlobId(staged._3.getValue());
 
         // if the blob entry does not exist, we exclusively compute it as STAGED.
@@ -434,8 +690,26 @@ public class BlobStoreImpl implements BlobStore {
             while (true) {
 
                 if (blobReference.count.compareAndSet(STAGED, PROMOTING)) {
-                    // we are the only thread that can be in this branch for the blobId
+                    // NOTE: we are the only thread that can be in this branch for the blobId
+
+                    // write journal entries to the WAL
+                    if (journalManager != null) {
+                        try {
+                            journalManager.journal(new StoreBlobFileLoggable(transaction.getId(), blobId, staged._1.getFileName().toString()));
+                            journalManager.journal(new UpdateBlobRefCountLoggable(transaction.getId(), blobId, 0, 1));
+                            journalManager.flush(true, true);   // force WAL entries to disk!
+                        } catch (final JournalException e) {
+                            references.remove(blobId);
+                            throw new IOException(e);
+                        }
+                    }
+
+                    // promote the staged blob
                     promote(staged);
+                    if (journalManager == null) {
+                        // no journal (or recovery)... so go ahead and schedule cleanup of the staged blob file
+                        enqueueVacuum(vacuumQueue, requestDeleteStagedBlobFile);
+                    }
 
                     // schedule disk persist of the new value
                     persistQueue.put(Tuple(blobId, blobReference, 1));
@@ -467,9 +741,21 @@ public class BlobStoreImpl implements BlobStore {
 
                 // only increment the blob reference if the blob is active!
                 if (count >= 0 && blobReference.count.compareAndSet(count, UPDATING_COUNT)) {
-                    // we are the only thread that can be in this branch for the blobId
+                    // NOTE: we are the only thread that can be in this branch for the blobId
 
                     final int newCount = count + 1;
+
+                    // write journal entries to the WAL
+                    if (journalManager != null) {
+                        try {
+                            journalManager.journal(new UpdateBlobRefCountLoggable(transaction.getId(), blobId, count, newCount));
+                            journalManager.flush(true, true);   // force WAL entries to disk!
+                        } catch (final JournalException e) {
+                            // restore the state of the blobReference first!
+                            blobReference.count.set(count);
+                            throw new IOException(e);
+                        }
+                    }
 
                     // persist the new value
                     persistQueue.put(Tuple(blobId, blobReference, newCount));
@@ -530,9 +816,11 @@ public class BlobStoreImpl implements BlobStore {
     public <T> T with(final Txn transaction, final BlobId blobId, final Function<Path, T> fnFile) throws IOException {
         final BlobFileLease blobFileLease = readLeaseBlobFile(transaction, blobId);
         try {
-            return fnFile.apply(blobFileLease.path);
+            return fnFile.apply(blobFileLease == null ? null : blobFileLease.path);
         } finally {
-            blobFileLease.release.run();  // MUST release the read lease!
+            if (blobFileLease != null) {
+                blobFileLease.release.run();  // MUST release the read lease!
+            }
         }
     }
 
@@ -586,7 +874,7 @@ public class BlobStoreImpl implements BlobStore {
 
                     // get the blob
                     final Path blobFile = blobDir.resolve(bytesToHex(blobId.getId()));
-                    return new BlobFileLease(blobFile, () -> blobReference.readers.decrementAndGet());
+                    return new BlobFileLease(blobFile, blobReference.readers::decrementAndGet);
                 }
             }
         } catch (final InterruptedException e) {
@@ -594,6 +882,31 @@ public class BlobStoreImpl implements BlobStore {
             Thread.currentThread().interrupt();
             throw new IOException(e);
         }
+    }
+
+    /**
+     * Gets the reference count for the Blob
+     *
+     * NOTE: this method is not thread-safe and should ONLY
+     * be used for testing, which is why this method is
+     * marked package-private!
+     *
+     * @param blobId The id of the blob
+     *
+     * @return the reference count, or null if the blob id is not in the references table.
+     *
+     * @throws IOException if the BlobStore is not open.
+     */
+    @Nullable Integer getReferenceCount(final BlobId blobId) throws IOException {
+        if (state.get() != State.OPEN) {
+            throw new IOException("Blob Store is not open!");
+        }
+
+        final BlobReference blobReference = references.get(blobId);
+        if (blobReference == null) {
+            return null;
+        }
+        return blobReference.count.get();
     }
 
     @Override
@@ -632,16 +945,42 @@ public class BlobStoreImpl implements BlobStore {
 
                 // only decrement the blob reference if the blob has more than zero references
                 if (count > 0 && blobReference.count.compareAndSet(count, UPDATING_COUNT)) {
-                    // we are the only thread that can be in this branch for the blobId
+                    // NOTE: we are the only thread that can be in this branch for the blobId
 
                     final int newCount = count - 1;
 
-                    // persist the new value
+                    // write journal entries to the WAL
+                    final JournalManager journalManager = database.getJournalManager().orElse(null);
+                    if (journalManager != null) {
+                        try {
+                            journalManager.journal(new UpdateBlobRefCountLoggable(transaction.getId(), blobId, count, newCount));
+                            journalManager.flush(true, true);   // force WAL entries to disk!
+                        } catch (final JournalException e) {
+                            // restore the state of the blobReference first!
+                            blobReference.count.set(count);
+                            throw new IOException(e);
+                        }
+                    }
+
+                    // schedule disk persist of the new value
                     persistQueue.put(Tuple(blobId, blobReference, newCount));
 
                     if (newCount == 0) {
                         // schedule blob file for vacuum.
-                        vacuumQueue.put(Tuple(blobId, blobReference));
+
+                        final BlobVacuum.RequestDeleteBlobFile requestDeleteBlobFile =
+                                new BlobVacuum.RequestDeleteBlobFile(references, blobDir, blobId, blobReference);
+
+                        if (journalManager != null) {
+                            // register a callback to schedule the BLOB file for vacuum ONLY after commit+checkpoint
+                            final ScheduleDeleteBlobFile scheduleDeleteBlobFile = new ScheduleDeleteBlobFile(
+                                    vacuumQueue, requestDeleteBlobFile);
+                            journalManager.listen(scheduleDeleteBlobFile);
+                            transaction.registerListener(scheduleDeleteBlobFile);
+                        } else {
+                            // no journal (or recovery)... so go ahead and schedule
+                            enqueueVacuum(vacuumQueue, requestDeleteBlobFile);
+                        }
                     }
 
                     // update memory with the new value, and release other spinning threads
@@ -698,66 +1037,148 @@ public class BlobStoreImpl implements BlobStore {
     }
 
     @Override
-    public void close() throws IOException {
-        // check the blob store is open
-        if (state.get() == State.CLOSED) {
-            return;
-        }
-        if (!state.compareAndSet(State.OPEN, State.CLOSING)) {
-            throw new IOException("BlobStore is not open");
-        }
-
+    public void redo(final BlobLoggable blobLoggable) throws LogException {
         try {
-            // shutdown the persistent writer
-            if (persistentWriter != null) {
-                persistQueue.put(PersistentWriter.POISON_PILL);
-            }
-            persistentWriterThread.join();
+            if (blobLoggable instanceof StoreBlobFileLoggable) {
+                final StoreBlobFileLoggable storeBlobFileLoggable = (StoreBlobFileLoggable) blobLoggable;
+                redoStoreBlobFile(storeBlobFileLoggable.getBlobId(), storeBlobFileLoggable.getStagedUuid());
 
-            // shutdown the vacuum
-            if (blobVacuum != null) {
-                blobVacuumThread.interrupt();
+            } else if (blobLoggable instanceof UpdateBlobRefCountLoggable) {
+                final UpdateBlobRefCountLoggable updateBlobRefCountLoggable = (UpdateBlobRefCountLoggable) blobLoggable;
+                updateBlogRefCount(updateBlobRefCountLoggable.getBlobId(), updateBlobRefCountLoggable.getNewCount());
             }
-            blobVacuumThread.join();
-        } catch (final InterruptedException e) {
-            // Restore the interrupted status
-            Thread.currentThread().interrupt();
-            throw new IOException(e);
-        } finally {
-            // we are now closed!
-            state.set(State.CLOSED);
+        } catch (final IOException e) {
+            throw new LogException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void undo(final BlobLoggable blobLoggable) throws LogException {
+        try {
+            if (blobLoggable instanceof StoreBlobFileLoggable) {
+                final StoreBlobFileLoggable storeBlobFileLoggable = (StoreBlobFileLoggable) blobLoggable;
+                undoStoreBlobFile(storeBlobFileLoggable.getBlobId(), storeBlobFileLoggable.getStagedUuid());
+
+            } else if (blobLoggable instanceof UpdateBlobRefCountLoggable) {
+                final UpdateBlobRefCountLoggable updateBlobRefCountLoggable = (UpdateBlobRefCountLoggable) blobLoggable;
+                updateBlogRefCount(updateBlobRefCountLoggable.getBlobId(), updateBlobRefCountLoggable.getCurrentCount());
+            }
+        } catch (final IOException e) {
+            throw new LogException(e.getMessage(), e);
         }
     }
 
     /**
-     * Closes the BlobStore if the {@link #persistentWriter} has
-     * to shutdown due to abnormal circumstances.
+     * Recovery - redo: Promotes the Staged Blob File after performing some checks.
+     *
+     * This is possible because the Staged Blob file is not
+     * removed until a checkpoint is written AFTER the transaction
+     * was committed.
+     *
+     * @param blobId the blobId
+     * @param stagedUuid The uuid of the staged blob file.
+     *
+     * @throws IOException if the staged blob file cannot be promoted
      */
-    private void abnormalPersistentWriterShutdown() {
-        // check the blob store is open
-        if (state.get() == State.CLOSED) {
-            return;
+    private void redoStoreBlobFile(final BlobId blobId, final String stagedUuid) throws IOException {
+        final Path stagedBlobFile = stagingDir.resolve(stagedUuid);
+
+        // check the staged file exists
+        if (!Files.exists(stagedBlobFile)) {
+            throw new IOException("Staged Blob File does not exist: " + stagedBlobFile.toAbsolutePath());
         }
-        if (!state.compareAndSet(State.OPEN, State.CLOSING)) {
-            return;
+
+        // check the staged file has the correct checksum
+        final StreamableDigest streamableDigest = digestType.newStreamableDigest();
+        FileUtils.digest(stagedBlobFile, streamableDigest);
+        final String blobFilename = bytesToHex(blobId.getId());
+        if (!Arrays.equals(blobId.getId(), streamableDigest.getMessageDigest())) {
+            throw new IOException("Staged Blob File checksum '"
+                    + bytesToHex(streamableDigest.getMessageDigest()) + "', does not match checksum of blobId ''"
+                    + blobFilename + "'");
         }
 
-        try {
+        final Path blobFile = blobDir.resolve(blobFilename);
 
-            // NOTE: persistent writer thread will join when this method finished!
+        Files.copy(stagedBlobFile, blobFile, REPLACE_EXISTING);
+    }
 
-            // shutdown the vacuum
-            if (blobVacuum != null) {
-                blobVacuumThread.interrupt();
+    /**
+     * Recovery - undo: Demotes the Blob File back to the staging area after performing some checks.
+     *
+     * @param blobId the blobId
+     * @param stagedUuid The uuid of the staged blob file.
+     *
+     * @throws IOException if the blob file cannot be demoted to the staging area
+     */
+    private void undoStoreBlobFile(final BlobId blobId, final String stagedUuid) throws IOException {
+        final String blobFilename = bytesToHex(blobId.getId());
+        final Path blobFile = blobDir.resolve(blobFilename);
+
+        // check the blob file exists
+        if (!Files.exists(blobFile)) {
+            throw new IOException("Blob File does not exist: " + blobFile.toAbsolutePath());
+        }
+
+        final Path stagedBlobFile = stagingDir.resolve(stagedUuid);
+
+        Files.copy(blobFile, stagedBlobFile, REPLACE_EXISTING);
+    }
+
+    /**
+     * Recovery - redo/undo: sets the reference count of a blob.
+     *
+     * @param blobId the blobId
+     * @param count The reference count to set.
+     *
+     * @throws IOException if the blob's reference count cannot be set
+     */
+    private void updateBlogRefCount(final BlobId blobId, final int count) throws IOException {
+        buffer.clear();
+        buffer.limit(digestType.getDigestLengthBytes());  // we are only going to read the BlobIds
+
+        // start immediately after the file header
+        channel.position(BLOB_STORE_HEADER_LEN);
+
+        boolean updatedCount = false;
+
+        while (channel.read(buffer) > 0) {
+            buffer.flip();
+            final byte[] id = new byte[digestType.getDigestLengthBytes()];
+            buffer.get(id);
+            final BlobId readBlobId = new BlobId(id);
+
+            if (blobId.equals(readBlobId)) {
+
+                buffer.clear();
+                buffer.limit(REFERENCE_COUNT_LEN);
+                buffer.putInt(count);
+                buffer.flip();
+
+                channel.write(buffer);
+
+                updatedCount = true;
+
+                break;
             }
-            blobVacuumThread.join();
-        } catch (final InterruptedException e) {
-            // Restore the interrupted status
-            Thread.currentThread().interrupt();
-            LOG.error(e.getMessage(), e);
-        } finally {
-            // we are now closed!
-            state.set(State.CLOSED);
+
+            // skip over the reference count
+            channel.position(channel.position() + REFERENCE_COUNT_LEN);
+        }
+
+        /*
+         * If we could not update the count of an existing entry, append a new entry to the end of the file.
+         * We even include those entries with count = 0, so that their blob files will be cleared up by
+         * the next call to compactPersistentReferences
+         */
+        if (!updatedCount) {
+            buffer.clear();
+            buffer.put(blobId.getId());
+            buffer.putInt(count);
+
+            buffer.flip();
+
+            channel.write(buffer);
         }
     }
 
@@ -785,19 +1206,23 @@ public class BlobStoreImpl implements BlobStore {
     /**
      * Promotes a staged BLOB file to the BLOB store.
      *
-     * Moves a staged BLOB file in the Blob Store staging area to
+     * Copies a staged BLOB file in the Blob Store staging area to
      * the live Blob Store.
+     *
+     * The staged BLOB will be removed as part of the Journalling
+     * and Recovery.
      *
      * @param staged the staged BLOB.
      * @throws IOException if an error occurs whilst promoting the BLOB.
      */
     private void promote(final Tuple3<Path, Long, MessageDigest> staged) throws IOException {
-        Files.move(staged._1, blobDir.resolve(staged._3.toHexString()), ATOMIC_MOVE, REPLACE_EXISTING);
+        Files.copy(staged._1, blobDir.resolve(staged._3.toHexString()), REPLACE_EXISTING);
     }
 
     /**
      * Deletes a BLOB file from the Blob Store.
      *
+     * @param blobDir the blob directory.
      * @param blobId the identifier of the BLOB file to delete.
      * @param always true if we should always be able to delete the file,
      *     false if the file may not exist.
@@ -805,7 +1230,7 @@ public class BlobStoreImpl implements BlobStore {
      * @throws IOException if the file cannot be deleted, for example if {@code always}
      *                     is set to true and the BLOB does not exist.
      */
-    private void deleteBlob(final BlobId blobId, final boolean always) throws IOException {
+    private static void deleteBlob(final Path blobDir, final BlobId blobId, final boolean always) throws IOException {
         final Path blobFile = blobDir.resolve(bytesToHex(blobId.getId()));
         if (always) {
             Files.delete(blobFile);
@@ -930,6 +1355,113 @@ public class BlobStoreImpl implements BlobStore {
     }
 
     /**
+     * A Journal and Transaction listener which will execute an action only
+     * after the transaction has been completed (aborted or committed) and
+     * a checkpoint has been written.
+     */
+    private static abstract class CommitThenCheckpointListener implements TxnListener, JournalManager.JournalListener {
+        // written from single-thread, read from multiple threads
+        private volatile boolean committedOrAborted = false;
+
+        @Override
+        public void commit() {
+            committedOrAborted = true;
+        }
+
+        @Override
+        public void abort() {
+            committedOrAborted = true;
+        }
+
+        @Override
+        public boolean afterCheckpoint(final long txnId) {
+            if (!committedOrAborted) {
+                /*
+                 * we have not yet/committed or aborted
+                 * so keep receiving checkpoint events!
+                 */
+                return true;
+            }
+
+            execute();
+
+            return false;
+        }
+
+        /**
+         * Called after the transaction has completed
+         * and a checkpoint has been written.
+         */
+        public abstract void execute();
+    }
+
+    /**
+     * Deletes a staged Blob file once the transaction that promoted it has
+     * completed and a checkpoint has been written.
+     */
+    private static class DeleteStagedBlobFile extends CommitThenCheckpointListener {
+        private final BlockingQueue<BlobVacuum.Request> vacuumQueue;
+        private final BlobVacuum.RequestDeleteStagedBlobFile requestDeleteStagedBlobFile;
+
+        /**
+         * @param vacuumQueue the vacuum queue.
+         * @param requestDeleteStagedBlobFile the request to delete the staged blob file.
+         */
+        public DeleteStagedBlobFile(final BlockingQueue<BlobVacuum.Request> vacuumQueue, final BlobVacuum.RequestDeleteStagedBlobFile requestDeleteStagedBlobFile) {
+            this.vacuumQueue = vacuumQueue;
+            this.requestDeleteStagedBlobFile = requestDeleteStagedBlobFile;
+        }
+
+        @Override
+        public void execute() {
+            enqueueVacuum(vacuumQueue, requestDeleteStagedBlobFile);
+        }
+    }
+
+    /**
+     * Schedules a Blob File for deletion once the transaction that removed it
+     * has completed and a checkpoint has been written.
+     */
+    private static class ScheduleDeleteBlobFile extends CommitThenCheckpointListener {
+        private final BlockingQueue<BlobVacuum.Request> vacuumQueue;
+        private final BlobVacuum.RequestDeleteBlobFile requestDeleteBlobFile;
+
+        /**
+         * @param vacuumQueue the vacuum queue.
+         * @param requestDeleteBlobFile the request to delete the blob file.
+         */
+        public ScheduleDeleteBlobFile(final BlockingQueue<BlobVacuum.Request> vacuumQueue,
+                final BlobVacuum.RequestDeleteBlobFile requestDeleteBlobFile) {
+            this.vacuumQueue = vacuumQueue;
+            this.requestDeleteBlobFile = requestDeleteBlobFile;
+        }
+
+        @Override
+        public void execute() {
+            enqueueVacuum(vacuumQueue, requestDeleteBlobFile);
+        }
+    }
+
+    private static void enqueueVacuum(final BlockingQueue<BlobVacuum.Request> vacuumQueue,
+            final BlobVacuum.Request request) {
+        try {
+            /*
+             * We offer with timeout because vacuum
+             * is best effort rather than essential, anything
+             * we cannot vacuum will be cleaned up at next startup
+             * either as a part of crash recovery or compaction
+             */
+            if (!vacuumQueue.offer(request, VACUUM_ENQUEUE_TIMEOUT, TimeUnit.MILLISECONDS)) {
+                LOG.error("Timeout, could not not enqueue for vacuum: " + request);
+            }
+        } catch (final InterruptedException e) {
+            LOG.error("Interrupted, could not not enqueue for vacuum: " + request, e);
+            Thread.currentThread().interrupt();  // restore interrupted status!
+            return;
+        }
+    }
+
+    /**
      * The PersistentWriter is designed to be run
      * exclusively on its own single thread for a BlobStore
      * and is solely responsible for writing updates to the
@@ -964,7 +1496,6 @@ public class BlobStoreImpl implements BlobStore {
                     final Tuple3<BlobId, BlobReference, Integer> blobData = persistQueue.take();
                     if (blobData == POISON_PILL) {
                         // if we received the Poison Pill, we should shutdown!
-                        shutdown();
                         break;  // exit
                     }
 
@@ -975,11 +1506,9 @@ public class BlobStoreImpl implements BlobStore {
                 // Restore the interrupted status
                 LOG.error("PersistentWriter Shutting down due to interrupt: " + e.getMessage());
                 Thread.currentThread().interrupt();
-                shutdown();
                 abnormalShutdownCallback.run();
             } catch (final IOException e) {
                 LOG.error("PersistentWriter Shutting down, received: " + e.getMessage(), e);
-                shutdown();
                 abnormalShutdownCallback.run();
             }
         }
@@ -1014,26 +1543,6 @@ public class BlobStoreImpl implements BlobStore {
 
             channel.write(buffer);
         }
-
-        /**
-         * Cleans up the resources associated
-         * with the persistent writer.
-         *
-         * Closes the {@link #channel}.
-         */
-        private void shutdown() {
-            buffer.clear();
-
-            // close the file channel
-            if (channel != null) {
-                try {
-                    channel.close();
-                } catch (final IOException e) {
-                    // non-critical error
-                    LOG.error("Error whilst closing blob.dbx: " + e.getMessage(), e);
-                }
-            }
-        }
     }
 
     /**
@@ -1042,51 +1551,161 @@ public class BlobStoreImpl implements BlobStore {
      * and is solely responsible for deleting blob files from
      * the blob file store.
      */
-    private class BlobVacuum implements Runnable {
+    private static class BlobVacuum implements Runnable {
+        private final BlockingQueue<Request> vacuumQueue;
+
+        public BlobVacuum(final BlockingQueue<Request> vacuumQueue) {
+            this.vacuumQueue = vacuumQueue;
+        }
+
         @Override
         public void run() {
             try {
                 while (true) {
-                    Tuple2<BlobId, BlobReference> blobData = vacuumQueue.take();
-                    final BlobId blobId = blobData._1;
-                    final BlobReference blobReference = blobData._2;
+                    final Request request = vacuumQueue.take();
+                    if (!request.service()) {
+                        // if the request could not be serviced then enque it so we can try again in future
 
-                    // we can only delete if there are no references
-                    if (blobReference.count.compareAndSet(0, DELETING)) {
-
-                        // make sure there are no readers still actively reading
-                        if (blobReference.readers.get() == 0) {
-
-                            // no more readers can be taken whilst count == DELETING, so we can delete
-                            try {
-                                deleteBlob(blobId, true);
-                            } catch (final IOException ioe) {
-                                // non-critical error
-                                LOG.error("Unable to delete blob file: " + bytesToHex(blobId.getId()), ioe);
+                        try {
+                            if (!vacuumQueue.offer(request, VACUUM_ENQUEUE_TIMEOUT, TimeUnit.MILLISECONDS)) {
+                                LOG.error("Timeout, could not not enqueue for vacuum: " + request);
                             }
-
-                            // remove from shared map
-                            references.remove(blobId);
-
-                        } else {
-                            // reschedule the blob vacuum for later (when hopefully there are no active readers)
-                            vacuumQueue.put(blobData);
+                        } catch (final InterruptedException e) {
+                            LOG.error("Interrupted, could not not enqueue for vacuum: " + request, e);
+                            Thread.currentThread().interrupt();  // restore interrupted status!
+                            throw e;
                         }
-
-                        // NOTE: DELETING is the last state of a BlobReference#count -- there is no future change from this!
-
-                    } //else {
-                    // ignore this blob and continue as there are now again active references, so we don't need to dalete
-                    //}
+                    }
                 }
             } catch (final InterruptedException e) {
-                // expected when we are shutting down, only thrown by vacuumQueue.take.
+                // expected when we are shutting down, only thrown by vacuumQueue.take/offer.
                 // Any remaining objects in the queue which we have not yet vacuumed will
                 // be taken care of by {@link #compactPersistentReferences(ByteBuffer, Path)
                 // when the persistent blob store file is next opened
 
                 // Restore the interrupted status
                 Thread.currentThread().interrupt();
+            }
+        }
+
+        /**
+         * The type of Vacuum Request
+         */
+        interface Request extends Comparable<Request> {
+            /**
+             * @return true if the request was serviced,
+             *     false if the request should be re-scheduled.
+             */
+            boolean service();
+        }
+
+        /**
+         * Vacuum request for deleting a Blob File for a Blob that has been removed.
+         *
+         * The Blob File will only be deleted if it has no references and no active readers.
+         *
+         * As vacuuming happens asynchronously, a new Blob may have been added which
+         * has the same de-duplicated Blob File, causing an increase in references,
+         * in which case the Blob File will be recycled instead
+         * and will not be deleted here.
+         */
+        public static final class RequestDeleteBlobFile implements Request {
+            private final ConcurrentMap<BlobId, BlobReference> references;
+            private final Path blobDir;
+            private final BlobId blobId;
+            private final BlobReference blobReference;
+
+            public RequestDeleteBlobFile(final ConcurrentMap<BlobId, BlobReference> references,
+                    final Path blobDir, final BlobId blobId, final BlobReference blobReference) {
+                this.references = references;
+                this.blobDir = blobDir;
+                this.blobId = blobId;
+                this.blobReference = blobReference;
+            }
+
+            @Override
+            public String toString() {
+                return "RequestDeleteBlobFile(" + blobId + ")";
+            }
+
+            @Override
+            public int compareTo(final Request other) {
+                if (other instanceof RequestDeleteBlobFile) {
+                    return ((RequestDeleteBlobFile) other).blobReference.readers.get() - blobReference.readers.get();
+                } else {
+                    // This class has higher priority than other classes
+                    return 1;
+                }
+            }
+
+            @Override
+            public boolean service() {
+                // we can only delete the blob file itelf if there are no references
+                if (blobReference.count.compareAndSet(0, DELETING)) {
+
+                    // make sure there are no readers still actively reading the blob file
+                    if (blobReference.readers.get() == 0) {
+
+                        // no more readers can be taken whilst count == DELETING, so we can delete
+                        try {
+                            deleteBlob(blobDir, blobId, true);
+                        } catch (final IOException ioe) {
+                            // non-critical error
+                            LOG.error("Unable to delete blob file: " + bytesToHex(blobId.getId()), ioe);
+                        }
+
+                        // remove from shared map
+                        references.remove(blobId);
+
+                    } else {
+                        // reschedule the blob vacuum for later (when hopefully there are no active readers)
+                        return false;
+                    }
+
+                    // NOTE: DELETING is the last state of a BlobReference#count -- there is no coming back from this!
+
+                } else {
+                    /*
+                     * no-op: ignore this blob as it now again has active references,
+                     * so we don't need to delete it, instead it has been recycled :-)
+                     * Therefore we can just continue...
+                     */
+                }
+
+                // we serviced this request!
+                return true;
+            }
+        }
+
+        public static final class RequestDeleteStagedBlobFile implements Request {
+            private final Path stagingDir;
+            private final String stagedBlobUuid;
+
+            public RequestDeleteStagedBlobFile(final Path stagingDir, final String stagedBlobUuid) {
+                this.stagingDir = stagingDir;
+                this.stagedBlobUuid = stagedBlobUuid;
+            }
+
+            @Override
+            public String toString() {
+                return "RequestDeleteStagedBlobFile(" + stagedBlobUuid + ")";
+            }
+
+            @Override
+            public int compareTo(final Request other) {
+                if (other instanceof RequestDeleteStagedBlobFile) {
+                    return stagedBlobUuid.compareTo(((RequestDeleteStagedBlobFile)other).stagedBlobUuid);
+                } else {
+                    // This class has lower priority than other classes
+                    return -1;
+                }
+            }
+
+            @Override
+            public boolean service() {
+                final Path stagedBlobFile = stagingDir.resolve(stagedBlobUuid);
+                FileUtils.deleteQuietly(stagedBlobFile);
+                return true;
             }
         }
     }

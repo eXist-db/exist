@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BrokerPoolService;
 import org.exist.storage.BrokerPoolServiceException;
+import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.crypto.digest.DigestType;
 
@@ -59,8 +60,12 @@ public class BlobStoreImplService implements BlobStoreService, BrokerPoolService
     }
 
     @Override
-    public void prepare(final BrokerPool pool) throws BrokerPoolServiceException {
+    public void prepare(final BrokerPool pool) {
         this.blobStore = new BlobStoreImpl(pool, persistentFile, blobDir, DigestType.BLAKE_256);
+    }
+
+    @Override
+    public void startSystem(final DBBroker systemBroker) throws BrokerPoolServiceException {
         try {
             this.blobStore.open();
             LOG.info("Opened de-duplicating Blob Store v" + BlobStoreImpl.BLOB_STORE_VERSION + ". metadata=" + dataDir.relativize(persistentFile) + ", store=" + dataDir.relativize(blobDir) + "/");

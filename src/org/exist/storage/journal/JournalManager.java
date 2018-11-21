@@ -29,10 +29,10 @@ import org.exist.storage.recovery.RecoveryManager;
 import org.exist.util.Configuration;
 import org.exist.util.ReadOnlyException;
 
-import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Journal Manager just adds some light-weight
@@ -46,6 +46,8 @@ public class JournalManager implements BrokerPoolService {
     private Journal journal;
     private boolean journallingDisabled = false;
     private boolean initialized = false;
+
+    private final List<JournalListener> journalListeners = new CopyOnWriteArrayList<>();
 
     @Override
     public void configure(final Configuration configuration) {
@@ -123,6 +125,13 @@ public class JournalManager implements BrokerPoolService {
     public synchronized void checkpoint(final long transactionId, final boolean switchFiles) throws JournalException {
         if(!journallingDisabled) {
             journal.checkpoint(transactionId, switchFiles);
+
+            // notify each listener, de-registering those who want no further events
+            journalListeners.forEach(listener -> {
+                if(!listener.afterCheckpoint(transactionId)) {
+                    journalListeners.remove(listener);
+                }
+            });
         }
     }
 
@@ -164,4 +173,30 @@ public class JournalManager implements BrokerPoolService {
                 journal::setInRecovery, journal::getFiles, journal::getFile, journal::setCurrentFileNum,
                 () -> { journal.switchFiles(); return null; }, () -> { journal.clearBackupFiles(); return null; });
     }
+
+    /**
+     * Add a callback which can listen for Journal events.
+     *
+     * @param listener the journal listener
+     */
+    public void listen(final JournalListener listener) {
+        this.journalListeners.add(listener);
+    }
+
+    /**
+     * Callback for Journal events
+     */
+    public interface JournalListener {
+
+        /**
+         * Called after the journal has written a checkpoint
+         *
+         * @param txnId The id of the transaction written in the checkpoint
+         *
+         * @return true if the listener should continue to receive events, false
+         *    if the listener should be de-registered and receive no further events.
+         */
+        boolean afterCheckpoint(final long txnId);
+    }
+
 }

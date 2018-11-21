@@ -21,6 +21,7 @@
  */
 package org.exist.storage.recovery;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -34,6 +35,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.DBBroker;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.blob.BlobStore;
 import org.exist.storage.journal.*;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Checkpoint;
@@ -158,7 +160,22 @@ public class RecoveryManager {
                         try {
                             LOG.info("Running recovery...");
                             broker.getBrokerPool().reportStatus("Running recovery...");
-                            doRecovery(txnsStarted.size(), last, reader, lastLsn);
+
+
+                            try (final BlobStore blobStore = broker.getBrokerPool().getBlobStore()) {
+                                try {
+                                    blobStore.openForRecovery();
+                                } catch (final FileNotFoundException e) {
+                                    LOG.warn(e.getMessage(), e);
+                                } catch (final IOException e) {
+                                    throw new LogException("Unable to Open the Blob Store for Recovery: " + e.getMessage(), e);
+                                }
+
+                                doRecovery(txnsStarted.size(), last, reader, lastLsn);
+
+                            } catch (final IOException e) {
+                                LOG.error("Error whilst closing the Blob Store after recovery: " + e.getMessage(), e);
+                            }
                         } catch (final LogException e) {
                             // if restartOnError == true, we try to bring up the database even if there
                             // are errors. Otherwise, an exception is thrown, which will stop the db initialization

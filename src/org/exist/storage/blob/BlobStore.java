@@ -19,12 +19,14 @@ package org.exist.storage.blob;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.backup.RawDataBackup;
+import org.exist.storage.journal.LogException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
 
 import javax.annotation.Nullable;
 import java.io.Closeable;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -45,6 +47,17 @@ public interface BlobStore extends Closeable {
      * @throws IOException if the store cannot be opened.
      */
     void open() throws IOException;
+
+    /**
+     * Open's the BLOB Store for Recovery after a system crash.
+     *
+     * Should ONLY be called from {@link org.exist.storage.recovery.RecoveryManager#recover()}
+     * when stating up the database after a system crash.
+     *
+     * @throws FileNotFoundException if there is no existing blob.dbx to recover!
+     * @throws IOException if the store cannot be opened.
+     */
+    void openForRecovery() throws FileNotFoundException, IOException;
 
     /**
      * Add a BLOB to the BLOB Store.
@@ -135,4 +148,8 @@ public interface BlobStore extends Closeable {
      * @param backup the backup to write the Blob Store to.
      */
     void backupToArchive(final RawDataBackup backup) throws IOException;
+
+    void redo(final BlobLoggable blobLoggable) throws LogException;
+
+    void undo(final BlobLoggable blobLoggable) throws LogException;
 }
