@@ -964,6 +964,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         return inServiceMode;
     }
 
+    @Override
     public Optional<JournalManager> getJournalManager() {
         return journalManager;
     }
