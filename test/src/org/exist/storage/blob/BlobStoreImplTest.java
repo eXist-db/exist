@@ -35,10 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import static com.evolvedbinary.j8fu.Try.TaggedTryUnchecked;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
@@ -63,6 +60,7 @@ public class BlobStoreImplTest {
         final Database database = createNiceMock(Database.class);
         expect(database.getThreadGroup()).andReturn(Thread.currentThread().getThreadGroup());
         expect(database.getId()).andReturn("BlobStoreTest").times(2);
+        expect(database.getJournalManager()).andReturn(Optional.empty()).anyTimes();
         replay(database);
 
         return new BlobStoreImpl(database, blobDbx, blobDir, DIGEST_TYPE);
