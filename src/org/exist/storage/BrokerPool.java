@@ -22,6 +22,7 @@ package org.exist.storage;
 import com.evolvedbinary.j8fu.fsm.AtomicFSM;
 import com.evolvedbinary.j8fu.fsm.FSM;
 import net.jcip.annotations.GuardedBy;
+import net.jcip.annotations.NotThreadSafe;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -1409,16 +1410,25 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     /**
      * Executes a waiting cache synchronization for the database instance.
      *
+     * NOTE: This method should not be called concurrently from multiple threads.
+     *
      * @param broker    A broker responsible for executing the job
      * @param syncEvent One of {@link org.exist.storage.sync.Sync}
      */
-    //TODO : rename as runSync ? executeSync ?
-    //TOUNDERSTAND (pb) : *not* synchronized, so... "executes" or, rather, "schedules" ? "executes" (WM)
-    //TOUNDERSTAND (pb) : why do we need a broker here ? Why not get and release one when we're done ?
-    // WM: the method will always be under control of the BrokerPool. It is guaranteed that no
-    // other brokers are active when it is called. That's why we don't need to synchronize here.
-    //TODO : make it protected ?
     public void sync(final DBBroker broker, final Sync syncEvent) {
+
+        /**
+         * Database Systems - The Complete Book (Second edition)
+         * § 17.4.1 The Undo/Redo Rules
+         *
+         * The constraints that an undo/redo logging system must follow are summarized by the following rule:
+         *     * UR1  Before modifying any database element X on disk because of changes
+         *            made by some transaction T, it is necessary that the update record
+         *            <T,X,v,w> appear on disk.
+         */
+        journalManager.get().flush(true, true);
+
+        // sync various DBX files
         broker.sync(syncEvent);
 
         //TODO : strange that it is set *after* the sunc method has been called.
