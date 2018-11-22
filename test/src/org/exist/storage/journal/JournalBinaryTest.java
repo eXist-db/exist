@@ -54,219 +54,219 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Adam Retter <adam@evolvedbinary.com>
  */
-public class JournalBinaryTest extends AbstractJournalTest {
+public class JournalBinaryTest extends AbstractJournalTest<String> {
 
     @Override
-    protected List<ExpectedLoggable> store_expected(final long storedTxnId, final String storedDbPath, final int offset) {
+    protected List<ExpectedLoggable> store_expected(final TxnDoc<String> stored, final int offset) {
         final int docId = FIRST_USABLE_DOC_ID + offset;
 
         return Arrays.asList(
-                Start(storedTxnId),
-                CreateBinary(storedTxnId, storedDbPath),
-                CollectionNextDocId(storedTxnId, 1, docId),
-                CollectionCreateDoc(storedTxnId, 1, docId, storedDbPath),
-                Commit(storedTxnId)
+                Start(stored.transactionId),
+                CreateBinary(stored.transactionId, stored.docLocation),
+                CollectionNextDocId(stored.transactionId, 1, docId),
+                CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation),
+                Commit(stored.transactionId)
         );
     }
 
 
     @Override
-    protected List<ExpectedLoggable> storeWithoutCommit_expected(final long storedTxnId, final String storedDbPath) {
+    protected List<ExpectedLoggable> storeWithoutCommit_expected(final TxnDoc<String> stored) {
         final int docId = FIRST_USABLE_DOC_ID + 0;
 
         return Arrays.asList(
-                Start(storedTxnId),
-                CreateBinary(storedTxnId, storedDbPath),
-                CollectionNextDocId(storedTxnId, 1, docId),
-                CollectionCreateDoc(storedTxnId, 1, docId, storedDbPath)
+                Start(stored.transactionId),
+                CreateBinary(stored.transactionId, stored.docLocation),
+                CollectionNextDocId(stored.transactionId, 1, docId),
+                CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> storeThenDelete_expected(final long storedTxnId, final String storedDbPath, final long deletedTxnId, final String deletedDbPath, final int offset) {
+    protected List<ExpectedLoggable> storeThenDelete_expected(final TxnDoc<String> stored, final TxnDoc<String> deleted, final int offset) {
         final int docId = FIRST_USABLE_DOC_ID + offset;
 
         return Arrays.asList(
-                Start(storedTxnId),
-                CreateBinary(storedTxnId, storedDbPath),
-                CollectionNextDocId(storedTxnId, 1, docId),
-                CollectionCreateDoc(storedTxnId, 1, docId, storedDbPath),
-                Commit(storedTxnId),
+                Start(stored.transactionId),
+                CreateBinary(stored.transactionId, stored.docLocation),
+                CollectionNextDocId(stored.transactionId, 1, docId),
+                CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation),
+                Commit(stored.transactionId),
 
-                Start(deletedTxnId),
-                DeleteBinary(deletedTxnId, deletedDbPath),
-                CollectionDeleteDoc(deletedTxnId, 1, docId, deletedDbPath),
-                Commit(deletedTxnId)
+                Start(deleted.transactionId),
+                DeleteBinary(deleted.transactionId, deleted.docLocation),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation),
+                Commit(deleted.transactionId)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> storeWithoutCommitThenDelete_expected(final long storedTxnId, final String storedDbPath, final long deletedTxnId, final String deletedDbPath) {
+    protected List<ExpectedLoggable> storeWithoutCommitThenDelete_expected(final TxnDoc<String> stored, final TxnDoc<String> deleted) {
         final int docId = FIRST_USABLE_DOC_ID + 0;
         return Arrays.asList(
-                Start(storedTxnId),
-                CreateBinary(storedTxnId, storedDbPath),
-                CollectionNextDocId(storedTxnId, 1, docId),
-                CollectionCreateDoc(storedTxnId, 1, docId, storedDbPath),
+                Start(stored.transactionId),
+                CreateBinary(stored.transactionId, stored.docLocation),
+                CollectionNextDocId(stored.transactionId, 1, docId),
+                CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation),
 
-                Start(deletedTxnId),
-                DeleteBinary(deletedTxnId, deletedDbPath),
-                CollectionDeleteDoc(deletedTxnId, 1, docId, deletedDbPath),
-                Commit(deletedTxnId)
+                Start(deleted.transactionId),
+                DeleteBinary(deleted.transactionId, deleted.docLocation),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation),
+                Commit(deleted.transactionId)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> storeThenDeleteWithoutCommit_expected(final long storedTxnId, final String storedDbPath, final long deletedTxnId, final String deletedDbPath, final int offset) {
+    protected List<ExpectedLoggable> storeThenDeleteWithoutCommit_expected(final TxnDoc<String> stored, final TxnDoc<String> deleted, final int offset) {
         final int docId = FIRST_USABLE_DOC_ID + offset;
 
         return Arrays.asList(
-                Start(storedTxnId),
-                CreateBinary(storedTxnId, storedDbPath),
-                CollectionNextDocId(storedTxnId, 1, docId),
-                CollectionCreateDoc(storedTxnId, 1, docId, storedDbPath),
-                Commit(storedTxnId),
+                Start(stored.transactionId),
+                CreateBinary(stored.transactionId, stored.docLocation),
+                CollectionNextDocId(stored.transactionId, 1, docId),
+                CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation),
+                Commit(stored.transactionId),
 
-                Start(deletedTxnId),
-                DeleteBinary(deletedTxnId, deletedDbPath),
-                CollectionDeleteDoc(deletedTxnId, 1, docId, deletedDbPath)
+                Start(deleted.transactionId),
+                DeleteBinary(deleted.transactionId, deleted.docLocation),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> storeWithoutCommitThenDeleteWithoutCommit_expected(final long storedTxnId, final String storedDbPath, final long deletedTxnId, final String deletedDbPath) {
+    protected List<ExpectedLoggable> storeWithoutCommitThenDeleteWithoutCommit_expected(final TxnDoc<String> stored, final TxnDoc<String> deleted) {
         final int docId = FIRST_USABLE_DOC_ID + 0;
 
         return Arrays.asList(
-                Start(storedTxnId),
-                CreateBinary(storedTxnId, storedDbPath),
-                CollectionNextDocId(storedTxnId, 1, docId),
-                CollectionCreateDoc(storedTxnId, 1, docId, storedDbPath),
+                Start(stored.transactionId),
+                CreateBinary(stored.transactionId, stored.docLocation),
+                CollectionNextDocId(stored.transactionId, 1, docId),
+                CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation),
 
-                Start(deletedTxnId),
-                DeleteBinary(deletedTxnId, deletedDbPath),
-                CollectionDeleteDoc(deletedTxnId, 1, docId, deletedDbPath)
+                Start(deleted.transactionId),
+                DeleteBinary(deleted.transactionId, deleted.docLocation),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> delete_expected(final long deletedTxnId, final String deletedDbPath, final int offset) {
+    protected List<ExpectedLoggable> delete_expected(final TxnDoc<String> deleted, final int offset) {
         final int docId = FIRST_USABLE_DOC_ID + offset;
 
         return Arrays.asList(
-                Start(deletedTxnId),
-                DeleteBinary(deletedTxnId, deletedDbPath),
-                CollectionDeleteDoc(deletedTxnId, 1, docId, deletedDbPath),
-                Commit(deletedTxnId)
+                Start(deleted.transactionId),
+                DeleteBinary(deleted.transactionId, deleted.docLocation),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation),
+                Commit(deleted.transactionId)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> deleteWithoutCommit_expected(final long deletedTxnId, final String deletedDbPath, final int offset) {
+    protected List<ExpectedLoggable> deleteWithoutCommit_expected(final TxnDoc<String> deleted, final int offset) {
         final int docId = FIRST_USABLE_DOC_ID + offset;
 
         return Arrays.asList(
-                Start(deletedTxnId),
-                DeleteBinary(deletedTxnId, deletedDbPath),
-                CollectionDeleteDoc(deletedTxnId, 1, docId, deletedDbPath)
+                Start(deleted.transactionId),
+                DeleteBinary(deleted.transactionId, deleted.docLocation),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> replace_expected(final long replacedTxnId, final String replacedDbPath, final int offset, final boolean overridesStore) {
+    protected List<ExpectedLoggable> replace_expected(final TxnDoc<String> replaced, final int offset, final boolean overridesStore) {
         final int docId = FIRST_USABLE_DOC_ID + offset;
 
         return Arrays.asList(
-                Start(replacedTxnId),
-                CollectionDeleteDoc(replacedTxnId, 1, docId, replacedDbPath),
-                ReplaceBinary(replacedTxnId, replacedDbPath),
-                CollectionNextDocId(replacedTxnId, 1, docId + 1),
-                CollectionCreateDoc(replacedTxnId, 1, docId + 1, replacedDbPath),
-                Commit(replacedTxnId)
+                Start(replaced.transactionId),
+                CollectionDeleteDoc(replaced.transactionId, 1, docId, replaced.docLocation),
+                ReplaceBinary(replaced.transactionId, replaced.docLocation),
+                CollectionNextDocId(replaced.transactionId, 1, docId + 1),
+                CollectionCreateDoc(replaced.transactionId, 1, docId + 1, replaced.docLocation),
+                Commit(replaced.transactionId)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> replaceWithoutCommit_expected(final long replacedTxnId, final String replacedDbPath, final int offset) {
+    protected List<ExpectedLoggable> replaceWithoutCommit_expected(final TxnDoc<String> replaced, final int offset) {
         final int docId = FIRST_USABLE_DOC_ID + offset;
 
         return Arrays.asList(
-                Start(replacedTxnId),
-                CollectionDeleteDoc(replacedTxnId, 1, docId, replacedDbPath),
-                ReplaceBinary(replacedTxnId, replacedDbPath),
-                CollectionNextDocId(replacedTxnId, 1, docId + 1),
-                CollectionCreateDoc(replacedTxnId, 1, docId + 1, replacedDbPath)
+                Start(replaced.transactionId),
+                CollectionDeleteDoc(replaced.transactionId, 1, docId, replaced.docLocation),
+                ReplaceBinary(replaced.transactionId, replaced.docLocation),
+                CollectionNextDocId(replaced.transactionId, 1, docId + 1),
+                CollectionCreateDoc(replaced.transactionId, 1, docId + 1, replaced.docLocation)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> replaceThenDelete_expected(final long replacedTxnId, final String replacedDbPath, final long deletedTxnId, final String deletedDbPath, final int offset) {
+    protected List<ExpectedLoggable> replaceThenDelete_expected(final TxnDoc<String> replaced, final TxnDoc<String> deleted, final int offset) {
         final int docId = FIRST_USABLE_DOC_ID + offset;
 
         return Arrays.asList(
-                Start(replacedTxnId),
-                CollectionDeleteDoc(replacedTxnId, 1, docId, replacedDbPath),
-                ReplaceBinary(replacedTxnId, replacedDbPath),
-                CollectionNextDocId(replacedTxnId, 1, docId + 1),
-                CollectionCreateDoc(replacedTxnId, 1, docId + 1, replacedDbPath),
-                Commit(replacedTxnId),
+                Start(replaced.transactionId),
+                CollectionDeleteDoc(replaced.transactionId, 1, docId, replaced.docLocation),
+                ReplaceBinary(replaced.transactionId, replaced.docLocation),
+                CollectionNextDocId(replaced.transactionId, 1, docId + 1),
+                CollectionCreateDoc(replaced.transactionId, 1, docId + 1, replaced.docLocation),
+                Commit(replaced.transactionId),
 
-                Start(deletedTxnId),
-                DeleteBinary(deletedTxnId, deletedDbPath),
-                CollectionDeleteDoc(deletedTxnId, 1, docId + 1, deletedDbPath),
-                Commit(deletedTxnId)
+                Start(deleted.transactionId),
+                DeleteBinary(deleted.transactionId, deleted.docLocation),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId + 1, deleted.docLocation),
+                Commit(deleted.transactionId)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> replaceWithoutCommitThenDelete_expected(final long replacedTxnId, final String replacedDbPath, final long deletedTxnId, final String deletedDbPath, final int offset) {
+    protected List<ExpectedLoggable> replaceWithoutCommitThenDelete_expected(final TxnDoc<String> replaced, final TxnDoc<String> deleted, final int offset) {
         final int docId = FIRST_USABLE_DOC_ID + offset;
 
         return Arrays.asList(
-                Start(replacedTxnId),
-                CollectionDeleteDoc(replacedTxnId, 1, docId, replacedDbPath),
-                ReplaceBinary(replacedTxnId, replacedDbPath),
-                CollectionNextDocId(replacedTxnId, 1, docId + 1),
-                CollectionCreateDoc(replacedTxnId, 1, docId + 1, replacedDbPath),
+                Start(replaced.transactionId),
+                CollectionDeleteDoc(replaced.transactionId, 1, docId, replaced.docLocation),
+                ReplaceBinary(replaced.transactionId, replaced.docLocation),
+                CollectionNextDocId(replaced.transactionId, 1, docId + 1),
+                CollectionCreateDoc(replaced.transactionId, 1, docId + 1, replaced.docLocation),
 
-                Start(deletedTxnId),
-                DeleteBinary(deletedTxnId, deletedDbPath),
-                CollectionDeleteDoc(deletedTxnId, 1, docId + 1, deletedDbPath),
-                Commit(deletedTxnId)
+                Start(deleted.transactionId),
+                DeleteBinary(deleted.transactionId, deleted.docLocation),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId + 1, deleted.docLocation),
+                Commit(deleted.transactionId)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> replaceThenDeleteWithoutCommit_expected(final long replacedTxnId, final String replacedDbPath, final long deletedTxnId, final String deletedDbPath, final int offset, final boolean overridesStore) {
+    protected List<ExpectedLoggable> replaceThenDeleteWithoutCommit_expected(final TxnDoc<String> replaced, final TxnDoc<String> deleted, final int offset, final boolean overridesStore) {
         final int docId = FIRST_USABLE_DOC_ID + offset;
 
         return Arrays.asList(
-                Start(replacedTxnId),
-                CollectionDeleteDoc(replacedTxnId, 1, docId, replacedDbPath),
-                ReplaceBinary(replacedTxnId, replacedDbPath),
-                CollectionNextDocId(replacedTxnId, 1, docId + 1),
-                CollectionCreateDoc(replacedTxnId, 1, docId + 1, replacedDbPath),
-                Commit(replacedTxnId),
+                Start(replaced.transactionId),
+                CollectionDeleteDoc(replaced.transactionId, 1, docId, replaced.docLocation),
+                ReplaceBinary(replaced.transactionId, replaced.docLocation),
+                CollectionNextDocId(replaced.transactionId, 1, docId + 1),
+                CollectionCreateDoc(replaced.transactionId, 1, docId + 1, replaced.docLocation),
+                Commit(replaced.transactionId),
 
-                Start(deletedTxnId),
-                DeleteBinary(deletedTxnId, deletedDbPath),
-                CollectionDeleteDoc(deletedTxnId, 1, docId + 1, deletedDbPath)
+                Start(deleted.transactionId),
+                DeleteBinary(deleted.transactionId, deleted.docLocation),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId + 1, deleted.docLocation)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> replaceWithoutCommitThenDeleteWithoutCommit_expected(final long replacedTxnId, final String replacedDbPath, final long deletedTxnId, final String deletedDbPath, final int offset) {
+    protected List<ExpectedLoggable> replaceWithoutCommitThenDeleteWithoutCommit_expected(final TxnDoc<String> replaced, final TxnDoc<String> deleted, final int offset) {
         final int docId = FIRST_USABLE_DOC_ID + offset;
         return Arrays.asList(
-                Start(replacedTxnId),
-                CollectionDeleteDoc(replacedTxnId, 1, docId, replacedDbPath),
-                ReplaceBinary(replacedTxnId, replacedDbPath),
-                CollectionNextDocId(replacedTxnId, 1, docId + 1),
-                CollectionCreateDoc(replacedTxnId, 1, docId + 1, replacedDbPath),
+                Start(replaced.transactionId),
+                CollectionDeleteDoc(replaced.transactionId, 1, docId, replaced.docLocation),
+                ReplaceBinary(replaced.transactionId, replaced.docLocation),
+                CollectionNextDocId(replaced.transactionId, 1, docId + 1),
+                CollectionCreateDoc(replaced.transactionId, 1, docId + 1, replaced.docLocation),
 
-                Start(deletedTxnId),
-                DeleteBinary(deletedTxnId, deletedDbPath),
-                CollectionDeleteDoc(deletedTxnId, 1, docId + 1, deletedDbPath)
+                Start(deleted.transactionId),
+                DeleteBinary(deleted.transactionId, deleted.docLocation),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId + 1, deleted.docLocation)
         );
     }
 
@@ -281,7 +281,7 @@ public class JournalBinaryTest extends AbstractJournalTest {
     }
 
     @Override
-    protected XmldbURI storeAndVerify(final DBBroker broker, final Txn transaction, final Collection collection,
+    protected String storeAndVerify(final DBBroker broker, final Txn transaction, final Collection collection,
             final InputSource data, final String dbFilename) throws EXistException, PermissionDeniedException, IOException,
             TriggerException, LockException {
 
@@ -294,7 +294,7 @@ public class JournalBinaryTest extends AbstractJournalTest {
         assertNotNull(doc);
         assertEquals(Files.size(file), doc.getContentLength());
 
-        return collection.getURI().append(dbFilename);
+        return collection.getURI().append(dbFilename).getRawCollectionPath();
     }
 
     @Override
@@ -318,6 +318,17 @@ public class JournalBinaryTest extends AbstractJournalTest {
 
             assertEquals(expectedSize, cis.getByteCount());
         }
+    }
+
+    @Override
+    protected String delete(final DBBroker broker, final Txn transaction, final Collection collection,
+            final String dbFilename) throws PermissionDeniedException, LockException, IOException, TriggerException {
+        final DocumentImpl doc = collection.getDocument(broker, XmldbURI.create(dbFilename));
+        if(doc != null) {
+            collection.removeResource(transaction, broker, doc);
+        }
+
+        return doc.getURI().getRawCollectionPath();
     }
 
     private final static String FS_SUBDIR = "fs";
