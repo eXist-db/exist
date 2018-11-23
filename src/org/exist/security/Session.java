@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
+import org.exist.util.UUIDGenerator;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
