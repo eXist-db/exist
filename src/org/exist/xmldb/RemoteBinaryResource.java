@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.util.Properties;
 
 import org.apache.xmlrpc.client.XmlRpcClient;
+import org.exist.storage.blob.BlobId;
 import org.exist.util.EXistInputSource;
 import org.exist.util.Leasable;
 import org.exist.util.MimeType;
@@ -40,10 +41,11 @@ import javax.annotation.Nullable;
  */
 public class RemoteBinaryResource
         extends AbstractRemoteResource
-        implements BinaryResource {
+        implements EXistBinaryResource {
 
     private String type = null;
     private byte[] content = null;  // only used for binary results from an XQuery execution, where we have been sent the result
+    private BlobId blobId = null;
 
     public RemoteBinaryResource(final Leasable<XmlRpcClient>.Lease xmlRpcClientLease, final RemoteCollection parent, final XmldbURI documentName) throws XMLDBException {
         super(xmlRpcClientLease, parent, documentName, MimeType.BINARY_TYPE.getName());
@@ -119,6 +121,15 @@ public class RemoteBinaryResource
 
     @Override
     public void setDocType(final DocumentType doctype) throws XMLDBException {
+    }
+
+    @Override
+    public BlobId getBlobId() {
+        return blobId;
+    }
+
+    public void setBlobId(final BlobId blobId) {
+        this.blobId = blobId;
     }
 
     @Override

@@ -24,6 +24,7 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.blob.BlobId;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
 import org.exist.util.io.FastByteArrayInputStream;
@@ -46,7 +47,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 
-public class LocalBinaryResource extends AbstractEXistResource implements ExtendedResource, BinaryResource, EXistResource {
+public class LocalBinaryResource extends AbstractEXistResource implements ExtendedResource, EXistBinaryResource, EXistResource {
 
     protected InputSource inputSource = null;
     protected Path file = null;
@@ -61,6 +62,11 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
     @Override
     public String getResourceType() throws XMLDBException {
         return BinaryResource.RESOURCE_TYPE;
+    }
+
+    @Override
+    public BlobId getBlobId() throws XMLDBException {
+        return read((document, broker, transaction) -> ((BinaryDocument)document).getBlobId());
     }
 
     @Override
