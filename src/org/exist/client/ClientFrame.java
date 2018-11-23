@@ -1025,6 +1025,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
             final String collection = dialog.getCollection();
             final String backuptarget = dialog.getBackupTarget();
+            final boolean deduplicateBlobs = dialog.getDeduplicateBlobs();
 
             // DWES add check here?
             final Path target = Paths.get(backuptarget).normalize();
@@ -1049,8 +1050,9 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 final Backup backup = new Backup(
                         properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER),
                         properties.getProperty(InteractiveClient.PASSWORD, null), Paths.get(backuptarget),
-                        XmldbURI.xmldbUriFor(properties.getProperty(InteractiveClient.URI, "xmldb:exist://")
-                                + collection)
+                        XmldbURI.xmldbUriFor(properties.getProperty(InteractiveClient.URI, "xmldb:exist://") + collection),
+                        null,
+                        deduplicateBlobs
                 );
                 backup.backup(true, this);
             } catch (final XMLDBException | IOException | SAXException | URISyntaxException e) {

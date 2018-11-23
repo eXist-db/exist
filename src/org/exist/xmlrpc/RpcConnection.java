@@ -519,6 +519,9 @@ public class RpcConnection implements RpcAPI {
                 hash.put("mime-type", document.getMetadata().getMimeType());
                 hash.put("created", new Date(document.getMetadata().getCreated()));
                 hash.put("modified", new Date(document.getMetadata().getLastModified()));
+                if (document.getResourceType() == DocumentImpl.BINARY_FILE) {
+                    hash.put("blob-id", ((BinaryDocument)document).getBlobId().getId());
+                }
                 return hash;
             });
         } catch (final EXistException e) {

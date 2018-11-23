@@ -48,19 +48,23 @@ import javax.swing.*;
 import javax.xml.transform.OutputKeys;
 import java.awt.*;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Backup {
     private static final String EXIST_GENERATED_FILENAME_DOT_FILENAME = "_eXist_generated_backup_filename_dot_file_";
     private static final String EXIST_GENERATED_FILENAME_DOTDOT_FILENAME = "_eXist_generated_backup_filename_dotdot_file_";
 
-    private static final int currVersion = 1;
+    private static final int BACKUP_FORMAT_VERSION = 2;
+
+    private static final boolean DEFAULT_DEDUPLICATE_BLOBS_OPTION = false;
 
     private static final AtomicInteger backupThreadId = new AtomicInteger();
     private static final NamedThreadGroupFactory backupThreadGroupFactory = new NamedThreadGroupFactory("java-backup-tool");
@@ -71,6 +75,7 @@ public class Backup {
     private final XmldbURI rootCollection;
     private final String user;
     private final String pass;
+    private final boolean deduplicateBlobs;
 
     public Backup(final String user, final String pass, final Path target) {
         this(user, pass, target, XmldbURI.LOCAL_DB_URI);
@@ -81,7 +86,12 @@ public class Backup {
     }
 
     public Backup(final String user, final String pass, final Path target, final XmldbURI rootCollection,
-                  @Nullable final Properties properties) {
+            @Nullable final Properties properties) {
+        this(user, pass, target, rootCollection, properties, DEFAULT_DEDUPLICATE_BLOBS_OPTION);
+    }
+
+    public Backup(final String user, final String pass, final Path target, final XmldbURI rootCollection,
+            @Nullable final Properties properties, final boolean deduplicateBlobs) {
         this.user = user;
         this.pass = pass;
         this.target = target;
@@ -97,6 +107,7 @@ public class Backup {
             this.defaultOutputProperties.setProperty(OutputKeys.INDENT, properties.getProperty("indent", "no"));
         }
         this.contentsOutputProps.setProperty(OutputKeys.INDENT, "yes");
+        this.deduplicateBlobs = deduplicateBlobs;
     }
 
     public static String encode(final String enco) {
@@ -288,12 +299,13 @@ public class Backup {
             };
         }
 
+        final Set<String> seenBlobIds = new HashSet<>();
         try (final BackupWriter output = fWriter.apply(cname)) {
-            backup(current, output, dialog);
+            backup(seenBlobIds, current, output, dialog);
         }
     }
 
-    private void backup(final Collection current, final BackupWriter output, final BackupDialog dialog) throws XMLDBException, IOException, SAXException {
+    private void backup(final Set<String> seenBlobIds, final Collection current, final BackupWriter output, final BackupDialog dialog) throws XMLDBException, IOException, SAXException {
         if (current == null) {
             return;
         }
@@ -335,7 +347,8 @@ public class Backup {
         attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", current.getName());
         writeUnixStylePermissionAttributes(attr, currentPerms);
         attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", "" + new DateTimeValue(cur.getCreationTime()));
-        attr.addAttribute(Namespaces.EXIST_NS, "version", "version", "CDATA", String.valueOf(currVersion));
+        attr.addAttribute(Namespaces.EXIST_NS, "deduplicate-blobs", "deduplicate-blobs", "CDATA", Boolean.toString(deduplicateBlobs));
+        attr.addAttribute(Namespaces.EXIST_NS, "version", "version", "CDATA", String.valueOf(BACKUP_FORMAT_VERSION));
 
         serializer.startElement(Namespaces.EXIST_NS, "collection", "collection", attr);
 
@@ -376,23 +389,37 @@ public class Backup {
                     filename = EXIST_GENERATED_FILENAME_DOTDOT_FILENAME + i;
                 }
 
-                os = output.newEntry(filename);
-
                 if (resource instanceof ExtendedResource) {
-                    ((ExtendedResource) resource).getContentIntoAStream(os);
+                    if (deduplicateBlobs && resource instanceof EXistBinaryResource) {
+                        // only add distinct blobs to the Blob Store once!
+                        final String blobId = ((EXistBinaryResource)resource).getBlobId().toString();
+                        if (!seenBlobIds.contains(blobId)) {
+                            os = output.newBlobEntry(blobId);
+                            ((ExtendedResource) resource).getContentIntoAStream(os);
+                            output.closeEntry();
+
+                            seenBlobIds.add(blobId);
+                        }
+                    } else {
+                        os = output.newEntry(filename);
+                        ((ExtendedResource)resource).getContentIntoAStream(os);
+                        output.closeEntry();
+                    }
                 } else {
-                    writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
+                    os = output.newEntry(filename);
+                    writer = new BufferedWriter(new OutputStreamWriter(os, UTF_8));
 
                     // write resource to contentSerializer
-                    contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-                    contentSerializer.setOutput(writer, defaultOutputProperties);
-                    ((EXistResource) resource).setLexicalHandler(contentSerializer);
-                    ((XMLResource) resource).getContentAsSAX(contentSerializer);
-                    SerializerPool.getInstance().returnObject(contentSerializer);
+                    contentSerializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
+                    contentSerializer.setOutput( writer, defaultOutputProperties );
+                    ( (EXistResource)resource ).setLexicalHandler( contentSerializer );
+                    ( (XMLResource)resource ).getContentAsSAX( contentSerializer );
+                    SerializerPool.getInstance().returnObject( contentSerializer );
+
                     writer.flush();
+                    output.closeEntry();
                 }
-                output.closeEntry();
-                final EXistResource ris = (EXistResource) resource;
+                final EXistResource ris = (EXistResource)resource;
 
                 //store permissions
                 attr.clear();
@@ -429,7 +456,10 @@ public class Backup {
                             attr.addAttribute(Namespaces.EXIST_NS, "systemid", "systemid", "CDATA", ris.getDocType().getSystemId());
                         }
                     }
+                } else {
+                    attr.addAttribute( Namespaces.EXIST_NS, "blob-id", "blob-id", "CDATA", ((EXistBinaryResource)ris).getBlobId().toString());
                 }
+
                 serializer.startElement(Namespaces.EXIST_NS, "resource", "resource", attr);
                 if (perms[i] instanceof ACLPermission) {
                     writeACLPermission(serializer, (ACLPermission) perms[i]);
@@ -474,7 +504,7 @@ public class Backup {
                 continue;
             }
             output.newCollection(encode(URIUtils.urlDecodeUtf8(collection)));
-            backup(child, output, dialog);
+            backup(seenBlobIds, child, output, dialog);
             output.closeCollection();
         }
     }
