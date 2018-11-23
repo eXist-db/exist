@@ -210,7 +210,7 @@ public class BlobStoreImpl implements BlobStore {
     /**
      * File header - magic number
      */
-    private static final byte[] BLOB_STORE_MAGIC_NUMBER = {0x0E, 0x0D, 0x0B, 0x02};
+    static final byte[] BLOB_STORE_MAGIC_NUMBER = {0x0E, 0x0D, 0x0B, 0x02};
 
     /**
      * File header - blob store version
