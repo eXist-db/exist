@@ -47,6 +47,7 @@ public interface BackupDescriptor {
 
     EXistInputSource getInputSource(String describedItem);
 
+    EXistInputSource getBlobInputSource(String blobId);
     BackupDescriptor getChildBackupDescriptor(String describedItem);
 
     BackupDescriptor getBackupDescriptor(String describedItem);
