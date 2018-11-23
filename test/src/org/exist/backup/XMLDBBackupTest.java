@@ -35,6 +35,7 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmlunit.builder.DiffBuilder;
@@ -66,8 +67,10 @@ public class XMLDBBackupTest {
     @Parameterized.Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                { "local", XmldbURI.EMBEDDED_SERVER_URI.toString() },
-                { "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" }
+                { "local (classic)", XmldbURI.EMBEDDED_SERVER_URI.toString(), false },
+                { "remote (classic)", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc", false },
+                { "local (dedup)", XmldbURI.EMBEDDED_SERVER_URI.toString(), false },
+                { "remote (dedup)", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc", true },
         });
     }
 
@@ -77,8 +80,16 @@ public class XMLDBBackupTest {
     @Parameterized.Parameter(value = 1)
     public String baseUri;
 
+    @Parameterized.Parameter(value = 2)
+    public boolean deduplicateBlobs;
+
     private static final String DOC1_NAME = "doc1.xml";
-    private final String doc1Content = "<timestamp>" + System.currentTimeMillis() + "</timestamp>";
+    private final String doc1Content = "<timestamp>" + System.nanoTime() + "</timestamp>";
+
+    private static final String BIN_DOC1_NAME = "doc1.bin";
+    private final String binDoc1Content = Long.toString(System.nanoTime());
+    private static final String BIN_DOC2_NAME = "doc2.bin";
+    private final String binDoc2Content = Long.toString(System.nanoTime());
 
     private final String getBaseUri() {
         return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
@@ -116,7 +127,9 @@ public class XMLDBBackupTest {
         final Path backupFile = tempFolder.newFile(filename).toPath();
         final Backup backup = new Backup(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD,
                 backupFile,
-                collectionUri);
+                collectionUri,
+                null,
+                deduplicateBlobs);
         backup.backup(false, null);
         return backupFile;
     }
@@ -142,5 +155,13 @@ public class XMLDBBackupTest {
         final Resource doc1 = testCollection.createResource(DOC1_NAME, XMLResource.RESOURCE_TYPE);
         doc1.setContent(doc1Content);
         testCollection.storeResource(doc1);
+
+        final Resource binDoc1 = testCollection.createResource(BIN_DOC1_NAME, BinaryResource.RESOURCE_TYPE);
+        binDoc1.setContent(binDoc1Content);
+        testCollection.storeResource(binDoc1);
+
+        final Resource binDoc2 = testCollection.createResource(BIN_DOC2_NAME, BinaryResource.RESOURCE_TYPE);
+        binDoc2.setContent(binDoc2Content);
+        testCollection.storeResource(binDoc2);
     }
 }

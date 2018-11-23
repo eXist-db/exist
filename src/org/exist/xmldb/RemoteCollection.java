@@ -26,6 +26,7 @@ import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.ACEAider;
+import org.exist.storage.blob.BlobId;
 import org.exist.util.Compressor;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
@@ -419,6 +420,10 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
             r = new RemoteXMLResource(leasableXmlRpcClient.lease(), this, -1, -1, docUri, Optional.empty());
         } else {
             r = new RemoteBinaryResource(leasableXmlRpcClient.lease(), this, docUri);
+            if (hash.containsKey("blob-id")) {
+                final byte[] blobId = (byte[]) hash.get("blob-id");
+                ((RemoteBinaryResource) r).setBlobId(new BlobId(blobId));
+            }
         }
         r.setPermissions(perm);
         r.setContentLength(contentLen);

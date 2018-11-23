@@ -49,6 +49,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
     protected ZipFile archive;
     protected ZipEntry descriptor;
     protected String base;
+    protected final String blob = "blob/";
 
     public ZipArchiveBackupDescriptor(final Path fileArchive) throws IOException {
 
@@ -156,6 +157,18 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
     @Override
     public EXistInputSource getInputSource(final String describedItem) {
         final ZipEntry ze = archive.getEntry(base + describedItem);
+        EXistInputSource retval = null;
+
+        if ((ze != null) && !ze.isDirectory()) {
+            retval = new ZipEntryInputSource(archive, ze);
+        }
+
+        return retval;
+    }
+
+    @Override
+    public EXistInputSource getBlobInputSource(final String blobId) {
+        final ZipEntry ze = archive.getEntry(blob + blobId);
         EXistInputSource retval = null;
 
         if ((ze != null) && !ze.isDirectory()) {

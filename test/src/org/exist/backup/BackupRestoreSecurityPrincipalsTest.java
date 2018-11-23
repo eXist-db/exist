@@ -37,6 +37,7 @@ import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XmldbURI;
 import org.junit.*;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -102,7 +103,7 @@ public class BackupRestoreSecurityPrincipalsTest {
         backupFile = Files.createTempFile(BACKUP_FILE_PREFIX, BACKUP_FILE_SUFFIX);
         backupFile.toFile().deleteOnExit();
 
-        final Backup backup = new Backup("admin", "", backupFile);
+        final Backup backup = new Backup("admin", "", backupFile, XmldbURI.LOCAL_DB_URI, null, false);
         backup.backup(false, null);
 
         //reset database

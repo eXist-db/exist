@@ -150,11 +150,11 @@ public class Restore {
     private BackupDescriptor getBackupDescriptor(final Path f) throws IOException {
         final BackupDescriptor bd;
         if(Files.isDirectory(f)) {
-            bd = new FileSystemBackupDescriptor(f.resolve("db").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR));
+            bd = new FileSystemBackupDescriptor(f, f.resolve("db").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR));
         } else if(FileUtils.fileName(f).toLowerCase().endsWith(".zip")) {
             bd = new ZipArchiveBackupDescriptor(f);
         } else {
-            bd = new FileSystemBackupDescriptor(f);
+            bd = new FileSystemBackupDescriptor(f, f);
         }
         return bd;
     }
