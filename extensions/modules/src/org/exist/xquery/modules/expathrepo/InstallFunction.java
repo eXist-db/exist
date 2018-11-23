@@ -62,108 +62,106 @@ import org.expath.pkg.repo.tui.BatchUserInteraction;
  */
 public class InstallFunction extends BasicFunction {
 
-	private final static Logger logger = LogManager.getLogger(InstallFunction.class);
+    private final static Logger logger = LogManager.getLogger(InstallFunction.class);
 
     public final static FunctionSignature signatureInstall =
-		new FunctionSignature(
-			new QName("install", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
-			"Install package from repository.",
-			new SequenceType[] { new FunctionParameterSequenceType("pkgName", Type.STRING, Cardinality.EXACTLY_ONE, "package name")},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise"));
+            new FunctionSignature(
+                    new QName("install", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
+                    "Install package from repository.",
+                    new SequenceType[]{new FunctionParameterSequenceType("pkgName", Type.STRING, Cardinality.EXACTLY_ONE, "package name")},
+                    new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise"));
 
     public final static FunctionSignature signatureInstallFromDB =
-		new FunctionSignature(
-			new QName("install-from-db", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
-			"Install package stored in database.",
-			new SequenceType[] { new FunctionParameterSequenceType("path", Type.STRING, Cardinality.EXACTLY_ONE, "database path to the package archive (.xar file)")},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise"));
-    
+            new FunctionSignature(
+                    new QName("install-from-db", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
+                    "Install package stored in database.",
+                    new SequenceType[]{new FunctionParameterSequenceType("path", Type.STRING, Cardinality.EXACTLY_ONE, "database path to the package archive (.xar file)")},
+                    new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise"));
+
     public InstallFunction(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
+        super(context, signature);
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence)
-	throws XPathException {
-	Sequence removed = BooleanValue.FALSE;
-	boolean force = true;
-	UserInteractionStrategy interact = new BatchUserInteraction();
-	    String pkgOrPath = args[0].getStringValue();
-	    Optional<ExistRepository> repo = getContext().getRepository();
-	    try {
-		if (repo.isPresent()) {
-		    Repository parent_repo = repo.get().getParentRepo();
-		    Package pkg;
-		    if (isCalledAs("install")) {
-			// download .xar from a URI
-			URI uri = _getURI(pkgOrPath);
-			pkg = parent_repo.installPackage(uri, force, interact);
-			repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
-		    } else {
-				// .xar is stored as a binary resource
-				try(final LockedDocument lockedDoc = getBinaryDoc(pkgOrPath);) {
-					final DocumentImpl doc = lockedDoc.getDocument();
-					Path file = ((NativeBroker)context.getBroker()).getCollectionBinaryFileFsPath(doc.getURI());
-					LOG.debug("Installing file: " + file.toAbsolutePath().toString());
-					pkg = parent_repo.installPackage(new XarFileSource(file), force, interact);
-					repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
-				}
-		    }
-		    ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
-		    if (info != null && !info.getJars().isEmpty())
-			ClasspathHelper.updateClasspath(context.getBroker().getBrokerPool(), pkg);
-		    // TODO: expath libs do not provide a way to see if there were any XQuery modules installed at all
-		    context.getBroker().getBrokerPool().getXQueryPool().clear();
-		    removed = BooleanValue.TRUE;
+            throws XPathException {
+        Sequence removed = BooleanValue.FALSE;
+        boolean force = true;
+        UserInteractionStrategy interact = new BatchUserInteraction();
+        String pkgOrPath = args[0].getStringValue();
+        Optional<ExistRepository> repo = getContext().getRepository();
+        try {
+            if (repo.isPresent()) {
+                Repository parent_repo = repo.get().getParentRepo();
+                Package pkg;
+                if (isCalledAs("install")) {
+                    // download .xar from a URI
+                    URI uri = _getURI(pkgOrPath);
+                    pkg = parent_repo.installPackage(uri, force, interact);
+                    repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
                 } else {
-		    throw new XPathException("expath repository not available");
-		}
-            } catch (PackageException ex ) {
-                logger.error(ex.getMessage(), ex);
-		return removed;
-		// /TODO: _repo.removePackage seems to throw PackageException
-		//throw new XPathException("Problem installing package " + pkg + " in expath repository, check that eXist-db has access permissions to expath repository file directory  ", ex);
-	    } catch (XPathException xpe) {
-		logger.error(xpe.getMessage());
-		return removed;
-	    }
+                    // .xar is stored as a binary resource
+				    try(final LockedDocument lockedDoc = getBinaryDoc(pkgOrPath);) {
+					    final DocumentImpl doc = lockedDoc.getDocument();
+					    Path file = ((NativeBroker)context.getBroker()).getCollectionBinaryFileFsPath(doc.getURI());
+					    LOG.debug("Installing file: " + file.toAbsolutePath().toString());
+					    pkg = parent_repo.installPackage(new XarFileSource(file), force, interact);
+					    repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
+				    }
+                }
+                ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
+                if (info != null && !info.getJars().isEmpty())
+                    ClasspathHelper.updateClasspath(context.getBroker().getBrokerPool(), pkg);
+                // TODO: expath libs do not provide a way to see if there were any XQuery modules installed at all
+                context.getBroker().getBrokerPool().getXQueryPool().clear();
+                removed = BooleanValue.TRUE;
+            } else {
+                throw new XPathException("expath repository not available");
+            }
+        } catch (PackageException ex) {
+            logger.error(ex.getMessage(), ex);
             return removed;
+            // /TODO: _repo.removePackage seems to throw PackageException
+            //throw new XPathException("Problem installing package " + pkg + " in expath repository, check that eXist-db has access permissions to expath repository file directory  ", ex);
+        } catch (XPathException xpe) {
+            logger.error(xpe.getMessage());
+            return removed;
+        }
+        return removed;
     }
 
-    private URI _getURI(String s) throws XPathException
-    {
+    private URI _getURI(String s) throws XPathException {
         URI uri;
         try {
             uri = new URI(s);
+        } catch (URISyntaxException ex) {
+            throw new XPathException(this, EXPathErrorCode.EXPDY001, s + " is not a valid URI: " + ex.getMessage(), new StringValue(s), ex);
         }
-        catch ( URISyntaxException ex ) {
-        	throw new XPathException(this, EXPathErrorCode.EXPDY001, s + " is not a valid URI: " + ex.getMessage(), new StringValue(s), ex);
-        }
-        if ( uri.isAbsolute() ) {
+        if (uri.isAbsolute()) {
             return uri;
         } else {
-        	throw new XPathException(this, EXPathErrorCode.EXPDY001, s + " must be an absolute URI", new StringValue(s));
+            throw new XPathException(this, EXPathErrorCode.EXPDY001, s + " must be an absolute URI", new StringValue(s));
         }
     }
 
   private LockedDocument getBinaryDoc(final String path) throws XPathException {
-    try {
-      final XmldbURI uri = XmldbURI.createInternal(path);
-      final LockedDocument lockedDoc = context.getBroker().getXMLResource(uri, LockMode.READ_LOCK);
-      if (lockedDoc == null) {
-        throw new XPathException(this, EXPathErrorCode.EXPDY001,
-            path + " is not .xar resource",
-            new StringValue(path)
-        );
-      } else if (lockedDoc.getDocument().getResourceType() != DocumentImpl.BINARY_FILE) {
-        lockedDoc.close();
-        throw new XPathException(this, EXPathErrorCode.EXPDY001,
-            path + " is not a valid .xar, it's not a binary resource",
-            new StringValue(path)
-        );
+      try {
+          final XmldbURI uri = XmldbURI.createInternal(path);
+          final LockedDocument lockedDoc = context.getBroker().getXMLResource(uri, LockMode.READ_LOCK);
+          if (lockedDoc == null) {
+            throw new XPathException(this, EXPathErrorCode.EXPDY001,
+                path + " is not .xar resource",
+                new StringValue(path)
+            );
+          } else if (lockedDoc.getDocument().getResourceType() != DocumentImpl.BINARY_FILE) {
+            lockedDoc.close();
+            throw new XPathException(this, EXPathErrorCode.EXPDY001,
+                path + " is not a valid .xar, it's not a binary resource",
+                new StringValue(path)
+            );
+          }
+          return lockedDoc;
+      } catch (PermissionDeniedException e) {
+        throw new XPathException(this, EXPathErrorCode.EXPDY003, e.getMessage(), new StringValue(path), e);
       }
-      return lockedDoc;
-    } catch (PermissionDeniedException e) {
-      throw new XPathException(this, EXPathErrorCode.EXPDY003, e.getMessage(), new StringValue(path), e);
-    }
   }
 }
