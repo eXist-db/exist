@@ -33,6 +33,7 @@ import org.exist.storage.journal.LogException;
 import org.exist.storage.txn.Txn;
 import org.exist.storage.txn.TxnListener;
 import org.exist.util.FileUtils;
+import org.exist.util.UUIDGenerator;
 import org.exist.util.crypto.digest.DigestInputStream;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
@@ -1192,8 +1193,7 @@ public class BlobStoreImpl implements BlobStore {
      * @throws IOException if an error occurs whilst staging the BLOB.
      */
     private Tuple3<Path, Long, MessageDigest> stage(final InputStream is) throws IOException {
-        // TODO(AR) upgrade to com.fasterxml.uuid.java-uuid-generator
-        final Path stageFile = stagingDir.resolve(UUID.randomUUID().toString());
+        final Path stageFile = stagingDir.resolve(UUIDGenerator.getUUIDversion4());
         final CountingInputStream cis = new CountingInputStream(is);
         final StreamableDigest streamableDigest = digestType.newStreamableDigest();
         final DigestInputStream dis = new DigestInputStream(cis, streamableDigest);

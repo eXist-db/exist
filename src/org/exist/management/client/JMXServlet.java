@@ -34,7 +34,6 @@ import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-import java.util.UUID;
 import javax.management.*;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -49,6 +48,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
+import org.exist.util.UUIDGenerator;
 import org.exist.util.serializer.DOMSerializer;
 import org.w3c.dom.Element;
 
@@ -295,7 +295,7 @@ public class JMXServlet extends HttpServlet {
         if (!Files.exists(tokenFile) || token == null) {
 
             // Create random token
-            token = UUID.randomUUID().toString();
+            token = UUIDGenerator.getUUIDversion4();
 
             // Set value to properties
             props.setProperty(TOKEN_KEY, token);
