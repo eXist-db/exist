@@ -776,6 +776,72 @@ public class BlobStoreImpl implements BlobStore {
     }
 
     @Override
+    public BlobId copy(final Txn transaction, final BlobId blobId) throws IOException {
+        if (state.get() != State.OPEN) {
+            throw new IOException("Blob Store is not open!");
+        }
+
+        final BlobReference blobReference = references.get(blobId);
+        if (blobReference == null) {
+            return null;
+        }
+
+        // NOTE: that copy is simply an increment of the reference count!
+        try {
+            while (true) {
+
+                final int count = blobReference.count.get();
+
+                // guard against a concurrent #add or #remove
+                if (count == STAGED || count == PROMOTING || count == UPDATING_COUNT) {
+                    // spin whilst another thread promotes the blob, or updates the reference count
+                    // sleep a small time to save CPU
+                    Thread.sleep(10);
+                    continue;
+                }
+
+                // guard against a concurrent vacuum operation
+                if (count == DELETING) {
+                    return null;
+                }
+
+                // only increment the blob reference if the blob is active!
+                if (count >= 0 && blobReference.count.compareAndSet(count, UPDATING_COUNT)) {
+                    // NOTE: we are the only thread that can be in this branch for the blobId
+
+                    final int newCount = count + 1;
+
+                    // write journal entries to the WAL
+                    final JournalManager journalManager = database.getJournalManager().orElse(null);
+                    if (journalManager != null) {
+                        try {
+                            journalManager.journal(new UpdateBlobRefCountLoggable(transaction.getId(), blobId, count, newCount));
+                            journalManager.flush(true, true);   // force WAL entries to disk!
+                        } catch (final JournalException e) {
+                            // restore the state of the blobReference first!
+                            blobReference.count.set(count);
+                            throw new IOException(e);
+                        }
+                    }
+
+                    // persist the new value
+                    persistQueue.put(Tuple(blobId, blobReference, newCount));
+
+                    // update memory with the new value, and release other spinning threads
+                    blobReference.count.set(newCount);
+
+                    // done!
+                    return blobId;
+                }
+            }
+        } catch (final InterruptedException e) {
+            // thrown by persistQueue.put or Thread.sleep
+            Thread.currentThread().interrupt();
+            throw new IOException(e);
+        }
+    }
+
+    @Override
     @Nullable public InputStream get(final Txn transaction, final BlobId blobId) throws IOException {
         final BlobFileLease blobFileLease = readLeaseBlobFile(transaction, blobId);
         if (blobFileLease == null) {
