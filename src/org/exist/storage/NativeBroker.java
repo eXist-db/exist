@@ -72,6 +72,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.crypto.digest.DigestType;
+import org.exist.util.crypto.digest.MessageDigest;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
@@ -2058,6 +2059,13 @@ public class NativeBroker extends DBBroker {
     public long getBinaryResourceSize(final BinaryDocument blob)
             throws IOException {
         return blob.getContentLength();
+    }
+
+    @Override
+    public MessageDigest getBinaryResourceContentDigest(final Txn transaction, final BinaryDocument binaryDocument,
+        final DigestType digestType) throws IOException {
+        final BlobStore blobStore = pool.getBlobStore();
+        return blobStore.getDigest(transaction, binaryDocument.getBlobId(), digestType);
     }
 
     @Override
