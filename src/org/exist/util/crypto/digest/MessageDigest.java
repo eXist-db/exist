@@ -87,6 +87,6 @@ public class MessageDigest {
 
     @Override
     public String toString() {
-        return digestType +"{" + toHexString() + '}';
+        return digestType.getCommonNames()[0] + "{" + toHexString() + '}';
     }
 }

@@ -49,6 +49,8 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
+import org.exist.util.crypto.digest.DigestType;
+import org.exist.util.crypto.digest.MessageDigest;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Document;
@@ -689,6 +691,18 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     @Deprecated
     public abstract long getBinaryResourceSize(final BinaryDocument blob)
            throws IOException;
+
+    /**
+     * Get the Digest of the content of a Binary Document.
+     *
+     * @param transaction the database transaction
+     * @param binaryDocument the binary document
+     * @param digestType the type of the digest
+     *
+     * @return the message digest of the content of the Binary Document
+     */
+    public abstract MessageDigest getBinaryResourceContentDigest(final Txn transaction,
+            final BinaryDocument binaryDocument, final DigestType digestType) throws IOException;
     
     /**
      * Completely delete this binary document (descriptor and binary data).
