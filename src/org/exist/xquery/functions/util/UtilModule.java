@@ -115,6 +115,7 @@ public class UtilModule extends AbstractInternalModule {
             new FunctionDef(BinaryDoc.FS_BINARY_DOC, BinaryDoc.class),
             new FunctionDef(BinaryDoc.FS_BINARY_DOC_AVAILABLE, BinaryDoc.class),
             new FunctionDef(BinaryDoc.FS_IS_BINARY_DOC, BinaryDoc.class),
+            new FunctionDef(BinaryDoc.FS_BINARY_DOC_CONTENT_DIGEST, BinaryDoc.class),
             new FunctionDef(BinaryToString.signatures[0], BinaryToString.class),
             new FunctionDef(BinaryToString.signatures[1], BinaryToString.class),
             new FunctionDef(BinaryToString.signatures[2], BinaryToString.class),
