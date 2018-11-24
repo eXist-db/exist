@@ -67,6 +67,8 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
+import org.exist.util.crypto.digest.DigestType;
+import org.exist.util.crypto.digest.MessageDigest;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.util.serializer.SAXSerializer;
@@ -521,6 +523,10 @@ public class RpcConnection implements RpcAPI {
                 hash.put("modified", new Date(document.getMetadata().getLastModified()));
                 if (document.getResourceType() == DocumentImpl.BINARY_FILE) {
                     hash.put("blob-id", ((BinaryDocument)document).getBlobId().getId());
+
+                    final MessageDigest messageDigest = broker.getBinaryResourceContentDigest(transaction, (BinaryDocument)document, DigestType.BLAKE_256);
+                    hash.put("digest-algorithm", messageDigest.getDigestType().getCommonNames()[0]);
+                    hash.put("digest", messageDigest.getValue());
                 }
                 return hash;
             });
@@ -576,6 +582,27 @@ public class RpcConnection implements RpcAPI {
             }
             return desc;
         });
+    }
+
+    @Override
+    public Map<String, Object> getContentDigest(final String path, final String digestAlgorithm) throws EXistException, PermissionDeniedException {
+        try {
+            final DigestType digestType = DigestType.forCommonName(digestAlgorithm);
+            final MessageDigest messageDigest = this.<MessageDigest>readDocument(XmldbURI.xmldbUriFor(path)).apply((document, broker, transaction) -> {
+                if (document instanceof BinaryDocument) {
+                    return broker.getBinaryResourceContentDigest(transaction, (BinaryDocument) document, digestType);
+                } else {
+                    throw new EXistException("Only supported for binary documents");
+                }
+            });
+
+            final Map<String, Object> result = new HashMap<>();
+            result.put("digest-algorithm", messageDigest.getDigestType().getCommonNames()[0]);
+            result.put("digest", messageDigest.getValue());
+            return result;
+        } catch (final IllegalArgumentException | URISyntaxException e) {
+            throw new EXistException(e);
+        }
     }
 
     @Override

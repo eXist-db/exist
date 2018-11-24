@@ -27,6 +27,8 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.blob.BlobId;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
+import org.exist.util.crypto.digest.DigestType;
+import org.exist.util.crypto.digest.MessageDigest;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xquery.value.BinaryValue;
@@ -70,6 +72,12 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
     @Override
     public BlobId getBlobId() throws XMLDBException {
         return read((document, broker, transaction) -> ((BinaryDocument)document).getBlobId());
+    }
+
+    @Override
+    public MessageDigest getContentDigest(final DigestType digestType) throws XMLDBException {
+        return read((document, broker, transaction) ->
+                broker.getBinaryResourceContentDigest(transaction, (BinaryDocument)document, digestType));
     }
 
     @Override
