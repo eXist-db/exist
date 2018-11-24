@@ -72,6 +72,27 @@ public interface BlobStore extends Closeable {
     Tuple2<BlobId, Long> add(final Txn transaction, final InputStream is) throws IOException;
 
     /**
+     * Make a copy of a BLOB in the the BLOB Store.
+     *
+     * There is no requirements that an implementation actually make
+     * a physical copy of a BLOB, so long as it can provide COPY like
+     * semantics.
+     *
+     * This function exists as an optimisation opportunity for
+     * implementations to avoid having to call {@link #add(Txn, InputStream)}
+     * with the BLOB data to make a copy.
+     *
+     * @param transaction the current database transaction.
+     * @param blobId the id of the BLOB to copy.
+     *
+     * @return an identifier representing the copied blob,
+     *     or null if there is no such BLOB to copy.
+     *
+     * @throws IOException if the BLOB cannot be copied.
+     */
+    BlobId copy(final Txn transaction, final BlobId blobId) throws IOException;
+
+    /**
      * Get a BLOB from the BLOB Store.
      *
      * @param transaction the current database transaction.
