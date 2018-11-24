@@ -21,6 +21,8 @@
 package org.exist.xmldb;
 
 import org.exist.storage.blob.BlobId;
+import org.exist.util.crypto.digest.DigestType;
+import org.exist.util.crypto.digest.MessageDigest;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 
@@ -35,4 +37,20 @@ public interface EXistBinaryResource extends BinaryResource {
      * @return the id of the BLOB.
      */
     BlobId getBlobId() throws XMLDBException;
+
+    /**
+     * Get the length of the binary content.
+     *
+     * @return the length of the binary content.
+     */
+    long getContentLength() throws XMLDBException;
+
+    /**
+     * Get the digest of the BLOB content.
+     *
+     * @param digestType the message digest to use.
+     *
+     * @return the digest of the BLOB's content
+     */
+    MessageDigest getContentDigest(final DigestType digestType) throws XMLDBException;
 }
