@@ -20,6 +20,7 @@ package org.exist.storage.blob;
 import com.evolvedbinary.j8fu.Try;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.Database;
+import org.exist.storage.txn.Txn;
 import org.exist.util.FileUtils;
 import org.exist.util.crypto.digest.DigestInputStream;
 import org.exist.util.crypto.digest.DigestType;
@@ -290,8 +291,15 @@ public class BlobStoreImplTest {
         assertEquals(expectedBlobDbxLen, actualBlobDbxLen);
     }
 
+    /**
+     * A blind copy is where the same resource
+     * is added to the blob store twice, if the
+     * operator was aware of the blob store then
+     * they could call the more efficient
+     * {@link BlobStore#copy(Txn, BlobId)}.
+     */
     @Test
-    public void copy() throws IOException {
+    public void blindCopy() throws IOException {
         final Path blobDbx = temporaryFolder.getRoot().toPath().resolve("blob.dbx");
         final Path blobDir = temporaryFolder.newFolder("blob").toPath();
 
@@ -307,6 +315,78 @@ public class BlobStoreImplTest {
                 final Tuple2<BlobId, Long> copiedTestFileId = blobStore.add(null, src);
 
                 assertArrayEquals(testFile1Id.getId(), copiedTestFileId._1.getId());
+            }
+        }
+    }
+
+    @Test
+    public void copy() throws IOException {
+        final Path blobDbx = temporaryFolder.getRoot().toPath().resolve("blob.dbx");
+        final Path blobDir = temporaryFolder.newFolder("blob").toPath();
+
+        final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
+
+        try (final BlobStore blobStore = newBlobStore(blobDbx, blobDir)) {
+            blobStore.open();
+
+            // store
+            final BlobId testFile1Id = addAndVerify(blobStore, testFile1);
+
+            // copy
+            final BlobId copyBlobId = blobStore.copy(null, testFile1Id);
+
+            // check the two copies are identical
+            final Tuple2<byte[], MessageDigest> testFile1Data;
+            try (final InputStream testFile1Is = blobStore.get(null, testFile1Id)) {
+                testFile1Data = readAll(testFile1Is);
+            }
+            final Tuple2<byte[], MessageDigest> copyBlobData;
+            try (final InputStream copyBlobIs = blobStore.get(null, copyBlobId)) {
+                copyBlobData = readAll(copyBlobIs);
+            }
+
+            assertEquals(testFile1Data._2, copyBlobData._2);
+            assertArrayEquals(testFile1Data._1, copyBlobData._1);
+        }
+    }
+
+    @Test
+    public void copyRemove() throws IOException {
+        final Path blobDbx = temporaryFolder.getRoot().toPath().resolve("blob.dbx");
+        final Path blobDir = temporaryFolder.newFolder("blob").toPath();
+
+        final Tuple2<byte[], MessageDigest> testFile1 = generateTestFile();
+
+        try (final BlobStore blobStore = newBlobStore(blobDbx, blobDir)) {
+            blobStore.open();
+
+            // store
+            final BlobId testFile1Id = addAndVerify(blobStore, testFile1);
+
+            // copy
+            final BlobId copyBlobId = blobStore.copy(null, testFile1Id);
+
+            // assert that copies are identical... this is true for the deduplicating BLOB Store
+            assertEquals(testFile1Id, copyBlobId);
+
+            // remove the "original"
+            blobStore.remove(null, testFile1Id);
+
+            // assert that the copy is still present
+            final Tuple2<byte[], MessageDigest> copyBlobData;
+            try (final InputStream copyBlobIs = blobStore.get(null, copyBlobId)) {
+                assertNotNull(copyBlobIs);
+                copyBlobData = readAll(copyBlobIs);
+            }
+            assertEquals(testFile1._2, copyBlobData._2);
+            assertArrayEquals(testFile1._1, copyBlobData._1);
+
+            //remove the "copy"
+            blobStore.remove(null, copyBlobId);
+
+            // assert that the copy is no longer present
+            try (final InputStream copyBlobIs = blobStore.get(null, copyBlobId)) {
+                assertNull(copyBlobIs);
             }
         }
     }
