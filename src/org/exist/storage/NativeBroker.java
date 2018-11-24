@@ -2471,6 +2471,15 @@ public class NativeBroker extends DBBroker {
         }
     }
 
+    /**
+     * Creates a new Document object for the destination document
+     * - copies the nodes from the source document to the destination document
+     * - if no existing document in the destination:
+     *      - adds the destination document to the destination collection
+     *   else, switches the existing document object for the new document in the destination collection
+     *
+     *   asynchronously deletes the nodes of the old existing document
+     */
     private void doCopyDocument(final Txn transaction, final DocumentTrigger trigger,
             final DocumentImpl sourceDocument, final Collection targetCollection, final XmldbURI newDocName,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) final DocumentImpl oldDoc, final PreserveType preserve)
@@ -2500,10 +2509,7 @@ public class NativeBroker extends DBBroker {
                     copyResource_preserve(this, sourceDocument, newDoc, oldDoc != null);
                 }
 
-                try (final InputStream is = getBinaryResource((BinaryDocument) sourceDocument)) {
-                    storeBinaryResource(transaction, newDoc, is);
-                }
-
+                copyBinaryResource(transaction, (BinaryDocument)sourceDocument, newDoc);
                 newDocument = newDoc;
             } else {
                 final DocumentImpl newDoc;
@@ -2546,8 +2552,9 @@ public class NativeBroker extends DBBroker {
                     dropDomNodes(transaction, oldDoc);
 
                 } else {
-                    // no need to remove the bin file of the oldDstDoc, it will
-                    // have been overwritten already in the copy of the bin file
+                    // remove the blob of the old document
+                    final BlobStore blobStore = pool.getBlobStore();
+                    blobStore.remove(transaction, ((BinaryDocument)oldDoc).getBlobId());
                 }
 
                 // TODO(AR) do we need a freeId flag to control this?
@@ -2628,13 +2635,12 @@ public class NativeBroker extends DBBroker {
             LOG.debug("Copy took " + (System.currentTimeMillis() - start) + "ms.");
     }
 
-    private void copyBinaryResource(final Txn transaction, final BinaryDocument srcDoc, final BinaryDocument dstDoc,
-            final Date created, final Date lastModified, final PreserveType preserve)
-            throws IOException, LockException, TriggerException, PermissionDeniedException, EXistException {
-        try (final InputStream is = getBinaryResource(transaction, srcDoc)) {
-            dstDoc.getCollection().addBinaryResource(transaction, this, dstDoc, is, srcDoc.getMetadata().getMimeType(),
-                    -1, created, lastModified, preserve);
-        }
+    private void copyBinaryResource(final Txn transaction, final BinaryDocument srcDoc, final BinaryDocument dstDoc) throws IOException {
+        final BlobStore blobStore = pool.getBlobStore();
+        final BlobId dstBlobId = blobStore.copy(transaction, srcDoc.getBlobId());
+
+        dstDoc.setBlobId(dstBlobId);
+        dstDoc.setContentLength(srcDoc.getContentLength());
     }
 
 
