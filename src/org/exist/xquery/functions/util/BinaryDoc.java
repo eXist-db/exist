@@ -32,16 +32,15 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
+import org.exist.util.crypto.digest.DigestType;
+import org.exist.util.crypto.digest.MessageDigest;
+import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64BinaryDocument;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.util.UtilModule.functionSignature;
@@ -78,6 +77,27 @@ public class BinaryDoc extends BasicFunction {
             FS_PARAM_BINARY_RESOURCE
     );
 
+    private static final String FS_BINARY_DOC_CONTENT_DIGEST_NAME = "binary-doc-content-digest";
+    static final FunctionSignature FS_BINARY_DOC_CONTENT_DIGEST = functionSignature(
+            FS_BINARY_DOC_CONTENT_DIGEST_NAME,
+            "Gets the digest of the content of the resource identified by $binary-resource.",
+            returnsOpt(Type.HEX_BINARY, "the digest of the content of the Binary Resource"),
+            FS_PARAM_BINARY_RESOURCE,
+            param("algorithm", Type.STRING, "The name of the algorithm to use for calculating the digest. Supports: " + supportedAlgorithms())
+    );
+
+    private static String supportedAlgorithms() {
+        final StringBuilder builder = new StringBuilder();
+        for (final DigestType digestType : DigestType.values()) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append(digestType.getCommonNames()[0]);
+        }
+
+        return builder.toString();
+    }
+
     public BinaryDoc(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
@@ -86,7 +106,7 @@ public class BinaryDoc extends BasicFunction {
     public Sequence eval(final Sequence[] args, final Sequence contextSequence)
             throws XPathException {
 
-        final Sequence emptyParamReturnValue = isCalledAs(FS_BINARY_DOC_NAME) ? Sequence.EMPTY_SEQUENCE : BooleanValue.FALSE;
+        final Sequence emptyParamReturnValue = (isCalledAs(FS_BINARY_DOC_NAME) || isCalledAs(FS_BINARY_DOC_CONTENT_DIGEST_NAME)) ? Sequence.EMPTY_SEQUENCE : BooleanValue.FALSE;
         if (args[0].isEmpty()) {
             return emptyParamReturnValue;
         }
@@ -111,6 +131,26 @@ public class BinaryDoc extends BasicFunction {
                     transaction.commit();
 
                     return b64doc;
+                }
+            } else if (isCalledAs(FS_BINARY_DOC_CONTENT_DIGEST_NAME)) {
+                final String algorithm = args[1].getStringValue();
+                final DigestType digestType;
+                try {
+                    digestType = DigestType.forCommonName(algorithm);
+                } catch (final IllegalArgumentException e) {
+                    throw new XPathException(this, "Invalid algorithm: " + algorithm, e);
+                }
+
+                try (final Txn transaction = context.getBroker().getBrokerPool().getTransactionManager().beginTransaction()) {
+                    final BinaryDocument bin = (BinaryDocument) doc;
+                    final MessageDigest messageDigest = context.getBroker().getBinaryResourceContentDigest(transaction, bin, digestType);
+
+                    final InputStream is = new FastByteArrayInputStream(messageDigest.getValue());
+                    final Sequence result = BinaryValueFromInputStream.getInstance(context, new HexBinaryValueType(), is);
+
+                    transaction.commit();
+
+                    return result;
                 }
             } else {
                 return BooleanValue.TRUE;
