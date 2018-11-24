@@ -999,9 +999,6 @@ public class NativeBroker extends DBBroker {
     }
 
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.DBBroker#copyCollection(org.exist.storage.txn.Txn, org.exist.collections.Collection, org.exist.collections.Collection, org.exist.xmldb.XmldbURI)
-     */
     @Override
     public void copyCollection(final Txn transaction, final Collection collection, final Collection destination, final XmldbURI newName) throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException {
         if(isReadOnly()) {
@@ -2257,7 +2254,7 @@ public class NativeBroker extends DBBroker {
                 }
 
                 final XmldbURI newURI = destination.getURI().append(newName);
-                final XmldbURI oldUri = doc.getURI();
+//                final XmldbURI oldUri = doc.getURI();
 
                 final DocumentTrigger trigger = new DocumentTriggers(this, collection);
 
@@ -2302,7 +2299,7 @@ public class NativeBroker extends DBBroker {
      *   asynchronously deletes the nodes of the old existing document
      */
     private void doCopyDocument(final Txn transaction, final DocumentTrigger trigger,
-                                final DocumentImpl srcDoc, final Collection dstCol, final XmldbURI dstDocName)
+            final DocumentImpl srcDoc, final Collection dstCol, final XmldbURI dstDocName)
             throws TriggerException, LockException, PermissionDeniedException, IOException, ReadOnlyException, EXistException {
 
         // URI of the destination document in the database
@@ -2373,8 +2370,9 @@ public class NativeBroker extends DBBroker {
                     dropDomNodes(transaction, oldDstDoc);
 
                 } else {
-                    // no need to remove the bin file of the oldDstDoc, it will
-                    // have been overwritten already in the copy of the bin file
+                    // remove the blob of the old document
+                    final BlobStore blobStore = pool.getBlobStore();
+                    blobStore.remove(transaction, ((BinaryDocument)oldDstDoc).getBlobId());
                 }
 
                 // TODO(AR) do we need a freeId flag to control this?
@@ -2413,11 +2411,12 @@ public class NativeBroker extends DBBroker {
     }
 
     private void copyBinaryResource(final Txn transaction, final BinaryDocument srcDoc, final BinaryDocument dstDoc)
-            throws IOException, LockException, TriggerException, PermissionDeniedException, EXistException {
-        try (final InputStream is = getBinaryResource(transaction, srcDoc)) {
-            dstDoc.getCollection().addBinaryResource(transaction, this, dstDoc, is, srcDoc.getMetadata().getMimeType(),
-                    -1, null, null);
-        }
+            throws IOException {
+        final BlobStore blobStore = pool.getBlobStore();
+        final BlobId dstBlobId = blobStore.copy(transaction, srcDoc.getBlobId());
+
+        dstDoc.setBlobId(dstBlobId);
+        dstDoc.setContentLength(srcDoc.getContentLength());
     }
 
     /**
