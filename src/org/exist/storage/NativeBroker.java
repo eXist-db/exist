@@ -1144,60 +1144,11 @@ public class NativeBroker extends DBBroker {
                 LOG.debug("Copying resource: '" + child.getURI() + "'");
             }
 
-            //TODO The code below seems quite different to that in NativeBroker#copyResource presumably should be the same?
-
-
-            final XmldbURI newUri = destCollection._2.getURI().append(child.getFileURI());
-            trigger.beforeCopyDocument(this, transaction, child, newUri);
-
-            //are we overwriting an existing document?
-            final CollectionEntry oldDoc;
-            if(destCollection._2.hasDocument(this, child.getFileURI())) {
-                oldDoc = destCollection._2.getResourceEntry(this, child.getFileURI().toString());
-            } else {
-                oldDoc = null;
+            try {
+                doCopyDocument(transaction, trigger, child, destCollection._2, child.getFileURI());
+            } catch (final ReadOnlyException e) {
+                throw new IOException(e.getMessage(), e);
             }
-
-            DocumentImpl createdDoc;
-            if(child.getResourceType() == DocumentImpl.XML_FILE) {
-                //TODO : put a lock on newDoc ?
-                final DocumentImpl newDoc = new DocumentImpl(pool, destCollection._2, child.getFileURI());
-                newDoc.copyOf(child, false);
-                if(oldDoc != null) {
-                    //preserve permissions from existing doc we are replacing
-                    newDoc.setPermissions(oldDoc.getPermissions()); //TODO use newDoc.copyOf(oldDoc) ideally, but we cannot currently access oldDoc without READ access to it, which we may not have (and should not need for this)!
-                } else {
-                    //copy just the mode and acl of the permissions to the dest document
-                    final Permission srcPerm = child.getPermissions();
-                    final Permission destPerm = newDoc.getPermissions();
-                    copyModeAndAcl(srcPerm, destPerm);
-                }
-
-                newDoc.setDocId(getNextResourceId(transaction, destination));
-                copyXMLResource(transaction, child, newDoc);
-                storeXMLResource(transaction, newDoc);
-                destCollection._2.addDocument(transaction, this, newDoc);
-
-                createdDoc = newDoc;
-            } else {
-                final BinaryDocument newDoc = new BinaryDocument(pool, destCollection._2, child.getFileURI());
-                newDoc.copyOf(child, false);
-                if(oldDoc != null) {
-                    //preserve permissions from existing doc we are replacing
-                    newDoc.setPermissions(oldDoc.getPermissions()); //TODO use newDoc.copyOf(oldDoc) ideally, but we cannot currently access oldDoc without READ access to it, which we may not have (and should not need for this)!
-                }
-                newDoc.setDocId(getNextResourceId(transaction, destination));
-
-                try(final InputStream is = getBinaryResource((BinaryDocument) child)) {
-                    storeBinaryResource(transaction, newDoc, is);
-                }
-                storeXMLResource(transaction, newDoc);
-                destCollection._2.addDocument(transaction, this, newDoc);
-
-                createdDoc = newDoc;
-            }
-
-            trigger.afterCopyDocument(this, transaction, createdDoc, child.getURI());
         }
         saveCollection(transaction, destCollection._2);
 
@@ -2532,44 +2483,117 @@ public class NativeBroker extends DBBroker {
                     trigger.afterDeleteDocument(this, transaction, newURI);
                 }
 
-                trigger.beforeCopyDocument(this, transaction, doc, newURI);
+                doCopyDocument(transaction, trigger, doc, destination, newName);
 
-                DocumentImpl newDocument = null;
-                if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                    InputStream is = null;
-                    try {
-                        is = getBinaryResource((BinaryDocument) doc);
-                        newDocument = destination.addBinaryResource(transaction, this, newName, is, doc.getMetadata().getMimeType(), -1);
-                    } finally {
-                        if(is != null) {
-                            is.close();
-                        }
-                    }
-                } else {
-                    final DocumentImpl newDoc = new DocumentImpl(pool, destination, newName);
-                    newDoc.copyOf(doc, oldDoc != null);
-                    newDoc.setDocId(getNextResourceId(transaction, destination));
-                    newDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
-                    try {
-                        copyXMLResource(transaction, doc, newDoc);
-                        destination.addDocument(transaction, this, newDoc);
-                        storeXMLResource(transaction, newDoc);
-                    } finally {
-                        newDoc.getUpdateLock().release(LockMode.WRITE_LOCK);
-                    }
-                    newDocument = newDoc;
-                }
-
-                trigger.afterCopyDocument(this, transaction, newDocument, oldUri);
-
-            } catch(final IOException e) {
-                LOG.error("An error occurred while copying resource", e);
+            } catch(final ReadOnlyException e) {
+                throw new IOException(e.getMessage(), e);
             } catch(final TriggerException e) {
                 throw new PermissionDeniedException(e.getMessage(), e);
             } finally {
                 lock.release(LockMode.WRITE_LOCK);
             }
         }
+    }
+
+    /**
+     * Creates a new Document object for the destination document
+     * - copies the nodes from the source document to the destination document
+     * - if no existing document in the destination:
+     *      - adds the destination document to the destination collection
+     *   else, switches the existing document object for the new document in the destination collection
+     *
+     *   asynchronously deletes the nodes of the old existing document
+     */
+    private void doCopyDocument(final Txn transaction, final DocumentTrigger trigger,
+                                final DocumentImpl srcDoc, final Collection dstCol, final XmldbURI dstDocName)
+            throws TriggerException, LockException, PermissionDeniedException, IOException, ReadOnlyException, EXistException {
+
+        // URI of the destination document in the database
+        final XmldbURI dstDocUri = dstCol.getURI().append(dstDocName);
+
+        trigger.beforeCopyDocument(this, transaction, srcDoc, dstDocUri);
+
+        final DocumentImpl currentDstDoc = dstCol.getDocumentWithLock(this, dstDocName, LockMode.READ_LOCK);
+
+        // prepare the new document
+        DocumentImpl newDstDoc = null;
+        try {
+            if (srcDoc.getResourceType() == DocumentImpl.XML_FILE) {
+                newDstDoc = new DocumentImpl(pool, dstCol, dstDocName);
+            } else {
+                newDstDoc = new BinaryDocument(pool, dstCol, dstDocName);
+            }
+
+            newDstDoc.copyOf(srcDoc, currentDstDoc != null);
+
+            //TODO(AR) should the if/else happen outside of copyCollection i.e. also in copyResource?
+            if (currentDstDoc != null) {
+                //preserve permissions from existing doc we are replacing
+                newDstDoc.copyOf(currentDstDoc, true);
+            } else {
+                // copy just the mode and acl of the permissions from the srcDoc to the newDstDoc
+                copyModeAndAcl(srcDoc.getPermissions(), newDstDoc.getPermissions());
+            }
+
+            newDstDoc.setDocId(getNextResourceId(transaction, dstCol));
+        } finally {
+            if (currentDstDoc != null) {
+                currentDstDoc.getUpdateLock().release(LockMode.READ_LOCK);
+            }
+        }
+
+        // copy the content of the source document to the new document
+        if (srcDoc.getResourceType() == DocumentImpl.XML_FILE) {
+            // copy nodes from srcDoc to newDestDoc
+            copyXMLResource(transaction, srcDoc, newDstDoc);
+        } else {
+            copyBinaryResource(transaction, (BinaryDocument)srcDoc, (BinaryDocument)newDstDoc);
+        }
+
+        /*
+         * Stores the document entry for newDstDoc,
+         * or overwrites the document entry for currentDstDoc with
+         * the entry for newDstDoc, in collections.dbx.
+         */
+        storeXMLResource(transaction, newDstDoc);
+
+        // must be the last action (before cleanup), as this will make newDstDoc available to other threads!
+        // if currentDstDoc was not null, this replaces it in the in-memory Collection object with newDstDoc
+        final DocumentImpl oldDstDoc = currentDstDoc;  // just for sanity when reading variable names
+        dstCol.addDocument(transaction, this, newDstDoc);
+
+        // NOTE: copied document is now live!
+
+        // TODO (AR) this could be done asynchronously in future perhaps?
+        // cleanup the old destination doc (if present)
+        if (oldDstDoc != null) {
+            // MUST wait to lock the document first as it may be in use by other threads
+            oldDstDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
+            try {
+                if (oldDstDoc.getResourceType() == DocumentImpl.XML_FILE) {
+                    // drop the index and dom nodes of the old document
+                    dropIndex(transaction, oldDstDoc);
+                    dropDomNodes(transaction, oldDstDoc);
+
+                } else {
+                    // no need to remove the bin file of the oldDstDoc, it will
+                    // have been overwritten already in the copy of the bin file
+                }
+
+                // TODO(AR) do we need a freeId flag to control this?
+                // recycle the id
+                collectionsDb.freeResourceId(oldDstDoc.getDocId());
+
+            } finally {
+                oldDstDoc.getUpdateLock().release(LockMode.WRITE_LOCK);
+            }
+
+            // The Collection object oldDstDoc is now an empty husk which is
+            // not available or referenced from anywhere, it will be subject
+            // to garbage collection
+        }
+
+        trigger.afterCopyDocument(this, transaction, newDstDoc, srcDoc.getURI());
     }
 
     private void copyXMLResource(final Txn transaction, final DocumentImpl oldDoc, final DocumentImpl newDoc) throws IOException {
@@ -2589,6 +2613,14 @@ public class NativeBroker extends DBBroker {
         closeDocument();
         if (LOG.isDebugEnabled())
             LOG.debug("Copy took " + (System.currentTimeMillis() - start) + "ms.");
+    }
+
+    private void copyBinaryResource(final Txn transaction, final BinaryDocument srcDoc, final BinaryDocument dstDoc)
+            throws IOException, LockException, TriggerException, PermissionDeniedException, EXistException {
+        try (final InputStream is = getBinaryResource(srcDoc)) {
+            dstDoc.getCollection().addBinaryResource(transaction, this, dstDoc, is, srcDoc.getMetadata().getMimeType(),
+                    -1, null, null);
+        }
     }
 
     /**
@@ -2785,36 +2817,7 @@ public class NativeBroker extends DBBroker {
             if(LOG.isDebugEnabled()) {
                 LOG.debug("removeDocument() - removing dom");
             }
-            try {
-                if(!document.getMetadata().isReferenced()) {
-                    new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
-                        @Override
-                        public Object start() {
-                            final NodeHandle node = (NodeHandle) document.getFirstChild();
-                            domDb.removeAll(transaction, node.getInternalAddress());
-                            return null;
-                        }
-                    }.run();
-                }
-            } catch(NullPointerException npe0) {
-                LOG.error("Caught NPE in DOMTransaction to actually be able to remove the document.");
-            }
-
-            final NodeRef ref = new NodeRef(document.getDocId());
-            final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-            new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
-                @Override
-                public Object start() {
-                    try {
-                        domDb.remove(transaction, idx, null);
-                    } catch(final BTreeException | IOException e) {
-                        LOG.error("start() - " + "error while removing doc", e);
-                    } catch(final TerminatedException e) {
-                        LOG.error("method terminated", e);
-                    }
-                    return null;
-                }
-            }.run();
+            dropDomNodes(transaction, document);
             removeResourceMetadata(transaction, document);
             if(freeDocId) {
                 collectionsDb.freeResourceId(document.getDocId());
@@ -2847,6 +2850,39 @@ public class NativeBroker extends DBBroker {
         getIndexController().flush();
     }
 
+    private void dropDomNodes(final Txn transaction, final DocumentImpl document) {
+        try {
+            if(!document.getMetadata().isReferenced()) {
+                new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
+                    @Override
+                    public Object start() {
+                        final NodeHandle node = (NodeHandle) document.getFirstChild();
+                        domDb.removeAll(transaction, node.getInternalAddress());
+                        return null;
+                    }
+                }.run();
+            }
+        } catch(NullPointerException npe0) {
+            LOG.error("Caught NPE in DOMTransaction to actually be able to remove the document.");
+        }
+
+        final NodeRef ref = new NodeRef(document.getDocId());
+        final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+        new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
+            @Override
+            public Object start() {
+                try {
+                    domDb.remove(transaction, idx, null);
+                } catch(final BTreeException | IOException e) {
+                    LOG.error("start() - " + "error while removing doc", e);
+                } catch(final TerminatedException e) {
+                    LOG.error("method terminated", e);
+                }
+                return null;
+            }
+        }.run();
+    }
+
     @Override
     public void removeBinaryResource(final Txn transaction, final BinaryDocument blob) throws PermissionDeniedException, IOException {
         if(isReadOnly()) {
@@ -2857,6 +2893,7 @@ public class NativeBroker extends DBBroker {
             LOG.debug("removing binary resource " + blob.getDocId() + "...");
         }
 
+        // remove the bin file on the filesystem
         final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), false);
         if(Files.exists(binFile)) {
             if(fsJournalDir.isPresent()) {
@@ -2865,9 +2902,9 @@ public class NativeBroker extends DBBroker {
                 final MessageDigest binFileMessageDigest = streamableDigest.copyMessageDigest();
 
                 // make a copy for the WAL
-	            final Path walCurrentValue = getCollectionFile(fsJournalDir.get(), transaction, blob.getURI(), true);
-    	        Files.copy(binFile, walCurrentValue);
-    	        streamableDigest.reset();
+                final Path walCurrentValue = getCollectionFile(fsJournalDir.get(), transaction, blob.getURI(), true);
+                Files.copy(binFile, walCurrentValue);
+                streamableDigest.reset();
                 FileUtils.digest(walCurrentValue, streamableDigest);
                 final MessageDigest walCurrentValueMessageDigest = streamableDigest.copyMessageDigest();
 
