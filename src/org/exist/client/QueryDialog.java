@@ -76,6 +76,8 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class QueryDialog extends JFrame {
 
     private static final long serialVersionUID = 1L;
@@ -582,7 +584,7 @@ public class QueryDialog extends JFrame {
                 exprDisplay.setText(writer.toString());
 
                 statusMessage.setText(Messages.getString("QueryDialog.retrievingmessage"));
-                XMLResource resource;
+                Resource resource;
                 final int howmany = count.getNumber().intValue();
                 progress.setIndeterminate(false);
                 progress.setMinimum(1);
@@ -591,10 +593,14 @@ public class QueryDialog extends JFrame {
                 int select = -1;
                 final StringBuilder contents = new StringBuilder();
                 for (final ResourceIterator i = result.getIterator(); i.hasMoreResources() && j < howmany; j++) {
-                    resource = (XMLResource) i.nextResource();
+                    resource = i.nextResource();
                     progress.setValue(j);
                     try {
-                        contents.append((String) resource.getContent());
+                        if (resource.getResourceType() == XMLResource.RESOURCE_TYPE) {
+                            contents.append((String) resource.getContent());
+                        } else {
+                            contents.append(new String((byte[])resource.getContent(), UTF_8));
+                        }
                         contents.append("\n");
                     } catch (final XMLDBException e) {
                         select = ClientFrame.showErrorMessageQuery(
