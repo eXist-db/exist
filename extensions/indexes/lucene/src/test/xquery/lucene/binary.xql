@@ -93,7 +93,10 @@ declare
       %test:assertEquals("/db/lucenetest/indexedDocument.xml")
   function luct:check-ft-search-on-index() {
       let $store :=  system:as-user("admin", "",
-              xmldb:store("/db/lucenetest", 'indexedDocument.xml', $luct:DOCUMENT_INDEX_DATA)
+            xmldb:store("/db/lucenetest", 'indexedDocument.xml', $luct:DOCUMENT_DATA)
+          )
+      let $index := system:as-user("admin", "",
+            ft:index("/db/lucenetest/indexedDocument.xml", $luct:DOCUMENT_INDEX_DATA)
           )
       return
           system:as-user("admin", "",
@@ -105,7 +108,10 @@ declare
     %test:assertEquals("Different index data")
 function luct:check-ft-get-field-on-index() {
     let $store :=  system:as-user("admin", "",
-            xmldb:store("/db/lucenetest", 'indexedDocument2.xml', $luct:DOCUMENT_INDEX_DATA)
+            xmldb:store("/db/lucenetest", 'indexedDocument2.xml', $luct:DOCUMENT_DATA)
+        )
+    let $index := system:as-user("admin", "",
+            ft:index("/db/lucenetest/indexedDocument2.xml", $luct:DOCUMENT_INDEX_DATA)
         )
     return
         system:as-user("admin", "",
