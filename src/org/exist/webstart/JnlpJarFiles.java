@@ -73,7 +73,7 @@ public class JnlpJarFiles {
             "rsyntaxtextarea-%latest%",
             "slf4j-api-%latest%",
             "ws-commons-util-%latest%",
-            "xmldb",
+            "xmldb-api-%latest%",
             "xmlrpc-client-%latest%",
             "xmlrpc-common-%latest%"
     };
