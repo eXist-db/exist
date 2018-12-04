@@ -273,7 +273,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
-    public final boolean hasAccount(final String accountName) {
+    public boolean hasAccount(final String accountName) {
         return usersByName.read(principalDb -> principalDb.containsKey(accountName));
     }
 
@@ -289,7 +289,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
     //Groups management methods
     @Override
-    public final boolean hasGroup(final String groupName) {
+    public boolean hasGroup(final String groupName) {
         return groupsByName.read(principalDb -> principalDb.containsKey(groupName));
     }
 
