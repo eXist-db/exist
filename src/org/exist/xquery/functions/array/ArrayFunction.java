@@ -248,8 +248,13 @@ public class ArrayFunction extends BasicFunction {
                     case SIZE:
                         return new IntegerValue(array.getSize());
                     case GET:
-                        final IntegerValue index = (IntegerValue) args[1].itemAt(0);
-                        return array.get(index.getInt() - 1);
+                        final int index = ((IntegerValue) args[1].itemAt(0)).getInt();
+
+                        if (index <= 0 || index > array.getSize()) {
+                            throw new XPathException(this, ErrorCodes.FOAY0001, "Position " + index + " does not exist in this array. Length is " + array.getSize());
+                        }
+
+                        return array.get(index - 1);
                     case APPEND:
                         return array.append(args[1]);
                     case HEAD:

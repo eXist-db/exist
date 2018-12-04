@@ -155,6 +155,30 @@ function arr:square-constructor2($pos as xs:int) {
 };
 
 declare
+    %test:assertError("FOAY0001")
+ function arr:get-item-out-of-bounds1() {
+     let $a := [13, 10, 14]
+     return
+         array:get($a, 4)
+ };
+
+declare
+    %test:assertError("FOAY0001")
+ function arr:get-item-out-of-bounds2() {
+     let $a := [13, 10, 14]
+     return
+         array:get($a, 0)
+ };
+
+declare
+    %test:assertError("FOAY0001")
+ function arr:get-item-out-of-bounds3() {
+     let $a := [13, 10, 14]
+     return
+         array:get($a, -1)
+ };
+
+declare
     %test:assertEquals(0)
 function arr:square-constructor3() {
     let $a := []
