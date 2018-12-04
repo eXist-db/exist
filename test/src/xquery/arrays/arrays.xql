@@ -135,6 +135,14 @@ function arr:function-item-invalid() {
 };
 
 declare
+    %test:assertError("FOAY0001")
+function arr:get-item-out-of-bounds() {
+    let $a := [13, 10, 14]
+    return
+        array:get($a, 22)
+};
+
+declare
     %test:args(1)
     %test:assertEmpty
     %test:args(2)
