@@ -41,10 +41,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 
-import jline.Completor;
-import jline.ConsoleReader;
-import jline.History;
-import jline.Terminal;
 import org.exist.SystemProperties;
 import org.exist.dom.persistent.XMLUtil;
 import org.exist.security.ACLPermission;
@@ -65,6 +61,10 @@ import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.EXistXPathQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
+import org.jline.reader.*;
+import org.jline.reader.impl.history.DefaultHistory;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -148,7 +148,7 @@ public class InteractiveClient {
     protected Path queryHistoryFile;
     protected Path historyFile;
 
-    protected ConsoleReader console = null;
+    protected LineReader console = null;
 
     protected Collection current = null;
     protected int nextInSet = 1;
@@ -1048,7 +1048,7 @@ public class InteractiveClient {
                         }
                         command.append(lastLine);
                     }
-                } catch (final IOException e) {
+                } catch (final UserInterruptException e) {
                     //TODO report error?
                 }
                 final String xupdate = "<xu:modifications version=\"1.0\" "
@@ -2196,15 +2196,17 @@ public class InteractiveClient {
         if (interactive) {
             // in gui mode we use Readline for history management
             // initialize Readline library
-            Terminal.setupTerminal();
-            console = new ConsoleReader();
-            console.addCompletor(new CollectionCompleter());
-            try {
-                final History history = new History(historyFile.toFile());
-                console.setHistory(history);
-            } catch (final Exception e) {
-                // No error handling
-            }
+            final Terminal terminal = TerminalBuilder.builder()
+                    .build();
+
+            final History history = new DefaultHistory();
+
+            console = LineReaderBuilder.builder()
+                    .terminal(terminal)
+                    .variable(LineReader.HISTORY_FILE, historyFile)
+                    .history(history)
+                    .completer(new CollectionCompleter())
+                    .build();
         }
 
         // connect to the db
@@ -2371,8 +2373,9 @@ public class InteractiveClient {
 
     protected void writeQueryHistory() {
         try {
-            console.getHistory().flushBuffer();
-        } catch (final Exception e) {
+            console.getHistory().save();
+        } catch (final IOException e) {
+            System.err.println("Could not write history File to " + historyFile.toAbsolutePath().toString());
         }
         try (final BufferedWriter writer = Files.newBufferedWriter(queryHistoryFile, StandardCharsets.UTF_8)) {
             final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
@@ -2417,7 +2420,7 @@ public class InteractiveClient {
                     cont = process(line);
                 }
 
-            } catch (final EOFException e) {
+            } catch (final EndOfFileException e) {
                 break;
             } catch (final Exception e) {
                 System.err.println(e);
@@ -2425,8 +2428,8 @@ public class InteractiveClient {
         }
 
         try {
-            console.getHistory().flushBuffer();
-        } catch (final Exception e) {
+            console.getHistory().save();
+        } catch (final IOException e) {
             System.err.println("Could not write history File to " + historyFile.toAbsolutePath().toString());
         }
         shutdown(false);
@@ -2542,28 +2545,27 @@ public class InteractiveClient {
         return null;
     }
 
-    private class CollectionCompleter implements Completor {
+    private class CollectionCompleter implements Completer {
 
         @Override
-        public int complete(final String buffer, final int cursor, final List candidates) {
+        public void complete(final LineReader lineReader, final ParsedLine parsedLine, final List<Candidate> candidates) {
+            final String buffer = parsedLine.line();
             int p = buffer.lastIndexOf(' ');
             final String toComplete;
             if (p > -1 && ++p < buffer.length()) {
                 toComplete = buffer.substring(p);
             } else {
                 toComplete = buffer;
-                p = 0;
             }
 //            System.out.println("\nbuffer: '" + toComplete + "'; cursor: " + cursor);
             final Set<String> set = completitions.tailSet(toComplete);
             if (set != null && set.size() > 0) {
                 for (final String next : completitions.tailSet(toComplete)) {
                     if (next.startsWith(toComplete)) {
-                        candidates.add(next);
+                        candidates.add(new Candidate(next, next, null, null, null, null, true));
                     }
                 }
             }
-            return p;
         }
     }
 

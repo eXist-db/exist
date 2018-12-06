@@ -63,6 +63,7 @@ public class JnlpJarFiles {
             "jackson-core-%latest%",
             "jcip-annotations-%latest%",
             "jline-%latest%",
+            "jansi-%latest%",
             "jta-%latest%",
             "log4j-api-%latest%",
             "log4j-core-%latest%",
