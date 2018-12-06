@@ -136,10 +136,26 @@ function arr:function-item-invalid() {
 
 declare
     %test:assertError("FOAY0001")
-function arr:get-item-out-of-bounds() {
+function arr:get-item-out-of-bounds-positive() {
     let $a := [13, 10, 14]
     return
         array:get($a, 22)
+};
+
+declare
+    %test:assertError("FOAY0001")
+function arr:get-item-out-of-bounds-zero() {
+    let $a := [13, 10, 14]
+    return
+        array:get($a, 0)
+};
+
+declare
+    %test:assertError("FOAY0001")
+function arr:get-item-out-of-bounds-negative() {
+    let $a := [13, 10, 14]
+    return
+        array:get($a, -1)
 };
 
 declare
