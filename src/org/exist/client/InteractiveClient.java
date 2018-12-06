@@ -370,24 +370,22 @@ public class InteractiveClient {
 
         final List<ResourceDescriptor> tableData = new ArrayList<ResourceDescriptor>(resources.length); // A list of ResourceDescriptor for the GUI
 
-        final String cols[] = new String[4];
         int i = 0;
         for (; i < childCollections.length; i++) {
             //child = current.getChildCollection(childCollections[i]);
 
             perm = mgtService.getSubCollectionPermissions(current, childCollections[i]);
 
+            final Date created = mgtService.getSubCollectionCreationTime(current, childCollections[i]);
+
             if ("true".equals(properties.getProperty(PERMISSIONS))) {
-                cols[0] = perm.toString();
-                cols[1] = getOwnerName(perm);
-                cols[2] = getGroupName(perm);
-                cols[3] = childCollections[i];
-                resources[i] = 'd' + formatString(cols, colSizes);
+                resources[i] = '-' + perm.toString() + '\t' + getOwnerName(perm)
+                        + '\t' + getGroupName(perm) + '\t'
+                        + created.toString() + '\t'
+                        + childCollections[i];
             } else {
                 resources[i] = childCollections[i];
             }
-
-            final Date created = mgtService.getSubCollectionCreationTime(current, childCollections[i]);
 
             if (options.startGUI) {
                 try {
@@ -413,16 +411,17 @@ public class InteractiveClient {
             if (perm == null) {
                 System.out.println("null"); //TODO this is not useful!
             }
+
+            final Date lastModificationTime = ((EXistResource) res).getLastModificationTime();
+
             if ("true".equals(properties.getProperty(PERMISSIONS))) {
-                resources[i] = '-' + perm.toString() + '\t' + perm.getOwner().getName()
-                        + '\t' + perm.getGroup().getName() + '\t'
+                resources[i] = '-' + perm.toString() + '\t' + getOwnerName(perm)
+                        + '\t' + getGroupName(perm) + '\t'
+                        + lastModificationTime.toString() + '\t'
                         + childResources[j];
             } else {
                 resources[i] = childResources[j];
             }
-
-            final Date lastModificationTime = ((EXistResource) res).getLastModificationTime();
-            resources[i] += "\t" + lastModificationTime;
 
             if (options.startGUI) {
                 try {
