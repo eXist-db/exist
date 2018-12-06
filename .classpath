@@ -54,7 +54,8 @@ asm-commons-6.2<?xml version="1.0" encoding="UTF-8"?>
 	<classpathentry kind="lib" path="extensions/exquery/restxq/lib/exquery-restxq-api-1.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="extensions/exquery/restxq/lib/exquery-restxq-1.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/core/antlr-2.7.7.jar"/>
-	<classpathentry kind="lib" path="lib/core/jline-0.9.94.jar"/>
+	<classpathentry kind="lib" path="lib/core/jline-3.9.0.jar"/>
+	<classpathentry kind="lib" path="lib/core/jansi-1.17.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-api-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-core-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-slf4j-impl-2.11.0.jar"/>
