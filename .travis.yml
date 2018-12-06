@@ -1,5 +1,4 @@
 language: java
-sudo: false
 matrix:
   include:
     - jdk: openjdk8
@@ -8,7 +7,7 @@ matrix:
     - jdk: openjdk10
     - jdk: openjdk11
     - jdk: oraclejdk11
-    
+
     - os: osx
       osx_image: xcode9.2
       env: JAVA_HOME=$(/usr/libexec/java_home)
