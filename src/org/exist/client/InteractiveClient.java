@@ -2411,10 +2411,10 @@ public class InteractiveClient {
         while (cont) {
             try {
                 if ("true".equals(properties.getProperty(COLORS))) {
-                    line = console.readLine(ANSI_CYAN + "exist:" + path + ">"
+                    line = console.readLine(ANSI_CYAN + "exist:" + path + "> "
                             + ANSI_WHITE);
                 } else {
-                    line = console.readLine("exist:" + path + ">");
+                    line = console.readLine("exist:" + path + "> ");
                 }
                 if (line != null) {
                     cont = process(line);
