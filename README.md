@@ -20,21 +20,21 @@ eXist-db is a high-performance open source native XML database—a NoSQL documen
 
 The eXist-db community has adopted the [Contributor Covenant](https://www.contributor-covenant.org/) [Code of Conduct](https://www.contributor-covenant.org/version/1/4/code-of-conduct).
 
-## Resources 
+## Resources
 
-- **Homepage:** <http://exist-db.org>
-- **Binaries:** <http://exist-db.org/exist/apps/homepage/index.html#download>
-- **Documentation:** <http://exist-db.org/exist/apps/doc>
-- **Book:** [http://shop.oreilly.com/product/0636920026525.do](http://www.jdoqocy.com/click-7654993-11290546?sid=&url=http%3A%2F%2Fshop.oreilly.com%2Fproduct%2F0636920026525.do%3Fcmp%3Daf-webplatform-books-videos-product_cj_auwidget636_0636920026525_%25zp)
-- **Packages:** <http://exist-db.org/exist/apps/public-repo>
-- **Source code:** <https://github.com/eXist-db/exist>
-- **Git clone URL:** <git://github.com/eXist-db/exist.git>
-- **Mailing list:** <https://lists.sourceforge.net/lists/listinfo/exist-open>
-- **HipChat:** <https://www.hipchat.com/invite/300223/6ea0341b23fa1cf8390a23592b4b2c39>
+-   **Homepage:** <http://exist-db.org>
+-   **Binaries:** <http://exist-db.org/exist/apps/homepage/index.html#download>
+-   **Documentation:** <http://exist-db.org/exist/apps/doc>
+-   **Book:** [http://shop.oreilly.com/product/0636920026525.do](http://www.jdoqocy.com/click-7654993-11290546?sid=&url=http%3A%2F%2Fshop.oreilly.com%2Fproduct%2F0636920026525.do%3Fcmp%3Daf-webplatform-books-videos-product_cj_auwidget636_0636920026525_%25zp)
+-   **Packages:** <http://exist-db.org/exist/apps/public-repo>
+-   **Source code:** <https://github.com/eXist-db/exist>
+-   **Git clone URL:** <git://github.com/eXist-db/exist.git>
+-   **Mailing list:** <https://lists.sourceforge.net/lists/listinfo/exist-open>
+-   **HipChat:** <https://www.hipchat.com/invite/300223/6ea0341b23fa1cf8390a23592b4b2c39>
 
 New developers may find the notes in [BUILD.md](https://github.com/eXist-db/exist/blob/develop/BUILD.md) and [CONTRIBUTING.md](https://github.com/eXist-db/exist/blob/develop/CONTRIBUTING.md) helpful to start using and sharing your work with the eXist community.
 
-## Credits 
+## Credits
 The eXist-db developers use the YourKit Java Profiler.
 
 <img src="https://www.yourkit.com/images/yklogo.png" alt="YourKit Logo"/>
@@ -43,3 +43,6 @@ YourKit kindly supports open source projects with its full-featured Java Profile
 YourKit, LLC is the creator of <a href="https://www.yourkit.com/java/profiler/">YourKit Java Profiler</a>
 and <a href="https://www.yourkit.com/.net/profiler/">YourKit .NET Profiler</a>,
 innovative and intelligent tools for profiling Java and .NET applications.
+
+![sauce-labs_horiz_red-grey_rgb_200x28](https://user-images.githubusercontent.com/6205362/49570521-27bcc400-f937-11e8-9bfd-1a3ffc721d3d.png)
+Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs](https://saucelabs.com)
