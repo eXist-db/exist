@@ -379,7 +379,7 @@ public class InteractiveClient {
             final Date created = mgtService.getSubCollectionCreationTime(current, childCollections[i]);
 
             if ("true".equals(properties.getProperty(PERMISSIONS))) {
-                resources[i] = '-' + perm.toString() + '\t' + getOwnerName(perm)
+                resources[i] = 'c' + perm.toString() + '\t' + getOwnerName(perm)
                         + '\t' + getGroupName(perm) + '\t'
                         + created.toString() + '\t'
                         + childCollections[i];
