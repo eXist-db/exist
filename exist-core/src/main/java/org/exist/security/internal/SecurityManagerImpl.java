@@ -533,8 +533,8 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         }
         
         final AbstractRealm registeredRealm = (AbstractRealm)findRealmForRealmId(group.getRealmId());
-        if (registeredRealm.hasGroup(group.getName())) {
-            throw new ConfigurationException("The group '" + group.getName() + "' at realm '" + group.getRealmId() + "' already exist.");
+        if (registeredRealm.hasGroupLocal(group.getName())) {
+            throw new ConfigurationException("The group '" + group.getName() + "' at realm '" + group.getRealmId() + "' already exists.");
         }
         
         final GroupImpl newGroup = new GroupImpl(broker, registeredRealm, id, group.getName(), group.getManagers());
