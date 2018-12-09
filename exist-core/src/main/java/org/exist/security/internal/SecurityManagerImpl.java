@@ -629,16 +629,18 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         }
 
         final AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
-        final AccountImpl newAccount = new AccountImpl(broker, registeredRealm, id, account);
+        if (registeredRealm.hasAccountLocal(account.getName())) {
+            throw new ConfigurationException("The account '" + account.getName() + "' at realm '" + account.getRealmId() + "' already exists.");
+        }
 
+        final AccountImpl newAccount = new AccountImpl(broker, registeredRealm, id, account);
         final Lock lock = accountLocks.getWriteLock(newAccount);
         lock.lock();
         try {
             usersById.modify(principalDb -> principalDb.put(id, newAccount));
-            
+
             registeredRealm.registerAccount(newAccount);
 
-            //XXX: one transaction?
             save(broker);
             newAccount.save(broker);
 

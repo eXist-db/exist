@@ -40,6 +40,9 @@ public interface GroupsManagement {
 	boolean hasGroup(Group group);
 	boolean hasGroup(String name);
 
+	boolean hasGroupLocal(Group group);
+	boolean hasGroupLocal(String name);
+
 	boolean updateGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
 	
 	boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
