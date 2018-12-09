@@ -39,6 +39,9 @@ public interface AccountsManagement {
 	boolean hasAccount(Account account);
 	boolean hasAccount(String name);
 
+	boolean hasAccountLocal(Account account);
+	boolean hasAccountLocal(String name);
+
 	boolean updateAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
 	
 	boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
