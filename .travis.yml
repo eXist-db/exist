@@ -1,9 +1,10 @@
 language: java
 
+dist: xenial
+
 matrix:
   include:
     - jdk: openjdk8
-    - jdk: oraclejdk8
     - jdk: openjdk9
     - jdk: openjdk10
     - jdk: openjdk11
