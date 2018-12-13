@@ -1,6 +1,3 @@
-notifications:
-  hipchat: ec8fcfa661addc56a361a8ef536320@integrations
-
 language: java
 
 matrix:
@@ -24,5 +21,8 @@ cache:
   - $HOME/.m2
 
 after_failure:
-   - tar -cf logs.zip test/junit/data
-   - curl -u $CHUNK_USER:$CHUNK_PW -sT logs.zip chunk.io
+   - tar -cjf junit-data.tar.bz2 test/junit/data
+   - curl -v -u $CHUNK_USER:$CHUNK_PW -sT junit-data.tar.bz2 chunk.io
+
+notifications:
+  hipchat: ec8fcfa661addc56a361a8ef536320@integrations
