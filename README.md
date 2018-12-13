@@ -35,6 +35,10 @@ The eXist-db community has adopted the [Contributor Covenant](https://www.contri
 New developers may find the notes in [BUILD.md](https://github.com/eXist-db/exist/blob/develop/BUILD.md) and [CONTRIBUTING.md](https://github.com/eXist-db/exist/blob/develop/CONTRIBUTING.md) helpful to start using and sharing your work with the eXist community.
 
 ## Credits
+eXist-db delivers its releases via [BinTray](https://bintray.com/) which is kindly provided by [JFrog](https://jfrog.com/).
+
+<img src="https://bintray.com/assets/layout/jfrog_green_footer_logo-676d1edce7dfe5980a3a56e134a0581b.png" alt="JFrog Logo" width="81" height="79"/>
+
 The eXist-db developers use the YourKit Java Profiler.
 
 <img src="https://www.yourkit.com/images/yklogo.png" alt="YourKit Logo"/>
