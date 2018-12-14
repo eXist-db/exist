@@ -135,6 +135,63 @@ function arr:function-item-invalid() {
 };
 
 declare
+    %test:assertError("FOAY0001")
+function arr:get-item-out-of-bounds-positive() {
+    let $a := [13, 10, 14]
+    return
+        array:get($a, 4)
+};
+
+declare
+    %test:assertError("FOAY0001")
+function arr:get-item-out-of-bounds-positive-large() {
+    let $a := [13, 10, 14]
+    return
+        array:get($a, 22)
+};
+
+declare
+    %test:assertError("FOAY0001")
+function arr:get-item-out-of-bounds-zero() {
+    let $a := [13, 10, 14]
+    return
+        array:get($a, 0)
+};
+
+declare
+    %test:assertError("FOAY0001")
+function arr:get-item-out-of-bounds-negative() {
+    let $a := [13, 10, 14]
+    return
+        array:get($a, -1)
+};
+
+declare
+    %test:pending("eXist-db does not correctly detect the type error. This is likely a larger issue than just arrays.")
+    %test:assertError("XPTY0004")
+function arr:get-invalid-type() {
+    let $a := [13, 10, 14]
+    return
+        array:get($a, xs:double(0.1))
+};
+
+declare
+    %test:assertEquals(13)
+function arr:get-first() {
+    let $a := [13, 10, 14]
+    return
+        array:get($a, 1)
+};
+
+declare
+    %test:assertEquals(14)
+function arr:get-last() {
+    let $a := [13, 10, 14]
+    return
+        array:get($a, 3)
+};
+
+declare
     %test:args(1)
     %test:assertEmpty
     %test:args(2)
