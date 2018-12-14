@@ -68,13 +68,15 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
     }
 
     @Override
-    public Sequence get(AtomicValue key) throws XPathException {
+    public Sequence get(final AtomicValue key) throws XPathException {
         if (!Type.subTypeOf(key.getType(), Type.INTEGER)) {
-            throw new XPathException(ErrorCodes.XPTY0004, "position argument for array lookup must be a positive integer");
+            throw new XPathException(ErrorCodes.XPTY0004, "Position argument for array lookup must be a positive integer");
         }
         final int pos = ((IntegerValue)key).getInt();
         if (pos <= 0 || pos > getSize()) {
-            throw new XPathException(ErrorCodes.XPTY0004, "position argument for array lookup must be > 0 and < array:size");
+            final String startIdx = vector.length() == 0 ? "0" : "1";
+            final String endIdx = String.valueOf(vector.length());
+            throw new XPathException(ErrorCodes.FOAY0001, "Array index " + pos + " out of bounds (" + startIdx + ".." + endIdx + ")");
         }
         return get(pos - 1);
     }
