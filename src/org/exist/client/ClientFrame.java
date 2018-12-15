@@ -1309,7 +1309,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             doc.insertString(commandStart++, "\n", defaultAttrs); //$NON-NLS-1$
             if (command != null) {
                 processRunnable.setAction(command);
-                client.console.getHistory().addToHistory(command);
+                client.console.getHistory().add(command);
             }
         } catch (final BadLocationException e) {
             e.printStackTrace();
