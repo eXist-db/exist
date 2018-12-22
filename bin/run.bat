@@ -25,8 +25,6 @@ if not "%JAVA_HOME%" == "" (
     goto gotJavaHome
 )
 
-rem @WINDOWS_INSTALLER_1@
-
 echo WARNING: JAVA_HOME not found in your environment.
 echo.
 echo Please, set the JAVA_HOME variable in your enviroment to match the
@@ -34,27 +32,25 @@ echo location of the Java Virtual Machine you want to use in case of run fail.
 echo.
 
 :gotJavaHome
-rem @WINDOWS_INSTALLER_2@
 
-if not "%EXIST_HOME%" == "" goto gotExistHome
-
-rem try to guess
-set EXIST_HOME=.
-if exist "%EXIST_HOME%\start.jar" goto gotExistHome
-set EXIST_HOME=..
-if exist "%EXIST_HOME%\start.jar" goto gotExistHome
-
-echo EXIST_HOME not found. Please set your
-echo EXIST_HOME environment variable to the
-echo home directory of eXist.
+if not "%EXIST_APP_HOME%" == "" goto gotExistAppHome
+set EXIST_APP_HOME="%~dp0\.."
+if exist "%EXIST_APP_HOME%\start.jar" goto gotExistAppHome
+echo EXIST_APP_HOME not found. Please set your
+echo EXIST_APP_HOME environment variable to the
+echo installation directory of eXist-db.
 goto :eof
+:gotExistAppHome
 
-:gotExistHome
+if not "%JAVA_OPTIONS%" == "" goto doneJavaOptions
 set MX=2048
-rem @WINDOWS_INSTALLER_3@
+set JAVA_OPTIONS="-Xms128m -Xmx%MX%m -Dfile.encoding=UTF-8"
+:doneJavaOptions
 
-set JAVA_OPTS="-Xms128m -Xmx%MX%m -Dfile.encoding=UTF-8"
+if "%EXIST_HOME%" == "" goto doneExistHome
+set OPTIONS="-Dexist.home=%EXIST_HOME%"
+:doneExistHome
 
 :gotJavaOpts
-%JAVA_RUN% "%JAVA_OPTS%"  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" %CMD_LINE_ARGS%
+%JAVA_RUN% "%JAVA_OPTIONS%" "%OPTIONS%" -jar "%EXIST_APP_HOME%\start.jar" %CMD_LINE_ARGS%
 :eof

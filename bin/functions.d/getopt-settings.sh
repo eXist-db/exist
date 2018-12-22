@@ -23,8 +23,8 @@ JMX_LONG_EQUAL="--jmx="
 QUIET_OPTS="|-q|--quiet|"
 QUIET_ENABLED=0
 
-NR_JAVA_OPTS=0
-declare -a JAVA_OPTS
+NR_JAVA_ARGS=0
+declare -a JAVA_ARGS
 declare -a CLIENT_PROPS
 
 substring() {
@@ -101,13 +101,13 @@ get_opts() {
 			found_pidfile_opt=1
 		else
 			check_quiet_switch "$OPT";
-			JAVA_OPTS[${NR_JAVA_OPTS}]="$OPT";
-			let "NR_JAVA_OPTS += 1";
+			JAVA_ARGS[${NR_JAVA_ARGS}]="$OPT";
+			let "NR_JAVA_ARGS += 1";
 		fi
 	done
 
 	if [ "${QUIET_ENABLED}" -eq 0 ]; then
-		echo "${JAVA_OPTS[@]}";
+		echo "${JAVA_ARGS[@]}";
 	fi
 }
 
@@ -121,5 +121,5 @@ get_client_props() {
 				CLIENT_PROPS["${key}"]="${value}"
 				;;
 		esac
-	done < ${EXIST_HOME}/client.properties
+	done < ${EXIST_APP_HOME}/client.properties
 }

@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
 # -----------------------------------------------------------------------------
 # shutdown.sh - Stop Jetty + eXist
-#
-# $Id$
 # -----------------------------------------------------------------------------
-
-## @UNIX_INSTALLER_1@ 
 
 case "$0" in
 	/*)
@@ -21,7 +17,7 @@ source "${SCRIPTPATH}"/functions.d/eXist-settings.sh
 source "${SCRIPTPATH}"/functions.d/jmx-settings.sh
 source "${SCRIPTPATH}"/functions.d/getopt-settings.sh
 
-check_exist_home "$0";
+check_exist_app_home "$0";
 
 set_exist_options;
 check_java_home;
@@ -29,7 +25,7 @@ check_java_home;
 # set java options
 set_java_options;
 
-echo "${JAVA_RUN}" ${JAVA_OPTIONS} ${OPTIONS} -jar "$EXIST_HOME/start.jar" \
+echo "${JAVA_RUN}" ${JAVA_OPTIONS} ${OPTIONS} -jar "$EXIST_APP_HOME/start.jar" \
 	shutdown "$@"
-"${JAVA_RUN}" ${JAVA_OPTIONS} ${OPTIONS} -jar "$EXIST_HOME/start.jar" \
+"${JAVA_RUN}" ${JAVA_OPTIONS} ${OPTIONS} -jar "$EXIST_APP_HOME/start.jar" \
 	shutdown "$@"

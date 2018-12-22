@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
 # -----------------------------------------------------------------------------
 # startup.sh - Start Script for Jetty + eXist
-#
-# $Id$
 # -----------------------------------------------------------------------------
-
-## @UNIX_INSTALLER_1@
 
 #
 # In addition to the other parameter options for the standalone server
@@ -29,7 +25,7 @@ source "${SCRIPTPATH}"/functions.d/getopt-settings.sh
 
 get_opts "$@";
 
-check_exist_home "$0";
+check_exist_app_home "$0";
 
 set_exist_options;
 
@@ -52,6 +48,6 @@ if [ $PIDFILE ]; then
     echo $$ > $PIDFILE
 fi
 
-${JAVA_RUN} $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" standalone "${JAVA_OPTS[@]}"
+${JAVA_RUN} $JAVA_OPTIONS $OPTIONS -jar "$EXIST_APP_HOME/start.jar" standalone "${JAVA_ARGS[@]}"
 
 restore_locale_lang;

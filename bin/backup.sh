@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
 # -----------------------------------------------------------------------------
 # backup.sh - Backup tool start script
-#
-# $Id$
 # -----------------------------------------------------------------------------
-
-## @UNIX_INSTALLER_1@ 
 
 #
 # In addition to the other parameter options for the interactive client 
@@ -29,7 +25,7 @@ source "${SCRIPTPATH}"/functions.d/getopt-settings.sh
 
 get_opts "$@";
 
-check_exist_home "$0";
+check_exist_app_home "$0";
 
 set_exist_options;
 
@@ -46,10 +42,10 @@ set_locale_lang;
 
 if [ "${QUIET_ENABLED}" -gt 0 ]; then
     # Be quiet, no messages on stdout
-    "${JAVA_RUN}" ${JAVA_OPTIONS} ${OPTIONS} ${DEBUG_OPTS} -jar "$EXIST_HOME/start.jar" backup "${JAVA_OPTS[@]}" > /dev/null || exit 1 # forward non-zero exit status
+    "${JAVA_RUN}" ${JAVA_OPTIONS} ${OPTIONS} ${DEBUG_OPTS} -jar "$EXIST_APP_HOME/start.jar" backup "${JAVA_ARGS[@]}" > /dev/null || exit 1 # forward non-zero exit status
 else
     echo "Using locale: ${LANG}";
-    "${JAVA_RUN}" ${JAVA_OPTIONS} ${OPTIONS} ${DEBUG_OPTS} -jar "$EXIST_HOME/start.jar" backup "${JAVA_OPTS[@]}" || exit 1 # forward non-zero exit status
+    "${JAVA_RUN}" ${JAVA_OPTIONS} ${OPTIONS} ${DEBUG_OPTS} -jar "$EXIST_APP_HOME/start.jar" backup "${JAVA_ARGS[@]}" || exit 1 # forward non-zero exit status
 
 fi
 

@@ -51,13 +51,20 @@ if [ -z "${JAVA_HOME}" ]; then
   echo -e "Found JAVA_HOME=${JAVA_HOME}\n"
 fi
 
+# Set EXIST_APP_HOME (if not set in env)
+if [ -z "${EXIST_APP_HOME}" ]; then
+  echo -e "\nNo EXIST_APP_HOME environment variable found!"
+  echo "Attempting to derive EXIST_APP_HOME (if this fails you must manually set it)..."
+  exist_tools_dir=$(dirname "${wrapper_home}")
+  EXIST_APP_HOME=$(dirname "${exist_tools_dir}")
+  echo -e "Derived EXIST_APP_HOME=${EXIST_APP_HOME}\n"
+fi
+
 # Set EXIST_HOME (if not set in env)
 if [ -z "${EXIST_HOME}" ]; then
   echo -e "\nNo EXIST_HOME environment variable found!"
-  echo "Attempting to derive EXIST_HOME (if this fails you must manually set it)..."
-  exist_tools_dir=$(dirname "${wrapper_home}")
-  EXIST_HOME=$(dirname "${exist_tools_dir}")
-  echo -e "Derived EXIST_HOME=${EXIST_HOME}\n"
+  echo "Setting EXIST_HOME to EXIST_APP_HOME..."
+  EXIST_HOME="${EXIST_APP_HOME}"
 fi
 
 function review_systemd_config {
@@ -101,7 +108,7 @@ function systemd_user {
     if [ -z "${RUN_AS_USER}" ]; then
         echo -e "\nNo RUN_AS_USER environment variable found!"
         if [ -z "${WRAPPER_UNATTENDED}" ]; then
-            read -p "Which user should eXist run as for the systemd service (${USER})? " eval_response;
+            read -p "Which user should eXist-db run as for the systemd service (${USER})? " eval_response;
             case $eval_response in
                 "")
                     RUN_AS_USER="${USER}"
@@ -123,10 +130,11 @@ function use_systemd {
 
     systemd_user;
 
-    echo -e "\nPlease note that the environment variables JAVA_HOME, EXIST_HOME, and RUN_AS_USER are used for the systemd service setup."
+    echo -e "\nPlease note that the environment variables JAVA_HOME, EXIST_APP_HOME, EXIST_HOME, and RUN_AS_USER are used for the systemd service setup."
     echo -e "Please review them below and if they are not set correctly, please exit and set them in your environment before rerunning this script.\n\n"
 
     echo "JAVA_HOME=${JAVA_HOME}"
+    echo "EXIST_APP_HOME=${EXIST_APP_HOME}"
     echo "EXIST_HOME=${EXIST_HOME}"
     echo -e "RUN_AS_USER=${RUN_AS_USER}\n"
     if [ -z "${WRAPPER_UNATTENDED}" ]; then

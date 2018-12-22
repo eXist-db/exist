@@ -35,6 +35,7 @@ import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
 import javax.servlet.Servlet;
 
 import net.jcip.annotations.GuardedBy;
@@ -74,7 +75,10 @@ import static org.exist.util.ThreadUtils.newGlobalThread;
 public class JettyStart extends Observable implements LifeCycle.Listener {
 
     public static final String JETTY_HOME_PROP = "jetty.home";
+    private static final String JETTY_HOME_ENV = "JETTY_HOME";
     public static final String JETTY_BASE_PROP = "jetty.base";
+    private static final String JETTY_BASE_ENV = "JETTY_BASE";
+
 
     private static final String JETTY_PROPETIES_FILENAME = "jetty.properties";
     private static final Logger logger = LogManager.getLogger(JettyStart.class);
@@ -108,7 +112,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     }
 
     public synchronized void run(final boolean standalone) {
-        final String jettyProperty = Optional.ofNullable(System.getProperty(JETTY_HOME_PROP))
+        final String jettyHomeProp = Optional.ofNullable(sysPropOrEnv(JETTY_BASE_PROP, JETTY_BASE_ENV, sysPropOrEnv(JETTY_HOME_PROP, JETTY_HOME_ENV, null)))
                 .orElseGet(() -> {
                     final Optional<Path> home = ConfigurationHelper.getExistHome();
                     final Path jettyHome = FileUtils.resolve(home, "tools").resolve("jetty");
@@ -119,9 +123,9 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
         final Path jettyConfig;
         if (standalone) {
-            jettyConfig = Paths.get(jettyProperty).resolve("etc").resolve(Main.STANDALONE_ENABLED_JETTY_CONFIGS);
+            jettyConfig = Paths.get(jettyHomeProp).resolve("etc").resolve(Main.STANDALONE_ENABLED_JETTY_CONFIGS);
         } else {
-            jettyConfig = Paths.get(jettyProperty).resolve("etc").resolve(Main.STANDARD_ENABLED_JETTY_CONFIGS);
+            jettyConfig = Paths.get(jettyHomeProp).resolve("etc").resolve(Main.STANDARD_ENABLED_JETTY_CONFIGS);
         }
         run(new String[] { jettyConfig.toAbsolutePath().toString() }, null);
     }
@@ -154,29 +158,30 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             );
 
             logger.info("Running as user '{}'", System.getProperty("user.name", "(unknown user.name)"));
-            logger.info("[eXist Home : {}]", System.getProperty("exist.home", "unknown"));
-            logger.info("[eXist Version : {}]", SystemProperties.getInstance().getSystemProperty("product-version", "unknown"));
-            logger.info("[eXist Build : {}]", SystemProperties.getInstance().getSystemProperty("product-build", "unknown"));
-            logger.info("[Git commit : {}]", SystemProperties.getInstance().getSystemProperty("git-commit", "unknown"));
-
             logger.info("[Operating System : {} {} {}]", System.getProperty("os.name"), System.getProperty("os.version"), System.getProperty("os.arch"));
             logger.info("[log4j.configurationFile : {}]", System.getProperty("log4j.configurationFile"));
-            logger.info("[jetty Version: {}]", getJettyVersion(configProperties.get(JETTY_BASE_PROP)));
-            logger.info("[{} : {}]", JETTY_HOME_PROP, configProperties.get(JETTY_HOME_PROP));
-            logger.info("[{} : {}]", JETTY_BASE_PROP, configProperties.get(JETTY_BASE_PROP));
-            logger.info("[jetty configuration : {}]", jettyConfig.toAbsolutePath().toString());
+            logger.info("[eXist Home : {}]", sysPropOrEnv("exist.home", "EXIST_HOME", "unknown"));
+            logger.info("[eXist Version : {}]", SystemProperties.getInstance().getSystemProperty("product-version", "unknown"));
+            logger.info("[eXist Build : {}]", SystemProperties.getInstance().getSystemProperty("product-build", "unknown"));
+            logger.info("[eXist Git commit : {}]", SystemProperties.getInstance().getSystemProperty("git-commit", "unknown"));
 
             // configure the database instance
-            SingleInstanceConfiguration config;
+            final SingleInstanceConfiguration config;
             if (args.length == 2) {
                 config = new SingleInstanceConfiguration(args[1]);
             } else {
                 config = new SingleInstanceConfiguration();
             }
-            logger.info("Configuring eXist from {}",
+            logger.info("[eXist Configuration : {}",
                     config.getConfigFilePath()
                         .map(Path::normalize).map(Path::toAbsolutePath).map(Path::toString)
                         .orElse("<UNKNOWN>"));
+
+
+            logger.info("[jetty Version: {}]", getJettyVersion(configProperties.get(JETTY_BASE_PROP)));
+            logger.info("[{} : {}]", JETTY_HOME_PROP, configProperties.get(JETTY_HOME_PROP));
+            logger.info("[{} : {}]", JETTY_BASE_PROP, configProperties.get(JETTY_BASE_PROP));
+            logger.info("[jetty configuration : {}]", jettyConfig.toAbsolutePath().toString());
 
             BrokerPool.configure(1, 5, config, Optional.ofNullable(observer));
 
@@ -539,11 +544,42 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             }
         }
 
-        // set or override jetty.home and jetty.base with System properties
-        configProperties.put(JETTY_HOME_PROP, System.getProperty(JETTY_HOME_PROP));
-        configProperties.put(JETTY_BASE_PROP, System.getProperty(JETTY_BASE_PROP, System.getProperty(JETTY_HOME_PROP)));
+        // set or override jetty.home and jetty.base with System properties or env
+        final String jettyHome = sysPropOrEnv(JETTY_HOME_PROP, JETTY_HOME_ENV, null);
+        if (jettyHome != null) {
+            configProperties.put(JETTY_HOME_PROP, jettyHome);
+        }
+        final String jettyBase = sysPropOrEnv(JETTY_BASE_PROP, JETTY_BASE_ENV, jettyHome);
+        if (jettyBase != null) {
+            configProperties.put(JETTY_BASE_PROP, jettyBase);
+        }
 
         return configProperties;
+    }
+
+    /**
+     * Gets a value from system properties,
+     * if not present tries the environment,
+     * if still not present then the {@code defaultValue}.
+     *
+     * @param propName the property name
+     * @param envName the environment variable name
+     *
+     * @return the value, or null if there is no property
+     *     or environment variable and the default value is null
+     */
+    private @Nullable String sysPropOrEnv(final String propName, final String envName,
+            @Nullable final String defaultValue) {
+        String value = System.getProperty(propName);
+        if (value == null || value.isEmpty()) {
+            value = System.getenv(envName);
+
+            if (value == null || value.isEmpty()) {
+                value = defaultValue;
+            }
+        }
+
+        return value;
     }
 
     private List<Path> getEnabledConfigFiles(final Path enabledJettyConfigs) throws IOException {

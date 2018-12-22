@@ -4,7 +4,7 @@
 # Common eXist-db script functions and settings
 ##
 
-get_exist_home() {
+get_exist_app_home() {
 	case "$1" in
 		/*)
 			p="$1"
@@ -20,14 +20,14 @@ resolve_dir() {
     (builtin cd `dirname "${1/#~/$HOME}"`'/'`basename "${1/#~/$HOME}"` 2>/dev/null; if [ $? -eq 0 ]; then pwd; fi)
 }
 
-check_exist_home() {
-    if [ -z "${EXIST_HOME}" ]; then
-	EXIST_HOME_1=$(get_exist_home "$1");
-	EXIST_HOME=`resolve_dir "$EXIST_HOME_1/.."`;
+check_exist_app_home() {
+    if [ -z "${EXIST_APP_HOME}" ]; then
+	EXIST_APP_HOME=$(get_exist_app_home "$1");
+	EXIST_APP_HOME=`resolve_dir "$EXIST_APP_HOME/.."`;
     fi
 
-    if [ ! -f "${EXIST_HOME}/start.jar" ]; then
-	echo "Unable to find start.jar. Please set EXIST_HOME to point to your installation directory." > /dev/stderr;
+    if [ ! -f "${EXIST_APP_HOME}/start.jar" ]; then
+	echo "Unable to find start.jar. Please set EXIST_APP_HOME to point to your installation directory." > /dev/stderr;
 	exit 1;
     fi
 }
@@ -64,7 +64,7 @@ set_library_path() {
 	OLD_LIBRARY_PATH="${LD_LIBRARY_PATH}";
     fi
 # add lib/core to LD_LIBRARY_PATH for readline support
-    LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${EXIST_HOME}/lib/core";
+    LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${EXIST_APP_HOME}/lib/core";
     export LD_LIBRARY_PATH;
 }
 
@@ -83,7 +83,7 @@ set_client_java_options() {
     OS=`uname`
     if [ "${OS}" == "Darwin" ]; then
 	CLIENT_NAME="Client"
-        JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -Xdock:icon=${EXIST_HOME}/icon.png -Xdock:name=${CLIENT_NAME}";
+        JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -Xdock:icon=${EXIST_APP_HOME}/icon.png -Xdock:name=${CLIENT_NAME}";
     else
         JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS}";
     fi
@@ -119,11 +119,17 @@ check_java_home() {
 }
 
 set_exist_options() {
-    OPTIONS="-Dexist.home=$EXIST_HOME"
+    if [ -n "$EXIST_HOME" ]; then
+        OPTIONS="-Dexist.home=$EXIST_HOME"
+    fi
 }
 
-set_jetty_home() {
-if [ -n "$JETTY_HOME" ]; then
-	OPTIONS="-Djetty.home=$JETTY_HOME $OPTIONS"
-fi
+set_jetty_dirs() {
+    if [ -n "$JETTY_HOME" ]; then
+	    OPTIONS="$OPTIONS -Djetty.home=$JETTY_HOME"
+    fi
+
+    if [ -n "$JETTY_BASE" ]; then
+	    OPTIONS="$OPTIONS -Djetty.base=$JETTY_BASE"
+    fi
 }

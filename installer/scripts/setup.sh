@@ -2,11 +2,10 @@
 # -----------------------------------------------------------------------------
 #
 # Shell script to start up the eXist command line client.
-#
-# $Id$
 # -----------------------------------------------------------------------------
 
 # will be set by the installer
+EXIST_APP_HOME="%{INSTALL_PATH}"
 EXIST_HOME="%{INSTALL_PATH}"
 
 if [ ! -d "$JAVA_HOME" ]; then
@@ -17,8 +16,8 @@ JAVA_CMD="$JAVA_HOME/bin/java"
 
 OPTIONS=
 
-if [ ! -f "$EXIST_HOME/start.jar" ]; then
-	echo "Unable to find start.jar. EXIST_HOME = $EXIST_HOME"
+if [ ! -f "$EXIST_APP_HOME/start.jar" ]; then
+	echo "Unable to find start.jar. EXIST_APP_HOME = $EXIST_APP_HOME"
 	exit 1
 fi
 
@@ -30,4 +29,4 @@ if [ -z "$JAVA_OPTIONS" ]; then
 fi
 
 "$JAVA_CMD" $JAVA_OPTIONS $OPTIONS \
-    -jar "$EXIST_HOME/start.jar" org.exist.installer.Setup $*
+    -jar "$EXIST_APP_HOME/start.jar" org.exist.installer.Setup $*

@@ -1,15 +1,11 @@
 #!/usr/bin/env bash
 # -----------------------------------------------------------------------------
 # client.sh - Start Script for eXist interactive client
-#
-# $Id$
 # -----------------------------------------------------------------------------
 
 # This will enable Java debugging via JDWP on port 4000 in Server mode
-#DEBUG_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=4000"
-
-
-## @UNIX_INSTALLER_1@ 
+# DEBUG_OPTIONS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=4000"
+# DEBUG_OPTIONS="$DEBUG_OPTS -Dexist.start.debug=true"
 
 #
 # In addition to the other parameter options for the interactive client 
@@ -33,7 +29,7 @@ source "${SCRIPTPATH}"/functions.d/getopt-settings.sh
 
 get_opts "$@";
 
-check_exist_home "$0";
+check_exist_app_home "$0";
 
 set_exist_options;
 
@@ -53,10 +49,10 @@ set_library_path;
 
 if [ "${QUIET_ENABLED}" -gt 0 ]; then
     # Be quiet, no messages on stdout
-    "${JAVA_RUN}" ${JAVA_OPTIONS} ${OPTIONS} ${DEBUG_OPTS} -jar "$EXIST_HOME/start.jar" client "${JAVA_OPTS[@]}" > /dev/null || exit 1 # forward non-zero exit status
+    "${JAVA_RUN}" ${JAVA_OPTIONS} ${OPTIONS} ${DEBUG_OPTS} -jar "$EXIST_APP_HOME/start.jar" client "${JAVA_ARGS[@]}" > /dev/null || exit 1 # forward non-zero exit status
 else
     echo "Using locale: ${LANG}";
-    "${JAVA_RUN}" ${JAVA_OPTIONS} ${OPTIONS} ${DEBUG_OPTS} -jar "$EXIST_HOME/start.jar" client "${JAVA_OPTS[@]}" || exit 1 # forward non-zero exit status
+    "${JAVA_RUN}" ${JAVA_OPTIONS} ${OPTIONS} ${DEBUG_OPTS} -jar "$EXIST_APP_HOME/start.jar" client "${JAVA_ARGS[@]}" || exit 1 # forward non-zero exit status
 
 fi
 restore_library_path;

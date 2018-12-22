@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-#unset LANG
-
-# $Id$
 
 # Usage with profiler:
 usage="run.sh [-a architecture-and-cpu] [-y yjp-home-path] class-to-run\n run.sh -a linux-x86-32 -y /home/ljo/bin/yjp-8.0.13 org.exist.xquery.XPathQueryTest\n\nYou need yjp-8 now to profile since we are using java5+"
@@ -37,14 +34,17 @@ source "${SCRIPTPATH}"/functions.d/eXist-settings.sh
 source "${SCRIPTPATH}"/functions.d/jmx-settings.sh
 source "${SCRIPTPATH}"/functions.d/getopt-settings.sh
 
+if [ -z "$EXIST_APP_HOME" ]; then
+    EXIST_APP_HOME=`dirname "$0"`
+    EXIST_APP_HOME=`dirname "$EXIST_APP_HOME"`
+fi
+
 if [ -z "$EXIST_HOME" ]; then
-    EXIST_HOME_1=`dirname "$0"`
-    EXIST_HOME=`dirname "$EXIST_HOME_1"`
+    EXIST_HOME="$EXIST_APP_HOME"
 fi
 
 if [ ! -f "$EXIST_HOME/conf.xml" ]; then
-    EXIST_HOME_1="$EXIST_HOME/.."
-    EXIST_HOME=$EXIST_HOME_1
+    EXIST_HOME="$EXIST_HOME/.."
 fi
 
 if [ -z "$EXIST_BASE" ]; then
@@ -66,11 +66,11 @@ PROFILER_OPTS=-agentlib:yjpagent
 if [ "x${yjp_home}" != "x" ]; then
 "${JAVA_RUN}" $JAVA_OPTIONS \
 	-Dexist.home=$EXIST_HOME $PROFILER_OPTS \
-	-jar ${EXIST_HOME}/start.jar "$@"
+	-jar ${EXIST_App_HOME}/start.jar "$@"
 else
 "${JAVA_RUN}" $JAVA_OPTIONS \
 	-Dexist.home=$EXIST_HOME \
-	-jar ${EXIST_HOME}/start.jar "$@"
+	-jar ${EXIST_APP_HOME}/start.jar "$@"
 fi
 
 restore_locale_lang;
