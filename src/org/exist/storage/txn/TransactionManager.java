@@ -160,6 +160,7 @@ public class TransactionManager implements BrokerPoolService {
                     final long thisThreadId = Thread.currentThread().getId();
                     if (systemThreadId.compareAndSet(thisThreadId, thisThreadId)) {
                         // our thread is executing system tasks, allow reentrancy from our thread!
+
                         // done... return from CAS loop!
                         return doBeginTransaction();
 
@@ -196,8 +197,8 @@ public class TransactionManager implements BrokerPoolService {
         }
 
         /*
-         * NOTE: we call intentionally increment the txn counter
-         *     to set the counter to 1 to represent the TxnStart
+         * NOTE: we intentionally increment the txn counter here
+         *     to set the counter to 1 to represent the TxnStart,
          *     as that will not be done
          *     by {@link JournalManager#journal(Loggable)} or
          *     {@link Journal#writeToLog(loggable)}.
@@ -494,8 +495,8 @@ public class TransactionManager implements BrokerPoolService {
     private int uncommittedTransaction() {
         final Integer uncommittedCount = transactions.reduce(1000,
                 (txnId, txnCounter) -> {
-                    if (txnCounter.counter > 0) {
-                        LOG.warn("Found an uncommitted transaction with id " + txnId + ". Pending operations: " + txnCounter.counter);
+                    if (txnCounter.getCount() > 0) {
+                        LOG.warn("Found an uncommitted transaction with id " + txnId + ". Pending operations: " + txnCounter.getCount());
                         return 1;
                     } else {
                         return 0;
@@ -550,7 +551,15 @@ public class TransactionManager implements BrokerPoolService {
      * during shutdown.
      */
     private static final class TxnCounter {
-        private long counter = 0;
+        /**
+         * The counter variable is declared volatile as it is only ever
+         * written from one thread (via {@link #increment()} which is
+         * the `transaction` for which it is maintaining a count, whilst
+         * it is read from (potentially) a different thread
+         * (via {@link #getCount()} when {@link TransactionManager#shutdown()}
+         * calls {@link TransactionManager#uncommittedTransaction()}.
+         */
+        private volatile long counter = 0;
 
         public TxnCounter increment() {
             counter++;
