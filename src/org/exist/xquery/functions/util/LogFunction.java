@@ -27,9 +27,15 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.source.StringSource;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
+
+import javax.xml.transform.OutputKeys;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Properties;
 
 
 /**
@@ -84,6 +90,10 @@ public class LogFunction extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
+        // Force adaptive serialization
+        final Properties props = new Properties();
+        props.setProperty(OutputKeys.METHOD, "adaptive");
+
         SequenceIterator i;
 
         final String calledAs = getName().getLocalPart();
@@ -137,17 +147,15 @@ public class LogFunction extends BasicFunction {
         // Iterate over all input
         while (i.hasNext()) {
             final Item next = i.nextItem();
-            if (Type.subTypeOf(next.getType(), Type.NODE)) {
-                final Serializer serializer = context.getBroker().getSerializer();
-                serializer.reset();
-                try {
-                    buf.append(serializer.serialize((NodeValue) next));
-                } catch (final SAXException e) {
-                    throw (new XPathException(this, "An exception occurred while serializing node to log: " + e.getMessage(), e));
-                }
-            } else {
-                buf.append(next.getStringValue());
+            try (StringWriter writer = new StringWriter()) {
+                XQuerySerializer xqs = new XQuerySerializer(context.getBroker(), props, writer);
+                xqs.serialize(next.toSequence());
+                buf.append(writer.toString());
+
+            } catch (IOException | SAXException e) {
+                throw new XPathException(this, e.getMessage());
             }
+
         }
 
         // Finally write the log
