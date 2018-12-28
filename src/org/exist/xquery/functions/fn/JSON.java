@@ -95,8 +95,26 @@ public class JSON extends BasicFunction {
             }
         }
 
+        JsonFactory factory = createJsonFactory(liberal);
+
+        if (isCalledAs("parse-json")) {
+            return parse(args[0], handleDuplicates, factory);
+        } else {
+            return parseResource(args[0], handleDuplicates, factory);
+        }
+    }
+
+    /**
+     *  Create and initialize JSON factory.
+     *
+     * @param liberal Set TRUE to allow non standard JSON features.
+     *
+     * @return JSON factory
+     */
+    public static JsonFactory createJsonFactory(boolean liberal) {
         JsonFactory factory = new JsonFactory();
         factory.configure(JsonParser.Feature.ALLOW_NON_NUMERIC_NUMBERS, true);
+
         // duplicates are handled in readValue
         factory.configure(JsonParser.Feature.STRICT_DUPLICATE_DETECTION, false);
         if (liberal) {
@@ -106,12 +124,7 @@ public class JSON extends BasicFunction {
             factory.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
             factory.configure(JsonParser.Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER, true);
         }
-
-        if (isCalledAs("parse-json")) {
-            return parse(args[0], handleDuplicates, factory);
-        } else {
-            return parseResource(args[0], handleDuplicates, factory);
-        }
+        return factory;
     }
 
     private Sequence parse(Sequence json, String handleDuplicates, JsonFactory factory) throws XPathException {
