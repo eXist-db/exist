@@ -77,14 +77,9 @@ public class SourceFactory {
         Source source = null;
 
         /* resource: */
-        if (location.startsWith(ClassLoaderSource.PROTOCOL)) {
-            source = new ClassLoaderSource(location);
-        } else if (contextPath != null && contextPath.startsWith(ClassLoaderSource.PROTOCOL)) {
-            // Pretend it is a file on the local system so we can resolve it easily with URL() class.
-            final String conPathNoProtocol = contextPath.replace(ClassLoaderSource.PROTOCOL, "file://");
-            String resolvedURL = new URL(new URL(conPathNoProtocol), location).toString();
-            resolvedURL = resolvedURL.replaceFirst("file://", ClassLoaderSource.PROTOCOL);
-            source = new ClassLoaderSource(resolvedURL);
+        if (location.startsWith(ClassLoaderSource.PROTOCOL)
+                || (contextPath != null && contextPath.startsWith(ClassLoaderSource.PROTOCOL))) {
+            source = getSource_fromClasspath(contextPath, location);
         }
 
         /* xmldb */
@@ -152,6 +147,26 @@ public class SourceFactory {
                 .create(path)
                 .getPathSegments()[0]
                 .getRawCollectionPath();
+    }
+
+    private static Source getSource_fromClasspath(final String contextPath, final String location) throws IOException {
+        if (location.startsWith(ClassLoaderSource.PROTOCOL)) {
+            return new ClassLoaderSource(location);
+        }
+
+        final Path rootPath = Paths.get(contextPath.substring(ClassLoaderSource.PROTOCOL.length()));
+
+        // 1) try resolving location as child
+        final Path childLocation = rootPath.resolve(location);
+        try {
+            return new ClassLoaderSource(ClassLoaderSource.PROTOCOL + childLocation.toString());
+        } catch (final IOException e) {
+            // no-op, we will try again below
+        }
+
+        // 2) try resolving location as sibling
+        final Path siblingLocation = rootPath.resolveSibling(location);
+        return new ClassLoaderSource(ClassLoaderSource.PROTOCOL + siblingLocation.toString());
     }
 
     /**
