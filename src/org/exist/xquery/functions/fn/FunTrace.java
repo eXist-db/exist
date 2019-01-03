@@ -21,26 +21,16 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.io.StringWriter;
-import java.io.Writer;
 import org.exist.dom.QName;
-import org.exist.storage.serializers.Serializer;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.util.serializer.XQuerySerializer;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
+
+import javax.xml.transform.OutputKeys;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Properties;
 
 /**
  * @author Dannes Wessels
@@ -72,18 +62,12 @@ public class FunTrace extends BasicFunction {
  * @see org.exist.xquery.BasicFunction#eval(Sequence[], Sequence)
  */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        
-        // TODO Add TRACE log statements using log4j
-        // TODO Figure out why XQTS still does not work
-        // TODO Remove unneeded comments
-        
+
         String label = args[1].getStringValue();
         if(label==null){
             label="";
         }
-        
-        final Serializer serializer= context.getBroker().getSerializer();
-        
+
         Sequence result ;
         
         if(args[0].isEmpty()){
@@ -95,38 +79,31 @@ public class FunTrace extends BasicFunction {
             
             int position = 0;
 
+            // Force adaptive serialization
+            final Properties props = new Properties();
+            props.setProperty(OutputKeys.METHOD, "adaptive");
+
             for (final SequenceIterator i = args[0].iterate(); i.hasNext();) {
 
                 // Get item
                 final Item next = i.nextItem();
 
-                // Only write if debug mode
+                // Only write if logger is set to debug mode
                 if (LOG.isDebugEnabled()) {
-                    
-                    String value = null;
+
                     position++;
 
-                    final int type = next.getType();
-                    
-                    // Serialize an element type
-                    if (Type.ELEMENT == type) {
-                        final Writer sw = new StringWriter();
-                        try {
-                            serializer.serialize((NodeValue) next, sw);
+                    try (StringWriter writer = new StringWriter()) {
+                        XQuerySerializer xqs = new XQuerySerializer(context.getBroker(), props, writer);
+                        xqs.serialize(next.toSequence());
 
-                        } catch (final SAXException ex) {
-                            LOG.error(ex.getMessage());
-                        }
-                        value = sw.toString();
+                        // Write to log
+                        LOG.debug("{} [{}] [{}]: {}", label, position, Type.getTypeName(next.getType()), writer.toString());
 
-                    // Get string value for other types
-                    } else {
-                        value = next.getStringValue();
-
+                    } catch (IOException | SAXException e) {
+                        throw new XPathException(this, e.getMessage());
                     }
-                    
-                    // Write to log
-                    LOG.debug(label + " [" + position + "]: " + Type.getTypeName(type) + ": " + value);
+
                 }
 
                 // Add to result
