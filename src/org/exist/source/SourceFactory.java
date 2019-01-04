@@ -159,14 +159,14 @@ public class SourceFactory {
         // 1) try resolving location as child
         final Path childLocation = rootPath.resolve(location);
         try {
-            return new ClassLoaderSource(ClassLoaderSource.PROTOCOL + childLocation.toString());
+            return new ClassLoaderSource(ClassLoaderSource.PROTOCOL + childLocation.toString().replace('\\', '/'));
         } catch (final IOException e) {
             // no-op, we will try again below
         }
 
         // 2) try resolving location as sibling
         final Path siblingLocation = rootPath.resolveSibling(location);
-        return new ClassLoaderSource(ClassLoaderSource.PROTOCOL + siblingLocation.toString());
+        return new ClassLoaderSource(ClassLoaderSource.PROTOCOL + siblingLocation.toString().replace('\\', '/'));
     }
 
     /**
