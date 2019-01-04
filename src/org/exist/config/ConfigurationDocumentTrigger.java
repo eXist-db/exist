@@ -32,7 +32,6 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.RealmImpl;
-import org.exist.security.utils.ConverterFrom1_0;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.sax.event.SAXEvent;
@@ -100,15 +99,6 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
             if (conf != null) {
                 conf.checkForUpdates(document.getDocumentElement());
             }
-            if (documentPath.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
-                try {
-                	final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
-                    ConverterFrom1_0.convert(broker, sm, document);
-                } catch (final PermissionDeniedException | EXistException e) {
-                    LOG.error(e.getMessage(), e);
-                    //TODO : raise exception ? -pb
-                }
-            }
             break;
         }
     }
@@ -117,17 +107,6 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         final Configuration conf = Configurator.getConfigurtion(broker.getBrokerPool(), uri);
         if (conf != null) {
             conf.checkForUpdates(document.getDocumentElement());
-        }
-
-        //TODO : use XmldbURI methos ! not String.equals()
-        if (uri.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
-            try {
-            	final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
-                ConverterFrom1_0.convert(broker, sm, document);
-            } catch (final PermissionDeniedException | EXistException e) {
-                LOG.error(e.getMessage(), e);
-                //TODO : raise exception ? -pb
-            }
         }
     }
 
