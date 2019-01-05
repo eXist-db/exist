@@ -134,6 +134,53 @@ public class SourceFactoryTest {
     }
 
     @Test
+    public void getSourceFromResource_contextFolderUrl_locationRelative() throws IOException, PermissionDeniedException {
+        final String contextPath = "resource:org/exist/source";
+        final String location = "library.xqm";
+
+        final Source source = SourceFactory.getSource(null, contextPath, location, false);
+
+        assertTrue(source instanceof ClassLoaderSource);
+        assertEquals(getClass().getResource("library.xqm"), source.getKey());
+    }
+
+    @Test
+    public void getSourceFromResource_contextFolderUrl_locationAbsoluteUrl() throws IOException, PermissionDeniedException {
+        final String contextPath = "resource:org/exist/source";
+        final String location = "resource:org/exist/source/library.xqm";
+
+        final Source source = SourceFactory.getSource(null, contextPath, location, false);
+
+        assertTrue(source instanceof ClassLoaderSource);
+        assertEquals(getClass().getResource("library.xqm"), source.getKey());
+    }
+
+    @Test
+    public void getSourceFromResource_contextFolderUrl_locationRelativeUrl() throws IOException, PermissionDeniedException {
+        final String contextPath = "resource:org/exist/source";
+        final String location = "library.xqm";
+
+        final Source source = SourceFactory.getSource(null, contextPath, location, false);
+
+        assertTrue(source instanceof ClassLoaderSource);
+        assertEquals(getClass().getResource("library.xqm"), source.getKey());
+    }
+
+    @Test
+    public void getSourceFromResource_contextFolderUrl_locationRelativeUrl_basedOnSource() throws IOException, PermissionDeniedException {
+        final String contextPath = "resource:org/exist/source";
+        final String location = "library.xqm";
+
+        final Source mainSource = SourceFactory.getSource(null, "", contextPath, false);
+        assertTrue(mainSource instanceof ClassLoaderSource);
+
+        final Source relativeSource = SourceFactory.getSource(null, ((ClassLoaderSource)mainSource).getSource(), location, false);
+
+        assertTrue(relativeSource instanceof ClassLoaderSource);
+        assertEquals(getClass().getResource(location), relativeSource.getKey());
+    }
+
+    @Test
     public void getSourceFromXmldb_noContext() throws IOException, PermissionDeniedException {
         final String contextPath = null;
         final String location = "xmldb:exist:///db/library.xqm";
