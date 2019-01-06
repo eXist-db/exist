@@ -45,10 +45,6 @@
         <description>XHTML document</description>
         <extensions>.xhtml,.xht</extensions>
     </mime-type>
-    <mime-type name="text/html" type="xml">
-        <description>HTML document</description>
-        <extensions>.html,.htm</extensions>
-    </mime-type>
     <mime-type name="application/atom+xml" type="xml">
         <description>Atom Feed Document</description>
         <extensions>.atom</extensions>
@@ -75,6 +71,11 @@
     </mime-type>
     
     <!-- Binary mime types -->
+    <mime-type name="text/html" type="binary">
+        <!-- HTML is most likely not valid XML, unless it is XHTML -->
+        <description>HTML document</description>
+        <extensions>.html,.htm</extensions>
+    </mime-type>
     <mime-type name="application/exi" type="binary">
         <description>Efficient XML Interchange</description>
         <extensions>.exi</extensions>
