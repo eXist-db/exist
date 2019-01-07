@@ -3,7 +3,10 @@ package org.exist.storage.txn;
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMockSupport;
 import org.exist.EXistException;
+import org.exist.security.SecurityManager;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.storage.SystemTaskManager;
 import org.exist.storage.journal.JournalManager;
 import org.junit.Test;
@@ -193,7 +196,14 @@ public class TxnTest extends EasyMockSupport {
         final JournalManager mockJournalManager = createMock(JournalManager.class);
         final SystemTaskManager mockTaskManager = createMock(SystemTaskManager.class);
 
-        replay(mockBrokerPool);
+        final DBBroker mockBroker = createMock(DBBroker.class);
+        final SecurityManager mockSecurityManager = createMock(SecurityManager.class);
+        final Subject mockSystemSubject = createMock(Subject.class);
+        expect(mockBrokerPool.get(Optional.of(mockSystemSubject))).andReturn(mockBroker);
+        expect(mockBrokerPool.getSecurityManager()).andReturn(mockSecurityManager);
+        expect(mockSecurityManager.getSystemSubject()).andReturn(mockSystemSubject);
+
+        replay(mockBrokerPool, mockSecurityManager);
 
         return new TransactionManager(mockBrokerPool, Optional.of(mockJournalManager), mockTaskManager);
     }
