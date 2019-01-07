@@ -548,26 +548,36 @@ public class TransactionManager implements BrokerPoolService {
     }
 
     private void processSystemTasks() {
-        // no new transactions can begin, commit, or abort whilst processing system tasks
-        // only process system tasks if there are no active transactions, i.e. the state == IDLE
-        if (state.compareAndSet(STATE_IDLE, STATE_SYSTEM)) {
-            // CAS above guarantees that only a single thread will ever enter this block at once
-            try {
-                this.systemThreadId.set(Thread.currentThread().getId());
+        if (state.get() != STATE_IDLE) {
+            // avoids taking a broker below if it is not needed
+            return;
+        }
 
-                // we have to check that `transactions` is empty
-                // otherwise we might be in SYSTEM state but `abort` or `commit`
-                // functions are still finishing
-                if (transactions.isEmpty()) {
-                    systemTaskManager.processTasks();
+        try (final DBBroker systemBroker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+
+            // no new transactions can begin, commit, or abort whilst processing system tasks
+            // only process system tasks if there are no active transactions, i.e. the state == IDLE
+            if (state.compareAndSet(STATE_IDLE, STATE_SYSTEM)) {
+                // CAS above guarantees that only a single thread will ever enter this block at once
+                try {
+                    this.systemThreadId.set(Thread.currentThread().getId());
+
+                    // we have to check that `transactions` is empty
+                    // otherwise we might be in SYSTEM state but `abort` or `commit`
+                    // functions are still finishing
+                    if (transactions.isEmpty()) {
+                        systemTaskManager.processTasks(systemBroker);
+                    }
+
+                } finally {
+                    this.systemThreadId.set(-1);
+
+                    // restore IDLE state
+                    state.set(STATE_IDLE);
                 }
-
-            } finally {
-                this.systemThreadId.set(-1);
-
-                // restore IDLE state
-                state.set(STATE_IDLE);
             }
+        } catch (final EXistException e) {
+            LOG.error("Unable to process system tasks: " + e.getMessage(), e);
         }
     }
 
