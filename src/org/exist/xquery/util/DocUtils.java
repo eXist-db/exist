@@ -34,6 +34,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
@@ -228,20 +229,31 @@ public class DocUtils {
      * @return document The document that was parsed
      * @throws XPathException
      */
-    public static org.exist.dom.memtree.DocumentImpl parse(final BrokerPool pool, final XQueryContext context, final InputStream is) throws XPathException {
+    public static org.exist.dom.memtree.DocumentImpl parse(final BrokerPool pool, final XQueryContext context,
+            final InputStream is) throws XPathException {
         // we use eXist's in-memory DOM implementation
-        final XMLReader reader = pool.getParserPool().borrowXMLReader();
-        final InputSource src = new InputSource(is);
-        final SAXAdapter adapter = new SAXAdapter(context);
-        reader.setContentHandler(adapter);
+        final XMLReaderPool parserPool = pool.getParserPool();
+        XMLReader reader = null;
         try {
-            reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
-            reader.parse(src);
-        } catch (final SAXNotRecognizedException | SAXNotSupportedException e) {
-            throw new XPathException("Error creating XML parser: " + e.getMessage(), e);
-        } catch (final IOException | SAXException e) {
-            throw new XPathException("Error while parsing XML: " + e.getMessage(), e);
+            reader = pool.getParserPool().borrowXMLReader();
+            final InputSource src = new InputSource(is);
+            final SAXAdapter adapter = new SAXAdapter(context);
+            reader.setContentHandler(adapter);
+            try {
+                reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
+                reader.parse(src);
+            } catch (final SAXNotRecognizedException | SAXNotSupportedException e) {
+                throw new XPathException("Error creating XML parser: " + e.getMessage(), e);
+            } catch (final IOException | SAXException e) {
+                throw new XPathException("Error while parsing XML: " + e.getMessage(), e);
+            }
+
+            return adapter.getDocument();
+
+        } finally {
+            if (reader != null) {
+                parserPool.returnXMLReader(reader);
+            }
         }
-        return adapter.getDocument();
     }
 }
