@@ -47,22 +47,31 @@ public class SystemTaskManager implements BrokerPoolService {
         this.pool = pool;
     }
 
-    public void triggerSystemTask(final SystemTask task) {
+    public void addSystemTask(final SystemTask task) {
         synchronized (waitingSystemTasks) {
             waitingSystemTasks.push(task);
-            pool.getTransactionManager().processSystemTasks();
         }
     }
 
-    public void processTasks() {
+    /**
+     * Process system tasks.
+     *
+     * @param systemBroker a broker running as the SYSTEM subject.
+     */
+    public void processTasks(final DBBroker systemBroker) {
         //dont run the task if we are shutting down
         if (pool.isShuttingDown() || pool.isShutDown()) {
             return;
         }
 
+        // broker must be running as the SYSTEM subject
+        if (!systemBroker.getCurrentSubject().equals(pool.getSecurityManager().getSystemSubject())) {
+            throw new IllegalArgumentException("Process tasks requires a system broker");
+        }
+
         synchronized (waitingSystemTasks) {
             if(!waitingSystemTasks.isEmpty()) {
-                try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+                try {
                     while (!waitingSystemTasks.isEmpty()) {
                         final SystemTask task = waitingSystemTasks.pop();
 
@@ -72,9 +81,9 @@ public class SystemTaskManager implements BrokerPoolService {
                             LOG.warn("Unable to execute SystemTask: '" + task.getName() + "' as database is shut down!");
                         } else {
                             if (task.afterCheckpoint()) {
-                                pool.sync(broker, Sync.MAJOR);
+                                pool.sync(systemBroker, Sync.MAJOR);
                             }
-                            runSystemTask(task, broker);
+                            runSystemTask(task, systemBroker);
                         }
                     }
                 } catch (final Exception e) {

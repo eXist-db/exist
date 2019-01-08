@@ -1,6 +1,8 @@
 package org.exist.storage.txn;
 
 import org.exist.EXistException;
+import org.exist.security.SecurityManager;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.SystemTaskManager;
@@ -26,11 +28,16 @@ public class TransactionManagerTestHelper {
         expectLastCall().atLeastOnce();
         mockBroker.close();
         expectLastCall().atLeastOnce();
+        final SecurityManager mockSecurityManager = createMock(SecurityManager.class);
+        final Subject mockSystemSubject = createMock(Subject.class);
+        expect(mockBrokerPool.get(Optional.of(mockSystemSubject))).andReturn(mockBroker).anyTimes();
+        expect(mockBrokerPool.getSecurityManager()).andReturn(mockSecurityManager).anyTimes();
+        expect(mockSecurityManager.getSystemSubject()).andReturn(mockSystemSubject).anyTimes();
 
         final JournalManager mockJournalManager = createMock(JournalManager.class);
         final SystemTaskManager mockTaskManager = createMock(SystemTaskManager.class);
 
-        replay(mockBrokerPool, mockBroker);
+        replay(mockBrokerPool, mockBroker, mockSecurityManager);
 
         return new TransactionManager(mockBrokerPool, Optional.of(mockJournalManager), mockTaskManager);
     }
