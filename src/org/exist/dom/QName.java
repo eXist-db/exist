@@ -157,6 +157,32 @@ public class QName implements Comparable<QName> {
     }
 
     /**
+     * Get a URIQualifiedName format of the QName.
+     *
+     * @return the URIQualifiedName
+     */
+    public final String toURIQualifiedName() {
+        return '{' + getNamespaceURI() + '}' + getLocalPart();
+    }
+
+    /**
+     * Constructs a QName from a URIQualifiedName.
+     *
+     * @param uriQualifiedName the URIQualifiedName.
+     *
+     * @return the QName
+     */
+    public static QName fromURIQualifiedName(final String uriQualifiedName) {
+        final Matcher matcher = ptnClarkNotation.matcher(uriQualifiedName);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Argument is not a URIQualifiedName");
+        }
+        final String ns = matcher.group(1);
+        final String localPart = matcher.group(2);
+        return new QName(localPart, ns);
+    }
+
+    /**
      * Compares two QNames by comparing namespace URI
      * and local names. The prefixes are not relevant.
      *

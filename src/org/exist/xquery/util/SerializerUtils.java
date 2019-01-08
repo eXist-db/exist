@@ -12,6 +12,7 @@ import org.exist.xquery.functions.fn.FnModule;
 import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.OutputKeys;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Function;
 
 /**
  * Serializer utilities used by several XQuery functions.
@@ -93,16 +95,20 @@ public class SerializerUtils {
             while (reader.hasNext()) {
                 final int status = reader.next();
                 if (status == XMLStreamReader.START_ELEMENT) {
+
                     final String key = reader.getLocalName();
                     if (properties.contains(key)) {
                         throw new XPathException(parent, FnModule.SEPM0019, "serialization parameter specified twice: " + key);
                     }
-                    String value = reader.getAttributeValue("", "value");
+
+                    String value = reader.getAttributeValue(XMLConstants.NULL_NS_URI, "value");
                     if (value == null) {
                         // backwards compatibility: use element text as value
                         value = reader.getElementText();
                     }
-                    properties.put(key, value);
+
+                    setProperty(key, value, properties, reader.getNamespaceContext()::getNamespaceURI);
+
                 } else if(status == XMLStreamReader.END_ELEMENT) {
                     final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
                     final int otherLevel = otherId.getTreeLevel();
@@ -114,6 +120,34 @@ public class SerializerUtils {
             }
         } catch (final XMLStreamException | IOException e) {
             throw new XPathException(parent, ErrorCodes.EXXQDY0001, e.getMessage());
+        }
+    }
+
+    public static void setProperty(final String key, final String value, final Properties properties,
+            final Function<String, String> prefixToNs) {
+        final ParameterConvention parameterConvention = PARAMETER_CONVENTIONS_BY_NAME.get(key);
+        if (parameterConvention == null || parameterConvention.type != Type.QNAME) {
+            properties.setProperty(key, value);
+        } else {
+            final StringBuilder qnamesValue = new StringBuilder();
+            final String[] qnameStrs = value.split("\\s");
+            for (final String qnameStr : qnameStrs) {
+                if (qnamesValue.length() > 0) {
+                    //separate entries with a space
+                    qnamesValue.append(' ');
+                }
+
+                final String[] prefixAndLocal = qnameStr.split(":");
+                if (prefixAndLocal.length == 1) {
+                    qnamesValue.append("{}").append(prefixAndLocal[0]);
+                } else if (prefixAndLocal.length == 2) {
+                    final String prefix = prefixAndLocal[0];
+                    final String ns = prefixToNs.apply(prefix);
+                    qnamesValue.append('{').append(ns).append('}').append(prefixAndLocal[1]);
+                }
+            }
+
+            properties.setProperty(key, qnamesValue.toString());
         }
     }
 
@@ -249,12 +283,12 @@ public class SerializerUtils {
                 if (Cardinality.checkCardinality(Cardinality.MANY, parameterConvention.cardinality)) {
                     final String existingValue = (String) properties.get(parameterConvention.parameterName);
                     if (existingValue == null || existingValue.isEmpty()) {
-                        properties.setProperty(parameterConvention.parameterName, ((QNameValue) parameterValue.itemAt(0)).getStringValue());
+                        properties.setProperty(parameterConvention.parameterName, ((QNameValue) parameterValue.itemAt(0)).getQName().toURIQualifiedName());
                     } else {
-                        properties.setProperty(parameterConvention.parameterName, existingValue + " " + ((QNameValue) parameterValue.itemAt(0)).getStringValue());
+                        properties.setProperty(parameterConvention.parameterName, existingValue + " " + ((QNameValue) parameterValue.itemAt(0)).getQName().toURIQualifiedName());
                     }
                 } else {
-                    properties.setProperty(parameterConvention.parameterName, ((QNameValue) parameterValue.itemAt(0)).getStringValue());
+                    properties.setProperty(parameterConvention.parameterName, ((QNameValue) parameterValue.itemAt(0)).getQName().toURIQualifiedName());
                 }
             }
         } else if(Type.MAP == parameterConvention.type) {
