@@ -58,16 +58,16 @@ public class LuceneIndexConfig {
 
     private String name = null;
 
-    private NodePath path = null;
+    private NodePathPattern path = null;
 
     private boolean isQNameIndex = false;
 
     private Map<QName, String> specialNodes = null;
 
     private LuceneIndexConfig nextConfig = null;
-    
+
     private FieldType type = null;
-    
+
     // This is for the @attr match boosting
     // and the intention is to do a proper predicate check instead in the future. /ljo
     private MultiMap matchAttrs;
@@ -78,13 +78,13 @@ public class LuceneIndexConfig {
     			Map<String, FieldType> fieldTypes) throws DatabaseConfigurationException {
         if (config.hasAttribute(QNAME_ATTR)) {
             QName qname = parseQName(config, namespaces);
-            path = new NodePath(qname);
+            path = new NodePathPattern(qname);
             isQNameIndex = true;
         } else {
             String matchPath = config.getAttribute(MATCH_ATTR);
 
             try {
-				path = new NodePath(namespaces, matchPath);
+				path = new NodePathPattern(namespaces, matchPath);
 				if (path.length() == 0)
 				    throw new DatabaseConfigurationException("Lucene module: Invalid match path in collection config: " +
 				        matchPath);
@@ -96,10 +96,10 @@ public class LuceneIndexConfig {
         String name = config.getAttribute(FIELD_ATTR);
         if (name != null && name.length() > 0)
         	setName(name);
-        
+
         String fieldType = config.getAttribute(TYPE_ATTR);
         if (fieldType != null && fieldType.length() > 0)
-        	type = fieldTypes.get(fieldType);        
+        	type = fieldTypes.get(fieldType);
         if (type == null)
         	type = new FieldType(config, analyzers);
 
@@ -200,7 +200,7 @@ public class LuceneIndexConfig {
         return path.getLastComponent();
     }
 
-    public NodePath getNodePath() {
+    public NodePathPattern getNodePathPattern() {
         return path;
     }
 
@@ -252,14 +252,14 @@ public class LuceneIndexConfig {
     public String getName() {
 	return name;
     }
-	
+
     public void add(LuceneIndexConfig config) {
 	if (nextConfig == null)
 	    nextConfig = config;
 	else
 	    nextConfig.add(config);
     }
-	
+
     public LuceneIndexConfig getNext() {
 	return nextConfig;
     }
@@ -267,7 +267,7 @@ public class LuceneIndexConfig {
     private boolean isAttributeNode() {
         return path.getLastComponent().getNameType() == ElementValue.ATTRIBUTE;
     }
-	
+
     /**
      * @return true if this index can be queried by name
      */
