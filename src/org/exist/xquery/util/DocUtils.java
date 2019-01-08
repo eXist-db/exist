@@ -116,8 +116,6 @@ public class DocUtils {
     }
 
     private static Sequence getDocumentByPathFromURL(final XQueryContext context, final String path) throws XPathException, PermissionDeniedException {
-        XMLReader reader = null;
-            /* URL */
         try {
             final Source source = SourceFactory.getSource(context.getBroker(), "", path, false);
             if (source == null) {
@@ -135,18 +133,10 @@ public class DocUtils {
                     }
                 }
 
-                //TODO : process pseudo-protocols URLs more efficiently.
-                org.exist.dom.memtree.DocumentImpl memtreeDoc = null;
-                // we use eXist's in-memory DOM implementation
-                reader = context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
-                //TODO : we should be able to cope with context.getBaseURI()
-                final InputSource src = new InputSource(is);
-                final SAXAdapter adapter = new SAXAdapter();
-                reader.setContentHandler(adapter);
-                reader.parse(src);
-                final Document doc = adapter.getDocument();
-                memtreeDoc = (org.exist.dom.memtree.DocumentImpl) doc;
-                memtreeDoc.setContext(context);
+                final org.exist.dom.memtree.DocumentImpl memtreeDoc = parse(
+                        context.getBroker().getBrokerPool(),
+                        context,
+                        is);
                 memtreeDoc.setDocumentURI(path);
                 return memtreeDoc;
             }
@@ -155,14 +145,8 @@ public class DocUtils {
             throw new XPathException(e.getMessage() + " (" + path + ")");
         } catch (final MalformedURLException e) {
             throw new XPathException(e.getMessage(), e);
-        } catch (final SAXException e) {
-            throw new XPathException("An error occurred while parsing " + path + ": " + e.getMessage(), e);
         } catch (final IOException e) {
             throw new XPathException("An error occurred while parsing " + path + ": " + e.getMessage(), e);
-        } finally {
-            if (reader != null) {
-                context.getBroker().getBrokerPool().getParserPool().returnXMLReader(reader);
-            }
         }
     }
 
