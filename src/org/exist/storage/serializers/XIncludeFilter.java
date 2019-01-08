@@ -496,6 +496,7 @@ public class XIncludeFilter implements Receiver {
                 reader = parserPool.borrowXMLReader();
                 final SAXAdapter adapter = new SAXAdapter();
                 reader.setContentHandler(adapter);
+                reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
                 reader.parse(src);
                 final org.exist.dom.memtree.DocumentImpl doc = adapter.getDocument();
                 doc.setDocumentURI(externalUri.toString());
