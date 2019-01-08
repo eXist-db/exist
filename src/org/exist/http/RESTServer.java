@@ -955,6 +955,7 @@ public class RESTServer {
             reader = parserPool.borrowXMLReader();
             final SAXAdapter adapter = new SAXAdapter();
             nsExtractor.setContentHandler(adapter);
+            reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             nsExtractor.setParent(reader);
             nsExtractor.parse(src);
 

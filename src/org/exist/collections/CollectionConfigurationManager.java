@@ -22,6 +22,7 @@ package org.exist.collections;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.Namespaces;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.memtree.SAXAdapter;
@@ -162,6 +163,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
             try {
                 reader = parserPool.borrowXMLReader();
                 reader.setContentHandler(adapter);
+                reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
                 reader.parse(src);
             } finally {
                 if (reader != null) {
