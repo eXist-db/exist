@@ -50,6 +50,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.LifeCycle;
+import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.config.annotation.*;
@@ -765,6 +766,7 @@ public class Configurator {
 
             final SAXAdapter adapter = new SAXAdapter();
             reader.setContentHandler(adapter);
+            reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             reader.parse(src);
             
             return new ConfigurationImpl(adapter.getDocument().getDocumentElement());
