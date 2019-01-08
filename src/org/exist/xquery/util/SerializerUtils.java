@@ -281,11 +281,14 @@ public class SerializerUtils {
         } else if(Type.QNAME == parameterConvention.type) {
             if(!parameterValue.isEmpty()) {
                 if (Cardinality.checkCardinality(Cardinality.MANY, parameterConvention.cardinality)) {
-                    final String existingValue = (String) properties.get(parameterConvention.parameterName);
-                    if (existingValue == null || existingValue.isEmpty()) {
-                        properties.setProperty(parameterConvention.parameterName, ((QNameValue) parameterValue.itemAt(0)).getQName().toURIQualifiedName());
-                    } else {
-                        properties.setProperty(parameterConvention.parameterName, existingValue + " " + ((QNameValue) parameterValue.itemAt(0)).getQName().toURIQualifiedName());
+                    final SequenceIterator iterator = parameterValue.iterate();
+                    while (iterator.hasNext()) {
+                        final String existingValue = (String) properties.get(parameterConvention.parameterName);
+                        if (existingValue == null || existingValue.isEmpty()) {
+                            properties.setProperty(parameterConvention.parameterName, ((QNameValue) iterator.nextItem()).getQName().toURIQualifiedName());
+                        } else {
+                            properties.setProperty(parameterConvention.parameterName, existingValue + " " + ((QNameValue) iterator.nextItem()).getQName().toURIQualifiedName());
+                        }
                     }
                 } else {
                     properties.setProperty(parameterConvention.parameterName, ((QNameValue) parameterValue.itemAt(0)).getQName().toURIQualifiedName());
