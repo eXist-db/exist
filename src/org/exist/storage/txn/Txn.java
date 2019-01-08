@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
+import net.jcip.annotations.NotThreadSafe;
 import com.evolvedbinary.j8fu.function.SupplierE;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.Logger;
@@ -41,6 +42,7 @@ import org.exist.xmldb.XmldbURI;
  * @author wolf
  *
  */
+@NotThreadSafe
 public class Txn implements Transaction {
 
     public enum State { STARTED, ABORTED, COMMITTED, CLOSED }
