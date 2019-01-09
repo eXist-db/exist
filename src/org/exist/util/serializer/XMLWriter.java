@@ -21,10 +21,11 @@ package org.exist.util.serializer;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Arrays;
-import java.util.Properties;
+import java.util.*;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
+
+import com.evolvedbinary.j8fu.lazy.LazyVal;
 import org.exist.dom.QName;
 import org.exist.util.XMLString;
 import org.exist.util.serializer.encodings.CharacterSet;
@@ -65,6 +66,10 @@ public class XMLWriter {
     private static boolean[] attrSpecialChars;
 
     private String defaultNamespace = "";
+
+    private final Deque<QName> elementName = new ArrayDeque<QName>();
+    private LazyVal<Set<QName>> cdataSectionElements = new LazyVal<>(this::parseCdataSectionElementNames);
+    private boolean cdataSetionElement = false;
 
     static {
         textSpecialChars = new boolean[128];
@@ -116,6 +121,19 @@ public class XMLWriter {
         }
     }
 
+    private Set<QName> parseCdataSectionElementNames() {
+        final String s = outputProperties.getProperty(OutputKeys.CDATA_SECTION_ELEMENTS);
+        if (s == null || s.isEmpty()) {
+            return Collections.EMPTY_SET;
+        }
+
+        final Set<QName> qnames = new HashSet<>();
+        for (final String uriQualifiedName : s.split("\\s")) {
+            qnames.add(QName.fromURIQualifiedName(uriQualifiedName));
+        }
+        return qnames;
+    }
+
     protected void reset() {
         writer = null;
         resetObjectState();
@@ -127,6 +145,7 @@ public class XMLWriter {
         declarationWritten = false;
         doctypeWritten = false;
         defaultNamespace = "";
+        cdataSectionElements = new LazyVal<>(this::parseCdataSectionElementNames);
     }
 
     /**
@@ -174,6 +193,11 @@ public class XMLWriter {
             writer.write('<');
             writer.write(qname);
             tagIsOpen = true;
+            try {
+                elementName.push(QName.parse(namespaceUri, qname));
+            } catch (final QName.IllegalQNameException e) {
+                throw new TransformerException(e.getMessage(), e);
+            }
         } catch(final IOException ioe) {
             throw new TransformerException(ioe.getMessage(), ioe);
         }
@@ -200,6 +224,7 @@ public class XMLWriter {
             
             writer.write(qname.getLocalPart());
             tagIsOpen = true;
+            elementName.push(qname);
         } catch(final IOException ioe) {
             throw new TransformerException(ioe.getMessage(), ioe);
         }
@@ -209,6 +234,7 @@ public class XMLWriter {
         try {
             if (tagIsOpen) {
                 closeStartTag(true);
+                elementName.pop();
             } else {
                 writer.write("</");
                 writer.write(qname);
@@ -223,6 +249,7 @@ public class XMLWriter {
         try {
             if(tagIsOpen) {
                 closeStartTag(true);
+                elementName.pop();
             } else {
                 writer.write("</");
                 if(qname.getPrefix() != null && qname.getPrefix().length() > 0) {
@@ -329,10 +356,21 @@ public class XMLWriter {
     public void characters(final char[] ch, final int start, final int len) throws TransformerException {
         if(!declarationWritten) {
             writeDeclaration();
-        }      
-        final XMLString s = new XMLString(ch, start, len);
-        characters(s);
-        s.release();
+        }
+        if (cdataSetionElement) {
+            try {
+                writer.write(ch, start, len);
+            } catch (final IOException e) {
+                throw new TransformerException(e.getMessage(), e);
+            }
+        } else {
+            final XMLString s = new XMLString(ch, start, len);
+            try {
+                characters(s);
+            } finally {
+                s.release();
+            }
+        }
     }
 
     public void processingInstruction(final String target, final String data) throws TransformerException {
@@ -363,8 +401,9 @@ public class XMLWriter {
             
         try {
             if(tagIsOpen) {
-                        closeStartTag(false);
+                closeStartTag(false);
             }
+
             writer.write("<!--");
             writer.write(data.toString());
             writer.write("-->");
@@ -378,18 +417,24 @@ public class XMLWriter {
             closeStartTag(false);
         }
 
-        try {
-            writer.write("<![CDATA[");
-        } catch(final IOException ioe) {
-            throw new TransformerException(ioe.getMessage(), ioe);
+        if (cdataSectionElements.get().contains(elementName.peek())) {
+            try {
+                writer.write("<![CDATA[");
+                this.cdataSetionElement = true;
+            } catch (final IOException ioe) {
+                throw new TransformerException(ioe.getMessage(), ioe);
+            }
         }
     }
 
     public void endCdataSection() throws TransformerException {
-        try {
-            writer.write("]]>");
-        } catch(final IOException ioe) {
-            throw new TransformerException(ioe.getMessage(), ioe);
+        if (cdataSectionElements.get().contains(elementName.peek())) {
+            try {
+                writer.write("]]>");
+                this.cdataSetionElement = false;
+            } catch (final IOException ioe) {
+                throw new TransformerException(ioe.getMessage(), ioe);
+            }
         }
     }
 
@@ -521,7 +566,7 @@ public class XMLWriter {
                         i++;
                     }
                 } else if(!charSet.inCharacterSet(ch)) {
-                                break;
+                    break;
                 } else {
                     i++;
                 }
@@ -530,7 +575,7 @@ public class XMLWriter {
             // writer.write(s.subSequence(pos, i).toString());
             
             if (i >= len) {
-                    return;
+                return;
             }
             
             if(needsEscape(ch)) {
