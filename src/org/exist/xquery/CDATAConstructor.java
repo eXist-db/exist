@@ -31,9 +31,7 @@ import org.exist.xquery.value.Sequence;
  * @author wolf
  */
 public class CDATAConstructor extends NodeConstructor {
-
     private final String cdata;
-    private boolean literalCharacters = false;
 
     /**
      * @param context the xquery context
@@ -42,12 +40,6 @@ public class CDATAConstructor extends NodeConstructor {
     public CDATAConstructor(final XQueryContext context, final String content) {
         super(context);
         this.cdata = content;
-    }
-
-    @Override
-    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
-        super.analyze(contextInfo);
-        this.literalCharacters = (contextInfo.getFlags() & IN_NODE_CONSTRUCTOR) != 0;
     }
 
     @Override
@@ -69,19 +61,7 @@ public class CDATAConstructor extends NodeConstructor {
 
         try {
             final MemTreeBuilder builder = context.getDocumentBuilder();
-
-            final int nodeNr;
-            if (literalCharacters) {
-                //Empty CDATA sections generate no text nodes
-                if (cdata.isEmpty()) {
-                    return Sequence.EMPTY_SEQUENCE;
-                }
-
-                nodeNr = builder.characters(cdata);
-            } else {
-                nodeNr = builder.cdataSection(cdata);
-            }
-            final NodeImpl node = builder.getDocument().getNode(nodeNr);
+            final NodeImpl node = builder.getDocument().getNode(builder.cdataSection(cdata));
 
             if (context.getProfiler().isEnabled()) {
                 context.getProfiler().end(this, "", node);
