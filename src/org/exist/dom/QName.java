@@ -27,7 +27,6 @@ import org.exist.util.XMLChar;
 import org.exist.xquery.Constants;
 
 import javax.xml.XMLConstants;
-import java.nio.channels.IllegalChannelGroupException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
