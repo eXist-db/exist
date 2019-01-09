@@ -39,6 +39,7 @@ import org.exist.stax.IEmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
+import org.exist.storage.NodePath2;
 import org.exist.util.serializer.AttrList;
 import org.xml.sax.SAXException;
 
@@ -313,19 +314,19 @@ public class LuceneMatchListener extends AbstractMatchListener {
     }
 
     private NodePath getPath(final NodeProxy proxy) {
-        final NodePath path = new NodePath();
+        final NodePath2 path = new NodePath2();
         final IStoredNode<?> node = (IStoredNode<?>) proxy.getNode();
         walkAncestor(node, path);
         return path;
     }
 
-    private void walkAncestor(final IStoredNode node, final NodePath path) {
+    private void walkAncestor(final IStoredNode node, final NodePath2 path) {
         if (node == null) {
             return;
         }
         final IStoredNode parent = node.getParentStoredNode();
         walkAncestor(parent, path);
-        path.addComponent(node.getQName());
+        path.addNode(node);
     }
 
     /**

@@ -56,6 +56,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
+import org.exist.storage.NodePath2;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
@@ -291,19 +292,20 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 //            return null;
         if (config == null)
             return null;
-        NodePath p = new NodePath(path);
+        NodePath2 p = new NodePath2((NodePath2)path);
         boolean reindexRequired = false;
-        if (node.getNodeType() == Node.ELEMENT_NODE && !includeSelf)
-            p.removeLastComponent();
+        if (node.getNodeType() == Node.ELEMENT_NODE && !includeSelf) {
+            p.removeLastNode();
+        }
         while (p.length() > 0) {
             if (config.matches(p)) {
                 reindexRequired = true;
                 break;
             }
-            p.removeLastComponent();
+            p.removeLastNode();
         }
         if (reindexRequired) {
-            p = new NodePath(path);
+            p = new NodePath2((NodePath2)path);
             IStoredNode topMost = null;
             IStoredNode currentNode = node;
             if (currentNode.getNodeType() != Node.ELEMENT_NODE)
@@ -312,7 +314,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (config.matches(p))
                     topMost = currentNode;
                 currentNode = currentNode.getParentStoredNode();
-                p.removeLastComponent();
+                p.removeLastNode();
             }
             return topMost;
         }

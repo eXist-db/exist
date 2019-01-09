@@ -261,20 +261,20 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             return null;
         }
 
-        NodePath p = new NodePath(path);
+        NodePath2 p = new NodePath2((NodePath2)path);
         boolean reindexRequired = false;
 
         if (node.getNodeType() == Node.ELEMENT_NODE && !includeSelf)
-            p.removeLastComponent();
+            p.removeLastNode();
         for (int i = 0; i < p.length(); i++) {
             if (config.matches(p)) {
                 reindexRequired = true;
                 break;
             }
-            p.removeLastComponent();
+            p.removeLastNode();
         }
         if (reindexRequired) {
-            p = new NodePath(path);
+            p = new NodePath2((NodePath2)path);
             IStoredNode topMost = null;
             IStoredNode currentNode = node;
             if (currentNode.getNodeType() != Node.ELEMENT_NODE)
@@ -283,7 +283,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (config.matches(p))
                     topMost = currentNode;
                 currentNode = currentNode.getParentStoredNode();
-                p.removeLastComponent();
+                p.removeLastNode();
             }
             return topMost;
         }
