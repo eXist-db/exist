@@ -126,15 +126,15 @@ public class LuceneIndexTest {
         "</section>";
 
     private static final String XML8 =
-            "<a>" +
-            "   <b att='att on b1'>AAA on b1</b>" +
-            "   <b att='att on b2' attr='attr on b2'>AAA on b2</b>" +
-            "   <bb><b att='att on b3' attr='attr on b3'>AAA on b3</b></bb>" +
-            "   <c att='att on c1'>AAA on c1</c>" +
-            "   <c>AAA on c2</c>" +
-            "</a>";
+        "<a>" +
+        "   <b att='att on b1'>AAA on b1</b>" +
+        "   <b att='att on b2' attr='attr on b2'>AAA on b2</b>" +
+        "   <bb><b att='att on b3' attr='attr on b3'>AAA on b3</b></bb>" +
+        "   <c att='att on c1'>AAA on c1</c>" +
+        "   <c>AAA on c2</c>" +
+        "</a>";
 
-        private static final String XML9 =
+    private static final String XML9 =
 	    "<TEI xmlns=\"http://www.tei-c.org/ns/1.0\">" +
 	    "   <body>" +
             "      <p>erste aus haus maus zaus yaus raus qaus leisten</p>" +
@@ -288,6 +288,88 @@ public class LuceneIndexTest {
             assertEquals(1, seq.getItemCount());
 
             seq = xquery.execute(broker, "/section[ft:query(head/*, 'just')]", null);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
+        }
+    }
+
+    @Test
+    public void moreElaborateQueries() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, LockException, IOException, XPathException, QName.IllegalQNameException {
+        final String XML10 =
+                "<TEI>\n" +  // xmlns=\"http://www.tei-c.org/ns/1.0\">\n" +
+                "   <teiHeader>\n" +
+                "      <title type='t' xml:lang=\"Sa-Ltn\">       Buick             </title> \n" + // this should get indexed
+                "      <title type='t'     lang=\"Sa-Ltn\">       Cadillac          </title> \n" + // this should not get indexed -- attribute name ns does not match
+                "      <title type='t' xml:lang=\"En\"    >       Dodge             </title> \n" + // this should not get indexed -- attribute value does not match
+                "      <title type='t'                    >       Ford              </title> \n" + // this should not get indexed -- attribute is entirely missing
+                "      <title type='t' xml:lang=\"Sa-Ltn\"> <tag> ABuick    </tag>  </title> \n" + // this should get indexed
+                "      <title type='t'     lang=\"Sa-Ltn\"> <tag> ACadillac </tag>  </title> \n" + // this should not get indexed -- attribute name ns does not match
+                "      <title type='t' xml:lang=\"En\"    > <tag> ADodge    </tag>  </title> \n" + // this should not get indexed -- attribute value does not match
+                "      <title type='t'                    > <tag> AFord     </tag>  </title> \n" + // this should not get indexed -- attribute is entirely missing
+                "   </teiHeader>\n" +
+                "</TEI>";
+
+        final String COLLECTION_CONFIG10 =
+                "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">\n" +
+                "    <index>\n" +
+                "        <!-- Lucene indexes -->\n" +
+                "        <lucene diacritics='no'>\n" +
+                "            <analyzer class='org.apache.lucene.analysis.standard.StandardAnalyzer'/>\n" +
+                "            <text match=\"//title[@xml:lang='Sa-Ltn']\"/>\n" +
+                "        </lucene> \n" +
+                "    </index>\n" +
+                "</collection>";
+
+
+        final DocumentSet docs = configureAndStore(COLLECTION_CONFIG10, XML10, "test.xml");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+
+
+            // unbeknownst to me, the test on the next line fails if the literal "buick" is replaced with "Buick":
+            final Occurrences[] o1 = checkIndex(docs, broker, new QName[]{new QName("title")}, "buick", 1);
+            final Occurrences[] o2 = checkIndex(docs, broker, new QName[]{new QName("title")}, "cadillac", 0);
+            final Occurrences[] o3 = checkIndex(docs, broker, new QName[]{new QName("title")}, "dodge", 0);
+            final Occurrences[] o4 = checkIndex(docs, broker, new QName[]{new QName("title")}, "ford", 0);
+
+            final Occurrences[] p1 = checkIndex(docs, broker, new QName[]{new QName("title")}, "abuick", 1);
+            final Occurrences[] p2 = checkIndex(docs, broker, new QName[]{new QName("title")}, "acadillac", 0);
+            final Occurrences[] p3 = checkIndex(docs, broker, new QName[]{new QName("title")}, "adodge", 0);
+            final Occurrences[] p4 = checkIndex(docs, broker, new QName[]{new QName("title")}, "aford", 0);
+
+            final XQuery xquery = pool.getXQueryService();
+            assertNotNull(xquery);
+            Sequence seq;
+
+            seq = xquery.execute(broker, "//.[ft:query(title, 'Buick')]", null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute(broker, "//.[ft:query(title, 'Cadillac')]", null);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
+
+            seq = xquery.execute(broker, "//.[ft:query(title, 'Dodge')]", null);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
+
+            seq = xquery.execute(broker, "//.[ft:query(title, 'Ford')]", null);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
+
+            seq = xquery.execute(broker, "//.[ft:query(title, 'ABuick')]", null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute(broker, "//.[ft:query(title, 'ACadillac')]", null);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
+
+            seq = xquery.execute(broker, "//.[ft:query(title, 'ADodge')]", null);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
+
+            seq = xquery.execute(broker, "//.[ft:query(title, 'AFord')]", null);
             assertNotNull(seq);
             assertEquals(0, seq.getItemCount());
         }
@@ -1221,6 +1303,10 @@ public class LuceneIndexTest {
         return docs;
     }
 
+    /** It really depends on the Analyzer used with the index,
+     *  but probably you would like to have the 'term' argument all lower cased.
+     *  @see <a href='https://sourceforge.net/p/exist/mailman/message/36436727/'>Help needed with a test case</a>
+     */
     private Occurrences[] checkIndex(final DocumentSet docs, final DBBroker broker, final QName[] qn, final String term, final int expected) {
         final LuceneIndexWorker index = (LuceneIndexWorker)broker.getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         final Map<String, Object> hints = new HashMap<>();
