@@ -103,37 +103,102 @@
     <xs:complexType name="rangeIndexCreateType">
         <xs:group ref="fieldDefinitions" minOccurs="0" maxOccurs="unbounded"/>
         <xs:attributeGroup ref="qnameOpt"/>
+        <xs:attributeGroup ref="typeOpt"/>
         <xs:attributeGroup ref="nestedOpt"/>
         <xs:attributeGroup ref="whitespaceOpt"/>
+        <xs:attributeGroup ref="caseOpt"/>
         <xs:attribute name="collation" use="optional" type="xs:string"/>
     </xs:complexType>
     
     <xs:group name="fieldDefinitions">
         <xs:sequence>
+            <xs:element name="condition" type="newRangeIndexConditionType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="field" type="newRangeIndexFieldType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:group>
     
-    <xs:complexType name="newRangeIndexFieldType">
-        <xs:attributeGroup ref="nameReq"/>
-        <xs:attributeGroup ref="qnameOpt"/>
-        <xs:attributeGroup ref="matchOpt"/>
-        <xs:attribute name="case" use="optional">
+    <xs:complexType name="newRangeIndexConditionType">
+        <xs:attribute name="attribute" type="xs:NCName" use="required"/>
+        <xs:attribute name="operator" use="optional" default="eq">
             <xs:simpleType>
                 <xs:restriction base="xs:token">
-                    <xs:enumeration value="yes">
+                    <xs:enumeration value="eq">
                         <xs:annotation>
-                            <xs:documentation>Case sensitive</xs:documentation>
+                            <xs:documentation>Equals</xs:documentation>
                         </xs:annotation>
                     </xs:enumeration>
-                    <xs:enumeration value="no">
+                    <xs:enumeration value="ne">
                         <xs:annotation>
-                            <xs:documentation>Case insensitive</xs:documentation>
+                            <xs:documentation>Not equals</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="lt">
+                        <xs:annotation>
+                            <xs:documentation>Less than</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="gt">
+                        <xs:annotation>
+                            <xs:documentation>Greater than</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="le">
+                        <xs:annotation>
+                            <xs:documentation>Less than or equals</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="ge">
+                        <xs:annotation>
+                            <xs:documentation>Greater than or equals</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="starts-with">
+                        <xs:annotation>
+                            <xs:documentation>Starts with</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="ends-with">
+                        <xs:annotation>
+                            <xs:documentation>Ends with</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="contains">
+                        <xs:annotation>
+                            <xs:documentation>Contains</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="matches">
+                        <xs:annotation>
+                            <xs:documentation>Matches (supports Java regular expressions)</xs:documentation>
                         </xs:annotation>
                     </xs:enumeration>
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
+        <xs:attribute name="value" type="xs:string" use="required"/>
+        <xs:attributeGroup ref="caseOpt"/>
+        <xs:attribute name="numeric" use="optional" default="no">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="yes">
+                        <xs:annotation>
+                            <xs:documentation>Use numeric comparison for equality and ordinal comparisons</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="no">
+                        <xs:annotation>
+                            <xs:documentation>Use string comparison</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="newRangeIndexFieldType">
+        <xs:attributeGroup ref="nameReq"/>
+        <xs:attributeGroup ref="matchOpt"/>
+        <xs:attributeGroup ref="caseOpt"/>
         <xs:attributeGroup ref="nestedOpt"/>
         <xs:attributeGroup ref="whitespaceOpt"/>
         <xs:attributeGroup ref="typeReq"/>
@@ -314,6 +379,24 @@
     </xs:attributeGroup>
     <xs:attributeGroup name="boostReq">
         <xs:attribute name="boost" type="xs:double" use="required" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="caseOpt">
+        <xs:attribute name="case" use="optional">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="yes">
+                        <xs:annotation>
+                            <xs:documentation>Case sensitive</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="no">
+                        <xs:annotation>
+                            <xs:documentation>Case insensitive</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
     </xs:attributeGroup>
     <xs:attributeGroup name="matchOpt">
         <xs:attribute name="match" type="xs:string" use="optional" form="unqualified"/>
