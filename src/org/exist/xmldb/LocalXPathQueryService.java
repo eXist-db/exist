@@ -33,6 +33,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.LockedDocumentMap;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xmldb.function.LocalXmldbFunction;
@@ -221,7 +222,9 @@ public class LocalXPathQueryService extends AbstractLocalService implements EXis
         }
         LOG.debug("query took " + (System.currentTimeMillis() - start) + " ms.");
         if(result != null) {
-            return new LocalResourceSet(user, brokerPool, collection, properties, result, sortExpr);
+            final Properties resourceSetProperties = new Properties(properties);
+            resourceSetProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
+            return new LocalResourceSet(user, brokerPool, collection, resourceSetProperties, result, sortExpr);
         } else {
             return null;
         }
@@ -282,7 +285,9 @@ public class LocalXPathQueryService extends AbstractLocalService implements EXis
                 if(LOG.isDebugEnabled()) {
                     LOG.debug("query took " + (System.currentTimeMillis() - start) + " ms.");
                 }
-                return result != null ? new LocalResourceSet(user, brokerPool, collection, properties, result, null) : null;
+                final Properties resourceSetProperties = new Properties(properties);
+                resourceSetProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
+                return result != null ? new LocalResourceSet(user, brokerPool, collection, resourceSetProperties, result, null) : null;
             } finally {
                 compiled.getContext().runCleanupTasks();
                 pool.returnCompiledXQuery(source, compiled);

@@ -26,6 +26,7 @@ import java.util.*;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.source.Source;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.Leasable;
 import org.exist.xmlrpc.RpcAPI;
 import org.exist.xquery.XPathException;
@@ -116,7 +117,9 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
                 handle = (Integer) result.get("id");
                 hash = (Integer) result.get("hash");
             }
-            return new RemoteResourceSet(leasableXmlRpcClient, xmlRpcClient, collection, outputProperties, resources, handle, hash);
+            final Properties resourceSetProperties = new Properties(outputProperties);
+            resourceSetProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
+            return new RemoteResourceSet(leasableXmlRpcClient, xmlRpcClient, collection, resourceSetProperties, resources, handle, hash);
         } catch (final XmlRpcException xre) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
         }
@@ -210,6 +213,8 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
                 handle = (Integer) result.get("id");
                 hash = (Integer) result.get("hash");
             }
+            final Properties resourceSetProperties = new Properties(outputProperties);
+            resourceSetProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
             return new RemoteResourceSet(leasableXmlRpcClient, xmlRpcClient, collection, outputProperties, resources, handle, hash);
         } catch (final XmlRpcException xre) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
@@ -263,7 +268,9 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
                 handle = (Integer) result.get("id");
                 hash = (Integer) result.get("hash");
             }
-            return new RemoteResourceSet(leasableXmlRpcClient, xmlRpcClient, collection, outputProperties, resources, handle, hash);
+            final Properties resourceSetProperties = new Properties(outputProperties);
+            resourceSetProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
+            return new RemoteResourceSet(leasableXmlRpcClient, xmlRpcClient, collection, resourceSetProperties, resources, handle, hash);
         } catch (final XmlRpcException xre) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
         }
