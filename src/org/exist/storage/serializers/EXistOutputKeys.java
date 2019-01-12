@@ -94,4 +94,15 @@ public class EXistOutputKeys {
     public final static String ALLOW_DUPLICATE_NAMES = "allow-duplicate-names";
 
     public final static String HTML_VERSION = "html-version";
+
+    /**
+     * When serializing an XDM this should be used
+     * to enforce XDM serialization rules.
+     *
+     * XDM has different serialization rules
+     * compared to retrieving and serializing resources from the database.
+     *
+     * Set to "yes" to enable xdm-serialization rules, false otherwise.
+     */
+    public final static String XDM_SERIALIZATION = "xdm-serialization";
 }
