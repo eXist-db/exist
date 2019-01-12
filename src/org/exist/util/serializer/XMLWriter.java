@@ -27,6 +27,7 @@ import javax.xml.transform.TransformerException;
 
 import com.evolvedbinary.j8fu.lazy.LazyVal;
 import org.exist.dom.QName;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.XMLString;
 import org.exist.util.serializer.encodings.CharacterSet;
 
@@ -43,6 +44,7 @@ public class XMLWriter {
     protected final static Properties defaultProperties = new Properties();
     static {
         defaultProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        defaultProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "no");
     }
 
     protected Writer writer = null;
@@ -67,7 +69,16 @@ public class XMLWriter {
 
     private String defaultNamespace = "";
 
-    private final Deque<QName> elementName = new ArrayDeque<QName>();
+    /**
+     * When serializing an XDM this should be true,
+     * otherwise false.
+     *
+     * XDM has different serialization rules
+     * compared to retrieving resources from the database.
+     */
+    private boolean xdmSerialization = false;
+
+    private final Deque<QName> elementName = new ArrayDeque<>();
     private LazyVal<Set<QName>> cdataSectionElements = new LazyVal<>(this::parseCdataSectionElementNames);
     private boolean cdataSetionElement = false;
 
@@ -115,10 +126,12 @@ public class XMLWriter {
         }
 
         final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
-        charSet = CharacterSet.getCharacterSet(encoding);
-        if(charSet == null) {
+        this.charSet = CharacterSet.getCharacterSet(encoding);
+        if(this.charSet == null) {
             throw EX_CHARSET_NULL;
         }
+
+        this.xdmSerialization = outputProperties.getProperty(EXistOutputKeys.XDM_SERIALIZATION, "no").equals("yes");
     }
 
     private Set<QName> parseCdataSectionElementNames() {
@@ -417,7 +430,7 @@ public class XMLWriter {
             closeStartTag(false);
         }
 
-        if (cdataSectionElements.get().contains(elementName.peek())) {
+        if ((!xdmSerialization) || cdataSectionElements.get().contains(elementName.peek())) {
             try {
                 writer.write("<![CDATA[");
                 this.cdataSetionElement = true;
@@ -428,7 +441,7 @@ public class XMLWriter {
     }
 
     public void endCdataSection() throws TransformerException {
-        if (cdataSectionElements.get().contains(elementName.peek())) {
+        if ((!xdmSerialization) || cdataSectionElements.get().contains(elementName.peek())) {
             try {
                 writer.write("]]>");
                 this.cdataSetionElement = false;

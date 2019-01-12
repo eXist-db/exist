@@ -30,6 +30,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ManagedCollectionLock;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
@@ -343,14 +344,26 @@ public class PersistentDomTest {
                 assertNotNull(cdataSection);
                 assertEquals(CDATA_CONTENT, cdataSection.getTextContent());
 
-                final String expected = "<cdataText>" + CDATA_CONTENT.replace("<", "&lt;").replace(">", "&gt;") + "</cdataText>";
-                assertEquals(expected, serialize(broker, documentElement));
+                final Properties defaultOutputProperties = new Properties();
+                defaultOutputProperties.setProperty(OutputKeys.METHOD, "xml");
+                defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+                defaultOutputProperties.setProperty(OutputKeys.INDENT, "no");
+                defaultOutputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
 
-                final Properties outputProperties = new Properties();
-                outputProperties.setProperty(OutputKeys.METHOD, "xml");
-                outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-                outputProperties.setProperty(OutputKeys.INDENT, "no");
-                outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+                // normal document serialization
+                Properties outputProperties = new Properties(defaultOutputProperties);
+                outputProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "no");
+                assertEquals(CDATA_XML, serialize(broker, documentElement, outputProperties));
+
+                // XDM serialization
+                outputProperties = new Properties(defaultOutputProperties);
+                outputProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
+                final String expected = "<cdataText>" + CDATA_CONTENT.replace("<", "&lt;").replace(">", "&gt;") + "</cdataText>";
+                assertEquals(expected, serialize(broker, documentElement, outputProperties));
+
+                // XDM serialization with cdata-section-elements
+                outputProperties = new Properties(defaultOutputProperties);
+                outputProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
                 outputProperties.setProperty(OutputKeys.CDATA_SECTION_ELEMENTS, "{}cdataText");
                 assertEquals(CDATA_XML, serialize(broker, documentElement, outputProperties));
 
