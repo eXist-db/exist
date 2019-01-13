@@ -155,6 +155,8 @@ to add: -pre-compile steps
       <antcall target="download-3rd-party"/>
    </target>
 
+   <target name="prepare" description="Prepare module" if="${extension.include}"> </target>
+
    <target name="compile" description="Compile sources" if="${extension.include}">
       <echo>Compiling '${extension.name}'</echo>
       <antcall target="init"/>
@@ -205,6 +207,7 @@ to add: -pre-compile steps
 
       <echo>Generating jar for '${extension.name}'</echo>
 
+      <antcall target="prepare"/>
       <antcall target="compile"/>
 
       <copy todir="${build.classes.dir}">
@@ -238,7 +241,7 @@ to add: -pre-compile steps
             <attribute name="Created-By" value="${ant.version}"/>
          </manifest>
       </jar>
-      
+
 <!--      <antcall target="jar-metainf"/>-->
    </target>
    
