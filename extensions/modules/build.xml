@@ -194,12 +194,7 @@
         Below this line only generic build items
         ========================================
     -->
-    <target name="prepare-ivy">
-        <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="classpath.core"/>
-        <ivy:retrieve xmlns:ivy="antlib:org.apache.ivy.ant" sync="false"/>
-    </target>
-
-    <target name="prepare" depends="prepare-ivy,prepare-xslfo,prepare-simpleql,prepare-memcached,prepare-xmpp,prepare-expathrepo,prepare-cqlparser">
+    <target name="prepare" depends="prepare-xslfo,prepare-simpleql,prepare-memcached,prepare-xmpp,prepare-expathrepo,prepare-cqlparser">
         <mkdir dir="${classes}"/>
     </target>
 
