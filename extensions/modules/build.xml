@@ -121,22 +121,6 @@
 
     </target>
 
-    <!-- 
-        Special targets for simpleql module 
-    -->
-    <uptodate property="parser.uptodate" srcfile="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
-        targetfile="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.java"/>
-
-    <target name="prepare-simpleql" unless="parser.uptodate" if="${include.module.simpleql}">
-        <echo message="Running ANTLR to generate XQuery parser"/>
-        <antlr target="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
-            outputdirectory="${src}/org/exist/xquery/modules/simpleql" traceparser="${antlr.traceParser}"
-            tracelexer="${antlr.traceLexer}">
-            <classpath>
-                <path refid="classpath.core"/>
-            </classpath>
-        </antlr>
-    </target>
 
     <!-- 
         Special targets for memcached module
@@ -194,7 +178,7 @@
         Below this line only generic build items
         ========================================
     -->
-    <target name="prepare" depends="prepare-xslfo,prepare-simpleql,prepare-memcached,prepare-xmpp,prepare-expathrepo,prepare-cqlparser">
+    <target name="prepare" depends="prepare-xslfo,prepare-memcached,prepare-xmpp,prepare-expathrepo,prepare-cqlparser">
         <mkdir dir="${classes}"/>
     </target>
 
