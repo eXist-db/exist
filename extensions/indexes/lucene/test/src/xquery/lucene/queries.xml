@@ -74,7 +74,16 @@
         <remove-collection collection="/db/lucene"/>
         <remove-document collection="/db/system/config/db/lucene" name="collection.xconf"/>
     </tearDown>
-	<!-- Following axis tests -->
+	<test output="xml">
+		<task>Term range query</task>
+		<code>
+			declare namespace tei="http://www.tei-c.org/ns/1.0";
+
+			doc("/db/lucene/text1.xml")//p[ft:query(., 'eins TO zwei')]</code>
+		<expected>
+			<p>Eins zwei drei vier zwei fünf sechs.</p>
+		</expected>
+	</test>
 	<test output="xml">
 		<task>Case sensitivity</task>
 		<code> for $hit in doc("/db/lucene/text1.xml")//p[ft:query(., 'Eins')] return $hit </code>
