@@ -146,6 +146,8 @@ public class LuceneUtil {
             extractTermsFromPrefix((PrefixQuery) query, terms, reader, includeFields);
         } else if (query instanceof PhraseQuery) {
             extractTermsFromPhrase((PhraseQuery) query, terms, includeFields);
+        } else if (query instanceof TermRangeQuery) {
+            extractTermsFromTermRange((TermRangeQuery) query, terms, reader, includeFields);
         } else {
             // fallback to Lucene's Query.extractTerms if none of the
             // above matches
@@ -201,6 +203,10 @@ public class LuceneUtil {
                 terms.put(t1.text(), query);
             }
         }
+    }
+
+    private static void extractTermsFromTermRange(final TermRangeQuery query, final Map<Object, Query> terms, final IndexReader reader, boolean includeFields) throws IOException {
+        TERM_EXTRACTOR.extractTerms(query, terms, reader, includeFields);
     }
 
     private static Query rewrite(final MultiTermQuery query, final IndexReader reader) throws IOException {
