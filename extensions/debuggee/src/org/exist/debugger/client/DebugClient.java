@@ -21,8 +21,9 @@
  */
 package org.exist.debugger.client;
 
-import jline.ConsoleReader;
-import jline.Terminal;
+//TODO:check where that class would be
+//import jline.ConsoleReader;
+//import jline.Terminal;
 import org.exist.debuggee.CommandContinuation;
 import org.exist.debugger.*;
 
@@ -40,13 +41,14 @@ public class DebugClient implements ResponseListener {
     private final static String COMMAND_STEP = "step";
     private final static String COMMAND_CONT = "cont";
 
-    private ConsoleReader console;
+    //TODO:check where that class would be
+    //private ConsoleReader console;
     private Debugger debugger;
     private DebuggingSource source = null;
 
     public DebugClient() throws IOException {
-        Terminal.setupTerminal();
-        console = new ConsoleReader();
+//        Terminal.setupTerminal();
+//        console = new ConsoleReader();
         debugger = DebuggerImpl.getDebugger();
     }
 
@@ -54,14 +56,14 @@ public class DebugClient implements ResponseListener {
         String prompt = "offline";
         boolean cont = true;
         while (cont) {
-            try {
-                String line = console.readLine(prompt + "> ");
-                cont = parseInput(line);
-            } catch (EOFException e) {
-                break;
-            } catch (IOException e) {
-                System.err.println("Exception caught: " + e.getMessage());
-            }
+//            try {
+//                String line = console.readLine(prompt + "> ");
+//                cont = parseInput(line);
+//            } catch (EOFException e) {
+//                break;
+//            } catch (IOException e) {
+//                System.err.println("Exception caught: " + e.getMessage());
+//            }
         }
         if (source != null)
             source.stop(this);

@@ -53,7 +53,8 @@ public class Lock extends AbstractCommand {
 				Collection collection = broker.getCollection(collectionURI);
 
 				out().println("Collection lock:");
-				collection.getLock().debug(out());
+				//TODO:check where that method is
+				//collection.getLock().debug(out());
 
 				if (commandData.length == 0) return;
 
@@ -68,7 +69,8 @@ public class Lock extends AbstractCommand {
 				out().println("Lock token: " + doc.getMetadata().getLockToken());
 
 				out().println("Update lock: ");
-				doc.getUpdateLock().debug(out());
+				//TODO:check where that method is
+				//doc.getUpdateLock().debug(out());
 			}
 		} catch (Exception e) {
 			throw new CommandException(e);
