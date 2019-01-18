@@ -25,13 +25,14 @@ import java.util.Observable;
 import java.util.Observer;
 
 import org.exist.Database;
+import org.exist.EXistException;
 import org.exist.debuggee.dbgp.packets.Stop;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQuery;
 
-import static org.exist.util.ThreadUtils.nameInstanceThread;
+import static org.exist.util.ThreadUtils.newInstanceThread;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -46,11 +47,11 @@ public class ScriptRunner implements Runnable, Observer {
 	
 	protected Exception exception = null;
 	
-	public ScriptRunner(SessionImpl session, CompiledXQuery compiled) {
+	public ScriptRunner(SessionImpl session, CompiledXQuery compiled) throws EXistException {
 		this.session = session;
 		expression = compiled;
 		
-		thread = newInstanceThread(BrokerPool.getInstance(), "scriptRunner" this);
+		thread = newInstanceThread(BrokerPool.getInstance(), "scriptRunner", this);
 		thread.setDaemon(true);
 		thread.setName("Debug session "+compiled.getContext().hashCode());
 	}

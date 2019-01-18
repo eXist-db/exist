@@ -119,7 +119,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		sources = new HashMap<String, DebuggingSource>();
 		currentTransactionId = 1;
 		
-		Thread session = newGlobalThread("debuggerHttpSession" new HttpSession(this, url));
+		Thread session = newGlobalThread("debuggerHttpSession", new HttpSession(this, url));
 		session.start();
 
 		// 30s timeout

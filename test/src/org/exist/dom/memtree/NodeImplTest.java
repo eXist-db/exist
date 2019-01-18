@@ -87,13 +87,13 @@ public class NodeImplTest {
         assertEquals(0, count);
     }
 
-    private static class StubNodeImpl extends NodeImpl {
+    private static class StubNodeImpl extends NodeImpl<StubNodeImpl> {
         public StubNodeImpl() {
             super(null, 1);
         }
 
         @Override
-        public int compareTo(final Object o) {
+        public int compareTo(StubNodeImpl o) {
             return 0;
         }
 
