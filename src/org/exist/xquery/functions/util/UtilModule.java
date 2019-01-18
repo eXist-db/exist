@@ -25,11 +25,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.exist.dom.QName;
-import org.exist.xquery.AbstractInternalModule;
-import org.exist.xquery.FunctionDef;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.functions.inspect.InspectFunction;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 
 
 /**
@@ -70,14 +69,14 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(Expand.signatures[1], Expand.class),
         new FunctionDef(DescribeFunction.signature, DescribeFunction.class),
         new FunctionDef(FunDoctype.signature, FunDoctype.class),
-        new FunctionDef(Eval.signatures[0], Eval.class),
-        new FunctionDef(Eval.signatures[1], Eval.class),
-        new FunctionDef(Eval.signatures[2], Eval.class),
-        new FunctionDef(Eval.signatures[3], Eval.class),
-        new FunctionDef(Eval.signatures[4], Eval.class),
-        new FunctionDef(Eval.signatures[5], Eval.class),
-        new FunctionDef(Eval.signatures[6], Eval.class),
-        new FunctionDef(Eval.signatures[7], Eval.class),
+        new FunctionDef(Eval.FS_EVAL[0], Eval.class),
+        new FunctionDef(Eval.FS_EVAL[1], Eval.class),
+        new FunctionDef(Eval.FS_EVAL[2], Eval.class),
+        new FunctionDef(Eval.FS_EVAL_WITH_CONTEXT[0], Eval.class),
+        new FunctionDef(Eval.FS_EVAL_WITH_CONTEXT[1], Eval.class),
+        new FunctionDef(Eval.FS_EVAL_INLINE[0], Eval.class),
+        new FunctionDef(Eval.FS_EVAL_INLINE[1], Eval.class),
+        new FunctionDef(Eval.FS_EVAL_ASYNC, Eval.class),
         new FunctionDef(Compile.signatures[0], Compile.class),
         new FunctionDef(Compile.signatures[1], Compile.class),
         new FunctionDef(Compile.signatures[2], Compile.class),
@@ -203,4 +202,21 @@ public class UtilModule extends AbstractInternalModule {
     public boolean isEvalDisabled() {
         return evalDisabled;
     }
+
+    @Override
+    public void reset(final XQueryContext xqueryContext, final boolean keepGlobals) {
+        if (!keepGlobals) {
+            mGlobalVariables.clear();
+        }
+        super.reset(xqueryContext, keepGlobals);
+    }
+
+    static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
+        return FunctionDSL.functionSignature(new QName(name, NAMESPACE_URI), description, returnType, paramTypes);
+    }
+
+    static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
+        return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI), description, returnType, variableParamTypes);
+    }
 }
+
