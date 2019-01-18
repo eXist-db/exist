@@ -23,12 +23,15 @@ package org.exist.xquery.functions.util;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
+import java.util.Properties;
 import java.util.SimpleTimeZone;
 
+import javax.annotation.Nullable;
 import javax.xml.datatype.Duration;
 
 import org.exist.Namespaces;
@@ -49,29 +52,13 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.XMLReaderPool;
+import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.LocalVariable;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.value.EmptySequence;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.QNameValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.TimeUtils;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.*;
+import org.exist.xquery.functions.fn.FnModule;
+import org.exist.xquery.functions.fn.FunSerialize;
+import org.exist.xquery.functions.fn.FunSubSequence;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -132,6 +119,18 @@ public class Eval extends BasicFunction {
             "external-variable", Type.ANY_TYPE, "External variables to be bound for the query that is being " +
                     "evaluated. Should be alternating variable QName and value.");
 
+    private static final FunctionParameterSequenceType FS_PARAM_DEFAULT_SERIALISATION_PARAMS = optParam(
+            "default-serialization-params", Type.ITEM, "The default parameters for serialization, these may" +
+            "be overridden by any settings within the XQuery Prolog of the $expression.");
+
+    private static final FunctionParameterSequenceType FS_PARAM_STARTING_LOC = param(
+            "starting-loc", Type.DOUBLE, "the starting location within the results to return the values from"
+    );
+
+    private static final FunctionParameterSequenceType FS_PARAM_LENGTH = param(
+            "length", Type.DOUBLE, "the number of items from $starting-loc to return the values of"
+    );
+
     private static final FunctionReturnSequenceType RETURN_NODE_TYPE = returnsOptMany(
             Type.NODE, "the results of the evaluated XPath/XQuery expression");
 
@@ -185,6 +184,18 @@ public class Eval extends BasicFunction {
             )
     );
 
+    private static final String FS_EVAL_AND_SERIALIZE_NAME = "eval-and-serialize";
+    static final FunctionSignature[] FS_EVAL_AND_SERIALIZE = functionSignatures(
+            FS_EVAL_AND_SERIALIZE_NAME,
+            "Dynamically evaluates an XPath/XQuery expression and serializes the results",
+            RETURN_ITEM_TYPE,
+            arities(
+                    arity(FS_PARAM_EXPRESSION, FS_PARAM_DEFAULT_SERIALISATION_PARAMS),
+                    arity(FS_PARAM_EXPRESSION, FS_PARAM_DEFAULT_SERIALISATION_PARAMS, FS_PARAM_STARTING_LOC),
+                    arity(FS_PARAM_EXPRESSION, FS_PARAM_DEFAULT_SERIALISATION_PARAMS, FS_PARAM_STARTING_LOC, FS_PARAM_LENGTH)
+            )
+    );
+
     public Eval(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
@@ -211,7 +222,7 @@ public class Eval extends BasicFunction {
 
         int argCount = 0;
         Sequence exprContext = null;
-        if (isCalledAs("eval-inline")) {
+        if (isCalledAs(FS_EVAL_INLINE_NAME)) {
             // the current expression context
             exprContext = args[argCount++];
         }
@@ -230,7 +241,7 @@ public class Eval extends BasicFunction {
         }
 
         final NodeValue contextInit;
-        if (isCalledAs("eval-with-context")) {
+        if (isCalledAs(FS_EVAL_WITH_CONTEXT_NAME)) {
             // set the context initialization param for later use
             contextInit = (NodeValue) args[argCount++].itemAt(0);
         } else {
@@ -239,7 +250,9 @@ public class Eval extends BasicFunction {
 
         // should the compiled query be cached?
         final boolean cache;
-        if (argCount < getArgumentCount()) {
+        if (isCalledAs(FS_EVAL_AND_SERIALIZE_NAME)) {
+            cache = true;
+        } else if (argCount < getArgumentCount()) {
             cache = ((BooleanValue) args[argCount].itemAt(0)).effectiveBooleanValue();
         } else {
             cache = false;
@@ -297,7 +310,7 @@ public class Eval extends BasicFunction {
         }
 
         //bind external vars?
-        if (isCalledAs("eval") && getArgumentCount() == 3) {
+        if (isCalledAs(FS_EVAL_NAME) && getArgumentCount() == 3) {
             if (!args[2].isEmpty()) {
                 final Sequence externalVars = args[2];
                 for (int i = 0; i < externalVars.getItemCount(); i++) {
@@ -330,11 +343,60 @@ public class Eval extends BasicFunction {
             }
             Sequence result = null;
             try {
-                result = execute(evalContext.getBroker(), xqueryService, querySource, innerContext, exprContext, cache);
-                return result;
+                if (!isCalledAs(FS_EVAL_AND_SERIALIZE_NAME)) {
+                    result = execute(evalContext.getBroker(), xqueryService, querySource, innerContext, exprContext,
+                            cache, null);
+
+                    return result;
+
+                } else {
+                    // get the default serialization options
+                    final Properties defaultOutputOptions;
+                    if (getArgumentCount() == 2 && !args[1].isEmpty()) {
+                        defaultOutputOptions = FunSerialize.getSerializationProperties(this, args[1].itemAt(0));
+                    } else {
+                        defaultOutputOptions = new Properties();
+                    }
+
+                    // execute the query, XQuery prolog serialization options are collected into `xqueryOutputProperties`
+                    final Properties xqueryOutputProperties = new Properties();
+                    result = execute(evalContext.getBroker(), xqueryService, querySource, innerContext, exprContext,
+                            cache, xqueryOutputProperties);
+
+                    // do we need to subsequence the results?
+                    if (getArgumentCount() > 2) {
+                        result = FunSubSequence.subsequence(result,
+                                ((DoubleValue)getArgument(2).eval(contextSequence, null).convertTo(Type.DOUBLE)),
+                                getArgumentCount() == 3 ? null : ((DoubleValue)getArgument(3).eval(contextSequence, null).convertTo(Type.DOUBLE))
+                        );
+                    }
+
+                    // override the default options with the ones from the xquery prolog
+                    final Properties serializationProperties = new Properties(defaultOutputOptions);
+                    serializationProperties.putAll(xqueryOutputProperties);
+
+                    // serialize the results
+                    try(final StringWriter writer = new StringWriter()) {
+                        final XQuerySerializer xqSerializer = new XQuerySerializer(
+                                context.getBroker(), serializationProperties, writer);
+
+                        Sequence seq = args[0];
+                        if (xqSerializer.normalize()) {
+                            seq = FunSerialize.normalize(this, context, result);
+                        }
+
+                        xqSerializer.serialize(seq);
+
+                        return new StringValue(writer.toString());
+
+                    } catch (final IOException | SAXException e) {
+                        throw new XPathException(this, FnModule.SENR0001, e.getMessage());
+                    }
+                }
             } finally {
                 cleanup(evalContext, innerContext, oldDocs, mark, expr, result);
             }
+
         } catch (final XPathException e) {
             try {
                 e.prependMessage("Error while evaluating expression: " + querySource.getContent() + ". ");
@@ -365,7 +427,8 @@ public class Eval extends BasicFunction {
     }
 
     private Sequence execute(final DBBroker broker, final XQuery xqueryService, final Source querySource,
-            final XQueryContext innerContext, final Sequence exprContext, final boolean cache) throws XPathException {
+            final XQueryContext innerContext, final Sequence exprContext, final boolean cache,
+            @Nullable final Properties outputProperties) throws XPathException {
 
         CompiledXQuery compiled = null;
         final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
@@ -379,7 +442,7 @@ public class Eval extends BasicFunction {
                 compiled.getContext().prepareForReuse();
             }
 
-            Sequence sequence = xqueryService.execute(broker, compiled, exprContext, false);
+            Sequence sequence = xqueryService.execute(broker, compiled, exprContext, outputProperties, false);
             ValueSequence newSeq = new ValueSequence();
             newSeq.keepUnOrdered(unordered);
             boolean hasSupplements = false;

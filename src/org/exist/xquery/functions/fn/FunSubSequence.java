@@ -27,6 +27,8 @@ import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
+import javax.annotation.Nullable;
+
 /**
  * Implements the fn:subsequence function.
  *
@@ -102,38 +104,10 @@ public class FunSubSequence extends Function {
         if (seq.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
-
-            final long startArg = ((IntegerValue)getArgument(1).eval(contextSequence, contextItem).convertTo(Type.INTEGER)).getLong();
-            final long toExclusive;
-            if (getArgumentCount() == 3) {
-                /*
-                    From: https://www.w3.org/TR/xpath-functions-31/#func-subsequence
-
-                    $sourceSeq[fn:round($startingLoc) le position()
-                            and position() lt fn:round($startingLoc) + fn:round($length)]
-                 */
-                final long lengthArg = ((IntegerValue) getArgument(2).eval(contextSequence, contextItem).convertTo(Type.INTEGER)).getLong();
-                toExclusive = startArg + lengthArg;
-            } else {
-                /*
-                    From: https://www.w3.org/TR/xpath-functions-31/#func-subsequence
-
-                    $sourceSeq[fn:round($startingLoc) le position()]
-                 */
-                toExclusive = Long.MAX_VALUE;   // we can't travel past Long.MAX_VALUE (...at the moment!)
-            }
-
-            //TODO(AR) are there shortcuts where we can determine that the result is an empty-sequence from the args
-
-            // we can't start before the first item
-            final long fromInclusive;
-            if (startArg <= 0) {
-                fromInclusive = 1;
-            } else {
-                fromInclusive = startArg;
-            }
-
-            result = new SubSequence(fromInclusive, toExclusive, seq);
+            return subsequence(seq,
+                    ((DoubleValue)getArgument(1).eval(contextSequence, contextItem).convertTo(Type.DOUBLE)),
+                    getArgumentCount() != 3 ? null : ((DoubleValue)getArgument(2).eval(contextSequence, contextItem).convertTo(Type.DOUBLE))
+            );
         }
 
         if (context.getProfiler().isEnabled()) {
@@ -141,5 +115,47 @@ public class FunSubSequence extends Function {
         }
 
         return result;
+    }
+
+    /**
+     * Creates a Subsequence from a sequence
+     *
+     * @param startLoc the starting location value as passed to {@code fn:subsequence}
+     * @param length the length value as passed to {@code fn:subsequence}, or null for all items
+     *
+     * @return the subsequence
+     */
+    public static Sequence subsequence(final Sequence sequence, final DoubleValue startLoc, @Nullable final DoubleValue length) {
+        final long startArg = startLoc.getLong();
+        final long toExclusive;
+        if (length != null) {
+                /*
+                    From: https://www.w3.org/TR/xpath-functions-31/#func-subsequence
+
+                    $sourceSeq[fn:round($startingLoc) le position()
+                            and position() lt fn:round($startingLoc) + fn:round($length)]
+                 */
+            final long lengthArg = length.getLong();
+            toExclusive = startArg + lengthArg;
+        } else {
+                /*
+                    From: https://www.w3.org/TR/xpath-functions-31/#func-subsequence
+
+                    $sourceSeq[fn:round($startingLoc) le position()]
+                 */
+            toExclusive = Long.MAX_VALUE;   // we can't travel past Long.MAX_VALUE (...at the moment!)
+        }
+
+        //TODO(AR) are there shortcuts where we can determine that the result is an empty-sequence from the args
+
+        // we can't start before the first item
+        final long fromInclusive;
+        if (startArg <= 0) {
+            fromInclusive = 1;
+        } else {
+            fromInclusive = startArg;
+        }
+
+        return new SubSequence(fromInclusive, toExclusive, sequence);
     }
 }

@@ -260,6 +260,47 @@ public class EvalTest {
         assertNotNull(collection);
         return collection;
     }
+
+    @Test
+    public void evalAndSerialize() throws XMLDBException {
+        final String query = "let $query := \"<elem1>hello</elem1>\"\n" +
+                "return\n" +
+                "util:eval-and-serialize($query, ())";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        final Resource r = result.getResource(0);
+        assertEquals("<elem1>hello</elem1>", r.getContent());
+    }
+
+    @Test
+    public void evalAndSerializeDefaultOptions() throws XMLDBException {
+        String query = "let $query := \"<elem1>hello</elem1>\"\n" +
+                "return\n" +
+                "util:eval-and-serialize($query, map { \"method\": \"adaptive\" })";
+        ResourceSet result = existEmbeddedServer.executeQuery(query);
+        Resource r = result.getResource(0);
+        assertEquals("\"<elem1>hello</elem1>\"", r.getContent());
+
+        // test that XQuery Prolog output options override the default provided options
+        query = "xquery version \"3.1\";\n" +
+                "declare namespace output = \"http://www.w3.org/2010/xslt-xquery-serialization\";\n" +
+                "declare option output:method \"xml\";\n" +
+                "let $query := \"<elem1>hello</elem1>\"\n" +
+                "return\n" +
+                "util:eval-and-serialize($query, map { \"method\": \"adaptive\" })";
+        result = existEmbeddedServer.executeQuery(query);
+        r = result.getResource(0);
+        assertEquals("<elem1>hello</elem1>", r.getContent());
+    }
+
+    @Test
+    public void evalAndSerializeSubsequence() throws XMLDBException {
+        final String query = "let $query := \"for $i in (1 to 10) return <i>{$i}</i>\"\n" +
+                "return\n" +
+                "util:eval-and-serialize($query, (), 1, 4)";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        final Resource r = result.getResource(0);
+        assertEquals("<i>1</i><i>2</i><i>3</i><i>4</i>", r.getContent());
+    }
     
     private void writeModule(Collection collection, String modulename, String module) throws XMLDBException {
         BinaryResource res = (BinaryResource) collection.createResource(modulename, "BinaryResource");
