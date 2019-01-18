@@ -27,6 +27,7 @@ import java.io.StringReader;
 import org.exist.Namespaces;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.util.XMLReaderPool;
 import org.exist.xquery.XQueryContext;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
