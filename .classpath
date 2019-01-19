@@ -59,7 +59,7 @@
 	<classpathentry kind="lib" path="lib/core/rsyntaxtextarea-2.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/slf4j-api-1.7.25.jar"/>
 	<classpathentry kind="lib" path="lib/core/ws-commons-util-1.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/core/xmldb-api-1.6.0.jar" sourcepath="/home/pr/git/xmldb-org/xmldb-api/src/main/java"/>
+	<classpathentry kind="lib" path="lib/core/xmldb-api-1.7.0.jar" sourcepath="/home/pr/git/xmldb-org/xmldb-api/src/main/java"/>
 	<classpathentry kind="lib" path="lib/core/xmlrpc-client-3.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmlrpc-common-3.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmlrpc-server-3.1.3.jar"/>
