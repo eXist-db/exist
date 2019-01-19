@@ -1293,7 +1293,7 @@ public class NativeBroker extends DBBroker {
      * @param transaction The current transaction
      * @param documentTrigger The trigger to use for document events
      * @param sourceCollection The Collection to copy documents from
-     * @param destinationCollection The Collection to copy documents to
+     * @param targetCollection The Collection to copy documents to
      *
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
      * @throws LockException If an exception occurs whilst acquiring locks
@@ -1303,74 +1303,78 @@ public class NativeBroker extends DBBroker {
      */
     private void doCopyCollectionDocuments(final Txn transaction, final DocumentTrigger documentTrigger,
             @EnsureLocked(mode=LockMode.READ_LOCK) final Collection sourceCollection,
-            @EnsureLocked(mode=LockMode.WRITE_LOCK) final Collection destinationCollection,
+            @EnsureLocked(mode=LockMode.WRITE_LOCK) final Collection targetCollection,
             final PreserveType preserve)
             throws LockException, PermissionDeniedException, IOException, TriggerException, EXistException {
-        for(final Iterator<DocumentImpl> i = sourceCollection.iterator(this); i.hasNext(); ) {
-            final DocumentImpl child = i.next();
+        for (final Iterator<DocumentImpl> i = sourceCollection.iterator(this); i.hasNext(); ) {
+            final DocumentImpl sourceDocument = i.next();
 
             if(LOG.isDebugEnabled()) {
-                LOG.debug("Copying resource: '{}'", child.getURI());
+                LOG.debug("Copying resource: '{}'", sourceDocument.getURI());
             }
 
-            // TODO(AR) The code below seems quite different to that in NativeBroker#copyResource presumably should be the same?
+            // TODO(AR) The code below seems somewhat different to that in NativeBroker#copyResource presumably should be the same?
 
-            final XmldbURI newDocName = child.getFileURI();
-            final XmldbURI newDocUri = destinationCollection.getURI().append(newDocName);
-            documentTrigger.beforeCopyDocument(this, transaction, child, newDocUri);
+            final XmldbURI sourceDocumentUri = sourceDocument.getURI();
+            final XmldbURI newDocName = sourceDocument.getFileURI();
+            final XmldbURI targetCollectionUri = targetCollection.getURI();
+            final XmldbURI targetDocumentUri = targetCollectionUri.append(newDocName);
+
+            documentTrigger.beforeCopyDocument(this, transaction, sourceDocument, targetDocumentUri);
 
             //are we overwriting an existing document?
-            final CollectionEntry oldDoc;
-            if(destinationCollection.hasDocument(this, child.getFileURI())) {
-                oldDoc = destinationCollection.getResourceEntry(this, newDocName.toString());
-            } else {
-                oldDoc = null;
+            try(final LockedDocument oldLockedDoc = targetCollection.getDocumentWithLock(this, newDocName, LockMode.WRITE_LOCK)) {
+                final DocumentImpl oldDoc = oldLockedDoc == null ? null : oldLockedDoc.getDocument();
+
+                final DocumentImpl newDocument;
+                final LockManager lockManager = getBrokerPool().getLockManager();
+                try (final ManagedDocumentLock newDocLock = lockManager.acquireDocumentWriteLock(targetDocumentUri)) {
+                    if (sourceDocument.getResourceType() == DocumentImpl.BINARY_FILE) {
+                        final BinaryDocument newDoc;
+                        if (oldDoc != null) {
+                            newDoc = new BinaryDocument(oldDoc);
+                        } else {
+                            newDoc = new BinaryDocument(pool, targetCollection, sourceDocument.getFileURI());
+                        }
+
+                        newDoc.copyOf(this, sourceDocument, oldDoc);
+                        newDoc.setDocId(getNextResourceId(transaction));
+
+                        if (preserveOnCopy(preserve)) {
+                            copyResource_preserve(this, sourceDocument, newDoc, oldDoc != null);
+                        }
+
+                        try (final InputStream is = getBinaryResource((BinaryDocument) sourceDocument)) {
+                            storeBinaryResource(transaction, newDoc, is);
+                        }
+                        storeXMLResource(transaction, newDoc);
+                        targetCollection.addDocument(transaction, this, newDoc);
+
+                        newDocument = newDoc;
+                    } else {
+                        final DocumentImpl newDoc;
+                        if (oldDoc != null) {
+                            newDoc = new DocumentImpl(oldDoc);
+                        } else {
+                            newDoc = new DocumentImpl(pool, targetCollection, newDocName);
+                        }
+
+                        newDoc.copyOf(this, sourceDocument, oldDoc);
+                        newDoc.setDocId(getNextResourceId(transaction));
+
+                        copyXMLResource(transaction, sourceDocument, newDoc);
+                        if (preserveOnCopy(preserve)) {
+                            copyResource_preserve(this, sourceDocument, newDoc, oldDoc != null);
+                        }
+                        storeXMLResource(transaction, newDoc);
+                        targetCollection.addDocument(transaction, this, newDoc);
+
+                        newDocument = newDoc;
+                    }
+                }
+
+                documentTrigger.afterCopyDocument(this, transaction, newDocument, sourceDocumentUri);
             }
-
-            final DocumentImpl createdDoc;
-            if(child.getResourceType() == DocumentImpl.BINARY_FILE) {
-                final BinaryDocument newDoc;
-                if (oldDoc != null) {
-                    newDoc = new BinaryDocument(pool, destinationCollection, oldDoc);
-                } else {
-                    newDoc = new BinaryDocument(pool, destinationCollection, child.getFileURI());
-                }
-
-                newDoc.copyOf(this, child, oldDoc);
-                newDoc.setDocId(getNextResourceId(transaction));
-
-                if(preserveOnCopy(preserve)) {
-                    copyResource_preserve(this, child, newDoc, oldDoc != null);
-                }
-
-                try (final InputStream is = getBinaryResource((BinaryDocument) child)) {
-                    storeBinaryResource(transaction, newDoc, is);
-                }
-                storeXMLResource(transaction, newDoc);
-                destinationCollection.addDocument(transaction, this, newDoc);
-
-                createdDoc = newDoc;
-            } else {
-                //TODO : put a lock on newDoc ?
-                final DocumentImpl newDoc;
-                if (oldDoc != null) {
-                    newDoc = new DocumentImpl(pool, destinationCollection, oldDoc);
-                } else {
-                    newDoc = new DocumentImpl(pool, destinationCollection, child.getFileURI());
-                }
-                newDoc.copyOf(this, child, oldDoc);
-                newDoc.setDocId(getNextResourceId(transaction));
-                copyXMLResource(transaction, child, newDoc);
-                if (preserveOnCopy(preserve)) {
-                    copyResource_preserve(this, child, newDoc, oldDoc != null);
-                }
-                storeXMLResource(transaction, newDoc);
-                destinationCollection.addDocument(transaction, this, newDoc);
-
-                createdDoc = newDoc;
-            }
-
-            documentTrigger.afterCopyDocument(this, transaction, createdDoc, child.getURI());
         }
     }
 
@@ -2685,21 +2689,21 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public void copyResource(final Txn transaction, final DocumentImpl sourceDocument, final Collection targetCollection, final XmldbURI newName, final PreserveType preserve) throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException {
+    public void copyResource(final Txn transaction, final DocumentImpl sourceDocument, final Collection targetCollection, final XmldbURI newDocName, final PreserveType preserve) throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException {
         assert(sourceDocument != null);
         assert(targetCollection != null);
-        assert(newName != null);
+        assert(newDocName != null);
         if(isReadOnly()) {
             throw new IOException(DATABASE_IS_READ_ONLY);
         }
 
-        if(newName.numSegments() != 1) {
+        if(newDocName.numSegments() != 1) {
             throw new IOException("newName name must be just a name i.e. an XmldbURI with one segment!");
         }
 
         final XmldbURI sourceDocumentUri = sourceDocument.getURI();
         final XmldbURI targetCollectionUri = targetCollection.getURI();
-        final XmldbURI destinationDocumentUri = targetCollectionUri.append(newName);
+        final XmldbURI targetDocumentUri = targetCollectionUri.append(newDocName);
 
         if(!sourceDocument.getPermissions().validate(getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' has insufficient privileges to copy the resource '" + sourceDocumentUri + "'.");
@@ -2715,11 +2719,11 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' does not have execute access on the destination collection '" + targetCollectionUri + "'.");
         }
 
-        if(targetCollection.hasChildCollection(this, newName.lastSegment())) {
-            throw new EXistException("The collection '" + targetCollectionUri + "' already has a sub-collection named '" + newName.lastSegment() + "', you cannot create a Document with the same name as an existing collection.");
+        if(targetCollection.hasChildCollection(this, newDocName.lastSegment())) {
+            throw new EXistException("The collection '" + targetCollectionUri + "' already has a sub-collection named '" + newDocName.lastSegment() + "', you cannot create a Document with the same name as an existing collection.");
         }
 
-        try(final LockedDocument oldLockedDoc = targetCollection.getDocumentWithLock(this, newName, LockMode.WRITE_LOCK)) {
+        try(final LockedDocument oldLockedDoc = targetCollection.getDocumentWithLock(this, newDocName, LockMode.WRITE_LOCK)) {
             final DocumentTrigger trigger = new DocumentTriggers(this, transaction, targetCollection);
 
             final DocumentImpl oldDoc = oldLockedDoc == null ? null : oldLockedDoc.getDocument();
@@ -2739,27 +2743,28 @@ public class NativeBroker extends DBBroker {
                 }
 
                 trigger.beforeDeleteDocument(this, transaction, oldDoc);
-                trigger.afterDeleteDocument(this, transaction, destinationDocumentUri);
+                trigger.afterDeleteDocument(this, transaction, targetDocumentUri);
             }
 
-            trigger.beforeCopyDocument(this, transaction, sourceDocument, destinationDocumentUri);
+            trigger.beforeCopyDocument(this, transaction, sourceDocument, targetDocumentUri);
 
-            DocumentImpl newDocument = null;
-            if (sourceDocument.getResourceType() == DocumentImpl.BINARY_FILE) {
-                final LockManager lockManager = getBrokerPool().getLockManager();
-                try (final ManagedDocumentLock newDocLock = lockManager.acquireDocumentWriteLock(destinationDocumentUri);
-                        final InputStream is = getBinaryResource((BinaryDocument) sourceDocument)) {
+            final DocumentImpl newDocument;
+            final LockManager lockManager = getBrokerPool().getLockManager();
+            try (final ManagedDocumentLock newDocLock = lockManager.acquireDocumentWriteLock(targetDocumentUri)) {
+                if (sourceDocument.getResourceType() == DocumentImpl.BINARY_FILE) {
                     final BinaryDocument newDoc;
                     if (oldDoc != null) {
                         newDoc = new BinaryDocument(oldDoc);
                     } else {
-                        newDoc = new BinaryDocument(getBrokerPool(), targetCollection, newName);
+                        newDoc = new BinaryDocument(getBrokerPool(), targetCollection, newDocName);
                     }
+
                     newDoc.copyOf(this, sourceDocument, oldDoc);
                     newDoc.setDocId(getNextResourceId(transaction));
+
                     final Date created;
                     final Date lastModified;
-                    if(preserveOnCopy(preserve)) {
+                    if (preserveOnCopy(preserve)) {
                         copyResource_preserve(this, sourceDocument, newDoc, oldDoc != null);
                         if (oldDoc != null) {
                             created = new Date(oldDoc.getMetadata().getLastModified());
@@ -2772,27 +2777,28 @@ public class NativeBroker extends DBBroker {
                         lastModified = null;
                     }
 
-                    targetCollection.addBinaryResource(transaction, this, newDoc, is, sourceDocument.getMetadata().getMimeType(), -1,  created, lastModified, preserve);
+                    try (final InputStream is = getBinaryResource((BinaryDocument) sourceDocument)) {
+                        targetCollection.addBinaryResource(transaction, this, newDoc, is, sourceDocument.getMetadata().getMimeType(), -1, created, lastModified, preserve);
+                    }
 
                     newDocument = newDoc;
-                }
-            } else {
-                final LockManager lockManager = getBrokerPool().getLockManager();
-                try (final ManagedDocumentLock newDocLock = lockManager.acquireDocumentWriteLock(destinationDocumentUri)) {
+                } else {
                     final DocumentImpl newDoc;
                     if (oldDoc != null) {
                         newDoc = new DocumentImpl(oldDoc);
                     } else {
-                        newDoc = new DocumentImpl(pool, targetCollection, newName);
+                        newDoc = new DocumentImpl(pool, targetCollection, newDocName);
                     }
+
                     newDoc.copyOf(this, sourceDocument, oldDoc);
                     newDoc.setDocId(getNextResourceId(transaction));
+
                     copyXMLResource(transaction, sourceDocument, newDoc);
                     if (preserveOnCopy(preserve)) {
                         copyResource_preserve(this, sourceDocument, newDoc, oldDoc != null);
                     }
-                    targetCollection.addDocument(transaction, this, newDoc);
                     storeXMLResource(transaction, newDoc);
+                    targetCollection.addDocument(transaction, this, newDoc);
 
                     newDocument = newDoc;
                 }
