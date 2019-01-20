@@ -195,6 +195,7 @@ public class Configuration implements ErrorHandler
 
             final SAXAdapter adapter = new SAXAdapter();
             reader.setContentHandler(adapter);
+            reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             reader.parse(src);
 
             final Document doc = adapter.getDocument();

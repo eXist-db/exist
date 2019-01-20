@@ -34,6 +34,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
@@ -115,8 +116,6 @@ public class DocUtils {
     }
 
     private static Sequence getDocumentByPathFromURL(final XQueryContext context, final String path) throws XPathException, PermissionDeniedException {
-        XMLReader reader = null;
-            /* URL */
         try {
             final Source source = SourceFactory.getSource(context.getBroker(), "", path, false);
             if (source == null) {
@@ -134,18 +133,10 @@ public class DocUtils {
                     }
                 }
 
-                //TODO : process pseudo-protocols URLs more efficiently.
-                org.exist.dom.memtree.DocumentImpl memtreeDoc = null;
-                // we use eXist's in-memory DOM implementation
-                reader = context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
-                //TODO : we should be able to cope with context.getBaseURI()
-                final InputSource src = new InputSource(is);
-                final SAXAdapter adapter = new SAXAdapter();
-                reader.setContentHandler(adapter);
-                reader.parse(src);
-                final Document doc = adapter.getDocument();
-                memtreeDoc = (org.exist.dom.memtree.DocumentImpl) doc;
-                memtreeDoc.setContext(context);
+                final org.exist.dom.memtree.DocumentImpl memtreeDoc = parse(
+                        context.getBroker().getBrokerPool(),
+                        context,
+                        is);
                 memtreeDoc.setDocumentURI(path);
                 return memtreeDoc;
             }
@@ -154,14 +145,8 @@ public class DocUtils {
             throw new XPathException(e.getMessage() + " (" + path + ")");
         } catch (final MalformedURLException e) {
             throw new XPathException(e.getMessage(), e);
-        } catch (final SAXException e) {
-            throw new XPathException("An error occurred while parsing " + path + ": " + e.getMessage(), e);
         } catch (final IOException e) {
             throw new XPathException("An error occurred while parsing " + path + ": " + e.getMessage(), e);
-        } finally {
-            if (reader != null) {
-                context.getBroker().getBrokerPool().getParserPool().returnXMLReader(reader);
-            }
         }
     }
 
@@ -228,20 +213,31 @@ public class DocUtils {
      * @return document The document that was parsed
      * @throws XPathException
      */
-    public static org.exist.dom.memtree.DocumentImpl parse(final BrokerPool pool, final XQueryContext context, final InputStream is) throws XPathException {
+    public static org.exist.dom.memtree.DocumentImpl parse(final BrokerPool pool, final XQueryContext context,
+            final InputStream is) throws XPathException {
         // we use eXist's in-memory DOM implementation
-        final XMLReader reader = pool.getParserPool().borrowXMLReader();
-        final InputSource src = new InputSource(is);
-        final SAXAdapter adapter = new SAXAdapter(context);
-        reader.setContentHandler(adapter);
+        final XMLReaderPool parserPool = pool.getParserPool();
+        XMLReader reader = null;
         try {
-            reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
-            reader.parse(src);
-        } catch (final SAXNotRecognizedException | SAXNotSupportedException e) {
-            throw new XPathException("Error creating XML parser: " + e.getMessage(), e);
-        } catch (final IOException | SAXException e) {
-            throw new XPathException("Error while parsing XML: " + e.getMessage(), e);
+            reader = pool.getParserPool().borrowXMLReader();
+            final InputSource src = new InputSource(is);
+            final SAXAdapter adapter = new SAXAdapter(context);
+            reader.setContentHandler(adapter);
+            try {
+                reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
+                reader.parse(src);
+            } catch (final SAXNotRecognizedException | SAXNotSupportedException e) {
+                throw new XPathException("Error creating XML parser: " + e.getMessage(), e);
+            } catch (final IOException | SAXException e) {
+                throw new XPathException("Error while parsing XML: " + e.getMessage(), e);
+            }
+
+            return adapter.getDocument();
+
+        } finally {
+            if (reader != null) {
+                parserPool.returnXMLReader(reader);
+            }
         }
-        return adapter.getDocument();
     }
 }
