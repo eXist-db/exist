@@ -50,15 +50,7 @@ public class FunSerialize extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         final Properties outputProperties;
         if (getArgumentCount() == 2 && !args[1].isEmpty()) {
-            final Item parametersItem = args[1].itemAt(0);
-            if(parametersItem.getType() == Type.MAP) {
-                outputProperties = SerializerUtils.getSerializationOptions(this, (MapType) args[1].itemAt(0));
-            } else if(isSerializationParametersElement(parametersItem)) {
-                outputProperties = new Properties();
-                SerializerUtils.getSerializationOptions(this, (NodeValue) args[1].itemAt(0), outputProperties);
-            } else {
-                throw new XPathException(this, ErrorCodes.XPTY0004, "The parameters element must be either a output:serialization-parameters element or a map");
-            }
+            outputProperties = getSerializationProperties(this, args[1].itemAt(0));
         } else {
             outputProperties = new Properties();
         }
@@ -68,7 +60,7 @@ public class FunSerialize extends BasicFunction {
 
             Sequence seq = args[0];
             if (xqSerializer.normalize()) {
-                seq = normalize(seq);
+                seq = normalize(this, context, seq);
             }
 
             xqSerializer.serialize(seq);
@@ -76,6 +68,20 @@ public class FunSerialize extends BasicFunction {
         } catch (final IOException | SAXException e) {
             throw new XPathException(this, FnModule.SENR0001, e.getMessage());
         }
+    }
+
+    public static Properties getSerializationProperties(final Expression callingExpr, final Item parametersItem) throws XPathException {
+        final Properties outputProperties;
+        if(parametersItem.getType() == Type.MAP) {
+            outputProperties = SerializerUtils.getSerializationOptions(callingExpr, (MapType) parametersItem);
+        } else if(isSerializationParametersElement(parametersItem)) {
+            outputProperties = new Properties();
+            SerializerUtils.getSerializationOptions(callingExpr, (NodeValue) parametersItem, outputProperties);
+        } else {
+            throw new XPathException(callingExpr, ErrorCodes.XPTY0004, "The parameters element must be either an " +
+                    "output:serialization-parameters element or a map");
+        }
+        return outputProperties;
     }
 
     /**
@@ -103,7 +109,7 @@ public class FunSerialize extends BasicFunction {
      * @return normalized sequence
      * @throws XPathException
      */
-    protected Sequence normalize(Sequence input) throws XPathException {
+    public static Sequence normalize(final Expression callingExpr, final XQueryContext context, final Sequence input) throws XPathException {
         if (input.isEmpty())
             // "If the sequence that is input to serialization is empty, create a sequence S1 that consists of a zero-length string."
             {return StringValue.EMPTY_STRING;}
@@ -112,7 +118,7 @@ public class FunSerialize extends BasicFunction {
             final Item next = i.nextItem();
             if (Type.subTypeOf(next.getType(), Type.NODE)) {
                 if (next.getType() == Type.ATTRIBUTE || next.getType() == Type.NAMESPACE || next.getType() == Type.FUNCTION_REFERENCE)
-                    {throw new XPathException(this, FnModule.SENR0001,
+                    {throw new XPathException(callingExpr, FnModule.SENR0001,
                         "It is an error if an item in the sequence to serialize is an attribute node or a namespace node.");}
                 temp.add(next);
             } else {
@@ -146,7 +152,7 @@ public class FunSerialize extends BasicFunction {
             }
             return (DocumentImpl)receiver.getDocument();
         } catch (final SAXException e) {
-            throw new XPathException(this, FnModule.SENR0001, e.getMessage());
+            throw new XPathException(callingExpr, FnModule.SENR0001, e.getMessage());
         } finally {
             context.popDocumentContext();
         }
