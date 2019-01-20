@@ -42,7 +42,9 @@ import java.util.Map;
 public class SAXAdapter implements ContentHandler, LexicalHandler {
     private MemTreeBuilder builder;
     private Map<String, String> namespaces = null;
-    private boolean replaceAttributeFlag;
+    private boolean replaceAttributeFlag = false;
+    private boolean cdataFlag = false;
+    private final StringBuilder cdataBuf = new StringBuilder();
 
     public SAXAdapter() {
         setBuilder(new MemTreeBuilder());
@@ -75,7 +77,11 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
 
     @Override
     public void characters(final char[] ch, final int start, final int length) throws SAXException {
-        builder.characters(ch, start, length);
+        if (cdataFlag) {
+            cdataBuf.append(ch, start, length);
+        } else {
+            builder.characters(ch, start, length);
+        }
     }
 
     @Override
@@ -138,15 +144,20 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
     }
 
     @Override
-    public void endCDATA() throws SAXException {
-    }
-
-    @Override
     public void endDTD() throws SAXException {
     }
 
     @Override
     public void startCDATA() throws SAXException {
+        this.cdataFlag = true;
+    }
+
+
+    @Override
+    public void endCDATA() throws SAXException {
+        builder.cdataSection(cdataBuf);
+        cdataBuf.delete(0, cdataBuf.length());
+        this.cdataFlag = false;
     }
 
     @Override

@@ -89,6 +89,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.parser.*;
 import org.exist.xquery.pragmas.*;
 import org.exist.xquery.update.Modification;
+import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 
@@ -2944,7 +2945,8 @@ public class XQueryContext implements BinaryValueManager, Context {
         if (dynamicOptions != null) {
             for (final Option option : dynamicOptions) {
                 if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())) {
-                    properties.put(option.getQName().getLocalPart(), option.getContents());
+                    SerializerUtils.setProperty(option.getQName().getLocalPart(), option.getContents(), properties,
+                            inScopeNamespaces::get);
                 }
             }
         }
@@ -2953,7 +2955,8 @@ public class XQueryContext implements BinaryValueManager, Context {
             for (final Option option : staticOptions) {
                 if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())
                         && !properties.containsKey(option.getQName().getLocalPart())) {
-                    properties.put(option.getQName().getLocalPart(), option.getContents());
+                    SerializerUtils.setProperty(option.getQName().getLocalPart(), option.getContents(), properties,
+                            inScopeNamespaces::get);
                 }
             }
         }

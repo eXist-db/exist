@@ -35,6 +35,7 @@ import javax.xml.transform.sax.SAXSource;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.Namespaces;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
@@ -272,6 +273,7 @@ public class ModuleUtils {
                 adapter.setReplaceAttributeFlag(true);
 
                 reader.setContentHandler(adapter);
+                reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
                 reader.parse(srcHtml);
                 final Document doc = adapter.getDocument();
                 // we use eXist's in-memory DOM implementation

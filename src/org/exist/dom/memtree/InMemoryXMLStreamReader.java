@@ -24,12 +24,15 @@ package org.exist.dom.memtree;
 import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
+import org.exist.util.hashtable.Object2IntHashMap;
 import org.w3c.dom.Node;
 
+import javax.annotation.Nullable;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import java.util.*;
 
 
 /**
@@ -41,9 +44,12 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
 
     private final DocumentImpl doc;
     private final NodeImpl rootNode;
+    private final InScopeNamespaces inScopeNamespaces = new InScopeNamespaces();
     private int currentNode;
 
     private int state = XMLStreamReader.START_DOCUMENT;
+
+
 
     public InMemoryXMLStreamReader(final DocumentImpl doc, final NodeImpl node) {
         this.doc = doc;
@@ -74,6 +80,9 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
 
                 if(next < 0) { // no child nodes
                     state = XMLStreamReader.END_ELEMENT;
+
+                    inScopeNamespaces.pop(getQName());
+
                     return state;
                 }
             }
@@ -89,12 +98,23 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
                         state = XMLStreamReader.END_ELEMENT;
                     }
                     currentNode = next;
+
+                    if (state == XMLStreamReader.END_ELEMENT) {
+                        inScopeNamespaces.pop(getQName());
+                    }
+
                     return state;
                 }
             }
             currentNode = next;
         } else {
             currentNode = rootNode.getNodeNumber();
+        }
+
+        if (state == XMLStreamReader.START_ELEMENT) {
+            inScopeNamespaces.push(getQName());
+        }  else if (state == XMLStreamReader.END_ELEMENT) {
+            inScopeNamespaces.pop(getQName());
         }
 
         switch(doc.nodeKind[currentNode]) {
@@ -173,7 +193,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
 
     @Override
     public String getNamespaceURI(final String prefix) {
-        return null;
+        return getNamespaceContext().getNamespaceURI(prefix);
     }
 
     @Override
@@ -362,7 +382,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
 
     @Override
     public NamespaceContext getNamespaceContext() {
-        throw new UnsupportedOperationException();
+        return inScopeNamespaces;
     }
 
     @Override
@@ -477,5 +497,96 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
     @Override
     public String getPIData() {
         return new String(doc.characters, doc.alpha[currentNode], doc.alphaLen[currentNode]);
+    }
+
+    /**
+     * Allows access to namespaces that are in-scope
+     * by using a reference counting mechanism as
+     * opposed to a stack.
+     */
+    private static class InScopeNamespaces implements NamespaceContext {
+        private final Object2IntHashMap<QName> namespaces = new Object2IntHashMap<>(4);
+
+        // uri -> prefix(s)
+        private final Map<String, Set<String>> byUri = new HashMap<>();
+
+        // prefix -> url
+        private final Map<String, String> byPrefix = new HashMap<>();
+
+        /**
+         * Push an in-scope namespace.
+         *
+         * The namespace.
+         */
+        public void push(@Nullable final QName qname) {
+            if (qname == null) {
+                return;
+            }
+
+            final int count;
+            if (namespaces.containsKey(qname)) {
+                count = namespaces.get(qname) + 1;
+            } else {
+                count = 1;
+            }
+            namespaces.put(qname, count);
+
+            byUri.compute(qname.getNamespaceURI(), (k,v) -> {
+                if (v == null) {
+                    v = new HashSet<>();
+                }
+                v.add(qname.getPrefix());
+                return v;
+            });
+
+            byPrefix.putIfAbsent(qname.getPrefix(), qname.getNamespaceURI());
+        }
+
+        /**
+         * Pop an in-scope namespace.
+         */
+        public void pop(@Nullable final QName qname) {
+            if (qname == null) {
+                return;
+            }
+
+            if (!namespaces.containsKey(qname)) {
+                return;
+            }
+
+            final int newCount = namespaces.get(qname) - 1;
+            if (newCount >= 1) {
+                namespaces.put(qname, newCount);
+            } else {
+                namespaces.remove(qname);
+                byUri.remove(qname);
+                byPrefix.remove(qname);
+            }
+        }
+
+        @Override
+        public String getNamespaceURI(final String prefix) {
+            return byPrefix.get(prefix);
+        }
+
+        @Override
+        public String getPrefix(final String namespaceURI) {
+            final Set<String> prefixes = byUri.get(namespaceURI);
+            if (prefixes == null) {
+                return null;
+            }
+
+            return prefixes.iterator().next();
+        }
+
+        @Override
+        public Iterator getPrefixes(final String namespaceURI) {
+            final Set<String> prefixes = byUri.get(namespaceURI);
+            if (prefixes == null) {
+                return Collections.EMPTY_SET.iterator();
+            } else {
+                return prefixes.iterator();
+            }
+        }
     }
 }
