@@ -27,7 +27,6 @@ import org.exist.util.XMLChar;
 import org.exist.xquery.Constants;
 
 import javax.xml.XMLConstants;
-import java.nio.channels.IllegalChannelGroupException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -154,6 +153,32 @@ public class QName implements Comparable<QName> {
         } else 
             return localPart;
         */
+    }
+
+    /**
+     * Get a URIQualifiedName format of the QName.
+     *
+     * @return the URIQualifiedName
+     */
+    public final String toURIQualifiedName() {
+        return '{' + getNamespaceURI() + '}' + getLocalPart();
+    }
+
+    /**
+     * Constructs a QName from a URIQualifiedName.
+     *
+     * @param uriQualifiedName the URIQualifiedName.
+     *
+     * @return the QName
+     */
+    public static QName fromURIQualifiedName(final String uriQualifiedName) {
+        final Matcher matcher = ptnClarkNotation.matcher(uriQualifiedName);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Argument is not a URIQualifiedName");
+        }
+        final String ns = matcher.group(1);
+        final String localPart = matcher.group(2);
+        return new QName(localPart, ns);
     }
 
     /**

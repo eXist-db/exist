@@ -1491,7 +1491,7 @@ public class XQueryTest {
         ResourceSet result;
         String query;
         XMLResource resu;
-        String xml = "<root><node><![CDATA[world]]></node></root>";
+        final String xml = "<root><node><![CDATA[world]]></node></root>";
 
         XPathQueryService service =
                 storeXMLStringAndGetQueryService("cdata.xml", xml);
@@ -1517,8 +1517,10 @@ public class XQueryTest {
         query = "/root[node = 'world']";
         result = service.queryResource("cdata.xml", query);
         assertEquals(1, result.getSize());
+
+        // NOTE - no cdata-section-elements specified for XDM serialization
         resu = (XMLResource) result.getResource(0);
-        assertEquals("XQuery: " + query, xml, resu.getContent().toString());
+        assertEquals("XQuery: " + query, "<root><node>world</node></root>", resu.getContent().toString());
     }
 
     /**
