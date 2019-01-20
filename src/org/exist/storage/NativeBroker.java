@@ -2697,8 +2697,8 @@ public class NativeBroker extends DBBroker {
 
     private void doCopyDocument(final Txn transaction, final DocumentTrigger trigger,
             final DocumentImpl sourceDocument, final Collection targetCollection, final XmldbURI newDocName,
-            final DocumentImpl oldDoc, final PreserveType preserve) throws TriggerException, LockException,
-            PermissionDeniedException, IOException, EXistException {
+            @EnsureLocked(mode=LockMode.WRITE_LOCK) final DocumentImpl oldDoc, final PreserveType preserve)
+            throws TriggerException, LockException, PermissionDeniedException, IOException, EXistException {
 
         final XmldbURI sourceDocumentUri = sourceDocument.getURI();
         final XmldbURI targetCollectionUri = targetCollection.getURI();
@@ -2727,8 +2727,6 @@ public class NativeBroker extends DBBroker {
                 try (final InputStream is = getBinaryResource((BinaryDocument) sourceDocument)) {
                     storeBinaryResource(transaction, newDoc, is);
                 }
-                storeXMLResource(transaction, newDoc);
-                targetCollection.addDocument(transaction, this, newDoc);
 
                 newDocument = newDoc;
             } else {
@@ -2746,10 +2744,43 @@ public class NativeBroker extends DBBroker {
                 if (preserveOnCopy(preserve)) {
                     copyResource_preserve(this, sourceDocument, newDoc, oldDoc != null);
                 }
-                storeXMLResource(transaction, newDoc);
-                targetCollection.addDocument(transaction, this, newDoc);
 
                 newDocument = newDoc;
+            }
+
+            /*
+             * Stores the document entry for newDstDoc,
+             * or overwrites the document entry for currentDstDoc with
+             * the entry for newDstDoc, in collections.dbx.
+             */
+            storeXMLResource(transaction, newDocument);
+
+            // must be the last action (before cleanup), as this will make newDstDoc available to other threads!
+            targetCollection.addDocument(transaction, this, newDocument);
+
+            // NOTE: copied document is now live!
+
+
+            // TODO (AR) this could be done asynchronously in future perhaps?
+            // cleanup the old destination doc (if present)
+            if (oldDoc != null) {
+                if (oldDoc.getResourceType() == DocumentImpl.XML_FILE) {
+                    // drop the index and dom nodes of the old document
+                    dropIndex(transaction, oldDoc);
+                    dropDomNodes(transaction, oldDoc);
+
+                } else {
+                    // no need to remove the bin file of the oldDstDoc, it will
+                    // have been overwritten already in the copy of the bin file
+                }
+
+                // TODO(AR) do we need a freeId flag to control this?
+                // recycle the id
+                collectionsDb.freeResourceId(oldDoc.getDocId());
+
+                // The Collection object oldDstDoc is now an empty husk which is
+                // not available or referenced from anywhere, it will be subject
+                // to garbage collection
             }
         }
 
@@ -3004,36 +3035,7 @@ public class NativeBroker extends DBBroker {
             if(LOG.isDebugEnabled()) {
                 LOG.debug("removeDocument() - removing dom");
             }
-            try {
-                if(!document.getMetadata().isReferenced()) {
-                    new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
-                        @Override
-                        public Object start() {
-                            final NodeHandle node = (NodeHandle) document.getFirstChild();
-                            domDb.removeAll(transaction, node.getInternalAddress());
-                            return null;
-                        }
-                    }.run();
-                }
-            } catch(NullPointerException npe0) {
-                LOG.error("Caught NPE in DOMTransaction to actually be able to remove the document.");
-            }
-
-            final NodeRef ref = new NodeRef(document.getDocId());
-            final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-            new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
-                @Override
-                public Object start() {
-                    try {
-                        domDb.remove(transaction, idx, null);
-                    } catch(final BTreeException | IOException e) {
-                        LOG.error("start() - " + "error while removing doc", e);
-                    } catch(final TerminatedException e) {
-                        LOG.error("method terminated", e);
-                    }
-                    return null;
-                }
-            }.run();
+            dropDomNodes(transaction, document);
             removeResourceMetadata(transaction, document);
             if(freeDocId) {
                 collectionsDb.freeResourceId(document.getDocId());
@@ -3061,6 +3063,39 @@ public class NativeBroker extends DBBroker {
         listener.endIndexDocument(transaction);
         notifyDropIndex(document);
         getIndexController().flush();
+    }
+
+    private void dropDomNodes(final Txn transaction, final DocumentImpl document) {
+        try {
+            if(!document.getMetadata().isReferenced()) {
+                new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
+                    @Override
+                    public Object start() {
+                        final NodeHandle node = (NodeHandle) document.getFirstChild();
+                        domDb.removeAll(transaction, node.getInternalAddress());
+                        return null;
+                    }
+                }.run();
+            }
+        } catch(NullPointerException npe0) {
+            LOG.error("Caught NPE in DOMTransaction to actually be able to remove the document.");
+        }
+
+        final NodeRef ref = new NodeRef(document.getDocId());
+        final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+        new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
+            @Override
+            public Object start() {
+                try {
+                    domDb.remove(transaction, idx, null);
+                } catch(final BTreeException | IOException e) {
+                    LOG.error("start() - " + "error while removing doc", e);
+                } catch(final TerminatedException e) {
+                    LOG.error("method terminated", e);
+                }
+                return null;
+            }
+        }.run();
     }
 
     @Override
