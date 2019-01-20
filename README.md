@@ -20,6 +20,16 @@ eXist-db is a high-performance open source native XML database—a NoSQL documen
 
 The eXist-db community has adopted the [Contributor Covenant](https://www.contributor-covenant.org/) [Code of Conduct](https://www.contributor-covenant.org/version/1/4/code-of-conduct).
 
+## Open Community Calls
+We holds an open community call each week on Monday. The start time alternates between:  
+-   18:30-19:30 UTC
+-   14:30-15:30 UTC
+to allow members from different timezones to join.
+
+If you wish to participate, please join the chatroom (link above) shortly before each call to receive an invitation link.
+
+The notes of past community calls are located [here](https://drive.google.com/drive/folders/0B4NLNdpw86LPc2JsV294NDFfTjQ)
+
 ## Resources
 
 -   **Homepage:** <http://exist-db.org>
@@ -49,4 +59,5 @@ and <a href="https://www.yourkit.com/.net/profiler/">YourKit .NET Profiler</a>,
 innovative and intelligent tools for profiling Java and .NET applications.
 
 ![sauce-labs_horiz_red-grey_rgb_200x28](https://user-images.githubusercontent.com/6205362/49570521-27bcc400-f937-11e8-9bfd-1a3ffc721d3d.png)
+
 Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs](https://saucelabs.com)
