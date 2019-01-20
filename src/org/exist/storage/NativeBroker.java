@@ -2916,7 +2916,7 @@ public class NativeBroker extends DBBroker {
 
         final DocumentTrigger trigger = new DocumentTriggers(this, transaction, sourceCollection);
 
-        // check if the move would overwrite a collection
+        // check if the move would overwrite a document
         final DocumentImpl oldDoc = targetCollection.getDocument(this, newName);
         if(oldDoc != null) {
 
@@ -2930,7 +2930,7 @@ public class NativeBroker extends DBBroker {
             }
             */
 
-            // remove the old resource
+            // remove the existing document
             removeResource(transaction, oldDoc);
         }
 
