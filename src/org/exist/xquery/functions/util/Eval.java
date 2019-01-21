@@ -352,7 +352,7 @@ public class Eval extends BasicFunction {
                 } else {
                     // get the default serialization options
                     final Properties defaultOutputOptions;
-                    if (getArgumentCount() == 2 && !args[1].isEmpty()) {
+                    if (getArgumentCount() >= 2 && !args[1].isEmpty()) {
                         defaultOutputOptions = FunSerialize.getSerializationProperties(this, args[1].itemAt(0));
                     } else {
                         defaultOutputOptions = new Properties();
