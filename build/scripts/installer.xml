@@ -89,14 +89,16 @@
     </target>
 
     <target name="download-xar">
+        <!-- get dest="${apps.dir}" src="${apps.repo}/find?abbrev=${xar}&amp;processor=${project.version}"
+             verbose="on" maxtime="180" usetimestamp="true" tryGzipEncoding="true"/ -->
 
         <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask">
             <classpath>
                 <pathelement location="${asocat-exist.jar}"/>
             </classpath>
         </taskdef>
-        <fetch dest="${apps.dir}" url="${apps.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes&amp;processor=${project.version}"
-            failonerror="false" maxtime="360">
+        <fetch dest="${apps.dir}" url="${apps.repo}/find?abbrev=${xar}&amp;processor=${project.version}&amp;zip=yes"
+               failonerror="true" maxtime="180">
             <patternset>
                 <include name="**/*.xar"/>
             </patternset>
