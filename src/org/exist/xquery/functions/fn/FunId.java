@@ -27,7 +27,7 @@ import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.persistent.*;
-import org.exist.util.XMLChar;
+import org.exist.util.XMLNames;
 import org.exist.xquery.*;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.value.*;
@@ -155,7 +155,7 @@ public class FunId extends Function {
     				final StringTokenizer tok = new StringTokenizer(nextId, " ");
     				while(tok.hasMoreTokens()) {
     					nextId = tok.nextToken();
-    					if(XMLChar.isValidNCName(nextId)) {
+    					if(XMLNames.isNCName(nextId)) {
                             if (processInMem)
                                 {getId(result, contextSequence, nextId);}
                             else
@@ -163,7 +163,7 @@ public class FunId extends Function {
                         }
     				}
     			} else {
-    				if(XMLChar.isValidNCName(nextId)) {
+    				if(XMLNames.isNCName(nextId)) {
                         if (processInMem)
                             {getId(result, contextSequence, nextId);}
                         else
@@ -195,7 +195,7 @@ public class FunId extends Function {
         final Set<DocumentImpl> visitedDocs = new TreeSet<>();
         for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
             final NodeImpl v = (NodeImpl) i.nextItem();
-            final DocumentImpl doc = v.getOwnerDocument();
+            final DocumentImpl doc = v.getNodeType() == Node.DOCUMENT_NODE ? (DocumentImpl)v : v.getOwnerDocument();
 
             if (doc != null && !visitedDocs.contains(doc)) {
                 final NodeImpl elem = doc.selectById(id);
