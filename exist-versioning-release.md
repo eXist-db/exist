@@ -3,30 +3,29 @@
 ![eXist Logo](https://github.com/eXist-db/exist/raw/develop/webapp/logo.jpg)
 
 ## Overview
+This document describes the Versioning Scheme and Release Process for eXist. These two topics are tightly connected, so both are covered in this document.
 
-This document describes the Versioning Scheme and Release Process for eXist. These two topics are tightly connected, so both are covered in this document. 
+*   The Versioning Scheme describes how eXist's source code and releases are named. Version numbers unambiguously inform users and developers about the significance of the release and order relative to past and future versions.
 
-* The Versioning Scheme describes how eXist's source code and releases are named. Version numbers unambiguously inform users and developers about the significance of the release and order relative to past and future versions.
+*   The Release Process describes how the Release Manager (the person who orchestrates a release) should take a `snapshot (tag)` of eXist source code, apply the Versioning Scheme, assemble it, and publish the resulting products. The goal is to have a clear procedure for altering the version number to mark transitions in phases of development leading up to each release, and to ensure that releases are consistently sourced from a specific point in the project repository's history.
 
-* The Release Process describes how the Release Manager (the person who orchestrates a release) should take a snapshot of eXist source code, apply the Versioning Scheme, assemble it, and publish the resulting products. The goal is to have a clear procedure for altering the version number to mark transitions in phases of development leading up to each release, and to ensure that releases are consistently sourced from a specific point in the project repository's history.
-
-The final section of the document describes the old versioning practice, compared to the new one. 
+The final section of the document describes the old versioning practice, compared to the new one.
 
 ### Motivation
 
-This proposal is intended to facilitate more rapid releases, with the goal of getting new features and bug fixes out to the community without sacrificing quality or stability. Critical to the success of this effort is achieving a common understanding about version numbers and managing version changes during releases. 
+This proposal is intended to facilitate more rapid releases, with the goal of getting new features and bug fixes out to the community without sacrificing quality or stability. Critical to the success of this effort is achieving a common understanding about version numbers and managing version changes during releases.
 
-Problems with versioning crept in during the long development phase of eXist 3.0, when eXist's version-related properties (as recorded in the `$EXIST_HOME/build.properties` file) diverged, and as a result, the community struggled with having two ways of talking about eXist's version, e.g., the public label, `3.0.RC2`, and the numeric version, `3.0.3`. 
+Problems with versioning crept in during the long development phase of eXist 3.0, when eXist's version-related properties (as recorded in the `$EXIST_HOME/build.properties` file) diverged, and as a result, the community struggled with having two ways of talking about eXist's version, e.g., the public label, `3.0.RC2`, and the numeric version, `3.0.3`.
 
 This proposal was first implemented with eXist 3.1.0, which inaugurated the use of a single version number for all versions of eXist. The document has been refined and expanded since then.
 
-The new versioning scheme uses the popular Semantic Versioning scheme, in which each number here reflects major, minor, and patch versions. This single version-related property will bring clarity and semantic precision to eXist's releases. The Semantic Versioning scheme allows the eXist team to label development versions as snapshots or release candidates, and to release these and nightly builds with clear version numbers. 
+The new versioning scheme uses the popular Semantic Versioning scheme, in which each number here reflects major, minor, and patch versions. This single version-related property will bring clarity and semantic precision to eXist's releases. The Semantic Versioning scheme allows the eXist team to label development versions as snapshots or release candidates, and to release these and nightly builds with clear version numbers.
 
 Paired with a revised set of release procedures, the new versioning scheme ensures the names of new versions of eXist delivered to the community are precise and reliable. Removing versioning ambiguities and clarifying release practices facilitates a rapid cycle of development and release.
 
 ## Versioning Scheme
 
-eXist follows a widely-used, semantically precise versioning scheme called [Semantic Versioning](http://semver.org/) (specifically [version 2.0.0](https://github.com/mojombo/semver/tree/v2.0.0)) of this scheme. For a complete introduction to Semantic Versioning, please consult the documentation. Here, we summarize how the principles of Semantic Versioning are applied to eXist. 
+eXist follows a widely-used, semantically precise versioning scheme called [Semantic Versioning](http://semver.org/) (specifically [version 2.0.0](https://github.com/mojombo/semver/tree/v2.0.0)) of this scheme. For a complete introduction to Semantic Versioning, please consult the documentation. Here, we summarize how the principles of Semantic Versioning are applied to eXist.
 
 ### Product Releases
 
@@ -46,36 +45,36 @@ For example, the 3rd major version of eXist would have the Semantic Version numb
 
 For pre-releases, such as [release candidates](https://en.wikipedia.org/wiki/Software_release_life_cycle#Release_candidate) or [snapshots](https://docs.oracle.com/middleware/1212/core/MAVEN/maven_version.htm#MAVEN401), a 4-component Semantic Versioning version number is used: "`MAJOR`**.**`MINOR`**.**`PATCH`**-**`PRERELEASE`. We follow Semantic Versioning's definitions for the `PRERELEASE` label scheme:
 
-* `PRERELEASE` is a series of dot separated identifiers, each identifier must use only the following ASCII characters `[0-9A-Za-z-]` and must not be empty.
+*   `PRERELEASE` is a series of dot separated identifiers, each identifier must use only the following ASCII characters `[0-9A-Za-z-]` and must not be empty.
 
-* The presence of `PRERELEASE` indicates that the version is pre-release and not yet considered stable. Product releases do not have `PRERELEASE`.
+*   The presence of `PRERELEASE` indicates that the version is pre-release and not yet considered stable. Product releases do not have `PRERELEASE`.
 
-* Given two versions in which `MAJOR`, `MINOR`, and `PATCH` are equal, the version with a `PRERELEASE` has lower precedence than one without it. The following rules hold true in terms of version number preference:
+*   Given two versions in which `MAJOR`, `MINOR`, and `PATCH` are equal, the version with a `PRERELEASE` has lower precedence than one without it. The following rules hold true in terms of version number preference:
 
-    * `3.0.0` > `3.0.0-RC2`
-    * `3.0.0-RC2` > `3.0.0-RC1`
-    * `3.0.0-RC1` > `2.2.4`
+    *   `3.0.0` > `3.0.0-RC2`
+    *   `3.0.0-RC2` > `3.0.0-RC1`
+    *   `3.0.0-RC1` > `2.2.4`
 
 eXist uses only two clearly defined forms of `PRERELEASE` label:
 
-* `RCx` is used for release candidates. The `x` should be replaced with the iteration of the release candidate, for example `3.0.0-RC1` for the first release candidate of eXist 3, and `3.0.0-RC2` for the second release candidate of eXist 3. While not all releases are necessarily preceded by a release candidate (which are feature complete and considered ready for release), the core developers may opt to issue one or more release candidates in order to gather feedback from testing by early adopters.
+*   `RCx` is used for release candidates. The `x` should be replaced with the iteration of the release candidate, for example `3.0.0-RC1` for the first release candidate of eXist 3, and `3.0.0-RC2` for the second release candidate of eXist 3. While not all releases are necessarily preceded by a release candidate (which are feature complete and considered ready for release), the core developers may opt to issue one or more release candidates in order to gather feedback from testing by early adopters.
 
-* `SNAPSHOT` is used for point-in-time builds. These products are typically not published or distributed, but used only for local testing by developers or by the nightly-build system.
+*   `SNAPSHOT` is used for point-in-time builds. These products are typically not published or distributed, but used only for local testing by developers or by the nightly-build system.
 
 ### Nightly Builds
 
 A nightly build is similar to a snapshot, except it is automatically built from the latest source code and released once daily. To help distinguish between one day's nightly build and the next's, a 5-component Semantic Versioning version number is used for nightly builds' filenames: "`MAJOR`**.**`MINOR`**.**`PATCH`**-**`PRERELEASE`**+**`BUILD`. We follow Semantic Versioning's definitions for the `BUILD` label scheme:
 
-* `BUILD` is a series of dot separated identifiers, each identifier must use only ASCII alphanumerics and hyphen [0-9A-Za-z-]
+*   `BUILD` is a series of dot separated identifiers, each identifier must use only ASCII alphanumerics and hyphen [0-9A-Za-z-]
  and must be empty. Build metadata SHOULD be ignored when determining version precedence.
 
-* The presence of `BUILD` indicates that the version is pre-release and not yet considered stable. Product releases do not have `BUILD`.
+*   The presence of `BUILD` indicates that the version is pre-release and not yet considered stable. Product releases do not have `BUILD`.
 
 eXist adds a further constraint and modifies the precedence for the `BUILD` label:
 
-* The `BUILD` label is a UTC timezone timestamp, in the format `YYYYMMDDHHmmSS` (as would be given by the UNIX command `date +%Y%m%d%H%M%S`).
+*   The `BUILD` label is a UTC timezone timestamp, in the format `YYYYMMDDHHmmSS` (as would be given by the UNIX command `date +%Y%m%d%H%M%S`).
 
-* The precedence of the `BUILD` label, may be numerically compared by timestamp, e.g. `20170227142409 > 20160204000001`.
+*   The precedence of the `BUILD` label, may be numerically compared by timestamp, e.g. `20170227142409 > 20160204000001`.
 
 For example, the macOS disk image for the build from the SNAPSHOT pre-release version of eXist 3.2.0 on May 7, 2017 at 21:37:22 UTC would be named:
 
@@ -86,7 +85,6 @@ It is trivial for a developer to relate a timestamp back to a Git hash (by using
 ### Where the version number is stored
 
 The version number is stored in the `$EXIST_HOME/build.properties` file, in a single property, `project.version`. The Semantic Versioning number `3.2.0-SNAPSHOT` would be stored as follows:
-
 ```
 project.version = 3.2.0-SNAPSHOT
 ```
@@ -95,50 +93,50 @@ That version number must also should be copied into the `META-INF/MANIFEST.MF` f
 
 ## Release Process
 
-This section details concrete steps for creating and publishing product releases. Each section here assumes you are starting with a clean Git checkout of the `develop` branch from https://github.com/eXist-db/exist.git.
+This section details concrete steps for creating and publishing product releases. Each section here assumes you are starting with a clean Git checkout of the `develop` branch from [https://github.com/eXist-db/exist.git](https://github.com/eXist-db/exist.git).
 
 ### Initiating Semantic Versioning
 
-Version 3.0.0 was released before Semantic Versioning. The following steps will initiate Semantic Versioning for the remainder of the development phase of the next release, a new minor version to be called version 3.1.0: 
+Version 3.0.0 was released before Semantic Versioning. The following steps will initiate Semantic Versioning for the remainder of the development phase of the next release, a new minor version to be called version 3.1.0:
 
-1. Modify `$EXIST_HOME/build.properties` to read:
+1.  Modify `$EXIST_HOME/build.properties` to read:
 
     ```
     project.version = 3.1.0-SNAPSHOT
     ```
-    
-2. Commit the changes and push to `origin` (or `upstream` if you are on a fork).
+
+2.  Commit the changes and push to `origin` (or `upstream` if you are on a fork).
 
 ### Preparing a Product Release
 
 Once development on a new stable version is complete, the following steps will prepare the version for release. For purposes of illustration, we will assume we are preparing the stable release of version 3.1.0.
 
-1. Merge any outstanding PRs that have been reviewed and accepted for the milestone eXist-3.1.0.
+1.  Merge any outstanding PRs that have been reviewed and accepted for the milestone eXist-3.1.0.
 
-2. Make sure that you have the HEAD of `origin/develop` (or `upstream` if you are on a fork).
+2.  Make sure that you have the HEAD of `origin/develop` (or `upstream` if you are on a fork).
 
-3. Modify `$EXIST_HOME/build.properties` to remove any `LABEL` (e.g., `-SNAPSHOT` or `-RCx`) and read as follows:
+3.  Modify `$EXIST_HOME/build.properties` to remove any `LABEL` (e.g., `-SNAPSHOT` or `-RCx`) and read as follows:
     ```
     project.version = 3.1.0
     ```
-    
+
     And commit the changes and push to `origin` (or `upstream` if you are on a fork):
     ```
     $ git commit build.properties -m "[release] Set version for 3.1.0 release"
     $ git push origin/develop
     ```
 
-4. Git tag **and sign** eXist-3.1.0 from the `HEAD` of `develop` branch and push the tag to `origin` (or `upstream` if you are on a fork):
+4.  Git tag **and sign** eXist-3.1.0 from the `HEAD` of `develop` branch and push the tag to `origin` (or `upstream` if you are on a fork):
     ```
     $ git tag -s -m "Release tag for eXist 3.1.0" eXist-3.1.0
     $ git push origin eXist-3.1.0
     ```
-5. Update the stable branch (`master`) of eXist-db to reflect the latest release:
+5.  Update the stable branch (`master`) of eXist-db to reflect the latest release:
     ```
     $ git push origin develop:master
     ```
 
-6. Prepare for development on the next version of eXist by modifying `$EXIST_HOME/build.properties` to increment to the next the snapshot phase of the next minor version:
+6.  Prepare for development on the next version of eXist by modifying `$EXIST_HOME/build.properties` to increment to the next the snapshot phase of the next minor version:
     ```
     project.version = 3.2.0-SNAPSHOT
     ```
@@ -151,27 +149,27 @@ Once development on a new stable version is complete, the following steps will p
 
     **NOTE:** We increment to the next `MINOR` version, rather than to the next `PATCH` or `MAJOR` version, for two reasons. First, we assume the next version will likely contain features and not just bug patches, although this does not prevent us from doing a `3.1.1` (a `PATCH` release) release next, should we have only patches. By the same token, the future is uncertain and we recognise that it is easier to release features with non-breaking API changes and patches, although this still does not prevent us from doing a `4.0.0` release next, should we have breaking API changes.
 
-6. Check out the `eXist-3.1.0` tag and create product builds for publication:
+6.  Check out the `eXist-3.1.0` tag and create product builds for publication:
 
-    1. If you haven't previously done so, download and install [IzPack 4.3.5](http://download.jboss.org/jbosstools/updates/requirements/izpack/4.3.5/IzPack-install-4.3.5.jar) to `/usr/local/izpack-4.3.5` or somewhere equally sensible.
-    
-    2. If you haven't previously done so, create the file `$EXIST_HOME/local.build.properties` and set your identity to use for code signing the Jar files and Mac products:
+    1.  If you haven't previously done so, download and install [IzPack 4.3.5](http://download.jboss.org/jbosstools/updates/requirements/izpack/4.3.5/IzPack-install-4.3.5.jar) to `/usr/local/izpack-4.3.5` or somewhere equally sensible.
+
+    2.  If you haven't previously done so, create the file `$EXIST_HOME/local.build.properties` and set your identity to use for code signing the Jar files and Mac products:
         ```
         keystore.file=/home/my-username/exist-release-build_key.store
         keystore.alias=exist-release-build
         keystore.password=exist-release-build-password
-        
+
         izpack.dir = /usr/local/izpack-4.3.5
 
         mac.codesign.identity=Developer ID Application: Your Megacorp Here
         ```
 
-    3. If you haven't previously done so, or you are not using your own existing key, you need to create the Java keystore file `/home/my-username/exist-release-build_key.store`:
+    3.  If you haven't previously done so, or you are not using your own existing key, you need to create the Java keystore file `/home/my-username/exist-release-build_key.store`:
         ```
         $ keytool -genkeypair --alias exist-release-build -storepass exist-release-build-password -validity 9999 -keystore /home/my-username/exist-release-build_key.store
         ```
 
-    4. Perform the build of the tag:
+    4.  Perform the build of the tag:
         ```
         $ git checkout eXist-3.1.0
         $ ./build.sh clean clean-all jnlp-unsign-all all jnlp-sign-exist jnlp-sign-core jnlp-sign-exist-extensions
@@ -179,20 +177,17 @@ Once development on a new stable version is complete, the following steps will p
         ```
 
 #### Publishing the Product Release
+1.  Login to https://bintray.com/existdb/ and create a new "Version", then upload the files `$EXIST_HOME/installer/eXist-db-setup-3.2.0.jar`, `$EXIST_HOME/dist/eXist-db-3.2.0.dmg`, `$EXIST_HOME/dist/exist-3.1.0.war`, and `$EXIST_HOME/dist/exist-3.1.0.tar.bz2`. Once the files have uploaded, make sure to click "Publish" to publish them to the version. Once published, you need to go to the "Files" section of the version, and click "Actions"->"Show in downloads list" for each file.
 
-1. Login to https://bintray.com/existdb/ and create a new "Version", then upload the files `$EXIST_HOME/installer/eXist-db-setup-3.2.0.jar`, `$EXIST_HOME/dist/eXist-db-3.2.0.dmg`, `$EXIST_HOME/dist/exist-3.1.0.war`, and `$EXIST_HOME/dist/exist-3.1.0.tar.bz2`. Once the files have uploaded, make sure to click "Publish" to publish them to the version. Once published, you need to go to the "Files" section of the version, and click "Actions"->"Show in downloads list" for each file.
+2.  Update and publish the latest Maven artifacts as described here: [https://github.com/exist-db/mvn-repo](https://github.com/exist-db/mvn-repo)
 
-2. Update and publish the latest Maven artifacts as described here: https://github.com/exist-db/mvn-repo
+3.  Ask [Evolved Binary](http://www.evolvedbinary.com) to build and upload new Docker Images for the latest release.
 
-3. Ask [Evolved Binary](http://www.evolvedbinary.com) to build and upload new Docker Images for the latest release.
+4.  Update the Mac HomeBrew for eXist-db, see: [Releasing to Homebrew](https://github.com/eXist-db/exist/blob/develop/exist-versioning-release.md#releasing-to-homebrew).
 
-4. Update the Mac HomeBrew for eXist-db, see: [Releasing to Homebrew](https://github.com/eXist-db/exist/blob/develop/exist-versioning-release.md#releasing-to-homebrew).
-
-5. Edit the links for the downloads on the eXist website.
-
+5.  Edit the links for the downloads on the eXist website.
     1. `$ git clone https://github.com/exist-db/website.git`
-    
-    2. Edit the file `website/index.html`, you need to modify the HTML under `<a name="downloads"/>` and update the version numbers for the current release:
+    2.  Edit the file `website/index.html`, you need to modify the HTML under `<a name="downloads"/>` and update the version numbers for the current release:
 
    ```html
    <a name="downloads"/>
@@ -227,30 +222,30 @@ Once development on a new stable version is complete, the following steps will p
              </button>
          </a>
    ```
-   
+
     3. Edit the file `expath-pkg.xml` and bump the version i.e. `version="4"` to reflect the new version.
-    
+
     4. Commit your change and push: `$ git commit index.html expath-pkg.xml -m "Update for eXist-3.1.0 website" && git push origin master`
-    
+
     5. Tag your release of the Website and push the tag: `$ git tag -s -m "Release tag for eXist 3.1.0 website" eXist-3.1.0 && git push origin eXist-3.1.0`.
-    
+
     6. Create a XAR for the website: `$ git checkout eXist-3.1.0 && ant`.
-    
+
     7. Visit http://www.exist-db.org/exist/apps/dashboard/index.html, login and upload the new `build/homepage.xar` file via the Package Manager.
 
-6. Login to the blog at http://exist-db.org/exist/apps/wiki/blogs/eXist/ and add a new news item which announces the release and holds the release notes. It should be named like http://exist-db.org/exist/apps/wiki/blogs/eXist/eXistdb310
+6.  Login to the blog at [http://exist-db.org/exist/apps/wiki/blogs/eXist/](http://exist-db.org/exist/apps/wiki/blogs/eXist/) and add a new news item which announces the release and holds the release notes. It should be named like [http://exist-db.org/exist/apps/wiki/blogs/eXist/eXistdb310](http://exist-db.org/exist/apps/wiki/blogs/eXist/eXistdb310)
 
-7. Visit the GitHub releases page https://github.com/eXist-db/exist/releases and create a new release, enter the tag you previously created and link the release notes from the blog and the binaries from BinTray.
+7.  Visit the GitHub releases page [https://github.com/eXist-db/exist/releases](https://github.com/eXist-db/exist/releases) and create a new release, enter the tag you previously created and link the release notes from the blog and the binaries from BinTray.
 
-8. Send an email to the `exist-open` mailing list announcing the release with a title similar to `[ANN] Release of eXist 3.1.0`, copy and paste the release notes from the blog into the email and reformat appropriately (see past emails).
+8.  Send an email to the `exist-open` mailing list announcing the release with a title similar to `[ANN] Release of eXist 3.1.0`, copy and paste the release notes from the blog into the email and reformat appropriately (see past emails).
 
-9. Tweet about it using the `existdb` twitter account.
+9.  Tweet about it using the `existdb` twitter account.
 
-10. Post it to the LinkedIn eXist-db group: https://www.linkedin.com/groups/35624
+10. Post it to the LinkedIn eXist-db group: [https://www.linkedin.com/groups/35624](https://www.linkedin.com/groups/35624)
 
-11. Submit a news item to XML.com - https://www.xml.com/news/submit-news-item/.
+11. Submit a news item to XML.com - [https://www.xml.com/news/submit-news-item/](https://www.xml.com/news/submit-news-item/).
 
-12. Update the Wikipedia page with the new version details - https://en.wikipedia.org/wiki/EXist.
+12. Update the Wikipedia page with the new version details - [https://en.wikipedia.org/wiki/EXist](https://en.wikipedia.org/wiki/EXist).
 
 13. Go to GitHub and move all issues and PRs which are still open for the release milestone to the next release milestone. Close the release milestone.
 
@@ -259,17 +254,17 @@ Once development on a new stable version is complete, the following steps will p
 
 Assuming that eXist 3.1.0 has been released and a new patch version is ready to be released, the steps for creating and publishing eXist 3.1.1 are:
 
-1. Merge any outstanding PRs that have been reviewed (and accepted) for the milestone eXist-3.1.1.
+1.  Merge any outstanding PRs that have been reviewed (and accepted) for the milestone eXist-3.1.1.
 
-2. Make sure that you have the HEAD of `origin/develop` (or `upstream` if you are on a fork).
+2.  Make sure that you have the HEAD of `origin/develop` (or `upstream` if you are on a fork).
 
-3. Modify the `$EXIST_HOME/build.properties` to look like:
+3.  Modify the `$EXIST_HOME/build.properties` to look like:
     ```
     project.version = 3.1.1
     ```
     Commit the changes and push to `origin` (or `upstream` if you are on a fork).
 
-4. Git tag **and sign** eXist-3.1.1 from the `HEAD` of `develop` branch and push the tag to `origin` (or `upstream` if you are on a fork):
+4.  Git tag **and sign** eXist-3.1.1 from the `HEAD` of `develop` branch and push the tag to `origin` (or `upstream` if you are on a fork):
     ```
     $ git tag -s -m "Release tag for eXist 3.1.1" eXist-3.1.1
     $ git push origin eXist-3.1.1
@@ -279,10 +274,10 @@ Assuming that eXist 3.1.0 has been released and a new patch version is ready to 
     ```
     project.version = 3.2.0-SNAPSHOT
     ```
-    
+
     Commit the changes and push to `origin` (or `upstream` if you are on a fork).
 
-6. Checkout the `eXist-3.1.1` tag and create product builds for publication:
+6.  Checkout the `eXist-3.1.1` tag and create product builds for publication:
     ```
     $ git checkout eXist-3.1.1
     $ ./build.sh jnlp-unsign-all all jnlp-sign-exist jnlp-sign-core
@@ -293,34 +288,34 @@ Assuming that eXist 3.1.0 has been released and a new patch version is ready to 
 
 Assuming that work on eXist 3.2.0 is complete and the changes from the previous release (3.1.x) are substantial (therefore introducing a stability concern), and merit a release candidate phase, the steps for creating and publishing eXist 3.2.0-RC1 are:
 
-1. Merge any outstanding PRs that have been reviewed (and accepted) for the milestone eXist-3.2.0.
+1.  Merge any outstanding PRs that have been reviewed (and accepted) for the milestone eXist-3.2.0.
 
-2. Make sure that you have the HEAD of `origin/develop` (or `upstream` if you are on a fork).
+2.  Make sure that you have the HEAD of `origin/develop` (or `upstream` if you are on a fork).
 
-3. Modify the `$EXIST_HOME/build.properties` to look like:
+3.  Modify the `$EXIST_HOME/build.properties` to look like:
     ```
     project.version = 3.2.0-RC1
     ```
     Commit the changes and push to `origin` (or `upstream` if you are on a fork).
 
-4. Git tag **and sign** eXist-3.2.0-RC1 from the `HEAD` of `develop` branch and push the tag to `origin` (or `upstream` if you are on a fork):
+4.  Git tag **and sign** eXist-3.2.0-RC1 from the `HEAD` of `develop` branch and push the tag to `origin` (or `upstream` if you are on a fork):
     ```
     $ git tag -s -m "Release tag for eXist 3.2.0-RC1" eXist-3.2.0-RC1
     $ git push origin eXist-3.2.0-RC1
     ```
-    
-5. Prepare for development on the next version of eXist; Modify `$EXIST_HOME/build.properties` to look like:
+
+5.  Prepare for development on the next version of eXist; Modify `$EXIST_HOME/build.properties` to look like:
     ```
     project.version = 3.2.0-RC2
     ```
-    
+
     Commit the changes and push to `origin` (or `upstream` if you are on a fork).
 
     **NOTE:** We advance to the next release candidate, rather than restoring the `SNAPSHOT` label, because we assume there may be a need for a subsequent release candidate before release, although this does not prevent us from skipping straight to the final release, should the release candidate prove as stable as hoped.
 
     **NOTE:** The timeframe between a RC and final release (or next RC) must be short, and therefore is **limited to two weeks**. During this time **ONLY patch bugfix** PRs should be merged.
 
-6. Checkout the `eXist-3.2.0-RC1` tag and create product builds for publication:
+6.  Checkout the `eXist-3.2.0-RC1` tag and create product builds for publication:
     ```
     $ git checkout eXist-3.2.0-RC1
     $ ./build.sh jnlp-unsign-all all jnlp-sign-exist jnlp-sign-core
@@ -328,7 +323,6 @@ Assuming that work on eXist 3.2.0 is complete and the changes from the previous 
     ```
 
 ### Releasing to Homebrew
-
 [Homebrew](http://brew.sh) is a popular command-line package manager for macOS. Once Homebrew is installed, applications like eXist can be installed via a simple command. eXist's presence on Homebrew is found in the Caskroom project, as a "cask", at [https://github.com/caskroom/homebrew-cask/blob/master/Casks/exist-db.rb](https://github.com/caskroom/homebrew-cask/blob/master/Casks/exist-db.rb).
 
 > **Terminology:** "Caskroom" is the Homebrew extension project where pre-built binaries and GUI applications go, whereas the original "Homebrew" project is reserved for command-line utilities that can be built from source. Because the macOS version of eXist is released as an app bundle with GUI components, it is distributed via Caskroom.
@@ -357,7 +351,6 @@ Once cask-repair has successfully downloaded the new installer, it will calculat
 ## Comparison to the Old Versioning and Release Procedures
 
 ### The Old Way
-
 During the development of eXist 3.0, the version-related properties in `$EXIST_HOME/build.proprties` diverged and looked like this:
 
 ```
@@ -365,7 +358,7 @@ project.version = 3.0.RC2
 project.version.numeric = 3.0.3
 ```
 
-Here there are two different version numbers above: `project.version` and `project.version.numeric`. The second version number was introduced in an attempt to assist many users who were running custom-compiled versions and needing to detect API changes during the very extended release candidate phase. The divergence in version numbers caused real confusion and consternation among users who tried to communicate these version numbers with each other. 
+Here there are two different version numbers above: `project.version` and `project.version.numeric`. The second version number was introduced in an attempt to assist many users who were running custom-compiled versions and needing to detect API changes during the very extended release candidate phase. The divergence in version numbers caused real confusion and consternation among users who tried to communicate these version numbers with each other.
 
 When eXist 3.0 was released, these properties were manually modified for sake of expediency and therefore did not match the Git tag `eXist-3.0`. Rather, its `$EXIST_HOME/build.properties` contained the following version components:
 
@@ -377,7 +370,6 @@ project.version.numeric = 3.0.4
 Our goal is to prevent such a divergence in versioning from creeping back into eXist and to ensure a clean versioning system to serve eXist through its future development and release cycles.
 
 ### The New Way
-
 eXist now has a single version number, forumlated according to the precise principles of Semantic Versioning, captured in a single property:
 
 ```
@@ -430,15 +422,11 @@ It is trivial for a developer to relate a timestamp back to a Git commit (by usi
 ## Future Considerations
 
 ### Release Candidates
-
-1. While a release candidate is being tested, only bugfix patch PRs for that RC can be merged. We could consider a slightly more complex branch and release process to enable the `develop` branch to continue unrestricted.
+1.  While a release candidate is being tested, only bugfix patch PRs for that RC can be merged. We could consider a slightly more complex branch and release process to enable the `develop` branch to continue unrestricted.
 
 ### Maven Compatibility
-
 The use of the `BUILD` label may have to be refined if we migrate to Maven. Maven Snapshots have two forms:
 
-1. A base version which is not actualised, e.g.: `3.1.0-SNAPSHOT`. This fits with our current proposals.
+1.  A base version which is not actualised, e.g.: `3.1.0-SNAPSHOT`. This fits with our current proposals.
 
-2. A published SNAPSHOT release which looks: ``3.1.0-20170507.213722-1`. This is not incompatible with Semver, but would replace the `PRERELEASE` label `SNAPSHOT` with a concrete `PRERELEASE` timestamp.
-
-
+2.  A published SNAPSHOT release which looks: ``3.1.0-20170507.213722-1`. This is not incompatible with Semver, but would replace the `PRERELEASE` label `SNAPSHOT` with a concrete `PRERELEASE` timestamp.
