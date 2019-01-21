@@ -146,4 +146,11 @@
         ]]></code>
         <expected>another foobar title</expected>
     </test>
+    <test output="text" >
+        <task>Test Index 7 - search term range (resulted in UnsupportedOperationException)</task>
+        <code><![CDATA[
+        count( ft:search("/db/binary/", "para:[even TO foobaar]")//@uri  )
+        ]]></code>
+        <expected>3</expected>
+    </test>
 </TestSet>
