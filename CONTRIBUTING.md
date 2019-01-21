@@ -60,12 +60,12 @@ This is still the default mode, however, when a release candidate is under devel
 
 #### Backport
 Assuming the stable is `4.x` and RC is `5.x`
--   open a second `4.x-my-feature branch` based of `4.x-develop`
--   [`cherry-pick`](https://git-scm.com/docs/git-cherry-pick) your commits from `my-feature-branch` into `4.x-my-feature-branch`
--   open a second PR from `4.x-my-feature` into `4.x-develop` mentioning the original PR in the commit message
+-   create a second branch `my-feature-branch-4.x.x` based off `develop-4.x.x`
+-   [`cherry-pick`](https://git-scm.com/docs/git-cherry-pick) your commits from `my-feature-branch` into `my-feature-branch-4.x.x`
+-   open a second PR from `my-feature-branch-4.x.x` into `develop-4.x.x` mentioning the original PR in the commit message
 
 ### Forward-port
-Works just as Backport but with `5.x-my-feature` and `5.x-develop`
+Works just as backport but with `my-feature-branch-5.x.x` and `develop-5.x.x`
 
 During this phase of development the default mode for PRs is to happen in threes one for each develop branch.
 

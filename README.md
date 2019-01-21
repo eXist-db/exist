@@ -21,7 +21,7 @@ eXist-db is a high-performance open source native XML database—a NoSQL documen
 The eXist-db community has adopted the [Contributor Covenant](https://www.contributor-covenant.org/) [Code of Conduct](https://www.contributor-covenant.org/version/1/4/code-of-conduct).
 
 ## Open Community Calls
-We holds an open community call each week on Monday. The start time alternates between:  
+We hold an open community call each week on Monday. The start time alternates between:  
 -   18:30-19:30 UTC
 -   14:30-15:30 UTC
 to allow members from different timezones to join.
