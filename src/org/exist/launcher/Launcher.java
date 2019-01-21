@@ -73,7 +73,7 @@ public class Launcher extends Observable implements Observer {
     private MenuItem showServices;
     private MenuItem quitItem;
 
-    public final static String PACKAGE_DASHBOARD = "http://exist-db.org/apps/dashboard";
+    public final static String PACKAGE_DASHBOARD = "http://exist-db.org/apps/existdb-dashboard";
     public final static String PACKAGE_EXIDE = "http://exist-db.org/apps/eXide";
     public final static String PACKAGE_MONEX = "http://exist-db.org/apps/monex";
 
@@ -465,7 +465,7 @@ public class Launcher extends Observable implements Observer {
         serviceLock.lock();
         try {
             final int port = jetty.isPresent() ? jetty.get().getPrimaryPort() : 8080;
-            final URI url = new URI("http://localhost:" + port + "/exist/apps/dashboard/");
+            final URI url = new URI("http://localhost:" + port + "/exist/apps/existdb-dashboard/");
             desktop.browse(url);
         } catch (final URISyntaxException e) {
             if (isSystemTraySupported())

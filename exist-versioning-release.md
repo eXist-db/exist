@@ -236,7 +236,7 @@ Once development on a new stable version is complete, the following steps will p
     
     6. Create a XAR for the website: `$ git checkout eXist-3.1.0 && ant`.
     
-    7. Visit http://www.exist-db.org/exist/apps/dashboard/index.html, login and upload the new `build/homepage.xar` file via the Package Manager.
+    7. Visit http://www.exist-db.org/exist/apps/existdb-dashboard/index.html, login and upload the new `build/homepage.xar` file via the Package Manager.
 
 6. Login to the blog at http://exist-db.org/exist/apps/wiki/blogs/eXist/ and add a new news item which announces the release and holds the release notes. It should be named like http://exist-db.org/exist/apps/wiki/blogs/eXist/eXistdb310
 

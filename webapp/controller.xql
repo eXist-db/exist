@@ -14,7 +14,7 @@ import module namespace request="http://exist-db.org/xquery/request";
 import module namespace xdb = "http://exist-db.org/xquery/xmldb";
 
 declare function local:get-dashboard() {
-	let $path := collection(repo:get-root())//expath:package[@name = "http://exist-db.org/apps/dashboard"]
+	let $path := collection(repo:get-root())//expath:package[@name = "http://exist-db.org/apps/existdb-dashboard"]
     return
         if ($path) then
             substring-after(util:collection-name($path), repo:get-root())
