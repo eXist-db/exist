@@ -26,6 +26,7 @@ import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.util.UTF8;
 import org.exist.util.XMLChar;
+import org.exist.util.XMLNames;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
@@ -373,11 +374,12 @@ public class StringValue extends AtomicValue {
             case Type.ID:
             case Type.IDREF:
             case Type.ENTITY:
-                if (!XMLChar.isValidNCName(value)) {
+                if (!XMLNames.isNCName(value)) {
                     throw new XPathException("Type error: string " + value + " is not a valid " + Type.getTypeName(type));
                 }
+                return;
             case Type.NMTOKEN:
-                if (!XMLChar.isValidNmtoken(value)) {
+                if (!XMLNames.isNmToken(value)) {
                     throw new XPathException("Type error: string " + value + " is not a valid xs:NMTOKEN");
                 }
         }

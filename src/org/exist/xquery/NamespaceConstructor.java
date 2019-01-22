@@ -25,12 +25,10 @@ package org.exist.xquery;
 import org.exist.Namespaces;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.util.XMLChar;
+import org.exist.util.XMLNames;
 import org.exist.xquery.util.*;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.value.*;
-
-import java.util.Iterator;
 
 
 /**
@@ -101,7 +99,7 @@ public class NamespaceConstructor extends NodeConstructor {
         String prefix = "";
         if (!prefixSeq.isEmpty()) {
             prefix = prefixSeq.getStringValue();
-            if (!(prefix.length() == 0 || XMLChar.isValidNCName(prefix))) {
+            if (!(prefix.length() == 0 || XMLNames.isNCName(prefix))) {
                 throw new XPathException(this, ErrorCodes.XQDY0074, "Prefix cannot be cast to xs:NCName");
             }
         }
