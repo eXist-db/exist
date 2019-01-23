@@ -47,7 +47,8 @@ public class Transactions extends AbstractCommand {
 		try {
 			TransactionManager tm = BrokerPool.getInstance().getTransactionManager();
 			
-			tm.debug(out());
+			//TODO:check where that method is
+			//tm.debug(out());
 			
 		} catch (EXistException e) {
 			throw new CommandException(e);
