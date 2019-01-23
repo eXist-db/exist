@@ -27,6 +27,7 @@ import java.util.Deque;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
+import org.exist.source.Source;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.value.Sequence;
 
@@ -182,10 +183,15 @@ public class Profiler {
 
     public final void traceFunctionEnd(Function function, long elapsed) {
         if (stats.isEnabled()) {
-            final String source = String.format("%s [%d:%d]", function.getContext().getSource().getKey(),
-                    function
-                    .getLine(), function.getColumn());
-            stats.recordFunctionCall(function.getSignature().getName(), source, elapsed);
+            final Source source = function.getContext().getSource();
+            final String sourceMsg;
+            if (source == null) {
+                sourceMsg = String.format("[unknown source] [%d:%d]", function.getLine(), function.getColumn());
+            } else {
+                sourceMsg = String.format("%s [%d:%d]", function.getContext().getSource().getKey(),
+                        function.getLine(), function.getColumn());
+            }
+            stats.recordFunctionCall(function.getSignature().getName(), sourceMsg, elapsed);
         }
         if (isLogEnabled()) {
             log.trace(String.format("EXIT  %-25s %10d ms", function.getSignature().getName(), elapsed));
