@@ -136,7 +136,7 @@ public class LoadXQueryModule extends BasicFunction {
         }
 
         // create temporary context so main context is not polluted
-        final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
+        final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), context.getProfiler());
         tempContext.setModuleLoadPath(context.getModuleLoadPath());
         setExternalVars(externalVars, tempContext::declareGlobalVariable);
 
