@@ -31,7 +31,7 @@ import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
-import org.exist.util.XMLChar;
+import org.exist.util.XMLNames;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.Dependency;
@@ -166,7 +166,7 @@ public class FunIdRef extends Function {
             for(final SequenceIterator i = idrefval.iterate(); i.hasNext(); ) {
     			nextId = i.nextItem().getStringValue();
                 if (nextId.length() == 0) {continue;}
-                if(XMLChar.isValidNCName(nextId)) {
+                if(XMLNames.isNCName(nextId)) {
                     if (processInMem)
                         {getIdRef(result, contextSequence, nextId);}
                     else

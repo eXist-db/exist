@@ -70,6 +70,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 
     private static final int CACHE_CHILD_COUNT_MAX = 0x10000;
 
+    public static final String ATTR_CDATA_TYPE = "CDATA";
     public static final String ATTR_ID_TYPE = "ID";
     public static final String ATTR_IDREF_TYPE = "IDREF";
     public static final String ATTR_IDREFS_TYPE = "IDREFS";
