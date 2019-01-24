@@ -29,7 +29,11 @@
         <isset property="test.haltonfailure"/>
     </condition>
 
-
+    <condition property="gc.log.file.prefix" 
+        value="-XX:+PrintReferenceGC -XX:+PrintGCCause -XX:+PrintGCApplicationStoppedTime -XX:+PrintGCDateStamps -XX:+PrintGCDetails -XX:+PrintTenuringDistribution -Xloggc:" 
+        else="-Xlog:gc*,gc+ref=debug,gc+phases=debug,gc+age=debug,safepoint:file=" >
+        <matches pattern="^1\.[1-8]+\.[0-9]+(_[0-9]+)?$" string="${java.version}"/>
+    </condition>
 
     <target name="test"
         depends="test-prepare, test-local, test-extensions, test-jetty, test-concurrent, test-remote, test-recovery, test-wrapup, test-ant"
@@ -149,8 +153,13 @@
         <echo message="Running tests on a local database instance"/>
         <echo message="------------------------------------------"/>
 
-        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" 
-            maxmemory="${junit.forked.VM.maxmemory}">
+        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" fork="yes" forkmode="perTest">
+            <jvmarg value="-Xms2g" />
+            <jvmarg value="-Xmx2g" />
+            <jvmarg value="-XX:MetaspaceSize=1g" />
+            <jvmarg value="-XX:NewRatio=1" />
+            <jvmarg line="${gc.log.file.prefix}${junit.reports.dat}/test-local_gc.log" />
+
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
             <!-- local database, so should not be needed. /ljo -->
@@ -166,57 +175,57 @@
             <formatter type="xml"/>
 
             <!-- xquery smoke tests //-->
-            <test fork="yes" name="xquery.CoreTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="xquery.dates.DateTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="xquery.expathrepo.ExpathRepoTests" todir="${junit.reports.dat}"/>
-            <!--test fork="yes" name="xquery.indexing.IndexingTests" todir="${junit.reports.dat}"/-->
-            <test fork="yes" name="xquery.util.UtilTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="xquery.xinclude.XIncludeTests" todir="${junit.reports.dat}"/>
-            <!--test fork="yes" name="xquery.xmlcalabash.XMLCalabashTests" todir="${junit.reports.dat}"/-->
-            <!--test fork="yes" name="xquery.xproc.XProcTests" todir="${junit.reports.dat}"/-->
-            <test fork="yes" name="xquery.xquery3.XQuery3Tests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="xquery.optimizer.OptimizerTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="xquery.arrays.ArrayTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="xquery.maps.MapTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="xquery.logicalOp.LogicalOpTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="xquery.numbers.NumberTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="xquery.modules.compression.CompressionTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="xquery.modules.file.FileTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="xquery.validation.ValidationTests" todir="${junit.reports.dat}"/>
+            <test name="xquery.CoreTests" todir="${junit.reports.dat}"/>
+            <test name="xquery.dates.DateTests" todir="${junit.reports.dat}"/>
+            <test name="xquery.expathrepo.ExpathRepoTests" todir="${junit.reports.dat}"/>
+            <!--test name="xquery.indexing.IndexingTests" todir="${junit.reports.dat}"/-->
+            <test name="xquery.util.UtilTests" todir="${junit.reports.dat}"/>
+            <test name="xquery.xinclude.XIncludeTests" todir="${junit.reports.dat}"/>
+            <!--test name="xquery.xmlcalabash.XMLCalabashTests" todir="${junit.reports.dat}"/-->
+            <!--test name="xquery.xproc.XProcTests" todir="${junit.reports.dat}"/-->
+            <test name="xquery.xquery3.XQuery3Tests" todir="${junit.reports.dat}"/>
+            <test name="xquery.optimizer.OptimizerTests" todir="${junit.reports.dat}"/>
+            <test name="xquery.arrays.ArrayTests" todir="${junit.reports.dat}"/>
+            <test name="xquery.maps.MapTests" todir="${junit.reports.dat}"/>
+            <test name="xquery.logicalOp.LogicalOpTests" todir="${junit.reports.dat}"/>
+            <test name="xquery.numbers.NumberTests" todir="${junit.reports.dat}"/>
+            <test name="xquery.modules.compression.CompressionTests" todir="${junit.reports.dat}"/>
+            <test name="xquery.modules.file.FileTests" todir="${junit.reports.dat}"/>
+            <test name="xquery.validation.ValidationTests" todir="${junit.reports.dat}"/>
 
             <!--  //-->
-            <test fork="yes" name="org.exist.http.AuditTrailSessionListenerTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.util.SortTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.xmldb.XmldbLocalTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.xupdate.XUpdateTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.xupdate.RemoveAppendTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.xupdate.StressTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.xquery.AllXqueryTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.xquery.OptimizerTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.collections.triggers.AllTriggerTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.collections.AllCollectionTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.security.AccountTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.security.LocalSecurityManagerRoundtripTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.security.RemoteSecurityManagerRoundtripTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.security.RestApiSecurityTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.security.SimpleACLPermissionTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.security.UnixStylePermissionTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.security.XmldbApiSecurityTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.security.XMLDBSecurityTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.security.internal.aider.UnixStylePermissionAiderTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.storage.NativeBrokerTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.storage.StartupLockingTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.storage.lock.DocumentLocksTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.storage.lock.CollectionLocksTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.storage.lock.GetXMLResourceNoLockTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.storage.lock.LockManagerTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.storage.lock.ProtectedModeTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.AllIndexerTests" todir="${junit.reports.dat}"/>
+            <test name="org.exist.http.AuditTrailSessionListenerTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.util.SortTests" todir="${junit.reports.dat}"/>
+            <test name="org.exist.xmldb.XmldbLocalTests" todir="${junit.reports.dat}"/>
+            <test name="org.exist.xupdate.XUpdateTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.xupdate.RemoveAppendTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.xupdate.StressTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.xquery.AllXqueryTests" todir="${junit.reports.dat}"/>
+            <test name="org.exist.xquery.OptimizerTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.collections.triggers.AllTriggerTests" todir="${junit.reports.dat}"/>
+            <test name="org.exist.collections.AllCollectionTests" todir="${junit.reports.dat}"/>
+            <test name="org.exist.security.AccountTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.security.LocalSecurityManagerRoundtripTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.security.RemoteSecurityManagerRoundtripTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.security.RestApiSecurityTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.security.SimpleACLPermissionTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.security.UnixStylePermissionTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.security.XmldbApiSecurityTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.security.XMLDBSecurityTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.security.internal.aider.UnixStylePermissionAiderTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.storage.NativeBrokerTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.storage.StartupLockingTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.storage.lock.DocumentLocksTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.storage.lock.CollectionLocksTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.storage.lock.GetXMLResourceNoLockTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.storage.lock.LockManagerTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.storage.lock.ProtectedModeTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.AllIndexerTests" todir="${junit.reports.dat}"/>
 
-            <test fork="yes" name="org.exist.storage.ModificationTimeTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.storage.ModificationTimeTest" todir="${junit.reports.dat}"/>
             
             <!-- Execute all other tests except those that have to be called manually.   -->
-            <batchtest fork="yes" todir="${junit.reports.dat}">
+            <batchtest todir="${junit.reports.dat}">
                 <fileset dir="${junit.reports}/src">
                     <include name="**/*Test.java"/>
                     <include name="org/exist/*/*Test.java"/>
@@ -249,7 +258,13 @@
         <echo message="Running tests on a remote Jetty Server"/>
         <echo message="------------------------------------------"/>
 
-        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
+        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" fork="yes" forkmode="perTest">
+            <jvmarg value="-Xms2g" />
+            <jvmarg value="-Xmx2g" />
+            <jvmarg value="-XX:MetaspaceSize=1g" />
+            <jvmarg value="-XX:NewRatio=1" />
+            <jvmarg line="${gc.log.file.prefix}${junit.reports.dat}/test-jetty_gc.log" />
+
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
             <!-- fixme! - jetty.port.jetty /ljo -->
@@ -264,7 +279,7 @@
             <formatter type="plain"/>
             <formatter type="xml"/>
 
-            <batchtest fork="yes" todir="${junit.reports.dat}">
+            <batchtest todir="${junit.reports.dat}">
                 <fileset dir="${junit.reports}/src">
                     <include name="org/exist/soap/*Test.java"/>
                 </fileset>
@@ -281,7 +296,13 @@
         <echo message="-----------------"/>
         <echo message="Concurrency tests on local database"/>
         <echo message="-----------------"/>
-        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="no">
+        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" fork="yes" forkmode="once">
+            <jvmarg value="-Xms5g" />
+            <jvmarg value="-Xmx5g" />
+            <jvmarg value="-XX:MetaspaceSize=1g" />
+            <jvmarg value="-XX:NewRatio=1" />
+            <jvmarg line="${gc.log.file.prefix}${junit.reports.dat}/test-concurrent_gc.log" />
+
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
             <!-- local database, so should not be needed. /ljo -->
@@ -307,7 +328,13 @@
         <echo message="--------------"/>
         <echo message="Recovery tests"/>
         <echo message="--------------"/>
-        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory}">
+        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" fork="yes" forkmode="perTest">
+            <jvmarg value="-Xms5g" />
+            <jvmarg value="-Xmx5g" />
+            <jvmarg value="-XX:MetaspaceSize=1g" />
+            <jvmarg value="-XX:NewRatio=1" />
+            <jvmarg line="${gc.log.file.prefix}${junit.reports.dat}/test-recovery_gc.log" />
+
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
             <!-- local database, so should not be needed. /ljo -->
@@ -360,7 +387,13 @@
         <echo message="--------------------------------"/>
         <echo message="Running tests on remote database"/>
         <echo message="--------------------------------"/>
-        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
+        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" fork="yes" forkmode="perTest">
+            <jvmarg value="-Xms2g" />
+            <jvmarg value="-Xmx2g" />
+            <jvmarg value="-XX:MetaspaceSize=1g" />
+            <jvmarg value="-XX:NewRatio=1" />
+            <jvmarg line="${gc.log.file.prefix}${junit.reports.dat}/test-remote_gc.log" />
+
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
             <!-- fixme! - jetty.port.standalone /ljo -->
@@ -374,12 +407,12 @@
             <formatter type="plain"/>
             <formatter type="xml"/>
 
-            <test fork="yes" name="org.exist.xmlrpc.AllXmlRpcTests" todir="${junit.reports.dat}"/>
+            <test name="org.exist.xmlrpc.AllXmlRpcTests" todir="${junit.reports.dat}"/>
 
-            <test fork="yes" name="org.exist.xmldb.XmldbRemoteTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.xquery.XPathQueryTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.http.RESTServiceTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.storage.XIncludeSerializerTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.xmldb.XmldbRemoteTests" todir="${junit.reports.dat}"/>
+            <test name="org.exist.xquery.XPathQueryTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.http.RESTServiceTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.storage.XIncludeSerializerTest" todir="${junit.reports.dat}"/>
         </junit>
     </target>
 
@@ -390,7 +423,13 @@
         <echo message="--------------------------------"/>
         <echo message="Running antunit tests on eXist-db ant tasks"/>
         <echo message="--------------------------------"/>
-        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
+        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" fork="yes" forkmode="once">
+            <jvmarg value="-Xms5g" />
+            <jvmarg value="-Xmx5g" />
+            <jvmarg value="-XX:MetaspaceSize=1g" />
+            <jvmarg value="-XX:NewRatio=1" />
+            <jvmarg line="${gc.log.file.prefix}${junit.reports.dat}/test-ant_gc.log" />
+
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
             <!-- local database, so should not be needed. /ljo -->
@@ -404,7 +443,7 @@
             <formatter type="plain"/>
             <formatter type="xml"/>
 
-            <test fork="yes" name="org.exist.ant.AntUnitTestRunner" todir="${junit.reports.dat}"/>
+            <test name="org.exist.ant.AntUnitTestRunner" todir="${junit.reports.dat}"/>
         </junit>
     </target>
 
@@ -413,7 +452,13 @@
         <echo message="Running additional tests, which may take some time"/>
         <echo message="------------------------------------------"/>
 
-        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
+        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" fork="yes" forkmode="once">
+            <jvmarg value="-Xms5g" />
+            <jvmarg value="-Xmx5g" />
+            <jvmarg value="-XX:MetaspaceSize=1g" />
+            <jvmarg value="-XX:NewRatio=1" />
+            <jvmarg line="${gc.log.file.prefix}${junit.reports.dat}/extra-tests_gc.log" />
+
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
             <!-- fixme! - jetty.port.jetty /ljo -->
@@ -427,7 +472,7 @@
             
             <formatter type="plain"/>
             <formatter type="xml"/>
-            <test fork="yes" name="org.exist.xquery.XQueryUpdateTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.xquery.XQueryUpdateTest" todir="${junit.reports.dat}"/>
         </junit>
     </target>
 
