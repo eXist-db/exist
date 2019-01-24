@@ -281,7 +281,7 @@
         <echo message="-----------------"/>
         <echo message="Concurrency tests on local database"/>
         <echo message="-----------------"/>
-        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="no">
+        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="yes">
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
             <!-- local database, so should not be needed. /ljo -->
