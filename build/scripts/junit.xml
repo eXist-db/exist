@@ -290,8 +290,8 @@
         <echo message="Concurrency tests on local database"/>
         <echo message="-----------------"/>
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" fork="yes" forkmode="once">
-            <jvmarg value="-Xms5g" />
-            <jvmarg value="-Xmx5g" />
+            <jvmarg value="-Xms2g" />
+            <jvmarg value="-Xmx4g" />
             <jvmarg value="-XX:MetaspaceSize=1g" />
             <jvmarg value="-XX:NewRatio=1" />
             <jvmarg line="${gc.log.file.prefix}${junit.reports.dat}/test-concurrent_gc.log" />
@@ -319,8 +319,8 @@
         <echo message="Recovery tests"/>
         <echo message="--------------"/>
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" fork="yes" forkmode="perTest">
-            <jvmarg value="-Xms5g" />
-            <jvmarg value="-Xmx5g" />
+            <jvmarg value="-Xms2g" />
+            <jvmarg value="-Xmx2g" />
             <jvmarg value="-XX:MetaspaceSize=1g" />
             <jvmarg value="-XX:NewRatio=1" />
             <jvmarg line="${gc.log.file.prefix}${junit.reports.dat}/test-recovery_gc.log" />
@@ -414,8 +414,8 @@
         <echo message="Running antunit tests on eXist-db ant tasks"/>
         <echo message="--------------------------------"/>
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" fork="yes" forkmode="once">
-            <jvmarg value="-Xms5g" />
-            <jvmarg value="-Xmx5g" />
+            <jvmarg value="-Xms2g" />
+            <jvmarg value="-Xmx2g" />
             <jvmarg value="-XX:MetaspaceSize=1g" />
             <jvmarg value="-XX:NewRatio=1" />
             <jvmarg line="${gc.log.file.prefix}${junit.reports.dat}/test-ant_gc.log" />
@@ -443,8 +443,8 @@
         <echo message="------------------------------------------"/>
 
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" fork="yes" forkmode="once">
-            <jvmarg value="-Xms5g" />
-            <jvmarg value="-Xmx5g" />
+            <jvmarg value="-Xms2g" />
+            <jvmarg value="-Xmx2g" />
             <jvmarg value="-XX:MetaspaceSize=1g" />
             <jvmarg value="-XX:NewRatio=1" />
             <jvmarg line="${gc.log.file.prefix}${junit.reports.dat}/extra-tests_gc.log" />
