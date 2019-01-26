@@ -43,15 +43,15 @@ public interface RestoreListener {
 
     boolean hasProblems();
 
-    public void setCurrentCollection(String currentCollectionName);
+    void setCurrentCollection(String currentCollectionName);
 
-    public void setCurrentResource(String currentResourceName);
+    void setCurrentResource(String currentResourceName);
     
-    public void restoreStarting();
+    void restoreStarting();
 
-    public void restoreFinished();
+    void restoreFinished();
 
-    public void observe(Observable observable);
+    void observe(Observable observable);
 
-    public void setCurrentBackup(String currentBackup);
+    void setCurrentBackup(String currentBackup);
 }

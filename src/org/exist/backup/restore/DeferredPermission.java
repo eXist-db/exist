@@ -30,7 +30,7 @@ import org.exist.security.ACLPermission.ACE_TARGET;
  */
 public interface DeferredPermission {
     
-    public void apply();
+    void apply();
     
-    public void addACE(int index, ACE_TARGET target, String who, ACE_ACCESS_TYPE access_type, int mode);
+    void addACE(int index, ACE_TARGET target, String who, ACE_ACCESS_TYPE access_type, int mode);
 }

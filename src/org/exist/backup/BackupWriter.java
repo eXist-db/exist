@@ -55,5 +55,5 @@ public interface BackupWriter extends Closeable
 
     void setProperties( Properties properties ) throws IOException;
 
-    public void addToRoot(String name, Path file) throws IOException;
+    void addToRoot(String name, Path file) throws IOException;
 }
