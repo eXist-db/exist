@@ -37,7 +37,7 @@ public class GuiRestoreListener extends AbstractRestoreListener {
         this(null);
     }
 
-    public GuiRestoreListener(JFrame parent) {
+    public GuiRestoreListener(final JFrame parent) {
         dialog = new RestoreDialog(parent, "Restoring data ...", false);
         dialog.setVisible(true);
     }

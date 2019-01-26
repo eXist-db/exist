@@ -33,27 +33,27 @@ public class ConsoleRestoreListener extends AbstractRestoreListener {
         this(false);
     }
     
-    public ConsoleRestoreListener(boolean quiet) {
+    public ConsoleRestoreListener(final boolean quiet) {
         super();
         this.quiet = quiet;
     }
     
     @Override
-    public void info(String message) {
+    public void info(final String message) {
         if(!this.quiet) {
             System.err.println(message);
         }
     }
 
     @Override
-    public void warn(String message) {
+    public void warn(final String message) {
         super.warn(message);
 
         System.err.println(message);
     }
 
     @Override
-    public void error(String message) {
+    public void error(final String message) {
         super.error(message);
 
         System.err.println(message);

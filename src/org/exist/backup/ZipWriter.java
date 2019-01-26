@@ -40,7 +40,7 @@ import java.util.zip.ZipOutputStream;
 public class ZipWriter implements BackupWriter
 {
     private String currentPath;
-    private ZipOutputStream out;
+    private final ZipOutputStream out;
     private StringWriter contents;
     private boolean dataWritten = false;
 
@@ -76,7 +76,7 @@ public class ZipWriter implements BackupWriter
     }
 
 
-    public OutputStream newEntry( String name ) throws IOException
+    public OutputStream newEntry(final String name ) throws IOException
     {
         final ZipEntry entry = new ZipEntry( mkRelative( currentPath ) + '/' + name );
         out.putNextEntry( entry );
@@ -91,7 +91,7 @@ public class ZipWriter implements BackupWriter
     }
 
 
-    public void newCollection( String name )
+    public void newCollection(final String name )
     {
         if( name.startsWith( "/" ) ) {
             currentPath = name;
@@ -117,7 +117,7 @@ public class ZipWriter implements BackupWriter
     }
 
 
-    public void setProperties( Properties properties ) throws IOException
+    public void setProperties(final Properties properties ) throws IOException
     {
         if( dataWritten ) {
             throw( new IOException( "Backup properties need to be set before any backup data is written" ) );
@@ -144,9 +144,9 @@ public class ZipWriter implements BackupWriter
         }
     }
 
-    private String mkRelative( String path )
+    private String mkRelative(final String path )
     {
-        if( ( path.length() > 0 ) && ( path.charAt( 0 ) == '/' ) ) {
+        if( (!path.isEmpty()) && ( path.charAt( 0 ) == '/' ) ) {
             return( path.substring( 1 ) );
         }
         return( path );

@@ -46,7 +46,7 @@ public class BackupModule extends AbstractInternalModule
         new FunctionDef( RetrieveBackup.signature, RetrieveBackup.class )
     };
 
-    public BackupModule(Map<String, List<?>> parameters)
+    public BackupModule(final Map<String, List<?>> parameters)
     {
         super( functions, parameters, true );
     }

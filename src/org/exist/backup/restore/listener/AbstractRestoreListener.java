@@ -46,27 +46,27 @@ public abstract class AbstractRestoreListener implements RestoreListener {
     }
 
     @Override
-    public void createCollection(String collection) {
+    public void createCollection(final String collection) {
         info("Creating collection " + collection);
     }
 
     @Override
-    public void setCurrentBackup(String currentBackup) {
+    public void setCurrentBackup(final String currentBackup) {
         info("Processing backup: " + currentBackup);
     }
 
     @Override
-    public void setCurrentCollection(String currentCollectionName) {
+    public void setCurrentCollection(final String currentCollectionName) {
         this.currentCollectionName = currentCollectionName;
     }
 
     @Override
-    public void setCurrentResource(String currentResourceName) {
+    public void setCurrentResource(final String currentResourceName) {
         this.currentResourceName = currentResourceName;
     }
 
     @Override
-    public void observe(Observable observable) {
+    public void observe(final Observable observable) {
 
         if (observables == null) {
             observables = new ArrayList<>();
@@ -78,23 +78,23 @@ public abstract class AbstractRestoreListener implements RestoreListener {
     }
 
     @Override
-    public void restored(String resource) {
+    public void restored(final String resource) {
         info("Restored " + resource);
     }
 
     @Override
-    public void warn(String message) {
+    public void warn(final String message) {
         problems.add(new Warning(message));
     }
 
     @Override
-    public void error(String message) {
+    public void error(final String message) {
         problems.add(new Error(message));
     }
 
     @Override
     public boolean hasProblems() {
-        return problems.size() > 0;
+        return !problems.isEmpty();
     }
 
     @Override
@@ -112,7 +112,7 @@ public abstract class AbstractRestoreListener implements RestoreListener {
     private abstract class Problem {
         private final String message;
 
-        public Problem(String message) {
+        public Problem(final String message) {
             this.message = message;
         }
 
@@ -122,7 +122,7 @@ public abstract class AbstractRestoreListener implements RestoreListener {
     }
 
     private class Error extends Problem {
-        public Error(String message) {
+        public Error(final String message) {
             super(message);
         }
 
@@ -133,7 +133,7 @@ public abstract class AbstractRestoreListener implements RestoreListener {
     }
 
     private class Warning extends Problem {
-        public Warning(String message) {
+        public Warning(final String message) {
             super(message);
         }
 

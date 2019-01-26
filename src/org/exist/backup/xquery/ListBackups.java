@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -66,12 +65,12 @@ public class ListBackups extends BasicFunction
     public final static QName             DIRECTORY_ELEMENT = new QName( "directory", Namespaces.EXIST_NS, "" );
     public final static QName             BACKUP_ELEMENT    = new QName( "backup", Namespaces.EXIST_NS, "" );
 
-    public ListBackups( XQueryContext context )
+    public ListBackups(final XQueryContext context )
     {
         super( context, signature );
     }
 
-    public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence ) throws XPathException
     {
         if(!context.getEffectiveUser().hasDbaRole()) {
             throw new XPathException("You must be a DBA to list available backups");
@@ -99,7 +98,7 @@ public class ListBackups extends BasicFunction
                     matcher.reset(FileUtils.fileName(file));
 
                     if( matcher.matches() ) {
-                        BackupDescriptor descriptor;
+                        final BackupDescriptor descriptor;
 
                         try {
 
@@ -116,7 +115,7 @@ public class ListBackups extends BasicFunction
                                 attrs.addAttribute( "", "file", "file", "CDATA", FileUtils.fileName(file));
                                 builder.startElement( BACKUP_ELEMENT, attrs );
 
-                                for (Object o : properties.keySet()) {
+                                for (final Object o : properties.keySet()) {
                                     final String key = o.toString();
                                     builder.startElement(new QName(key, Namespaces.EXIST_NS, ""), null);
                                     builder.characters((String) properties.get(key));
