@@ -164,25 +164,36 @@ public class Backup
             } else {
                 temp = enco.substring( y, y + 4 );
 
-                if( "&22;".equals(temp) ) {
-                    out.append( '"' );
-                } else if( "&26;".equals(temp) ) {
-                    out.append( '&' );
-                } else if( "&2A;".equals(temp) ) {
-                    out.append( '*' );
-                } else if( "&3A;".equals(temp) ) {
-                    out.append( ':' );
-                } else if( "&3C;".equals(temp) ) {
-                    out.append( '<' );
-                } else if( "&3E;".equals(temp) ) {
-                    out.append( ">" );
-                } else if( "&3F;".equals(temp) ) {
-                    out.append( '?' );
-                } else if( "&5C;".equals(temp) ) {
-                    out.append( '\\' );
-                } else if( "&7C;".equals(temp) ) {
-                    out.append( '|' );
-                } else {
+                switch (temp) {
+                    case "&22;":
+                        out.append('"');
+                        break;
+                    case "&26;":
+                        out.append('&');
+                        break;
+                    case "&2A;":
+                        out.append('*');
+                        break;
+                    case "&3A;":
+                        out.append(':');
+                        break;
+                    case "&3C;":
+                        out.append('<');
+                        break;
+                    case "&3E;":
+                        out.append(">");
+                        break;
+                    case "&3F;":
+                        out.append('?');
+                        break;
+                    case "&5C;":
+                        out.append('\\');
+                        break;
+                    case "&7C;":
+                        out.append('|');
+                        break;
+                    default:
+                        break;
                 }
                 y = y + 3;
             }

@@ -823,7 +823,7 @@ public class SystemExport {
             this.prevBackup = prevBackup;
 
             if (checkNames) {
-                writtenDocs = new TreeSet<String>();
+                writtenDocs = new TreeSet<>();
             }
         }
 

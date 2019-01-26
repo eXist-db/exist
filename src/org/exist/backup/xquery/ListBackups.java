@@ -43,19 +43,16 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-import java.io.File;
 import java.io.IOException;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 
 public class ListBackups extends BasicFunction
@@ -119,10 +116,10 @@ public class ListBackups extends BasicFunction
                                 attrs.addAttribute( "", "file", "file", "CDATA", FileUtils.fileName(file));
                                 builder.startElement( BACKUP_ELEMENT, attrs );
 
-                                for( final Iterator<Object> iter = properties.keySet().iterator(); iter.hasNext(); ) {
-                                    final String key = iter.next().toString();
-                                    builder.startElement( new QName( key, Namespaces.EXIST_NS, "" ), null );
-                                    builder.characters( (String)properties.get( key ) );
+                                for (Object o : properties.keySet()) {
+                                    final String key = o.toString();
+                                    builder.startElement(new QName(key, Namespaces.EXIST_NS, ""), null);
+                                    builder.characters((String) properties.get(key));
                                     builder.endElement();
                                 }
                                 builder.endElement();

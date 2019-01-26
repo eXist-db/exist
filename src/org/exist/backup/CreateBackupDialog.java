@@ -136,12 +136,7 @@ public class CreateBackupDialog extends JPanel {
 
 
         final JButton select = new JButton(Messages.getString("CreateBackupDialog.3"));
-        select.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                actionSelect();
-            }
-        });
+        select.addActionListener(e -> actionSelect());
         c.gridx = 2;
         c.gridy = 1;
         c.anchor = GridBagConstraints.EAST;
@@ -169,7 +164,7 @@ public class CreateBackupDialog extends JPanel {
 
 
     private Vector<String> getAllCollections() {
-        final Vector<String> list = new Vector<String>();
+        final Vector<String> list = new Vector<>();
 
         try {
             final Collection root = DatabaseManager.getCollection(uri + XmldbURI.ROOT_COLLECTION, user, passwd);

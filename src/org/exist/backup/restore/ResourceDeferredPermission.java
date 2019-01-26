@@ -24,7 +24,6 @@ package org.exist.backup.restore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.backup.restore.listener.RestoreListener;
-import org.exist.security.Permission;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
