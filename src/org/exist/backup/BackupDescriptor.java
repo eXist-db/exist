@@ -21,40 +21,37 @@
  */
 package org.exist.backup;
 
+import org.exist.util.EXistInputSource;
 import org.exist.util.XMLReaderPool;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import org.exist.util.EXistInputSource;
-
 import java.io.IOException;
-
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.Properties;
 
 
-public interface BackupDescriptor
-{
-    String COLLECTION_DESCRIPTOR        = "__contents__.xml";
+public interface BackupDescriptor {
+    String COLLECTION_DESCRIPTOR = "__contents__.xml";
 
-    String BACKUP_PROPERTIES            = "backup.properties";
+    String BACKUP_PROPERTIES = "backup.properties";
 
-    String PREVIOUS_PROP_NAME           = "previous";
+    String PREVIOUS_PROP_NAME = "previous";
     String NUMBER_IN_SEQUENCE_PROP_NAME = "nr-in-sequence";
-    String INCREMENTAL_PROP_NAME        = "incremental";
-    String DATE_PROP_NAME               = "date";
+    String INCREMENTAL_PROP_NAME = "incremental";
+    String DATE_PROP_NAME = "date";
 
     EXistInputSource getInputSource();
 
 
-    EXistInputSource getInputSource( String describedItem );
+    EXistInputSource getInputSource(String describedItem);
 
 
-    BackupDescriptor getChildBackupDescriptor( String describedItem );
+    BackupDescriptor getChildBackupDescriptor(String describedItem);
 
 
-    BackupDescriptor getBackupDescriptor( String describedItem );
+    BackupDescriptor getBackupDescriptor(String describedItem);
 
 
     String getName();
@@ -63,15 +60,14 @@ public interface BackupDescriptor
     String getSymbolicPath();
 
 
-    String getSymbolicPath( String describedItem, boolean isChildDescriptor );
+    String getSymbolicPath(String describedItem, boolean isChildDescriptor);
 
 
     /**
      * Returns general properties of the backup, normally including the creation date or if it is an incremental backup.
      *
-     * @return  a Properties object or null if no properties were found
-     *
-     * @throws  IOException  if there was an error in the properties file
+     * @return a Properties object or null if no properties were found
+     * @throws IOException if there was an error in the properties file
      */
     Properties getProperties() throws IOException;
 
@@ -82,7 +78,7 @@ public interface BackupDescriptor
     Date getDate();
 
 
-    boolean before( long timestamp );
+    boolean before(long timestamp);
 
 
     void parse(XMLReaderPool parserPool, ContentHandler handler)
