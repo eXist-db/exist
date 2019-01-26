@@ -1,6 +1,7 @@
 package org.exist.util.serializer;
 
 import org.exist.storage.DBBroker;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.json.JSONSerializer;
 import org.exist.xquery.XPathException;
@@ -30,6 +31,9 @@ public class XQuerySerializer {
         this.broker = broker;
         this.outputProperties = outputProperties;
         this.writer = writer;
+
+        // ALWAYS enforce XDM serialization rules
+        outputProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
     }
 
     public void serialize(final Sequence sequence) throws SAXException, XPathException {

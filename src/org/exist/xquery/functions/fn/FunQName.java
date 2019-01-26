@@ -23,7 +23,7 @@ package org.exist.xquery.functions.fn;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.util.XMLChar;
+import org.exist.util.XMLNames;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -142,7 +142,7 @@ public class FunQName extends BasicFunction {
             //context.declareInScopeNamespace(prefix, namespace);
         }
 
-        if(!XMLChar.isValidName(qname.getLocalPart()))
+        if(!XMLNames.isName(qname.getLocalPart()))
             {throw new XPathException(this, ErrorCodes.FOCA0002, "'" + qname.getLocalPart() + "' is not a valid local name.");}
 
         final Sequence result = new QNameValue(context, qname);

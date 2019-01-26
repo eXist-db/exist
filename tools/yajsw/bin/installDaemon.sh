@@ -17,7 +17,7 @@ while [ -h "$PRG" ] ; do
     PRG=`dirname "$PRG"`/"$link"
   fi
 done
- 
+
 PRGDIR=`dirname "$PRG"`
 EXECUTABLE=installDaemonNoPriv.sh
 
@@ -68,7 +68,7 @@ function review_systemd_config {
                 *)
                     exit
                     ;;
-            esac    
+            esac
             ;;
         *)
             ;;
@@ -119,17 +119,20 @@ function use_systemd {
     echo "JAVA_HOME=${JAVA_HOME}"
     echo "EXIST_HOME=${EXIST_HOME}"
     echo -e "RUN_AS_USER=${RUN_AS_USER}\n"
-
-    read -p "Continue (Y/n)? " eval_response;
-    case $eval_response in
-        [Yy])
-            review_systemd_config;
-            install_systemd_config;
-            ;;
-        *)
-            exit;
-            ;;
-    esac 
+    if [ -z ${WRAPPER_UNATTENDED} ]; then
+      read -p "Continue (Y/n)? " eval_response;
+      case $eval_response in
+          [Yy])
+              review_systemd_config;
+              install_systemd_config;
+              ;;
+          *)
+              exit;
+              ;;
+      esac
+    else
+      install_systemd_config;
+    fi
 }
 
 w_wrapper_pid_file="${wrapper_home}/work/wrapper.eXist-db.pid";
@@ -140,15 +143,23 @@ export w_wrapper_pid_file;
 
 if [ `pgrep -P 1 systemd | head -n 1` ]; then
     echo -e "Detected systemd running.\n";
-    read -p "Do you want to use it (Y=Run service with non-privileged systemd/N=continue with privileged systemV-init)? " systemd_response;
-    case $systemd_response in
-	[Yy][Ee][Ss]|[YyJj])
-	    use_systemd;
-	    ;;
-	[Nn][Oo]|[Nn])
-	    sudo "$PRGDIR"/"$EXECUTABLE"
-	    ;;
-    esac
+    if [ -n ${WRAPPER_UNATTENDED} -a -z ${WRAPPER_USE_SYSTEMD} -a -z ${WRAPPER_USE_SYSTEMV} ]; then
+      read -p "Do you want to use it (Y=Run service with non-privileged systemd/N=continue with privileged systemV-init)? " systemd_response;
+      case $systemd_response in
+      	[Yy][Ee][Ss]|[YyJj])
+      	    use_systemd;
+      	    ;;
+      	[Nn][Oo]|[Nn])
+      	    sudo "$PRGDIR"/"$EXECUTABLE"
+      	    ;;
+      esac
+    else
+      if [ -z ${WRAPPER_USE_SYSTEMD} ]; then
+        sudo "$PRGDIR"/"$EXECUTABLE"
+      else
+        use_systemd;
+      fi
+    fi
 else
     sudo "$PRGDIR"/"$EXECUTABLE"
 fi

@@ -21,7 +21,6 @@
 
   <property file="build.properties"/>
 
-  <property name="autodeploy.repo" value="http://demo.exist-db.org/exist/apps/public-repo"/>
   <property name="autostart-dir" value="autodeploy"/>
 
   <target name="prepare">
@@ -64,17 +63,20 @@
   </target>
 
   <target name="download-xar" unless="xar-installed">
+    <!-- get dest="${autostart-dir}" src="${autodeploy.repo}/find?abbrev=${xar}&amp;processor=${project.version}"
+         verbose="on" maxtime="180" usetimestamp="true" tryGzipEncoding="true"/ -->
 
     <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask">
-        <classpath>
-          <pathelement location="${asocat-exist.jar}"/>
-        </classpath>
+      <classpath>
+        <pathelement location="${asocat-exist.jar}"/>
+      </classpath>
     </taskdef>
-    <fetch dest="${autostart-dir}" url="${autodeploy.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes&amp;processor=${project.version}"
-           failonerror="false" maxtime="120">
-         <patternset>
-             <include name="**/*.xar"/>
-         </patternset>
+    <fetch dest="${autostart-dir}" url="${autodeploy.repo}/find?abbrev=${xar}&amp;processor=${project.version}&amp;zip=yes"
+        failonerror="true" maxtime="180">
+      <patternset>
+        <include name="**/*.xar"/>
+      </patternset>
     </fetch>
   </target>
+
 </project>

@@ -21,11 +21,13 @@
  */
 package org.exist.commands.threads;
 
+import java.util.Collections;
 import java.util.Map;
 
 import org.exist.plugin.command.AbstractCommand;
 import org.exist.plugin.command.CommandException;
-import org.exist.storage.lock.DeadlockDetection;
+//TODO:check where that class would be
+//import org.exist.storage.lock.DeadlockDetection;
 import org.exist.storage.lock.LockInfo;
 import org.exist.xmldb.XmldbURI;
 
@@ -45,7 +47,8 @@ public class Deadlock extends AbstractCommand {
 	@Override
 	public void process(XmldbURI collection, String[] commandData) throws CommandException {
 		
-        Map<String, LockInfo> threads = DeadlockDetection.getWaitingThreads();
+		//TODO:check where that method is
+        Map<String, LockInfo> threads = Collections.emptyMap(); // DeadlockDetection.getWaitingThreads();
 
         for (Map.Entry<String, LockInfo> entry : threads.entrySet()) {
         	

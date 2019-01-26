@@ -29,6 +29,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
@@ -40,6 +41,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.w3c.dom.CDATASection;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -48,6 +50,7 @@ import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
 
+import javax.annotation.Nullable;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import java.io.IOException;
@@ -81,6 +84,13 @@ public class PersistentDomTest {
             "</x>\n" +
             "<!-- 2 -->";
 
+    private static final XmldbURI TEST_CDATA_XML_COLLECTION = XmldbURI.create("/db/persistent-dom-cdata-test");
+    private static final XmldbURI CDATA_XML_NAME = XmldbURI.create("cdata.xml");
+    private static final String CDATA_CONTENT = "<p>Hello there \"Bob?\"</p>";
+    private static final String CDATA_XML =
+            "<cdataText><![CDATA[" + CDATA_CONTENT + "]]></cdataText>";
+
+
     @Test
     public void mixed_childNodes() throws EXistException, PermissionDeniedException, IOException, SAXException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -89,7 +99,7 @@ public class PersistentDomTest {
 
             DocumentImpl document = null;
             try {
-                document = broker.getXMLResource(TEST_MIXED_XML_COLLECTION.append(MIXED_XML_NAME), Lock.LockMode.WRITE_LOCK);
+                document = broker.getXMLResource(TEST_MIXED_XML_COLLECTION.append(MIXED_XML_NAME), Lock.LockMode.READ_LOCK);
                 assertNotNull(document);
 
                 final NodeList documentChildNodes = document.getChildNodes();
@@ -99,7 +109,7 @@ public class PersistentDomTest {
                 assertComment(broker, "<!-- 2 -->", documentChildNodes.item(2));
             } finally {
                 if (document != null) {
-                    document.getUpdateLock().release(Lock.LockMode.WRITE_LOCK);
+                    document.getUpdateLock().release(Lock.LockMode.READ_LOCK);
                 }
             }
 
@@ -150,7 +160,7 @@ public class PersistentDomTest {
 
             DocumentImpl document = null;
             try {
-                document = broker.getXMLResource(TEST_MIXED_XML_COLLECTION.append(MIXED_XML_NAME), Lock.LockMode.WRITE_LOCK);
+                document = broker.getXMLResource(TEST_MIXED_XML_COLLECTION.append(MIXED_XML_NAME), Lock.LockMode.READ_LOCK);
                 assertNotNull(document);
                 assertNull(document.getPreviousSibling());
                 assertNull(document.getNextSibling());
@@ -170,7 +180,7 @@ public class PersistentDomTest {
                 assertNull(comment2.getNextSibling());
             } finally {
                 if (document != null) {
-                    document.getUpdateLock().release(Lock.LockMode.WRITE_LOCK);
+                    document.getUpdateLock().release(Lock.LockMode.READ_LOCK);
                 }
             }
 
@@ -269,7 +279,7 @@ public class PersistentDomTest {
 
             DocumentImpl document = null;
             try {
-                document = broker.getXMLResource(TEST_SIMPLE_XML_COLLECTION.append(SIMPLE_XML_NAME), Lock.LockMode.WRITE_LOCK);
+                document = broker.getXMLResource(TEST_SIMPLE_XML_COLLECTION.append(SIMPLE_XML_NAME), Lock.LockMode.READ_LOCK);
                 assertNotNull(document);
                 assertNull(document.getPreviousSibling());
 
@@ -286,7 +296,7 @@ public class PersistentDomTest {
                 assertNull(childLevel2.getPreviousSibling());
             } finally {
                 if (document != null) {
-                    document.getUpdateLock().release(Lock.LockMode.WRITE_LOCK);
+                    document.getUpdateLock().release(Lock.LockMode.READ_LOCK);
                 }
             }
 
@@ -302,7 +312,7 @@ public class PersistentDomTest {
 
             DocumentImpl document = null;
             try {
-                document = broker.getXMLResource(TEST_SIMPLE_XML_COLLECTION.append(SIMPLE_XML_NAME), Lock.LockMode.WRITE_LOCK);
+                document = broker.getXMLResource(TEST_SIMPLE_XML_COLLECTION.append(SIMPLE_XML_NAME), Lock.LockMode.READ_LOCK);
                 assertNotNull(document);
                 assertNull(document.getNextSibling());
 
@@ -319,7 +329,58 @@ public class PersistentDomTest {
                 assertNull(childLevel2.getNextSibling());
             } finally {
                 if (document != null) {
-                    document.getUpdateLock().release(Lock.LockMode.WRITE_LOCK);
+                    document.getUpdateLock().release(Lock.LockMode.READ_LOCK);
+                }
+            }
+
+            transaction.commit();
+        }
+    }
+
+    @Test
+    public void cdata() throws EXistException, PermissionDeniedException, IOException, SAXException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+            final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+
+            DocumentImpl document = null;
+            try {
+                document = broker.getXMLResource(TEST_CDATA_XML_COLLECTION.append(CDATA_XML_NAME), Lock.LockMode.READ_LOCK);
+                assertNotNull(document);
+
+                final Element documentElement = document.getDocumentElement();
+                assertNotNull(documentElement);
+
+                final CDATASection cdataSection = (CDATASection) documentElement.getFirstChild();
+                assertNotNull(cdataSection);
+                assertEquals(CDATA_CONTENT, cdataSection.getTextContent());
+
+                final Properties defaultOutputProperties = new Properties();
+                defaultOutputProperties.setProperty(OutputKeys.METHOD, "xml");
+                defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+                defaultOutputProperties.setProperty(OutputKeys.INDENT, "no");
+                defaultOutputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+
+                // normal document serialization
+                Properties outputProperties = new Properties(defaultOutputProperties);
+                outputProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "no");
+                assertEquals(CDATA_XML, serialize(broker, documentElement, outputProperties));
+
+                // XDM serialization
+                outputProperties = new Properties(defaultOutputProperties);
+                outputProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
+                final String expected = "<cdataText>" + CDATA_CONTENT.replace("<", "&lt;").replace(">", "&gt;") + "</cdataText>";
+                assertEquals(expected, serialize(broker, documentElement, outputProperties));
+
+                // XDM serialization with cdata-section-elements
+                outputProperties = new Properties(defaultOutputProperties);
+                outputProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
+                outputProperties.setProperty(OutputKeys.CDATA_SECTION_ELEMENTS, "{}cdataText");
+                assertEquals(CDATA_XML, serialize(broker, documentElement, outputProperties));
+
+            } finally {
+                if (document != null) {
+                    document.getUpdateLock().release(Lock.LockMode.READ_LOCK);
                 }
             }
 
@@ -367,6 +428,16 @@ public class PersistentDomTest {
     }
 
     private static String serialize(final DBBroker broker, final Node node) throws IOException, SAXException {
+        final Properties outputProperties = new Properties();
+        outputProperties.setProperty(OutputKeys.METHOD, "xml");
+        outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        outputProperties.setProperty(OutputKeys.INDENT, "no");
+        outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+        return serialize(broker, node, outputProperties);
+    }
+
+    private static String serialize(final DBBroker broker, final Node node, @Nullable final Properties outputProperties)
+            throws IOException, SAXException {
         // serialize the results to the response output stream
         final Serializer serializer = broker.getSerializer();
         serializer.reset();
@@ -374,12 +445,6 @@ public class PersistentDomTest {
         try(final StringWriter writer = new StringWriter()) {
             sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(
                     SAXSerializer.class);
-
-            final Properties outputProperties = new Properties();
-            outputProperties.setProperty(OutputKeys.METHOD, "xml");
-            outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            outputProperties.setProperty(OutputKeys.INDENT, "no");
-            outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
 
             sax.setOutput(writer, outputProperties);
 
@@ -411,6 +476,9 @@ public class PersistentDomTest {
                     Tuple(MIXED_XML_NAME, MIXED_XML)
             );
 
+            createCollection(broker, transaction, TEST_CDATA_XML_COLLECTION,
+                    Tuple(CDATA_XML_NAME, CDATA_XML));
+
             transaction.commit();
         }
     }
@@ -423,6 +491,7 @@ public class PersistentDomTest {
 
             deleteCollection(broker, transaction, TEST_SIMPLE_XML_COLLECTION);
             deleteCollection(broker, transaction, TEST_MIXED_XML_COLLECTION);
+            deleteCollection(broker, transaction, TEST_CDATA_XML_COLLECTION);
 
             transaction.commit();
         }

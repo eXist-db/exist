@@ -24,10 +24,10 @@ package org.exist.dom;
 import org.exist.interpreter.Context;
 import org.exist.storage.ElementValue;
 import org.exist.util.XMLChar;
+import org.exist.util.XMLNames;
 import org.exist.xquery.Constants;
 
 import javax.xml.XMLConstants;
-import java.nio.channels.IllegalChannelGroupException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -154,6 +154,32 @@ public class QName implements Comparable<QName> {
         } else 
             return localPart;
         */
+    }
+
+    /**
+     * Get a URIQualifiedName format of the QName.
+     *
+     * @return the URIQualifiedName
+     */
+    public final String toURIQualifiedName() {
+        return '{' + getNamespaceURI() + '}' + getLocalPart();
+    }
+
+    /**
+     * Constructs a QName from a URIQualifiedName.
+     *
+     * @param uriQualifiedName the URIQualifiedName.
+     *
+     * @return the QName
+     */
+    public static QName fromURIQualifiedName(final String uriQualifiedName) {
+        final Matcher matcher = ptnClarkNotation.matcher(uriQualifiedName);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Argument is not a URIQualifiedName");
+        }
+        final String ns = matcher.group(1);
+        final String localPart = matcher.group(2);
+        return new QName(localPart, ns);
     }
 
     /**
@@ -375,11 +401,11 @@ public class QName implements Comparable<QName> {
 
         if(!(allowWildcards && this == QName.WildcardQName.getInstance())) {
 
-            if ((!(this instanceof WildcardLocalPartQName && allowWildcards)) && !XMLChar.isValidNCName(localPart)) {
+            if ((!(this instanceof WildcardLocalPartQName && allowWildcards)) && !XMLNames.isNCName(localPart)) {
                 result ^= INVALID_LOCAL_PART.val;
             }
 
-            if (prefix != null && !XMLChar.isValidNCName(prefix)) {
+            if (prefix != null && !XMLNames.isNCName(prefix)) {
                 result ^= INVALID_PREFIX.val;
             }
         }
@@ -391,12 +417,12 @@ public class QName implements Comparable<QName> {
         final int colon = name.indexOf(COLON);
 
         if (colon == Constants.STRING_NOT_FOUND) {
-            return XMLChar.isValidNCName(name) ? VALID.val : INVALID_LOCAL_PART.val;
+            return XMLNames.isNCName(name) ? VALID.val : INVALID_LOCAL_PART.val;
         } else if (colon == 0 || colon == name.length() - 1) {
             return ILLEGAL_FORMAT.val;
-        } else if (!XMLChar.isValidNCName(name.substring(0, colon))) {
+        } else if (!XMLNames.isNCName(name.substring(0, colon))) {
             return INVALID_PREFIX.val;
-        } else if (!XMLChar.isValidNCName(name.substring(colon + 1))) {
+        } else if (!XMLNames.isNCName(name.substring(colon + 1))) {
             return INVALID_LOCAL_PART.val;
         }
 

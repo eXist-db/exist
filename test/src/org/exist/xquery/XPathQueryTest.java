@@ -5,6 +5,7 @@ import org.exist.xmldb.EXistXPathQueryService;
 import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -39,6 +40,9 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class XPathQueryTest {
+
+    @ClassRule
+    public static final TemporaryFolder tempFolder = new TemporaryFolder();
 
     @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, true, true, true);
@@ -197,6 +201,9 @@ public class XPathQueryTest {
     // Added by Geoff Shuetrim (geoff@galexy.net) to highlight problems with XPath queries of elements called 'xpointer'.
     private final static String xpointerElementName =
             "<test><xpointer/></test>";
+
+    private final static String cdata_content = "<p>Hello there \"Bob?\"</p>";
+    private final static String cdata_xml = "<elem1><![CDATA[" + cdata_content + "]]></elem1>";
     
     private Collection testCollection;
     
@@ -2127,6 +2134,123 @@ public class XPathQueryTest {
         final String toarQuery="let $num := \"2003.123\" \n return substring($num, 1, 7)";
         result = queryAndAssert( service, toarQuery, 1, toarQuery);
         assertEquals("2003.12", result.getResource(0).getContent().toString());
+    }
+
+    @Test
+    public void cdataPersistentDom() throws XMLDBException {
+        final String docName = "cdata.xml";
+
+        final XQueryService service =
+                storeXMLStringAndGetQueryService(docName, cdata_xml);
+
+        String query = "/elem1";
+        ResourceSet result = queryResource(service, docName, query, 1);
+        final String expected = "<elem1>" + cdata_content.replace("<", "&lt;").replace(">", "&gt;") + "</elem1>";
+        assertEquals(expected, result.getResource(0).getContent().toString());
+
+        query =
+                "declare namespace output = \"http://www.w3.org/2010/xslt-xquery-serialization\";\n" +
+                "declare option output:cdata-section-elements \"elem1\";\n" +
+                "/elem1\n";
+        result = queryResource(service, docName, query, 1);
+        assertEquals(cdata_xml, result.getResource(0).getContent().toString());
+
+        query =
+                "fn:serialize(doc(\"/db/test/" + docName + "\"),\n" +
+                    "<output:serialization-parameters xmlns:output = \"http://www.w3.org/2010/xslt-xquery-serialization\">\n" +
+                    "    <output:method value=\"xml\"/>\n" +
+                    "    <output:cdata-section-elements value=\"elem1\"/>\n" +
+                    "</output:serialization-parameters>)";
+        result = queryResource(service, docName, query, 1);
+        assertEquals(cdata_xml, result.getResource(0).getContent().toString());
+
+        query =
+                "fn:serialize(doc(\"/db/test/" + docName + "\"),\n" +
+                        "map {\n" +
+                        "    \"method\": \"xml\",\n" +
+                        "    \"cdata-section-elements\": xs:QName(\"elem1\")\n" +
+                        "})";
+        result = queryResource(service, docName, query, 1);
+        assertEquals(cdata_xml, result.getResource(0).getContent().toString());
+    }
+
+    @Test
+    public void cdataMemtreeDom() throws XMLDBException, IOException {
+        final String docName = "cdata.xml";
+        final Path tempFile = tempFolder.newFile().toPath();
+        Files.write(tempFile, Arrays.asList(cdata_xml));
+
+        final XQueryService service = getQueryService();
+
+        String query = "doc(\"" + tempFile.toUri().toString() + "\")";
+        ResourceSet result = queryAndAssert(service, query, 1, null);
+        final String expected = "<elem1>" + cdata_content.replace("<", "&lt;").replace(">", "&gt;") + "</elem1>";
+        assertEquals(expected, result.getResource(0).getContent().toString());
+
+        query =
+                "declare namespace output = \"http://www.w3.org/2010/xslt-xquery-serialization\";\n" +
+                "declare option output:cdata-section-elements \"elem1\";\n" +
+                "doc(\"" + tempFile.toUri().toString() + "\")\n";
+        result = queryAndAssert(service, query, 1, null);
+        assertEquals(cdata_xml, result.getResource(0).getContent().toString());
+
+        query =
+                "fn:serialize(doc(\"" + tempFile.toUri().toString() + "\"),\n" +
+                        "<output:serialization-parameters xmlns:output = \"http://www.w3.org/2010/xslt-xquery-serialization\">\n" +
+                        "    <output:method value=\"xml\"/>\n" +
+                        "    <output:cdata-section-elements value=\"elem1\"/>\n" +
+                        "</output:serialization-parameters>)";
+        result = queryAndAssert(service, query, 1, null);
+        assertEquals(cdata_xml, result.getResource(0).getContent().toString());
+
+        query =
+                "fn:serialize(doc(\"" + tempFile.toUri().toString() + "\"),\n" +
+                        "map {\n" +
+                        "    \"method\": \"xml\",\n" +
+                        "    \"cdata-section-elements\": xs:QName(\"elem1\")\n" +
+                        "})";
+        result = queryAndAssert(service, query, 1, null);
+        assertEquals(cdata_xml, result.getResource(0).getContent().toString());
+    }
+
+    @Test
+    public void cdataComputedDom() throws XMLDBException {
+        final XQueryService service = getQueryService();
+
+        String query =
+                "document {\n" +
+                    cdata_xml + "\n" +
+                "}";
+        ResourceSet result = queryAndAssert(service, query, 1, null);
+        final String expected = "<elem1>" + cdata_content.replace("<", "&lt;").replace(">", "&gt;") + "</elem1>";
+        assertEquals(expected, result.getResource(0).getContent().toString());
+
+        query =
+                "declare namespace output = \"http://www.w3.org/2010/xslt-xquery-serialization\";\n" +
+                "declare option output:cdata-section-elements \"elem1\";\n" +
+                "document {\n" +
+                    cdata_xml + "\n" +
+                "}";
+        result = queryAndAssert(service, query, 1, null);
+        assertEquals(cdata_xml, result.getResource(0).getContent().toString());
+
+        query =
+                "fn:serialize(document {" + cdata_xml + "},\n" +
+                        "<output:serialization-parameters xmlns:output = \"http://www.w3.org/2010/xslt-xquery-serialization\">\n" +
+                        "    <output:method value=\"xml\"/>\n" +
+                        "    <output:cdata-section-elements value=\"elem1\"/>\n" +
+                        "</output:serialization-parameters>)";
+        result = queryAndAssert(service, query, 1, null);
+        assertEquals(cdata_xml, result.getResource(0).getContent().toString());
+
+        query =
+                "fn:serialize(document {" + cdata_xml + "},\n" +
+                        "map {\n" +
+                        "    \"method\": \"xml\",\n" +
+                        "    \"cdata-section-elements\": xs:QName(\"elem1\")\n" +
+                        "})";
+        result = queryAndAssert(service, query, 1, null);
+        assertEquals(cdata_xml, result.getResource(0).getContent().toString());
     }
 
     /**

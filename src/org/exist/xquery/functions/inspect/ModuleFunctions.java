@@ -63,7 +63,7 @@ public class ModuleFunctions extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         final ValueSequence list = new ValueSequence();
         if (getArgumentCount() == 1) {
-            final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
+            final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), context.getProfiler());
             tempContext.setModuleLoadPath(context.getModuleLoadPath());
 
             Module module = null;

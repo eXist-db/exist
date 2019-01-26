@@ -190,10 +190,8 @@ public class MemTreeBuilder {
 
 
     private int getAttribType(final QName qname, final String type) {
-        if(qname.equals(Namespaces.XML_ID_QNAME)) {
+        if(qname.equals(Namespaces.XML_ID_QNAME) || type.equals(Indexer.ATTR_ID_TYPE)) {
             // an xml:id attribute.
-            return AttrImpl.ATTR_CDATA_TYPE;
-        } else if(type.equals(Indexer.ATTR_ID_TYPE)) {
             return AttrImpl.ATTR_ID_TYPE;
         } else if(type.equals(Indexer.ATTR_IDREF_TYPE)) {
             return AttrImpl.ATTR_IDREF_TYPE;
@@ -259,7 +257,7 @@ public class MemTreeBuilder {
         //} else {
         //lastNode = doc.addAttribute(lastNode, qname, value);
         //}
-        final int nodeNr = doc.addAttribute(lastNode, qname, value, AttrImpl.ATTR_CDATA_TYPE);
+        final int nodeNr = doc.addAttribute(lastNode, qname, value, getAttribType(qname, Indexer.ATTR_CDATA_TYPE));
 
         //TODO :
         //1) call linkNode(nodeNr); ?

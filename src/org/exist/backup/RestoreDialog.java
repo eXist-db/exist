@@ -80,7 +80,7 @@ public class RestoreDialog extends JDialog
         JLabel label = new JLabel( "Backup:" );
         c.gridx  = 0;
         c.gridy  = 0;
-        c.anchor = GridBagConstraints.WEST;
+        c.anchor = GridBagConstraints.EAST;
         c.fill   = GridBagConstraints.NONE;
         grid.setConstraints( label, c );
         getContentPane().add( label );
@@ -91,13 +91,14 @@ public class RestoreDialog extends JDialog
         c.gridy  = 0;
         c.anchor = GridBagConstraints.WEST;
         c.fill   = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1.0;
         grid.setConstraints( currentBackup, c );
         getContentPane().add( currentBackup );
 
         label    = new JLabel( "Collection:" );
         c.gridx  = 0;
         c.gridy  = 1;
-        c.anchor = GridBagConstraints.WEST;
+        c.anchor = GridBagConstraints.EAST;
         c.fill   = GridBagConstraints.NONE;
         grid.setConstraints( label, c );
         getContentPane().add( label );
@@ -108,13 +109,14 @@ public class RestoreDialog extends JDialog
         c.gridy  = 1;
         c.anchor = GridBagConstraints.WEST;
         c.fill   = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1.0;
         grid.setConstraints( currentCollection, c );
         getContentPane().add( currentCollection );
 
         label    = new JLabel( "Restoring:" );
         c.gridx  = 0;
         c.gridy  = 2;
-        c.anchor = GridBagConstraints.WEST;
+        c.anchor = GridBagConstraints.EAST;
         c.fill   = GridBagConstraints.NONE;
         grid.setConstraints( label, c );
         getContentPane().add( label );
@@ -125,13 +127,14 @@ public class RestoreDialog extends JDialog
         c.gridy  = 2;
         c.anchor = GridBagConstraints.WEST;
         c.fill   = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1.0;
         grid.setConstraints( resource, c );
         getContentPane().add( resource );
 
         label    = new JLabel( "Progress:" );
         c.gridx  = 0;
         c.gridy  = 3;
-        c.anchor = GridBagConstraints.WEST;
+        c.anchor = GridBagConstraints.EAST;
         c.fill   = GridBagConstraints.NONE;
         grid.setConstraints( label, c );
         getContentPane().add( label );
@@ -143,6 +146,7 @@ public class RestoreDialog extends JDialog
         c.gridy  = 3;
         c.anchor = GridBagConstraints.EAST;
         c.fill   = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1.0;
         grid.setConstraints( progress, c );
         getContentPane().add( progress );
 
@@ -154,7 +158,8 @@ public class RestoreDialog extends JDialog
         c.gridy     = 4;
         c.gridwidth = 2;
         c.anchor    = GridBagConstraints.WEST;
-        c.fill      = GridBagConstraints.HORIZONTAL;
+        c.fill      = GridBagConstraints.BOTH;
+        c.weighty   = 1.0;
         grid.setConstraints( scroll, c );
         getContentPane().add( scroll );
     }
