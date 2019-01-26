@@ -21,7 +21,6 @@
  */
 package org.exist.backup;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
