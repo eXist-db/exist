@@ -21,28 +21,27 @@
  */
 package org.exist.backup.restore.listener;
 
-import java.util.Observable;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 import org.exist.backup.RestoreDialog;
 
+import javax.swing.*;
+import java.util.Observable;
+
 /**
- *
  * @author Adam Retter <adam@exist-db.org>
  */
 public class GuiRestoreListener extends AbstractRestoreListener {
 
     private final RestoreDialog dialog;
-    
+
     public GuiRestoreListener() {
-       this(null);
+        this(null);
     }
-    
+
     public GuiRestoreListener(JFrame parent) {
-        dialog = new RestoreDialog(parent, "Restoring data ...", false );
+        dialog = new RestoreDialog(parent, "Restoring data ...", false);
         dialog.setVisible(true);
     }
-    
+
     @Override
     public void info(final String message) {
         SwingUtilities.invokeLater(() -> dialog.displayMessage(message));
@@ -58,39 +57,38 @@ public class GuiRestoreListener extends AbstractRestoreListener {
     @Override
     public void error(final String message) {
         super.error(message);
-     
+
         SwingUtilities.invokeLater(() -> dialog.displayMessage(message));
     }
 
     @Override
     public void observe(final Observable observable) {
-        
+
         SwingUtilities.invokeLater(() -> observable.addObserver(dialog.getObserver()));
     }
 
     @Override
     public void setCurrentBackup(final String currentBackup) {
         super.setCurrentBackup(currentBackup);
-        
+
         SwingUtilities.invokeLater(() -> dialog.setBackup(currentBackup));
     }
-    
-    
+
 
     @Override
     public void setCurrentCollection(final String currentCollectionName) {
         super.setCurrentCollection(currentCollectionName);
-        
+
         SwingUtilities.invokeLater(() -> dialog.setCollection(currentCollectionName));
     }
-    
+
     @Override
     public void setCurrentResource(final String currentResourceName) {
         super.setCurrentResource(currentResourceName);
 
         SwingUtilities.invokeLater(() -> dialog.setResource(currentResourceName));
     }
-    
+
     public void hideDialog() {
         dialog.setVisible(false);
     }

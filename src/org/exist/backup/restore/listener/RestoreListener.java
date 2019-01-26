@@ -24,21 +24,20 @@ package org.exist.backup.restore.listener;
 import java.util.Observable;
 
 /**
- *
  * @author Adam Retter <adam@exist-db.org>
  */
 public interface RestoreListener {
-    
+
     void createCollection(String collection);
-    
+
     void restored(String resource);
-    
+
     void info(String message);
-    
+
     void warn(String message);
-    
+
     void error(String message);
-    
+
     String warningsAndErrorsAsString();
 
     boolean hasProblems();
@@ -46,7 +45,7 @@ public interface RestoreListener {
     void setCurrentCollection(String currentCollectionName);
 
     void setCurrentResource(String currentResourceName);
-    
+
     void restoreStarting();
 
     void restoreFinished();
