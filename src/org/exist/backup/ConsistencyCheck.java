@@ -493,7 +493,7 @@ public class ConsistencyCheck {
         private final Agent jmxAgent = AgentFactory.getInstance();
         private final List<DocumentImpl> docs = new ArrayList<>(100);
 
-        private DocumentCallback(@Nullable final List<ErrorReport> errors, @Nullable final ProgressCallback progress, boolean checkDocs) {
+        private DocumentCallback(@Nullable final List<ErrorReport> errors, @Nullable final ProgressCallback progress, final boolean checkDocs) {
             this.errors = errors;
             this.progress = progress;
             this.checkDocs = checkDocs;
@@ -521,7 +521,7 @@ public class ConsistencyCheck {
                     if (progress != null) {
                         progress.startDocument(doc.getFileURI().toString(), docCount, getDocumentCount());
                     }
-                    int percentage = 100 * (docCount + 1) / (getDocumentCount() + 1);
+                    final int percentage = 100 * (docCount + 1) / (getDocumentCount() + 1);
 
                     if ((jmxAgent != null) && (percentage != lastPercentage)) {
                         lastPercentage = percentage;

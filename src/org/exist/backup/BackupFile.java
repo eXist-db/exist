@@ -22,64 +22,54 @@
 package org.exist.backup;
 
 import java.io.File;
-
 import java.text.DateFormat;
 import java.text.ParseException;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
-public class BackupFile
-{
-    private File file;
+public class BackupFile {
+    private final File file;
     private Date date;
 
-    private final DateFormat dateFormat = new SimpleDateFormat( BackupDirectory.DATE_FORMAT_PICTURE );
+    private final DateFormat dateFormat = new SimpleDateFormat(BackupDirectory.DATE_FORMAT_PICTURE);
 
-    public BackupFile( File file, String dateTime )
-    {
+    public BackupFile(final File file, final String dateTime) {
         this.file = file;
 
         try {
-            date = dateFormat.parse( dateTime );
+            date = dateFormat.parse(dateTime);
+        } catch (final ParseException e) {
+            // NOP
         }
-        catch( final ParseException e ) {
-        }
     }
 
-    public boolean after( BackupFile other )
-    {
-        return( date.after( other.date ) );
+    public boolean after(final BackupFile other) {
+        return (date.after(other.date));
     }
 
 
-    public boolean after( long time )
-    {
-        return( date.getTime() > time );
+    public boolean after(final long time) {
+        return (date.getTime() > time);
     }
 
 
-    public boolean before( BackupFile other )
-    {
-        return( date.before( other.date ) );
+    public boolean before(final BackupFile other) {
+        return (date.before(other.date));
     }
 
 
-    public boolean before( long time )
-    {
-        return( time > date.getTime() );
+    public boolean before(final long time) {
+        return (time > date.getTime());
     }
 
 
-    public File getFile()
-    {
-        return( file );
+    public File getFile() {
+        return (file);
     }
 
 
-    public Date getDate()
-    {
-        return( date );
+    public Date getDate() {
+        return (date);
     }
 }

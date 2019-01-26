@@ -33,8 +33,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.HeadlessException;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -181,7 +179,7 @@ public class CreateBackupDialog extends JPanel {
         final String[] childCollections = collection.listChildCollections();
         Collection child = null;
 
-        for (String childCollection : childCollections) {
+        for (final String childCollection : childCollections) {
             try {
                 child = collection.getChildCollection(childCollection);
             } catch (final XMLDBException xmldbe) {
@@ -190,13 +188,13 @@ public class CreateBackupDialog extends JPanel {
                 } else {
                     throw xmldbe;
                 }
-            } catch (Exception npe) {
+            } catch (final Exception npe) {
                 System.out.println("Corrupted resource/collection skipped: " + child != null ? child.getName() != null ? child.getName() : "unknown" : "unknown");
                 continue;
             }
             try {
                 getAllCollections(child, collections);
-            } catch (Exception ee) {
+            } catch (final Exception ee) {
                 System.out.println("Corrupted resource/collection skipped: " + child != null ? child.getName() != null ? child.getName() : "unknown" : "unknown");
                 continue;
             }

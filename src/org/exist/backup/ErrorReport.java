@@ -24,197 +24,165 @@ package org.exist.backup;
 import org.exist.xmldb.XmldbURI;
 
 
-public class ErrorReport
-{
-    public final static int      INCORRECT_NODE_ID      = 0;
-    public final static int      INCORRECT_NODE_TYPE    = 1;
-    public final static int      NODE_HIERARCHY         = 2;
-    public final static int      ACCESS_FAILED          = 3;
-    public final static int      CHILD_COLLECTION       = 4;
-    public final static int      RESOURCE_ACCESS_FAILED = 5;
-    public final static int      DOM_INDEX              = 6;
-    public final static int      CONFIGURATION_FAILD    = 7;
+public class ErrorReport {
+    public final static int INCORRECT_NODE_ID = 0;
+    public final static int INCORRECT_NODE_TYPE = 1;
+    public final static int NODE_HIERARCHY = 2;
+    public final static int ACCESS_FAILED = 3;
+    public final static int CHILD_COLLECTION = 4;
+    public final static int RESOURCE_ACCESS_FAILED = 5;
+    public final static int DOM_INDEX = 6;
+    public final static int CONFIGURATION_FAILD = 7;
 
-    public final static String[] ERRCODES               = {
-        "ERR_NODE_ID", "ERR_NODE_TYPE", "ERR_NODE_HIERARCHY", "ERR_ACCESS",
-        "ERR_CHILD_COLLECTION", "RESOURCE_ACCESS_FAILED", "ERR_DOM_INDEX"
+    public final static String[] ERRCODES = {
+            "ERR_NODE_ID", "ERR_NODE_TYPE", "ERR_NODE_HIERARCHY", "ERR_ACCESS",
+            "ERR_CHILD_COLLECTION", "RESOURCE_ACCESS_FAILED", "ERR_DOM_INDEX"
     };
 
-    private int                  code;
+    private final int code;
 
-    private String               message                = null;
+    private String message = null;
 
-    private Throwable            exception              = null;
+    private Throwable exception = null;
 
-    public ErrorReport( int code, String message )
-    {
-        this.code    = code;
+    public ErrorReport(final int code, final String message) {
+        this.code = code;
         this.message = message;
     }
 
 
-    public ErrorReport( int code, String message, Throwable exception )
-    {
-        this.code      = code;
-        this.message   = message;
+    public ErrorReport(final int code, final String message, final Throwable exception) {
+        this.code = code;
+        this.message = message;
         this.exception = exception;
     }
 
-    public int getErrcode()
-    {
-        return( code );
+    public int getErrcode() {
+        return (code);
     }
 
 
-    public String getErrcodeString()
-    {
-        return( ERRCODES[code] );
+    public String getErrcodeString() {
+        return (ERRCODES[code]);
     }
 
 
-    public String getMessage()
-    {
-        return( message );
+    public String getMessage() {
+        return (message);
     }
 
 
-    public void setMessage( String message )
-    {
+    public void setMessage(final String message) {
         this.message = message;
     }
 
 
-    public Throwable getException()
-    {
-        return( exception );
+    public Throwable getException() {
+        return (exception);
     }
 
 
-    public void setException( Throwable exception )
-    {
+    public void setException(final Throwable exception) {
         this.exception = exception;
     }
 
 
-    public String toString()
-    {
+    public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append( ERRCODES[code] ).append( ":\n" );
+        sb.append(ERRCODES[code]).append(":\n");
 
-        if( message != null ) {
-            sb.append( message );
+        if (message != null) {
+            sb.append(message);
         }
-        return( sb.toString() );
+        return (sb.toString());
     }
 
-    public static class ResourceError extends ErrorReport
-    {
+    public static class ResourceError extends ErrorReport {
         private int documentId = -1;
 
-        public ResourceError( int code, String message )
-        {
-            super( code, message );
+        public ResourceError(final int code, final String message) {
+            super(code, message);
         }
 
 
-        public ResourceError( int code, String message, Throwable exception )
-        {
-            super( code, message, exception );
+        public ResourceError(final int code, final String message, final Throwable exception) {
+            super(code, message, exception);
         }
 
-        public int getDocumentId()
-        {
-            return( documentId );
+        public int getDocumentId() {
+            return (documentId);
         }
 
 
-        public void setDocumentId( int documentId )
-        {
+        public void setDocumentId(final int documentId) {
             this.documentId = documentId;
         }
 
 
-        public String toString()
-        {
-            return( super.toString() + "\nDocument ID: " + documentId );
+        public String toString() {
+            return (super.toString() + "\nDocument ID: " + documentId);
         }
     }
 
 
-    public static class CollectionError extends ErrorReport
-    {
-        private int      collectionId  = -1;
+    public static class CollectionError extends ErrorReport {
+        private int collectionId = -1;
 
         private XmldbURI collectionURI = null;
 
-        public CollectionError( int code, String message )
-        {
-            super( code, message );
+        public CollectionError(final int code, final String message) {
+            super(code, message);
         }
 
 
-        public CollectionError( int code, String message, Throwable exception )
-        {
-            super( code, message, exception );
+        public CollectionError(final int code, final String message, final Throwable exception) {
+            super(code, message, exception);
         }
 
-        public int getCollectionId()
-        {
-            return( collectionId );
+        public int getCollectionId() {
+            return (collectionId);
         }
 
 
-        public void setCollectionId( int collectionId )
-        {
+        public void setCollectionId(final int collectionId) {
             this.collectionId = collectionId;
         }
 
+        public XmldbURI getCollectionURI() {
+            return (collectionURI);
+        }
 
-        public void setCollectionURI( XmldbURI collectionURI )
-        {
+        public void setCollectionURI(final XmldbURI collectionURI) {
             this.collectionURI = collectionURI;
         }
 
-
-        public XmldbURI getCollectionURI()
-        {
-            return( collectionURI );
-        }
-
-
-        public String toString()
-        {
-            return( super.toString() + "\nCollection ID: " + collectionId );
+        public String toString() {
+            return (super.toString() + "\nCollection ID: " + collectionId);
         }
     }
 
 
-    public static class IndexError extends ErrorReport
-    {
+    public static class IndexError extends ErrorReport {
         private int documentId = -1;
 
-        public IndexError( int code, String message, int documentId )
-        {
-            super( code, message );
+        public IndexError(final int code, final String message, final int documentId) {
+            super(code, message);
             this.documentId = documentId;
         }
 
 
-        public IndexError( int code, String message, Throwable exception, int documentId )
-        {
-            super( code, message, exception );
+        public IndexError(final int code, final String message, final Throwable exception, final int documentId) {
+            super(code, message, exception);
             this.documentId = documentId;
         }
 
-        public int getDocumentId()
-        {
-            return( documentId );
+        public int getDocumentId() {
+            return (documentId);
         }
 
 
-        public String toString()
-        {
-            return( super.toString() + "\nDocument ID: " + documentId );
+        public String toString() {
+            return (super.toString() + "\nDocument ID: " + documentId);
         }
     }
 }

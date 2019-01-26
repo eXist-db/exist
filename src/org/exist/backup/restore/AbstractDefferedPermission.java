@@ -41,7 +41,7 @@ abstract class AbstractDeferredPermission<T> implements DeferredPermission {
     final private int mode;
     final List<ACEAider> aces = new ArrayList<>();
 
-    public AbstractDeferredPermission(RestoreListener listener, T target, String owner, String group, int mode) {
+    public AbstractDeferredPermission(final RestoreListener listener, final T target, final String owner, final String group, final int mode) {
         this.listener = listener;
         this.target = target;
         this.owner = owner;
@@ -74,7 +74,7 @@ abstract class AbstractDeferredPermission<T> implements DeferredPermission {
     }
 
     @Override
-    public void addACE(int index, ACE_TARGET target, String who, ACE_ACCESS_TYPE access_type, int mode) {
+    public void addACE(final int index, final ACE_TARGET target, final String who, final ACE_ACCESS_TYPE access_type, final int mode) {
         aces.add(new ACEAider(access_type, target, who, mode));
     }
 }

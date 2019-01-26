@@ -52,12 +52,12 @@ public class RetrieveBackup extends BasicFunction
             new FunctionParameterSequenceType( "name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the file to retrieve." )
         }, new SequenceType( Type.ITEM, Cardinality.EMPTY ) );
 
-    public RetrieveBackup( XQueryContext context )
+    public RetrieveBackup(final XQueryContext context )
     {
         super( context, signature );
     }
 
-    public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence ) throws XPathException
     {
         if(!context.getEffectiveUser().hasDbaRole()) {
             throw new XPathException("You must be a DBA to retrieve a backup");
@@ -84,7 +84,7 @@ public class RetrieveBackup extends BasicFunction
             final ZipArchiveBackupDescriptor descriptor = new ZipArchiveBackupDescriptor( backupFile );
             final Properties                 properties = descriptor.getProperties();
 
-            if( ( properties == null ) || ( properties.size() == 0 ) ) {
+            if( ( properties == null ) || (properties.isEmpty()) ) {
                 throw( new XPathException( this, "the file does not see to be a valid backup archive" ) );
             }
         }

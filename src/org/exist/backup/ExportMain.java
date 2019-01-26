@@ -94,7 +94,7 @@ public class ExportMain {
 
     protected static BrokerPool startDB(final Optional<Path> configFile) {
         try {
-            Configuration config;
+            final Configuration config;
 
             if (configFile.isPresent()) {
                 config = new Configuration(configFile.get().toAbsolutePath().toString(), Optional.empty());
@@ -156,7 +156,7 @@ public class ExportMain {
                 errors = checker.checkAll(new CheckCallback());
             }
 
-            if (errors != null && errors.size() > 0) {
+            if (errors != null && !errors.isEmpty()) {
                 System.err.println("ERRORS FOUND.");
                 retval = 1;
             } else {
@@ -195,26 +195,26 @@ public class ExportMain {
 
         private boolean verbose = false;
 
-        public Callback(boolean verbose) {
+        public Callback(final boolean verbose) {
             this.verbose = verbose;
         }
 
         @Override
-        public void startCollection(String path) {
+        public void startCollection(final String path) {
             if (verbose) {
                 System.out.println("Entering collection " + path + " ...");
             }
         }
 
         @Override
-        public void startDocument(String name, int count, int docsCount) {
+        public void startDocument(final String name, final int count, final int docsCount) {
             if (verbose) {
                 System.out.println("Writing document " + name + " [" + (count + 1) + " of " + docsCount + ']');
             }
         }
 
         @Override
-        public void error(String message, Throwable exception) {
+        public void error(final String message, final Throwable exception) {
             System.err.println(message);
 
             if (exception != null) {
@@ -226,15 +226,15 @@ public class ExportMain {
 
     private static class CheckCallback implements org.exist.backup.ConsistencyCheck.ProgressCallback {
         @Override
-        public void startDocument(String name, int current, int count) {
+        public void startDocument(final String name, final int current, final int count) {
         }
 
         @Override
-        public void startCollection(String path) {
+        public void startCollection(final String path) {
         }
 
         @Override
-        public void error(ErrorReport error) {
+        public void error(final ErrorReport error) {
             System.out.println(error.toString());
         }
     }

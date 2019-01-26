@@ -177,7 +177,7 @@ public class ExportGUI extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosed(java.awt.event.WindowEvent evt) {
+            public void windowClosed(final java.awt.event.WindowEvent evt) {
                 formWindowClosed(evt);
             }
         });
@@ -320,12 +320,12 @@ public class ExportGUI extends javax.swing.JFrame {
     } // </editor-fold>//GEN-END:initComponents
 
 
-    private void formWindowClosed(java.awt.event.WindowEvent evt) { // GEN-FIRST:event_formWindowClosed
+    private void formWindowClosed(final java.awt.event.WindowEvent evt) { // GEN-FIRST:event_formWindowClosed
         BrokerPool.stopAll(false);
     } // GEN-LAST:event_formWindowClosed
 
 
-    private void startBtncheck(java.awt.event.ActionEvent evt) { // GEN-FIRST:event_startBtncheck
+    private void startBtncheck(final java.awt.event.ActionEvent evt) { // GEN-FIRST:event_startBtncheck
 
         if (!checkOutputDir()) {
             return;
@@ -347,7 +347,7 @@ public class ExportGUI extends javax.swing.JFrame {
     } // GEN-LAST:event_startBtncheck
 
 
-    private void exportBtnActionPerformed(java.awt.event.ActionEvent evt) { // GEN-FIRST:event_exportBtnActionPerformed
+    private void exportBtnActionPerformed(final java.awt.event.ActionEvent evt) { // GEN-FIRST:event_exportBtnActionPerformed
 
         if (!checkOutputDir()) {
             return;
@@ -357,7 +357,7 @@ public class ExportGUI extends javax.swing.JFrame {
 
             try {
                 currentTask.setText("Checking database consistency ...");
-                List<ErrorReport> errors = checkDB();
+                final List<ErrorReport> errors = checkDB();
                 currentTask.setText("Exporting data ...");
                 exportDB(outputDir.getText(), errors);
             } finally {
@@ -372,7 +372,7 @@ public class ExportGUI extends javax.swing.JFrame {
     } // GEN-LAST:event_exportBtnActionPerformed
 
 
-    private void btnChangeDirActionPerformed(java.awt.event.ActionEvent evt) { // GEN-FIRST:event_btnChangeDirActionPerformed
+    private void btnChangeDirActionPerformed(final java.awt.event.ActionEvent evt) { // GEN-FIRST:event_btnChangeDirActionPerformed
         final Path dir = Paths.get(outputDir.getText());
         final JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled(false);
@@ -386,13 +386,13 @@ public class ExportGUI extends javax.swing.JFrame {
     } // GEN-LAST:event_btnChangeDirActionPerformed
 
 
-    private void menuQuitActionPerformed(java.awt.event.ActionEvent evt) { // GEN-FIRST:event_menuQuitActionPerformed
+    private void menuQuitActionPerformed(final java.awt.event.ActionEvent evt) { // GEN-FIRST:event_menuQuitActionPerformed
         BrokerPool.stopAll(false);
         System.exit(SystemExitCodes.OK_EXIT_CODE);
     } // GEN-LAST:event_menuQuitActionPerformed
 
 
-    private void btnConfSelectActionPerformed(java.awt.event.ActionEvent evt) { // GEN-FIRST:event_btnConfSelectActionPerformed
+    private void btnConfSelectActionPerformed(final java.awt.event.ActionEvent evt) { // GEN-FIRST:event_btnConfSelectActionPerformed
         final Path dir = Paths.get(dbConfig.getText()).normalize().getParent();
         final JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled(false);
@@ -400,7 +400,7 @@ public class ExportGUI extends javax.swing.JFrame {
         chooser.setSelectedFile(dir.resolve("conf.xml").toFile());
         chooser.setCurrentDirectory(dir.toFile());
         chooser.setFileFilter(new FileFilter() {
-            public boolean accept(File f) {
+            public boolean accept(final File f) {
                 if (f.isDirectory()) {
                     return (true);
                 }
@@ -425,7 +425,7 @@ public class ExportGUI extends javax.swing.JFrame {
     } // GEN-LAST:event_btnConfSelectActionPerformed
 
 
-    private void exportDB(String exportTarget, List<ErrorReport> errorList) {
+    private void exportDB(final String exportTarget, final List<ErrorReport> errorList) {
         if (!startDB()) {
             return;
         }
@@ -433,18 +433,18 @@ public class ExportGUI extends javax.swing.JFrame {
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             final SystemExport.StatusCallback callback = new SystemExport.StatusCallback() {
-                public void startCollection(String path) {
+                public void startCollection(final String path) {
                     progress.setString(path);
                 }
 
 
-                public void startDocument(String name, int current, int count) {
+                public void startDocument(final String name, final int current, final int count) {
                     progress.setString(name);
                     progress.setValue(progress.getValue() + 1);
                 }
 
 
-                public void error(String message, Throwable exception) {
+                public void error(final String message, final Throwable exception) {
                     displayMessage(message);
 
                     if (exception != null) {
@@ -499,19 +499,19 @@ public class ExportGUI extends javax.swing.JFrame {
 
             final ConsistencyCheck checker = new ConsistencyCheck(broker, directAccess, scan);
             final org.exist.backup.ConsistencyCheck.ProgressCallback cb = new ConsistencyCheck.ProgressCallback() {
-                public void startDocument(String path, int current, int count) {
+                public void startDocument(final String path, final int current, final int count) {
                     progress.setString(path);
                     progress.setValue(progress.getValue() + 1);
                 }
 
 
-                public void error(ErrorReport error) {
+                public void error(final ErrorReport error) {
                     displayMessage(error.toString());
                     displayMessage("---------------------------------------------------");
                 }
 
 
-                public void startCollection(String path) {
+                public void startCollection(final String path) {
                     progress.setString(path);
                 }
             };
@@ -521,7 +521,7 @@ public class ExportGUI extends javax.swing.JFrame {
             displayMessage("Checking collections ...");
             final List<ErrorReport> errors = checker.checkCollectionTree(cb);
 
-            if (errors.size() == 0) {
+            if (errors.isEmpty()) {
                 displayMessage("No errors found.");
             } else {
                 displayMessage("Errors found.");
@@ -539,7 +539,7 @@ public class ExportGUI extends javax.swing.JFrame {
             displayMessage("Checking documents ...");
             checker.checkDocuments(cb, errors);
 
-            if (errors.size() == 0) {
+            if (errors.isEmpty()) {
                 displayMessage("No errors found.");
             } else {
                 displayMessage("Errors found.");
@@ -558,7 +558,7 @@ public class ExportGUI extends javax.swing.JFrame {
     }
 
 
-    public void displayMessage(String message) {
+    public void displayMessage(final String message) {
         messages.append(message + '\n');
         messages.setCaretPosition(messages.getDocument().getLength());
 
@@ -568,7 +568,7 @@ public class ExportGUI extends javax.swing.JFrame {
     }
 
 
-    private void openLog(String dir) {
+    private void openLog(final String dir) {
         final Path file = SystemExport.getUniqueFile("report", ".log", dir);
         try {
             logWriter = new PrintWriter(Files.newBufferedWriter(file, UTF_8));
@@ -590,7 +590,7 @@ public class ExportGUI extends javax.swing.JFrame {
      *
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         java.awt.EventQueue.invokeLater(() -> new ExportGUI().setVisible(true));
     }
 }

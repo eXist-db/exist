@@ -36,6 +36,6 @@ public class SkippedEntryDeferredPermission implements DeferredPermission {
     }
 
     @Override
-    public void addACE(int index, ACE_TARGET target, String who, ACE_ACCESS_TYPE access_type, int mode) {
+    public void addACE(final int index, final ACE_TARGET target, final String who, final ACE_ACCESS_TYPE access_type, final int mode) {
     }
 }

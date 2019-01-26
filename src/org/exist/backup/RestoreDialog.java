@@ -47,7 +47,7 @@ public class RestoreDialog extends JDialog {
      * @param modal
      * @throws HeadlessException
      */
-    public RestoreDialog(Frame owner, String title, boolean modal) throws HeadlessException {
+    public RestoreDialog(final Frame owner, final String title, final boolean modal) throws HeadlessException {
         super(owner, title, modal);
         setupComponents();
         setSize(new Dimension(350, 200));
@@ -148,22 +148,22 @@ public class RestoreDialog extends JDialog {
     }
 
 
-    public void setBackup(String backup) {
+    public void setBackup(final String backup) {
         currentBackup.setText(backup);
     }
 
 
-    public void setCollection(String collection) {
+    public void setCollection(final String collection) {
         currentCollection.setText(collection);
     }
 
 
-    public void setResource(String current) {
+    public void setResource(final String current) {
         resource.setText(current);
     }
 
 
-    public void displayMessage(String message) {
+    public void displayMessage(final String message) {
         messages.append(message + '\n');
         messages.setCaretPosition(messages.getDocument().getLength());
     }
@@ -174,7 +174,7 @@ public class RestoreDialog extends JDialog {
     }
 
     class UploadProgressObserver implements Observer {
-        public void update(Observable o, Object arg) {
+        public void update(final Observable o, final Object arg) {
             progress.setIndeterminate(false);
             final ProgressIndicator ind = (ProgressIndicator) arg;
             progress.setValue(ind.getPercentage());

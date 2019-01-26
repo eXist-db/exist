@@ -58,13 +58,13 @@ public class SystemImport {
     
     public final static Logger LOG = LogManager.getLogger( SystemImport.class );
 
-    private Database db;
+    private final Database db;
     
-    public SystemImport(Database db) {
+    public SystemImport(final Database db) {
     	this.db = db;
 	}
 
-    public void restore(RestoreListener listener, String username, Object credentials, String newCredentials, final Path f, String uri) throws XMLDBException, IOException, SAXException, ParserConfigurationException, URISyntaxException, AuthenticationException, ConfigurationException, PermissionDeniedException {
+    public void restore(final RestoreListener listener, final String username, final Object credentials, final String newCredentials, final Path f, final String uri) throws XMLDBException, IOException, SAXException, ParserConfigurationException, URISyntaxException, AuthenticationException, ConfigurationException, PermissionDeniedException {
         
         //login
         try(final DBBroker broker = db.authenticate(username, credentials)) {
@@ -130,7 +130,7 @@ public class SystemImport {
             if((properties != null ) && "yes".equals(properties.getProperty("incremental", "no"))) {
                 final String previous = properties.getProperty("previous", "");
 
-                if(previous.length() > 0) {
+                if(!previous.isEmpty()) {
                     contents = bd.getParentDir().resolve(previous);
 
                     if(!Files.isReadable(contents)) {
@@ -155,7 +155,7 @@ public class SystemImport {
         return bd;
     }
     
-    private void setAdminCredentials(DBBroker broker, String newCredentials) throws ConfigurationException, PermissionDeniedException {
+    private void setAdminCredentials(final DBBroker broker, final String newCredentials) throws ConfigurationException, PermissionDeniedException {
     	final Subject subject = broker.getCurrentSubject();
     	subject.setPassword(newCredentials);
     	subject.save(broker);

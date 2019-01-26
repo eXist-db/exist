@@ -23,57 +23,50 @@
 package org.exist.backup;
 
 import org.exist.util.XMLReaderPool;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.DateTimeValue;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-import org.exist.xquery.XPathException;
-import org.exist.xquery.value.DateTimeValue;
-
 import java.io.IOException;
-
 import java.util.Date;
 import java.util.Properties;
 
 
-public abstract class AbstractBackupDescriptor implements BackupDescriptor
-{
+public abstract class AbstractBackupDescriptor implements BackupDescriptor {
     protected Date date;
 
-    public Date getDate()
-    {
-        if( date == null ) {
+    public Date getDate() {
+        if (date == null) {
 
             try {
                 final Properties properties = getProperties();
-                final String     dateStr    = properties.getProperty( "date" );
+                final String dateStr = properties.getProperty("date");
 
-                if( dateStr != null ) {
-                    final DateTimeValue dtv = new DateTimeValue( dateStr );
+                if (dateStr != null) {
+                    final DateTimeValue dtv = new DateTimeValue(dateStr);
                     date = dtv.getDate();
                 }
-            }
-            catch( final IOException | XPathException e ) {
+            } catch (final IOException | XPathException e) {
             }
 
-            if( date == null ) {
+            if (date == null) {
 
                 // catch unexpected issues by setting the backup time as early as possible
-                date = new Date( 0 );
+                date = new Date(0);
             }
         }
-        return( date );
+        return (date);
     }
 
 
-    public boolean before( long timestamp )
-    {
-        return( timestamp > getDate().getTime() );
+    public boolean before(final long timestamp) {
+        return (timestamp > getDate().getTime());
     }
 
     @Override
-    public void parse(final XMLReaderPool parserPool, final ContentHandler handler ) throws IOException, SAXException
-    {
+    public void parse(final XMLReaderPool parserPool, final ContentHandler handler) throws IOException, SAXException {
         XMLReader reader = null;
         try {
             reader = parserPool.borrowXMLReader();
