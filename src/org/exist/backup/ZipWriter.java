@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -67,7 +68,7 @@ public class ZipWriter implements BackupWriter
         final ZipEntry entry = new ZipEntry( mkRelative( currentPath ) + "/__contents__.xml" );
         out.putNextEntry( entry );
         try {
-            out.write(contents.toString().getBytes("UTF-8"));
+            out.write(contents.toString().getBytes(StandardCharsets.UTF_8));
         } finally {
             out.closeEntry();
         }

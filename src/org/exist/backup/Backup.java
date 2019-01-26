@@ -56,6 +56,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
@@ -342,7 +343,7 @@ public class Backup
                 if( resource instanceof ExtendedResource ) {
                     ( (ExtendedResource)resource ).getContentIntoAStream( os );
                 } else {
-                    writer            = new BufferedWriter( new OutputStreamWriter( os, "UTF-8" ) );
+                    writer            = new BufferedWriter( new OutputStreamWriter( os, StandardCharsets.UTF_8) );
 
                     // write resource to contentSerializer
                     contentSerializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );

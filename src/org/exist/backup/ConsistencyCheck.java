@@ -558,7 +558,7 @@ public class ConsistencyCheck {
          * check each of them.
          */
         public void checkDocs() {
-            final DocumentImpl documents[] = new DocumentImpl[docs.size()];
+            final DocumentImpl[] documents = new DocumentImpl[docs.size()];
             docs.toArray(documents);
             Arrays.sort(documents, (d1, d2) -> {
                 final long a1 = StorageAddress.pageFromPointer(d1.getFirstChildAddress());

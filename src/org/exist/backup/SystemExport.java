@@ -726,7 +726,7 @@ public class SystemExport {
         return (collectionCount);
     }
 
-    public static interface StatusCallback {
+    public interface StatusCallback {
         void startCollection(String path) throws TerminatedException;
 
 
