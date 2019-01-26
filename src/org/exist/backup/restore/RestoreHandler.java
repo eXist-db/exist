@@ -21,12 +21,6 @@
  */
 package org.exist.backup.restore;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.*;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -62,6 +56,13 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.*;
+
 
 /**
  * Handler for parsing __contents.xml__ files during
@@ -88,7 +89,7 @@ public class RestoreHandler extends DefaultHandler {
     //handler state
     private int version = 0;
     private EXistCollection currentCollection;
-    private Deque<DeferredPermission> deferredPermissions = new ArrayDeque<DeferredPermission>();
+    private final Deque<DeferredPermission> deferredPermissions = new ArrayDeque<>();
     
     
     public RestoreHandler(final RestoreListener listener, final String dbBaseUri, final String dbUsername, final String dbPassword, final BackupDescriptor descriptor) {
@@ -339,15 +340,16 @@ public class RestoreHandler extends DefaultHandler {
             }
         }
 
-        final EXistInputSource is = descriptor.getInputSource(filename);
-        if(is == null) {
-            final String msg = "Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath( name, false ) + "'.\nReason: Unable to obtain its EXistInputSource";
-            listener.warn(msg);
-            return new SkippedEntryDeferredPermission();
-        }
 
-        try {
-            
+        try(EXistInputSource is = descriptor.getInputSource(filename)){
+
+            if(is == null) {
+                final String msg = "Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath( name, false ) + "'.\nReason: Unable to obtain its EXistInputSource";
+                listener.warn(msg);
+                return new SkippedEntryDeferredPermission();
+            }
+
+
             listener.setCurrentResource(name);
             if(currentCollection instanceof Observable) {
                 listener.observe((Observable)currentCollection);
@@ -413,11 +415,9 @@ public class RestoreHandler extends DefaultHandler {
                 return deferredPermission;
             }
         } catch(final Exception e) {
-            listener.warn("Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath(name, false) + "'.\nReason: " + e.getMessage());
+            listener.warn(String.format("Failed to restore resource '%s'\nfrom file '%s'.\nReason: %s", name, descriptor.getSymbolicPath(name, false), e.getMessage()));
             LOG.error(e.getMessage(), e);
             return new SkippedEntryDeferredPermission();
-        } finally {
-            is.close();
         }
     }
 

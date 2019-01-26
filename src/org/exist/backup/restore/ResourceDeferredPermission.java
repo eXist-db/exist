@@ -37,7 +37,7 @@ class ResourceDeferredPermission extends AbstractDeferredPermission<Resource> {
 
     private final static Logger LOG = LogManager.getLogger(ResourceDeferredPermission.class);
     
-    public ResourceDeferredPermission(RestoreListener listener, Resource resource, String owner, String group, Integer mode) {
+    public ResourceDeferredPermission(final RestoreListener listener, final Resource resource, final String owner, final String group, final Integer mode) {
         super(listener, resource, owner, group, mode);
     }
 

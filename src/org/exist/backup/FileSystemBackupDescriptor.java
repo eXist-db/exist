@@ -38,7 +38,7 @@ import java.util.Properties;
 public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
     protected Path descriptor;
 
-    public FileSystemBackupDescriptor(Path theDesc) throws FileNotFoundException {
+    public FileSystemBackupDescriptor(final Path theDesc) throws FileNotFoundException {
         if (!FileUtils.fileName(theDesc).equals(BackupDescriptor.COLLECTION_DESCRIPTOR) || Files.isDirectory(theDesc) || !Files.isReadable(theDesc)) {
             throw (new FileNotFoundException(theDesc.toAbsolutePath().toString() + " is not a valid collection descriptor"));
         }
@@ -46,7 +46,7 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
     }
 
     @Override
-    public BackupDescriptor getChildBackupDescriptor(String describedItem) {
+    public BackupDescriptor getChildBackupDescriptor(final String describedItem) {
         final Path child = descriptor.getParent().resolve(describedItem).resolve(BackupDescriptor.COLLECTION_DESCRIPTOR);
         BackupDescriptor bd = null;
 
@@ -59,7 +59,7 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
     }
 
     @Override
-    public BackupDescriptor getBackupDescriptor(String describedItem) {
+    public BackupDescriptor getBackupDescriptor(final String describedItem) {
         final String topDir = descriptor.getParent().getParent().toAbsolutePath().toString();
         final String subDir = topDir + describedItem;
         final String desc = subDir + '/' + BackupDescriptor.COLLECTION_DESCRIPTOR;
@@ -96,7 +96,7 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
     }
 
     @Override
-    public String getSymbolicPath(String describedItem, boolean isChildDescriptor) {
+    public String getSymbolicPath(final String describedItem, final boolean isChildDescriptor) {
         Path resbase = descriptor.getParent().resolve(describedItem);
 
         if (isChildDescriptor) {

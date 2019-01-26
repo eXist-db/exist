@@ -183,7 +183,7 @@ public class Main {
         final boolean rebuildRepo = getBool(arguments, rebuildExpathRepoArg);
 
         // initialize driver
-        Database database;
+        final Database database;
 
         try {
             final Class<?> cl = Class.forName(properties.getProperty(DRIVER_PROP, DEFAULT_DRIVER));
@@ -274,7 +274,7 @@ public class Main {
     }
 
     private static void restoreWithoutGui(final String username, final String password, final Optional<String> dbaPassword, final Path f,
-                                          final String uri, final boolean rebuildRepo, boolean quiet) {
+                                          final String uri, final boolean rebuildRepo, final boolean quiet) {
 
         final RestoreListener listener = new ConsoleRestoreListener(quiet);
         final Restore restore = new Restore();
@@ -303,7 +303,7 @@ public class Main {
                 } else {
                     System.err.println("Failed to retrieve root collection: " + uri);
                 }
-            } catch (XMLDBException e) {
+            } catch (final XMLDBException e) {
                 reportError(e);
                 System.err.println("Rebuilding application repository failed!");
             }
@@ -342,7 +342,7 @@ public class Main {
                         final Collection root = DatabaseManager.getCollection(rootURI, username, dbaPassword.orElse(password));
                         ClientFrame.repairRepository(root);
                         System.out.println("Application repository rebuilt successfully.");
-                    } catch (XMLDBException e) {
+                    } catch (final XMLDBException e) {
                         reportError(e);
                         System.err.println("Rebuilding application repository failed!");
                     }
