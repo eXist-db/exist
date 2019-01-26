@@ -58,7 +58,7 @@ public class Restore {
     
 //    private final static Logger LOG = LogManager.getLogger(Restore.class);
 
-    public void restore(RestoreListener listener, String username, String password, String newAdminPass, Path f, String uri) throws XMLDBException, FileNotFoundException, IOException, SAXException, ParserConfigurationException, URISyntaxException {
+    public void restore(RestoreListener listener, String username, String password, String newAdminPass, Path f, String uri) throws XMLDBException, IOException, SAXException, ParserConfigurationException, URISyntaxException {
         
         //set the admin password
         if(newAdminPass != null) {

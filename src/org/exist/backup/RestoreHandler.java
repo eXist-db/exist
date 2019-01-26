@@ -32,9 +32,9 @@ import org.xml.sax.ContentHandler;
  */
 public interface RestoreHandler extends ContentHandler {
 
-	public void startCollectionRestore(Collection collection, Attributes atts);
-	public void endCollectionRestore(Collection collection);
+	void startCollectionRestore(Collection collection, Attributes atts);
+	void endCollectionRestore(Collection collection);
 	
-	public void startDocumentRestore(Document document, Attributes atts);
-	public void endDocumentRestore(Document document);
+	void startDocumentRestore(Document document, Attributes atts);
+	void endDocumentRestore(Document document);
 }

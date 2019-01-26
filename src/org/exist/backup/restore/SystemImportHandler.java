@@ -333,7 +333,7 @@ public class SystemImportHandler extends DefaultHandler {
         }
         if(modified != null) {
             try {
-                date_modified = (Date) (new DateTimeValue(modified)).getDate();
+                date_modified = (new DateTimeValue(modified)).getDate();
             } catch(final XPathException xpe) {
                 listener.warn("Illegal modification date. Ignoring date...");
             }
