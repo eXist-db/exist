@@ -109,6 +109,16 @@ public abstract class AbstractRestoreListener implements RestoreListener {
         return builder.toString();
     }
 
+    @Override
+    public void setNumberOfFiles(long nr){
+        // NOP
+    }
+
+    @Override
+    public void incrementFileCounter(){
+        // NOP
+    }
+
     private abstract class Problem {
         private final String message;
 

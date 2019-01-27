@@ -43,6 +43,9 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
             throw (new FileNotFoundException(theDesc.toAbsolutePath().toString() + " is not a valid collection descriptor"));
         }
         descriptor = theDesc;
+
+        // Count number of files
+        countFileEntries(theDesc);
     }
 
     @Override
@@ -143,4 +146,17 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
         }
         return null;
     }
+
+    private void countFileEntries(Path file) {
+        try {
+            numberOfFiles = Files.walk(file.getParent())
+                    .filter(f -> !Files.isDirectory(f))
+                    .filter(f -> !COLLECTION_DESCRIPTOR.equals(f.getFileName().toString()))
+                    .count();
+
+        } catch (IOException e) {
+            // Swallow
+        }
+    }
+
 }

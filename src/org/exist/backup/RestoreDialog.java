@@ -125,6 +125,7 @@ public class RestoreDialog extends JDialog {
         progress = new JProgressBar();
         progress.setStringPainted(true);
         progress.setString("");
+        progress.setIndeterminate(false);
         c.gridx = 1;
         c.gridy = 3;
         c.anchor = GridBagConstraints.EAST;
@@ -184,6 +185,28 @@ public class RestoreDialog extends JDialog {
             } else {
                 progress.setString("Storing nodes"); //$NON-NLS-1$
             }
+        }
+
+    }
+
+    long totalNumberOfFiles=0;
+    public void setTotalNumberOfFiles(long nr) {
+        totalNumberOfFiles = nr;
+    }
+
+    long fileCounter=0;
+    public void incrementFileCounter(){
+
+        fileCounter++;
+
+        if(totalNumberOfFiles==0l){
+            progress.setString("N/A");
+        } else {
+            int percentage = (int) (fileCounter * 100 / totalNumberOfFiles);
+            //progress.setString( String.format(java.util.Locale.US,"%.1f", percentage) + "%");
+            progress.setString( percentage + "%");
+            progress.setValue( percentage );
+
         }
 
     }
