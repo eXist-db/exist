@@ -182,7 +182,6 @@ public class RestoreDialog extends JDialog {
             progress.setString("N/A");
         } else {
             int percentage = (int) (fileCounter * 100 / totalNumberOfFiles);
-            //progress.setString( String.format(java.util.Locale.US,"%.1f", percentage) + "%");
             progress.setString(percentage + "%");
             progress.setValue(percentage);
         }
