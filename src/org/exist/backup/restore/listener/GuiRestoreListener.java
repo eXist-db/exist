@@ -64,7 +64,7 @@ public class GuiRestoreListener extends AbstractRestoreListener {
     @Override
     public void observe(final Observable observable) {
 
-        SwingUtilities.invokeLater(() -> observable.addObserver(dialog.getObserver()));
+        //SwingUtilities.invokeLater(() -> observable.addObserver(dialog.getObserver()));
     }
 
     @Override
