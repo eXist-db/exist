@@ -21,50 +21,36 @@
  */
 package org.exist.backup;
 
+import org.exist.backup.restore.listener.ConsoleRestoreListener;
+import org.exist.backup.restore.listener.GuiRestoreListener;
+import org.exist.backup.restore.listener.RestoreListener;
+import org.exist.client.ClientFrame;
+import org.exist.util.ConfigurationHelper;
+import org.exist.util.NamedThreadFactory;
+import org.exist.util.SystemExitCodes;
+import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
+import org.xml.sax.SAXException;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.XMLDBException;
+import se.softhouse.jargo.*;
+
+import javax.swing.*;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-
-import org.exist.util.NamedThreadFactory;
-import org.exist.util.SystemExitCodes;
-import org.xml.sax.SAXException;
-
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.XMLDBException;
-
-import org.exist.util.ConfigurationHelper;
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XmldbURI;
-
-import java.io.IOException;
-import java.io.InputStream;
-
-import java.net.URISyntaxException;
 import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.prefs.Preferences;
-
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.exist.backup.restore.listener.ConsoleRestoreListener;
-import org.exist.backup.restore.listener.GuiRestoreListener;
-import org.exist.backup.restore.listener.RestoreListener;
-import org.exist.client.ClientFrame;
-import se.softhouse.jargo.*;
 
 import static org.exist.util.ArgumentUtil.getBool;
 import static org.exist.util.ArgumentUtil.getOpt;

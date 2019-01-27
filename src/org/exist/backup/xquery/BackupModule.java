@@ -21,10 +21,11 @@
  */
 package org.exist.backup.xquery;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+
+import java.util.List;
+import java.util.Map;
 
 
 /**
