@@ -35,6 +35,8 @@ import java.util.Properties;
 
 
 public abstract class AbstractBackupDescriptor implements BackupDescriptor {
+
+    protected long numberOfFiles = 0;
     protected Date date;
 
     public Date getDate() {
@@ -77,5 +79,10 @@ public abstract class AbstractBackupDescriptor implements BackupDescriptor {
                 parserPool.returnXMLReader(reader);
             }
         }
+    }
+
+    @Override
+    public long getNumberOfFiles(){
+        return numberOfFiles;
     }
 }

@@ -92,4 +92,16 @@ public class GuiRestoreListener extends AbstractRestoreListener {
     public void hideDialog() {
         dialog.setVisible(false);
     }
+
+    @Override
+    public void setNumberOfFiles(long nr) {
+        dialog.setTotalNumberOfFiles(nr);
+    }
+
+    @Override
+    public void incrementFileCounter(){
+        SwingUtilities.invokeLater(dialog::incrementFileCounter);
+    }
+
+
 }
