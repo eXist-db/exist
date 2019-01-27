@@ -16,9 +16,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.function.Predicate;
 
 /**
  * BackupSystemTask creates an XML backup of the current database into a directory
@@ -140,14 +137,8 @@ public class BackupSystemTask implements SystemTask {
 
     public void purgeZipFiles() throws IOException {
         if (LOG.isDebugEnabled()) {LOG.debug("starting purgeZipFiles()");}
-        
-		Predicate<Path> filter = path -> {
-			String entryName = path.getFileName().toString();
-
-			return entryName.startsWith(prefix) && entryName.endsWith(suffix);
-		};
 		
-		List<Path> entriesPaths = FileUtils.list(directory, filter);
+		List<Path> entriesPaths = FileUtils.list(directory, FileUtils.getPrefixSuffixFilter(prefix, suffix));
 		int entriesNumber = entriesPaths.size();
 		int numberOfEntriesToBeDeleted = entriesNumber - zipFilesMax + 1;
 
@@ -174,7 +165,7 @@ public class BackupSystemTask implements SystemTask {
 	            FileUtils.deleteQuietly(path);
 			});	
 		}
-    } 
+    }  
 
     @Override
     public boolean afterCheckpoint() {
