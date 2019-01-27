@@ -20,34 +20,20 @@
  */
 package org.exist.backup;
 
+import org.exist.client.Messages;
+import org.exist.client.MimeTypeFileFilter;
+import org.exist.security.PermissionDeniedException;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
-import org.exist.client.Messages;
-import org.exist.client.MimeTypeFileFilter;
-import org.exist.xmldb.XmldbURI;
-
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.HeadlessException;
-import java.awt.Insets;
-
+import javax.swing.*;
+import java.awt.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
-
 import java.util.Vector;
-
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
-import org.exist.security.PermissionDeniedException;
 
 
 public class CreateBackupDialog extends JPanel {

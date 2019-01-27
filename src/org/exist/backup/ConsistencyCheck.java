@@ -19,21 +19,20 @@
  */
 package org.exist.backup;
 
-import org.exist.dom.persistent.*;
-import org.exist.security.Account;
-import org.exist.security.Group;
-import org.exist.security.Permission;
-import org.exist.storage.StorageAddress;
-import org.w3c.dom.Node;
-
 import org.exist.collections.Collection;
+import org.exist.dom.persistent.*;
 import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
 import org.exist.numbering.NodeId;
+import org.exist.security.Account;
+import org.exist.security.Group;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.AccountImpl;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
+import org.exist.storage.StorageAddress;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.Value;
 import org.exist.storage.dom.DOMFile;
@@ -42,16 +41,13 @@ import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
-
-import java.io.IOException;
-
-import java.util.*;
+import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-
-import org.exist.security.PermissionDeniedException;
+import java.io.IOException;
+import java.util.*;
 
 
 public class ConsistencyCheck {

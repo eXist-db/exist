@@ -22,6 +22,7 @@
 package org.exist.backup;
 
 import org.exist.EXistException;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
@@ -30,6 +31,8 @@ import org.exist.util.MimeType;
 import org.exist.util.SystemExitCodes;
 import org.exist.xquery.TerminatedException;
 
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -38,13 +41,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
-
-import javax.swing.JCheckBox;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.filechooser.FileFilter;
-
-import org.exist.security.PermissionDeniedException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.util.ThreadUtils.newGlobalThread;
