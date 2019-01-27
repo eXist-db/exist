@@ -220,7 +220,9 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry zipEntry = entries.nextElement();
-                if (!zipEntry.isDirectory() && !zipEntry.getName().endsWith(COLLECTION_DESCRIPTOR)) {
+                if (!zipEntry.isDirectory()
+                        && !zipEntry.getName().endsWith(COLLECTION_DESCRIPTOR)
+                        && !zipEntry.getName().equals("backup.properties")  ) {
                     numberOfFiles++;
                 }
             }
