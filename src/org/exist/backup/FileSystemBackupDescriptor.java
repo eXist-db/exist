@@ -148,6 +148,12 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
     }
 
     private void countFileEntries(Path file) {
+
+        // Only count files from top level.
+        if(!file.toString().endsWith("/db/" + COLLECTION_DESCRIPTOR)){
+            return;
+        }
+
         try {
             numberOfFiles = Files.walk(file.getParent())
                     .filter(f -> !Files.isDirectory(f))
