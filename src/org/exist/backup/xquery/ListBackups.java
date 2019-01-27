@@ -21,9 +21,6 @@
  */
 package org.exist.backup.xquery;
 
-import org.exist.util.FileUtils;
-import org.xml.sax.helpers.AttributesImpl;
-
 import org.exist.Namespaces;
 import org.exist.backup.BackupDescriptor;
 import org.exist.backup.BackupDirectory;
@@ -32,19 +29,12 @@ import org.exist.backup.ZipArchiveBackupDescriptor;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.storage.BrokerPool;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.util.FileUtils;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
+import org.xml.sax.helpers.AttributesImpl;
 
 import java.io.IOException;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;

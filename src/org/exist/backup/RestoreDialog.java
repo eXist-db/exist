@@ -19,13 +19,8 @@
  */
 package org.exist.backup;
 
-import org.exist.storage.ElementIndex;
-import org.exist.util.ProgressIndicator;
-
 import javax.swing.*;
 import java.awt.*;
-import java.util.Observable;
-import java.util.Observer;
 
 
 public class RestoreDialog extends JDialog {

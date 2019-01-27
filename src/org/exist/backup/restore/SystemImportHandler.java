@@ -21,18 +21,13 @@
  */
 package org.exist.backup.restore;
 
-import java.io.IOException;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.security.PermissionFactory;
 import org.exist.storage.lock.*;
-import org.exist.util.ExistSAXParserFactory;
-import org.exist.util.XMLReaderPool;
-import org.w3c.dom.DocumentType;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.helpers.DefaultHandler;
 import org.exist.Namespaces;
+import org.exist.backup.BackupDescriptor;
+import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.BinaryDocument;
@@ -40,29 +35,36 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentMetadata;
 import org.exist.dom.persistent.DocumentTypeImpl;
 import org.exist.security.ACLPermission;
+import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
+import org.exist.security.ACLPermission.ACE_TARGET;
 import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
+import org.exist.security.internal.aider.ACEAider;
+import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.EXistInputSource;
+import org.exist.util.ExistSAXParserFactory;
+import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.DateTimeValue;
-
-import java.net.URISyntaxException;
-import java.util.*;
+import org.w3c.dom.DocumentType;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 import javax.xml.parsers.SAXParserFactory;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.exist.backup.BackupDescriptor;
-import org.exist.backup.restore.listener.RestoreListener;
-import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
-import org.exist.security.ACLPermission.ACE_TARGET;
-import org.exist.storage.DBBroker;
-import org.exist.storage.txn.TransactionManager;
-import org.exist.storage.txn.Txn;
-import org.xml.sax.XMLReader;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayDeque;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Deque;
 
 /**
  * Handler for parsing __contents.xml__ files during
