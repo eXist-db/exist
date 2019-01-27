@@ -53,4 +53,8 @@ public interface RestoreListener {
     void observe(Observable observable);
 
     void setCurrentBackup(String currentBackup);
+
+    void setNumberOfFiles(long nr);
+
+    void incrementFileCounter();
 }

@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.Properties;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -66,7 +67,16 @@ public class Restore {
 
         //get the backup descriptors, can be more than one if it was an incremental backup
         final Deque<BackupDescriptor> descriptors = getBackupDescriptors(f);
-        
+
+        // count all files
+        long totalNrOfFiles=0;
+        Iterator<BackupDescriptor> bdIterator = descriptors.iterator();
+        while(bdIterator.hasNext()){
+            totalNrOfFiles += bdIterator.next().getNumberOfFiles();
+        }
+        listener.setNumberOfFiles(totalNrOfFiles);
+
+        // continue restore
         final SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
         saxFactory.setNamespaceAware(true);
         saxFactory.setValidating(false);

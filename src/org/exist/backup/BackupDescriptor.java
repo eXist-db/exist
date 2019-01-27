@@ -33,6 +33,7 @@ import java.util.Properties;
 
 
 public interface BackupDescriptor {
+
     String COLLECTION_DESCRIPTOR = "__contents__.xml";
 
     String BACKUP_PROPERTIES = "backup.properties";
@@ -44,24 +45,17 @@ public interface BackupDescriptor {
 
     EXistInputSource getInputSource();
 
-
     EXistInputSource getInputSource(String describedItem);
-
 
     BackupDescriptor getChildBackupDescriptor(String describedItem);
 
-
     BackupDescriptor getBackupDescriptor(String describedItem);
-
 
     String getName();
 
-
     String getSymbolicPath();
 
-
     String getSymbolicPath(String describedItem, boolean isChildDescriptor);
-
 
     /**
      * Returns general properties of the backup, normally including the creation date or if it is an incremental backup.
@@ -71,18 +65,16 @@ public interface BackupDescriptor {
      */
     Properties getProperties() throws IOException;
 
-
     Path getParentDir();
-
 
     Date getDate();
 
-
     boolean before(long timestamp);
-
 
     void parse(XMLReaderPool parserPool, ContentHandler handler)
             throws IOException, SAXException;
 
     Path getRepoBackup() throws IOException;
+
+    long getNumberOfFiles();
 }

@@ -47,6 +47,10 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
     protected String base;
 
     public ZipArchiveBackupDescriptor(final Path fileArchive) throws IOException {
+
+        // Count number of files
+        countFileEntries(fileArchive);
+
         archive = new ZipFile(fileArchive.toFile());
 
         //is it full backup?
@@ -101,6 +105,8 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
         if ((descriptor == null) || descriptor.isDirectory()) {
             throw new FileNotFoundException(archive.getName() + " is a bit corrupted (" + base + " descriptor not found): not a valid eXist backup archive");
         }
+
+
     }
 
     @Override
@@ -208,4 +214,20 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
     public String getName() {
         return FileUtils.fileName(Paths.get(archive.getName()));
     }
+
+    private void countFileEntries(Path fileArchive) {
+        try(ZipFile zipFile = new ZipFile(fileArchive.toFile())) {
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry zipEntry = entries.nextElement();
+                if (!zipEntry.isDirectory() && !zipEntry.getName().endsWith(COLLECTION_DESCRIPTOR)) {
+                    numberOfFiles++;
+                }
+            }
+
+        } catch (IOException ex) {
+            // Swallow
+        }
+    }
+
 }

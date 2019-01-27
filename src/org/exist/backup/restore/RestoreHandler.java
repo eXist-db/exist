@@ -405,6 +405,7 @@ public class RestoreHandler extends DefaultHandler {
                 }
                 
                 listener.restored(name);
+                listener.incrementFileCounter();
                 
                 return deferredPermission;
             }
