@@ -37,7 +37,9 @@ public class RestoreDialog extends JDialog {
     JTextArea messages;
     JProgressBar progress;
 
-    Observer progressObserver = new UploadProgressObserver();
+    long totalNumberOfFiles = 0;
+    long fileCounter = 0;
+
 
     /**
      * Creates a new RestoreDialog object.
@@ -148,66 +150,47 @@ public class RestoreDialog extends JDialog {
         getContentPane().add(scroll);
     }
 
-
     public void setBackup(final String backup) {
         currentBackup.setText(backup);
     }
-
 
     public void setCollection(final String collection) {
         currentCollection.setText(collection);
     }
 
-
     public void setResource(final String current) {
         resource.setText(current);
     }
-
 
     public void displayMessage(final String message) {
         messages.append(message + '\n');
         messages.setCaretPosition(messages.getDocument().getLength());
     }
 
-
-    public Observer getObserver() {
-        return (progressObserver);
-    }
-
-    class UploadProgressObserver implements Observer {
-        public void update(final Observable o, final Object arg) {
-            progress.setIndeterminate(false);
-            final ProgressIndicator ind = (ProgressIndicator) arg;
-            progress.setValue(ind.getPercentage());
-
-            if (o instanceof ElementIndex) {
-                progress.setString("Storing elements"); //$NON-NLS-1$
-            } else {
-                progress.setString("Storing nodes"); //$NON-NLS-1$
-            }
-        }
-
-    }
-
-    long totalNumberOfFiles=0;
+    /**
+     *  Set the total number of files in the backup.
+     *
+     * @param nr Number of files.
+     */
     public void setTotalNumberOfFiles(long nr) {
         totalNumberOfFiles = nr;
     }
 
-    long fileCounter=0;
-    public void incrementFileCounter(){
+    /**
+     * Increment the number of files that are restored and display the value.
+     */
+    public void incrementFileCounter() {
 
         fileCounter++;
 
-        if(totalNumberOfFiles==0l){
+        if (totalNumberOfFiles == 0l) {
             progress.setString("N/A");
         } else {
             int percentage = (int) (fileCounter * 100 / totalNumberOfFiles);
             //progress.setString( String.format(java.util.Locale.US,"%.1f", percentage) + "%");
-            progress.setString( percentage + "%");
-            progress.setValue( percentage );
-
+            progress.setString(percentage + "%");
+            progress.setValue(percentage);
         }
-
     }
+
 }
