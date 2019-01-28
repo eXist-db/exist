@@ -61,10 +61,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayDeque;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Deque;
+import java.util.*;
 
 /**
  * Handler for parsing __contents.xml__ files during
