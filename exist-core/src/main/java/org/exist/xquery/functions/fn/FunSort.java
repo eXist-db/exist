@@ -105,7 +105,7 @@ public class FunSort extends BasicFunction {
         item = i.nextItem();
         if (ref != null) {
           refArgs[0] = item.toSequence();
-          value = ref.evalFunction(contextSequence, null, refArgs);
+          value = ref.evalFunction(null, null, refArgs);
         } else {
           value = item.toSequence();
         }
