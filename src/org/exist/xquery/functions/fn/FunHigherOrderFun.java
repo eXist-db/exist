@@ -145,7 +145,7 @@ public class FunHigherOrderFun extends BasicFunction {
 				ref.analyze(cachedContextInfo);
 				for (final SequenceIterator i = args[1].iterate(); i.hasNext(); ) {
 					final Item item = i.nextItem();
-					final Sequence r = ref.evalFunction(contextSequence, null, new Sequence[]{item.toSequence()});
+					final Sequence r = ref.evalFunction(null, null, new Sequence[]{item.toSequence()});
 					result.addAll(r);
 				}
 			}
@@ -154,7 +154,7 @@ public class FunHigherOrderFun extends BasicFunction {
 				ref.analyze(cachedContextInfo);
 				for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
 					final Item item = i.nextItem();
-					final Sequence r = ref.evalFunction(contextSequence, null, new Sequence[]{item.toSequence()});
+					final Sequence r = ref.evalFunction(null, null, new Sequence[]{item.toSequence()});
 					result.addAll(r);
 				}
 			}
@@ -174,7 +174,7 @@ public class FunHigherOrderFun extends BasicFunction {
 				ref.analyze(cachedContextInfo);
 				for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
 					final Item item = i.nextItem();
-					final Sequence r = ref.evalFunction(contextSequence, null, new Sequence[]{item.toSequence()});
+					final Sequence r = ref.evalFunction(null, null, new Sequence[]{item.toSequence()});
 					if (r.effectiveBooleanValue()) {
 						result.add(item);
 					}
@@ -185,7 +185,7 @@ public class FunHigherOrderFun extends BasicFunction {
 				ref.analyze(cachedContextInfo);
 				final Sequence seq = args[0];
 				final Sequence zero = args[1];
-				result = foldLeft(ref, zero, seq.iterate(), contextSequence);
+				result = foldLeft(ref, zero, seq.iterate());
 			}
         } else if (isCalledAs("fold-right")) {
             try (final FunctionReference ref = (FunctionReference) args[2].itemAt(0)) {
@@ -193,11 +193,11 @@ public class FunHigherOrderFun extends BasicFunction {
 				final Sequence zero = args[1];
 				final Sequence seq = args[0];
 				if (seq instanceof ValueSequence) {
-					result = foldRightNonRecursive(ref, zero, ((ValueSequence) seq).iterateInReverse(), contextSequence);
+					result = foldRightNonRecursive(ref, zero, ((ValueSequence) seq).iterateInReverse());
 				} else if (seq instanceof RangeSequence) {
-					result = foldRightNonRecursive(ref, zero, ((RangeSequence) seq).iterateInReverse(), contextSequence);
+					result = foldRightNonRecursive(ref, zero, ((RangeSequence) seq).iterateInReverse());
 				} else {
-					result = foldRight(ref, zero, seq, contextSequence);
+					result = foldRight(ref, zero, seq);
 				}
 			}
         } else if (isCalledAs("map-pairs")) {
@@ -206,7 +206,7 @@ public class FunHigherOrderFun extends BasicFunction {
 				final SequenceIterator i1 = args[1].iterate();
 				final SequenceIterator i2 = args[2].iterate();
 				while (i1.hasNext() && i2.hasNext()) {
-					final Sequence r = ref.evalFunction(contextSequence, null,
+					final Sequence r = ref.evalFunction(null, null,
 							new Sequence[]{i1.nextItem().toSequence(), i2.nextItem().toSequence()});
 					result.addAll(r);
 				}
@@ -217,7 +217,7 @@ public class FunHigherOrderFun extends BasicFunction {
 				final SequenceIterator i1 = args[0].iterate();
 				final SequenceIterator i2 = args[1].iterate();
 				while (i1.hasNext() && i2.hasNext()) {
-					final Sequence r = ref.evalFunction(contextSequence, null,
+					final Sequence r = ref.evalFunction(null, null,
 							new Sequence[]{i1.nextItem().toSequence(), i2.nextItem().toSequence()});
 					result.addAll(r);
 				}
@@ -237,12 +237,12 @@ public class FunHigherOrderFun extends BasicFunction {
 		return result;
 	}
 
-    private Sequence foldLeft(final FunctionReference ref, Sequence accum, final SequenceIterator seq, final Sequence contextSequence) throws XPathException {
+    private Sequence foldLeft(final FunctionReference ref, Sequence accum, final SequenceIterator seq) throws XPathException {
         final Sequence refArgs[] = new Sequence[2];
         while(seq.hasNext()) {
             refArgs[0] = accum;
             refArgs[1] = seq.nextItem().toSequence();
-            accum = ref.evalFunction(contextSequence, null, refArgs);
+            accum = ref.evalFunction(null, null, refArgs);
         }
         return accum;
     }
@@ -253,22 +253,22 @@ public class FunHigherOrderFun extends BasicFunction {
      *
      * @param seq An iterator which moves from right to left
      */
-    private Sequence foldRightNonRecursive(final FunctionReference ref, Sequence accum, final SequenceIterator seq, final Sequence contextSequence) throws XPathException {
+    private Sequence foldRightNonRecursive(final FunctionReference ref, Sequence accum, final SequenceIterator seq) throws XPathException {
         final Sequence refArgs[] = new Sequence[2];
         while (seq.hasNext()) {
             refArgs[0] = seq.nextItem().toSequence();
             refArgs[1] = accum;
-            accum = ref.evalFunction(contextSequence, null, refArgs);
+            accum = ref.evalFunction(null, null, refArgs);
         }
         return accum;
     }
 
-	private Sequence foldRight(final FunctionReference ref, final Sequence zero, final Sequence seq, final Sequence contextSequence) throws XPathException {
+	private Sequence foldRight(final FunctionReference ref, final Sequence zero, final Sequence seq) throws XPathException {
         if (seq.isEmpty()) {
             return zero;
         }
 		final Sequence head = seq.itemAt(0).toSequence();
-		final Sequence tailResult = foldRight(ref, zero, seq.tail(), contextSequence);
-		return ref.evalFunction(contextSequence, null, new Sequence[] { head, tailResult });
+		final Sequence tailResult = foldRight(ref, zero, seq.tail());
+		return ref.evalFunction(null, null, new Sequence[] { head, tailResult });
 	}
 }
