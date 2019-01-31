@@ -7,11 +7,10 @@ matrix:
     - jdk: openjdk8
     - jdk: openjdk9
     - jdk: openjdk10
-    - jdk: openjdk11
     - jdk: oraclejdk11
 
     - os: osx
-      osx_image: xcode9.2
+      osx_image: xcode9.3
       env: JAVA_HOME=$(/usr/libexec/java_home)
 
 script: ./build.sh -Dexist.autodeploy=off -Dtest.haltonerror=true -Dtest.haltonfailure=true clean clean-all all test
