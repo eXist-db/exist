@@ -5,13 +5,11 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       JAVA_HOME: C:\Program Files\Java\jdk1.8.0
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      JAVA_HOME: C:\Program Files\Java\jdk9
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+      JAVA_HOME: C:\Program Files\Java\jdk11
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-      JAVA_HOME: /usr/lib/jvm/java-9-openjdk-amd64
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-      JAVA_HOME: /usr/lib/jvm/java-10-openjdk-amd64
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+      JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
 
 install:
   - cmd: set EXIST_HOME=%APPVEYOR_BUILD_FOLDER%
