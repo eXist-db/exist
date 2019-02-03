@@ -72,18 +72,6 @@
 
 
     <!-- 
-        Special targets for memcached module
-    -->
-    <target name="prepare-memcached" if="${include.module.memcached}">
-        <echo message="-------------------------------------------------------"/>
-        <echo message="Downloading libraries required by the memcached module"/>
-        <echo message="-------------------------------------------------------"/>
-        
-        <fetch classpathref="classpath.core" dest="${modules.lib}" 
-            url="${include.module.memcached.url}" classname="net.spy.memcached.MemcachedClient"/>
-    </target>
-
-    <!-- 
         Special targets for xmpp module 
     -->
     <target name="prepare-xmpp" if="${include.module.xmpp}">
@@ -120,7 +108,7 @@
         Below this line only generic build items
         ========================================
     -->
-    <target name="prepare" depends="prepare-memcached,prepare-xmpp,prepare-cqlparser">
+    <target name="prepare" depends="prepare-xmpp,prepare-cqlparser">
         <mkdir dir="${classes}"/>
     </target>
 
