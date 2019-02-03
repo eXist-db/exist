@@ -21,6 +21,8 @@
  */
 package org.exist.backup;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.repo.RepoBackup;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileInputSource;
@@ -33,9 +35,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 
 public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
+
+    private final static Logger LOG = LogManager.getLogger();
+
     protected Path descriptor;
 
     public FileSystemBackupDescriptor(final Path theDesc) throws FileNotFoundException {
@@ -147,21 +153,21 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
         return null;
     }
 
-    private void countFileEntries(Path file) {
+    private void countFileEntries(final Path directory) {
 
         // Only count files from top level.
-        if(!file.toString().endsWith("/db/" + COLLECTION_DESCRIPTOR)){
+        if(!directory.toString().endsWith("/db/" + COLLECTION_DESCRIPTOR)){
             return;
         }
 
-        try {
-            numberOfFiles = Files.walk(file.getParent())
+        try(final Stream<Path> walk = Files.walk(directory.getParent())){
+            numberOfFiles = walk
                     .filter(f -> !Files.isDirectory(f))
                     .filter(f -> !COLLECTION_DESCRIPTOR.equals(f.getFileName().toString()))
                     .count();
 
-        } catch (IOException e) {
-            // Swallow
+        } catch (final IOException e) {
+            LOG.error("Unable to count number of files in {}.", directory.toString(), e);
         }
     }
 
