@@ -81,3 +81,4 @@ extensions/modules/simpleql/src/org/exist/xquery/modules/simpleql/SimpleQLParser
 extensions/modules/simpleql/src/org/exist/xquery/modules/simpleql/SimpleQLParserTokenTypes.txt
 extensions/modules/xslfo/lib
 extensions/modules/memcached/lib
+extensions/modules/xmpp/lib
