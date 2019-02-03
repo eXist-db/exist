@@ -40,7 +40,9 @@
         <fileset dir="${top.dir}/extensions">
             <include name="**/lib/*.jar"/>
         </fileset>
-        <pathelement path="${top.dir}/lib/extensions/exist-security-ldap.jar"/>
+        <fileset dir="${top.dir}/lib/extensions">
+            <include name="exist-security-ldap*.jar"/>
+        </fileset>
         <pathelement path="${top.dir}/exist.jar"/>
         <pathelement path="${top.dir}/exist-optional.jar"/>
         <pathelement path="${top.dir}/start.jar"/>
