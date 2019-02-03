@@ -63,6 +63,7 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/process/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/scheduler/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/sql/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/xmldiff/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/autodeploy" />
       <excludeFolder url="file://$MODULE_DIR$/backup" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
