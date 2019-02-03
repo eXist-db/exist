@@ -10,7 +10,7 @@
     <!-- required due to dependency on interface -->
     <path id="classpath.extension.custom">
         <fileset dir="${existhome.dir}/lib/extensions">
-            <include name="exist-index-lucene.jar"/>
+            <include name="exist-index-lucene*.jar"/>
         </fileset>
         <fileset dir="../lucene/lib">
             <include name="*.jar"/>
