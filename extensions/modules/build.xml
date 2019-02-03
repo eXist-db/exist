@@ -197,7 +197,6 @@
                 <path refid="classpath.core"/>
             </classpath>
 
-            <exclude name="org/exist/xquery/modules/cache/**" unless="${include.module.cache}"/>
             <exclude name="org/exist/xquery/modules/compression/**" unless="${include.module.compression}"/>
             <exclude name="org/exist/xquery/modules/context/**" unless="${include.module.context}"/>
             <exclude name="org/exist/xquery/modules/counter/**" unless="${include.module.counter}"/>
@@ -214,7 +213,6 @@
             <exclude name="org/exist/xquery/modules/memcached/**" unless="${include.module.memcached}"/>
             <exclude name="org/exist/xquery/modules/oracle/**" unless="${include.module.oracle_ext}"/>
 			<exclude name="org/exist/xquery/modules/scheduler/**" unless="${include.module.scheduler}"/>
-            <exclude name="org/exist/xquery/modules/simpleql/**" unless="${include.module.simpleql}"/>
             <exclude name="org/exist/xquery/modules/sql/**" unless="${include.module.sql}"/>
             <exclude name="org/exist/xquery/modules/xmldiff/**" unless="${include.module.xmldiff}"/>
             <exclude name="org/exist/xquery/modules/xmpp/**" unless="${include.module.xmpp}"/>
