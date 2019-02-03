@@ -18,7 +18,7 @@
   ~ License along with this library; if not, write to the Free Software
   ~ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   -->
-<project basedir="." default="all" name="file">
+<project basedir="." default="all" name="ftpclient">
 
     <property file="../../local.build.properties"/>
     <property file="../../build.properties"/>
@@ -26,17 +26,10 @@
     <property name="extension.name" value="${ant.project.name}"/>
     <property name="existhome.dir" location="../../.."/>
 
-    <property name="extension.include" value="${include.module.file}"/>
+    <property name="extension.include" value="${include.module.ftpclient}"/>
 
     <!-- import common.xml here -->
     <import file="${existhome.dir}/build/scripts/extensions-common.xml"/>
-
-    <target name="prepare"  if="${include.module.file}">
-        <echo message="Copying file module files"/>
-
-        <copy file="${src.dir}/org/exist/xquery/modules/file/repo.xsl"
-              tofile="${build.classes.dir}/org/exist/xquery/modules/file/repo.xsl"/>
-
-    </target>
+    
 
 </project>
