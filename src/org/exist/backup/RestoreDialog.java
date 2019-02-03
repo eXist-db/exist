@@ -32,8 +32,8 @@ public class RestoreDialog extends JDialog {
     JTextArea messages;
     JProgressBar progress;
 
-    long totalNumberOfFiles = 0;
-    long fileCounter = 0;
+    private long totalNumberOfFiles = 0;
+    private long fileCounter = 0;
 
 
     /**
@@ -167,7 +167,7 @@ public class RestoreDialog extends JDialog {
      *
      * @param nr Number of files.
      */
-    public void setTotalNumberOfFiles(long nr) {
+    public void setTotalNumberOfFiles(final long nr) {
         totalNumberOfFiles = nr;
     }
 
@@ -178,10 +178,10 @@ public class RestoreDialog extends JDialog {
 
         fileCounter++;
 
-        if (totalNumberOfFiles == 0l) {
+        if (totalNumberOfFiles == 0L) {
             progress.setString("N/A");
         } else {
-            int percentage = (int) (fileCounter * 100 / totalNumberOfFiles);
+            final int percentage = (int) (fileCounter * 100 / totalNumberOfFiles);
             progress.setString(percentage + "%");
             progress.setValue(percentage);
         }
