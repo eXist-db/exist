@@ -372,7 +372,8 @@ public class Eval extends BasicFunction {
                     }
 
                     // override the default options with the ones from the xquery prolog
-                    final Properties serializationProperties = new Properties(defaultOutputOptions);
+                    final Properties serializationProperties = new Properties();
+                    serializationProperties.putAll(defaultOutputOptions);
                     serializationProperties.putAll(xqueryOutputProperties);
 
                     // serialize the results
@@ -380,9 +381,11 @@ public class Eval extends BasicFunction {
                         final XQuerySerializer xqSerializer = new XQuerySerializer(
                                 context.getBroker(), serializationProperties, writer);
 
-                        Sequence seq = args[0];
+                        final Sequence seq;
                         if (xqSerializer.normalize()) {
                             seq = FunSerialize.normalize(this, context, result);
+                        } else {
+                            seq = result;
                         }
 
                         xqSerializer.serialize(seq);
