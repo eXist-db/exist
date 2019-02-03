@@ -71,23 +71,6 @@
     <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask" classpathref="classpath.core" />
 
 
-    <!-- 
-        Special targets for xmpp module 
-    -->
-    <target name="prepare-xmpp" if="${include.module.xmpp}">
-        <echo message="--------------------------------------------------"/>
-        <echo message="Downloading libraries required by the XMPP module"/>
-        <echo message="--------------------------------------------------"/>
-
-        <fetch classpathref="classpath.core" dest="${modules.lib}" 
-                             url="${include.module.xmpp.url}" classname="org.jivesoftware.smack.XMPPConnection">
-            <patternset>
-                <include name="**/smack.jar"/>
-                <include name="**/smackx.jar"/>
-            </patternset>
-        </fetch>
-
-    </target>
 
     <!-- 
         Special targets for cqlparser module 
@@ -108,7 +91,7 @@
         Below this line only generic build items
         ========================================
     -->
-    <target name="prepare" depends="prepare-xmpp,prepare-cqlparser">
+    <target name="prepare" depends="prepare-cqlparser">
         <mkdir dir="${classes}"/>
     </target>
 
