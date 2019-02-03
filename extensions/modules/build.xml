@@ -102,25 +102,6 @@
     -->
     <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask" classpathref="classpath.core" />
 
-   <!--
-        Special targets for expath package module
-    -->
-    <target name="prepare-expathrepo" if="${include.module.expathrepo}">
-        <echo message="------------------------------------------------------"/>
-        <echo message="Downloading libraries required by the expath package module"/>
-        <echo message="------------------------------------------------------"/>
-
-        <copy todir="${classes}/org/exist/xquery/modules/expathrepo">
-            <fileset dir="${src}/org/exist/xquery/modules/expathrepo">
-                <include name="*.xql"/>
-            </fileset>
-        </copy>
-        <!-- disabled because teamcity doesn't like it -->
-          <!--get src="${include.module.expathrepo.url}"
-                dest="${top.dir}/${lib.core}"/-->
-
-    </target>
-
 
     <!-- 
         Special targets for memcached module
@@ -178,7 +159,7 @@
         Below this line only generic build items
         ========================================
     -->
-    <target name="prepare" depends="prepare-xslfo,prepare-memcached,prepare-xmpp,prepare-expathrepo,prepare-cqlparser">
+    <target name="prepare" depends="prepare-xslfo,prepare-memcached,prepare-xmpp,prepare-cqlparser">
         <mkdir dir="${classes}"/>
     </target>
 
