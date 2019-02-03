@@ -93,5 +93,6 @@
     <orderEntry type="library" name="exquery-core" level="project" />
     <orderEntry type="library" name="expath" level="project" />
     <orderEntry type="library" name="lib" level="project" />
+    <orderEntry type="library" name="lib-memcached" level="project" />
   </component>
 </module>
