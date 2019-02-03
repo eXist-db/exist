@@ -146,13 +146,6 @@
 
     </target>
 
-    <target name="finish-persistentlogin" if="${include.module.persistentlogin}">
-        <copy todir="${classes}/org/exist/xquery/modules/persistentlogin">
-            <fileset dir="${src}/org/exist/xquery/modules/persistentlogin">
-                <include name="*.xql"/>
-            </fileset>
-        </copy>
-    </target>
 
     <!-- 
         ========================================
@@ -204,7 +197,7 @@
         </javac>
     </target>
 
-    <target name="jar" depends="compile, finish-persistentlogin">
+    <target name="jar" depends="compile">
         <echo message="Creating exist-modules.jar ..."/>
         <jar basedir="${classes}" jarfile="${top.dir}/${lib.extensions}/exist-modules.jar">
             <manifest>
