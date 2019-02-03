@@ -552,9 +552,6 @@
         depends="prepare,jar,wrapper,extension-betterform,extension-modules,extension-xprocxq,extensions-xar,test-compile"
         description="Build all">
 
-        <!--  hand over build to extensions build -->
-        <ant antfile="${build.scripts}/extensions-build.xml" target="all" inheritAll="false"/>
-
         <!--  this module must be built after the ldap extension -->
         <ant antfile="build.xml" dir="extensions/security/activedirectory" inheritall="false"/>
 
@@ -822,6 +819,11 @@
     </target>
 
     <target name="extension-modules" depends="jar">
+
+        <!--  hand over build to extensions build -->
+        <ant antfile="${build.scripts}/extensions-build.xml" target="all" inheritAll="false"/>
+
+        <!-- old modules -->
         <ant antfile="build.xml" dir="extensions/modules" inheritall="false"/>
     </target>
 
