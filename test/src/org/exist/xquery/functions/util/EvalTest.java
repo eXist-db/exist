@@ -24,7 +24,7 @@ import org.xmldb.api.modules.CollectionManagementService;
  *
  * @author jim.fuller@webcomposite.com
  */
-@RunWith(ParallelRunner.class)
+//@RunWith(ParallelRunner.class)
 public class EvalTest {
 
     @ClassRule
@@ -278,18 +278,38 @@ public class EvalTest {
                 "util:eval-and-serialize($query, map { \"method\": \"adaptive\" })";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
         Resource r = result.getResource(0);
-        assertEquals("\"<elem1>hello</elem1>\"", r.getContent());
+        assertEquals("<elem1>hello</elem1>", r.getContent());
 
         // test that XQuery Prolog output options override the default provided options
         query = "xquery version \"3.1\";\n" +
                 "declare namespace output = \"http://www.w3.org/2010/xslt-xquery-serialization\";\n" +
-                "declare option output:method \"xml\";\n" +
+                "declare option output:method \"text\";\n" +
                 "let $query := \"<elem1>hello</elem1>\"\n" +
                 "return\n" +
                 "util:eval-and-serialize($query, map { \"method\": \"adaptive\" })";
         result = existEmbeddedServer.executeQuery(query);
         r = result.getResource(0);
-        assertEquals("<elem1>hello</elem1>", r.getContent());
+        assertEquals("hello", r.getContent());
+    }
+
+    @Test
+    public void evalAndSerializeJson() throws XMLDBException {
+        String query = "let $query := \"<outer><elem1>hello</elem1></outer>\"\n" +
+                "return\n" +
+                "util:eval-and-serialize($query, map { \"method\": \"json\" })";
+        ResourceSet result = existEmbeddedServer.executeQuery(query);
+        Resource r = result.getResource(0);
+        assertEquals("{\"elem1\":\"hello\"}", r.getContent());
+    }
+
+    @Test
+    public void evalAndSerializeAdaptive() throws XMLDBException {
+        String query = "let $query := 'map { \"key\": \"value\"}'\n" +
+                "return\n" +
+                "util:eval-and-serialize($query, map { \"method\": \"adaptive\" })";
+        ResourceSet result = existEmbeddedServer.executeQuery(query);
+        Resource r = result.getResource(0);
+        assertEquals("map{\"key\":\"value\"}", r.getContent());
     }
 
     @Test
