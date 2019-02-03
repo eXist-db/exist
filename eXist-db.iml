@@ -53,6 +53,7 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/exi/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/expathrepo/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/file/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/ftpclient/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/autodeploy" />
       <excludeFolder url="file://$MODULE_DIR$/backup" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
