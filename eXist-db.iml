@@ -64,6 +64,7 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/sql/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/xmldiff/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/xslfo/src" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/cqlparser/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/autodeploy" />
       <excludeFolder url="file://$MODULE_DIR$/backup" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
@@ -94,5 +95,6 @@
     <orderEntry type="library" name="expath" level="project" />
     <orderEntry type="library" name="lib" level="project" />
     <orderEntry type="library" name="lib-memcached" level="project" />
+    <orderEntry type="library" name="lib-cqlparser" level="project" />
   </component>
 </module>
