@@ -21,6 +21,8 @@
  */
 package org.exist.backup;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.repo.RepoBackup;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
@@ -41,6 +43,8 @@ import java.util.zip.ZipFile;
 
 
 public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
+
+    private final static Logger LOG = LogManager.getLogger();
 
     protected ZipFile archive;
     protected ZipEntry descriptor;
@@ -215,20 +219,20 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
         return FileUtils.fileName(Paths.get(archive.getName()));
     }
 
-    private void countFileEntries(Path fileArchive) {
-        try(ZipFile zipFile = new ZipFile(fileArchive.toFile())) {
-            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+    private void countFileEntries(final Path fileArchive) {
+        try (final ZipFile zipFile = new ZipFile(fileArchive.toFile())) {
+            final Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while (entries.hasMoreElements()) {
-                ZipEntry zipEntry = entries.nextElement();
+                final ZipEntry zipEntry = entries.nextElement();
                 if (!zipEntry.isDirectory()
                         && !zipEntry.getName().endsWith(COLLECTION_DESCRIPTOR)
-                        && !zipEntry.getName().equals("backup.properties")  ) {
+                        && !zipEntry.getName().equals("backup.properties")) {
                     numberOfFiles++;
                 }
             }
 
-        } catch (IOException ex) {
-            // Swallow
+        } catch (final IOException ex) {
+            LOG.error("Unable to count number of files in {}.", fileArchive.toString(), ex);
         }
     }
 

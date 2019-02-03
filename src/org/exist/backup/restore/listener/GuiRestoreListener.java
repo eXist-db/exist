@@ -94,7 +94,7 @@ public class GuiRestoreListener extends AbstractRestoreListener {
     }
 
     @Override
-    public void setNumberOfFiles(long nr) {
+    public void setNumberOfFiles(final long nr) {
         dialog.setTotalNumberOfFiles(nr);
     }
 
