@@ -56,6 +56,7 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/ftpclient/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/httpclient/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/image/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/jndi/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/autodeploy" />
       <excludeFolder url="file://$MODULE_DIR$/backup" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
