@@ -48,6 +48,7 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/compression/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/context/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/counter/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/datetime/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/autodeploy" />
       <excludeFolder url="file://$MODULE_DIR$/backup" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
