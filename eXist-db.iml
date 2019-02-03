@@ -58,6 +58,7 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/image/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/jndi/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/mail/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/math/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/autodeploy" />
       <excludeFolder url="file://$MODULE_DIR$/backup" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
