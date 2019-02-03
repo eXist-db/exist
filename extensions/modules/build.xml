@@ -73,25 +73,11 @@
 
 
     <!-- 
-        Special targets for cqlparser module 
-    -->
-    <target name="prepare-cqlparser" if="${include.module.cqlparser}">
-        <echo message="------------------------------------------------------"/>
-        <echo message="Downloading libraries required by the cqlparser module"/>
-        <echo message="------------------------------------------------------"/>
-
-        <fetch classpathref="classpath.core" dest="${modules.lib}" 
-               url="${include.module.cqlparser.url}" classname="org.z3950.zing.cql.CQLParser" />
-
-    </target>
-
-
-    <!-- 
         ========================================
         Below this line only generic build items
         ========================================
     -->
-    <target name="prepare" depends="prepare-cqlparser">
+    <target name="prepare">
         <mkdir dir="${classes}"/>
     </target>
 
