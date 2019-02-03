@@ -97,6 +97,9 @@ to add: -pre-compile steps
       <fileset dir="${existhome.dir}/${lib.user}">
          <include name="*.jar"/>
       </fileset>
+      <fileset dir="${existhome.dir}/${lib.test}">
+         <include name="*.jar"/>
+      </fileset>
       <!-- 
          lib.extensions must be excluded to prevent circular dependencies
       -->
