@@ -60,6 +60,7 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/mail/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/math/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/persistentlogin/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/process/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/autodeploy" />
       <excludeFolder url="file://$MODULE_DIR$/backup" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
