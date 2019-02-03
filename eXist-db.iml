@@ -43,7 +43,6 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/xUnit/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/xUnit/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/range/test/src" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/simpleql/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/cache/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/compression/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/context/src" isTestSource="false" />
@@ -64,6 +63,7 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/scheduler/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/sql/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/xmldiff/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/xslfo/src" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/autodeploy" />
       <excludeFolder url="file://$MODULE_DIR$/backup" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
@@ -92,5 +92,6 @@
     <orderEntry type="library" name="exquery-restxq" level="project" />
     <orderEntry type="library" name="exquery-core" level="project" />
     <orderEntry type="library" name="expath" level="project" />
+    <orderEntry type="library" name="lib" level="project" />
   </component>
 </module>
