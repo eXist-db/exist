@@ -303,8 +303,9 @@ to add: -pre-compile steps
             <attribute name="Build-Timestamp" value="${DSTAMP}${TSTAMP}"/>
             <attribute name="Built-By" value="${user.name}"/>
             <attribute name="Build-Jdk" value="${java.version}"/>
-
             <attribute name="Created-By" value="${ant.version}"/>
+            <attribute name="Description" value="eXist XML Native Database Extension Module"/>
+
          </manifest>
       </jar>
    </target>

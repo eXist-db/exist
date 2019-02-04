@@ -741,7 +741,6 @@
         <delete failonerror="no" dir="${dist}"/>
 
         <ant antfile="build.xml" dir="extensions/betterform" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/modules" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/security/activedirectory"  target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/xprocxq" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="tools/yajsw" target="clean" inheritall="false"/>
@@ -805,7 +804,7 @@
                 <exclude name=".DO_NOT_DELETE"/>
             </fileset>
         </delete>
-        <ant antfile="build.xml" dir="extensions/modules" target="clean-all" inheritall="false"/>
+
     </target>
 
     <target name="wrapper" depends="jar">
@@ -823,8 +822,6 @@
         <!--  hand over build to extensions build -->
         <ant antfile="${build.scripts}/extensions-build.xml" target="all" inheritAll="false"/>
 
-        <!-- old modules -->
-        <ant antfile="build.xml" dir="extensions/modules" inheritall="false"/>
     </target>
 
     <target name="extension-xprocxq" depends="jar">
