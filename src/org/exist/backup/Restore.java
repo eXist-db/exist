@@ -21,17 +21,6 @@
  */
 package org.exist.backup;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Properties;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import org.exist.backup.restore.RestoreHandler;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.security.Account;
@@ -48,6 +37,18 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.Properties;
+
 /**
  * Restore.java.
  *
@@ -58,7 +59,7 @@ public class Restore {
     
 //    private final static Logger LOG = LogManager.getLogger(Restore.class);
 
-    public void restore(RestoreListener listener, String username, String password, String newAdminPass, Path f, String uri) throws XMLDBException, FileNotFoundException, IOException, SAXException, ParserConfigurationException, URISyntaxException {
+    public void restore(final RestoreListener listener, final String username, String password, final String newAdminPass, final Path f, final String uri) throws XMLDBException, IOException, SAXException, ParserConfigurationException, URISyntaxException {
         
         //set the admin password
         if(newAdminPass != null) {
@@ -67,7 +68,16 @@ public class Restore {
 
         //get the backup descriptors, can be more than one if it was an incremental backup
         final Deque<BackupDescriptor> descriptors = getBackupDescriptors(f);
-        
+
+        // count all files
+        long totalNrOfFiles=0;
+        Iterator<BackupDescriptor> bdIterator = descriptors.iterator();
+        while(bdIterator.hasNext()){
+            totalNrOfFiles += bdIterator.next().getNumberOfFiles();
+        }
+        listener.setNumberOfFiles(totalNrOfFiles);
+
+        // continue restore
         final SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
         saxFactory.setNamespaceAware(true);
         saxFactory.setValidating(false);
@@ -124,7 +134,7 @@ public class Restore {
             if((properties != null ) && "yes".equals(properties.getProperty("incremental", "no"))) {
                 final String previous = properties.getProperty("previous", "");
 
-                if(previous.length() > 0) {
+                if(!previous.isEmpty()) {
                     contents = bd.getParentDir().resolve(previous);
 
                     if(!Files.isReadable(contents)) {
@@ -149,7 +159,7 @@ public class Restore {
         return bd;
     }
     
-    private String setAdminCredentials(String uri, String username, String password, String adminPassword) throws XMLDBException, URISyntaxException {
+    private String setAdminCredentials(final String uri, final String username, final String password, final String adminPassword) throws XMLDBException, URISyntaxException {
         final XmldbURI dbUri;
 
         if(!uri.endsWith(XmldbURI.ROOT_COLLECTION)) {

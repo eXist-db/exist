@@ -21,50 +21,36 @@
  */
 package org.exist.backup;
 
+import org.exist.backup.restore.listener.ConsoleRestoreListener;
+import org.exist.backup.restore.listener.GuiRestoreListener;
+import org.exist.backup.restore.listener.RestoreListener;
+import org.exist.client.ClientFrame;
+import org.exist.util.ConfigurationHelper;
+import org.exist.util.NamedThreadFactory;
+import org.exist.util.SystemExitCodes;
+import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
+import org.xml.sax.SAXException;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.XMLDBException;
+import se.softhouse.jargo.*;
+
+import javax.swing.*;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-
-import org.exist.util.NamedThreadFactory;
-import org.exist.util.SystemExitCodes;
-import org.xml.sax.SAXException;
-
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.XMLDBException;
-
-import org.exist.util.ConfigurationHelper;
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XmldbURI;
-
-import java.io.IOException;
-import java.io.InputStream;
-
-import java.net.URISyntaxException;
 import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.prefs.Preferences;
-
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.exist.backup.restore.listener.ConsoleRestoreListener;
-import org.exist.backup.restore.listener.GuiRestoreListener;
-import org.exist.backup.restore.listener.RestoreListener;
-import org.exist.client.ClientFrame;
-import se.softhouse.jargo.*;
 
 import static org.exist.util.ArgumentUtil.getBool;
 import static org.exist.util.ArgumentUtil.getOpt;
@@ -183,7 +169,7 @@ public class Main {
         final boolean rebuildRepo = getBool(arguments, rebuildExpathRepoArg);
 
         // initialize driver
-        Database database;
+        final Database database;
 
         try {
             final Class<?> cl = Class.forName(properties.getProperty(DRIVER_PROP, DEFAULT_DRIVER));
@@ -274,7 +260,7 @@ public class Main {
     }
 
     private static void restoreWithoutGui(final String username, final String password, final Optional<String> dbaPassword, final Path f,
-                                          final String uri, final boolean rebuildRepo, boolean quiet) {
+                                          final String uri, final boolean rebuildRepo, final boolean quiet) {
 
         final RestoreListener listener = new ConsoleRestoreListener(quiet);
         final Restore restore = new Restore();
@@ -303,7 +289,7 @@ public class Main {
                 } else {
                     System.err.println("Failed to retrieve root collection: " + uri);
                 }
-            } catch (XMLDBException e) {
+            } catch (final XMLDBException e) {
                 reportError(e);
                 System.err.println("Rebuilding application repository failed!");
             }
@@ -322,44 +308,40 @@ public class Main {
 
         final GuiRestoreListener listener = new GuiRestoreListener();
 
-        final Callable<Void> callable = new Callable<Void>() {
+        final Callable<Void> callable = () -> {
 
-            @Override
-            public Void call() throws Exception {
+            final Restore restore = new Restore();
 
-                final Restore restore = new Restore();
+            try {
+                restore.restore(listener, username, password, dbaPassword.orElse(null), f, uri);
 
-                try {
-                    restore.restore(listener, username, password, dbaPassword.orElse(null), f, uri);
+                listener.hideDialog();
 
-                    listener.hideDialog();
-
-                    if (JOptionPane.showConfirmDialog(null, "Would you like to rebuild the application repository?\nThis is only necessary if application packages were restored.", "Rebuild App Repository?",
-                            JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                        System.out.println("Rebuilding application repository ...");
-                        try {
-                            String rootURI = uri;
-                            if (!(rootURI.contains(XmldbURI.ROOT_COLLECTION) || rootURI.endsWith(XmldbURI.ROOT_COLLECTION))) {
-                                rootURI += XmldbURI.ROOT_COLLECTION;
-                            }
-                            final Collection root = DatabaseManager.getCollection(rootURI, username, dbaPassword.orElse(password));
-                            ClientFrame.repairRepository(root);
-                            System.out.println("Application repository rebuilt successfully.");
-                        } catch (XMLDBException e) {
-                            reportError(e);
-                            System.err.println("Rebuilding application repository failed!");
+                if (JOptionPane.showConfirmDialog(null, "Would you like to rebuild the application repository?\nThis is only necessary if application packages were restored.", "Rebuild App Repository?",
+                        JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    System.out.println("Rebuilding application repository ...");
+                    try {
+                        String rootURI = uri;
+                        if (!(rootURI.contains(XmldbURI.ROOT_COLLECTION) || rootURI.endsWith(XmldbURI.ROOT_COLLECTION))) {
+                            rootURI += XmldbURI.ROOT_COLLECTION;
                         }
-                    }
-                } catch (final Exception e) {
-                    ClientFrame.showErrorMessage(e.getMessage(), null); //$NON-NLS-1$
-                } finally {
-                    if (listener.hasProblems()) {
-                        ClientFrame.showErrorMessage(listener.warningsAndErrorsAsString(), null);
+                        final Collection root = DatabaseManager.getCollection(rootURI, username, dbaPassword.orElse(password));
+                        ClientFrame.repairRepository(root);
+                        System.out.println("Application repository rebuilt successfully.");
+                    } catch (final XMLDBException e) {
+                        reportError(e);
+                        System.err.println("Rebuilding application repository failed!");
                     }
                 }
-
-                return null;
+            } catch (final Exception e) {
+                ClientFrame.showErrorMessage(e.getMessage(), null); //$NON-NLS-1$
+            } finally {
+                if (listener.hasProblems()) {
+                    ClientFrame.showErrorMessage(listener.warningsAndErrorsAsString(), null);
+                }
             }
+
+            return null;
         };
 
         final ExecutorService executor = Executors.newSingleThreadExecutor(new NamedThreadFactory(null, null, "backup.restore-with-gui"));
@@ -368,12 +350,10 @@ public class Main {
         while (!future.isDone() && !future.isCancelled()) {
             try {
                 future.get(100, TimeUnit.MILLISECONDS);
-            } catch (final InterruptedException ie) {
+            } catch (final InterruptedException | TimeoutException ie) {
 
             } catch (final ExecutionException ee) {
                 break;
-            } catch (final TimeoutException te) {
-
             }
         }
     }

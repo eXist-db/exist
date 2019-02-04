@@ -21,6 +21,8 @@
  */
 package org.exist.backup;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.repo.RepoBackup;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
@@ -42,11 +44,17 @@ import java.util.zip.ZipFile;
 
 public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
 
+    private final static Logger LOG = LogManager.getLogger();
+
     protected ZipFile archive;
     protected ZipEntry descriptor;
     protected String base;
 
-    public ZipArchiveBackupDescriptor(Path fileArchive) throws IOException {
+    public ZipArchiveBackupDescriptor(final Path fileArchive) throws IOException {
+
+        // Count number of files
+        countFileEntries(fileArchive);
+
         archive = new ZipFile(fileArchive.toFile());
 
         //is it full backup?
@@ -93,7 +101,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
     }
 
 
-    private ZipArchiveBackupDescriptor(ZipFile archive, String base) throws FileNotFoundException {
+    private ZipArchiveBackupDescriptor(final ZipFile archive, final String base) throws FileNotFoundException {
         this.archive = archive;
         this.base = base;
         descriptor = archive.getEntry(base + BackupDescriptor.COLLECTION_DESCRIPTOR);
@@ -101,10 +109,12 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
         if ((descriptor == null) || descriptor.isDirectory()) {
             throw new FileNotFoundException(archive.getName() + " is a bit corrupted (" + base + " descriptor not found): not a valid eXist backup archive");
         }
+
+
     }
 
     @Override
-    public BackupDescriptor getChildBackupDescriptor(String describedItem) {
+    public BackupDescriptor getChildBackupDescriptor(final String describedItem) {
         BackupDescriptor bd = null;
 
         try {
@@ -118,7 +128,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
 
     @Override
     public BackupDescriptor getBackupDescriptor(String describedItem) {
-        if ((describedItem.length() > 0) && (describedItem.charAt(0) == '/')) {
+        if ((!describedItem.isEmpty()) && (describedItem.charAt(0) == '/')) {
             describedItem = describedItem.substring(1);
         }
 
@@ -144,7 +154,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
     }
 
     @Override
-    public EXistInputSource getInputSource(String describedItem) {
+    public EXistInputSource getInputSource(final String describedItem) {
         final ZipEntry ze = archive.getEntry(base + describedItem);
         EXistInputSource retval = null;
 
@@ -161,7 +171,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
     }
 
     @Override
-    public String getSymbolicPath(String describedItem, boolean isChildDescriptor) {
+    public String getSymbolicPath(final String describedItem, final boolean isChildDescriptor) {
         String retval = archive.getName() + "#" + base + describedItem;
 
         if (isChildDescriptor) {
@@ -177,7 +187,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
 
         if (ze != null) {
             properties = new Properties();
-            try (InputStream is = archive.getInputStream(ze)) {
+            try (final InputStream is = archive.getInputStream(ze)) {
                 properties.load(is);
             }
         }
@@ -208,4 +218,22 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
     public String getName() {
         return FileUtils.fileName(Paths.get(archive.getName()));
     }
+
+    private void countFileEntries(final Path fileArchive) {
+        try (final ZipFile zipFile = new ZipFile(fileArchive.toFile())) {
+            final Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                final ZipEntry zipEntry = entries.nextElement();
+                if (!zipEntry.isDirectory()
+                        && !zipEntry.getName().endsWith(COLLECTION_DESCRIPTOR)
+                        && !zipEntry.getName().equals("backup.properties")) {
+                    numberOfFiles++;
+                }
+            }
+
+        } catch (final IOException ex) {
+            LOG.error("Unable to count number of files in {}.", fileArchive.toString(), ex);
+        }
+    }
+
 }

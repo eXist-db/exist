@@ -21,19 +21,18 @@
  */
 package org.exist.backup;
 
+import org.exist.util.FileUtils;
+import org.exist.xmldb.XmldbURI;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
-
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Properties;
-
-import org.exist.util.FileUtils;
-import org.exist.xmldb.XmldbURI;
 
 
 /**

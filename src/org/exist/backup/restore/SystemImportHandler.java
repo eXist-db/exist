@@ -21,18 +21,13 @@
  */
 package org.exist.backup.restore;
 
-import java.io.IOException;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.security.PermissionFactory;
 import org.exist.storage.lock.*;
-import org.exist.util.ExistSAXParserFactory;
-import org.exist.util.XMLReaderPool;
-import org.w3c.dom.DocumentType;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.helpers.DefaultHandler;
 import org.exist.Namespaces;
+import org.exist.backup.BackupDescriptor;
+import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.BinaryDocument;
@@ -40,29 +35,33 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentMetadata;
 import org.exist.dom.persistent.DocumentTypeImpl;
 import org.exist.security.ACLPermission;
+import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
+import org.exist.security.ACLPermission.ACE_TARGET;
 import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
+import org.exist.security.internal.aider.ACEAider;
+import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.EXistInputSource;
+import org.exist.util.ExistSAXParserFactory;
+import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.DateTimeValue;
-
-import java.net.URISyntaxException;
-import java.util.*;
+import org.w3c.dom.DocumentType;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 import javax.xml.parsers.SAXParserFactory;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.exist.backup.BackupDescriptor;
-import org.exist.backup.restore.listener.RestoreListener;
-import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
-import org.exist.security.ACLPermission.ACE_TARGET;
-import org.exist.storage.DBBroker;
-import org.exist.storage.txn.TransactionManager;
-import org.exist.storage.txn.Txn;
-import org.xml.sax.XMLReader;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.*;
 
 /**
  * Handler for parsing __contents.xml__ files during
@@ -81,9 +80,9 @@ public class SystemImportHandler extends DefaultHandler {
     }
     private static final int STRICT_URI_VERSION = 1;
     
-    private DBBroker broker;
+    private final DBBroker broker;
     
-    private org.exist.backup.RestoreHandler rh;
+    private final org.exist.backup.RestoreHandler rh;
     
     private final RestoreListener listener;
     private final String dbBaseUri;
@@ -92,9 +91,9 @@ public class SystemImportHandler extends DefaultHandler {
     //handler state
     private int version = 0;
     private Collection currentCollection;
-    private Deque<DeferredPermission> deferredPermissions = new ArrayDeque<>();
+    private final Deque<DeferredPermission> deferredPermissions = new ArrayDeque<>();
     
-    public SystemImportHandler(DBBroker broker, RestoreListener listener, String dbBaseUri, BackupDescriptor descriptor) {
+    public SystemImportHandler(final DBBroker broker, final RestoreListener listener, final String dbBaseUri, final BackupDescriptor descriptor) {
         this.broker = broker;
         this.listener = listener;
         this.dbBaseUri = dbBaseUri;
@@ -113,7 +112,7 @@ public class SystemImportHandler extends DefaultHandler {
      * @see  org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
      */
     @Override
-    public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
+    public void startElement(final String namespaceURI, final String localName, final String qName, final Attributes atts) throws SAXException {
 
         //only process entries in the exist namespace
 //        if(namespaceURI != null && !namespaceURI.equals(Namespaces.EXIST_NS)) {
@@ -144,7 +143,7 @@ public class SystemImportHandler extends DefaultHandler {
     }
     
     @Override
-    public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
+    public void endElement(final String namespaceURI, final String localName, final String qName) throws SAXException {
 
         if(namespaceURI.equals(Namespaces.EXIST_NS) && ("collection".equals(localName) || "resource".equals(localName))) {
             setDeferredPermissions();
@@ -155,7 +154,7 @@ public class SystemImportHandler extends DefaultHandler {
         super.endElement(namespaceURI, localName, qName);
     }
     
-    private DeferredPermission restoreCollectionEntry(Attributes atts) throws SAXException {
+    private DeferredPermission restoreCollectionEntry(final Attributes atts) throws SAXException {
         
         final String name = atts.getValue("name");
         
@@ -183,7 +182,7 @@ public class SystemImportHandler extends DefaultHandler {
         
         try {
             listener.createCollection(name);
-            XmldbURI collUri;
+            final XmldbURI collUri;
 
             if(version >= STRICT_URI_VERSION) {
                 collUri = XmldbURI.create(name);
@@ -237,7 +236,7 @@ public class SystemImportHandler extends DefaultHandler {
         }
     }
 
-    private void restoreSubCollectionEntry(Attributes atts) throws SAXException {
+    private void restoreSubCollectionEntry(final Attributes atts) throws SAXException {
         
         final String name;
         if(atts.getValue("filename") != null) {
@@ -280,7 +279,7 @@ public class SystemImportHandler extends DefaultHandler {
         }
     }
     
-    private DeferredPermission restoreResourceEntry(Attributes atts) throws SAXException {
+    private DeferredPermission restoreResourceEntry(final Attributes atts) throws SAXException {
         
         final String skip = atts.getValue( "skip" );
 
@@ -333,7 +332,7 @@ public class SystemImportHandler extends DefaultHandler {
         }
         if(modified != null) {
             try {
-                date_modified = (Date) (new DateTimeValue(modified)).getDate();
+                date_modified = (new DateTimeValue(modified)).getDate();
             } catch(final XPathException xpe) {
                 listener.warn("Illegal modification date. Ignoring date...");
             }
@@ -354,14 +353,14 @@ public class SystemImportHandler extends DefaultHandler {
             }
         }
 
-        final EXistInputSource is = descriptor.getInputSource(filename);
-        if(is == null) {
-            final String msg = "Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath( name, false ) + "'.\nReason: Unable to obtain its EXistInputSource";
-            listener.warn(msg);
-            throw new RuntimeException(msg);
-        }
 
-        try {
+        try(EXistInputSource is = descriptor.getInputSource(filename)){
+
+            if(is == null) {
+                final String msg = "Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath( name, false ) + "'.\nReason: Unable to obtain its EXistInputSource";
+                listener.warn(msg);
+                throw new RuntimeException(msg);
+            }
             
             listener.setCurrentResource(name);
             if(currentCollection != null) {
@@ -427,12 +426,10 @@ public class SystemImportHandler extends DefaultHandler {
             listener.warn("Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath(name, false) + "'.\nReason: " + e.getMessage());
             LOG.error(e.getMessage(), e);
             return new SkippedEntryDeferredPermission();
-        } finally {
-            is.close();
         }
     }
 
-    private void restoreDeletedEntry(Attributes atts) {
+    private void restoreDeletedEntry(final Attributes atts) {
         final String name = atts.getValue("name");
         final String type = atts.getValue("type");
         
@@ -480,7 +477,7 @@ public class SystemImportHandler extends DefaultHandler {
         }
     }
 
-    private void addACEToDeferredPermissions(Attributes atts) {
+    private void addACEToDeferredPermissions(final Attributes atts) {
         final int index = Integer.parseInt(atts.getValue("index"));
         final ACE_TARGET target = ACE_TARGET.valueOf(atts.getValue("target"));
         final String who = atts.getValue("who");
@@ -496,7 +493,7 @@ public class SystemImportHandler extends DefaultHandler {
         deferredPermission.apply();
     }
     
-    private Date getDateFromXSDateTimeStringForItem(String strXSDateTime, String itemName) {
+    private Date getDateFromXSDateTimeStringForItem(final String strXSDateTime, final String itemName) {
         Date date_created = null;
 
         if(strXSDateTime != null) {
@@ -517,7 +514,7 @@ public class SystemImportHandler extends DefaultHandler {
         return date_created;
     }
     
-    private Collection mkcol(XmldbURI collPath, Date created) throws SAXException {
+    private Collection mkcol(final XmldbURI collPath, final Date created) throws SAXException {
         
     	final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
     	try(final Txn txn = txnManager.beginTransaction()) {
@@ -533,7 +530,7 @@ public class SystemImportHandler extends DefaultHandler {
     
     class CollectionDeferredPermission extends AbstractDeferredPermission<Collection> {
         
-        public CollectionDeferredPermission(RestoreListener listener, Collection collection, String owner, String group, Integer mode) {
+        public CollectionDeferredPermission(final RestoreListener listener, final Collection collection, final String owner, final String group, final Integer mode) {
             super(listener, collection, owner, group, mode);
         }
 
@@ -560,7 +557,7 @@ public class SystemImportHandler extends DefaultHandler {
 
     class ResourceDeferredPermission extends AbstractDeferredPermission<DocumentImpl> {
 
-        public ResourceDeferredPermission(RestoreListener listener, DocumentImpl resource, String owner, String group, Integer mode) {
+        public ResourceDeferredPermission(final RestoreListener listener, final DocumentImpl resource, final String owner, final String group, final Integer mode) {
             super(listener, resource, owner, group, mode);
         }
 

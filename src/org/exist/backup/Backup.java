@@ -21,13 +21,21 @@
  */
 package org.exist.backup;
 
-import org.exist.util.FileUtils;
 import com.evolvedbinary.j8fu.function.FunctionE;
+import org.exist.Namespaces;
+import org.exist.security.ACLPermission;
+import org.exist.security.Permission;
+import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.FileUtils;
 import org.exist.util.NamedThreadGroupFactory;
 import org.exist.util.SystemExitCodes;
+import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.serializer.SerializerPool;
+import org.exist.xmldb.*;
+import org.exist.xquery.util.URIUtils;
+import org.exist.xquery.value.DateTimeValue;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
-
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -35,69 +43,45 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
-import org.exist.Namespaces;
-import org.exist.security.Permission;
-import org.exist.storage.serializers.EXistOutputKeys;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SerializerPool;
-import org.exist.xmldb.EXistCollection;
-import org.exist.xmldb.EXistResource;
-import org.exist.xmldb.ExtendedResource;
-import org.exist.xmldb.UserManagementService;
-import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.util.URIUtils;
-import org.exist.xquery.value.DateTimeValue;
-
+import javax.annotation.Nullable;
+import javax.swing.*;
+import javax.xml.transform.OutputKeys;
 import java.awt.*;
-
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.Nullable;
-import javax.swing.*;
 
-import javax.xml.transform.OutputKeys;
-import org.exist.security.ACLPermission;
+public class Backup {
+    private static final String EXIST_GENERATED_FILENAME_DOT_FILENAME = "_eXist_generated_backup_filename_dot_file_";
+    private static final String EXIST_GENERATED_FILENAME_DOTDOT_FILENAME = "_eXist_generated_backup_filename_dotdot_file_";
 
-
-public class Backup
-{
-	private static final String	EXIST_GENERATED_FILENAME_DOT_FILENAME	 = "_eXist_generated_backup_filename_dot_file_";
-	private static final String	EXIST_GENERATED_FILENAME_DOTDOT_FILENAME = "_eXist_generated_backup_filename_dotdot_file_";
-	
-    private static final int 	currVersion             = 1;
+    private static final int currVersion = 1;
 
     private static final AtomicInteger backupThreadId = new AtomicInteger();
     private static final NamedThreadGroupFactory backupThreadGroupFactory = new NamedThreadGroupFactory("java-backup-tool");
     private final ThreadGroup backupThreadGroup = backupThreadGroupFactory.newThreadGroup(null);
-
-    private Path           target;
-    private XmldbURI         rootCollection;
-    private String           user;
-    private String           pass;
-
     private final Properties defaultOutputProperties = new Properties();
     private final Properties contentsOutputProps = new Properties();
+    private final Path target;
+    private final XmldbURI rootCollection;
+    private final String user;
+    private final String pass;
 
     public Backup(final String user, final String pass, final Path target) {
         this(user, pass, target, XmldbURI.LOCAL_DB_URI);
     }
 
-    public Backup(final String user, final String pass, final Path target, final XmldbURI rootCollection ) {
+    public Backup(final String user, final String pass, final Path target, final XmldbURI rootCollection) {
         this(user, pass, target, rootCollection, null);
     }
 
     public Backup(final String user, final String pass, final Path target, final XmldbURI rootCollection,
-            @Nullable final Properties properties ) {
+                  @Nullable final Properties properties) {
         this.user = user;
         this.pass = pass;
         this.target = target;
@@ -115,89 +99,149 @@ public class Backup
         this.contentsOutputProps.setProperty(OutputKeys.INDENT, "yes");
     }
 
-    public static String encode( String enco )
-    {
+    public static String encode(final String enco) {
         final StringBuilder out = new StringBuilder();
-        char          t;
+        char t;
 
-        for( int y = 0; y < enco.length(); y++ ) {
-            t = enco.charAt( y );
+        for (int y = 0; y < enco.length(); y++) {
+            t = enco.charAt(y);
 
-            if( t == '"' ) {
-                out.append( "&22;" );
-            } else if( t == '&' ) {
-                out.append( "&26;" );
-            } else if( t == '*' ) {
-                out.append( "&2A;" );
-            } else if( t == ':' ) {
-                out.append( "&3A;" );
-            } else if( t == '<' ) {
-                out.append( "&3C;" );
-            } else if( t == '>' ) {
-                out.append( "&3E;" );
-            } else if( t == '?' ) {
-                out.append( "&3F;" );
-            } else if( t == '\\' ) {
-                out.append( "&5C;" );
-            } else if( t == '|' ) {
-                out.append( "&7C;" );
+            if (t == '"') {
+                out.append("&22;");
+            } else if (t == '&') {
+                out.append("&26;");
+            } else if (t == '*') {
+                out.append("&2A;");
+            } else if (t == ':') {
+                out.append("&3A;");
+            } else if (t == '<') {
+                out.append("&3C;");
+            } else if (t == '>') {
+                out.append("&3E;");
+            } else if (t == '?') {
+                out.append("&3F;");
+            } else if (t == '\\') {
+                out.append("&5C;");
+            } else if (t == '|') {
+                out.append("&7C;");
             } else {
-                out.append( t );
+                out.append(t);
             }
         }
-        return( out.toString() );
+        return (out.toString());
     }
 
 
-    public static String decode( String enco )
-    {
-        final StringBuilder out  = new StringBuilder();
-        String        temp = "";
-        char          t;
+    public static String decode(final String enco) {
+        final StringBuilder out = new StringBuilder();
+        String temp = "";
+        char t;
 
-        for( int y = 0; y < enco.length(); y++ ) {
-            t = enco.charAt( y );
+        for (int y = 0; y < enco.length(); y++) {
+            t = enco.charAt(y);
 
-            if( t != '&' ) {
-                out.append( t );
+            if (t != '&') {
+                out.append(t);
             } else {
-                temp = enco.substring( y, y + 4 );
+                temp = enco.substring(y, y + 4);
 
-                if( "&22;".equals(temp) ) {
-                    out.append( '"' );
-                } else if( "&26;".equals(temp) ) {
-                    out.append( '&' );
-                } else if( "&2A;".equals(temp) ) {
-                    out.append( '*' );
-                } else if( "&3A;".equals(temp) ) {
-                    out.append( ':' );
-                } else if( "&3C;".equals(temp) ) {
-                    out.append( '<' );
-                } else if( "&3E;".equals(temp) ) {
-                    out.append( ">" );
-                } else if( "&3F;".equals(temp) ) {
-                    out.append( '?' );
-                } else if( "&5C;".equals(temp) ) {
-                    out.append( '\\' );
-                } else if( "&7C;".equals(temp) ) {
-                    out.append( '|' );
-                } else {
+                switch (temp) {
+                    case "&22;":
+                        out.append('"');
+                        break;
+                    case "&26;":
+                        out.append('&');
+                        break;
+                    case "&2A;":
+                        out.append('*');
+                        break;
+                    case "&3A;":
+                        out.append(':');
+                        break;
+                    case "&3C;":
+                        out.append('<');
+                        break;
+                    case "&3E;":
+                        out.append(">");
+                        break;
+                    case "&3F;":
+                        out.append('?');
+                        break;
+                    case "&5C;":
+                        out.append('\\');
+                        break;
+                    case "&7C;":
+                        out.append('|');
+                        break;
+                    default:
+                        break;
                 }
                 y = y + 3;
             }
         }
-        return( out.toString() );
+        return (out.toString());
     }
 
+    public static void main(final String[] args) {
+        try {
+            final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+            final Database database = (Database) cl.newInstance();
+            database.setProperty("create-database", "true");
+            DatabaseManager.registerDatabase(database);
+            final Backup backup = new Backup("admin", null, Paths.get("backup"), URIUtils.encodeXmldbUriFor(args[0]));
+            backup.backup(false, null);
+        } catch (final Throwable e) {
+            e.printStackTrace();
+            System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
+        }
+    }
 
-    public void backup( boolean guiMode, JFrame parent ) throws XMLDBException, IOException, SAXException
-    {
+    public static void writeUnixStylePermissionAttributes(final AttributesImpl attr, final Permission permission) {
+        if (permission == null) {
+            return;
+        }
+
+        try {
+            attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", permission.getOwner().getName());
+            attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", permission.getGroup().getName());
+            attr.addAttribute(Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString(permission.getMode()));
+        } catch (final Exception e) {
+
+        }
+    }
+
+    public static void writeACLPermission(final SAXSerializer serializer, final ACLPermission acl) throws SAXException {
+        if (acl == null) {
+            return;
+        }
+        final AttributesImpl attr = new AttributesImpl();
+        attr.addAttribute(Namespaces.EXIST_NS, "entries", "entries", "CDATA", Integer.toString(acl.getACECount()));
+        attr.addAttribute(Namespaces.EXIST_NS, "version", "version", "CDATA", Short.toString(acl.getVersion()));
+
+        serializer.startElement(Namespaces.EXIST_NS, "acl", "acl", attr);
+
+        for (int i = 0; i < acl.getACECount(); i++) {
+            attr.clear();
+            attr.addAttribute(Namespaces.EXIST_NS, "index", "index", "CDATA", Integer.toString(i));
+            attr.addAttribute(Namespaces.EXIST_NS, "target", "target", "CDATA", acl.getACETarget(i).name());
+            attr.addAttribute(Namespaces.EXIST_NS, "who", "who", "CDATA", acl.getACEWho(i));
+            attr.addAttribute(Namespaces.EXIST_NS, "access_type", "access_type", "CDATA", acl.getACEAccessType(i).name());
+            attr.addAttribute(Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString(acl.getACEMode(i)));
+
+            serializer.startElement(Namespaces.EXIST_NS, "ace", "ace", attr);
+            serializer.endElement(Namespaces.EXIST_NS, "ace", "ace");
+        }
+
+        serializer.endElement(Namespaces.EXIST_NS, "acl", "acl");
+    }
+
+    public void backup(final boolean guiMode, final JFrame parent) throws XMLDBException, IOException, SAXException {
         final Collection current = DatabaseManager.getCollection(rootCollection.toString(), user, pass);
 
-        if( guiMode ) {
-            final BackupDialog dialog = new BackupDialog( parent, false );
-            dialog.setSize( new Dimension( 350, 150 ) );
-            dialog.setVisible( true );
+        if (guiMode) {
+            final BackupDialog dialog = new BackupDialog(parent, false);
+            dialog.setSize(new Dimension(350, 150));
+            dialog.setVisible(true);
             final BackupRunnable backupRunnable = new BackupRunnable(current, dialog, this);
             final Thread backupThread = newBackupThread("backup-" + backupThreadId.getAndIncrement(), backupRunnable);
             backupThread.start();
@@ -205,64 +249,59 @@ public class Backup
 
             //super("exist-backupThread-" + backupThreadId.getAndIncrement());
 
-            if( parent == null ) {
+            if (parent == null) {
 
                 // if backup runs as a single dialog, wait for it (or app will terminate)
-                while( backupThread.isAlive() ) {
+                while (backupThread.isAlive()) {
 
-                    synchronized( this ) {
+                    synchronized (this) {
 
                         try {
-                            wait( 20 );
-                        }
-                        catch( final InterruptedException e ) {
+                            wait(20);
+                        } catch (final InterruptedException e) {
                         }
                     }
                 }
             }
         } else {
-            backup( current, null );
+            backup(current, null);
         }
     }
 
-
-    private void backup(Collection current, BackupDialog dialog) throws XMLDBException, IOException, SAXException
-    {
+    private void backup(final Collection current, final BackupDialog dialog) throws XMLDBException, IOException, SAXException {
         String cname = current.getName();
 
-        if(cname.charAt( 0 ) != '/') {
+        if (cname.charAt(0) != '/') {
             cname = "/" + cname;
         }
 
         final FunctionE<String, BackupWriter, IOException> fWriter;
-        if(FileUtils.fileName(target).endsWith(".zip")) {
+        if (FileUtils.fileName(target).endsWith(".zip")) {
             fWriter = currentName -> new ZipWriter(target, encode(URIUtils.urlDecodeUtf8(currentName)));
         } else {
             fWriter = currentName -> {
                 String child = encode(URIUtils.urlDecodeUtf8(currentName));
-                if(child.charAt(0) == '/') {
+                if (child.charAt(0) == '/') {
                     child = child.substring(1);
                 }
                 return new FileSystemWriter(target.resolve(child));
             };
         }
 
-        try(final BackupWriter output = fWriter.apply(cname)) {
+        try (final BackupWriter output = fWriter.apply(cname)) {
             backup(current, output, dialog);
         }
     }
 
-
-    private void backup( Collection current, BackupWriter output, BackupDialog dialog ) throws XMLDBException, IOException, SAXException
-    {
-        if( current == null ) {
+    private void backup(final Collection current, final BackupWriter output, final BackupDialog dialog) throws XMLDBException, IOException, SAXException {
+        if (current == null) {
             return;
         }
 
-        current.setProperty( OutputKeys.ENCODING, defaultOutputProperties.getProperty( OutputKeys.ENCODING ) );
-        current.setProperty( OutputKeys.INDENT, defaultOutputProperties.getProperty( OutputKeys.INDENT ) );
-        current.setProperty( EXistOutputKeys.EXPAND_XINCLUDES, defaultOutputProperties.getProperty( EXistOutputKeys.EXPAND_XINCLUDES ) );
-        current.setProperty( EXistOutputKeys.PROCESS_XSL_PI, defaultOutputProperties.getProperty( EXistOutputKeys.PROCESS_XSL_PI ) );
+        current.setProperty(OutputKeys.ENCODING, defaultOutputProperties.getProperty(OutputKeys.ENCODING));
+        current.setProperty(OutputKeys.INDENT, defaultOutputProperties.getProperty(OutputKeys.INDENT));
+        current.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, defaultOutputProperties.getProperty(EXistOutputKeys.EXPAND_XINCLUDES));
+        current.setProperty(EXistOutputKeys.PROCESS_XSL_PI, defaultOutputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI));
 
         // get resources and permissions
         final String[] resources = current.listResources();
@@ -270,135 +309,134 @@ public class Backup
         // do not sort: order is important because permissions need to be read in the same order below
         // Arrays.sort( resources );
 
-        final UserManagementService   mgtService   = (UserManagementService)current.getService( "UserManagementService", "1.0" );
-        final Permission[]            perms        = mgtService.listResourcePermissions();
-        final Permission              currentPerms = mgtService.getPermissions( current );
+        final UserManagementService mgtService = (UserManagementService) current.getService("UserManagementService", "1.0");
+        final Permission[] perms = mgtService.listResourcePermissions();
+        final Permission currentPerms = mgtService.getPermissions(current);
 
 
-        if( dialog != null ) {
-            dialog.setCollection( current.getName() );
-            dialog.setResourceCount( resources.length );
+        if (dialog != null) {
+            dialog.setCollection(current.getName());
+            dialog.setResourceCount(resources.length);
         }
-        final Writer        contents   = output.newContents();
+        final Writer contents = output.newContents();
 
         // serializer writes to __contents__.xml
-        final SAXSerializer serializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
-        serializer.setOutput( contents, contentsOutputProps );
+        final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+        serializer.setOutput(contents, contentsOutputProps);
 
         serializer.startDocument();
-        serializer.startPrefixMapping( "", Namespaces.EXIST_NS );
+        serializer.startPrefixMapping("", Namespaces.EXIST_NS);
 
         // write <collection> element
-        final EXistCollection cur  = (EXistCollection)current;
+        final EXistCollection cur = (EXistCollection) current;
         final AttributesImpl attr = new AttributesImpl();
 
         //The name should have come from an XmldbURI.toString() call
-        attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", current.getName() );
+        attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", current.getName());
         writeUnixStylePermissionAttributes(attr, currentPerms);
-        attr.addAttribute( Namespaces.EXIST_NS, "created", "created", "CDATA", "" + new DateTimeValue( cur.getCreationTime() ) );
-        attr.addAttribute( Namespaces.EXIST_NS, "version", "version", "CDATA", String.valueOf( currVersion ) );
-        
-        serializer.startElement( Namespaces.EXIST_NS, "collection", "collection", attr );
+        attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", "" + new DateTimeValue(cur.getCreationTime()));
+        attr.addAttribute(Namespaces.EXIST_NS, "version", "version", "CDATA", String.valueOf(currVersion));
 
-        if(currentPerms instanceof ACLPermission) {
-            writeACLPermission(serializer, (ACLPermission)currentPerms);
+        serializer.startElement(Namespaces.EXIST_NS, "collection", "collection", attr);
+
+        if (currentPerms instanceof ACLPermission) {
+            writeACLPermission(serializer, (ACLPermission) currentPerms);
         }
 
         // scan through resources
-        Resource       resource;
-        OutputStream   os;
+        Resource resource;
+        OutputStream os;
         BufferedWriter writer;
-        SAXSerializer  contentSerializer;
+        SAXSerializer contentSerializer;
 
-        for( int i = 0; i < resources.length; i++ ) {
+        for (int i = 0; i < resources.length; i++) {
 
             try {
 
-                if( "__contents__.xml".equals(resources[i]) ) {
+                if ("__contents__.xml".equals(resources[i])) {
 
                     //Skipping resources[i]
                     continue;
                 }
-                resource = current.getResource( resources[i] );
+                resource = current.getResource(resources[i]);
 
-                if( dialog != null ) {
-                    dialog.setResource( resources[i] );
-                    dialog.setProgress( i );
+                if (dialog != null) {
+                    dialog.setResource(resources[i]);
+                    dialog.setProgress(i);
                 }
-                
-                final String name 	= resources[i];
-                String filename = encode( URIUtils.urlDecodeUtf8( resources[i] ) );
-                
+
+                final String name = resources[i];
+                String filename = encode(URIUtils.urlDecodeUtf8(resources[i]));
+
                 // Check for special resource names which cause problems as filenames, and if so, replace the filename with a generated filename
-                
-                if( ".".equals(name.trim()) ) {
-                	filename = EXIST_GENERATED_FILENAME_DOT_FILENAME + i;
-                } else if( "..".equals(name.trim()) ) {
-                	filename = EXIST_GENERATED_FILENAME_DOTDOT_FILENAME + i;
+
+                if (".".equals(name.trim())) {
+                    filename = EXIST_GENERATED_FILENAME_DOT_FILENAME + i;
+                } else if ("..".equals(name.trim())) {
+                    filename = EXIST_GENERATED_FILENAME_DOTDOT_FILENAME + i;
                 }
 
-                os = output.newEntry( filename );
+                os = output.newEntry(filename);
 
-                if( resource instanceof ExtendedResource ) {
-                    ( (ExtendedResource)resource ).getContentIntoAStream( os );
+                if (resource instanceof ExtendedResource) {
+                    ((ExtendedResource) resource).getContentIntoAStream(os);
                 } else {
-                    writer            = new BufferedWriter( new OutputStreamWriter( os, "UTF-8" ) );
+                    writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
 
                     // write resource to contentSerializer
-                    contentSerializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
-                    contentSerializer.setOutput( writer, defaultOutputProperties );
-                    ( (EXistResource)resource ).setLexicalHandler( contentSerializer );
-                    ( (XMLResource)resource ).getContentAsSAX( contentSerializer );
-                    SerializerPool.getInstance().returnObject( contentSerializer );
+                    contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+                    contentSerializer.setOutput(writer, defaultOutputProperties);
+                    ((EXistResource) resource).setLexicalHandler(contentSerializer);
+                    ((XMLResource) resource).getContentAsSAX(contentSerializer);
+                    SerializerPool.getInstance().returnObject(contentSerializer);
                     writer.flush();
                 }
                 output.closeEntry();
-                final EXistResource ris = (EXistResource)resource;
+                final EXistResource ris = (EXistResource) resource;
 
                 //store permissions
                 attr.clear();
-                attr.addAttribute( Namespaces.EXIST_NS, "type", "type", "CDATA", resource.getResourceType() );
-                attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", name );
+                attr.addAttribute(Namespaces.EXIST_NS, "type", "type", "CDATA", resource.getResourceType());
+                attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", name);
                 writeUnixStylePermissionAttributes(attr, perms[i]);
                 Date date = ris.getCreationTime();
 
-                if( date != null ) {
-                    attr.addAttribute( Namespaces.EXIST_NS, "created", "created", "CDATA", "" + new DateTimeValue( date ) );
+                if (date != null) {
+                    attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", "" + new DateTimeValue(date));
                 }
                 date = ris.getLastModificationTime();
 
-                if( date != null ) {
-                    attr.addAttribute( Namespaces.EXIST_NS, "modified", "modified", "CDATA", "" + new DateTimeValue( date ) );
+                if (date != null) {
+                    attr.addAttribute(Namespaces.EXIST_NS, "modified", "modified", "CDATA", "" + new DateTimeValue(date));
                 }
 
-                attr.addAttribute( Namespaces.EXIST_NS, "filename", "filename", "CDATA", filename );
-                attr.addAttribute( Namespaces.EXIST_NS, "mimetype", "mimetype", "CDATA", encode( ( (EXistResource)resource ).getMimeType() ) );
+                attr.addAttribute(Namespaces.EXIST_NS, "filename", "filename", "CDATA", filename);
+                attr.addAttribute(Namespaces.EXIST_NS, "mimetype", "mimetype", "CDATA", encode(((EXistResource) resource).getMimeType()));
 
-                if( !"BinaryResource".equals(resource.getResourceType()) ) {
+                if (!"BinaryResource".equals(resource.getResourceType())) {
 
-                    if( ris.getDocType() != null ) {
+                    if (ris.getDocType() != null) {
 
-                        if( ris.getDocType().getName() != null ) {
-                            attr.addAttribute( Namespaces.EXIST_NS, "namedoctype", "namedoctype", "CDATA", ris.getDocType().getName() );
+                        if (ris.getDocType().getName() != null) {
+                            attr.addAttribute(Namespaces.EXIST_NS, "namedoctype", "namedoctype", "CDATA", ris.getDocType().getName());
                         }
 
-                        if( ris.getDocType().getPublicId() != null ) {
-                            attr.addAttribute( Namespaces.EXIST_NS, "publicid", "publicid", "CDATA", ris.getDocType().getPublicId() );
+                        if (ris.getDocType().getPublicId() != null) {
+                            attr.addAttribute(Namespaces.EXIST_NS, "publicid", "publicid", "CDATA", ris.getDocType().getPublicId());
                         }
 
-                        if( ris.getDocType().getSystemId() != null ) {
-                            attr.addAttribute( Namespaces.EXIST_NS, "systemid", "systemid", "CDATA", ris.getDocType().getSystemId() );
+                        if (ris.getDocType().getSystemId() != null) {
+                            attr.addAttribute(Namespaces.EXIST_NS, "systemid", "systemid", "CDATA", ris.getDocType().getSystemId());
                         }
                     }
                 }
-                serializer.startElement( Namespaces.EXIST_NS, "resource", "resource", attr );
-                if(perms[i] instanceof ACLPermission) {
-                    writeACLPermission(serializer, (ACLPermission)perms[i]);
+                serializer.startElement(Namespaces.EXIST_NS, "resource", "resource", attr);
+                if (perms[i] instanceof ACLPermission) {
+                    writeACLPermission(serializer, (ACLPermission) perms[i]);
                 }
-                serializer.endElement( Namespaces.EXIST_NS, "resource", "resource" );
-            }
-            catch( final XMLDBException e ) {
-                System.err.println( "Failed to backup resource " + resources[i] + " from collection " + current.getName() );
+                serializer.endElement(Namespaces.EXIST_NS, "resource", "resource");
+            } catch (final XMLDBException e) {
+                System.err.println("Failed to backup resource " + resources[i] + " from collection " + current.getName());
                 throw e;
             }
         }
@@ -406,7 +444,7 @@ public class Backup
         // write subcollections
         final String[] collections = current.listChildCollections();
 
-        for (String collection : collections) {
+        for (final String collection : collections) {
 
             if (current.getName().equals(XmldbURI.SYSTEM_COLLECTION) && "temp".equals(collection)) {
                 continue;
@@ -419,17 +457,17 @@ public class Backup
         }
 
         // close <collection>
-        serializer.endElement( Namespaces.EXIST_NS, "collection", "collection" );
-        serializer.endPrefixMapping( "" );
+        serializer.endElement(Namespaces.EXIST_NS, "collection", "collection");
+        serializer.endPrefixMapping("");
         serializer.endDocument();
         output.closeContents();
 
-        SerializerPool.getInstance().returnObject( serializer );
+        SerializerPool.getInstance().returnObject(serializer);
 
         // descend into subcollections
         Collection child;
 
-        for (String collection : collections) {
+        for (final String collection : collections) {
             child = current.getChildCollection(collection);
 
             if (child.getName().equals(XmldbURI.TEMP_COLLECTION)) {
@@ -441,66 +479,11 @@ public class Backup
         }
     }
 
-
-    public static void main( String[] args )
-    {
-        try {
-            final Class<?> cl       = Class.forName( "org.exist.xmldb.DatabaseImpl" );
-            final Database database = (Database)cl.newInstance();
-            database.setProperty( "create-database", "true" );
-            DatabaseManager.registerDatabase( database );
-            final Backup backup = new Backup( "admin", null, Paths.get("backup"), URIUtils.encodeXmldbUriFor( args[0] ) );
-            backup.backup( false, null );
-        }
-        catch( final Throwable e ) {
-            e.printStackTrace();
-            System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
-        }
-    }
-
-    public static void writeUnixStylePermissionAttributes(AttributesImpl attr, Permission permission) {
-        if (permission == null)
-            {return;}
-
-        try {
-            attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", permission.getOwner().getName());
-            attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", permission.getGroup().getName());
-            attr.addAttribute(Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString(permission.getMode()));
-        } catch (final Exception e) {
-
-        }
-    }
-
-    public static void writeACLPermission(SAXSerializer serializer, ACLPermission acl) throws SAXException {
-        if (acl == null)
-            {return;}
-        final AttributesImpl attr = new AttributesImpl();
-        attr.addAttribute(Namespaces.EXIST_NS, "entries", "entries", "CDATA", Integer.toString(acl.getACECount()));
-        attr.addAttribute(Namespaces.EXIST_NS, "version", "version", "CDATA", Short.toString(acl.getVersion()));
-
-        serializer.startElement(Namespaces.EXIST_NS, "acl", "acl", attr );
-
-        for(int i = 0; i < acl.getACECount(); i++) {
-            attr.clear();
-            attr.addAttribute(Namespaces.EXIST_NS, "index", "index", "CDATA", Integer.toString(i));
-            attr.addAttribute(Namespaces.EXIST_NS, "target", "target", "CDATA",  acl.getACETarget(i).name());
-            attr.addAttribute(Namespaces.EXIST_NS, "who", "who", "CDATA", acl.getACEWho(i));
-            attr.addAttribute(Namespaces.EXIST_NS, "access_type", "access_type", "CDATA", acl.getACEAccessType(i).name());
-            attr.addAttribute(Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString(acl.getACEMode(i)));
-
-            serializer.startElement(Namespaces.EXIST_NS, "ace", "ace", attr);
-            serializer.endElement(Namespaces.EXIST_NS, "ace", "ace");
-        }
-
-        serializer.endElement(Namespaces.EXIST_NS, "acl", "acl");
-    }
-
     /**
      * Create a new thread for this backup instance.
      *
      * @param threadName the name of the thread
-     * @param runnable the function to execute on the thread
-     *
+     * @param runnable   the function to execute on the thread
      * @return the thread
      */
     private Thread newBackupThread(final String threadName, final Runnable runnable) {
@@ -522,7 +505,7 @@ public class Backup
         public void run() {
             try {
                 backup.backup(collection, dialog);
-                dialog.setVisible( false );
+                dialog.setVisible(false);
             } catch (final Exception e) {
                 e.printStackTrace();
             }
