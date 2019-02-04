@@ -36,18 +36,14 @@
 
         <!-- not needed -->
         <exclude module="batik-anim"/>
-        <exclude module="batik-awt-util"/>
-        <exclude module="batik-constants"/>
         <exclude module="batik-dom"/>
         <exclude module="batik-ext"/>
         <exclude module="batik-extension"/>
         <exclude module="batik-gvt"/>
-        <exclude module="batik-i18n"/>
         <exclude module="batik-parser"/>
         <exclude module="batik-script"/>
         <exclude module="batik-svg-dom"/>
-        <exclude module="vbatik-xml"/>
-        <exclude module="fontbox"/>
+        <exclude module="batik-xml"/>
 
     </dependencies>
 
