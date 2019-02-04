@@ -83,3 +83,4 @@ extensions/modules/xslfo/lib
 extensions/modules/memcached/lib
 extensions/modules/xmpp/lib
 extensions/modules/cqlparser/lib
+extensions/debuggee/lib

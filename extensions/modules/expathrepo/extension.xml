@@ -30,15 +30,5 @@
 
     <!-- import common.xml here -->
     <import file="${existhome.dir}/build/scripts/extensions-common.xml"/>
-
-    <target name="prepare"  if="${include.module.expathrepo}">
-        <echo message="Copying expathrepo files"/>
-
-        <copy todir="${build.classes.dir}/org/exist/xquery/modules/expathrepo">
-            <fileset dir="${src.dir}/org/exist/xquery/modules/expathrepo">
-                <include name="*.xql"/>
-            </fileset>
-        </copy>
-    </target>
-
+    
 </project>

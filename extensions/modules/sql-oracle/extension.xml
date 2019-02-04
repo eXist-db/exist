@@ -41,7 +41,7 @@
         </and>
     </condition>
 
-    <!-- Workaround : copy sql module to local location so it is possible to build   -->
+    <!-- Workaround : temp. copy sql module to local location so it is possible to build   -->
     <target name="all" if="include.module.oracle_ext">
         <mkdir dir="lib"/>
         <copy todir="lib">
@@ -52,7 +52,5 @@
             <fileset dir="lib" includes="exist-sql-*.jar" excludes="*oracle*"/>
         </delete>
     </target>
-
-
 
 </project>

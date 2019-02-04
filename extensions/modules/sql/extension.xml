@@ -31,5 +31,4 @@
     <!-- import common.xml here -->
     <import file="${existhome.dir}/build/scripts/extensions-common.xml"/>
 
-
 </project>
