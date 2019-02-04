@@ -22,8 +22,7 @@
     <info organisation="org.exist" module="xmpp"/>
 
     <dependencies>
-
         <dependency org="org.igniterealtime.smack" name="smack" rev="3.1.0" conf="*->*,!sources,!javadoc"/>
-
     </dependencies>
+
 </ivy-module>

@@ -31,12 +31,4 @@
     <!-- import common.xml here -->
     <import file="${existhome.dir}/build/scripts/extensions-common.xml"/>
 
-    <target name="prepare"  if="${include.module.file}">
-        <echo message="Copying file module files"/>
-
-        <copy file="${src.dir}/org/exist/xquery/modules/file/repo.xsl"
-              tofile="${build.classes.dir}/org/exist/xquery/modules/file/repo.xsl"/>
-
-    </target>
-
 </project>

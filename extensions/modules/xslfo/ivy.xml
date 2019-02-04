@@ -19,7 +19,7 @@
   -->
 <ivy-module version="2.0">
 
-    <info organisation="org.exist" module="tika"/>
+    <info organisation="org.exist" module="xslfo"/>
 
     <dependencies>
 
@@ -50,4 +50,5 @@
         <exclude module="fontbox"/>
 
     </dependencies>
+
 </ivy-module>
