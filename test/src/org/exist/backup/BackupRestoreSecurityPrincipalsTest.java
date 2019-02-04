@@ -338,5 +338,13 @@ public class BackupRestoreSecurityPrincipalsTest {
         @Override
         public void setCurrentBackup(String currentBackup) {
         }
+
+        @Override
+        public void setNumberOfFiles(long nr) {
+        }
+
+        @Override
+        public void incrementFileCounter() {
+        }
     }
 }

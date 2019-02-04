@@ -25,7 +25,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
-
 import java.nio.file.Path;
 import java.util.Properties;
 
@@ -55,5 +54,5 @@ public interface BackupWriter extends Closeable
 
     void setProperties( Properties properties ) throws IOException;
 
-    public void addToRoot(String name, Path file) throws IOException;
+    void addToRoot(String name, Path file) throws IOException;
 }

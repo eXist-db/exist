@@ -22,12 +22,17 @@
 package org.exist.backup;
 
 import org.exist.EXistException;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.SystemExitCodes;
 import org.exist.xquery.TerminatedException;
+import se.softhouse.jargo.Argument;
+import se.softhouse.jargo.ArgumentException;
+import se.softhouse.jargo.CommandLineParser;
+import se.softhouse.jargo.ParsedArguments;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,12 +41,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
-
-import org.exist.security.PermissionDeniedException;
-import se.softhouse.jargo.Argument;
-import se.softhouse.jargo.ArgumentException;
-import se.softhouse.jargo.CommandLineParser;
-import se.softhouse.jargo.ParsedArguments;
 
 import static org.exist.util.ArgumentUtil.getBool;
 import static org.exist.util.ArgumentUtil.getOpt;
@@ -94,7 +93,7 @@ public class ExportMain {
 
     protected static BrokerPool startDB(final Optional<Path> configFile) {
         try {
-            Configuration config;
+            final Configuration config;
 
             if (configFile.isPresent()) {
                 config = new Configuration(configFile.get().toAbsolutePath().toString(), Optional.empty());
@@ -156,7 +155,7 @@ public class ExportMain {
                 errors = checker.checkAll(new CheckCallback());
             }
 
-            if (errors != null && errors.size() > 0) {
+            if (errors != null && !errors.isEmpty()) {
                 System.err.println("ERRORS FOUND.");
                 retval = 1;
             } else {
@@ -195,26 +194,26 @@ public class ExportMain {
 
         private boolean verbose = false;
 
-        public Callback(boolean verbose) {
+        public Callback(final boolean verbose) {
             this.verbose = verbose;
         }
 
         @Override
-        public void startCollection(String path) {
+        public void startCollection(final String path) {
             if (verbose) {
                 System.out.println("Entering collection " + path + " ...");
             }
         }
 
         @Override
-        public void startDocument(String name, int count, int docsCount) {
+        public void startDocument(final String name, final int count, final int docsCount) {
             if (verbose) {
                 System.out.println("Writing document " + name + " [" + (count + 1) + " of " + docsCount + ']');
             }
         }
 
         @Override
-        public void error(String message, Throwable exception) {
+        public void error(final String message, final Throwable exception) {
             System.err.println(message);
 
             if (exception != null) {
@@ -226,15 +225,15 @@ public class ExportMain {
 
     private static class CheckCallback implements org.exist.backup.ConsistencyCheck.ProgressCallback {
         @Override
-        public void startDocument(String name, int current, int count) {
+        public void startDocument(final String name, final int current, final int count) {
         }
 
         @Override
-        public void startCollection(String path) {
+        public void startCollection(final String path) {
         }
 
         @Override
-        public void error(ErrorReport error) {
+        public void error(final ErrorReport error) {
             System.out.println(error.toString());
         }
     }

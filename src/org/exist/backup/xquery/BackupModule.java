@@ -21,10 +21,11 @@
  */
 package org.exist.backup.xquery;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -46,7 +47,7 @@ public class BackupModule extends AbstractInternalModule
         new FunctionDef( RetrieveBackup.signature, RetrieveBackup.class )
     };
 
-    public BackupModule(Map<String, List<? extends Object>> parameters)
+    public BackupModule(final Map<String, List<?>> parameters)
     {
         super( functions, parameters, true );
     }

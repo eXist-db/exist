@@ -24,34 +24,37 @@ package org.exist.backup.restore.listener;
 import java.util.Observable;
 
 /**
- *
  * @author Adam Retter <adam@exist-db.org>
  */
 public interface RestoreListener {
-    
+
     void createCollection(String collection);
-    
+
     void restored(String resource);
-    
+
     void info(String message);
-    
+
     void warn(String message);
-    
+
     void error(String message);
-    
+
     String warningsAndErrorsAsString();
 
     boolean hasProblems();
 
-    public void setCurrentCollection(String currentCollectionName);
+    void setCurrentCollection(String currentCollectionName);
 
-    public void setCurrentResource(String currentResourceName);
-    
-    public void restoreStarting();
+    void setCurrentResource(String currentResourceName);
 
-    public void restoreFinished();
+    void restoreStarting();
 
-    public void observe(Observable observable);
+    void restoreFinished();
 
-    public void setCurrentBackup(String currentBackup);
+    void observe(Observable observable);
+
+    void setCurrentBackup(String currentBackup);
+
+    void setNumberOfFiles(long nr);
+
+    void incrementFileCounter();
 }

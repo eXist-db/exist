@@ -26,20 +26,104 @@ import java.util.List;
 import java.util.Observable;
 
 /**
- *
  * @author Adam Retter <adam@exist-db.org>
  */
 public abstract class AbstractRestoreListener implements RestoreListener {
 
-    private final List<Problem> problems = new ArrayList<Problem>();
+    private final List<Problem> problems = new ArrayList<>();
     private String currentCollectionName;
     private String currentResourceName;
     private List<Observable> observables;
-    
+
+    @Override
+    public void restoreStarting() {
+        info("Starting restore of backup...");
+    }
+
+    @Override
+    public void restoreFinished() {
+        info("Finished restore of backup.");
+    }
+
+    @Override
+    public void createCollection(final String collection) {
+        info("Creating collection " + collection);
+    }
+
+    @Override
+    public void setCurrentBackup(final String currentBackup) {
+        info("Processing backup: " + currentBackup);
+    }
+
+    @Override
+    public void setCurrentCollection(final String currentCollectionName) {
+        this.currentCollectionName = currentCollectionName;
+    }
+
+    @Override
+    public void setCurrentResource(final String currentResourceName) {
+        this.currentResourceName = currentResourceName;
+    }
+
+    @Override
+    public void observe(final Observable observable) {
+
+        if (observables == null) {
+            observables = new ArrayList<>();
+        }
+
+        if (!observables.contains(observable)) {
+            observables.add(observable);
+        }
+    }
+
+    @Override
+    public void restored(final String resource) {
+        info("Restored " + resource);
+    }
+
+    @Override
+    public void warn(final String message) {
+        problems.add(new Warning(message));
+    }
+
+    @Override
+    public void error(final String message) {
+        problems.add(new Error(message));
+    }
+
+    @Override
+    public boolean hasProblems() {
+        return !problems.isEmpty();
+    }
+
+    @Override
+    public String warningsAndErrorsAsString() {
+        final StringBuilder builder = new StringBuilder();
+        builder.append("------------------------------------\n");
+        builder.append("Problems occured found during restore:\n");
+        for (final Problem problem : problems) {
+            builder.append(problem.toString());
+            builder.append(System.getProperty("line.separator"));
+        }
+        return builder.toString();
+    }
+
+    @Override
+    public void setNumberOfFiles(long nr){
+        // NOP
+    }
+
+    @Override
+    public void incrementFileCounter(){
+        // NOP
+    }
+
     private abstract class Problem {
         private final String message;
-        public Problem(String message) {
-           this.message = message;
+
+        public Problem(final String message) {
+            this.message = message;
         }
 
         protected String getMessage() {
@@ -48,7 +132,7 @@ public abstract class AbstractRestoreListener implements RestoreListener {
     }
 
     private class Error extends Problem {
-        public Error(String message) {
+        public Error(final String message) {
             super(message);
         }
 
@@ -59,7 +143,7 @@ public abstract class AbstractRestoreListener implements RestoreListener {
     }
 
     private class Warning extends Problem {
-        public Warning(String message) {
+        public Warning(final String message) {
             super(message);
         }
 
@@ -67,79 +151,5 @@ public abstract class AbstractRestoreListener implements RestoreListener {
         public String toString() {
             return "WARN: " + getMessage();
         }
-    }
-
-    @Override
-    public void restoreStarting() {
-        info("Starting restore of backup...");
-    }
-    
-    @Override
-    public void restoreFinished() {
-        info("Finished restore of backup.");
-    }
-    
-    @Override
-    public void createCollection(String collection) {
-        info("Creating collection " + collection);
-    }
-
-    @Override
-    public void setCurrentBackup(String currentBackup) {
-        info("Processing backup: " + currentBackup);
-    }
-    
-    @Override
-    public void setCurrentCollection(String currentCollectionName) {
-        this.currentCollectionName = currentCollectionName;
-    }
-
-    @Override
-    public void setCurrentResource(String currentResourceName) {
-        this.currentResourceName = currentResourceName;
-    }
-
-    @Override
-    public void observe(Observable observable) {
-        
-        if(observables == null) {
-            observables = new ArrayList<Observable>();
-        }
-        
-        if(!observables.contains(observable)) {
-            observables.add(observable);
-        }
-    }
-    
-    @Override
-    public void restored(String resource) {
-        info("Restored " + resource);
-    }
-
-    @Override
-    public void warn(String message) {
-        problems.add(new Warning(message));
-    }
-
-    @Override
-    public void error(String message) {
-        problems.add(new Error(message));
-    }
-
-    @Override
-    public boolean hasProblems() {
-        return problems.size() > 0;
-    }
-
-    @Override
-    public String warningsAndErrorsAsString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("------------------------------------\n");
-        builder.append("Problems occured found during restore:\n");
-        for(final Problem problem : problems) {
-            builder.append(problem.toString());
-            builder.append(System.getProperty("line.separator"));
-        }
-        return builder.toString();
     }
 }

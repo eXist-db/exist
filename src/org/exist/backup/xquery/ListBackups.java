@@ -21,9 +21,6 @@
  */
 package org.exist.backup.xquery;
 
-import org.exist.util.FileUtils;
-import org.xml.sax.helpers.AttributesImpl;
-
 import org.exist.Namespaces;
 import org.exist.backup.BackupDescriptor;
 import org.exist.backup.BackupDirectory;
@@ -32,30 +29,19 @@ import org.exist.backup.ZipArchiveBackupDescriptor;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.storage.BrokerPool;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.util.FileUtils;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
+import org.xml.sax.helpers.AttributesImpl;
 
-import java.io.File;
 import java.io.IOException;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 
 public class ListBackups extends BasicFunction
@@ -69,12 +55,12 @@ public class ListBackups extends BasicFunction
     public final static QName             DIRECTORY_ELEMENT = new QName( "directory", Namespaces.EXIST_NS, "" );
     public final static QName             BACKUP_ELEMENT    = new QName( "backup", Namespaces.EXIST_NS, "" );
 
-    public ListBackups( XQueryContext context )
+    public ListBackups(final XQueryContext context )
     {
         super( context, signature );
     }
 
-    public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence ) throws XPathException
     {
         if(!context.getEffectiveUser().hasDbaRole()) {
             throw new XPathException("You must be a DBA to list available backups");
@@ -102,7 +88,7 @@ public class ListBackups extends BasicFunction
                     matcher.reset(FileUtils.fileName(file));
 
                     if( matcher.matches() ) {
-                        BackupDescriptor descriptor;
+                        final BackupDescriptor descriptor;
 
                         try {
 
@@ -119,10 +105,10 @@ public class ListBackups extends BasicFunction
                                 attrs.addAttribute( "", "file", "file", "CDATA", FileUtils.fileName(file));
                                 builder.startElement( BACKUP_ELEMENT, attrs );
 
-                                for( final Iterator<Object> iter = properties.keySet().iterator(); iter.hasNext(); ) {
-                                    final String key = iter.next().toString();
-                                    builder.startElement( new QName( key, Namespaces.EXIST_NS, "" ), null );
-                                    builder.characters( (String)properties.get( key ) );
+                                for (final Object o : properties.keySet()) {
+                                    final String key = o.toString();
+                                    builder.startElement(new QName(key, Namespaces.EXIST_NS, ""), null);
+                                    builder.characters((String) properties.get(key));
                                     builder.endElement();
                                 }
                                 builder.endElement();
