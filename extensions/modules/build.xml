@@ -28,12 +28,6 @@
 
     <!-- Modules (in alphabetical order) -->
 
-	<condition property="include.module.oracle_ext">
-	    <and>
-            <istrue value="${include.module.oracle}"/>
-            <available classname="oracle.jdbc.OracleTypes"/>
-        </and>
-    </condition>
  
     <path id="classpath.core">
         <fileset dir="${top.dir}/${lib.core}">
