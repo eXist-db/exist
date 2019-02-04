@@ -43,6 +43,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import com.evolvedbinary.j8fu.lazy.LazyVal;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
@@ -178,7 +179,7 @@ public abstract class Serializer implements XMLReader {
 
     private ErrorHandler errorHandler = null;
 
-    protected SAXTransformerFactory factory;
+    private final LazyVal<SAXTransformerFactory> factory;
     protected boolean createContainerElements = false;
 
     protected Properties defaultProperties = new Properties();
@@ -203,9 +204,10 @@ public abstract class Serializer implements XMLReader {
 		this(broker, config, null);
 	}
 
-	public Serializer(DBBroker broker, Configuration config, List<String> chainOfReceivers) {
+	public Serializer(final DBBroker broker, Configuration config, List<String> chainOfReceivers) {
 		this.broker = broker;
-		factory = TransformerFactoryAllocator.getTransformerFactory(broker.getBrokerPool());
+		this.factory = new LazyVal<>(() -> TransformerFactoryAllocator.getTransformerFactory(broker.getBrokerPool()));
+
 		xinclude = new XIncludeFilter(this);
         customMatchListeners = new CustomMatchListenerFactory(broker, config, chainOfReceivers);
 		receiver = xinclude;
@@ -723,7 +725,7 @@ public abstract class Serializer implements XMLReader {
         // does stylesheet point to an external resource?
         if (externalUri!=null) {
             final StreamSource source = new StreamSource(externalUri.toString());
-            templates = factory.newTemplates(source);
+            this.templates = factory.get().newTemplates(source);
             // read stylesheet from the database
         } else {
             // if stylesheet is relative, add path to the
@@ -745,16 +747,15 @@ public abstract class Serializer implements XMLReader {
 
             //TODO: use xmldbURI
             if (xsl.getCollection() != null) {
-                factory.setURIResolver(
-                        new InternalURIResolver(xsl.getCollection().getURI().toString()));
+                factory.get().setURIResolver(new InternalURIResolver(xsl.getCollection().getURI().toString()));
             }
 
             // save handlers
             Receiver oldReceiver = receiver;
 
             // compile stylesheet
-            factory.setErrorListener(new ErrorListener());
-            final TemplatesHandler handler = factory.newTemplatesHandler();
+            factory.get().setErrorListener(new ErrorListener());
+            final TemplatesHandler handler = factory.get().newTemplatesHandler();
             receiver = new ReceiverToSAX(handler);
             try {
                 this.serializeToReceiver(xsl, true);
@@ -765,12 +766,13 @@ public abstract class Serializer implements XMLReader {
 
             // restore handlers
             receiver = oldReceiver;
-            factory.setURIResolver(null);
+            factory.get().setURIResolver(null);
         }
         LOG.debug(
                 "compiling stylesheet took " + (System.currentTimeMillis() - start));
-        if(templates != null)
-            {xslHandler = factory.newTransformerHandler(templates);}
+        if(templates != null) {
+        	xslHandler = factory.get().newTransformerHandler(templates);
+        }
 //			xslHandler.getTransformer().setOutputProperties(outputProperties);
         checkStylesheetParams();
 	}
