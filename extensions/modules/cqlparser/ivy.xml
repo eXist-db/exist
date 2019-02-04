@@ -22,8 +22,7 @@
     <info organisation="org.exist" module="cqlparser"/>
 
     <dependencies>
-
         <dependency org="org.z3950.zing" name="cql-java" rev="1.10" conf="*->*,!sources,!javadoc"/>
-
     </dependencies>
+
 </ivy-module>
