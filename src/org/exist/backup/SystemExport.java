@@ -19,19 +19,14 @@
  */
 package org.exist.backup;
 
-import org.exist.collections.MutableCollection;
-import org.exist.dom.QName;
-import org.exist.dom.persistent.DocumentMetadata;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.StoredNode;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DefaultDocumentSet;
+import com.evolvedbinary.j8fu.function.FunctionE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
+import org.exist.collections.MutableCollection;
+import org.exist.dom.QName;
+import org.exist.dom.persistent.*;
 import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
 import org.exist.numbering.NodeId;
@@ -53,7 +48,6 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.util.UTF8;
-import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.exist.util.serializer.SAXSerializer;
@@ -75,11 +69,7 @@ import org.xml.sax.helpers.NamespaceSupport;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.OutputKeys;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -122,7 +112,7 @@ public class SystemExport {
     private final Properties defaultOutputProperties = new Properties();
     private final Properties contentsOutputProps = new Properties();
 
-    private DBBroker broker;
+    private final DBBroker broker;
     private StatusCallback callback = null;
     private boolean directAccess = false;
     private ProcessMonitor.Monitor monitor = null;
@@ -159,7 +149,7 @@ public class SystemExport {
         }
     }
 
-    public Path export(String targetDir, boolean incremental, boolean zip, List<ErrorReport> errorList) {
+    public Path export(final String targetDir, final boolean incremental, final boolean zip, final List<ErrorReport> errorList) {
         return (export(targetDir, incremental, -1, zip, errorList));
     }
 
@@ -176,7 +166,7 @@ public class SystemExport {
      * @param errorList   a list of {@link ErrorReport} objects as returned by methods in {@link ConsistencyCheck}.
      * @return DOCUMENT ME!
      */
-    public Path export(String targetDir, boolean incremental, int maxInc, boolean zip, List<ErrorReport> errorList) {
+    public Path export(final String targetDir, boolean incremental, final int maxInc, final boolean zip, final List<ErrorReport> errorList) {
         Path backupFile = null;
 
         try {
@@ -261,7 +251,7 @@ public class SystemExport {
     }
 
 
-    private void reportError(String message, Throwable e) {
+    private void reportError(final String message, final Throwable e) {
         if (callback != null) {
             callback.error("EXPORT: " + message, e);
         }
@@ -270,7 +260,7 @@ public class SystemExport {
     }
 
 
-    private static boolean isDamaged(DocumentImpl doc, List<ErrorReport> errorList) {
+    private static boolean isDamaged(final DocumentImpl doc, final List<ErrorReport> errorList) {
         if (errorList == null) {
             return (false);
         }
@@ -286,7 +276,7 @@ public class SystemExport {
 
 
     @SuppressWarnings("unused")
-    private static boolean isDamaged(Collection collection, List<ErrorReport> errorList) {
+    private static boolean isDamaged(final Collection collection, final List<ErrorReport> errorList) {
         if (errorList == null) {
             return (false);
         }
@@ -301,7 +291,7 @@ public class SystemExport {
     }
 
 
-    private static boolean isDamagedChild(XmldbURI uri, List<ErrorReport> errorList) {
+    private static boolean isDamagedChild(final XmldbURI uri, final List<ErrorReport> errorList) {
         if (errorList == null) {
             return (false);
         }
@@ -323,7 +313,7 @@ public class SystemExport {
      * @param docs      a document set containing all the documents which were exported regularily. the method will ignore those.
      * @param errorList a list of {@link org.exist.backup.ErrorReport} objects as returned by methods in {@link ConsistencyCheck}
      */
-    private void exportOrphans(BackupWriter output, DocumentSet docs, List<ErrorReport> errorList) throws IOException {
+    private void exportOrphans(final BackupWriter output, final DocumentSet docs, final List<ErrorReport> errorList) throws IOException {
         output.newCollection("/db/__lost_and_found__");
 
         try(final Writer contents = output.newContents()) {
@@ -373,7 +363,7 @@ public class SystemExport {
      * @throws SAXException
      * @throws TerminatedException DOCUMENT ME!
      */
-    private void export(BackupHandler bh, Collection current, BackupWriter output, Date date, BackupDescriptor prevBackup, List<ErrorReport> errorList, MutableDocumentSet docs) throws IOException, SAXException, TerminatedException, PermissionDeniedException {
+    private void export(final BackupHandler bh, final Collection current, final BackupWriter output, final Date date, final BackupDescriptor prevBackup, final List<ErrorReport> errorList, final MutableDocumentSet docs) throws IOException, SAXException, TerminatedException, PermissionDeniedException {
 //        if( callback != null ) {
 //            callback.startCollection( current.getURI().toString() );
 //        }
@@ -482,7 +472,7 @@ public class SystemExport {
     }
 
 
-    private void exportDocument(BackupHandler bh, BackupWriter output, Date date, BackupDescriptor prevBackup, SAXSerializer serializer, int docsCount, int count, DocumentImpl doc) throws IOException, SAXException, TerminatedException {
+    private void exportDocument(final BackupHandler bh, final BackupWriter output, final Date date, final BackupDescriptor prevBackup, final SAXSerializer serializer, final int docsCount, final int count, final DocumentImpl doc) throws IOException, SAXException, TerminatedException {
         if (callback != null) {
             callback.startDocument(doc.getFileURI().toString(), count, docsCount);
         }
@@ -549,8 +539,8 @@ public class SystemExport {
         }
 
         try {
-            String created;
-            String modified;
+            final String created;
+            final String modified;
 
             // metadata could be damaged
             if (metadata != null) {
@@ -609,7 +599,7 @@ public class SystemExport {
      * @param doc      the document to serialize
      * @param receiver the output handler
      */
-    private void writeXML(DocumentImpl doc, Receiver receiver) {
+    private void writeXML(final DocumentImpl doc, final Receiver receiver) {
         try {
             char[] ch;
             int nsdecls;
@@ -726,7 +716,7 @@ public class SystemExport {
         return (collectionCount);
     }
 
-    public static interface StatusCallback {
+    public interface StatusCallback {
         void startCollection(String path) throws TerminatedException;
 
 
@@ -737,17 +727,17 @@ public class SystemExport {
     }
 
     private class CollectionCallback implements BTreeCallback {
-        private BackupWriter writer;
-        private BackupDescriptor prevBackup;
-        private Date date;
-        private List<ErrorReport> errors;
-        private MutableDocumentSet docs = new DefaultDocumentSet();
+        private final BackupWriter writer;
+        private final BackupDescriptor prevBackup;
+        private final Date date;
+        private final List<ErrorReport> errors;
+        private final MutableDocumentSet docs = new DefaultDocumentSet();
         private int collectionCount = 0;
-        private boolean exportCollection;
+        private final boolean exportCollection;
         private int lastPercentage = -1;
-        private Agent jmxAgent = AgentFactory.getInstance();
+        private final Agent jmxAgent = AgentFactory.getInstance();
 
-        private CollectionCallback(BackupWriter writer, Date date, BackupDescriptor prevBackup, List<ErrorReport> errorList, boolean exportCollection) {
+        private CollectionCallback(final BackupWriter writer, final Date date, final BackupDescriptor prevBackup, final List<ErrorReport> errorList, final boolean exportCollection) {
             this.writer = writer;
             this.errors = errorList;
             this.date = date;
@@ -755,7 +745,7 @@ public class SystemExport {
             this.exportCollection = exportCollection;
         }
 
-        public boolean indexInfo(Value value, long pointer) throws TerminatedException {
+        public boolean indexInfo(final Value value, final long pointer) throws TerminatedException {
             String uri = null;
 
             try {
@@ -781,7 +771,7 @@ public class SystemExport {
                     if (prevBackup != null) {
                         bd = prevBackup.getBackupDescriptor(uri);
                     }
-                    int percentage = 100 * (collectionCount + 1) / (getCollectionCount() + 1);
+                    final int percentage = 100 * (collectionCount + 1) / (getCollectionCount() + 1);
 
                     if ((jmxAgent != null) && (percentage != lastPercentage)) {
                         lastPercentage = percentage;
@@ -808,14 +798,14 @@ public class SystemExport {
 
 
     private class DocumentCallback implements BTreeCallback {
-        private DocumentSet exportedDocs;
+        private final DocumentSet exportedDocs;
         private Set<String> writtenDocs = null;
-        private SAXSerializer serializer;
-        private BackupWriter output;
-        private Date date;
-        private BackupDescriptor prevBackup;
+        private final SAXSerializer serializer;
+        private final BackupWriter output;
+        private final Date date;
+        private final BackupDescriptor prevBackup;
 
-        private DocumentCallback(BackupWriter output, SAXSerializer serializer, Date date, BackupDescriptor prevBackup, DocumentSet exportedDocs, boolean checkNames) {
+        private DocumentCallback(final BackupWriter output, final SAXSerializer serializer, final Date date, final BackupDescriptor prevBackup, final DocumentSet exportedDocs, final boolean checkNames) {
             this.exportedDocs = exportedDocs;
             this.serializer = serializer;
             this.output = output;
@@ -823,11 +813,11 @@ public class SystemExport {
             this.prevBackup = prevBackup;
 
             if (checkNames) {
-                writtenDocs = new TreeSet<String>();
+                writtenDocs = new TreeSet<>();
             }
         }
 
-        public boolean indexInfo(Value key, long pointer) throws TerminatedException {
+        public boolean indexInfo(final Value key, final long pointer) throws TerminatedException {
             final CollectionStore store = (CollectionStore) ((NativeBroker) broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             final int docId = CollectionStore.DocumentKey.getDocumentId(key);
 
@@ -868,16 +858,16 @@ public class SystemExport {
 
 
     private class CheckDeletedHandler extends DefaultHandler {
-        private Collection collection;
-        private SAXSerializer serializer;
+        private final Collection collection;
+        private final SAXSerializer serializer;
 
-        private CheckDeletedHandler(Collection collection, SAXSerializer serializer) {
+        private CheckDeletedHandler(final Collection collection, final SAXSerializer serializer) {
             this.collection = collection;
             this.serializer = serializer;
         }
 
         @Override
-        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
             if (uri.equals(Namespaces.EXIST_NS)) {
 
                 try {

@@ -19,21 +19,20 @@
  */
 package org.exist.backup;
 
-import org.exist.dom.persistent.*;
-import org.exist.security.Account;
-import org.exist.security.Group;
-import org.exist.security.Permission;
-import org.exist.storage.StorageAddress;
-import org.w3c.dom.Node;
-
 import org.exist.collections.Collection;
+import org.exist.dom.persistent.*;
 import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
 import org.exist.numbering.NodeId;
+import org.exist.security.Account;
+import org.exist.security.Group;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.AccountImpl;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
+import org.exist.storage.StorageAddress;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.Value;
 import org.exist.storage.dom.DOMFile;
@@ -42,16 +41,13 @@ import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
-
-import java.io.IOException;
-
-import java.util.*;
+import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-
-import org.exist.security.PermissionDeniedException;
+import java.io.IOException;
+import java.util.*;
 
 
 public class ConsistencyCheck {
@@ -492,7 +488,7 @@ public class ConsistencyCheck {
         private final Agent jmxAgent = AgentFactory.getInstance();
         private final List<DocumentImpl> docs = new ArrayList<>(100);
 
-        private DocumentCallback(@Nullable final List<ErrorReport> errors, @Nullable final ProgressCallback progress, boolean checkDocs) {
+        private DocumentCallback(@Nullable final List<ErrorReport> errors, @Nullable final ProgressCallback progress, final boolean checkDocs) {
             this.errors = errors;
             this.progress = progress;
             this.checkDocs = checkDocs;
@@ -520,7 +516,7 @@ public class ConsistencyCheck {
                     if (progress != null) {
                         progress.startDocument(doc.getFileURI().toString(), docCount, getDocumentCount());
                     }
-                    int percentage = 100 * (docCount + 1) / (getDocumentCount() + 1);
+                    final int percentage = 100 * (docCount + 1) / (getDocumentCount() + 1);
 
                     if ((jmxAgent != null) && (percentage != lastPercentage)) {
                         lastPercentage = percentage;
@@ -558,7 +554,7 @@ public class ConsistencyCheck {
          * check each of them.
          */
         public void checkDocs() {
-            final DocumentImpl documents[] = new DocumentImpl[docs.size()];
+            final DocumentImpl[] documents = new DocumentImpl[docs.size()];
             docs.toArray(documents);
             Arrays.sort(documents, (d1, d2) -> {
                 final long a1 = StorageAddress.pageFromPointer(d1.getFirstChildAddress());

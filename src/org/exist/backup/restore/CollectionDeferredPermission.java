@@ -37,7 +37,7 @@ class CollectionDeferredPermission extends AbstractDeferredPermission<Collection
     
     private final static Logger LOG = LogManager.getLogger(CollectionDeferredPermission.class);
     
-    public CollectionDeferredPermission(RestoreListener listener, Collection collection, String owner, String group, Integer mode) {
+    public CollectionDeferredPermission(final RestoreListener listener, final Collection collection, final String owner, final String group, final Integer mode) {
         super(listener, collection, owner, group, mode);
     }
 

@@ -20,36 +20,20 @@
  */
 package org.exist.backup;
 
+import org.exist.client.Messages;
+import org.exist.client.MimeTypeFileFilter;
+import org.exist.security.PermissionDeniedException;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
-import org.exist.client.Messages;
-import org.exist.client.MimeTypeFileFilter;
-import org.exist.xmldb.XmldbURI;
-
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.HeadlessException;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
+import javax.swing.*;
+import java.awt.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
-
 import java.util.Vector;
-
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
-import org.exist.security.PermissionDeniedException;
 
 
 public class CreateBackupDialog extends JPanel {
@@ -136,12 +120,7 @@ public class CreateBackupDialog extends JPanel {
 
 
         final JButton select = new JButton(Messages.getString("CreateBackupDialog.3"));
-        select.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                actionSelect();
-            }
-        });
+        select.addActionListener(e -> actionSelect());
         c.gridx = 2;
         c.gridy = 1;
         c.anchor = GridBagConstraints.EAST;
@@ -169,7 +148,7 @@ public class CreateBackupDialog extends JPanel {
 
 
     private Vector<String> getAllCollections() {
-        final Vector<String> list = new Vector<String>();
+        final Vector<String> list = new Vector<>();
 
         try {
             final Collection root = DatabaseManager.getCollection(uri + XmldbURI.ROOT_COLLECTION, user, passwd);
@@ -186,7 +165,7 @@ public class CreateBackupDialog extends JPanel {
         final String[] childCollections = collection.listChildCollections();
         Collection child = null;
 
-        for (String childCollection : childCollections) {
+        for (final String childCollection : childCollections) {
             try {
                 child = collection.getChildCollection(childCollection);
             } catch (final XMLDBException xmldbe) {
@@ -195,13 +174,13 @@ public class CreateBackupDialog extends JPanel {
                 } else {
                     throw xmldbe;
                 }
-            } catch (Exception npe) {
+            } catch (final Exception npe) {
                 System.out.println("Corrupted resource/collection skipped: " + child != null ? child.getName() != null ? child.getName() : "unknown" : "unknown");
                 continue;
             }
             try {
                 getAllCollections(child, collections);
-            } catch (Exception ee) {
+            } catch (final Exception ee) {
                 System.out.println("Corrupted resource/collection skipped: " + child != null ? child.getName() != null ? child.getName() : "unknown" : "unknown");
                 continue;
             }
