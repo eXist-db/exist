@@ -18,13 +18,13 @@
    <!-- required due to dependency on interface -->
    <path id="classpath.extension.custom">
       <fileset dir="${existhome.dir}/lib/extensions">
-         <include name="exist-metadata-interface.jar"/>
-         <include name="exist-index-lucene.jar"/>
+         <include name="exist-metadata-interface*.jar"/>
+         <include name="exist-index-lucene*.jar"/>
       </fileset>
       <fileset dir="${luceneIndex.dir}/lib">
-         <include name="lucene-core-4.3.1.jar"/>
-         <include name="lucene-queries-4.3.1.jar"/>
-         <include name="lucene-analyzers-common-4.3.1.jar"/>
+         <include name="lucene-core-*.jar"/>
+         <include name="lucene-queries-*.jar"/>
+         <include name="lucene-analyzers-common-*.jar"/>
       </fileset>
    </path>
 
@@ -59,7 +59,7 @@
       <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask" classpathref="classpath.core"/>
 
       <fetch classpathref="classpath.core" dest="${existhome.dir}/${lib.user}"
-         url="http://download.oracle.com/maven/com/sleepycat/je/5.0.58/je-5.0.58.jar"
+         url="https://download.oracle.com/maven/com/sleepycat/je/5.0.58/je-5.0.58.jar"
          classname="com.sleepycat.je.Database" usecache="true"/>
    </target>
 
