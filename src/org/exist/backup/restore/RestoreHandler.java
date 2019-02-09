@@ -79,6 +79,7 @@ public class RestoreHandler extends DefaultHandler {
         saxFactory.setValidating(false);
     }
     private static final int STRICT_URI_VERSION = 1;
+    private static final int BLOB_STORE_VERSION = 2;
     
     private final RestoreListener listener;
     private final String dbBaseUri;
@@ -88,6 +89,7 @@ public class RestoreHandler extends DefaultHandler {
     
     //handler state
     private int version = 0;
+    private boolean deduplicateBlobs = false;
     private EXistCollection currentCollection;
     private final Deque<DeferredPermission> deferredPermissions = new ArrayDeque<>();
     
@@ -194,6 +196,12 @@ public class RestoreHandler extends DefaultHandler {
                     listener.warn("Could not parse document name into a URI: " + e.getMessage());
                     return new SkippedEntryDeferredPermission();
                 }
+            }
+
+            if (version >= BLOB_STORE_VERSION) {
+                this.deduplicateBlobs = Boolean.valueOf(atts.getValue("deduplicate-blobs"));
+            } else {
+                this.deduplicateBlobs = false;
             }
 
             currentCollection = mkcol(collUri, getDateFromXSDateTimeStringForItem(created, name));
@@ -324,10 +332,8 @@ public class RestoreHandler extends DefaultHandler {
         final String systemid = atts.getValue("systemid");
         final String namedoctype = atts.getValue("namedoctype");
 
-
         final XmldbURI docUri;
-
-        if(version >= STRICT_URI_VERSION) {
+        if (version >= STRICT_URI_VERSION) {
             docUri = XmldbURI.create(name);
         } else {
             try {
@@ -340,16 +346,27 @@ public class RestoreHandler extends DefaultHandler {
             }
         }
 
+        final EXistInputSource is;
+        if (deduplicateBlobs && type.equals("BinaryResource")) {
+            final String blobId = atts.getValue("blob-id");
+            is = descriptor.getBlobInputSource(blobId);
 
-        try(EXistInputSource is = descriptor.getInputSource(filename)){
+            if (is == null) {
+                final String msg = "Failed to restore resource '" + name + "'\nfrom BLOB '" + blobId + "'.\nReason: Unable to obtain its EXistInputSource";
+                listener.warn(msg);
+                return new SkippedEntryDeferredPermission();
+            }
+        } else {
+            is = descriptor.getInputSource(filename);
 
-            if(is == null) {
+            if (is == null) {
                 final String msg = "Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath( name, false ) + "'.\nReason: Unable to obtain its EXistInputSource";
                 listener.warn(msg);
                 return new SkippedEntryDeferredPermission();
             }
+        }
 
-
+        try {
             listener.setCurrentResource(name);
             if(currentCollection instanceof Observable) {
                 listener.observe((Observable)currentCollection);
@@ -362,6 +379,7 @@ public class RestoreHandler extends DefaultHandler {
             }
 
             if(is.getByteStreamLength() > 0 || "BinaryResource".equals(type)) {
+                // TODO(AR) we could add an optimisation here so that we need only send the content for duplicate blobs once!
                 res.setContent(is);
             } else {
                 res = null;
@@ -419,6 +437,8 @@ public class RestoreHandler extends DefaultHandler {
             listener.warn(String.format("Failed to restore resource '%s'\nfrom file '%s'.\nReason: %s", name, descriptor.getSymbolicPath(name, false), e.getMessage()));
             LOG.error(e.getMessage(), e);
             return new SkippedEntryDeferredPermission();
+        } finally {
+            is.close();
         }
     }
 

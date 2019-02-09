@@ -42,16 +42,18 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
 
     private final static Logger LOG = LogManager.getLogger();
 
+    protected Path root;
     protected Path descriptor;
 
-    public FileSystemBackupDescriptor(final Path theDesc) throws FileNotFoundException {
-        if (!FileUtils.fileName(theDesc).equals(BackupDescriptor.COLLECTION_DESCRIPTOR) || Files.isDirectory(theDesc) || !Files.isReadable(theDesc)) {
-            throw (new FileNotFoundException(theDesc.toAbsolutePath().toString() + " is not a valid collection descriptor"));
+    public FileSystemBackupDescriptor(final Path root, final Path descriptor) throws FileNotFoundException {
+        if (!FileUtils.fileName(descriptor).equals(BackupDescriptor.COLLECTION_DESCRIPTOR) || Files.isDirectory(descriptor) || !Files.isReadable(descriptor)) {
+            throw new FileNotFoundException(descriptor.toAbsolutePath().toString() + " is not a valid collection descriptor");
         }
-        descriptor = theDesc;
+        this.descriptor = descriptor;
+        this.root = root;
 
         // Count number of files
-        countFileEntries(theDesc);
+        countFileEntries(descriptor);
     }
 
     @Override
@@ -60,11 +62,11 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
         BackupDescriptor bd = null;
 
         try {
-            bd = new FileSystemBackupDescriptor(child);
+            bd = new FileSystemBackupDescriptor(root, child);
         } catch (final FileNotFoundException fnfe) {
             // DoNothing(R)
         }
-        return (bd);
+        return bd;
     }
 
     @Override
@@ -75,11 +77,11 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
         BackupDescriptor bd = null;
 
         try {
-            bd = new FileSystemBackupDescriptor(Paths.get(desc));
+            bd = new FileSystemBackupDescriptor(root, Paths.get(desc));
         } catch (final FileNotFoundException fnfe) {
             // DoNothing(R)
         }
-        return (bd);
+        return bd;
     }
 
     @Override
@@ -90,18 +92,30 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
     @Override
     public EXistInputSource getInputSource(final String describedItem) {
         final Path child = descriptor.getParent().resolve(describedItem);
-        EXistInputSource is = null;
 
+        EXistInputSource is = null;
         if ((!Files.isDirectory(child)) && Files.isReadable(child)) {
             is = new FileInputSource(child);
         }
 
-        return (is);
+        return is;
+    }
+
+    @Override
+    public EXistInputSource getBlobInputSource(final String blobId) {
+        final Path blobFile = root.resolve("blob").resolve(blobId);
+
+        EXistInputSource is = null;
+        if((!Files.isDirectory(blobFile)) && Files.isReadable(blobFile)) {
+            is = new FileInputSource(blobFile);
+        }
+
+        return is;
     }
 
     @Override
     public String getSymbolicPath() {
-        return (descriptor.toAbsolutePath().toString());
+        return descriptor.toAbsolutePath().toString();
     }
 
     @Override

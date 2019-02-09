@@ -767,8 +767,7 @@
         <delete failonerror="no">
             <fileset dir="${src.webapp}/WEB-INF/data/journal"/>
         </delete>
-        <delete failonerror="no" dir="${src.webapp}/WEB-INF/data/fs"/>
-        <delete failonerror="no" dir="${src.webapp}/WEB-INF/data/fs.journal"/>
+        <delete failonerror="no" dir="${src.webapp}/WEB-INF/data/blob"/>
         <delete failonerror="no" dir="${src.webapp}/WEB-INF/data/lucene"/>
         <delete failonerror="no" dir="${src.webapp}/WEB-INF/data/metadata"/>
         <delete failonerror="no" dir="${src.webapp}/WEB-INF/data/range"/>

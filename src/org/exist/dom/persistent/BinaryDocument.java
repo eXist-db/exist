@@ -24,11 +24,13 @@ package org.exist.dom.persistent;
 
 import org.exist.collections.Collection;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.blob.BlobId;
 import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.xmldb.XmldbURI;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 
 /**
@@ -40,6 +42,7 @@ import java.io.IOException;
  * @author wolf
  */
 public class BinaryDocument extends DocumentImpl {
+    private BlobId blobId;
     private long realSize = 0L;
 
     public BinaryDocument(final BrokerPool pool) {
@@ -91,10 +94,27 @@ public class BinaryDocument extends DocumentImpl {
         this.realSize = length;
     }
 
+    /**
+     * Get the Blob Store id for the
+     * content of this document.
+     *
+     * @return
+     */
+    @Nullable public BlobId getBlobId() {
+        return blobId;
+    }
+
+    public void setBlobId(final BlobId blobId) {
+        this.blobId = blobId;
+    }
+
     @Override
     public void write(final VariableByteOutputStream ostream) throws IOException {
         ostream.writeInt(getDocId());
         ostream.writeUTF(getFileURI().toString());
+
+        ostream.writeInt(blobId.getId().length);
+        ostream.write(blobId.getId());
 
         getPermissions().write(ostream);
 
@@ -106,6 +126,10 @@ public class BinaryDocument extends DocumentImpl {
     public void read(final VariableByteInput istream) throws IOException {
         setDocId(istream.readInt());
         setFileURI(XmldbURI.create(istream.readUTF()));
+
+        final byte[] blobIdRaw = new byte[istream.readInt()];
+        istream.read(blobIdRaw);
+        this.blobId = new BlobId(blobIdRaw);
 
         getPermissions().read(istream);
 

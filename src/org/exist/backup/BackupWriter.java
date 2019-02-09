@@ -43,6 +43,9 @@ public interface BackupWriter extends Closeable
     OutputStream newEntry( String name ) throws IOException;
 
 
+    OutputStream newBlobEntry(String blobId) throws IOException;
+
+
     void closeEntry() throws IOException;
 
 
@@ -53,6 +56,4 @@ public interface BackupWriter extends Closeable
 
 
     void setProperties( Properties properties ) throws IOException;
-
-    void addToRoot(String name, Path file) throws IOException;
 }

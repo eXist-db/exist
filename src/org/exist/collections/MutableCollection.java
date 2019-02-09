@@ -1659,13 +1659,8 @@ public void removeXMLResource(final Txn transaction, final DBBroker broker, fina
                     updateModificationTime(blob);
                 }
 
-                broker.removeResourceMetadata(transaction, oldDoc);
-
-                broker.getIndexController().setDocument(oldDoc, StreamListener.ReindexMode.REMOVE_BINARY);
-                broker.getIndexController().flush();
-
-                // NOTE(AR): the actual binary file on disk will be removed/overwritten in broker#storeBinaryResource below
-                //broker.removeResource(transaction, oldDoc);
+                // remove the old document
+                broker.removeResource(transaction, oldDoc);
             }
 
             // store the binary content (create/replace)

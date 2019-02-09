@@ -29,6 +29,10 @@ public class BrokerPoolServiceException extends Exception {
         super(message, cause);
     }
 
+    public BrokerPoolServiceException(final String message) {
+        super(message);
+    }
+
     public BrokerPoolServiceException(final Throwable cause) {
         super(cause);
     }

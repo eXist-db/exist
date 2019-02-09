@@ -24,7 +24,7 @@ package org.exist.dom.persistent;
 
 import java.io.IOException;
 
-import org.exist.security.UUIDGenerator;
+import org.exist.util.UUIDGenerator;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 

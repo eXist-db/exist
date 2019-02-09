@@ -1,12 +1,12 @@
 package org.exist.exiftool.xquery;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
@@ -16,8 +16,11 @@ import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
-import org.exist.storage.NativeBroker;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.blob.BlobStore;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.txn.TransactionException;
+import org.exist.storage.txn.Txn;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
@@ -33,6 +36,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import static com.evolvedbinary.j8fu.Try.TaggedTryUnchecked;
 
 /**
  * @author Dulip Withanage <dulip.withanage@gmail.com>
@@ -86,7 +91,7 @@ public class MetadataFunctions extends BasicFunction {
             }
 
         } catch (URISyntaxException use) {
-            throw new XPathException("Could not parse document URI: " + use.getMessage(), use);
+            throw new XPathException(this, "Could not parse document URI: " + use.getMessage(), use);
         }
 
     }
@@ -95,17 +100,23 @@ public class MetadataFunctions extends BasicFunction {
         try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(docUri, LockMode.READ_LOCK)) {
 
             if (lockedDoc != null && lockedDoc.getDocument() instanceof BinaryDocument) {
-                //resolve real filesystem path of binary file
-                final Path binaryFile = ((NativeBroker) context.getBroker()).getCollectionBinaryFileFsPath(docUri);
-                if (!Files.exists(binaryFile)) {
-                    throw new XPathException("Binary Document at " + docUri.toString() + " does not exist.");
+                final BinaryDocument binDoc = (BinaryDocument)lockedDoc.getDocument();
+
+                final BrokerPool pool = context.getBroker().getBrokerPool();
+                final BlobStore blobStore = pool.getBlobStore();
+                try (final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+                    final Sequence result =
+                            blobStore
+                                    .with(transaction, binDoc.getBlobId(), blobFile -> TaggedTryUnchecked(XPathException.class, () -> exifToolExtract(blobFile)))
+                                    .get();
+                    transaction.commit();
+                    return result;
                 }
-                return exifToolExtract(binaryFile);
             } else {
-                throw new XPathException("The binay document at " + docUri.toString() + " cannot be found.");
+                throw new XPathException(this, "The binary document at " + docUri.toString() + " cannot be found.");
             }
-        } catch (PermissionDeniedException pde) {
-            throw new XPathException("Could not access binary document: " + pde.getMessage(), pde);
+        } catch (PermissionDeniedException | IOException | TransactionException e) {
+            throw new XPathException(this, "Could not access binary document: " + e.getMessage(), e);
         }
     }
 
@@ -137,11 +148,11 @@ public class MetadataFunctions extends BasicFunction {
                 return ModuleUtils.inputSourceToXML(context, new InputSource(baos.toFastByteInputStream()));
             }
         } catch (final IOException ex) {
-            throw new XPathException("Could not execute the Exiftool " + ex.getMessage(), ex);
+            throw new XPathException(this, "Could not execute the Exiftool " + ex.getMessage(), ex);
         } catch (final SAXException saxe) {
-            throw new XPathException("Could not parse output from the Exiftool " + saxe.getMessage(), saxe);
+            throw new XPathException(this, "Could not parse output from the Exiftool " + saxe.getMessage(), saxe);
         } catch (final InterruptedException ie) {
-            throw new XPathException("Could not execute the Exiftool " + ie.getMessage(), ie);
+            throw new XPathException(this, "Could not execute the Exiftool " + ie.getMessage(), ie);
         }
     }
 
@@ -156,7 +167,7 @@ public class MetadataFunctions extends BasicFunction {
                 try(final OutputStream stdOut = p.getOutputStream()) {
                     final Source src = SourceFactory.getSource(context.getBroker(), null, uri.toString(), false);
                     if (src == null) {
-                        throw new XPathException("Could not read source for the Exiftool: " + uri.toString());
+                        throw new XPathException(this, "Could not read source for the Exiftool: " + uri.toString());
                     }
                     try(final InputStream isSrc = src.getInputStream()) {
 
@@ -179,13 +190,13 @@ public class MetadataFunctions extends BasicFunction {
             }
 
         } catch (final IOException ex) {
-            throw new XPathException("Could not execute the Exiftool " + ex.getMessage(), ex);
+            throw new XPathException(this, "Could not execute the Exiftool " + ex.getMessage(), ex);
         } catch(final PermissionDeniedException pde) {
-            throw new XPathException("Could not execute the Exiftool " + pde.getMessage(), pde);
+            throw new XPathException(this, "Could not execute the Exiftool " + pde.getMessage(), pde);
         } catch (final SAXException saxe) {
-            throw new XPathException("Could not parse output from the Exiftool " + saxe.getMessage(), saxe);
+            throw new XPathException(this, "Could not parse output from the Exiftool " + saxe.getMessage(), saxe);
         } catch (final InterruptedException ie) {
-            throw new XPathException("Could not execute the Exiftool " + ie.getMessage(), ie);
+            throw new XPathException(this, "Could not execute the Exiftool " + ie.getMessage(), ie);
         }
     }
 }

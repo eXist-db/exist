@@ -47,6 +47,7 @@ import org.xmldb.api.base.XMLDBException;
 import javax.annotation.Nullable;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.util.io.InputStreamUtil.copy;
 
 public abstract class AbstractRemoteResource extends AbstractRemote
         implements EXistResource, ExtendedResource, Resource {
@@ -529,14 +530,6 @@ public abstract class AbstractRemoteResource extends AbstractRemote
             return bos.toByteArray();
         } catch (final IOException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        }
-    }
-
-    private void copy(final InputStream is, final OutputStream os) throws IOException {
-        int read;
-        final byte buffer[] = new byte[65536]; //64KB
-        while ((read = is.read(buffer)) > -1) {
-            os.write(buffer, 0, read);
         }
     }
 

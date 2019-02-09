@@ -84,6 +84,13 @@ public class ZipWriter implements BackupWriter
         return( out );
     }
 
+    public OutputStream newBlobEntry(final String blobId) throws IOException
+    {
+        final ZipEntry entry = new ZipEntry("blob/" + blobId);
+        out.putNextEntry(entry);
+        dataWritten = true;
+        return out;
+    }
 
     public void closeEntry() throws IOException
     {
@@ -126,19 +133,6 @@ public class ZipWriter implements BackupWriter
         out.putNextEntry( entry );
         try {
             properties.store(out, "Backup properties");
-        } finally {
-            out.closeEntry();
-        }
-    }
-
-    public void addToRoot(final String name, final Path file) throws IOException {
-        if (dataWritten) {
-            throw new IOException("Additional files have to be added before backup data is written");
-        }
-        final ZipEntry entry = new ZipEntry(name);
-        out.putNextEntry(entry);
-        try {
-            Files.copy(file, out);
         } finally {
             out.closeEntry();
         }
