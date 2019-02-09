@@ -21,7 +21,6 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/lucene/test/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/ngram/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/ngram/test/src" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/xqdoc/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/src" isTestSource="true" />
@@ -43,6 +42,28 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/xUnit/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/xUnit/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/range/test/src" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/cache/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/compression/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/context/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/counter/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/datetime/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/example/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/exi/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/expathrepo/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/file/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/ftpclient/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/httpclient/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/image/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/jndi/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/mail/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/math/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/persistentlogin/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/process/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/scheduler/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/sql/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/xmldiff/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/xslfo/src" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/commands/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/autodeploy" />
       <excludeFolder url="file://$MODULE_DIR$/backup" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
@@ -71,5 +92,8 @@
     <orderEntry type="library" name="exquery-restxq" level="project" />
     <orderEntry type="library" name="exquery-core" level="project" />
     <orderEntry type="library" name="expath" level="project" />
+    <orderEntry type="library" name="lib" level="project" />
+    <orderEntry type="library" name="lib-memcached" level="project" />
+    <orderEntry type="library" name="lib-cqlparser" level="project" />
   </component>
 </module>
