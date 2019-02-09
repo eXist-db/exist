@@ -27,6 +27,7 @@ import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
+import org.exist.util.UUIDGenerator;
 import org.exist.webdav.ExistResource.Mode;
 import org.exist.webdav.exceptions.CollectionDoesNotExistException;
 import org.exist.webdav.exceptions.CollectionExistsException;
@@ -258,7 +259,7 @@ public class MiltonCollection extends MiltonResource
             LOG.debug(String.format("'%s' name='%s'", resourceXmldbUri, name));
         }
 
-        String token = UUID.randomUUID().toString();
+        String token = UUIDGenerator.getUUIDversion4();
 
         return new LockToken(token, lockInfo, timeout);
     }
@@ -275,7 +276,7 @@ public class MiltonCollection extends MiltonResource
             LOG.debug(String.format("'%s' -- %s", resourceXmldbUri, lockInfo.toString()));
         }
 
-        return refreshLock(UUID.randomUUID().toString());
+        return refreshLock(UUIDGenerator.getUUIDversion4());
     }
 
     @Override

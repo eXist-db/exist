@@ -140,7 +140,7 @@ public class DBSource extends AbstractSource {
      */
     @Override
     public String getContent() throws IOException {
-        final long binaryLength = broker.getBinaryResourceSize(doc);
+        final long binaryLength = doc.getContentLength();
         if(binaryLength > (long)Integer.MAX_VALUE) {
             throw new IOException("Resource too big to be read using this method.");
         }

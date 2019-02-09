@@ -67,6 +67,7 @@ public class BackupSystemTask implements SystemTask {
     private Path directory;
     private String suffix;
     private XmldbURI collection;
+    private boolean deduplicateBlobs;
     private String prefix;
     // purge old zip backup files
     private int zipFilesMax = -1;
@@ -86,6 +87,8 @@ public class BackupSystemTask implements SystemTask {
         }
         collection = XmldbURI.create(collName);
         LOG.debug("Collection to backup: " + collection.toString() + ". User: " + user);
+
+        deduplicateBlobs = Boolean.valueOf(properties.getProperty("deduplucate-blobs", "false"));
 
         suffix = properties.getProperty("suffix", "");
         prefix = properties.getProperty("prefix", "");
@@ -119,7 +122,7 @@ public class BackupSystemTask implements SystemTask {
         final String dateTime = creationDateFormat.format(Calendar.getInstance().getTime());
         final Path dest = directory.resolve(prefix + dateTime + suffix);
 
-        final Backup backup = new Backup(user, password, dest, collection);
+        final Backup backup = new Backup(user, password, dest, collection, null, deduplicateBlobs);
         try {
             backup.backup(false, null);
         } catch (final XMLDBException | SAXException | IOException e) {

@@ -24,8 +24,11 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.blob.BlobId;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
+import org.exist.util.crypto.digest.DigestType;
+import org.exist.util.crypto.digest.MessageDigest;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xquery.value.BinaryValue;
@@ -49,7 +52,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import com.evolvedbinary.j8fu.function.SupplierE;
 
-public class LocalBinaryResource extends AbstractEXistResource implements ExtendedResource, BinaryResource, EXistResource {
+public class LocalBinaryResource extends AbstractEXistResource implements ExtendedResource, EXistBinaryResource, EXistResource {
 
     protected InputSource inputSource = null;
     protected Path file = null;
@@ -64,6 +67,17 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
     @Override
     public String getResourceType() throws XMLDBException {
         return BinaryResource.RESOURCE_TYPE;
+    }
+
+    @Override
+    public BlobId getBlobId() throws XMLDBException {
+        return read((document, broker, transaction) -> ((BinaryDocument)document).getBlobId());
+    }
+
+    @Override
+    public MessageDigest getContentDigest(final DigestType digestType) throws XMLDBException {
+        return read((document, broker, transaction) ->
+                broker.getBinaryResourceContentDigest(transaction, (BinaryDocument)document, digestType));
     }
 
     @Override
@@ -93,7 +107,8 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
         if(binaryValue != null) {
             return binaryValue;
         }
-        return binaryResourceRead.get();
+
+        return read((document, broker, transaction) -> broker.getBinaryResource(transaction, ((BinaryDocument) document)));
     }
 
     @Override
@@ -172,7 +187,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
      * that are already working within a transaction
      */
     InputStream getStreamContent(final DBBroker broker, final Txn transaction) throws XMLDBException {
-        return getStreamContent(() -> this.<InputStream>read(broker, transaction).apply((document, broker1, transaction1) -> broker.getBinaryResource(((BinaryDocument) document))));
+        return getStreamContent(() -> this.<InputStream>read(broker, transaction).apply((document, broker1, transaction1) -> broker.getBinaryResource(transaction, ((BinaryDocument) document))));
     }
 
     private InputStream getStreamContent(final SupplierE<InputStream, XMLDBException> streamContentRead) throws XMLDBException {
@@ -211,10 +226,10 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
         read((document, broker, transaction) -> {
             if(os instanceof FileOutputStream) {
                 try(final OutputStream bos = new BufferedOutputStream(os, 65536)) {
-                    broker.readBinaryResource((BinaryDocument) document, bos);
+                    broker.readBinaryResource(transaction, (BinaryDocument) document, bos);
                 }
             } else {
-                broker.readBinaryResource((BinaryDocument) document, os);
+                broker.readBinaryResource(transaction, (BinaryDocument) document, os);
             }
             return null;
         });

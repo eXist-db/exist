@@ -40,7 +40,7 @@ import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
-import org.exist.security.UUIDGenerator;
+import org.exist.util.UUIDGenerator;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;

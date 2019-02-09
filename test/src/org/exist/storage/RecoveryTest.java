@@ -52,8 +52,8 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.*;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -68,9 +68,6 @@ import org.xml.sax.SAXException;
  *
  */
 public class RecoveryTest {
-
-    // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
     
     private static Path dir = TestUtils.shakespeareSamples();
     
@@ -81,28 +78,42 @@ public class RecoveryTest {
         "  <para>Hello World!</para>" +
         "</test>";
 
-    @Test
-    public void storeAndRead() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException, BTreeException, XPathException {
-        BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = startDb();
-        store(pool);
+    @Rule
+    public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
-        stopDb();
-
+    @After
+    public void cleanup() {
+        // restore the flag in-case of a test failure
         BrokerPool.FORCE_CORRUPTION = false;
-        pool = startDb();
-        read(pool);
     }
 
-    private void store(final BrokerPool pool) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, LockException {
+    @Test
+    public void storeCommit_removeNoCommit() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException, BTreeException, XPathException {
+
+        // store, commit, and then remove without committing (remove should be undone during next recovery!)
+        storeAndCommit_removeNoCommit(existEmbeddedServer.getBrokerPool());
+
+        // flush journal
+        existEmbeddedServer.getBrokerPool().getJournalManager().get().flush(true, false);
+
+        // restart with no Journal checkpoint, forces recovery to run at startup
+        BrokerPool.FORCE_CORRUPTION = true;
+        existEmbeddedServer.restart();
+        BrokerPool.FORCE_CORRUPTION = false;
+
+        // check the documents we stored exist
+        verify(existEmbeddedServer.getBrokerPool());
+    }
+
+    private void storeAndCommit_removeNoCommit(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection test2;
             List<Path> files;
-            BinaryDocument doc;
+            BinaryDocument binaryDocument;
 
-            try(final Txn transaction = transact.beginTransaction()) {
+            try (final Txn transaction = transact.beginTransaction()) {
 
                 Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
                 assertNotNull(root);
@@ -115,11 +126,11 @@ public class RecoveryTest {
                 files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
                 assertNotNull(files);
 
-                doc = test2.addBinaryResource(transaction, broker, TestConstants.TEST_BINARY_URI, "Some text data".getBytes(), null);
-                assertNotNull(doc);
+                binaryDocument = test2.addBinaryResource(transaction, broker, TestConstants.TEST_BINARY_URI, "Some text data".getBytes(), null);
+                assertNotNull(binaryDocument);
 
                 // store some documents. Will be replaced below
-	            for(final Path f : files) {
+                for (final Path f : files) {
                     try {
                         final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
                         assertNotNull(info);
@@ -130,7 +141,7 @@ public class RecoveryTest {
                 }
 
                 // replace some documents
-                for(final Path f : files) {
+                for (final Path f : files) {
                     try {
                         final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
                         assertNotNull(info);
@@ -155,20 +166,11 @@ public class RecoveryTest {
             final Txn transaction = transact.beginTransaction();
 
             test2.removeXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(files.get(0))));
-            test2.removeBinaryResource(transaction, broker, doc);
-            
-//DO NOT COMMIT TRANSACTION
-            pool.getJournalManager().get().flush(true, false);
-
-            //DOMFile domDb = ((NativeBroker)broker).getDOMFile();
-            //assertNotNull(domDb);
-            //Writer writer = new StringWriter();
-            //domDb.dump(writer);
-            //System.out.println(writer.toString());
-	    }
+            test2.removeBinaryResource(transaction, broker, binaryDocument);
+        }
     }
 
-    private void read(final BrokerPool pool) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException, XPathException, IOException, BTreeException, LockException {
+    private void verify(final BrokerPool pool) throws EXistException, PermissionDeniedException, SAXException, XPathException, IOException, BTreeException, LockException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
@@ -207,7 +209,7 @@ public class RecoveryTest {
 
                 final BinaryDocument binDoc = (BinaryDocument)lockedBinDoc.getDocument();
                 try (final InputStream is = broker.getBinaryResource(binDoc)) {
-                    final byte[] bdata = new byte[(int) broker.getBinaryResourceSize(binDoc)];
+                    final byte[] bdata = new byte[(int) binDoc.getContentLength()];
                     is.read(bdata);
                     final String data = new String(bdata);
                     assertNotNull(data);
@@ -232,15 +234,4 @@ public class RecoveryTest {
             }
 	    }
     }
-
-    private BrokerPool startDb() throws EXistException, IOException, DatabaseConfigurationException {
-        existEmbeddedServer.startDb();
-        return existEmbeddedServer.getBrokerPool();
-    }
-
-    @After
-    public void stopDb() {
-        existEmbeddedServer.stopDb();
-    }
-
 }

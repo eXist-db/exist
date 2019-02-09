@@ -54,6 +54,9 @@ import org.exist.scheduler.impl.SystemTaskJobImpl;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.SecurityManagerImpl;
+import org.exist.storage.blob.BlobStore;
+import org.exist.storage.blob.BlobStoreImplService;
+import org.exist.storage.blob.BlobStoreService;
 import org.exist.storage.journal.JournalManager;
 import org.exist.storage.lock.FileLockService;
 import org.exist.storage.lock.LockManager;
@@ -256,6 +259,11 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      * The transaction manager of the database instance.
      */
     private TransactionManager transactionManager = null;
+
+    /**
+     * The Blob Store of the database instance.
+     */
+    private BlobStoreService blobStoreService;
 
     /**
      * Delay (in ms) for running jobs to return when the database instance shuts down.
@@ -483,6 +491,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
         final SystemTaskManager systemTaskManager = servicesManager.register(new SystemTaskManager(this));
         this.transactionManager = servicesManager.register(new TransactionManager(this, journalManager, systemTaskManager));
+
+        this.blobStoreService = servicesManager.register(new BlobStoreImplService());
 
         this.symbols = servicesManager.register(new SymbolTable());
 
@@ -918,6 +928,11 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         return scheduler;
     }
 
+    @Override
+    public BlobStore getBlobStore() {
+        return blobStoreService.getBlobStore();
+    }
+
     public SymbolTable getSymbols() {
         return symbols;
     }
@@ -963,6 +978,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         return inServiceMode;
     }
 
+    @Override
     public Optional<JournalManager> getJournalManager() {
         return journalManager;
     }
