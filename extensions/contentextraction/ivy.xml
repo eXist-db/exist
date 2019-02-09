@@ -4,7 +4,7 @@
 -->
 <ivy-module version="2.0">
 
-    <info organisation="org.exist" module="tika"/>
+    <info organisation="org.exist" module="contentextraction"/>
 
     <dependencies>
 

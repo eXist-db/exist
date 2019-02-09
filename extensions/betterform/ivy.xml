@@ -1,4 +1,3 @@
-<!-- Ivy module to retrieve the tika jar, including dependancies, excluding duplicate jars $Id$ -->
 <ivy-module version="2.0">
     <info organisation="org.exist" module="betterfrom" />
     <dependencies>            

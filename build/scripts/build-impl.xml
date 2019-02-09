@@ -552,9 +552,6 @@
         depends="prepare,jar,wrapper,extension-betterform,extension-modules,extension-xprocxq,extensions-xar,test-compile"
         description="Build all">
 
-        <!--  hand over build to extensions build -->
-        <ant antfile="${build.scripts}/extensions-build.xml" target="all" inheritAll="false"/>
-
         <!--  this module must be built after the ldap extension -->
         <ant antfile="build.xml" dir="extensions/security/activedirectory" inheritall="false"/>
 
@@ -744,7 +741,6 @@
         <delete failonerror="no" dir="${dist}"/>
 
         <ant antfile="build.xml" dir="extensions/betterform" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/modules" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/security/activedirectory"  target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/xprocxq" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="tools/yajsw" target="clean" inheritall="false"/>
@@ -807,7 +803,7 @@
                 <exclude name=".DO_NOT_DELETE"/>
             </fileset>
         </delete>
-        <ant antfile="build.xml" dir="extensions/modules" target="clean-all" inheritall="false"/>
+
     </target>
 
     <target name="wrapper" depends="jar">
@@ -821,7 +817,10 @@
     </target>
 
     <target name="extension-modules" depends="jar">
-        <ant antfile="build.xml" dir="extensions/modules" inheritall="false"/>
+
+        <!--  hand over build to extensions build -->
+        <ant antfile="${build.scripts}/extensions-build.xml" target="all" inheritAll="false"/>
+
     </target>
 
     <target name="extension-xprocxq" depends="jar">

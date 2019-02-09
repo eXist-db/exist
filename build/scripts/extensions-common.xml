@@ -52,7 +52,7 @@ to add: -pre-compile steps
    <property name="lib.dir" location="lib"/>
 
    <property name="dist.dir" location="${existhome.dir}/lib/extensions"/>
-   <property name="dist.extension.jar" value="${dist.dir}/exist-${extension.name}.jar"/>
+   <property name="dist.extension.jar" value="${dist.dir}/exist-${extension.name}-${project.version}.jar"/>
    <property name="dist.webfragment.jar" value="${existhome.dir}/webapp/WEB-INF/lib/metainf-${extension.name}.jar"/>
 
    <property name="junit.report.dir" value="${existhome.dir}/test/junit/data"/>
@@ -95,6 +95,9 @@ to add: -pre-compile steps
          <include name="*.jar"/>
       </fileset>
       <fileset dir="${existhome.dir}/${lib.user}">
+         <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${existhome.dir}/${lib.test}">
          <include name="*.jar"/>
       </fileset>
       <!-- 
@@ -155,6 +158,8 @@ to add: -pre-compile steps
       <antcall target="download-3rd-party"/>
    </target>
 
+   <target name="prepare" description="Prepare module" if="${extension.include}"> </target>
+
    <target name="compile" description="Compile sources" if="${extension.include}">
       <echo>Compiling '${extension.name}'</echo>
       <antcall target="init"/>
@@ -205,6 +210,7 @@ to add: -pre-compile steps
 
       <echo>Generating jar for '${extension.name}'</echo>
 
+      <antcall target="prepare"/>
       <antcall target="compile"/>
 
       <copy todir="${build.classes.dir}">
@@ -238,7 +244,7 @@ to add: -pre-compile steps
             <attribute name="Created-By" value="${ant.version}"/>
          </manifest>
       </jar>
-      
+
 <!--      <antcall target="jar-metainf"/>-->
    </target>
    
@@ -297,8 +303,9 @@ to add: -pre-compile steps
             <attribute name="Build-Timestamp" value="${DSTAMP}${TSTAMP}"/>
             <attribute name="Built-By" value="${user.name}"/>
             <attribute name="Build-Jdk" value="${java.version}"/>
-
             <attribute name="Created-By" value="${ant.version}"/>
+            <attribute name="Description" value="eXist XML Native Database Extension Module"/>
+
          </manifest>
       </jar>
    </target>
