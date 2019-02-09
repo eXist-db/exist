@@ -20,6 +20,7 @@
 
 package org.exist.collections;
 
+import com.evolvedbinary.j8fu.Try;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
@@ -46,7 +47,6 @@ import javax.xml.transform.Source;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -95,6 +95,8 @@ public class CollectionStoreTest {
                     }
                 }
             }
+
+            transaction.commit();
         }
     }
 
@@ -131,12 +133,15 @@ public class CollectionStoreTest {
                         assertTrue(lockedDoc.getDocument() instanceof BinaryDocument);
 
                         final BinaryDocument doc = (BinaryDocument)lockedDoc.getDocument();
-
-                        final Path docData = broker.getBinaryFile(doc);
-                        assertEquals(TEST_BIN_DOC, new String(Files.readAllBytes(docData), UTF_8));
+                        final Try<String, IOException> docContent = broker.withBinaryFile(transaction, doc, is ->
+                                Try.TaggedTryUnchecked(IOException.class, () -> new String(Files.readAllBytes(is), UTF_8))
+                        );
+                        assertEquals(TEST_BIN_DOC, docContent.get());
                     }
                 }
             }
+
+            transaction.commit();
         }
     }
 }

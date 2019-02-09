@@ -26,10 +26,13 @@ import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.ACEAider;
+import org.exist.storage.blob.BlobId;
 import org.exist.util.Compressor;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
 import org.exist.util.Leasable;
+import org.exist.util.crypto.digest.DigestType;
+import org.exist.util.crypto.digest.MessageDigest;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.xml.sax.InputSource;
 import org.xmldb.api.base.Collection;
@@ -419,6 +422,16 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
             r = new RemoteXMLResource(leasableXmlRpcClient.lease(), this, -1, -1, docUri, Optional.empty());
         } else {
             r = new RemoteBinaryResource(leasableXmlRpcClient.lease(), this, docUri);
+            if (hash.containsKey("blob-id")) {
+                final byte[] blobId = (byte[]) hash.get("blob-id");
+                ((RemoteBinaryResource) r).setBlobId(new BlobId(blobId));
+            }
+            if (hash.containsKey("digest-algorithm") && hash.containsKey("digest")) {
+                final String digestAlgorithm = (String)hash.get("digest-algorithm");
+                final byte[] digest = (byte[])hash.get("digest");
+                final MessageDigest messageDigest = new MessageDigest(DigestType.forCommonName(digestAlgorithm), digest);
+                ((RemoteBinaryResource) r).setContentDigest(messageDigest);
+            }
         }
         r.setPermissions(perm);
         r.setContentLength(contentLen);

@@ -34,7 +34,7 @@ public class ResourceRandomAccess extends RandomAccessFile {
 	private Resource resource;
 	
 	public ResourceRandomAccess(Resource resource, String mode) throws FileNotFoundException {
-		super(resource.getFile().toFile(), mode);
+		super(resource.	getFile().toFile(), mode);
 		
 		this.resource = resource;
 	}

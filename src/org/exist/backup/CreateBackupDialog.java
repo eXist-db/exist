@@ -41,6 +41,7 @@ public class CreateBackupDialog extends JPanel {
 
     JComboBox collections;
     JTextField backupTarget;
+    JCheckBox deduplicateBlobs;
 
     final String uri;
     final String user;
@@ -117,6 +118,15 @@ public class CreateBackupDialog extends JPanel {
         c.fill = GridBagConstraints.HORIZONTAL;
         grid.setConstraints(backupTarget, c);
         add(backupTarget);
+
+
+        deduplicateBlobs = new JCheckBox("Deduplicate BLOBs");
+        c.gridx = 1;
+        c.gridy = 2;
+        c.anchor = GridBagConstraints.EAST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        grid.setConstraints(deduplicateBlobs, c);
+        add(deduplicateBlobs);
 
 
         final JButton select = new JButton(Messages.getString("CreateBackupDialog.3"));
@@ -200,5 +210,10 @@ public class CreateBackupDialog extends JPanel {
 
     public Path getBackupDir() {
         return backupDir;
+    }
+
+
+    public boolean getDeduplicateBlobs() {
+        return deduplicateBlobs.isSelected();
     }
 }

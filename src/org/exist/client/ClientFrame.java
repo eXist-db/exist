@@ -35,6 +35,8 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
 import org.exist.util.SystemExitCodes;
+import org.exist.util.crypto.digest.DigestType;
+import org.exist.util.crypto.digest.MessageDigest;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.*;
@@ -1025,6 +1027,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
             final String collection = dialog.getCollection();
             final String backuptarget = dialog.getBackupTarget();
+            final boolean deduplicateBlobs = dialog.getDeduplicateBlobs();
 
             // DWES add check here?
             final Path target = Paths.get(backuptarget).normalize();
@@ -1049,8 +1052,9 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 final Backup backup = new Backup(
                         properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER),
                         properties.getProperty(InteractiveClient.PASSWORD, null), Paths.get(backuptarget),
-                        XmldbURI.xmldbUriFor(properties.getProperty(InteractiveClient.URI, "xmldb:exist://")
-                                + collection)
+                        XmldbURI.xmldbUriFor(properties.getProperty(InteractiveClient.URI, "xmldb:exist://") + collection),
+                        null,
+                        deduplicateBlobs
                 );
                 backup.backup(true, this);
             } catch (final XMLDBException | IOException | SAXException | URISyntaxException e) {
@@ -1236,6 +1240,8 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             XmldbURI name;
             Date created = new Date();
             Date modified = null;
+            Long size = null;
+            MessageDigest messageDigest = null;
             String mimeType = null;
 
             if (fileman.getSelectedRowCount() == 1) {
@@ -1254,6 +1260,10 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     modified = ((EXistResource) res).getLastModificationTime();
                     mimeType = ((EXistResource) res).getMimeType();
                     perm = service.getPermissions(res);
+                    if (res instanceof EXistBinaryResource) {
+                        messageDigest = ((EXistBinaryResource) res).getContentDigest(DigestType.BLAKE_256);
+                        size = ((EXistBinaryResource) res).getContentLength();
+                    }
                 }
 
                 //this is a local instance, we cannot use disconnected local instance in the ResourcePropertyDialog
@@ -1278,7 +1288,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 selected.add(resources.getRow(fileman.convertRowIndexToModel(rows[i])));
             }
 
-            final EditPropertiesDialog editPropertiesDialog = new EditPropertiesDialog(service, client.getProperties().getProperty(InteractiveClient.USER), collection, name, mimeType, created, modified, permAider, selected);
+            final EditPropertiesDialog editPropertiesDialog = new EditPropertiesDialog(service, client.getProperties().getProperty(InteractiveClient.USER), collection, name, mimeType, created, modified, size, messageDigest, permAider, selected);
             editPropertiesDialog.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosed(final WindowEvent e) {
