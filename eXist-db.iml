@@ -21,7 +21,6 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/lucene/test/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/ngram/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/ngram/test/src" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/xqdoc/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/src" isTestSource="true" />
