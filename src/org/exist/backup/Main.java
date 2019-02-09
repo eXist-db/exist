@@ -113,6 +113,9 @@ public class Main {
     private static final Argument<File> backupOutputDirArg = fileArgument("-d", "--dir")
             .description("specify the directory to use for backups.")
             .build();
+    private static final Argument<Boolean> backupDeduplicateBlobs = booleanArgument("--deduplicate-blobs")
+            .description("Deduplicate BLOBS in the backup.")
+            .build();
 
 
     /* restore arguments */
@@ -168,6 +171,8 @@ public class Main {
         final Optional<Path> restorePath = getOpt(arguments, restoreArg).map(File::toPath);
         final boolean rebuildRepo = getBool(arguments, rebuildExpathRepoArg);
 
+        boolean deduplicateBlobs = getBool(arguments, backupDeduplicateBlobs);
+
         // initialize driver
         final Database database;
 
@@ -194,6 +199,7 @@ public class Main {
 
                     if (JOptionPane.showOptionDialog(null, dialog, "Create Backup", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null) == JOptionPane.YES_OPTION) {
                         collection = dialog.getCollection();
+                        deduplicateBlobs = dialog.getDeduplicateBlobs();
                         properties.setProperty(BACKUP_DIR_PROP, dialog.getBackupTarget());
                     }
                 } else {
@@ -208,7 +214,8 @@ public class Main {
                             properties.getProperty(PASSWORD_PROP, DEFAULT_PASSWORD),
                             Paths.get(properties.getProperty(BACKUP_DIR_PROP, DEFAULT_BACKUP_DIR)),
                             XmldbURI.xmldbUriFor(properties.getProperty(URI_PROP, DEFAULT_URI) + collection),
-                            properties
+                            properties,
+                            deduplicateBlobs
                     );
                     backup.backup(guiMode, null);
                 } catch (final Exception e) {
@@ -391,7 +398,7 @@ public class Main {
         try {
             final ParsedArguments arguments = CommandLineParser
                     .withArguments(userArg, passwordArg, dbaPasswordArg)
-                    .andArguments(backupCollectionArg, backupOutputDirArg)
+                    .andArguments(backupCollectionArg, backupOutputDirArg, backupDeduplicateBlobs)
                     .andArguments(restoreArg, rebuildExpathRepoArg)
                     .andArguments(helpArg, guiArg, quietArg, optionArg)
                     .parse(args);

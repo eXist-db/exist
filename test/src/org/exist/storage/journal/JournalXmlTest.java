@@ -20,10 +20,10 @@
 
 package org.exist.storage.journal;
 
-import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.numbering.DLN;
 import org.exist.security.PermissionDeniedException;
@@ -66,7 +66,7 @@ import static org.junit.Assert.assertNotNull;
  *
  * @author Adam Retter <adam@evolvedbinary.com>
  */
-public class JournalXmlTest extends AbstractJournalTest {
+public class JournalXmlTest extends AbstractJournalTest<String> {
 
     private static final int TEXT_PAGE_SIZE = 4032;
 
@@ -101,7 +101,7 @@ public class JournalXmlTest extends AbstractJournalTest {
         source.setEncoding("UTF-8");
 
         BrokerPool.FORCE_CORRUPTION = false;
-        final Tuple2<Long, String> stored = store(COMMIT, source, "large-non-corrupt.xml");
+        final TxnDoc<String> stored = store(COMMIT, source, "large-non-corrupt.xml");
         flushJournal();
 
         // shutdown the broker pool (without destroying the data dir)
@@ -109,7 +109,7 @@ public class JournalXmlTest extends AbstractJournalTest {
 
         // check journal entries written for store
         assertPartialOrdered(
-                store_expected(stored._1, stored._2, 0, largeText),
+                store_expected(stored, 0, largeText),
                 readLatestJournalEntries());
     }
 
@@ -130,7 +130,7 @@ public class JournalXmlTest extends AbstractJournalTest {
         source.setEncoding("UTF-8");
 
         BrokerPool.FORCE_CORRUPTION = true;
-        final Tuple2<Long, String> stored = store(COMMIT, source, "large-non-corrupt.xml");
+        final TxnDoc<String> stored = store(COMMIT, source, "large-non-corrupt.xml");
         flushJournal();
 
         // shutdown the broker pool (without destroying the data dir)
@@ -141,39 +141,39 @@ public class JournalXmlTest extends AbstractJournalTest {
 
         // check journal entries written for store
         assertPartialOrdered(
-                store_expected(stored._1, stored._2, 0, largeText),
+                store_expected(stored, 0, largeText),
                 readLatestJournalEntries());
     }
 
     @Override
-    protected List<ExpectedLoggable> store_expected(final long storedTxnId, final String storedDbPath, final int offset) {
-        return store_expected(storedTxnId, storedDbPath, offset, "text1");
+    protected List<ExpectedLoggable> store_expected(final TxnDoc<String> stored, final int offset) {
+        return store_expected(stored, offset, "text1");
     }
 
-    private List<ExpectedLoggable> store_expected(final long storedTxnId, final String storedDbPath, final int offset, final String text) {
+    private List<ExpectedLoggable> store_expected(final TxnDoc<String> stored, final int offset, final String text) {
         final int docId = FIRST_USABLE_DOC_ID + offset;
         final long pageNum = FIRST_USABLE_PAGE + offset;
 
         if (text.length() < TEXT_PAGE_SIZE) {
             return Arrays.asList(
-                    Start(storedTxnId),
-                    CollectionNextDocId(storedTxnId, 1, docId),
-                    StoreElementNode(storedTxnId, pageNum, 1),
-                    StoreTextNode(storedTxnId, pageNum, text),
-                    CollectionCreateDoc(storedTxnId, 1, docId, storedDbPath),
-                    Commit(storedTxnId)
+                    Start(stored.transactionId),
+                    CollectionNextDocId(stored.transactionId, 1, docId),
+                    StoreElementNode(stored.transactionId, pageNum, 1),
+                    StoreTextNode(stored.transactionId, pageNum, text),
+                    CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation),
+                    Commit(stored.transactionId)
             );
         } else {
             final int textNodeHeaderLen = 5;
             long textPageNum = pageNum + 1;
 
             final ExtendedArrayList<ExpectedLoggable> expected = List(
-                    Start(storedTxnId),
-                    CollectionNextDocId(storedTxnId, 1, docId),
-                    StoreElementNode(storedTxnId, pageNum, 1),
+                    Start(stored.transactionId),
+                    CollectionNextDocId(stored.transactionId, 1, docId),
+                    StoreElementNode(stored.transactionId, pageNum, 1),
 
                     // first entry for large text node
-                    StartStorePartialTextNode(storedTxnId, textPageNum++, new DLN("1.1"), text.substring(0, TEXT_PAGE_SIZE - textNodeHeaderLen))
+                    StartStorePartialTextNode(stored.transactionId, textPageNum++, new DLN("1.1"), text.substring(0, TEXT_PAGE_SIZE - textNodeHeaderLen))
             );
 
             for (int i = TEXT_PAGE_SIZE - textNodeHeaderLen; i < text.length(); i += TEXT_PAGE_SIZE) {
@@ -182,178 +182,221 @@ public class JournalXmlTest extends AbstractJournalTest {
                     partialTextEndOffset = i + (text.length() - i);
                 }
                 final String partialText = text.substring(i, partialTextEndOffset);
-                expected.add(StorePartialTextNode(storedTxnId, textPageNum++, partialText));
+                expected.add(StorePartialTextNode(stored.transactionId, textPageNum++, partialText));
             }
 
 
             return expected.add(
-                    CollectionCreateDoc(storedTxnId, 1, docId, storedDbPath),
-                    Commit(storedTxnId)
+                    CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation),
+                    Commit(stored.transactionId)
             );
         }
     }
 
 
     @Override
-    protected List<ExpectedLoggable> storeWithoutCommit_expected(final long storedTxnId, final String storedDbPath) {
+    protected List<ExpectedLoggable> storeWithoutCommit_expected(final TxnDoc<String> stored) {
         final int docId = FIRST_USABLE_DOC_ID + 0;
         final long pageNum = FIRST_USABLE_PAGE + 0;
 
         return Arrays.asList(
-                Start(storedTxnId),
-                CollectionNextDocId(storedTxnId, 1, docId),
-                StoreElementNode(storedTxnId, pageNum, 1),
-                StoreTextNode(storedTxnId, pageNum, "text1"),
-                CollectionCreateDoc(storedTxnId, 1, docId, storedDbPath)
+                Start(stored.transactionId),
+                CollectionNextDocId(stored.transactionId, 1, docId),
+                StoreElementNode(stored.transactionId, pageNum, 1),
+                StoreTextNode(stored.transactionId, pageNum, "text1"),
+                CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> storeThenDelete_expected(final long storedTxnId, final String storedDbPath, final long deletedTxnId, final String deletedDbPath, final int offset) {
+    protected List<ExpectedLoggable> storeThenDelete_expected(final TxnDoc<String> stored, final TxnDoc<String> deleted, final int offset) {
         final int docId = FIRST_USABLE_DOC_ID + offset;
         final long pageNum = FIRST_USABLE_PAGE + 0;
 
         return Arrays.asList(
-                Start(storedTxnId),
-                CollectionNextDocId(storedTxnId, 1, docId),
-                StoreElementNode(storedTxnId, pageNum, 1),
-                StoreTextNode(storedTxnId, pageNum, "text1"),
-                CollectionCreateDoc(storedTxnId, 1, docId, storedDbPath),
-                Commit(storedTxnId),
+                Start(stored.transactionId),
+                CollectionNextDocId(stored.transactionId, 1, docId),
+                StoreElementNode(stored.transactionId, pageNum, 1),
+                StoreTextNode(stored.transactionId, pageNum, "text1"),
+                CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation),
+                Commit(stored.transactionId),
 
-                Start(deletedTxnId),
-                DeleteElementNode(deletedTxnId, pageNum, 1),
-                CollectionDeleteDoc(deletedTxnId, 1, docId, deletedDbPath),
-                Commit(deletedTxnId)
+                Start(deleted.transactionId),
+                DeleteElementNode(deleted.transactionId, pageNum, 1),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation),
+                Commit(deleted.transactionId)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> storeWithoutCommitThenDelete_expected(final long storedTxnId, final String storedDbPath, final long deletedTxnId, final String deletedDbPath) {
+    protected List<ExpectedLoggable> storeWithoutCommitThenDelete_expected(final TxnDoc<String> stored, final TxnDoc<String> deleted) {
         final int docId = FIRST_USABLE_DOC_ID + 0;
         final long pageNum = FIRST_USABLE_PAGE + 0;
 
         return Arrays.asList(
-                Start(storedTxnId),
-                CollectionNextDocId(storedTxnId, 1, docId),
-                StoreElementNode(storedTxnId, pageNum, 1),
-                StoreTextNode(storedTxnId, pageNum, "text1"),
-                CollectionCreateDoc(storedTxnId, 1, docId, storedDbPath),
+                Start(stored.transactionId),
+                CollectionNextDocId(stored.transactionId, 1, docId),
+                StoreElementNode(stored.transactionId, pageNum, 1),
+                StoreTextNode(stored.transactionId, pageNum, "text1"),
+                CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation),
 
-                Start(deletedTxnId),
-                DeleteElementNode(deletedTxnId, pageNum, 1),
-                CollectionDeleteDoc(deletedTxnId, 1, docId, deletedDbPath),
-                Commit(deletedTxnId)
+                Start(deleted.transactionId),
+                DeleteElementNode(deleted.transactionId, pageNum, 1),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation),
+                Commit(deleted.transactionId)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> storeThenDeleteWithoutCommit_expected(final long storedTxnId, final String storedDbPath, final long deletedTxnId, final String deletedDbPath, final int offset) {
+    protected List<ExpectedLoggable> storeThenDeleteWithoutCommit_expected(final TxnDoc<String> stored, final TxnDoc<String> deleted, final int offset) {
         final int docId = FIRST_USABLE_DOC_ID + offset;
         final long pageNum = FIRST_USABLE_PAGE + offset;
 
         return Arrays.asList(
-                Start(storedTxnId),
-                CollectionNextDocId(storedTxnId, 1, docId),
-                StoreElementNode(storedTxnId, pageNum, 1),
-                StoreTextNode(storedTxnId, pageNum, "text1"),
-                CollectionCreateDoc(storedTxnId, 1, docId, storedDbPath),
-                Commit(storedTxnId),
+                Start(stored.transactionId),
+                CollectionNextDocId(stored.transactionId, 1, docId),
+                StoreElementNode(stored.transactionId, pageNum, 1),
+                StoreTextNode(stored.transactionId, pageNum, "text1"),
+                CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation),
+                Commit(stored.transactionId),
 
-                Start(deletedTxnId),
-                DeleteElementNode(deletedTxnId, pageNum, 1),
-                CollectionDeleteDoc(deletedTxnId, 1, docId, deletedDbPath)
+                Start(deleted.transactionId),
+                DeleteElementNode(deleted.transactionId, pageNum, 1),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> storeWithoutCommitThenDeleteWithoutCommit_expected(final long storedTxnId, final String storedDbPath, final long deletedTxnId, final String deletedDbPath) {
+    protected List<ExpectedLoggable> storeWithoutCommitThenDeleteWithoutCommit_expected(final TxnDoc<String> stored, final TxnDoc<String> deleted) {
         final int docId = FIRST_USABLE_DOC_ID + 0;
         final long pageNum = FIRST_USABLE_PAGE + 0;
 
         return Arrays.asList(
-                Start(storedTxnId),
-                CollectionNextDocId(storedTxnId, 1, docId),
-                StoreElementNode(storedTxnId, pageNum, 1),
-                StoreTextNode(storedTxnId, pageNum, "text1"),
-                CollectionCreateDoc(storedTxnId, 1, docId, storedDbPath),
+                Start(stored.transactionId),
+                CollectionNextDocId(stored.transactionId, 1, docId),
+                StoreElementNode(stored.transactionId, pageNum, 1),
+                StoreTextNode(stored.transactionId, pageNum, "text1"),
+                CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation),
 
-                Start(deletedTxnId),
-                DeleteElementNode(deletedTxnId, pageNum, 1),
-                CollectionDeleteDoc(deletedTxnId, 1, docId, deletedDbPath)
+                Start(deleted.transactionId),
+                DeleteElementNode(deleted.transactionId, pageNum, 1),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> delete_expected(final long deletedTxnId, final String deletedDbPath, final int offset) {
+    protected List<ExpectedLoggable> delete_expected(final TxnDoc<String> deleted, final int offset) {
         final int docId = FIRST_USABLE_DOC_ID + offset;
         final int pageNum = FIRST_USABLE_PAGE + offset;
 
         return Arrays.asList(
-                Start(deletedTxnId),
-                DeleteElementNode(deletedTxnId, pageNum, 1),
-                CollectionDeleteDoc(deletedTxnId, 1, docId, deletedDbPath),
-                Commit(deletedTxnId)
+                Start(deleted.transactionId),
+                DeleteElementNode(deleted.transactionId, pageNum, 1),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation),
+                Commit(deleted.transactionId)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> deleteWithoutCommit_expected(final long deletedTxnId, final String deletedDbPath, final int offset) {
+    protected List<ExpectedLoggable> deleteWithoutCommit_expected(final TxnDoc<String> deleted, final int offset) {
         final int docId = FIRST_USABLE_DOC_ID + 0;
         final int pageNum = FIRST_USABLE_PAGE + 0;
 
         return Arrays.asList(
-                Start(deletedTxnId),
-                DeleteElementNode(deletedTxnId, pageNum, 1),
-                CollectionDeleteDoc(deletedTxnId, 1, docId, deletedDbPath)
+                Start(deleted.transactionId),
+                DeleteElementNode(deleted.transactionId, pageNum, 1),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> replace_expected(final long replacedTxnId, final String replacedDbPath, final int offset, final boolean overridesStore) {
+    protected List<ExpectedLoggable> replaceSameContent_expected(final TxnDoc<String> replaced, final int offset, final boolean overridesStore) {
         final int docId = FIRST_USABLE_DOC_ID + 0;
         final int pageNum = FIRST_USABLE_PAGE + 0;
 
         final ExtendedArrayList<ExpectedLoggable> expected = List(
-                Start(replacedTxnId),
+                Start(replaced.transactionId),
 
-                DeleteElementNode(replacedTxnId, pageNum, 1),
-                CollectionDeleteDoc(replacedTxnId, 1, docId, replacedDbPath),
+                DeleteElementNode(replaced.transactionId, pageNum, 1),
+                CollectionDeleteDoc(replaced.transactionId, 1, docId, replaced.docLocation),
 
-                StoreElementNode(replacedTxnId, pageNum, 1)
+                StoreElementNode(replaced.transactionId, pageNum, 1)
         );
 
         if (overridesStore) {
-            expected.add(StoreTextNode(replacedTxnId, pageNum, "text1"));
+            expected.add(StoreTextNode(replaced.transactionId, pageNum, "text1"));
         } else {
-            expected.add(StoreTextNode(replacedTxnId, pageNum, "text2"));
+            expected.add(StoreTextNode(replaced.transactionId, pageNum, "text1"));
         }
 
         return expected.add(
-            CollectionCreateDoc(replacedTxnId, 1, docId, replacedDbPath),
-            Commit(replacedTxnId)
+            CollectionCreateDoc(replaced.transactionId, 1, docId, replaced.docLocation),
+            Commit(replaced.transactionId)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> replaceWithoutCommit_expected(final long replacedTxnId, final String replacedDbPath, final int offset) {
+    protected List<ExpectedLoggable> replaceDifferentContent_expected(final TxnDoc<String> original, final TxnDoc<String> replacement, final int offset, final boolean overridesStore) {
+        final int docId = FIRST_USABLE_DOC_ID + 0;
+        final int pageNum = FIRST_USABLE_PAGE + 0;
+
+        final ExtendedArrayList<ExpectedLoggable> expected = List(
+                Start(replacement.transactionId),
+
+                DeleteElementNode(replacement.transactionId, pageNum, 1),
+                CollectionDeleteDoc(replacement.transactionId, 1, docId, replacement.docLocation),
+
+                StoreElementNode(replacement.transactionId, pageNum, 1)
+        );
+
+        if (overridesStore) {
+            expected.add(StoreTextNode(replacement.transactionId, pageNum, "text1"));
+        } else {
+            expected.add(StoreTextNode(replacement.transactionId, pageNum, "text2"));
+        }
+
+        return expected.add(
+                CollectionCreateDoc(replacement.transactionId, 1, docId, replacement.docLocation),
+                Commit(replacement.transactionId)
+        );
+    }
+
+    @Override
+    protected List<ExpectedLoggable> replaceSameContentWithoutCommit_expected(final TxnDoc<String> replaced, final int offset) {
         final int docId = FIRST_USABLE_DOC_ID + 0;
         final int pageNum = FIRST_USABLE_PAGE + 0;
 
         return Arrays.asList(
-                Start(replacedTxnId),
+                Start(replaced.transactionId),
 
-                DeleteElementNode(replacedTxnId, pageNum, 1),
-                CollectionDeleteDoc(replacedTxnId, 1, docId, replacedDbPath),
+                DeleteElementNode(replaced.transactionId, pageNum, 1),
+                CollectionDeleteDoc(replaced.transactionId, 1, docId, replaced.docLocation),
 
-                StoreElementNode(replacedTxnId, pageNum, 1),
-                StoreTextNode(replacedTxnId, pageNum, "text2"),
-                CollectionCreateDoc(replacedTxnId, 1, docId, replacedDbPath)
+                StoreElementNode(replaced.transactionId, pageNum, 1),
+                StoreTextNode(replaced.transactionId, pageNum, "text1"),
+                CollectionCreateDoc(replaced.transactionId, 1, docId, replaced.docLocation)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> replaceThenDelete_expected(final long replacedTxnId, final String replacedDbPath, final long deletedTxnId, final String deletedDbPath, int offset) {
+    protected List<ExpectedLoggable> replaceDifferentContentWithoutCommit_expected(final TxnDoc<String> original, final TxnDoc<String> replacement, final int offset) {
+        final int docId = FIRST_USABLE_DOC_ID + 0;
+        final int pageNum = FIRST_USABLE_PAGE + 0;
+
+        return Arrays.asList(
+                Start(replacement.transactionId),
+
+                DeleteElementNode(replacement.transactionId, pageNum, 1),
+                CollectionDeleteDoc(replacement.transactionId, 1, docId, replacement.docLocation),
+
+                StoreElementNode(replacement.transactionId, pageNum, 1),
+                StoreTextNode(replacement.transactionId, pageNum, "text2"),
+                CollectionCreateDoc(replacement.transactionId, 1, docId, replacement.docLocation)
+        );
+    }
+
+    @Override
+    protected List<ExpectedLoggable> replaceSameContentThenDelete_expected(final TxnDoc<String> replaced, final TxnDoc<String> deleted, int offset) {
         if (offset >= 2) {
             offset = offset / 2;
         }
@@ -362,24 +405,24 @@ public class JournalXmlTest extends AbstractJournalTest {
         final int pageNum = FIRST_USABLE_PAGE + 0;
 
         return Arrays.asList(
-                Start(replacedTxnId),
-                DeleteElementNode(replacedTxnId, pageNum, 1),
-                CollectionDeleteDoc(replacedTxnId, 1, docId, replacedDbPath),
-                StoreElementNode(replacedTxnId, pageNum, 1),
-                StoreTextNode(replacedTxnId, pageNum, "text2"),
-                CollectionCreateDoc(replacedTxnId, 1, docId, replacedDbPath),
-                Commit(replacedTxnId),
+                Start(replaced.transactionId),
+                DeleteElementNode(replaced.transactionId, pageNum, 1),
+                CollectionDeleteDoc(replaced.transactionId, 1, docId, replaced.docLocation),
+                StoreElementNode(replaced.transactionId, pageNum, 1),
+                StoreTextNode(replaced.transactionId, pageNum, "text1"),
+                CollectionCreateDoc(replaced.transactionId, 1, docId, replaced.docLocation),
+                Commit(replaced.transactionId),
 
-                Start(deletedTxnId),
-                DeleteElementNode(deletedTxnId, pageNum, 1),
-                CollectionDeleteDoc(deletedTxnId, 1, docId, deletedDbPath),
-                Commit(deletedTxnId)
+                Start(deleted.transactionId),
+                DeleteElementNode(deleted.transactionId, pageNum, 1),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation),
+                Commit(deleted.transactionId)
         );
     }
 
     //NOTE special case for XML tests of replaceThenDelete_isRepeatable
     @Override
-    protected List<ExpectedLoggable> store_expected_for_replaceThenDelete(final long storedTxnId, final String storedDbPath, int offset) {
+    protected List<ExpectedLoggable> store_expected_for_replaceThenDelete(final TxnDoc<String> stored, int offset) {
         if (offset >= 2) {
             offset = offset / 2;
         }
@@ -387,83 +430,175 @@ public class JournalXmlTest extends AbstractJournalTest {
         final long pageNum = FIRST_USABLE_PAGE + 0;
 
         return Arrays.asList(
-                Start(storedTxnId),
-                CollectionNextDocId(storedTxnId, 1, docId),
-                StoreElementNode(storedTxnId, pageNum, 1),
-                StoreTextNode(storedTxnId, pageNum, "text1"),
-                CollectionCreateDoc(storedTxnId, 1, docId, storedDbPath),
-                Commit(storedTxnId)
+                Start(stored.transactionId),
+                CollectionNextDocId(stored.transactionId, 1, docId),
+                StoreElementNode(stored.transactionId, pageNum, 1),
+                StoreTextNode(stored.transactionId, pageNum, "text1"),
+                CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation),
+                Commit(stored.transactionId)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> replaceWithoutCommitThenDelete_expected(final long replacedTxnId, final String replacedDbPath, final long deletedTxnId, final String deletedDbPath, final int offset) {
+    protected List<ExpectedLoggable> replaceDifferentContentThenDelete_expected(final TxnDoc<String> original, final TxnDoc<String> replacement, final TxnDoc<String> deleted, int offset) {
+        if (offset >= 2) {
+            offset = offset / 2;
+        }
+
+        final int docId = FIRST_USABLE_DOC_ID + offset;
+        final int pageNum = FIRST_USABLE_PAGE + 0;
+
+        return Arrays.asList(
+                Start(replacement.transactionId),
+                DeleteElementNode(replacement.transactionId, pageNum, 1),
+                CollectionDeleteDoc(replacement.transactionId, 1, docId, replacement.docLocation),
+                StoreElementNode(replacement.transactionId, pageNum, 1),
+                StoreTextNode(replacement.transactionId, pageNum, "text2"),
+                CollectionCreateDoc(replacement.transactionId, 1, docId, replacement.docLocation),
+                Commit(replacement.transactionId),
+
+                Start(deleted.transactionId),
+                DeleteElementNode(deleted.transactionId, pageNum, 1),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation),
+                Commit(deleted.transactionId)
+        );
+    }
+
+    @Override
+    protected List<ExpectedLoggable> replaceSameContentWithoutCommitThenDelete_expected(final TxnDoc<String> replaced, final TxnDoc<String> deleted, final int offset) {
         final int docId = FIRST_USABLE_DOC_ID + 0;
         final int pageNum = FIRST_USABLE_PAGE + 0;
 
         return Arrays.asList(
-                Start(replacedTxnId),
-                DeleteElementNode(replacedTxnId, pageNum, 1),
-                CollectionDeleteDoc(replacedTxnId, 1, docId, replacedDbPath),
-                StoreElementNode(replacedTxnId, pageNum, 1),
-                StoreTextNode(replacedTxnId, pageNum, "text2"),
-                CollectionCreateDoc(replacedTxnId, 1, docId, replacedDbPath),
+                Start(replaced.transactionId),
+                DeleteElementNode(replaced.transactionId, pageNum, 1),
+                CollectionDeleteDoc(replaced.transactionId, 1, docId, replaced.docLocation),
+                StoreElementNode(replaced.transactionId, pageNum, 1),
+                StoreTextNode(replaced.transactionId, pageNum, "text1"),
+                CollectionCreateDoc(replaced.transactionId, 1, docId, replaced.docLocation),
 
-                Start(deletedTxnId),
-                DeleteElementNode(deletedTxnId, pageNum, 1),
-                CollectionDeleteDoc(deletedTxnId, 1, docId, deletedDbPath),
-                Commit(deletedTxnId)
+                Start(deleted.transactionId),
+                DeleteElementNode(deleted.transactionId, pageNum, 1),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation),
+                Commit(deleted.transactionId)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> replaceThenDeleteWithoutCommit_expected(final long replacedTxnId, final String replacedDbPath, final long deletedTxnId, final String deletedDbPath, final int offset, final boolean overridesStore) {
+    protected List<ExpectedLoggable> replaceDifferentContentWithoutCommitThenDelete_expected(final TxnDoc<String> original, final TxnDoc<String> replacement, final TxnDoc<String> deleted, final int offset) {
+        final int docId = FIRST_USABLE_DOC_ID + 0;
+        final int pageNum = FIRST_USABLE_PAGE + 0;
+
+        return Arrays.asList(
+                Start(replacement.transactionId),
+                DeleteElementNode(replacement.transactionId, pageNum, 1),
+                CollectionDeleteDoc(replacement.transactionId, 1, docId, replacement.docLocation),
+                StoreElementNode(replacement.transactionId, pageNum, 1),
+                StoreTextNode(replacement.transactionId, pageNum, "text2"),
+                CollectionCreateDoc(replacement.transactionId, 1, docId, replacement.docLocation),
+
+                Start(deleted.transactionId),
+                DeleteElementNode(deleted.transactionId, pageNum, 1),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation),
+                Commit(deleted.transactionId)
+        );
+    }
+
+    @Override
+    protected List<ExpectedLoggable> replaceSameContentThenDeleteWithoutCommit_expected(final TxnDoc<String> replaced, final TxnDoc<String> deleted, final int offset, final boolean overridesStore) {
         final int docId = FIRST_USABLE_DOC_ID + 0;
         final int pageNum = FIRST_USABLE_PAGE + 0;
 
         final ExtendedArrayList<ExpectedLoggable> expected = List(
-                Start(replacedTxnId),
-                DeleteElementNode(replacedTxnId, pageNum, 1),
-                CollectionDeleteDoc(replacedTxnId, 1, docId, replacedDbPath),
-                StoreElementNode(replacedTxnId, pageNum, 1)
+                Start(replaced.transactionId),
+                DeleteElementNode(replaced.transactionId, pageNum, 1),
+                CollectionDeleteDoc(replaced.transactionId, 1, docId, replaced.docLocation),
+                StoreElementNode(replaced.transactionId, pageNum, 1)
         );
 
         if (overridesStore) {
-            expected.add(StoreTextNode(replacedTxnId, pageNum, "text1"));
+            expected.add(StoreTextNode(replaced.transactionId, pageNum, "text1"));
         } else {
-            expected.add(StoreTextNode(replacedTxnId, pageNum, "text2"));
+            expected.add(StoreTextNode(replaced.transactionId, pageNum, "text1"));
         }
 
         return expected.add(
-                CollectionCreateDoc(replacedTxnId, 1, docId, replacedDbPath),
-                Commit(replacedTxnId)
+                CollectionCreateDoc(replaced.transactionId, 1, docId, replaced.docLocation),
+                Commit(replaced.transactionId)
         ).add(
 
-                Start(deletedTxnId),
-                DeleteElementNode(deletedTxnId, pageNum, 1),
-                CollectionDeleteDoc(deletedTxnId, 1, docId, deletedDbPath)
+                Start(deleted.transactionId),
+                DeleteElementNode(deleted.transactionId, pageNum, 1),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation)
         );
     }
 
     @Override
-    protected List<ExpectedLoggable> replaceWithoutCommitThenDeleteWithoutCommit_expected(final long replacedTxnId, final String replacedDbPath, final long deletedTxnId, final String deletedDbPath, final int offset) {
+    protected List<ExpectedLoggable> replaceDifferentContentThenDeleteWithoutCommit_expected(final TxnDoc<String> original, final TxnDoc<String> replacement, final TxnDoc<String> deleted, final int offset, final boolean overridesStore) {
+        final int docId = FIRST_USABLE_DOC_ID + 0;
+        final int pageNum = FIRST_USABLE_PAGE + 0;
+
+        final ExtendedArrayList<ExpectedLoggable> expected = List(
+                Start(replacement.transactionId),
+                DeleteElementNode(replacement.transactionId, pageNum, 1),
+                CollectionDeleteDoc(replacement.transactionId, 1, docId, replacement.docLocation),
+                StoreElementNode(replacement.transactionId, pageNum, 1)
+        );
+
+        if (overridesStore) {
+            expected.add(StoreTextNode(replacement.transactionId, pageNum, "text1"));
+        } else {
+            expected.add(StoreTextNode(replacement.transactionId, pageNum, "text2"));
+        }
+
+        return expected.add(
+                CollectionCreateDoc(replacement.transactionId, 1, docId, replacement.docLocation),
+                Commit(replacement.transactionId)
+        ).add(
+
+                Start(deleted.transactionId),
+                DeleteElementNode(deleted.transactionId, pageNum, 1),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation)
+        );
+    }
+
+    @Override
+    protected List<ExpectedLoggable> replaceSameContentWithoutCommitThenDeleteWithoutCommit_expected(final TxnDoc<String> replaced, final TxnDoc<String> deleted, final int offset) {
         final int docId = FIRST_USABLE_DOC_ID + 0;
         final int pageNum = FIRST_USABLE_PAGE + 0;
 
         return Arrays.asList(
-                Start(replacedTxnId),
-                DeleteElementNode(replacedTxnId, pageNum, 1),
-                CollectionDeleteDoc(replacedTxnId, 1, docId, replacedDbPath),
-                StoreElementNode(replacedTxnId, pageNum, 1),
-                StoreTextNode(replacedTxnId, pageNum, "text2"),
-                CollectionCreateDoc(replacedTxnId, 1, docId, replacedDbPath),
+                Start(replaced.transactionId),
+                DeleteElementNode(replaced.transactionId, pageNum, 1),
+                CollectionDeleteDoc(replaced.transactionId, 1, docId, replaced.docLocation),
+                StoreElementNode(replaced.transactionId, pageNum, 1),
+                StoreTextNode(replaced.transactionId, pageNum, "text1"),
+                CollectionCreateDoc(replaced.transactionId, 1, docId, replaced.docLocation),
 
-                Start(deletedTxnId),
-                DeleteElementNode(deletedTxnId, pageNum, 1),
-                CollectionDeleteDoc(deletedTxnId, 1, docId, deletedDbPath)
+                Start(deleted.transactionId),
+                DeleteElementNode(deleted.transactionId, pageNum, 1),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation)
         );
     }
 
+    @Override
+    protected List<ExpectedLoggable> replaceDifferentContentWithoutCommitThenDeleteWithoutCommit_expected(final TxnDoc<String> original, final TxnDoc<String> replacement, final TxnDoc<String> deleted, final int offset) {
+        final int docId = FIRST_USABLE_DOC_ID + 0;
+        final int pageNum = FIRST_USABLE_PAGE + 0;
+
+        return Arrays.asList(
+                Start(replacement.transactionId),
+                DeleteElementNode(replacement.transactionId, pageNum, 1),
+                CollectionDeleteDoc(replacement.transactionId, 1, docId, replacement.docLocation),
+                StoreElementNode(replacement.transactionId, pageNum, 1),
+                StoreTextNode(replacement.transactionId, pageNum, "text2"),
+                CollectionCreateDoc(replacement.transactionId, 1, docId, replacement.docLocation),
+
+                Start(deleted.transactionId),
+                DeleteElementNode(deleted.transactionId, pageNum, 1),
+                CollectionDeleteDoc(deleted.transactionId, 1, docId, deleted.docLocation)
+        );
+    }
 
     @Override
     protected Path getTestFile1() throws IOException {
@@ -476,7 +611,7 @@ public class JournalXmlTest extends AbstractJournalTest {
     }
 
     @Override
-    protected XmldbURI storeAndVerify(final DBBroker broker, final Txn transaction, final Collection collection,
+    protected String storeAndVerify(final DBBroker broker, final Txn transaction, final Collection collection,
             final InputSource data, final String dbFilename) throws EXistException, PermissionDeniedException, IOException,
             SAXException, LockException {
 
@@ -485,7 +620,13 @@ public class JournalXmlTest extends AbstractJournalTest {
 
         assertNotNull(collection.getDocument(broker, XmldbURI.create(dbFilename)));
 
-        return collection.getURI().append(dbFilename);
+        return collection.getURI().append(dbFilename).getRawCollectionPath();
+    }
+
+    @Override
+    protected String calcDocLocation(final Path content, final XmldbURI collectionUri, final String fileName)
+            throws IOException {
+        return collectionUri.append(fileName).getRawCollectionPath();
     }
 
     @Override
@@ -503,5 +644,16 @@ public class JournalXmlTest extends AbstractJournalTest {
                 .build();
 
         assertFalse(diff.toString(), diff.hasDifferences());
+    }
+
+    @Override
+    protected String delete(final DBBroker broker, final Txn transaction, final Collection collection,
+            final String dbFilename) throws PermissionDeniedException, LockException, IOException, TriggerException {
+        final DocumentImpl doc = collection.getDocument(broker, XmldbURI.create(dbFilename));
+        if(doc != null) {
+            collection.removeResource(transaction, broker, doc);
+        }
+
+        return doc.getURI().getRawCollectionPath();
     }
 }

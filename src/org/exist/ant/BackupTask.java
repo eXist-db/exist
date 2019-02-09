@@ -38,6 +38,7 @@ import java.nio.file.Paths;
 public class BackupTask extends AbstractXMLDBTask
 {
     private String dir = null;
+    private boolean deduplicateBlobs = false;
 
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()
@@ -57,7 +58,7 @@ public class BackupTask extends AbstractXMLDBTask
         log( "Backup directory: " + dir );
 
         try {
-            final Backup backup = new Backup( user, password, Paths.get(dir), XmldbURI.create( uri ) );
+            final Backup backup = new Backup(user, password, Paths.get(dir), XmldbURI.create( uri ), null, deduplicateBlobs);
             backup.backup( false, null );
 
         }
@@ -82,5 +83,9 @@ public class BackupTask extends AbstractXMLDBTask
     public void setDir( String dir )
     {
         this.dir = dir;
+    }
+
+    public void setDeduplicateBlobs(final boolean deduplicateBlobs) {
+        this.deduplicateBlobs = deduplicateBlobs;
     }
 }

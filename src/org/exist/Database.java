@@ -42,6 +42,8 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.MetaStorage;
 import org.exist.storage.NotificationService;
 import org.exist.storage.ProcessMonitor;
+import org.exist.storage.blob.BlobStore;
+import org.exist.storage.journal.JournalManager;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.util.Configuration;
 import org.exist.xquery.PerformanceStats;
@@ -77,6 +79,13 @@ public interface Database {
      * @return TransactionManager
      */
     public TransactionManager getTransactionManager();
+
+    /**
+     * Get the database Journal Manager.
+     *
+     * @return the Journal Manager
+     */
+    Optional<JournalManager> getJournalManager();
 
     /**
      * 
@@ -169,6 +178,8 @@ public interface Database {
     public NotificationService getNotificationService();
 
     public PluginsManager getPluginsManager();
+
+    public BlobStore getBlobStore();
 
     public SymbolTable getSymbols();
 

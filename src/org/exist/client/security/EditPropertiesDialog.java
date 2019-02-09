@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.exist.client.DialogCompleteWithResponse;
@@ -43,6 +44,7 @@ import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.PermissionAider;
+import org.exist.util.crypto.digest.MessageDigest;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.util.URIUtils;
@@ -61,7 +63,9 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     private final XmldbURI uri;
     private final String internetMediaType;
     private final Date created;
-    private final Date lastModified;
+    @Nullable private final Date lastModified;
+    @Nullable private Long size;
+    @Nullable private final MessageDigest messageDigest;
     private final PermissionAider permission;
     private final List<ResourceDescriptor> applyTo;
     
@@ -73,7 +77,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     /**
      * Creates new form PropertiesDialog
      */
-    public EditPropertiesDialog(final UserManagementService userManagementService, final String currentUser, final Collection parent, final XmldbURI uri, final String internetMediaType, final Date created, final Date lastModified, final PermissionAider permission, final List<ResourceDescriptor> applyTo) {
+    public EditPropertiesDialog(final UserManagementService userManagementService, final String currentUser, final Collection parent, final XmldbURI uri, final String internetMediaType, final Date created, @Nullable final Date lastModified, @Nullable final Long size, @Nullable final MessageDigest messageDigest, final PermissionAider permission, final List<ResourceDescriptor> applyTo) {
         this.userManagementService = userManagementService;
         this.currentUser = currentUser;
         this.parent = parent;
@@ -81,6 +85,8 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         this.internetMediaType = internetMediaType;
         this.created = created;
         this.lastModified = lastModified;
+        this.size = size;
+        this.messageDigest = messageDigest;
         this.permission = permission;
         this.applyTo = applyTo;
         this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());        
@@ -93,6 +99,18 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         lblInternetMediaTypeValue.setText(internetMediaType != null ? internetMediaType : "N/A");
         lblCreatedValue.setText(DateFormat.getDateTimeInstance().format(created));
         lblLastModifiedValue.setText(lastModified != null ? DateFormat.getDateTimeInstance().format(lastModified) : "N/A");
+        lblSizeValue.setText(size != null ? humanSize(size) : "N/A");
+        if (messageDigest != null) {
+            lblDigestAlgorithmValue.setText(messageDigest.getDigestType().getCommonNames()[0]);
+            txtDigest.setText(messageDigest.toHexString());
+            txtDigest.setVisible(true);
+            spDigest.setVisible(true);
+        } else {
+            lblDigestAlgorithmValue.setText("N/A");
+            txtDigest.setText("<digest>");
+            txtDigest.setVisible(false);
+            spDigest.setVisible(false);
+        }
         
         lblOwnerValue.setText(permission.getOwner().getName());
         //final Point pntLblOwnerValue = lblOwnerValue.getLocation();
@@ -128,7 +146,21 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Could not get dba group members: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }
-    
+
+    private static String humanSize(long bytes) {
+        if (bytes < 1024) {
+            return bytes + " bytes";
+        } else if (bytes < 1024 * 1024) {
+            return Math.round(bytes / 1024) + " KB";
+        } else if (bytes < 1024 * 1024 * 1024) {
+            return Math.round(bytes / (1024 * 1024)) + " MB";
+        } else if (bytes < 1024 * 1024 * 1024 * 1024) {
+            return Math.round(bytes / (1024 * 1024 * 1024)) + " GB";
+        } else {
+            return bytes + " bytes";
+        }
+    }
+
     private BasicPermissionsTableModel getBasicPermissionsTableModel() {
         if(basicPermissionsTableModel == null) {
             basicPermissionsTableModel = new BasicPermissionsTableModel(permission);
@@ -166,6 +198,8 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         miMoveDown = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         miRemoveAce = new javax.swing.JMenuItem();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
         lblResource = new javax.swing.JLabel();
         lblInternetMediaType = new javax.swing.JLabel();
         lblCreated = new javax.swing.JLabel();
@@ -193,28 +227,58 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         btnSave = new javax.swing.JButton();
         btnClose = new javax.swing.JButton();
         btnAddAce = new javax.swing.JButton();
+        lblDigest = new javax.swing.JLabel();
+        lblDigestAlgorithmValue = new javax.swing.JLabel();
+        spDigest = new javax.swing.JScrollPane();
+        txtDigest = new javax.swing.JTextArea();
+        lblSize = new javax.swing.JLabel();
+        lblSizeValue = new javax.swing.JLabel();
 
         miInsertAceBefore.setText("Insert ACE before...");
-        miInsertAceBefore.addActionListener(this::miInsertAceBeforeActionPerformed);
+        miInsertAceBefore.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miInsertAceBeforeActionPerformed(evt);
+            }
+        });
         pmAcl.add(miInsertAceBefore);
 
         miInsertAceAfter.setText("Insert ACE after...");
-        miInsertAceAfter.addActionListener(this::miInsertAceAfterActionPerformed);
+        miInsertAceAfter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miInsertAceAfterActionPerformed(evt);
+            }
+        });
         pmAcl.add(miInsertAceAfter);
         pmAcl.add(jSeparator3);
 
         miMoveUp.setText("Move ACE up");
-        miMoveUp.addActionListener(this::miMoveUpActionPerformed);
+        miMoveUp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miMoveUpActionPerformed(evt);
+            }
+        });
         pmAcl.add(miMoveUp);
 
         miMoveDown.setText("Move ACE down");
-        miMoveDown.addActionListener(this::miMoveDownActionPerformed);
+        miMoveDown.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miMoveDownActionPerformed(evt);
+            }
+        });
         pmAcl.add(miMoveDown);
         pmAcl.add(jSeparator4);
 
         miRemoveAce.setText("Remove ACE");
-        miRemoveAce.addActionListener(this::miRemoveAceActionPerformed);
+        miRemoveAce.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miRemoveAceActionPerformed(evt);
+            }
+        });
         pmAcl.add(miRemoveAce);
+
+        jTextArea1.setColumns(20);
+        jTextArea1.setRows(5);
+        jScrollPane1.setViewportView(jTextArea1);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Properties");
@@ -244,10 +308,18 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         lblGroupValue.setText("<group>");
 
         btnChangeOwner.setText("...");
-        btnChangeOwner.addActionListener(this::btnChangeOwnerActionPerformed);
+        btnChangeOwner.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnChangeOwnerActionPerformed(evt);
+            }
+        });
 
         btnChangeGroup.setText("...");
-        btnChangeGroup.addActionListener(this::btnChangeGroupActionPerformed);
+        btnChangeGroup.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnChangeGroupActionPerformed(evt);
+            }
+        });
 
         tblBasePermissions.setModel(getBasicPermissionsTableModel());
         tblBasePermissions.setRowSelectionAllowed(false);
@@ -267,48 +339,73 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         jScrollPane3.setViewportView(tblAcl);
 
         btnSave.setText("Save");
-        btnSave.addActionListener(this::btnSaveActionPerformed);
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveActionPerformed(evt);
+            }
+        });
 
         btnClose.setText("Close");
-        btnClose.addActionListener(this::btnCloseActionPerformed);
+        btnClose.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCloseActionPerformed(evt);
+            }
+        });
 
         btnAddAce.setText("Add Access Control Entry...");
-        btnAddAce.addActionListener(this::btnAddAceActionPerformed);
+        btnAddAce.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddAceActionPerformed(evt);
+            }
+        });
+
+        lblDigest.setText("Digest:");
+
+        lblDigestAlgorithmValue.setText("<digest algorithm>");
+
+        txtDigest.setEditable(false);
+        txtDigest.setColumns(20);
+        txtDigest.setLineWrap(true);
+        txtDigest.setRows(5);
+        txtDigest.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        spDigest.setViewportView(txtDigest);
+
+        lblSize.setText("Size:");
+
+        lblSizeValue.setText("<size>");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jSeparator1))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(25, 25, 25)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblBasePermissions)
                             .addComponent(lblAccessControlList)
+                            .addComponent(btnAddAce)
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lblBasePermissions)
+                            .addComponent(spDigest, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addGroup(layout.createSequentialGroup()
-                                            .addComponent(lblOwner)
-                                            .addGap(112, 112, 112))
-                                        .addComponent(lblLastModified, javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(lblCreated, javax.swing.GroupLayout.Alignment.LEADING))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(lblResource)
-                                            .addComponent(lblInternetMediaType)
-                                            .addComponent(lblGroup))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                                    .addComponent(lblResource)
+                                    .addComponent(lblInternetMediaType)
+                                    .addComponent(lblOwner)
+                                    .addComponent(lblLastModified)
+                                    .addComponent(lblCreated)
+                                    .addComponent(lblGroup)
+                                    .addComponent(lblSize)
+                                    .addComponent(lblDigest))
+                                .addGap(28, 28, 28)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(lblResourceValue, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
-                                        .addComponent(lblInternetMediaTypeValue, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(lblCreatedValue, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(lblLastModifiedValue, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addComponent(lblDigestAlgorithmValue, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(lblSizeValue)
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(lblGroupValue, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -316,19 +413,22 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(lblOwnerValue, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btnChangeOwner, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                            .addComponent(btnAddAce)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                                .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                                        .addComponent(btnChangeOwner, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(lblResourceValue, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(lblInternetMediaTypeValue, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(lblCreatedValue, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(lblLastModifiedValue, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 432, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(btnClose)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnSave)))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -349,35 +449,45 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblLastModified)
                     .addComponent(lblLastModifiedValue))
-                .addGap(14, 14, 14)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblSize)
+                    .addComponent(lblSizeValue))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblDigest)
+                    .addComponent(lblDigestAlgorithmValue))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(spDigest, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblOwner)
                     .addComponent(lblOwnerValue)
                     .addComponent(btnChangeOwner, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblGroup)
                     .addComponent(lblGroupValue)
                     .addComponent(btnChangeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(18, 18, 18)
                 .addComponent(lblBasePermissions)
-                .addGap(5, 5, 5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblAccessControlList)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnAddAce)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnClose)
                     .addComponent(btnSave))
-                .addGap(20, 20, 20))
+                .addContainerGap())
         );
 
         pack();
@@ -567,16 +677,20 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     private javax.swing.JButton btnChangeOwner;
     private javax.swing.JButton btnClose;
     private javax.swing.JButton btnSave;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
+    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JLabel lblAccessControlList;
     private javax.swing.JLabel lblBasePermissions;
     private javax.swing.JLabel lblCreated;
     private javax.swing.JLabel lblCreatedValue;
+    private javax.swing.JLabel lblDigest;
+    private javax.swing.JLabel lblDigestAlgorithmValue;
     private javax.swing.JLabel lblGroup;
     private javax.swing.JLabel lblGroupValue;
     private javax.swing.JLabel lblInternetMediaType;
@@ -587,13 +701,17 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     private javax.swing.JLabel lblOwnerValue;
     private javax.swing.JLabel lblResource;
     private javax.swing.JLabel lblResourceValue;
+    private javax.swing.JLabel lblSize;
+    private javax.swing.JLabel lblSizeValue;
     private javax.swing.JMenuItem miInsertAceAfter;
     private javax.swing.JMenuItem miInsertAceBefore;
     private javax.swing.JMenuItem miMoveDown;
     private javax.swing.JMenuItem miMoveUp;
     private javax.swing.JMenuItem miRemoveAce;
     private javax.swing.JPopupMenu pmAcl;
+    private javax.swing.JScrollPane spDigest;
     private javax.swing.JTable tblAcl;
     private javax.swing.JTable tblBasePermissions;
+    private javax.swing.JTextArea txtDigest;
     // End of variables declaration//GEN-END:variables
 }

@@ -96,6 +96,16 @@ public interface RpcAPI {
     void exitServiceMode() throws PermissionDeniedException;
 
     /**
+     * Get the content digest of a resource.
+     *
+     * @param path the path to the resource.
+     * @param digestAlgorithm the digest algorithm
+     *
+     * @return the message digest of the content
+     */
+    Map<String, Object> getContentDigest(final String path, final String digestAlgorithm) throws EXistException, PermissionDeniedException;
+
+    /**
      * Retrieve document by name. XML content is indented if prettyPrint is set
      * to >=0. Use supplied encoding for output.
      *

@@ -48,6 +48,7 @@
 	<classpathentry kind="lib" path="lib/core/jctools-core-2.1.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/jline-3.9.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/jsr305-3.0.2.jar"/>
+    <classpathentry kind="lib" path="lib/core/java-uuid-generator-3.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/core/jta-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-api-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-core-2.11.0.jar"/>
