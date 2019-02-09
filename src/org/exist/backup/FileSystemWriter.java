@@ -40,6 +40,7 @@ import java.util.Properties;
  */
 public class FileSystemWriter implements BackupWriter {
     private final Path rootDir;
+    private final Path blobDir;
     private Path currentDir;
     private Path currentContents;
     private Writer currentContentsOut;
@@ -56,9 +57,12 @@ public class FileSystemWriter implements BackupWriter {
             //removing "path"
             FileUtils.deleteQuietly(file);
         }
-        Files.createDirectories(file);
+
         currentDir = file;
         rootDir = file;
+        blobDir = file.resolve("blob");
+
+        Files.createDirectories(blobDir);
     }
 
     @Override
@@ -108,6 +112,13 @@ public class FileSystemWriter implements BackupWriter {
     }
 
     @Override
+    public OutputStream newBlobEntry(final String blobId) throws IOException {
+        currentOut = Files.newOutputStream(blobDir.resolve(blobId));
+        dataWritten = true;
+        return currentOut;
+    }
+
+    @Override
     public void closeEntry() throws IOException {
         currentOut.close();
     }
@@ -121,10 +132,5 @@ public class FileSystemWriter implements BackupWriter {
         try (final OutputStream os = Files.newOutputStream(propFile)) {
             properties.store(os, "Backup properties");
         }
-    }
-
-    @Override
-    public void addToRoot(final String name, final Path file) throws IOException {
-        Files.copy(file, rootDir.resolve(name), StandardCopyOption.ATOMIC_MOVE);
     }
 }

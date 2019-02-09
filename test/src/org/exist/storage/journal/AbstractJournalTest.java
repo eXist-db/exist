@@ -19,7 +19,6 @@
  */
 package org.exist.storage.journal;
 
-import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.collections.Collection;
@@ -70,7 +69,7 @@ import static org.junit.Assert.assertNull;
  *
  * @author Adam Retter <adam@evolvedbinary.com>
  */
-public abstract class AbstractJournalTest {
+public abstract class AbstractJournalTest<T> {
 
     protected static final boolean COMMIT = true;
     protected static final boolean NO_COMMIT = false;
@@ -98,7 +97,7 @@ public abstract class AbstractJournalTest {
         final Path testFile = getTestFile1();
 
         BrokerPool.FORCE_CORRUPTION = true;
-        final Tuple2<Long, String> stored = store(COMMIT, testFile);
+        final TxnDoc<T> stored = store(COMMIT, testFile);
         flushJournal();
 
         // shutdown the broker pool (without destroying the data dir)
@@ -111,12 +110,12 @@ public abstract class AbstractJournalTest {
         if (!shouldGenerateReplaceEntry) {
             // expected STORE
             assertPartialOrdered(
-                    store_expected(stored._1, stored._2, offset),
+                    store_expected(stored, offset),
                     readLatestJournalEntries());
         } else {
             // expected REPLACE
             assertPartialOrdered(
-                    replace_expected(stored._1, stored._2, offset > 0 ? offset - 1 : offset, true),
+                    replaceSameContent_expected(stored, offset > 0 ? offset - 1 : offset, true),
                     readLatestJournalEntries());
         }
     }
@@ -133,7 +132,7 @@ public abstract class AbstractJournalTest {
         store(true, 2);
     }
 
-    protected abstract List<ExpectedLoggable> store_expected(final long storedTxnId, final String storedDbPath, final int offset);
+    protected abstract List<ExpectedLoggable> store_expected(final TxnDoc<T> stored, final int offset);
 
     @Test
     public void storeWithoutCommit() throws LockException, SAXException, PermissionDeniedException,
@@ -144,7 +143,7 @@ public abstract class AbstractJournalTest {
         final Path testFile = getTestFile1();
 
         BrokerPool.FORCE_CORRUPTION = true;
-        final Tuple2<Long, String> stored = store(NO_COMMIT, testFile);
+        final TxnDoc<T> stored = store(NO_COMMIT, testFile);
         flushJournal();
 
         // shutdown the broker pool (without destroying the data dir)
@@ -155,7 +154,7 @@ public abstract class AbstractJournalTest {
 
         // check journal entries written for store without commit
         assertPartialOrdered(
-                storeWithoutCommit_expected(stored._1, stored._2),
+                storeWithoutCommit_expected(stored),
                 readLatestJournalEntries());
     }
 
@@ -171,7 +170,7 @@ public abstract class AbstractJournalTest {
         storeWithoutCommit();
     }
 
-    protected abstract List<ExpectedLoggable> storeWithoutCommit_expected(final long storedTxnId, final String storedDbPath);
+    protected abstract List<ExpectedLoggable> storeWithoutCommit_expected(final TxnDoc<T> stored);
 
     @Test
     public void storeThenDelete() throws LockException, SAXException, PermissionDeniedException,
@@ -187,8 +186,8 @@ public abstract class AbstractJournalTest {
         final Path testFile = getTestFile1();
 
         BrokerPool.FORCE_CORRUPTION = true;
-        final Tuple2<Long, String> stored = store(COMMIT, testFile);
-        final Tuple2<Long, String> deleted = delete(COMMIT, testFile);
+        final TxnDoc<T> stored = store(COMMIT, testFile);
+        final TxnDoc<T> deleted = delete(COMMIT, testFile);
         flushJournal();
 
         // shutdown the broker pool (without destroying the data dir)
@@ -199,7 +198,7 @@ public abstract class AbstractJournalTest {
 
         // check journal entries written for replace
         assertPartialOrdered(
-                storeThenDelete_expected(stored._1, stored._2, deleted._1, deleted._2, offset),
+                storeThenDelete_expected(stored, deleted, offset),
                 readLatestJournalEntries());
     }
 
@@ -215,7 +214,7 @@ public abstract class AbstractJournalTest {
         storeThenDelete(2);
     }
 
-    protected abstract List<ExpectedLoggable> storeThenDelete_expected(final long storedTxnId, final String storedDbPath, final long deletedTxnId, final String deletedDbPath, final int offset);
+    protected abstract List<ExpectedLoggable> storeThenDelete_expected(final TxnDoc<T> stored, final TxnDoc<T> deleted, final int offset);
 
     @Test
     public void storeWithoutCommitThenDelete() throws LockException, SAXException, PermissionDeniedException,
@@ -226,8 +225,8 @@ public abstract class AbstractJournalTest {
         final Path testFile = getTestFile1();
 
         BrokerPool.FORCE_CORRUPTION = true;
-        final Tuple2<Long, String> stored = store(NO_COMMIT, testFile);
-        final Tuple2<Long, String> deleted = delete(COMMIT, testFile);
+        final TxnDoc<T> stored = store(NO_COMMIT, testFile);
+        final TxnDoc<T> deleted = delete(COMMIT, testFile);
         flushJournal();
 
 
@@ -239,7 +238,7 @@ public abstract class AbstractJournalTest {
 
         // check journal entries written for replace
         assertPartialOrdered(
-                storeWithoutCommitThenDelete_expected(stored._1, stored._2, deleted._1, deleted._2),
+                storeWithoutCommitThenDelete_expected(stored, deleted),
                 readLatestJournalEntries());
     }
 
@@ -255,7 +254,7 @@ public abstract class AbstractJournalTest {
         storeWithoutCommitThenDelete();
     }
 
-    protected abstract List<ExpectedLoggable> storeWithoutCommitThenDelete_expected(final long storedTxnId, final String storedDbPath, final long deletedTxnId, final String deletedDbPath);
+    protected abstract List<ExpectedLoggable> storeWithoutCommitThenDelete_expected(final TxnDoc<T> stored, final TxnDoc<T> deleted);
 
     @Test
     public void storeThenDeleteWithoutCommit() throws LockException, SAXException, PermissionDeniedException,
@@ -271,8 +270,8 @@ public abstract class AbstractJournalTest {
         final Path testFile = getTestFile1();
 
         BrokerPool.FORCE_CORRUPTION = true;
-        final Tuple2<Long, String> stored = store(COMMIT, testFile);
-        final Tuple2<Long, String> deleted = delete(NO_COMMIT, testFile);
+        final TxnDoc<T> stored = store(COMMIT, testFile);
+        final TxnDoc<T> deleted = delete(NO_COMMIT, testFile);
         flushJournal();
 
         // shutdown the broker pool (without destroying the data dir)
@@ -285,12 +284,12 @@ public abstract class AbstractJournalTest {
         if (!shouldGenerateReplaceEntry) {
             // expected STORE
             assertPartialOrdered(
-                    storeThenDeleteWithoutCommit_expected(stored._1, stored._2, deleted._1, deleted._2, offset),
+                    storeThenDeleteWithoutCommit_expected(stored, deleted, offset),
                     readLatestJournalEntries());
         } else {
             // expected REPLACE
             assertPartialOrdered(
-                    replaceThenDeleteWithoutCommit_expected(stored._1, stored._2, deleted._1, deleted._2, offset > 0 ? offset - 1 : offset, true),
+                    replaceSameContentThenDeleteWithoutCommit_expected(stored, deleted, offset > 0 ? offset - 1 : offset, true),
                     readLatestJournalEntries());
         }
     }
@@ -307,7 +306,7 @@ public abstract class AbstractJournalTest {
         storeThenDeleteWithoutCommit(true, 2);
     }
 
-    protected abstract List<ExpectedLoggable> storeThenDeleteWithoutCommit_expected(final long storedTxnId, final String storedDbPath, final long deletedTxnId, final String deletedDbPath, final int offset);
+    protected abstract List<ExpectedLoggable> storeThenDeleteWithoutCommit_expected(final TxnDoc<T> stored, final TxnDoc<T> deleted, final int offset);
 
     @Test
     public void storeWithoutCommitThenDeleteWithoutCommit() throws LockException, SAXException,
@@ -318,8 +317,8 @@ public abstract class AbstractJournalTest {
         final Path testFile = getTestFile1();
 
         BrokerPool.FORCE_CORRUPTION = true;
-        final Tuple2<Long, String> stored = store(NO_COMMIT, testFile);
-        final Tuple2<Long, String> deleted = delete(NO_COMMIT, testFile);
+        final TxnDoc<T> stored = store(NO_COMMIT, testFile);
+        final TxnDoc<T> deleted = delete(NO_COMMIT, testFile);
         flushJournal();
 
         // shutdown the broker pool (without destroying the data dir)
@@ -330,7 +329,7 @@ public abstract class AbstractJournalTest {
 
         // check journal entries written for replace
         assertPartialOrdered(
-                storeWithoutCommitThenDeleteWithoutCommit_expected(stored._1, stored._2, deleted._1, deleted._2),
+                storeWithoutCommitThenDeleteWithoutCommit_expected(stored, deleted),
                 readLatestJournalEntries());
     }
 
@@ -346,7 +345,7 @@ public abstract class AbstractJournalTest {
         storeWithoutCommitThenDeleteWithoutCommit();
     }
 
-    protected abstract List<ExpectedLoggable> storeWithoutCommitThenDeleteWithoutCommit_expected(final long storedTxnId, final String storedDbPath, final long deletedTxnId, final String deletedDbPath);
+    protected abstract List<ExpectedLoggable> storeWithoutCommitThenDeleteWithoutCommit_expected(final TxnDoc<T> stored, final TxnDoc<T> deleted);
 
     @Test
     public void delete() throws LockException, SAXException, PermissionDeniedException, EXistException,
@@ -361,21 +360,21 @@ public abstract class AbstractJournalTest {
         final Path testFile = getTestFile1();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        final Tuple2<Long, String> stored = store(COMMIT, testFile);
+        final TxnDoc<T> stored = store(COMMIT, testFile);
 
         // shutdown the broker pool (without destroying the data dir)
         existEmbeddedServer.getBrokerPool().shutdown();
 
         // check journal entries written for store
         assertPartialOrdered(
-                store_expected(stored._1, stored._2, offset),
+                store_expected(stored, offset),
                 readLatestJournalEntries());
 
         // restart the database server
         existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = true;
-        final Tuple2<Long, String> deleted = delete(COMMIT, testFile);
+        final TxnDoc<T> deleted = delete(COMMIT, testFile);
         flushJournal();
 
         // shutdown the broker pool (without destroying the data dir)
@@ -386,7 +385,7 @@ public abstract class AbstractJournalTest {
 
         // check journal entries written for delete
         assertPartialOrdered(
-                delete_expected(deleted._1, deleted._2, offset),
+                delete_expected(deleted, offset),
                 readLatestJournalEntries());
     }
 
@@ -402,7 +401,7 @@ public abstract class AbstractJournalTest {
         delete(2);
     }
 
-    protected abstract List<ExpectedLoggable> delete_expected(final long deletedTxnId, final String deletedDbPath, final int offset);
+    protected abstract List<ExpectedLoggable> delete_expected(final TxnDoc<T> deleted, final int offset);
 
     @Test
     public void deleteWithoutCommit() throws LockException, SAXException, PermissionDeniedException,
@@ -418,7 +417,7 @@ public abstract class AbstractJournalTest {
         final Path testFile = getTestFile1();
 
         BrokerPool.FORCE_CORRUPTION = false;
-        final Tuple2<Long, String> stored = store(COMMIT, testFile);
+        final TxnDoc<T> stored = store(COMMIT, testFile);
 
         // shutdown the broker pool (without destroying the data dir)
         existEmbeddedServer.getBrokerPool().shutdown();
@@ -427,12 +426,12 @@ public abstract class AbstractJournalTest {
         if (!shouldGenerateReplaceEntry) {
             // expected STORE
             assertPartialOrdered(
-                    store_expected(stored._1, stored._2, offset),
+                    store_expected(stored, offset),
                     readLatestJournalEntries());
         } else {
             // expected REPLACE
             assertPartialOrdered(
-                    replace_expected(stored._1, stored._2, offset > 0 ? offset - 1 : offset, true),
+                    replaceSameContent_expected(stored, offset > 0 ? offset - 1 : offset, true),
                     readLatestJournalEntries());
         }
 
@@ -440,7 +439,7 @@ public abstract class AbstractJournalTest {
         existEmbeddedServer.restart();
 
         BrokerPool.FORCE_CORRUPTION = true;
-        final Tuple2<Long, String> deleted = delete(NO_COMMIT, testFile);
+        final TxnDoc<T> deleted = delete(NO_COMMIT, testFile);
         flushJournal();
 
         // shutdown the broker pool (without destroying the data dir)
@@ -451,7 +450,7 @@ public abstract class AbstractJournalTest {
 
         // check journal entries written for replace
         assertPartialOrdered(
-                deleteWithoutCommit_expected(deleted._1, deleted._2, offset),
+                deleteWithoutCommit_expected(deleted, offset),
                 readLatestJournalEntries());
     }
 
@@ -467,22 +466,22 @@ public abstract class AbstractJournalTest {
         deleteWithoutCommit(true, 2);
     }
 
-    protected abstract List<ExpectedLoggable> deleteWithoutCommit_expected(final long deletedTxnId, final String deletedDbPath, final int offset);
+    protected abstract List<ExpectedLoggable> deleteWithoutCommit_expected(final TxnDoc<T> deleted, final int offset);
 
     @Test
-    public void replace() throws LockException, SAXException, PermissionDeniedException, EXistException,
+    public void replaceSameContent() throws LockException, SAXException, PermissionDeniedException, EXistException,
             IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
-        replace(false, 0);
+        replaceSameContent(false, 0);
     }
 
-    private void replace(final boolean storeShouldGenerateReplaceEntry, final int offset) throws IllegalAccessException, EXistException, NoSuchFieldException, IOException, LockException, SAXException, PermissionDeniedException, DatabaseConfigurationException {
+    private void replaceSameContent(final boolean storeShouldGenerateReplaceEntry, final int offset) throws IllegalAccessException, EXistException, NoSuchFieldException, IOException, LockException, SAXException, PermissionDeniedException, DatabaseConfigurationException {
         checkpointJournalAndSwitchFile();
 
         final Path testFile = getTestFile1();
         final String testFilename = FileUtils.fileName(testFile);
 
         BrokerPool.FORCE_CORRUPTION = false;
-        final Tuple2<Long, String> stored = store(COMMIT, testFile);
+        final TxnDoc<T> stored = store(COMMIT, testFile);
 
         // shutdown the broker pool (without destroying the data dir)
         existEmbeddedServer.getBrokerPool().shutdown();
@@ -491,12 +490,80 @@ public abstract class AbstractJournalTest {
         if (!storeShouldGenerateReplaceEntry) {
             // expected STORE
             assertPartialOrdered(
-                    store_expected(stored._1, stored._2, offset),
+                    store_expected(stored, offset),
                     readLatestJournalEntries());
         } else {
             // expected REPLACE
             assertPartialOrdered(
-                    replace_expected(stored._1, stored._2, offset > 0 ? offset - 1 : offset, true),
+                    replaceSameContent_expected(stored, offset > 0 ? offset - 1 : offset, true),
+                    readLatestJournalEntries());
+        }
+
+        // restart the database server
+        existEmbeddedServer.restart();
+
+        final Path testFile2 = getTestFile2();
+
+        // replace testFile with testFile
+        BrokerPool.FORCE_CORRUPTION = true;
+        final TxnDoc<T> replaced = store(COMMIT, testFile, testFilename);
+        flushJournal();
+
+        // shutdown the broker pool (without destroying the data dir)
+        existEmbeddedServer.getBrokerPool().shutdown();
+
+        // reset the corruption flag back to normal
+        BrokerPool.FORCE_CORRUPTION = false;
+
+        // check journal entries written for replace
+        assertPartialOrdered(
+                replaceSameContent_expected(replaced, offset, false),
+                readLatestJournalEntries());
+    }
+
+    @Test
+    public void replaceSameContent_isRepeatable() throws LockException, SAXException, PermissionDeniedException,
+            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+        replaceSameContent(false, 0);
+        existEmbeddedServer.restart();
+
+        replaceSameContent(true, 2);
+        existEmbeddedServer.restart();
+
+        replaceSameContent(true, 4);
+    }
+
+    protected abstract List<ExpectedLoggable> replaceSameContent_expected(final TxnDoc<T> replaced, final int offset, final boolean overridesStore);
+
+    @Test
+    public void replaceDifferentContent() throws LockException, SAXException, PermissionDeniedException, EXistException,
+            IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+        replaceDifferentContent(false, 0);
+    }
+
+    private void replaceDifferentContent(final boolean storeShouldGenerateReplaceEntry, final int offset) throws IllegalAccessException, EXistException, NoSuchFieldException, IOException, LockException, SAXException, PermissionDeniedException, DatabaseConfigurationException {
+        checkpointJournalAndSwitchFile();
+
+        final Path testFile = getTestFile1();
+        final String testFilename = FileUtils.fileName(testFile);
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        final TxnDoc<T> stored = store(COMMIT, testFile);
+
+        // shutdown the broker pool (without destroying the data dir)
+        existEmbeddedServer.getBrokerPool().shutdown();
+
+        // check journal entries written for store
+        if (!storeShouldGenerateReplaceEntry) {
+            // expected STORE
+            assertPartialOrdered(
+                    store_expected(stored, offset),
+                    readLatestJournalEntries());
+        } else {
+            // expected REPLACE
+            final TxnDoc<T> original = new TxnDoc<>(stored.transactionId, calcDocLocation(getTestFile2(), testFilename));
+            assertPartialOrdered(
+                    replaceDifferentContent_expected(original, stored, offset > 0 ? offset - 1 : offset, true),
                     readLatestJournalEntries());
         }
 
@@ -507,7 +574,7 @@ public abstract class AbstractJournalTest {
 
         // replace testFile with testFile2
         BrokerPool.FORCE_CORRUPTION = true;
-        final Tuple2<Long, String> replaced = store(COMMIT, testFile2, testFilename);
+        final TxnDoc<T> replaced = store(COMMIT, testFile2, testFilename);
         flushJournal();
 
         // shutdown the broker pool (without destroying the data dir)
@@ -518,38 +585,38 @@ public abstract class AbstractJournalTest {
 
         // check journal entries written for replace
         assertPartialOrdered(
-                replace_expected(replaced._1, replaced._2, offset, false),
+                replaceDifferentContent_expected(stored, replaced, offset, false),
                 readLatestJournalEntries());
     }
 
     @Test
-    public void replace_isRepeatable() throws LockException, SAXException, PermissionDeniedException,
+    public void replaceDifferentContent_isRepeatable() throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
-        replace(false, 0);
+        replaceDifferentContent(false, 0);
         existEmbeddedServer.restart();
 
-        replace(true, 2);
+        replaceDifferentContent(true, 2);
         existEmbeddedServer.restart();
 
-        replace(true, 4);
+        replaceDifferentContent(true, 4);
     }
 
-    protected abstract List<ExpectedLoggable> replace_expected(final long replacedTxnId, final String replacedDbPath, final int offset, final boolean overridesStore);
+    protected abstract List<ExpectedLoggable> replaceDifferentContent_expected(final TxnDoc<T> original, final TxnDoc<T> replacement, final int offset, final boolean overridesStore);
 
     @Test
-    public void replaceWithoutCommit() throws LockException, SAXException, PermissionDeniedException,
+    public void replaceSameContentWithoutCommit() throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
-        replaceWithoutCommit(false, 0);
+        replaceSameContentWithoutCommit(false, 0);
     }
 
-    private void replaceWithoutCommit(final boolean storeShouldGenerateReplaceEntry, final int offset) throws IllegalAccessException, EXistException, NoSuchFieldException, IOException, LockException, SAXException, PermissionDeniedException, DatabaseConfigurationException {
+    private void replaceSameContentWithoutCommit(final boolean storeShouldGenerateReplaceEntry, final int offset) throws IllegalAccessException, EXistException, NoSuchFieldException, IOException, LockException, SAXException, PermissionDeniedException, DatabaseConfigurationException {
         checkpointJournalAndSwitchFile();
 
         final Path testFile = getTestFile1();
         final String testFilename = FileUtils.fileName(testFile);
 
         BrokerPool.FORCE_CORRUPTION = false;
-        final Tuple2<Long, String> stored = store(COMMIT, testFile);
+        final TxnDoc<T> stored = store(COMMIT, testFile);
 
         // shutdown the broker pool (without destroying the data dir)
         existEmbeddedServer.getBrokerPool().shutdown();
@@ -558,12 +625,77 @@ public abstract class AbstractJournalTest {
         if (!storeShouldGenerateReplaceEntry) {
             // expected STORE
             assertPartialOrdered(
-                    store_expected(stored._1, stored._2, offset),
+                    store_expected(stored, offset),
                     readLatestJournalEntries());
         } else {
             // expected REPLACE
             assertPartialOrdered(
-                    replace_expected(stored._1, stored._2, offset > 0 ? offset - 1 : offset, true),
+                    replaceSameContent_expected(stored, offset > 0 ? offset - 1 : offset, true),
+                    readLatestJournalEntries());
+        }
+
+        // restart the database server
+        existEmbeddedServer.restart();
+
+        // replace testFile with testFile
+        BrokerPool.FORCE_CORRUPTION = true;
+        final TxnDoc<T> replaced = store(NO_COMMIT, testFile, testFilename);
+        flushJournal();
+
+        // shutdown the broker pool (without destroying the data dir)
+        existEmbeddedServer.getBrokerPool().shutdown();
+
+        // reset the corruption flag back to normal
+        BrokerPool.FORCE_CORRUPTION = false;
+
+        // check journal entries written for replace
+        assertPartialOrdered(
+                replaceSameContentWithoutCommit_expected(replaced, offset),
+                readLatestJournalEntries());
+    }
+
+    @Test
+    public void replaceSameContentWithoutCommit_isRepeatable() throws LockException, SAXException,
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+        replaceSameContentWithoutCommit(false, 0);
+        existEmbeddedServer.restart();
+
+        replaceSameContentWithoutCommit(true, 1);
+        existEmbeddedServer.restart();
+
+        replaceSameContentWithoutCommit(true, 2);
+    }
+
+    protected abstract List<ExpectedLoggable> replaceSameContentWithoutCommit_expected(final TxnDoc<T> replaced, final int offset);
+
+    @Test
+    public void replaceDifferentContentWithoutCommit() throws LockException, SAXException, PermissionDeniedException,
+            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+        replaceDifferentContentWithoutCommit(false, 0);
+    }
+
+    private void replaceDifferentContentWithoutCommit(final boolean storeShouldGenerateReplaceEntry, final int offset) throws IllegalAccessException, EXistException, NoSuchFieldException, IOException, LockException, SAXException, PermissionDeniedException, DatabaseConfigurationException {
+        checkpointJournalAndSwitchFile();
+
+        final Path testFile = getTestFile1();
+        final String testFilename = FileUtils.fileName(testFile);
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        final TxnDoc<T> stored = store(COMMIT, testFile);
+
+        // shutdown the broker pool (without destroying the data dir)
+        existEmbeddedServer.getBrokerPool().shutdown();
+
+        // check journal entries written for store
+        if (!storeShouldGenerateReplaceEntry) {
+            // expected STORE
+            assertPartialOrdered(
+                    store_expected(stored, offset),
+                    readLatestJournalEntries());
+        } else {
+            // expected REPLACE
+            assertPartialOrdered(
+                    replaceSameContent_expected(stored, offset > 0 ? offset - 1 : offset, true),
                     readLatestJournalEntries());
         }
 
@@ -574,7 +706,7 @@ public abstract class AbstractJournalTest {
 
         // replace testFile with testFile2
         BrokerPool.FORCE_CORRUPTION = true;
-        final Tuple2<Long, String> replaced = store(NO_COMMIT, testFile2, testFilename);
+        final TxnDoc<T> replaced = store(NO_COMMIT, testFile2, testFilename);
         flushJournal();
 
         // shutdown the broker pool (without destroying the data dir)
@@ -585,31 +717,31 @@ public abstract class AbstractJournalTest {
 
         // check journal entries written for replace
         assertPartialOrdered(
-                replaceWithoutCommit_expected(replaced._1, replaced._2, offset),
+                replaceDifferentContentWithoutCommit_expected(stored, replaced, offset),
                 readLatestJournalEntries());
     }
 
     @Test
-    public void replaceWithoutCommit_isRepeatable() throws LockException, SAXException,
+    public void replaceDifferentContentWithoutCommit_isRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
-        replaceWithoutCommit(false, 0);
+        replaceDifferentContentWithoutCommit(false, 0);
         existEmbeddedServer.restart();
 
-        replaceWithoutCommit(true, 1);
+        replaceDifferentContentWithoutCommit(true, 1);
         existEmbeddedServer.restart();
 
-        replaceWithoutCommit(true, 2);
+        replaceDifferentContentWithoutCommit(true, 2);
     }
 
-    protected abstract List<ExpectedLoggable> replaceWithoutCommit_expected(final long replacedTxnId, final String replacedDbPath, final int offset);
+    protected abstract List<ExpectedLoggable> replaceDifferentContentWithoutCommit_expected(final TxnDoc<T> original, final TxnDoc<T> replaced, final int offset);
 
     @Test
-    public void replaceThenDelete() throws LockException, SAXException, PermissionDeniedException,
+    public void replaceSameContentThenDelete() throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
-        replaceThenDelete(0);
+        replaceSameContentThenDelete(0);
     }
 
-    private void replaceThenDelete(final int offset) throws LockException, SAXException, PermissionDeniedException,
+    private void replaceSameContentThenDelete(final int offset) throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
 
         checkpointJournalAndSwitchFile();
@@ -618,26 +750,23 @@ public abstract class AbstractJournalTest {
         final String testFilename = FileUtils.fileName(testFile);
 
         BrokerPool.FORCE_CORRUPTION = false;
-        final Tuple2<Long, String> stored = store(COMMIT, testFile);
+        final TxnDoc<T> stored = store(COMMIT, testFile);
 
         // shutdown the broker pool (without destroying the data dir)
         existEmbeddedServer.getBrokerPool().shutdown();
 
         // check journal entries written for store
-        final boolean isXmlTest = this instanceof JournalXmlTest;
         assertPartialOrdered(
-                store_expected_for_replaceThenDelete(stored._1, stored._2, offset),
+                store_expected_for_replaceThenDelete(stored, offset),
                 readLatestJournalEntries());
 
         // restart the database server
         existEmbeddedServer.restart();
 
-        final Path testFile2 = getTestFile2();
-
-        // replace testFile with testFile2
+        // replace testFile with testFile
         BrokerPool.FORCE_CORRUPTION = true;
-        final Tuple2<Long, String> replaced = store(COMMIT, testFile2, testFilename);
-        final Tuple2<Long, String> deleted = delete(COMMIT, testFilename);
+        final TxnDoc<T> replaced = store(COMMIT, testFile, testFilename);
+        final TxnDoc<T> deleted = delete(COMMIT, testFilename);
         flushJournal();
 
         // shutdown the broker pool (without destroying the data dir)
@@ -648,39 +777,39 @@ public abstract class AbstractJournalTest {
 
         // check journal entries written for replace
         assertPartialOrdered(
-                replaceThenDelete_expected(replaced._1, replaced._2, deleted._1, deleted._2, offset),
+                replaceSameContentThenDelete_expected(replaced, deleted, offset),
                 readLatestJournalEntries());
     }
 
     @Test
-    public void replaceThenDelete_isRepeatable() throws LockException, SAXException,
+    public void replaceSameContentThenDelete_isRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
-        replaceThenDelete(0);
+        replaceSameContentThenDelete(0);
         existEmbeddedServer.restart();
 
-        replaceThenDelete(2);
+        replaceSameContentThenDelete(2);
         existEmbeddedServer.restart();
 
-        replaceThenDelete(4);
+        replaceSameContentThenDelete(4);
     }
 
     /**
      * NOTE: needs to be overridden by {@link JournalXmlTest}!
      */
-    protected List<ExpectedLoggable> store_expected_for_replaceThenDelete(final long storedTxnId, final String storedDbPath, final int offset) {
-        return store_expected(storedTxnId, storedDbPath, offset);
+    protected List<ExpectedLoggable> store_expected_for_replaceThenDelete(final TxnDoc<T> stored, final int offset) {
+        return store_expected(stored, offset);
     }
 
-    protected abstract List<ExpectedLoggable> replaceThenDelete_expected(final long replacedTxnId, final String replacedDbPath, final long deletedTxnId, final String deletedDbPath, final int offset);
+    protected abstract List<ExpectedLoggable> replaceSameContentThenDelete_expected(final TxnDoc<T> replaced, final TxnDoc<T> deleted, final int offset);
 
     @Test
-    public void replaceWithoutCommitThenDelete() throws LockException, SAXException,
-            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
-        replaceWithoutCommitThenDelete(0);
+    public void replaceDifferentContentThenDelete() throws LockException, SAXException, PermissionDeniedException,
+            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+        replaceDifferentContentThenDelete(0);
     }
 
-    private void replaceWithoutCommitThenDelete(final int offset) throws LockException, SAXException,
-            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+    private void replaceDifferentContentThenDelete(final int offset) throws LockException, SAXException, PermissionDeniedException,
+            EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
 
         checkpointJournalAndSwitchFile();
 
@@ -688,14 +817,14 @@ public abstract class AbstractJournalTest {
         final String testFilename = FileUtils.fileName(testFile);
 
         BrokerPool.FORCE_CORRUPTION = false;
-        final Tuple2<Long, String> stored = store(COMMIT, testFile);
+        final TxnDoc<T> stored = store(COMMIT, testFile);
 
         // shutdown the broker pool (without destroying the data dir)
         existEmbeddedServer.getBrokerPool().shutdown();
 
         // check journal entries written for store
         assertPartialOrdered(
-                store_expected(stored._1, stored._2, offset),
+                store_expected_for_replaceThenDelete(stored, offset),
                 readLatestJournalEntries());
 
         // restart the database server
@@ -705,8 +834,8 @@ public abstract class AbstractJournalTest {
 
         // replace testFile with testFile2
         BrokerPool.FORCE_CORRUPTION = true;
-        final Tuple2<Long, String> replaced = store(NO_COMMIT, testFile2, testFilename);
-        final Tuple2<Long, String> deleted = delete(COMMIT, testFilename);
+        final TxnDoc<T> replaced = store(COMMIT, testFile2, testFilename);
+        final TxnDoc<T> deleted = delete(COMMIT, testFilename);
         flushJournal();
 
         // shutdown the broker pool (without destroying the data dir)
@@ -717,7 +846,67 @@ public abstract class AbstractJournalTest {
 
         // check journal entries written for replace
         assertPartialOrdered(
-                replaceWithoutCommitThenDelete_expected(replaced._1, replaced._2, deleted._1, deleted._2, offset),
+                replaceDifferentContentThenDelete_expected(stored, replaced, deleted, offset),
+                readLatestJournalEntries());
+    }
+
+    @Test
+    public void replaceDifferentContentThenDelete_isRepeatable() throws LockException, SAXException,
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+        replaceDifferentContentThenDelete(0);
+        existEmbeddedServer.restart();
+
+        replaceDifferentContentThenDelete(2);
+        existEmbeddedServer.restart();
+
+        replaceDifferentContentThenDelete(4);
+    }
+
+    protected abstract List<ExpectedLoggable> replaceDifferentContentThenDelete_expected(final TxnDoc<T> original, final TxnDoc<T> replacement, final TxnDoc<T> deleted, final int offset);
+
+    @Test
+    public void replaceSameContentWithoutCommitThenDelete() throws LockException, SAXException,
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+        replaceSameContentWithoutCommitThenDelete(0);
+    }
+
+    private void replaceSameContentWithoutCommitThenDelete(final int offset) throws LockException, SAXException,
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+
+        checkpointJournalAndSwitchFile();
+
+        final Path testFile = getTestFile1();
+        final String testFilename = FileUtils.fileName(testFile);
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        final TxnDoc<T> stored = store(COMMIT, testFile);
+
+        // shutdown the broker pool (without destroying the data dir)
+        existEmbeddedServer.getBrokerPool().shutdown();
+
+        // check journal entries written for store
+        assertPartialOrdered(
+                store_expected(stored, offset),
+                readLatestJournalEntries());
+
+        // restart the database server
+        existEmbeddedServer.restart();
+
+        // replace testFile with testFile
+        BrokerPool.FORCE_CORRUPTION = true;
+        final TxnDoc<T> replaced = store(NO_COMMIT, testFile, testFilename);
+        final TxnDoc<T> deleted = delete(COMMIT, testFilename);
+        flushJournal();
+
+        // shutdown the broker pool (without destroying the data dir)
+        existEmbeddedServer.getBrokerPool().shutdown();
+
+        // reset the corruption flag back to normal
+        BrokerPool.FORCE_CORRUPTION = false;
+
+        // check journal entries written for replace
+        assertPartialOrdered(
+                replaceSameContentWithoutCommitThenDelete_expected(replaced, deleted, offset),
                 readLatestJournalEntries());
     }
 
@@ -759,26 +948,125 @@ public abstract class AbstractJournalTest {
      */
     @Ignore("Only possible from a single-thread by programming error. Journal is not expected to recover such cases!")
     @Test
-    public void replaceWithoutCommitThenDelete_isRepeatable() throws LockException, SAXException,
+    public void replaceSameContentWithoutCommitThenDelete_isRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
-        replaceWithoutCommitThenDelete(0);
+        replaceSameContentWithoutCommitThenDelete(0);
         existEmbeddedServer.restart();
 
-        replaceWithoutCommitThenDelete(0);
+        replaceSameContentWithoutCommitThenDelete(0);
         existEmbeddedServer.restart();
 
-        replaceWithoutCommitThenDelete(0);
+        replaceSameContentWithoutCommitThenDelete(0);
     }
 
-    protected abstract List<ExpectedLoggable> replaceWithoutCommitThenDelete_expected(final long replacedTxnId, final String replacedDbPath, final long deletedTxnId, final String deletedDbPath, final int offset);
+    protected abstract List<ExpectedLoggable> replaceSameContentWithoutCommitThenDelete_expected(final TxnDoc<T> replaced, final TxnDoc<T> deleted, final int offset);
 
     @Test
-    public void replaceThenDeleteWithoutCommit() throws LockException, SAXException,
+    public void replaceDifferentContentWithoutCommitThenDelete() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
-        replaceThenDeleteWithoutCommit(false, 0);
+        replaceDifferentContentWithoutCommitThenDelete(0);
     }
 
-    private void replaceThenDeleteWithoutCommit(final boolean storeShouldGenerateReplaceEntry, final int offset) throws LockException, SAXException,
+    private void replaceDifferentContentWithoutCommitThenDelete(final int offset) throws LockException, SAXException,
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+
+        checkpointJournalAndSwitchFile();
+
+        final Path testFile = getTestFile1();
+        final String testFilename = FileUtils.fileName(testFile);
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        final TxnDoc<T> stored = store(COMMIT, testFile);
+
+        // shutdown the broker pool (without destroying the data dir)
+        existEmbeddedServer.getBrokerPool().shutdown();
+
+        // check journal entries written for store
+        assertPartialOrdered(
+                store_expected(stored, offset),
+                readLatestJournalEntries());
+
+        // restart the database server
+        existEmbeddedServer.restart();
+
+        final Path testFile2 = getTestFile2();
+
+        // replace testFile with testFile2
+        BrokerPool.FORCE_CORRUPTION = true;
+        final TxnDoc<T> replaced = store(NO_COMMIT, testFile2, testFilename);
+        final TxnDoc<T> deleted = delete(COMMIT, testFilename);
+        flushJournal();
+
+        // shutdown the broker pool (without destroying the data dir)
+        existEmbeddedServer.getBrokerPool().shutdown();
+
+        // reset the corruption flag back to normal
+        BrokerPool.FORCE_CORRUPTION = false;
+
+        // check journal entries written for replace
+        assertPartialOrdered(
+                replaceDifferentContentWithoutCommitThenDelete_expected(stored, replaced, deleted, offset),
+                readLatestJournalEntries());
+    }
+
+    /**
+     * Shows that recovery of entries in the journal fail for a non-linear history of a resource.
+     * The history created by this test, should never be created within by a single thread unless
+     * due to a programming mistake.
+     *
+     * It is currently possible to create such a non-recoverable history between threads
+     * for a single resource, however that must be solved by improved locking of resources
+     * e.g. keeping resource locks for the duration of a transaction.
+     *
+     * This test creates the journal history (repetitively):
+     *
+     * 1. <START T-1>
+     * 2. <T-1, A, null, x>
+     * 3. <COMMIT T-1>      // store!
+     * 4. <START T-2>
+     * 5. <T-2, A, x, y>	// replace!
+     * 6. <START T-3>
+     * 7. <T-3, A, x, null>	// delete!
+     * 8. <COMMIT T-3>
+     * 9. CRASH!
+     *
+     * In the above:
+     *     * "T-n" is the transaction id.
+     *     * <T-n, A, v, w> is the tuple <transactionId, key, previousValue, newValue)
+     *
+     * The problem with the above schedule, after crash, the recovery will never set
+     * key "A" to value "null", which it likely should.
+     *
+     * eXist-db performs the following recovery:
+     *
+     * R1. redo schedule step 5: A=y
+     * R2. redo schedule step 7: A=null
+     * R3. undo schedule step 5: A=x
+     *
+     * Step R3 will leaves the database in an inconsistent state (i.e. A != null).
+     */
+    @Ignore("Only possible from a single-thread by programming error. Journal is not expected to recover such cases!")
+    @Test
+    public void replaceDifferentContentWithoutCommitThenDelete_isRepeatable() throws LockException, SAXException,
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+        replaceDifferentContentWithoutCommitThenDelete(0);
+        existEmbeddedServer.restart();
+
+        replaceDifferentContentWithoutCommitThenDelete(0);
+        existEmbeddedServer.restart();
+
+        replaceDifferentContentWithoutCommitThenDelete(0);
+    }
+
+    protected abstract List<ExpectedLoggable> replaceDifferentContentWithoutCommitThenDelete_expected(final TxnDoc<T> original, final TxnDoc<T> replacement, final TxnDoc<T> deleted, final int offset);
+
+    @Test
+    public void replaceSameContentThenDeleteWithoutCommit() throws LockException, SAXException,
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+        replaceSameContentThenDeleteWithoutCommit(false, 0);
+    }
+
+    private void replaceSameContentThenDeleteWithoutCommit(final boolean storeShouldGenerateReplaceEntry, final int offset) throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
         checkpointJournalAndSwitchFile();
 
@@ -786,7 +1074,7 @@ public abstract class AbstractJournalTest {
         final String testFilename = FileUtils.fileName(testFile);
 
         BrokerPool.FORCE_CORRUPTION = false;
-        final Tuple2<Long, String> stored = store(COMMIT, testFile);
+        final TxnDoc<T> stored = store(COMMIT, testFile);
 
         // shutdown the broker pool (without destroying the data dir)
         existEmbeddedServer.getBrokerPool().shutdown();
@@ -795,24 +1083,23 @@ public abstract class AbstractJournalTest {
         if (!storeShouldGenerateReplaceEntry) {
             //  expected STORE
             assertPartialOrdered(
-                    store_expected(stored._1, stored._2, offset),
+                    store_expected(stored, offset),
                     readLatestJournalEntries());
         } else {
             // expected REPLACE
+            final TxnDoc<T> original = new TxnDoc<>(stored.transactionId, calcDocLocation(getTestFile2(), testFilename));
             assertPartialOrdered(
-                    replace_expected(stored._1, stored._2, offset > 0 ? offset - 1 : offset, true),
+                    replaceSameContent_expected(stored, offset > 0 ? offset - 1 : offset, true),
                     readLatestJournalEntries());
         }
 
         // restart the database server
         existEmbeddedServer.restart();
 
-        final Path testFile2 = getTestFile2();
-
-        // replace testFile with testFile2
+        // replace testFile with testFile
         BrokerPool.FORCE_CORRUPTION = true;
-        final Tuple2<Long, String> replaced = store(COMMIT, testFile2, testFilename);
-        final Tuple2<Long, String> deleted = delete(NO_COMMIT, testFilename);
+        final TxnDoc<T> replaced = store(COMMIT, testFile, testFilename);
+        final TxnDoc<T> deleted = delete(NO_COMMIT, testFilename);
         flushJournal();
 
         // shutdown the broker pool (without destroying the data dir)
@@ -823,31 +1110,31 @@ public abstract class AbstractJournalTest {
 
         // check journal entries written for replace
         assertPartialOrdered(
-                replaceThenDeleteWithoutCommit_expected(replaced._1, replaced._2, deleted._1, deleted._2, offset, false),
+                replaceSameContentThenDeleteWithoutCommit_expected(replaced, deleted, offset, false),
                 readLatestJournalEntries());
     }
 
     @Test
-    public void replaceThenDeleteWithoutCommit_isRepeatable() throws LockException, SAXException,
+    public void replaceSameContentThenDeleteWithoutCommit_isRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
-        replaceThenDeleteWithoutCommit(false, 0);
+        replaceSameContentThenDeleteWithoutCommit(false, 0);
         existEmbeddedServer.restart();
 
-        replaceThenDeleteWithoutCommit(true, 2);
+        replaceSameContentThenDeleteWithoutCommit(true, 2);
         existEmbeddedServer.restart();
 
-        replaceThenDeleteWithoutCommit(true, 4);
+        replaceSameContentThenDeleteWithoutCommit(true, 4);
     }
 
-    protected abstract List<ExpectedLoggable> replaceThenDeleteWithoutCommit_expected(final long replacedTxnId, final String replacedDbPath, final long deletedTxnId, final String deletedDbPath, final int offset, final boolean overridesStore);
+    protected abstract List<ExpectedLoggable> replaceSameContentThenDeleteWithoutCommit_expected(final TxnDoc<T> replaced, final TxnDoc<T> deleted, final int offset, final boolean overridesStore);
 
     @Test
-    public void replaceWithoutCommitThenDeleteWithoutCommit() throws LockException, SAXException,
+    public void replaceDifferentContentThenDeleteWithoutCommit() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
-        replaceWithoutCommitThenDeleteWithoutCommit(false, 0);
+        replaceDifferentContentThenDeleteWithoutCommit(false, 0);
     }
 
-    private void replaceWithoutCommitThenDeleteWithoutCommit(final boolean storeShouldGenerateReplaceEntry, final int offset) throws LockException, SAXException,
+    private void replaceDifferentContentThenDeleteWithoutCommit(final boolean storeShouldGenerateReplaceEntry, final int offset) throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
         checkpointJournalAndSwitchFile();
 
@@ -855,7 +1142,77 @@ public abstract class AbstractJournalTest {
         final String testFilename = FileUtils.fileName(testFile);
 
         BrokerPool.FORCE_CORRUPTION = false;
-        final Tuple2<Long, String> stored = store(COMMIT, testFile);
+        final TxnDoc<T> stored = store(COMMIT, testFile);
+
+        // shutdown the broker pool (without destroying the data dir)
+        existEmbeddedServer.getBrokerPool().shutdown();
+
+        // check journal entries written for store
+        if (!storeShouldGenerateReplaceEntry) {
+            //  expected STORE
+            assertPartialOrdered(
+                    store_expected(stored, offset),
+                    readLatestJournalEntries());
+        } else {
+            // expected REPLACE
+            final TxnDoc<T> original = new TxnDoc<>(stored.transactionId, calcDocLocation(getTestFile2(), testFilename));
+            assertPartialOrdered(
+                    replaceDifferentContent_expected(original, stored, offset > 0 ? offset - 1 : offset, true),
+                    readLatestJournalEntries());
+        }
+
+        // restart the database server
+        existEmbeddedServer.restart();
+
+        final Path testFile2 = getTestFile2();
+
+        // replace testFile with testFile2
+        BrokerPool.FORCE_CORRUPTION = true;
+        final TxnDoc<T> replaced = store(COMMIT, testFile2, testFilename);
+        final TxnDoc<T> deleted = delete(NO_COMMIT, testFilename);
+        flushJournal();
+
+        // shutdown the broker pool (without destroying the data dir)
+        existEmbeddedServer.getBrokerPool().shutdown();
+
+        // reset the corruption flag back to normal
+        BrokerPool.FORCE_CORRUPTION = false;
+
+        // check journal entries written for replace
+        assertPartialOrdered(
+                replaceDifferentContentThenDeleteWithoutCommit_expected(stored, replaced, deleted, offset, false),
+                readLatestJournalEntries());
+    }
+
+    @Test
+    public void replaceDifferentContentThenDeleteWithoutCommit_isRepeatable() throws LockException, SAXException,
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+        replaceDifferentContentThenDeleteWithoutCommit(false, 0);
+        existEmbeddedServer.restart();
+
+        replaceDifferentContentThenDeleteWithoutCommit(true, 2);
+        existEmbeddedServer.restart();
+
+        replaceDifferentContentThenDeleteWithoutCommit(true, 4);
+    }
+
+    protected abstract List<ExpectedLoggable> replaceDifferentContentThenDeleteWithoutCommit_expected(final TxnDoc<T> original, final TxnDoc<T> replacement, final TxnDoc<T> deleted, final int offset, final boolean overridesStore);
+
+    @Test
+    public void replaceSameContentWithoutCommitThenDeleteWithoutCommit() throws LockException, SAXException,
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+        replaceSameContentWithoutCommitThenDeleteWithoutCommit(false, 0);
+    }
+
+    private void replaceSameContentWithoutCommitThenDeleteWithoutCommit(final boolean storeShouldGenerateReplaceEntry, final int offset) throws LockException, SAXException,
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+        checkpointJournalAndSwitchFile();
+
+        final Path testFile = getTestFile1();
+        final String testFilename = FileUtils.fileName(testFile);
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        final TxnDoc<T> stored = store(COMMIT, testFile);
 
         // shutdown the broker pool (without destroying the data dir)
         existEmbeddedServer.getBrokerPool().shutdown();
@@ -864,24 +1221,22 @@ public abstract class AbstractJournalTest {
         if (!storeShouldGenerateReplaceEntry) {
             // expected STORE
             assertPartialOrdered(
-                    store_expected(stored._1, stored._2, offset),
+                    store_expected(stored, offset),
                     readLatestJournalEntries());
         } else {
             //  expected REPLACE
             assertPartialOrdered(
-                    replace_expected(stored._1, stored._2, offset > 0 ? offset - 1 : offset, true),
+                    replaceSameContent_expected(stored, offset > 0 ? offset - 1 : offset, true),
                     readLatestJournalEntries());
         }
 
         // restart the database server
         existEmbeddedServer.restart();
 
-        final Path testFile2 = getTestFile2();
-
-        // replace testFile with testFile2
+        // replace testFile with testFile
         BrokerPool.FORCE_CORRUPTION = true;
-        final Tuple2<Long, String> replaced = store(NO_COMMIT, testFile2, testFilename);
-        final Tuple2<Long, String> deleted = delete(NO_COMMIT, testFilename);
+        final TxnDoc<T> replaced = store(NO_COMMIT, testFile, testFilename);
+        final TxnDoc<T> deleted = delete(NO_COMMIT, testFilename);
         flushJournal();
 
         // shutdown the broker pool (without destroying the data dir)
@@ -892,23 +1247,92 @@ public abstract class AbstractJournalTest {
 
         // check journal entries written for replace
         assertPartialOrdered(
-                replaceWithoutCommitThenDeleteWithoutCommit_expected(replaced._1, replaced._2, deleted._1, deleted._2, offset),
+                replaceSameContentWithoutCommitThenDeleteWithoutCommit_expected(replaced, deleted, offset),
                 readLatestJournalEntries());
     }
 
     @Test
-    public void replaceWithoutCommitThenDeleteWithoutCommit_isRepeatable() throws LockException,
+    public void replaceSameContentWithoutCommitThenDeleteWithoutCommit_isRepeatable() throws LockException,
             SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
-        replaceWithoutCommitThenDeleteWithoutCommit(false, 0);
+        replaceSameContentWithoutCommitThenDeleteWithoutCommit(false, 0);
         existEmbeddedServer.restart();
 
-        replaceWithoutCommitThenDeleteWithoutCommit(true, 1);
+        replaceSameContentWithoutCommitThenDeleteWithoutCommit(true, 1);
         existEmbeddedServer.restart();
 
-        replaceWithoutCommitThenDeleteWithoutCommit(true, 2);
+        replaceSameContentWithoutCommitThenDeleteWithoutCommit(true, 2);
     }
 
-    protected abstract List<ExpectedLoggable> replaceWithoutCommitThenDeleteWithoutCommit_expected(final long replacedTxnId, final String replacedDbPath, final long deletedTxnId, final String deletedDbPath, final int offset);
+    protected abstract List<ExpectedLoggable> replaceSameContentWithoutCommitThenDeleteWithoutCommit_expected(final TxnDoc<T> replaced, final TxnDoc<T> deleted, final int offset);
+
+    @Test
+    public void replaceDifferentContentWithoutCommitThenDeleteWithoutCommit() throws LockException, SAXException,
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+        replaceDifferentContentWithoutCommitThenDeleteWithoutCommit(false, 0);
+    }
+
+    private void replaceDifferentContentWithoutCommitThenDeleteWithoutCommit(final boolean storeShouldGenerateReplaceEntry, final int offset) throws LockException, SAXException,
+            PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+        checkpointJournalAndSwitchFile();
+
+        final Path testFile = getTestFile1();
+        final String testFilename = FileUtils.fileName(testFile);
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        final TxnDoc<T> stored = store(COMMIT, testFile);
+
+        // shutdown the broker pool (without destroying the data dir)
+        existEmbeddedServer.getBrokerPool().shutdown();
+
+        // check journal entries written for store
+        if (!storeShouldGenerateReplaceEntry) {
+            // expected STORE
+            assertPartialOrdered(
+                    store_expected(stored, offset),
+                    readLatestJournalEntries());
+        } else {
+            //  expected REPLACE
+            assertPartialOrdered(
+                    replaceSameContent_expected(stored, offset > 0 ? offset - 1 : offset, true),
+                    readLatestJournalEntries());
+        }
+
+        // restart the database server
+        existEmbeddedServer.restart();
+
+        final Path testFile2 = getTestFile2();
+
+        // replace testFile with testFile2
+        BrokerPool.FORCE_CORRUPTION = true;
+        final TxnDoc<T> replaced = store(NO_COMMIT, testFile2, testFilename);
+        final TxnDoc<T> deleted = delete(NO_COMMIT, testFilename);
+        flushJournal();
+
+        // shutdown the broker pool (without destroying the data dir)
+        existEmbeddedServer.getBrokerPool().shutdown();
+
+        // reset the corruption flag back to normal
+        BrokerPool.FORCE_CORRUPTION = false;
+
+        // check journal entries written for replace
+        assertPartialOrdered(
+                replaceDifferentContentWithoutCommitThenDeleteWithoutCommit_expected(stored, replaced, deleted, offset),
+                readLatestJournalEntries());
+    }
+
+    @Test
+    public void replaceDifferentContentWithoutCommitThenDeleteWithoutCommit_isRepeatable() throws LockException,
+            SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, NoSuchFieldException, IllegalAccessException {
+        replaceDifferentContentWithoutCommitThenDeleteWithoutCommit(false, 0);
+        existEmbeddedServer.restart();
+
+        replaceDifferentContentWithoutCommitThenDeleteWithoutCommit(true, 1);
+        existEmbeddedServer.restart();
+
+        replaceDifferentContentWithoutCommitThenDeleteWithoutCommit(true, 2);
+    }
+
+    protected abstract List<ExpectedLoggable> replaceDifferentContentWithoutCommitThenDeleteWithoutCommit_expected(final TxnDoc<T> original, final TxnDoc<T> replacement, final TxnDoc<T> deleted, final int offset);
 
 
     protected void assertPartialOrdered(final List<ExpectedLoggable> expectedPartialOrderedJournalEntries, final List<Loggable> actualJournalEntries) throws AssertionError {
@@ -1021,10 +1445,10 @@ public abstract class AbstractJournalTest {
      *      unfinished (i.e. neither committed, aborted, or closed)
      * @param file The file that to store
      *
-     * @return a Tuple2(id, path), where id is of the transaction which stored the document, and path
-     *     is the path to the document in the database.
+     * @return a Tuple(txnId, docLocation), where txnId is of the transaction which stored the document, and docLocation
+     *     is an identifier to the document in the database.
      */
-    private Tuple2<Long, String> store(final boolean commitAndClose, final Path file) throws EXistException, PermissionDeniedException,
+    private TxnDoc<T> store(final boolean commitAndClose, final Path file) throws EXistException, PermissionDeniedException,
             IOException, SAXException, LockException {
         return store(commitAndClose, file, FileUtils.fileName(file));
     }
@@ -1037,10 +1461,10 @@ public abstract class AbstractJournalTest {
      * @param file The file containing the data to store in the document
      * @param dbFilename the name to use when storing the file in the database
      *
-     * @return a Tuple2(id, path), where id is of the transaction which stored the document, and path
-     *     is the path to the document in the database.
+     * @return a Tuple(txnId, docLocation), where txnId is of the transaction which stored the document, and docLocation
+     *     is an identifier to the document in the database.
      */
-    protected Tuple2<Long, String> store(final boolean commitAndClose, final Path file, final String dbFilename) throws EXistException,
+    protected TxnDoc<T> store(final boolean commitAndClose, final Path file, final String dbFilename) throws EXistException,
             PermissionDeniedException, IOException, SAXException, LockException {
         return store(commitAndClose, new FileInputSource(file), dbFilename);
     }
@@ -1053,10 +1477,10 @@ public abstract class AbstractJournalTest {
      * @param data The data to store in the document
      * @param dbFilename the name to use when storing the file in the database
      *
-     * @return a Tuple2(id, path), where id is of the transaction which stored the document, and path
-     *     is the path to the document in the database.
+     * @return a Tuple(txnId, docLocation), where txnId is of the transaction which stored the document, and docLocation
+     *     is an identifier to the document in the database.
      */
-    protected Tuple2<Long, String> store(final boolean commitAndClose, final InputSource data, final String dbFilename) throws EXistException,
+    protected TxnDoc<T> store(final boolean commitAndClose, final InputSource data, final String dbFilename) throws EXistException,
             PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
@@ -1069,14 +1493,14 @@ public abstract class AbstractJournalTest {
             assertNotNull(root);
             broker.saveCollection(transaction, root);
 
-            final XmldbURI docDbUri = storeAndVerify(broker, transaction, root, data, dbFilename);
+            final T docId = storeAndVerify(broker, transaction, root, data, dbFilename);
 
             if(commitAndClose) {
                 transaction.commit();
                 transaction.close();
             }
 
-            return new Tuple2<>(transaction.getId(), docDbUri.getRawCollectionPath());
+            return new TxnDoc<>(transaction.getId(), docId);
         }
     }
 
@@ -1091,9 +1515,33 @@ public abstract class AbstractJournalTest {
      *
      * @return the path to the document stored in the database.
      */
-    protected abstract XmldbURI storeAndVerify(final DBBroker broker, final Txn transaction, final Collection collection,
+    protected abstract T storeAndVerify(final DBBroker broker, final Txn transaction, final Collection collection,
             final InputSource data, final String dbFilename) throws EXistException, PermissionDeniedException,
             IOException, SAXException, LockException;
+
+    /**
+     * Calculate the doc location for a file
+     *
+     * @param content the content
+     * @param fileName the name of the file
+     *
+     * @return the doc location
+     */
+    private T calcDocLocation(final Path content, final String fileName) throws IOException {
+        return calcDocLocation(content, TestConstants.TEST_COLLECTION_URI, fileName);
+    }
+
+    /**
+     * Calculate the doc location for a file
+     *
+     * @param content the content
+     * @param collectionUri the URI of the collection that the file would be accessible from
+     * @param fileName the name of the file
+     *
+     * @return the doc location
+     */
+    protected abstract T calcDocLocation(final Path content, final XmldbURI collectionUri, final String fileName)
+            throws IOException;
 
     /**
      * Read a document from the database.
@@ -1148,10 +1596,10 @@ public abstract class AbstractJournalTest {
      *      unfinished (i.e. neither committed, aborted, or closed)
      * @param file The file that was previously stored, that should be deleted
      *
-     * @return a Tuple2(id, path), where id is of the transaction which deleted the document, and path
+     * @return a Tuple(id, path), where id is of the transaction which deleted the document, and path
      *     is the path of the deleted document from the database.
      */
-    private Tuple2<Long, String> delete(final boolean commitAndClose, final Path file)
+    private TxnDoc<T> delete(final boolean commitAndClose, final Path file)
             throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
         return delete(commitAndClose, FileUtils.fileName(file));
     }
@@ -1166,32 +1614,53 @@ public abstract class AbstractJournalTest {
      * @return a Tuple2(id, path), where id is of the transaction which deleted the document, and path
      *     is the path of the deleted document from the database.
      */
-    private Tuple2<Long, String> delete(final boolean commitAndClose, final String dbFilename)
+    private TxnDoc<T> delete(final boolean commitAndClose, final String dbFilename)
             throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
-            // the following transaction will not be committed. It will thus be rolled back by recovery
+            // the following transaction will not be committed. It may thus be rolled back by recovery
             final Txn transaction = transact.beginTransaction();
 
             final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
             broker.saveCollection(transaction, root);
 
-            final DocumentImpl doc = root.getDocument(broker, XmldbURI.create(dbFilename));
-            if(doc != null) {
-                root.removeResource(transaction, broker, doc);
-            }
+            final T docLocation = delete(broker, transaction, root, dbFilename);
 
             if(commitAndClose) {
                 transaction.commit();
                 transaction.close();
             }
 
-            return new Tuple2<>(transaction.getId(), doc.getURI().getRawCollectionPath());
+            return new TxnDoc<>(transaction.getId(), docLocation);
         }
     }
+
+    /**
+     * Delete a document from the database.
+     *
+     * @param commitAndClose true if the transaction should be committed. false will leave the transaction
+     *      unfinished (i.e. neither committed, aborted, or closed)
+     * @param dbFilename The name of the file that was previously stored, that should be deleted
+     *
+     * @return a Tuple2(id, path), where id is of the transaction which deleted the document, and path
+     *     is the path of the deleted document from the database.
+     */
+
+    /**
+     * Delete a document from the database.
+     *
+     * @param broker The database broker
+     * @param transaction The database transaction
+     * @param collection The Collection from which the document should be removed
+     * @param dbFilename The name of the document in the database to delete
+     *
+     * @return the path to the document stored in the database.
+     */
+    protected abstract T delete(final DBBroker broker, final Txn transaction, final Collection collection,
+        final String dbFilename) throws PermissionDeniedException, LockException, IOException, TriggerException;
 
     protected void flushJournal() {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -1426,7 +1895,7 @@ public abstract class AbstractJournalTest {
 
         @Override
         public String toString() {
-            return "STORED INDEX VALUE T-" + transactionId + " collectionCreateDoc(txnId=" + transactionId + ", page=" + page + ", docId=" + docId + ", uri=" + docUri + ")";
+            return "STORED INDEX VALUE T-" + transactionId + " collectionCreateDoc(txnId=" + transactionId + ", page=" + page + ", docLocation=" + docId + ", uri=" + docUri + ")";
         }
     }
 
@@ -1487,7 +1956,7 @@ public abstract class AbstractJournalTest {
 
         @Override
         public String toString() {
-            return "REMOVED INDEX VALUE T-" + transactionId + " collectionDeleteDoc(txnId=" + transactionId + ", page=" + page + ", docId=" + docId + ", uri=" + docUri + ")";
+            return "REMOVED INDEX VALUE T-" + transactionId + " collectionDeleteDoc(txnId=" + transactionId + ", page=" + page + ", docLocation=" + docId + ", uri=" + docUri + ")";
         }
     }
 
@@ -1724,6 +2193,16 @@ public abstract class AbstractJournalTest {
                 super.add(item);
             }
             return this;
+        }
+    }
+
+    protected static class TxnDoc<T> {
+        final long transactionId;
+        final T docLocation;
+
+        protected TxnDoc(final long transactionId, final T docLocation) {
+            this.transactionId = transactionId;
+            this.docLocation = docLocation;
         }
     }
 }

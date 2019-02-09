@@ -72,7 +72,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
             final Map<String, Path> packages = new HashMap<>();
             for (final Path xar : xars) {
                 try {
-                    final Optional<String> name = deployment.getNameFromDescriptor(xar);
+                    final Optional<String> name = deployment.getNameFromDescriptor(new XarFileSource(xar));
                     if(name.isPresent()) {
                         packages.put(name.get(), xar);
                     } else {
@@ -85,12 +85,12 @@ public class AutoDeploymentTrigger implements StartupTrigger {
 
             final PackageLoader loader = (name, version) -> {
                 // TODO: enforce version check
-                return packages.get(name);
+                return new XarFileSource(packages.get(name));
             };
 
             for (final Path xar : xars) {
                 try {
-                    deployment.installAndDeploy(xar, loader, false);
+                    deployment.installAndDeploy(new XarFileSource(xar), loader, false);
                 } catch (final PackageException | IOException e) {
                     LOG.warn("Exception during deployment of app " + FileUtils.fileName(xar) + ": " + e.getMessage(), e);
                     sysBroker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
