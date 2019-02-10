@@ -28,24 +28,32 @@ import java.util.function.Supplier;
  * @author Adam Retter <adam@evolvedbinary.com>
  */
 public enum DigestType {
-//    MD_5(       (byte)0x1,  128),
-//
-//    SHA_1(      (byte)0x8,  128),
-//    SHA_256(    (byte)0x9,  256),
-//
-//    RIPEMD_160( (byte)0x18, 160),
-//    RIPEMD_256( (byte)0x19, 256),
+    MD_2((byte)0x01, 128, MD2StreamableDigest::new, "MD2"),
+    MD_4((byte)0x02, 128, MD4StreamableDigest::new, "MD4"),
+    MD_5((byte)0x03, 128, MD5StreamableDigest::new, "MD5"),
 
-    BLAKE_256(  (byte)0x32, 256, Blake256StreamableDigest::new);
+    SHA_1(  (byte)0x10,  160, SHA1StreamableDigest::new, "SHA-1"),
+    SHA_256((byte)0x11,  256, SHA256StreamableDigest::new, "SHA-256"),
+    SHA_512((byte)0x12, 512, SHA512StreamableDigest::new, "SHA-512"),
+
+    RIPEMD_160((byte)0x20, 160, RIPEMD160StreamableDigest::new, "RIPEMD-160", "RIPEMD160"),
+    RIPEMD_256((byte)0x21, 256, RIPEMD256StreamableDigest::new, "RIPEMD-256", "RIPEMD256"),
+
+    BLAKE_160((byte)0x30, 160, Blake160StreamableDigest::new, "BLAKE2B-160", "BLAKE-160"),
+    BLAKE_256((byte)0x31, 256, Blake256StreamableDigest::new, "BLAKE2B-256", "BLAKE-256"),
+    BLAKE_512((byte)0x31, 512, Blake512StreamableDigest::new, "BLAKE2B-512", "BLAKE-512");
+
 
     private final byte id;
     private final int bits;
     private final Supplier<StreamableDigest> streamableFactory;
+    private final String[] commonNames;
 
-    DigestType(final byte id, final int bits, final Supplier<StreamableDigest> streamableFactory) {
+    DigestType(final byte id, final int bits, final Supplier<StreamableDigest> streamableFactory, final String... commonNames) {
         this.id = id;
         this.bits = bits;
         this.streamableFactory = streamableFactory;
+        this.commonNames = commonNames;
     }
 
     /**
@@ -71,6 +79,34 @@ public enum DigestType {
             }
         }
         throw new IllegalArgumentException("Unknown digest type id: " + id);
+    }
+
+    /**
+     * Get the common names for the digest type.
+     *
+     * @return the common names.
+     */
+    public String[] getCommonNames() {
+        return commonNames;
+    }
+
+    /**
+     * Get the digest type by common name.
+     *
+     * @param commonName the common name of the digest type
+     *
+     * @throws IllegalArgumentException if the common name is invalid.
+     */
+    public static DigestType forCommonName(final String commonName) {
+        for (final DigestType digestType : values()) {
+            for (final String cn : digestType.commonNames) {
+                if (cn.equals(commonName)) {
+                    return digestType;
+                }
+            }
+        }
+
+        throw new IllegalArgumentException("Unknown digest type common name: " + commonName);
     }
 
     /***

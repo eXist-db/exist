@@ -19,7 +19,6 @@
  */
 package org.exist.storage;
 
-import com.evolvedbinary.j8fu.function.FunctionE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.*;
@@ -51,6 +50,8 @@ import org.exist.numbering.NodeId;
 import org.exist.security.*;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.stax.IEmbeddedXMLStreamReader;
+import org.exist.storage.blob.BlobId;
+import org.exist.storage.blob.BlobStore;
 import org.exist.storage.btree.*;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.dom.DOMTransaction;
@@ -60,20 +61,20 @@ import org.exist.storage.index.BFile;
 import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
-import org.exist.storage.journal.*;
+import org.exist.storage.journal.JournalManager;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.NativeSerializer;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
+import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
-import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
-import org.exist.util.crypto.digest.StreamableDigest;
 import org.exist.util.io.FastByteArrayInputStream;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.value.Type;
@@ -87,16 +88,17 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.exist.dom.persistent.StoredNode;
 import org.exist.storage.dom.INodeIterator;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
+
+import static org.exist.util.io.InputStreamUtil.copy;
 
 /**
  * Main class for the native XML storage backend.
@@ -121,18 +123,6 @@ public class NativeBroker extends DBBroker {
     public final static String EXIST_STATISTICS_LOGGER = "org.exist.statistics";
 
     protected final static Logger LOG_STATS = LogManager.getLogger(EXIST_STATISTICS_LOGGER);
-
-    public final static byte LOG_RENAME_BINARY = 0x40;
-    public final static byte LOG_CREATE_BINARY = 0x41;
-    public final static byte LOG_REPLACE_BINARY = 0x42;
-    public final static byte LOG_DELETE_BINARY = 0x43;
-
-    static {
-        LogEntryTypes.addEntryType(LOG_RENAME_BINARY, RenameBinaryLoggable::new);
-        LogEntryTypes.addEntryType(LOG_CREATE_BINARY, CreateBinaryLoggable::new);
-        LogEntryTypes.addEntryType(LOG_REPLACE_BINARY, ReplaceBinaryLoggable::new);
-        LogEntryTypes.addEntryType(LOG_DELETE_BINARY, DeleteBinaryLoggable::new);
-    }
 
     public static final byte PREPEND_DB_ALWAYS = 0;
     public static final byte PREPEND_DB_NEVER = 1;
@@ -188,9 +178,6 @@ public class NativeBroker extends DBBroker {
     private int nodesCountThreshold = DEFAULT_NODES_BEFORE_MEMORY_CHECK;
 
     private final Path dataDir;
-    private final Path fsDir;
-    private final Optional<Path> fsJournalDir;
-    private int pageSize;
 
     private final byte prepend;
 
@@ -221,24 +208,6 @@ public class NativeBroker extends DBBroker {
         }
 
         this.dataDir = config.getProperty(BrokerPool.PROPERTY_DATA_DIR, Paths.get(DEFAULT_DATA_DIR));
-
-        final Path fs = dataDir.resolve("fs");
-        try {
-            this.fsDir = Files.createDirectories(fs);
-        } catch(final IOException ioe) {
-            throw new EXistException("Cannot make collection filesystem directory: " + fs.toAbsolutePath().toString(), ioe);
-        }
-
-        if(pool.isRecoveryEnabled()) {
-            final Path fsJournal = dataDir.resolve("fs.journal");
-            try {
-                this.fsJournalDir = Optional.of(Files.createDirectories(fsJournal));
-            } catch(final IOException ioe) {
-                throw new EXistException("Cannot make collection filesystem directory: " + fsJournal.toAbsolutePath().toString(), ioe);
-            }
-        } else {
-            this.fsJournalDir = Optional.empty();
-        }
 
         nodesCountThreshold = config.getInteger(BrokerPool.PROPERTY_NODES_BUFFER);
         if(nodesCountThreshold > 0) {
@@ -299,15 +268,6 @@ public class NativeBroker extends DBBroker {
         } finally {
             popSubject();
         }
-    }
-
-    /**
-     * Get the filesystem directory
-     *
-     * @return The filesystem directory
-     */
-    protected Path getFsDir() {
-        return fsDir;
     }
 
     @Override
@@ -529,28 +489,10 @@ public class NativeBroker extends DBBroker {
             }
         }
         pool.getSymbols().backupToArchive(backup);
-        backupBinary(backup, getFsDir(), "");
+        pool.getBlobStore().backupToArchive(backup);
         pool.getIndexManager().backupToArchive(backup);
         //TODO backup counters
         //TODO USE zip64 or tar to create snapshots larger then 4Gb
-    }
-
-    private void backupBinary(final RawDataBackup backup, final Path file, final String path) throws IOException {
-        final String thisPath = path + "/" + file.getFileName();
-        if(Files.isDirectory(file)) {
-            for(final Path p : FileUtils.list(file)) {
-                backupBinary(backup, p, thisPath);
-            }
-        } else {
-            // do not use try-with-resources here, closing the OutputStream will close the entire backup
-//            try(final OutputStream os = backup.newEntry(thisPath)) {
-            try {
-                final OutputStream os = backup.newEntry(thisPath);
-                Files.copy(file, os);
-            } finally {
-                backup.closeEntry();
-            }
-        }
     }
 
     @Override
@@ -1057,9 +999,6 @@ public class NativeBroker extends DBBroker {
     }
 
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.DBBroker#copyCollection(org.exist.storage.txn.Txn, org.exist.collections.Collection, org.exist.collections.Collection, org.exist.xmldb.XmldbURI)
-     */
     @Override
     public void copyCollection(final Txn transaction, final Collection collection, final Collection destination, final XmldbURI newName) throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException {
         if(isReadOnly()) {
@@ -1254,74 +1193,12 @@ public class NativeBroker extends DBBroker {
             // Need to move each collection in the source tree individually, so recurse.
             moveCollectionRecursive(transaction, trigger, collection, destination, newName, false);
 
-            // For binary resources, though, just move the top level directory and all descendants come with it.
-            //moveCollectionBinaries(transaction, fsSourceDir, destination, newName);
-
             trigger.afterMoveCollection(this, transaction, collection, srcURI);
 
         } finally {
             pool.getProcessMonitor().endJob();
         }
 
-    }
-
-    /**
-     * Moves only the binaries in {@code sourceDir} to {@code targetDir},
-     * there is no recursion into sub-directories.
-     */
-    private void moveCollectionBinaries(final Txn transaction, final Path sourceDir, final XmldbURI targetCollectionUri) throws IOException {
-        if (Files.exists(sourceDir)) {
-            final Path targetDir = getCollectionFile(getFsDir(), targetCollectionUri, false);
-
-            // iterate each file in the sourceDir
-            for (final Path sourceFile : FileUtils.list(sourceDir, Files::isRegularFile)) {
-
-                final Path targetFile = targetDir.resolve(sourceFile.getFileName());
-
-                if (fsJournalDir.isPresent()) {
-                    final StreamableDigest streamableDigest = BINARY_RESOURCE_DIGEST_TYPE.newStreamableDigest();
-
-                    FileUtils.digest(sourceFile, streamableDigest);
-                    final MessageDigest sourceFileMessageDigest = streamableDigest.copyMessageDigest();
-
-                    // note a backup target for the WAL
-                    final MessageDigest targetFileMessageDigest;
-                    final Path targetBackupFile;
-                    if (Files.exists(targetFile)) {
-                        // digest for the target file
-                        streamableDigest.reset();
-                        FileUtils.digest(targetFile, streamableDigest);
-                        targetFileMessageDigest = streamableDigest.copyMessageDigest();
-
-                        // target backup file
-                        targetBackupFile = getCollectionFile(fsJournalDir.get(), transaction, targetCollectionUri.append(FileUtils.fileName(sourceFile)), true);
-
-                    } else {
-                        targetFileMessageDigest = null;
-                        targetBackupFile = null;
-                    }
-
-                    // write the WAL entry
-                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceFile, sourceFileMessageDigest, targetFile, targetFileMessageDigest, targetBackupFile);
-                    try {
-                        logManager.get().journal(loggable);
-                    } catch (final JournalException e) {
-                        LOG.error(e.getMessage(), e);
-                    }
-
-                    // backup the target file, needed for undoing the transaction if recovery happens
-                    if (targetBackupFile != null) {
-                        Files.createDirectories(targetBackupFile.getParent());
-                        Files.move(targetFile, targetBackupFile, StandardCopyOption.ATOMIC_MOVE);
-                    }
-                }
-
-                // perform the actual binary file operation
-                // move the binary file/directory to the new location on disk
-                Files.createDirectories(targetFile.getParent());
-                Files.move(sourceFile, targetFile, StandardCopyOption.ATOMIC_MOVE);
-            }
-        }
     }
 
     //TODO bug the trigger param is reused as this is a recursive method, but in the current design triggers
@@ -1344,11 +1221,6 @@ public class NativeBroker extends DBBroker {
             final XmldbURI srcURI = collection.getURI();
             final XmldbURI dstURI = destination.getURI().append(newName);
 
-
-            // fsSourceDir must be known in advance, because once the collection is moved
-            // below, both collection and destination can point to the same resource
-            final Path fsSourceDir = getCollectionFile(getFsDir(), srcURI, false);
-
             //recheck here because now under 'synchronized(collectionsCache)'
             if(isSubCollection(collection, destination)) {
                 throw new PermissionDeniedException("Cannot move collection '" + srcURI + "' to it child collection '"+dstURI+"'.");
@@ -1356,6 +1228,32 @@ public class NativeBroker extends DBBroker {
 
             if(fireTrigger) {
                 trigger.beforeMoveCollection(this, transaction, collection, dstURI);
+            }
+
+            // de-reference any existing binaries in the destination from the blob store
+            Collection dst = null;
+            try {
+                dst = openCollection(dstURI, LockMode.WRITE_LOCK);
+                if (dst != null) {
+                    final Iterator<DocumentImpl> itDoc = dst.iterator(this);
+                    while (itDoc.hasNext()) {
+                        final DocumentImpl dstDoc = itDoc.next();
+                        if (dstDoc instanceof BinaryDocument) {
+                            final BinaryDocument binDstDoc = (BinaryDocument)dstDoc;
+                            binDstDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
+                            try {
+                                removeBinaryResource(transaction, binDstDoc);
+                                binDstDoc.setBlobId(null);
+                            } finally {
+                                binDstDoc.getUpdateLock().release(LockMode.READ_LOCK);
+                            }
+                        }
+                    }
+                }
+            } finally {
+                if (dst != null) {
+                    dst.release(LockMode.WRITE_LOCK);
+                }
             }
 
             final XmldbURI parentName = collection.getParentURI();
@@ -1396,8 +1294,6 @@ public class NativeBroker extends DBBroker {
             if(fireTrigger) {
                 trigger.afterMoveCollection(this, transaction, collection, srcURI);
             }
-
-            moveCollectionBinaries(transaction, fsSourceDir, dstURI);
 
             for(final Iterator<XmldbURI> i = collection.collectionIterator(this); i.hasNext(); ) {
                 final XmldbURI childName = i.next();
@@ -1582,7 +1478,7 @@ public class NativeBroker extends DBBroker {
                 final DocumentTrigger docTrigger = new DocumentTriggers(this, collection);
 
                 try {
-                    final StreamableDigest streamableDigest = BINARY_RESOURCE_DIGEST_TYPE.newStreamableDigest();
+//                    final StreamableDigest streamableDigest = BINARY_RESOURCE_DIGEST_TYPE.newStreamableDigest();
 
                     for (final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
                         final DocumentImpl doc = i.next();
@@ -1624,35 +1520,9 @@ public class NativeBroker extends DBBroker {
 
                         // if it is a binary document remove the content from disk
                         if (doc instanceof BinaryDocument) {
-                            final Path binFile = getCollectionFile(getFsDir(), doc.getURI(), false);
-                            if (Files.exists(binFile)) {
-                                if (fsJournalDir.isPresent()) {
-                                    streamableDigest.reset();
-                                    FileUtils.digest(binFile, streamableDigest);
-                                    final MessageDigest binFileMessageDigest = streamableDigest.copyMessageDigest();
 
-                                    // make a copy for the WAL
-                                    final Path walCurrentValue = getCollectionFile(fsJournalDir.get(), transaction, doc.getURI(), true);
-                                    Files.copy(binFile, walCurrentValue);
-                                    streamableDigest.reset();
-                                    FileUtils.digest(walCurrentValue, streamableDigest);
-                                    final MessageDigest walCurrentValueMessageDigest = streamableDigest.copyMessageDigest();
-
-                                    // write the WAL entry
-                                    if (logManager.isPresent()) {
-                                        final Loggable loggable = new DeleteBinaryLoggable(this, transaction, binFile, binFileMessageDigest, walCurrentValue, walCurrentValueMessageDigest);
-                                        try {
-                                            logManager.get().journal(loggable);
-                                        } catch (final JournalException e) {
-                                            LOG.error(e.getMessage(), e);
-                                        }
-                                    }
-                                }
-
-                                // perform the actual binary file operation
-                                // delete the binary file from disk
-                                Files.delete(binFile);
-                            }
+                            final BlobStore blobStore = pool.getBlobStore();
+                            blobStore.remove(transaction, ((BinaryDocument)doc).getBlobId());
                         }
 
                         docTrigger.afterDeleteDocument(this, transaction, doc.getURI());
@@ -1667,16 +1537,6 @@ public class NativeBroker extends DBBroker {
 
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Removing collection '" + collName + "' took " + (System.currentTimeMillis() - start));
-                }
-
-                // if there was a fs folder for holding binaries for the collection remove the (now empty folder) from disk
-                final Path fsBinCollection = getCollectionBinaryFileFsPath(uri);
-                if (Files.exists(fsBinCollection)) {
-                    if (!FileUtils.list(fsBinCollection).isEmpty()) {
-                        LOG.error("Unable to remove non-empty fs folder for Collection binaries: " + fsBinCollection.toAbsolutePath().toString());
-                    } else {
-                        FileUtils.delete(fsBinCollection);
-                    }
                 }
 
                 colTrigger.afterDeleteCollection(this, transaction, collection.getURI());
@@ -2074,123 +1934,24 @@ public class NativeBroker extends DBBroker {
         trigger.afterUpdateDocumentMetadata(this, transaction, doc);
     }
 
-    protected Path getCollectionFile(final Path dir, final XmldbURI uri, final boolean create) throws IOException {
-        return getCollectionFile(dir, null, uri, create);
-    }
-
-    public Path getCollectionBinaryFileFsPath(final XmldbURI uri) {
-        String suri = uri.getURI().toString();
-        if(suri.startsWith("/")) {
-            suri = suri.substring(1);
-        }
-        return getFsDir().resolve(suri);
-    }
-
-    private Path getCollectionFile(Path dir, final Txn transaction, final XmldbURI uri, final boolean create)
-            throws IOException {
-        if(transaction != null) {
-            dir = dir.resolve("txn." + transaction.getId());
-            if(create && !Files.exists(dir)) {
-                dir = Files.createDirectory(dir);
-            }
-
-            //XXX: replace by transaction operation id/number from Txn
-            //add unique id for operation in transaction
-            dir = dir.resolve("oper." + UUID.randomUUID().toString());
-            if(create && !Files.exists(dir)) {
-                dir = Files.createDirectory(dir);
-            }
-        }
-
-        //TODO(AR) consider just using Files.createDirectories to create the entire path in one atomic go
-        final XmldbURI[] segments = uri.getPathSegments();
-        Path binFile = dir;
-        final int last = segments.length - 1;
-        for(int i = 0; i < segments.length; i++) {
-            binFile = binFile.resolve(segments[i].toString());
-            if(create && i != last && !Files.exists(binFile)) {
-                Files.createDirectory(binFile);
-            }
-        }
-        return binFile;
-    }
-
     @Deprecated
     @Override
     public void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final byte[] data)
             throws IOException {
-        storeBinaryResource(transaction, blob, dest -> {
-            try(final InputStream is = new FastByteArrayInputStream(data)) {
-                Files.copy(is, dest);
-            }
-        });
+        try(final InputStream is = new FastByteArrayInputStream(data)) {
+                storeBinaryResource(transaction, blob, is);
+        }
     }
 
     @Override
     public void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final InputStream is)
             throws IOException {
-        storeBinaryResource(transaction, blob, dest -> Files.copy(is, dest));
-    }
+        final BlobStore blobStore = pool.getBlobStore();
+        final Tuple2<BlobId, Long> blobIdLen = blobStore.add(transaction, is);
 
-    /**
-     * @param transaction
-     * @param blob The binary document to store
-     * @param fWriteData A function that given the destination path, writes the document data to that path
-     */
-    private void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final ConsumerE<Path, IOException> fWriteData) throws IOException {
-        final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), true);
-        final boolean exists = Files.exists(binFile);
+        blob.setBlobId(blobIdLen._1);
+        blob.setContentLength(blobIdLen._2);
 
-        if (exists && Files.isDirectory(binFile)) {
-            throw new IOException("Cannot overwrite binary fs Collection '" + blob.getURI().getRawCollectionPath() + "' with Document: " + blob.getURI().lastSegment().toString());
-        }
-
-        if(fsJournalDir.isPresent()) {
-            final StreamableDigest streamableDigest = BINARY_RESOURCE_DIGEST_TYPE.newStreamableDigest();
-
-            // we must write a copy of the new binary file to disk first, so it can be redone or undone if the transaction needs to be recovered
-            final Path walNewValue = getCollectionFile(fsJournalDir.get(), transaction, blob.getURI(), true);
-            fWriteData.accept(walNewValue);
-            FileUtils.digest(walNewValue, streamableDigest);
-            final MessageDigest walNewValueMessageDigest = streamableDigest.copyMessageDigest();
-
-            final FunctionE<Path, Loggable, IOException> fLoggable;
-            if (exists) {
-                final Path currentValue = getCollectionFile(fsJournalDir.get(), transaction, blob.getURI(), true);
-                Files.copy(binFile, currentValue);
-                streamableDigest.reset();
-                FileUtils.digest(currentValue, streamableDigest);
-                final MessageDigest currentValueMessageDigest = streamableDigest.copyMessageDigest();
-
-                fLoggable = existing -> {
-                    streamableDigest.reset();
-                    FileUtils.digest(existing, streamableDigest);
-                    final MessageDigest existingMessageDigest = streamableDigest.copyMessageDigest();
-
-                    return new ReplaceBinaryLoggable(this, transaction, walNewValue, walNewValueMessageDigest, existing, existingMessageDigest, currentValue, currentValueMessageDigest);
-                };
-            } else {
-                fLoggable = create -> new CreateBinaryLoggable(this, transaction, walNewValue, walNewValueMessageDigest, create);
-            }
-
-            // write the WAL entry
-            if (logManager.isPresent() && fLoggable != null) {
-                final Loggable loggable = fLoggable.apply(binFile);
-                try {
-                    logManager.get().journal(loggable);
-                } catch (final JournalException e) {
-                    LOG.error(e.getMessage(), e);
-                }
-            }
-
-            // perform the actual binary file operation
-            // copy the binary file to the real location on disk
-            Files.copy(walNewValue, binFile, StandardCopyOption.REPLACE_EXISTING);
-        } else {
-            //no journal, just do the binary operation
-            Files.deleteIfExists(binFile);
-            fWriteData.accept(binFile);
-        }
     }
 
     @Override
@@ -2224,14 +1985,6 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' not allowed requested access to document '" + fileName + "'");
         }
 
-        if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-            final BinaryDocument bin = (BinaryDocument) doc;
-            try {
-                bin.setContentLength(getBinaryResourceSize(bin));
-            } catch(final IOException ex) {
-                LOG.fatal("Cannot get content size for " + bin.getURI(), ex);
-            }
-        }
         return doc;
     }
 
@@ -2261,14 +2014,6 @@ public class NativeBroker extends DBBroker {
             }
             //if (!doc.getMode().validate(getUser(), Permission.READ))
             //throw new PermissionDeniedException("not allowed to read document");
-            if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                final BinaryDocument bin = (BinaryDocument) doc;
-                try {
-                    bin.setContentLength(getBinaryResourceSize(bin));
-                } catch(final IOException ex) {
-                    LOG.fatal("Cannot get content size for " + bin.getURI(), ex);
-                }
-            }
             return doc;
         } catch(final LockException e) {
             LOG.error("Could not acquire lock on document " + fileName, e);
@@ -2283,27 +2028,76 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public void readBinaryResource(final BinaryDocument blob, final OutputStream os)
-        throws IOException {
-        final Path binFile = getBinaryFile(blob);
-        Files.copy(binFile, os);
+            throws IOException {
+        try (final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+            readBinaryResource(transaction, blob, os);
+            transaction.commit();
+        } catch (final TransactionException e) {
+            throw new IOException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void readBinaryResource(final Txn transaction, final BinaryDocument blob, final OutputStream os)
+            throws IOException {
+        final BlobStore blobStore = pool.getBlobStore();
+        try (final InputStream is = blobStore.get(transaction, blob.getBlobId())) {
+            if (is != null) {
+                if (os instanceof FastByteArrayOutputStream) {
+                    ((FastByteArrayOutputStream)os).write(is);
+                } else {
+                    copy(is, os);
+                }
+            }
+        }
     }
 
     @Override
     public long getBinaryResourceSize(final BinaryDocument blob)
-        throws IOException {
-        final Path binFile = getBinaryFile(blob);
-        return Files.size(binFile);
+            throws IOException {
+        return blob.getContentLength();
     }
 
     @Override
-    public Path getBinaryFile(final BinaryDocument blob) throws IOException {
-        return getCollectionFile(getFsDir(), blob.getURI(), false);
+    public MessageDigest getBinaryResourceContentDigest(final Txn transaction, final BinaryDocument binaryDocument,
+        final DigestType digestType) throws IOException {
+        final BlobStore blobStore = pool.getBlobStore();
+        return blobStore.getDigest(transaction, binaryDocument.getBlobId(), digestType);
+    }
+
+    @Override
+    public Path getBinaryFile(final BinaryDocument blob) {
+        throw new UnsupportedOperationException(
+                "No longer supported, use DBBroker#withBinaryFile(Txn, BinaryDocument, Function)");
+    }
+
+    @Override
+    public <T> T withBinaryFile(final Txn transaction, final BinaryDocument binaryDocument,
+            final Function<Path, T> fnFile) throws IOException {
+        final BlobStore blobStore = pool.getBlobStore();
+        return blobStore.with(transaction, binaryDocument.getBlobId(), fnFile);
     }
 
     @Override
     public InputStream getBinaryResource(final BinaryDocument blob)
-        throws IOException {
-        return Files.newInputStream(getBinaryFile(blob));
+            throws IOException {
+        // TODO(AR) how best to get the transaction?
+        try (final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+            final InputStream is = getBinaryResource(transaction, blob);
+
+            transaction.commit();
+
+            return is;
+        } catch (final TransactionException e) {
+            throw new IOException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public InputStream getBinaryResource(final Txn transaction, final BinaryDocument blob)
+            throws IOException {
+        final BlobStore blobStore = pool.getBlobStore();
+        return blobStore.get(transaction, blob.getBlobId());
     }
 
     //TODO : consider a better cooperation with Collection -pb
@@ -2460,7 +2254,7 @@ public class NativeBroker extends DBBroker {
                 }
 
                 final XmldbURI newURI = destination.getURI().append(newName);
-                final XmldbURI oldUri = doc.getURI();
+//                final XmldbURI oldUri = doc.getURI();
 
                 final DocumentTrigger trigger = new DocumentTriggers(this, collection);
 
@@ -2505,7 +2299,7 @@ public class NativeBroker extends DBBroker {
      *   asynchronously deletes the nodes of the old existing document
      */
     private void doCopyDocument(final Txn transaction, final DocumentTrigger trigger,
-                                final DocumentImpl srcDoc, final Collection dstCol, final XmldbURI dstDocName)
+            final DocumentImpl srcDoc, final Collection dstCol, final XmldbURI dstDocName)
             throws TriggerException, LockException, PermissionDeniedException, IOException, ReadOnlyException, EXistException {
 
         // URI of the destination document in the database
@@ -2576,8 +2370,9 @@ public class NativeBroker extends DBBroker {
                     dropDomNodes(transaction, oldDstDoc);
 
                 } else {
-                    // no need to remove the bin file of the oldDstDoc, it will
-                    // have been overwritten already in the copy of the bin file
+                    // remove the blob of the old document
+                    final BlobStore blobStore = pool.getBlobStore();
+                    blobStore.remove(transaction, ((BinaryDocument)oldDstDoc).getBlobId());
                 }
 
                 // TODO(AR) do we need a freeId flag to control this?
@@ -2616,11 +2411,12 @@ public class NativeBroker extends DBBroker {
     }
 
     private void copyBinaryResource(final Txn transaction, final BinaryDocument srcDoc, final BinaryDocument dstDoc)
-            throws IOException, LockException, TriggerException, PermissionDeniedException, EXistException {
-        try (final InputStream is = getBinaryResource(srcDoc)) {
-            dstDoc.getCollection().addBinaryResource(transaction, this, dstDoc, is, srcDoc.getMetadata().getMimeType(),
-                    -1, null, null);
-        }
+            throws IOException {
+        final BlobStore blobStore = pool.getBlobStore();
+        final BlobId dstBlobId = blobStore.copy(transaction, srcDoc.getBlobId());
+
+        dstDoc.setBlobId(dstBlobId);
+        dstDoc.setContentLength(srcDoc.getContentLength());
     }
 
     /**
@@ -2669,11 +2465,6 @@ public class NativeBroker extends DBBroker {
         if(!destination.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE | Permission.EXECUTE)) {
             throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on destination Collection to move resource " + doc.getFileURI());
         }
-        
-        
-        /* Copy reference to original document */
-        final Path fsOriginalDocument = getCollectionFile(getFsDir(), doc.getURI(), true);
-
 
         final XmldbURI oldName = doc.getFileURI();
         if(newName == null) {
@@ -2738,54 +2529,9 @@ public class NativeBroker extends DBBroker {
                     // reindexing
                     reindexXMLResource(transaction, doc, IndexMode.REPAIR);
                 }
-            } else {
-                // binary resource
-                final Path colDir = getCollectionFile(getFsDir(), destination.getURI(), true);
-                final Path targetFile = colDir.resolve(newName.lastSegment().toString());
-
-                if (fsJournalDir.isPresent()) {
-                    final StreamableDigest streamableDigest = BINARY_RESOURCE_DIGEST_TYPE.newStreamableDigest();
-
-                    FileUtils.digest(fsOriginalDocument, streamableDigest);
-                    final MessageDigest fsOriginalDocumentMessageDigest = streamableDigest.copyMessageDigest();
-
-                    // note a backup target for the WAL
-                    final MessageDigest targetFileMessageDigest;
-                    final Path targetBackupFile;
-                    if (Files.exists(targetFile)) {
-                        // digest for the target file
-                        streamableDigest.reset();
-                        FileUtils.digest(targetFile, streamableDigest);
-                        targetFileMessageDigest = streamableDigest.copyMessageDigest();
-
-                        // target backup file
-                        targetBackupFile = getCollectionFile(fsJournalDir.get(), transaction, destination.getURI().append(newName), true);
-
-                    } else {
-                        targetFileMessageDigest = null;
-                        targetBackupFile = null;
-                    }
-
-                    // write the WAL entry
-                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, fsOriginalDocument, fsOriginalDocumentMessageDigest, targetFile, targetFileMessageDigest, targetBackupFile);
-                    try {
-                        logManager.get().journal(loggable);
-                    } catch (final JournalException e) {
-                        LOG.error(e.getMessage(), e);
-                    }
-
-                    // backup the target file, needed for undoing the transaction if recovery happens
-                    if (targetBackupFile != null) {
-                        Files.createDirectories(targetBackupFile.getParent());
-                        Files.move(targetFile, targetBackupFile, StandardCopyOption.ATOMIC_MOVE);
-                    }
-                }
-
-                // perform the actual binary file operation
-                // move the binary file to the new location on disk
-                Files.createDirectories(targetFile.getParent());
-                Files.move(fsOriginalDocument, targetFile, StandardCopyOption.ATOMIC_MOVE);
             }
+
+            // NOTE: nothing needs to be done for binary resources as the reference to the Blob does not change
 
             storeXMLResource(transaction, doc);
             saveCollection(transaction, destination);
@@ -2894,35 +2640,13 @@ public class NativeBroker extends DBBroker {
             LOG.debug("removing binary resource " + blob.getDocId() + "...");
         }
 
-        // remove the bin file on the filesystem
-        final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), false);
-        if(Files.exists(binFile)) {
-            if(fsJournalDir.isPresent()) {
-                final StreamableDigest streamableDigest = BINARY_RESOURCE_DIGEST_TYPE.newStreamableDigest();
-                FileUtils.digest(binFile, streamableDigest);
-                final MessageDigest binFileMessageDigest = streamableDigest.copyMessageDigest();
-
-                // make a copy for the WAL
-                final Path walCurrentValue = getCollectionFile(fsJournalDir.get(), transaction, blob.getURI(), true);
-                Files.copy(binFile, walCurrentValue);
-                streamableDigest.reset();
-                FileUtils.digest(walCurrentValue, streamableDigest);
-                final MessageDigest walCurrentValueMessageDigest = streamableDigest.copyMessageDigest();
-
-                // write the WAL entry
-                if (logManager.isPresent()) {
-                    final Loggable loggable = new DeleteBinaryLoggable(this, transaction, binFile, binFileMessageDigest, walCurrentValue, walCurrentValueMessageDigest);
-                    try {
-                        logManager.get().journal(loggable);
-                    } catch (final JournalException e) {
-                        LOG.error(e.getMessage(), e);
-                    }
-                }
-            }
-
-            // perform the actual binary file operation, delete the file!
-            Files.delete(binFile);
+        if (blob.getBlobId() == null) {
+            LOG.warn("Trying to delete binary document: " + blob.getURI() + ", but blobId was null");
+            return;
         }
+
+        final BlobStore blobStore = pool.getBlobStore();
+        blobStore.remove(transaction, blob.getBlobId());
 
         // remove the file from the database metadata and indexes
         removeResourceMetadata(transaction, blob);

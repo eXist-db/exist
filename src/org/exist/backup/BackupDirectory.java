@@ -120,7 +120,7 @@ public class BackupDirectory {
                 if (FileUtils.fileName(newest).toLowerCase().endsWith(".zip")) {
                     descriptor = new ZipArchiveBackupDescriptor(newest);
                 } else {
-                    descriptor = new FileSystemBackupDescriptor(newest.resolve("db").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR));
+                    descriptor = new FileSystemBackupDescriptor(newest, newest.resolve("db").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR));
                 }
             } catch (final IOException e) {
                 e.printStackTrace();

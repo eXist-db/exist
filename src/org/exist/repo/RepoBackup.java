@@ -1,16 +1,18 @@
 package org.exist.repo;
 
+import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.storage.NativeBroker;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.txn.Txn;
 import org.exist.util.FileUtils;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.xmldb.XmldbURI;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -35,19 +37,30 @@ public class RepoBackup {
         return tempFile;
     }
 
+    /**
+     * @deprecated Use {@link #restore(Txn, DBBroker)}.
+     */
+    @Deprecated
     public static void restore(final DBBroker broker) throws IOException, PermissionDeniedException {
+        restore(null, broker);
+    }
+
+    public static void restore(final Txn transaction, final DBBroker broker) throws IOException, PermissionDeniedException {
         final XmldbURI docPath = XmldbURI.createInternal(XmldbURI.ROOT_COLLECTION + "/" + REPO_ARCHIVE);
         DocumentImpl doc = null;
         try {
             doc = broker.getXMLResource(docPath, LockMode.READ_LOCK);
-            if (doc == null)
-                {return;}
-            if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
-                {throw new IOException(docPath + " is not a binary resource");}
+            if (doc == null) {
+                return;
+            }
+            if (doc.getResourceType() != DocumentImpl.BINARY_FILE) {
+                throw new IOException(docPath + " is not a binary resource");
+            }
 
-            final Path file = ((NativeBroker)broker).getCollectionBinaryFileFsPath(doc.getURI());
-            final Path directory = ExistRepository.getRepositoryDir(broker.getConfiguration());
-            unzip(file, directory);
+            try (final InputStream is = broker.getBrokerPool().getBlobStore().get(transaction,  ((BinaryDocument)doc).getBlobId())) {
+                final Path directory = ExistRepository.getRepositoryDir(broker.getConfiguration());
+                unzip(doc.getURI(), is, directory);
+            }
         } finally {
             if (doc != null)
                 {doc.getUpdateLock().release(LockMode.READ_LOCK);}
@@ -82,18 +95,19 @@ public class RepoBackup {
     /***
      * Extract zipfile to outdir with complete directory structure.
      *
-     * @param zipfile Input .zip file
+     * @param fileUri the file URI
+     * @param file Input .zip file
      * @param outdir Output directory
      */
-    public static void unzip(final Path zipfile, final Path outdir) throws IOException {
-        try (final ZipInputStream zin = new ZipInputStream(Files.newInputStream(zipfile))) {
+    public static void unzip(final XmldbURI fileUri, final InputStream file, final Path outdir) throws IOException {
+        try (final ZipInputStream zin = new ZipInputStream(file)) {
             ZipEntry entry;
             while ((entry = zin.getNextEntry()) != null) {
                 final String name = entry.getName();
                 final Path out = outdir.resolve(name);
 
                 if (!out.startsWith(outdir)) {
-                    throw new IOException("Detected archive exit attack! zipFile=" + zipfile.toAbsolutePath().normalize().toString() + ", entry=" + name + ", outdir=" + outdir.toAbsolutePath().normalize().toString());
+                    throw new IOException("Detected archive exit attack! zipFile=" + fileUri.getRawCollectionPath() + ", entry=" + name + ", outdir=" + outdir.toAbsolutePath().normalize().toString());
                 }
 
                 if (entry.isDirectory() ) {
