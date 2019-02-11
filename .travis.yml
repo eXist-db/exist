@@ -25,4 +25,4 @@ after_failure:
    - curl -v -u $CHUNK_USER:$CHUNK_PW -sT junit-data.tar.bz2 chunk.io
 
 notifications:
-  hipchat: ec8fcfa661addc56a361a8ef536320@integrations
+  slack: exist-db:IXzUdqA0n11cnxaDz43ZQgdX
