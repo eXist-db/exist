@@ -22,8 +22,6 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/ngram/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/ngram/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/xqdoc/src/main/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/test/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tools/izpack/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/range/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/samples/src" isTestSource="false" />
@@ -64,6 +62,9 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/xmldiff/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/xslfo/src/main/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/commands/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/autodeploy" />
       <excludeFolder url="file://$MODULE_DIR$/backup" />
       <excludeFolder url="file://$MODULE_DIR$/build" />

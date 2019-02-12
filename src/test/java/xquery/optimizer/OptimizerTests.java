@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-    "test/src/xquery/optimizer"
+    "src/test/xquery/optimizer"
 })
 public class OptimizerTests {
 }

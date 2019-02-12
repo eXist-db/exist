@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-        "test/src/xquery/xqsuite"
+        "src/test/xquery/xqsuite"
 })
 public class XQSuiteTests {
 }
