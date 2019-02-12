@@ -13,9 +13,9 @@
     <property file="${server.dir}/build.properties" />
     <property file="${server.dir}/vm.properties" />
 
-    <property name="src" value="${wrapper.dir}/src"/>
+    <property name="src" value="${wrapper.dir}/src/main/java"/>
     <property name="lib" value="${wrapper.dir}/lib"/>
-    <property name="classes" value="${wrapper.dir}/classes"/>
+    <property name="classes" value="${wrapper.dir}/target/classes"/>
     <property name="conf" value="${wrapper.dir}/conf"/>
     <property name="bin" value="${wrapper.dir}/bin"/>
     <property name="logs" value="${wrapper.dir}/logs"/>
