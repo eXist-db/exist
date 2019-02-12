@@ -32,6 +32,7 @@ import org.exist.security.Account;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -43,11 +44,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class LDAPRealmTest {
 
 	private static String config = 
-		"<LDAP>" +
+		"<realm id=\"LDAP\">" +
 		"	<context>" +
 		"		<principalPattern>cn={0},dc=local</principalPattern>" +
 		"		<url>ldap://localhost:389</url>" +
-		"</LDAP>";
+        "	</context>" +
+		"</realm>";
 
 	private static LDAPRealm realm;
 	
@@ -56,23 +58,23 @@ public class LDAPRealmTest {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		InputStream is = new FastByteArrayInputStream(config.getBytes(UTF_8));
-		
-		Configuration config = Configurator.parse(is);
-
-		realm = new LDAPRealm(null, config);
+		try (final InputStream is = new FastByteArrayInputStream(config.getBytes(UTF_8))) {
+			Configuration config = Configurator.parse(is);
+			realm = new LDAPRealm(null, config);
+		}
 	}
 
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
+	public static void tearDownAfterClass() {
 	}
 
 	/**
 	 * Test method for {@link org.exist.security.realm.ldap.LDAPRealm#authenticate(java.lang.String, java.lang.Object)}.
 	 */
+	@Ignore
 	@Test
 	public void testAuthenticate() {
 		Account account = null;

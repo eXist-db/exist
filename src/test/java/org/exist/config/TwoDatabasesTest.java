@@ -22,6 +22,7 @@
 package org.exist.config;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,6 +46,7 @@ import org.exist.util.LockException;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
+import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertTrue;
 
@@ -53,6 +55,9 @@ import static org.junit.Assert.assertTrue;
  */
 public class TwoDatabasesTest {
 
+    @ClassRule
+    public static final TemporaryFolder tmpFolder = new TemporaryFolder();
+
     private static Path config1File;
     private static Path dataDir1;
 
@@ -60,7 +65,7 @@ public class TwoDatabasesTest {
     private static Path dataDir2;
 
     @BeforeClass
-    public static void prepare() {
+    public static void prepare() throws URISyntaxException, IOException {
         final String log4j = System.getProperty("log4j.configurationFile");
         if (log4j == null) {
             Path lf = Paths.get("log42j.xml");
@@ -69,17 +74,16 @@ public class TwoDatabasesTest {
             }
         }
 
-        final String packagePath = TwoDatabasesTest.class.getPackage().getName().replace('.', '/');
-        final Path existHome = Optional.ofNullable(System.getProperty("exist.home", System.getProperty("user.dir"))).map(Paths::get).orElse(Paths.get("."));
-        final Path testConfigPkg = existHome.resolve("test").resolve("src").resolve(packagePath);
-        final Path tmpTest = existHome.resolve("test").resolve("temp").resolve(packagePath);
+        final ClassLoader loader = TwoDatabasesTest.class.getClassLoader();
+        final char separator = System.getProperty("file.separator").charAt(0);
+        final String packagePath = TwoDatabasesTest.class.getPackage().getName().replace('.', separator);
 
-        config1File = testConfigPkg.resolve("conf1.xml");
-        dataDir1 = tmpTest.resolve("data1");
+        config1File = Paths.get(loader.getResource(packagePath + separator + "conf1.xml").toURI());
+        dataDir1 = tmpFolder.newFolder("data1").toPath();
         FileUtils.mkdirsQuietly(dataDir1);
 
-        config2File = testConfigPkg.resolve("conf2.xml");
-        dataDir2 = tmpTest.resolve("data2");
+        config2File = Paths.get(loader.getResource(packagePath + separator + "conf2.xml").toURI());
+        dataDir2 = tmpFolder.newFolder("data2").toPath();
         FileUtils.mkdirsQuietly(dataDir2);
     }
 

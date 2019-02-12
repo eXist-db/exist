@@ -118,7 +118,7 @@ to add: -pre-compile steps
       </fileset>
       <pathelement path="${test.classes.dir}"/>
       <!-- needed for org/exist/TestUtils -->
-      <pathelement path="${existhome.dir}/test/classes"/>
+      <pathelement path="${existhome.dir}/target/test-classes"/>
    </path>
 
    <path id="classpath.extensions">
