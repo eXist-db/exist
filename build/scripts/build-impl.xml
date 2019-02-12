@@ -10,16 +10,18 @@
     <property file="${basedir}/build.properties" />
 
     <property name="jetty.dir" value="tools/jetty"/>
-    <property name="src" value="./src"/>
+    <property name="src" value="./src/main/java"/>
+    <property name="src.test" value="./src/test/java"/>
     <property name="src.webapp" value="./webapp"/>
     <property name="samples" value="./samples/src"/>
     <property name="bin" value="./bin"/>
 
+    <property name="target" value="./target"/>
     <property name="build" value="./build"/>
-    <property name="build.src" value="${build}/src"/>
     <property name="build.scripts" value="${build}/scripts"/>
     <property name="build.soap" value="${build}/soap"/>
-    <property name="build.classes" value="${build}/classes"/>
+    <property name="build.classes" value="${target}/classes"/>
+    <property name="build.test.classes" value="${target}/test-classes"/>
     <property name="build.docs" value="${build}/docs"/>
     <property name="build.docs.src" value="${build.docs}/source"/>
     <property name="build.docs.html" value="${build.docs}/html"/>
@@ -227,13 +229,13 @@
     </target>
 
     <target name="compile-testkit" depends="prepare,compile" description="Compiles the Test Kit source code">
-        <mkdir dir="${junit.reports}/classes"/>
+        <mkdir dir="${build.test.classes}"/>
 
         <echo
                 message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
 
-        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" destdir="${junit.reports}/classes"
-               encoding="UTF-8" optimize="${build.optimize}" srcdir="${junit.reports}/src"
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" destdir="${build.test.classes}"
+               encoding="UTF-8" optimize="${build.optimize}" srcdir="${src.test}"
                source="${build.compiler.source}" target="${build.compiler.target}"
                fork="true" memoryInitialSize="512m" memoryMaximumSize="1024m">
 
@@ -252,8 +254,8 @@
             </classpath>
         </javac>
 
-        <copy todir="${junit.reports}/classes/org/exist/test/runner">
-            <fileset dir="${junit.reports}/src/org/exist/test/runner">
+        <copy todir="${build.test.classes}/org/exist/test/runner">
+            <fileset dir="${resources.test}/org/exist/test/runner">
                 <include name="*.xq"/>
             </fileset>
         </copy>
@@ -533,7 +535,7 @@
                 <attribute name="Description" value="eXist XML Native Database Test Kit"/>
                 <attribute name="Created-By" value="${ant.version}"/>
             </manifest>
-            <fileset dir="${junit.reports}/classes">
+            <fileset dir="${build.test.classes}">
                 <include name="org/exist/TestUtils.class"/>
                 <include name="org/exist/test/**"/>
                 <include name="xquery/TestRunner.class"/>
@@ -568,8 +570,6 @@
     <!-- Create javadoc                                                     -->
     <!-- ================================================================== -->
     <target name="javadocs" description="Create javadoc">
-        <mkdir dir="${build.src}"/>
-
         <delete dir="${build.javadoc}"/>
         <mkdir dir="${build.javadoc}"/>
 
@@ -578,9 +578,6 @@
             doctitle="eXist Javadocs" noindex="true" notree="true" access="public" maxmemory="1024M"
             source="${build.compiler.source}">
             <packageset dir="${src}">
-                <include name="org/**"/>
-            </packageset>
-            <packageset dir="${build.src}">
                 <include name="org/**"/>
             </packageset>
             <packageset dir="${build.extensions}/webdav/src">
@@ -631,15 +628,12 @@
         </javadoc>
 
         <ant antfile="${build.scripts}/extensions-build.xml" target="javadoc" inheritAll="false"/>
-
-        <delete dir="${build.src}"/>
     </target>
 
     <!-- ================================================================== -->
     <!-- Create javadoc with UML diagrams                                   -->
     <!-- ================================================================== -->
     <target depends="prepare" name="javadocs-uml" description="Create javadoc with UML diagrams">
-        <mkdir dir="${build.src}"/>
         <antcall target="copy-xapi"/>
 
         <!--delete dir="webapp/api"/>
@@ -649,9 +643,6 @@
             doctitle="eXist Javadocs" noindex="true" notree="true" access="public" maxmemory="1024M"
             source="${build.compiler.source}">
             <packageset dir="${src}">
-                <include name="org/**"/>
-            </packageset>
-            <packageset dir="${build.src}">
                 <include name="org/**"/>
             </packageset>
             <classpath>
@@ -699,8 +690,6 @@
         </javadoc>
 
         <ant antfile="build.xml" dir="extensions/fluent" target="javadoc"/>
-
-        <delete dir="${build.src}"/>
     </target>
 
     <!-- ================================================================== -->
@@ -726,6 +715,8 @@
         <delete dir="${junit.reports}/pmd"/>
         <delete dir="${junit.reports}/jdepend"/>
         <delete dir="${junit.reports}/classes"/>
+
+        <delete dir="${target}"/>
 
         <delete dir="samples/classes"/>
         <delete failonerror="no" file="examples.jar"/>

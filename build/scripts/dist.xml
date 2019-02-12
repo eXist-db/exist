@@ -271,9 +271,6 @@
         <copy todir="${dist.dir}/src">
             <fileset dir="src"/>
         </copy>
-        <copy todir="${dist.dir}/test/src">
-            <fileset dir="test/src"/>
-        </copy>
         <copy todir="${dist.dir}/lib">
             <fileset dir="lib"/>
         </copy>

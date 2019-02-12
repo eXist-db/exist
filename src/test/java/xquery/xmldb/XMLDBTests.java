@@ -5,7 +5,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-        "test/src/xquery/xmldb"
+        "src/test/xquery/xmldb"
 })
 public class XMLDBTests {
 }

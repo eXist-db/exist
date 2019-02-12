@@ -1,6 +1,7 @@
 package org.exist.util;
 
 import java.lang.reflect.Field;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -8,6 +9,7 @@ import java.util.Optional;
 import static org.junit.Assert.*;
 
 import com.googlecode.junittoolbox.ParallelRunner;
+import org.exist.config.TwoDatabasesTest;
 import org.junit.*;
 import org.junit.runner.RunWith;
 
@@ -76,10 +78,12 @@ public class MimeTableTest  {
 	 * The test config assigns all resources to application/xml
 	 */
     @Test
-	public void testWithDefaultResourceTypeFeature() {
-		Path existDir = Optional.ofNullable(System.getProperty("exist.home")).map(Paths::get).orElse(Paths.get(".")).resolve("test/src/org/exist/util");
+	public void testWithDefaultResourceTypeFeature() throws URISyntaxException {
+		final char separator = System.getProperty("file.separator").charAt(0);
+		final String packagePath = getClass().getPackage().getName().replace('.', separator);
+		final Path mimeTypes = Paths.get(getClass().getClassLoader().getResource(packagePath + separator + "mime-types-xml-default.xml").toURI());
 
-		MimeTable mimeTable = MimeTable.getInstance(existDir.resolve("mime-types-xml-default.xml"));
+		MimeTable mimeTable = MimeTable.getInstance(mimeTypes);
 		assertNotNull("Mime table not found", mimeTable);
 
 		MimeType mt;
@@ -115,10 +119,12 @@ public class MimeTableTest  {
 	 * The test config assigns all resources to foo/bar (BINARY)
 	 */
     @Test
-	public void testWithDefaultMimeTypeFeature() {
-		Path existDir = Optional.ofNullable(System.getProperty("exist.home")).map(Paths::get).orElse(Paths.get(".")).resolve("test/src/org/exist/util");
+	public void testWithDefaultMimeTypeFeature() throws URISyntaxException {
+		final char separator = System.getProperty("file.separator").charAt(0);
+		final String packagePath = getClass().getPackage().getName().replace('.', separator);
+		final Path mimeTypes = Paths.get(getClass().getClassLoader().getResource(packagePath + separator + "mime-types-foo-default.xml").toURI());
 
-		MimeTable mimeTable = MimeTable.getInstance(existDir.resolve("mime-types-foo-default.xml"));
+		MimeTable mimeTable = MimeTable.getInstance(mimeTypes);
 		assertNotNull("Mime table not found", mimeTable);
 
 		MimeType mt;

@@ -5,7 +5,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-    "test/src/xquery/maps"
+    "src/test/xquery/maps"
 })
 public class MapTests {
 }

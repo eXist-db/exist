@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-    "test/src/xquery/modules/cache"
+    "src/test/xquery/modules/cache"
 })
 public class CacheTests {
 }
