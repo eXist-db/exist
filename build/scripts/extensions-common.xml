@@ -36,6 +36,7 @@ to add: -pre-compile steps
    <!-- set global properties for this build -->
 
    <property name="src.dir" location="src/main/java"/>
+   <property name="resources.dir" location="src/main/resources"/>
    <property name="dat.dir" location="dat"/>
    <property name="metainf.dir" location="${dat.dir}/metainf"/>
 
@@ -221,7 +222,7 @@ to add: -pre-compile steps
          </fileset>
       </copy>
 
-      <jar jarfile="${dist.extension.jar}" basedir="${build.classes.dir}" compress="yes">
+      <jar jarfile="${dist.extension.jar}" compress="yes">
          <manifest>
             <attribute name="Implementation-Title" value="${project.name} - ${extension.name}"/>
             <attribute name="Implementation-Version" value="${project.version}"/>
@@ -243,6 +244,8 @@ to add: -pre-compile steps
 
             <attribute name="Created-By" value="${ant.version}"/>
          </manifest>
+         <fileset dir="${build.classes.dir}"/>
+         <fileset dir="${resources.dir}" erroronmissingdir="false"/>
       </jar>
 
 <!--      <antcall target="jar-metainf"/>-->
