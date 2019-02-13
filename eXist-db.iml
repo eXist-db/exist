@@ -65,6 +65,17 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/persistentlogin/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/expathrepo/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/file/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/simpleql/src/main/antlr" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/modules/sql-oracle/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/xquery" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/expath/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/webdav/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/xqdoc/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/xqdoc/src/test/resources" type="java-test-resource" />
       <excludeFolder url="file://$MODULE_DIR$/autodeploy" />
       <excludeFolder url="file://$MODULE_DIR$/backup" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
