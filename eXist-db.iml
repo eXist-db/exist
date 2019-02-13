@@ -76,16 +76,32 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/webdav/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/xqdoc/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/xqdoc/src/test/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/lucene/src/test/xquery" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/range/src/test/xquery" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/sort/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/sort/src/test/xquery" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/spatial/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/spatial/src/test/java" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/security/activedirectory/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/security/iprange/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/security/ldap/src/test/java" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/autodeploy" />
       <excludeFolder url="file://$MODULE_DIR$/backup" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/extensions/debuggee" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/exquery/modules/request/build" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/exquery/restxq/build" />
+      <excludeFolder url="file://$MODULE_DIR$/extensions/images" />
+      <excludeFolder url="file://$MODULE_DIR$/extensions/metadata" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/modules/src/org/exist/xquery/modules/cqlparser" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/modules/src/org/exist/xquery/modules/memcached" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/modules/src/org/exist/xquery/modules/oracle" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/modules/src/org/exist/xquery/modules/xmpp" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/modules/src/org/exist/xquery/modules/xslfo" />
+      <excludeFolder url="file://$MODULE_DIR$/extensions/netedit" />
+      <excludeFolder url="file://$MODULE_DIR$/extensions/security/oauth" />
+      <excludeFolder url="file://$MODULE_DIR$/extensions/security/openid" />
+      <excludeFolder url="file://$MODULE_DIR$/extensions/tomcat-realm" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/webdav/build" />
       <excludeFolder url="file://$MODULE_DIR$/tools/jetty/logs" />
       <excludeFolder url="file://$MODULE_DIR$/tools/jetty/work" />
