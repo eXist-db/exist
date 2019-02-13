@@ -8,6 +8,7 @@ import org.exist.xquery.TerminatedException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.DoubleValue;
 import org.junit.*;
+import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
@@ -331,10 +332,13 @@ public class BTreeTest {
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
+    @Rule
+    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     @Before
-    public void initialize() {
-        file = Paths.get(System.getProperty("exist.home", ".")).resolve("test/junit/test.dbx");
-        assertFalse(Files.exists(file));
+    public void initialize() throws IOException {
+        file = temporaryFolder.newFile("test.dbx").toPath();
+        assertTrue(Files.exists(file));
     }
 
     @After
