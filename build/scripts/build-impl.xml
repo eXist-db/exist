@@ -191,7 +191,7 @@
             filtering="true"/>
         <copy file="${basedir}/mime-types.xml.tmpl" tofile="${basedir}/mime-types.xml"
             filtering="true"/>
-        <copy file="${basedir}/mime-types.xml" tofile="${src}/org/exist/util/mime-types.xml"/>
+        <copy file="${basedir}/mime-types.xml" tofile="${build.classes}/org/exist/util/mime-types.xml"/>
 
         <copy file="${src.webapp}/WEB-INF/web.xml.tmpl" tofile="${src.webapp}/WEB-INF/web.xml"
             filtering="true" overwrite="true"/>
@@ -316,26 +316,26 @@
                 <exclude name="XQuery*AST.java"/>
             </fileset>
         </delete>
-        <antlr target="${src}/org/exist/xquery/parser/XQuery.g"
+        <antlr target="${resources.main}/org/exist/xquery/parser/XQuery.g"
             outputdirectory="${src}/org/exist/xquery/parser" traceparser="${antlr.traceParser}"
             tracelexer="${antlr.traceLexer}">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
         </antlr>
-        <antlr target="${src}/org/exist/xquery/parser/XQueryTree.g"
+        <antlr target="${resources.main}/org/exist/xquery/parser/XQueryTree.g"
             outputdirectory="${src}/org/exist/xquery/parser" tracetreewalker="${antlr.traceTreeWalker}">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
         </antlr>
-        <antlr target="${src}/org/exist/xquery/parser/DeclScanner.g"
+        <antlr target="${resources.main}/org/exist/xquery/parser/DeclScanner.g"
             outputdirectory="${src}/org/exist/xquery/parser">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
         </antlr>
-        <antlr target="${src}/org/exist/xquery/xqdoc/parser/XQDocParser.g"
+        <antlr target="${resources.main}/org/exist/xquery/xqdoc/parser/XQDocParser.g"
             outputdirectory="${src}/org/exist/xquery/xqdoc/parser">
             <classpath>
                 <path refid="classpath.core"/>
@@ -356,10 +356,9 @@
         <filter token="git.branch" value="${git.branch.full}"/>
         <filter token="git.commit" value="${git.revision}"/>
 
-        <!--copy file="${src}/CatalogManager.properties" todir="${build.classes}"/-->
         <copy todir="${build.classes}/org/exist/client">
-            <fileset dir="${src}/org/exist/client">
-        <include name="*.tmpl"/>
+            <fileset dir="${resources.main}/org/exist/client">
+                <include name="*.tmpl"/>
                 <include name="icons/**.png"/>
                 <include name="icons/**.gif"/>
                 <include name="*.xsl"/>
@@ -367,48 +366,47 @@
             </fileset>
         </copy>
         <copy todir="${build.classes}/org/exist/xquery/lib">
-            <fileset dir="${src}/org/exist/xquery/lib">
+            <fileset dir="${resources.main}/org/exist/xquery/lib">
                 <include name="**/*.xq*"/>
             </fileset>
         </copy>
         <copy todir="${build.classes}/org/exist/http">
-            <fileset dir="${src}/org/exist/http">
+            <fileset dir="${resources.main}/org/exist/http">
                 <include name="**.xq"/>
             </fileset>
         </copy>
-        <copy file="${src}/org/exist/xquery/util/messages.properties"
+        <copy file="${resources.main}/org/exist/xquery/util/messages.properties"
             todir="${build.classes}/org/exist/xquery/util"/>
-        <copy file="${src}/org/exist/ant/antlib.xml" todir="${build.classes}/org/exist/ant"/>
+        <copy file="${resources.main}/org/exist/ant/antlib.xml" todir="${build.classes}/org/exist/ant"/>
 
-        <copy file="${src}/org/exist/start/start.config" todir="${build.classes}/org/exist/start"/>
-        <copy file="${src}/org/exist/security/security.properties"
+        <copy file="${resources.main}/org/exist/start/start.config" todir="${build.classes}/org/exist/start"/>
+        <copy file="${resources.main}/org/exist/security/security.properties"
             todir="${build.classes}/org/exist/security"/>
-        <copy file="${src}/org/exist/system.properties" todir="${build.classes}/org/exist"
+        <copy file="${resources.main}/org/exist/system.properties" todir="${build.classes}/org/exist"
             filtering="true" overwrite="true"/>
-        <copy file="${src}/org/exist/util/mime-types.xml" todir="${build.classes}/org/exist/util"/>
         <copy todir="${build.classes}/org/exist/validation/internal/query">
-            <fileset dir="${src}/org/exist/validation/internal/query">
+            <fileset dir="${resources.main}/org/exist/validation/internal/query">
                 <include name="**.xq"/>
             </fileset>
         </copy>
-        <copy file="${src}/org/exist/scheduler/impl/quartz.properties"
+        <copy file="${resources.main}/org/exist/scheduler/impl/quartz.properties"
             todir="${build.classes}/org/exist/scheduler/impl"/>
         <copy todir="${build.classes}/org/exist/launcher">
-            <fileset dir="${src}/org/exist/launcher">
+            <fileset dir="${resources.main}/org/exist/launcher">
                 <include name="**.png"/>
                 <include name="**.xsl"/>
                 <include name="**.properties"/>
             </fileset>
         </copy>
         <copy todir="${build.classes}/org/exist/webstart/resources">
-            <fileset dir="${src}/org/exist/webstart/resources">
+            <fileset dir="${resources.main}/org/exist/webstart/resources">
                 <include name="*.jpg"/>
                 <include name="*.gif"/>
                 <include name="*.png"/>
             </fileset>
         </copy>
         <!-- Convert native to ascii-->
-        <native2ascii src="${src}/org/exist/client" dest="${build.classes}/org/exist/client"
+        <native2ascii src="${resources.main}/org/exist/client" dest="${build.classes}/org/exist/client"
             encoding="UTF-8" includes="messages*.properties"/>
 
         <echo message="Creating exist.jar ..."/>
