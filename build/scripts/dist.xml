@@ -325,7 +325,7 @@
             <fileset dir="samples"/>
         </copy>
 
-        <copy file="${src}/org/exist/util/mime-types.xml" todir="${dist.dir}"/>
+        <copy file="${build.classes}/org/exist/util/mime-types.xml" todir="${dist.dir}"/>
 
         <fixcrlf eol="crlf" includes="**/*.bat" srcdir="${dist.dir}/bin"/>
         <fixcrlf eol="crlf" includes="**/*.bat" srcdir="${dist.dir}/tools/yajsw/bin"/>
