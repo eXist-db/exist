@@ -62,6 +62,14 @@
 
         <mkdir dir="${war.tmp.libs}"/>
         <get src="${log4j2.web.url}" dest="${war.tmp.libs}/${log4j2.web.artifact}" verbose="true" usetimestamp="true" skipexisting="true" tryGzipEncoding="true"/>
+
+        <copy todir="${war.tmp.libs}" flatten="true">
+            <fileset dir="extensions/modules">
+                <include name="*/lib/*.jar"/>
+                <type type="file"/>
+            </fileset>
+        </copy>
+
     </target>
 
     <!-- ================================================================== -->
@@ -134,10 +142,7 @@
             <lib dir="extensions/exquery/restxq/lib">
                 <include name="*.jar"/>
             </lib>
-            <!-- Include extension modules jars  -->
-            <lib dir="extensions/modules/lib">
-                <include name="*.jar"/>
-            </lib>
+
             <lib dir="${war.tmp.libs}">
               <include name="*.jar"/>
             </lib>
