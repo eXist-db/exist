@@ -21,7 +21,7 @@ cache:
   - $HOME/.m2
 
 after_failure:
-   - tar -cjf junit-data.tar.bz2 test/junit/data
+   - tar -cjf junit-data.tar.bz2 target/junit-reports/data
    - curl -v -u $CHUNK_USER:$CHUNK_PW -sT junit-data.tar.bz2 chunk.io
 
 notifications:
