@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="jar" name="activedirectory">
     
-    <property name="src" value="./src"/>
-    <property name="classes" value="./classes"/>
+    <property name="src" value="src/main/java"/>
+    <property name="classes" value="target/classes"/>
     <property name="top.dir" value="../../.."/>
     
-    <property name="test" value="test"/>
-    <property name="test.classes" value="${test}/classes"/>
+    <property name="test" value="src/test"/>
+    <property name="test.classes" value="target/test-classes"/>
     <property name="test.src" value="${test}/src"/>
 
 	<property file="${top.dir}/build.properties"/>
