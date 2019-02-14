@@ -4,7 +4,7 @@ to add: -pre-compile steps
 -->
 <project basedir="." default="all" name="common">
 
-   <description>Reusable build script for all exist-db extensions </description>
+   <description>Reusable build script for all exist-db extensions</description>
 
    <import file="git-support.xml"/>
 
@@ -35,18 +35,19 @@ to add: -pre-compile steps
 
    <!-- set global properties for this build -->
 
-   <property name="src.dir" location="src"/>
+   <property name="src.dir" location="src/main/java"/>
+   <property name="resources.dir" location="src/main/resources"/>
    <property name="dat.dir" location="dat"/>
    <property name="metainf.dir" location="${dat.dir}/metainf"/>
 
-   <property name="build.dir" location="build"/>
+   <property name="build.dir" location="target"/>
    <property name="build.classes.dir" location="${build.dir}/classes"/>
    <property name="build.javadoc.dir" location="${build.dir}/javadoc"/>
 
-   <property name="test.dir" location="test"/>
-   <property name="test.build.dir" location="${build.dir}/test"/>
-   <property name="test.classes.dir" location="${test.build.dir}/classes"/>
-   <property name="test.src.dir" location="${test.dir}/src"/>
+   <property name="test.dir" location="src/test"/>
+   <property name="test.build.dir" location="${build.dir}/test-classes"/>
+   <property name="test.classes.dir" location="${test.build.dir}"/>
+   <property name="test.src.dir" location="${test.dir}/java"/>
    <property name="test.resources.dir" location="${test.dir}/resources"/>
 
    <property name="lib.dir" location="lib"/>
@@ -55,7 +56,7 @@ to add: -pre-compile steps
    <property name="dist.extension.jar" value="${dist.dir}/exist-${extension.name}-${project.version}.jar"/>
    <property name="dist.webfragment.jar" value="${existhome.dir}/webapp/WEB-INF/lib/metainf-${extension.name}.jar"/>
 
-   <property name="junit.report.dir" value="${existhome.dir}/test/junit/data"/>
+   <property name="junit.report.dir" value="${existhome.dir}/target/junit-reports/data"/>
 
    <property name="extension.include" value="yes"/>
 
@@ -118,7 +119,7 @@ to add: -pre-compile steps
       </fileset>
       <pathelement path="${test.classes.dir}"/>
       <!-- needed for org/exist/TestUtils -->
-      <pathelement path="${existhome.dir}/test/classes"/>
+      <pathelement path="${existhome.dir}/target/test-classes"/>
    </path>
 
    <path id="classpath.extensions">
@@ -221,7 +222,7 @@ to add: -pre-compile steps
          </fileset>
       </copy>
 
-      <jar jarfile="${dist.extension.jar}" basedir="${build.classes.dir}" compress="yes">
+      <jar jarfile="${dist.extension.jar}" compress="yes">
          <manifest>
             <attribute name="Implementation-Title" value="${project.name} - ${extension.name}"/>
             <attribute name="Implementation-Version" value="${project.version}"/>
@@ -243,6 +244,8 @@ to add: -pre-compile steps
 
             <attribute name="Created-By" value="${ant.version}"/>
          </manifest>
+         <fileset dir="${build.classes.dir}"/>
+         <fileset dir="${resources.dir}" erroronmissingdir="false"/>
       </jar>
 
 <!--      <antcall target="jar-metainf"/>-->

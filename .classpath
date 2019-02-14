@@ -123,24 +123,24 @@
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-util-9.4.14.v20181114.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-webapp-9.4.14.v20181114.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-xml-9.4.14.v20181114.jar"/>
-	<classpathentry kind="src" path="extensions/commands/src"/>
-	<classpathentry kind="src" path="extensions/debuggee/src"/>
-	<classpathentry kind="src" path="extensions/debuggee/test"/>
-	<classpathentry kind="src" path="extensions/expath/src"/>
+	<classpathentry kind="src" path="extensions/commands/src/main/java"/>
+	<classpathentry kind="src" path="extensions/debuggee/src/main/java"/>
+	<classpathentry kind="src" path="extensions/debuggee/src/test/java"/>
+	<classpathentry kind="src" path="extensions/expath/src/main/java"/>
 	<classpathentry kind="src" path="extensions/exquery/restxq/src/main/java"/>
-	<classpathentry kind="src" path="extensions/fluent/src"/>
-	<classpathentry kind="src" path="extensions/fluent/test/src"/>
-	<classpathentry kind="src" path="extensions/indexes/lucene/src"/>
-	<classpathentry kind="src" path="extensions/indexes/lucene/test/src"/>
-	<classpathentry kind="src" path="extensions/indexes/ngram/src"/>
-	<classpathentry kind="src" path="extensions/indexes/ngram/test/src"/>
-	<classpathentry kind="src" path="extensions/indexes/sort/src"/>
-	<classpathentry kind="src" path="extensions/indexes/sort/test/src"/>
-	<classpathentry kind="src" path="extensions/security/activedirectory/src"/>
-	<classpathentry kind="src" path="extensions/security/ldap/src"/>
-	<classpathentry kind="src" path="extensions/webdav/src"/>
-	<classpathentry kind="src" path="extensions/xqdoc/src"/>
-	<classpathentry kind="src" path="extensions/xqdoc/test/src"/>
+	<classpathentry kind="src" path="extensions/fluent/src/main/java"/>
+	<classpathentry kind="src" path="extensions/fluent/src/test/java"/>
+	<classpathentry kind="src" path="extensions/indexes/lucene/src/main/java"/>
+	<classpathentry kind="src" path="extensions/indexes/lucene/src/test/java"/>
+	<classpathentry kind="src" path="extensions/indexes/ngram/src/main/java"/>
+	<classpathentry kind="src" path="extensions/indexes/ngram/src/test/java"/>
+	<classpathentry kind="src" path="extensions/indexes/sort/src/main/java"/>
+	<classpathentry kind="src" path="extensions/indexes/sort/src/test/java"/>
+	<classpathentry kind="src" path="extensions/security/activedirectory/src/main/java"/>
+	<classpathentry kind="src" path="extensions/security/ldap/src/main/java"/>
+	<classpathentry kind="src" path="extensions/webdav/src/main/java"/>
+	<classpathentry kind="src" path="extensions/xqdoc/src/main/java"/>
+	<classpathentry kind="src" path="extensions/xqdoc/src/test/java"/>
 	<classpathentry kind="src" path="samples/src"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test/src"/>

@@ -10,16 +10,18 @@
     <property file="${basedir}/build.properties" />
 
     <property name="jetty.dir" value="tools/jetty"/>
-    <property name="src" value="./src"/>
+    <property name="src" value="./src/main/java"/>
+    <property name="src.test" value="./src/test/java"/>
     <property name="src.webapp" value="./webapp"/>
     <property name="samples" value="./samples/src"/>
     <property name="bin" value="./bin"/>
 
+    <property name="target" value="./target"/>
     <property name="build" value="./build"/>
-    <property name="build.src" value="${build}/src"/>
     <property name="build.scripts" value="${build}/scripts"/>
     <property name="build.soap" value="${build}/soap"/>
-    <property name="build.classes" value="${build}/classes"/>
+    <property name="build.classes" value="${target}/classes"/>
+    <property name="build.test.classes" value="${target}/test-classes"/>
     <property name="build.docs" value="${build}/docs"/>
     <property name="build.docs.src" value="${build.docs}/source"/>
     <property name="build.docs.html" value="${build.docs}/html"/>
@@ -189,7 +191,7 @@
             filtering="true"/>
         <copy file="${basedir}/mime-types.xml.tmpl" tofile="${basedir}/mime-types.xml"
             filtering="true"/>
-        <copy file="${basedir}/mime-types.xml" tofile="${src}/org/exist/util/mime-types.xml"/>
+        <copy file="${basedir}/mime-types.xml" tofile="${build.classes}/org/exist/util/mime-types.xml"/>
 
         <copy file="${src.webapp}/WEB-INF/web.xml.tmpl" tofile="${src.webapp}/WEB-INF/web.xml"
             filtering="true" overwrite="true"/>
@@ -227,13 +229,13 @@
     </target>
 
     <target name="compile-testkit" depends="prepare,compile" description="Compiles the Test Kit source code">
-        <mkdir dir="${junit.reports}/classes"/>
+        <mkdir dir="${build.test.classes}"/>
 
         <echo
                 message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
 
-        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" destdir="${junit.reports}/classes"
-               encoding="UTF-8" optimize="${build.optimize}" srcdir="${junit.reports}/src"
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" destdir="${build.test.classes}"
+               encoding="UTF-8" optimize="${build.optimize}" srcdir="${src.test}"
                source="${build.compiler.source}" target="${build.compiler.target}"
                fork="true" memoryInitialSize="512m" memoryMaximumSize="1024m">
 
@@ -252,8 +254,8 @@
             </classpath>
         </javac>
 
-        <copy todir="${junit.reports}/classes/org/exist/test/runner">
-            <fileset dir="${junit.reports}/src/org/exist/test/runner">
+        <copy todir="${build.test.classes}/org/exist/test/runner">
+            <fileset dir="${resources.test}/org/exist/test/runner">
                 <include name="*.xq"/>
             </fileset>
         </copy>
@@ -314,26 +316,26 @@
                 <exclude name="XQuery*AST.java"/>
             </fileset>
         </delete>
-        <antlr target="${src}/org/exist/xquery/parser/XQuery.g"
+        <antlr target="${resources.main}/org/exist/xquery/parser/XQuery.g"
             outputdirectory="${src}/org/exist/xquery/parser" traceparser="${antlr.traceParser}"
             tracelexer="${antlr.traceLexer}">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
         </antlr>
-        <antlr target="${src}/org/exist/xquery/parser/XQueryTree.g"
+        <antlr target="${resources.main}/org/exist/xquery/parser/XQueryTree.g"
             outputdirectory="${src}/org/exist/xquery/parser" tracetreewalker="${antlr.traceTreeWalker}">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
         </antlr>
-        <antlr target="${src}/org/exist/xquery/parser/DeclScanner.g"
+        <antlr target="${resources.main}/org/exist/xquery/parser/DeclScanner.g"
             outputdirectory="${src}/org/exist/xquery/parser">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
         </antlr>
-        <antlr target="${src}/org/exist/xquery/xqdoc/parser/XQDocParser.g"
+        <antlr target="${resources.main}/org/exist/xquery/xqdoc/parser/XQDocParser.g"
             outputdirectory="${src}/org/exist/xquery/xqdoc/parser">
             <classpath>
                 <path refid="classpath.core"/>
@@ -354,10 +356,9 @@
         <filter token="git.branch" value="${git.branch.full}"/>
         <filter token="git.commit" value="${git.revision}"/>
 
-        <!--copy file="${src}/CatalogManager.properties" todir="${build.classes}"/-->
         <copy todir="${build.classes}/org/exist/client">
-            <fileset dir="${src}/org/exist/client">
-        <include name="*.tmpl"/>
+            <fileset dir="${resources.main}/org/exist/client">
+                <include name="*.tmpl"/>
                 <include name="icons/**.png"/>
                 <include name="icons/**.gif"/>
                 <include name="*.xsl"/>
@@ -365,48 +366,47 @@
             </fileset>
         </copy>
         <copy todir="${build.classes}/org/exist/xquery/lib">
-            <fileset dir="${src}/org/exist/xquery/lib">
+            <fileset dir="${resources.main}/org/exist/xquery/lib">
                 <include name="**/*.xq*"/>
             </fileset>
         </copy>
         <copy todir="${build.classes}/org/exist/http">
-            <fileset dir="${src}/org/exist/http">
+            <fileset dir="${resources.main}/org/exist/http">
                 <include name="**.xq"/>
             </fileset>
         </copy>
-        <copy file="${src}/org/exist/xquery/util/messages.properties"
+        <copy file="${resources.main}/org/exist/xquery/util/messages.properties"
             todir="${build.classes}/org/exist/xquery/util"/>
-        <copy file="${src}/org/exist/ant/antlib.xml" todir="${build.classes}/org/exist/ant"/>
+        <copy file="${resources.main}/org/exist/ant/antlib.xml" todir="${build.classes}/org/exist/ant"/>
 
-        <copy file="${src}/org/exist/start/start.config" todir="${build.classes}/org/exist/start"/>
-        <copy file="${src}/org/exist/security/security.properties"
+        <copy file="${resources.main}/org/exist/start/start.config" todir="${build.classes}/org/exist/start"/>
+        <copy file="${resources.main}/org/exist/security/security.properties"
             todir="${build.classes}/org/exist/security"/>
-        <copy file="${src}/org/exist/system.properties" todir="${build.classes}/org/exist"
+        <copy file="${resources.main}/org/exist/system.properties" todir="${build.classes}/org/exist"
             filtering="true" overwrite="true"/>
-        <copy file="${src}/org/exist/util/mime-types.xml" todir="${build.classes}/org/exist/util"/>
         <copy todir="${build.classes}/org/exist/validation/internal/query">
-            <fileset dir="${src}/org/exist/validation/internal/query">
+            <fileset dir="${resources.main}/org/exist/validation/internal/query">
                 <include name="**.xq"/>
             </fileset>
         </copy>
-        <copy file="${src}/org/exist/scheduler/impl/quartz.properties"
+        <copy file="${resources.main}/org/exist/scheduler/impl/quartz.properties"
             todir="${build.classes}/org/exist/scheduler/impl"/>
         <copy todir="${build.classes}/org/exist/launcher">
-            <fileset dir="${src}/org/exist/launcher">
+            <fileset dir="${resources.main}/org/exist/launcher">
                 <include name="**.png"/>
                 <include name="**.xsl"/>
                 <include name="**.properties"/>
             </fileset>
         </copy>
         <copy todir="${build.classes}/org/exist/webstart/resources">
-            <fileset dir="${src}/org/exist/webstart/resources">
+            <fileset dir="${resources.main}/org/exist/webstart/resources">
                 <include name="*.jpg"/>
                 <include name="*.gif"/>
                 <include name="*.png"/>
             </fileset>
         </copy>
         <!-- Convert native to ascii-->
-        <native2ascii src="${src}/org/exist/client" dest="${build.classes}/org/exist/client"
+        <native2ascii src="${resources.main}/org/exist/client" dest="${build.classes}/org/exist/client"
             encoding="UTF-8" includes="messages*.properties"/>
 
         <echo message="Creating exist.jar ..."/>
@@ -533,7 +533,7 @@
                 <attribute name="Description" value="eXist XML Native Database Test Kit"/>
                 <attribute name="Created-By" value="${ant.version}"/>
             </manifest>
-            <fileset dir="${junit.reports}/classes">
+            <fileset dir="${build.test.classes}">
                 <include name="org/exist/TestUtils.class"/>
                 <include name="org/exist/test/**"/>
                 <include name="xquery/TestRunner.class"/>
@@ -568,8 +568,6 @@
     <!-- Create javadoc                                                     -->
     <!-- ================================================================== -->
     <target name="javadocs" description="Create javadoc">
-        <mkdir dir="${build.src}"/>
-
         <delete dir="${build.javadoc}"/>
         <mkdir dir="${build.javadoc}"/>
 
@@ -578,9 +576,6 @@
             doctitle="eXist Javadocs" noindex="true" notree="true" access="public" maxmemory="1024M"
             source="${build.compiler.source}">
             <packageset dir="${src}">
-                <include name="org/**"/>
-            </packageset>
-            <packageset dir="${build.src}">
                 <include name="org/**"/>
             </packageset>
             <packageset dir="${build.extensions}/webdav/src">
@@ -631,15 +626,12 @@
         </javadoc>
 
         <ant antfile="${build.scripts}/extensions-build.xml" target="javadoc" inheritAll="false"/>
-
-        <delete dir="${build.src}"/>
     </target>
 
     <!-- ================================================================== -->
     <!-- Create javadoc with UML diagrams                                   -->
     <!-- ================================================================== -->
     <target depends="prepare" name="javadocs-uml" description="Create javadoc with UML diagrams">
-        <mkdir dir="${build.src}"/>
         <antcall target="copy-xapi"/>
 
         <!--delete dir="webapp/api"/>
@@ -649,9 +641,6 @@
             doctitle="eXist Javadocs" noindex="true" notree="true" access="public" maxmemory="1024M"
             source="${build.compiler.source}">
             <packageset dir="${src}">
-                <include name="org/**"/>
-            </packageset>
-            <packageset dir="${build.src}">
                 <include name="org/**"/>
             </packageset>
             <classpath>
@@ -699,8 +688,6 @@
         </javadoc>
 
         <ant antfile="build.xml" dir="extensions/fluent" target="javadoc"/>
-
-        <delete dir="${build.src}"/>
     </target>
 
     <!-- ================================================================== -->
@@ -726,6 +713,8 @@
         <delete dir="${junit.reports}/pmd"/>
         <delete dir="${junit.reports}/jdepend"/>
         <delete dir="${junit.reports}/classes"/>
+
+        <delete dir="${target}"/>
 
         <delete dir="samples/classes"/>
         <delete failonerror="no" file="examples.jar"/>

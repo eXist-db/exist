@@ -2,7 +2,7 @@
 .exist_history
 .exist_query_history
 .idea/workspace.xml
-/target/
+target/
 autodeploy/
 /backup/
 build/intellij

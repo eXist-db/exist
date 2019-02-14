@@ -12,7 +12,7 @@
     <import file="../../build.xml"/>
 
     <path id="classpath.junit">
-        <pathelement path="${junit.reports}/classes"/>
+        <pathelement path="${build.test.classes}"/>
     </path>
 
      <path id="classpath.test-libs">
@@ -51,19 +51,18 @@
     <property name="jetty.port.ssl.standalone" value="8451" />
 
     <!-- Extra jUnit properties -->
-    <property name="junit.reports.dat" value="${junit.reports}/junit/data"/>
-    <property name="junit.reports.html" value="${junit.reports}/junit/html"/>
-    <property name="junit.reports.temp" value="${junit.reports}/temp"/>
+    <property name="junit.reports.dat" value="${junit.reports}/data"/>
+    <property name="junit.reports.html" value="${junit.reports}/html"/>
 
     <target name="test-compile">
-        <mkdir dir="${junit.reports}/classes"/>
+        <mkdir dir="${build.test.classes}"/>
 
          <echo
             message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
             
         <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}"
-            destdir="${junit.reports}/classes" encoding="UTF-8"
-            optimize="${build.optimize}" srcdir="${junit.reports}/src"
+            destdir="${build.test.classes}" encoding="UTF-8"
+            optimize="${build.optimize}" srcdir="${src.test}"
             source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
                 <path refid="classpath.core"/>
@@ -73,13 +72,14 @@
         </javac>
 
         <!-- copy all test resources to compiled tests output dir -->
-        <copy todir="${junit.reports}/classes" includeEmptyDirs="false">
-            <fileset dir="${junit.reports}/src">
-                <exclude name="**/*.java"/>
+        <copy todir="${build.test.classes}" includeEmptyDirs="false">
+            <fileset dir="${resources.test}">
+                <include name="**/*"/>
             </fileset>
             <file name="LICENSE"/>
         </copy>
-        <copy todir="${junit.reports}/classes/samples" includeemptydirs="false">
+
+        <copy todir="${build.test.classes}/samples" includeemptydirs="false">
             <fileset dir="samples" >
                 <exclude name="ant/**"/>
                 <exclude name="http/**"/>
@@ -89,7 +89,7 @@
                 <exclude name="build.xml"/>
             </fileset>
         </copy>
-        <copy todir="${junit.reports}/classes/org/exist/xquery/value" includeemptydirs="false">
+        <copy todir="${build.test.classes}/org/exist/xquery/value" includeemptydirs="false">
             <file name="webapp/logo.jpg"/>
         </copy>
 
@@ -103,17 +103,12 @@
             <fileset dir="webapp/WEB-INF/data" includes="*.dbx,*.log"/>
         </delete>
 
-        <delete dir="${junit.reports.temp}"/>
-        <delete dir="${junit.reports.dat}"/>
-        <delete dir="${junit.reports.html}"/>
-
-        <!--mkdir dir="${junit.reports}"/-->
-        <mkdir dir="${junit.reports}/classes"/>
+        <delete dir="${junit.reports}"/>
         <mkdir dir="${junit.reports.dat}"/>
         <mkdir dir="${junit.reports.html}"/>
 
         <!-- create a log4j config for running the tests -->
-        <xslt in="${basedir}/log4j2.xml" out="${basedir}/test/classes/log4j2-test.xml" style="${build.scripts}/log4j2-test.xsl" classpathref="classpath.core">
+        <xslt in="${basedir}/log4j2.xml" out="${build.test.classes}/log4j2-test.xml" style="${build.scripts}/log4j2-test.xsl" classpathref="classpath.core">
             <factory name="net.sf.saxon.TransformerFactoryImpl"/>
             <classpath>
                 <fileset dir="lib/endorsed">
@@ -226,7 +221,7 @@
             
             <!-- Execute all other tests except those that have to be called manually.   -->
             <batchtest todir="${junit.reports.dat}">
-                <fileset dir="${junit.reports}/src">
+                <fileset dir="${src.test}">
                     <include name="**/*Test.java"/>
                     <include name="org/exist/*/*Test.java"/>
                     <exclude name="**/concurrent/**/*.java"/>
@@ -280,7 +275,7 @@
             <formatter type="xml"/>
 
             <batchtest todir="${junit.reports.dat}">
-                <fileset dir="${junit.reports}/src">
+                <fileset dir="${src.test}">
                     <include name="org/exist/soap/*Test.java"/>
                 </fileset>
             </batchtest>
