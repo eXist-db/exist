@@ -12,7 +12,7 @@
 [![Java 8](https://img.shields.io/badge/java-8-blue.svg)](http://java.oracle.com)
 [![License](https://img.shields.io/badge/license-LGPL%202.1-blue.svg)](https://www.gnu.org/licenses/lgpl-2.1.html)
 [![Download](https://api.bintray.com/packages/existdb/releases/exist/images/download.svg)](https://bintray.com/existdb/releases/exist/_latestVersion)
-[![HipChat](https://img.shields.io/badge/hipchat-eXist–db-blue.svg)](https://www.hipchat.com/gEBQ3SNfp)
+[![Slack](https://img.shields.io/badge/exist--db-slack-3e103f.svg)](https://exist-db.slack.com)
 
 [![Code of Conduct](https://img.shields.io/badge/code%20of%20conduct-contributor%20covenant-%235e0d73.svg)](http://contributor-covenant.org/version/1/4/)
 
@@ -32,15 +32,15 @@ The notes of past community calls are located [here](https://drive.google.com/dr
 
 ## Resources
 
--   **Homepage:** <http://exist-db.org>
--   **Binaries:** <http://exist-db.org/exist/apps/homepage/index.html#download>
--   **Documentation:** <http://exist-db.org/exist/apps/doc>
+-   **Homepage:** [http://exist-db.org](http://exist-db.org)
+-   **Binaries:** [http://exist-db.org/exist/apps/homepage/index.html#download](http://exist-db.org/exist/apps/homepage/index.html#download)
+-   **Documentation:** [http://exist-db.org/exist/apps/doc](http://exist-db.org/exist/apps/doc)
 -   **Book:** [http://shop.oreilly.com/product/0636920026525.do](http://www.jdoqocy.com/click-7654993-11290546?sid=&url=http%3A%2F%2Fshop.oreilly.com%2Fproduct%2F0636920026525.do%3Fcmp%3Daf-webplatform-books-videos-product_cj_auwidget636_0636920026525_%25zp)
--   **Packages:** <http://exist-db.org/exist/apps/public-repo>
--   **Source code:** <https://github.com/eXist-db/exist>
--   **Git clone URL:** <git://github.com/eXist-db/exist.git>
--   **Mailing list:** <https://lists.sourceforge.net/lists/listinfo/exist-open>
--   **HipChat:** <https://www.hipchat.com/invite/300223/6ea0341b23fa1cf8390a23592b4b2c39>
+-   **Packages:** [http://exist-db.org/exist/apps/public-repo](http://exist-db.org/exist/apps/public-repo)
+-   **Source code:** [https://github.com/eXist-db/exist](https://github.com/eXist-db/exist)
+-   **Git clone URL:** `git://github.com/eXist-db/exist.git`
+-   **Mailing list:** [https://lists.sourceforge.net/lists/listinfo/exist-open](https://lists.sourceforge.net/lists/listinfo/exist-open)
+-   **Slack:** [https://exist-db.slack.com](https://exist-db.slack.com)
 
 New developers may find the notes in [BUILD.md](https://github.com/eXist-db/exist/blob/develop/BUILD.md) and [CONTRIBUTING.md](https://github.com/eXist-db/exist/blob/develop/CONTRIBUTING.md) helpful to start using and sharing your work with the eXist community.
 
