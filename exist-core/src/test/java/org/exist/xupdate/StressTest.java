@@ -21,12 +21,17 @@
  */
 package org.exist.xupdate;
 
+import java.io.IOException;
 import java.util.Random;
 import java.util.stream.IntStream;
 
+import org.exist.EXistException;
 import org.exist.TestUtils;
 
+import org.exist.collections.triggers.TriggerException;
+import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.DBUtils;
 import org.junit.After;
@@ -158,7 +163,7 @@ public class StressTest {
     }
 
     @After
-    public void tearDown() throws XMLDBException {
+    public void tearDown() throws XMLDBException, LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }
 }

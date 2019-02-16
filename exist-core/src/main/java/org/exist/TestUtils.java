@@ -1,18 +1,15 @@
 package org.exist;
 
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.FileUtils;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,8 +18,6 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Stream;
-
-import org.exist.util.ConfigurationHelper;
 
 /**
  * Utility functions for working with tests
@@ -53,54 +48,47 @@ public class TestUtils {
      * Removes all sub-collections of /db
      * except for /db/system
      */
-    public static void cleanupDB() {
-        try {
-            BrokerPool pool = BrokerPool.getInstance();
-            assertNotNull(pool);
-            try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-                final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+    public static void cleanupDB() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
+        BrokerPool pool = BrokerPool.getInstance();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+            final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
-                // Remove all collections below the /db root, except /db/system
-                try(final Collection root = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI, Lock.LockMode.WRITE_LOCK)) {
-                    if(root == null) {
-                        transaction.commit();
-                        return;
-                    }
-
-                    for (final Iterator<DocumentImpl> i = root.iterator(broker); i.hasNext(); ) {
-                        final DocumentImpl doc = i.next();
-                        root.removeXMLResource(transaction, broker, doc.getURI().lastSegment());
-                    }
-                    broker.saveCollection(transaction, root);
-
-                    for (final Iterator<XmldbURI> i = root.collectionIterator(broker); i.hasNext(); ) {
-                        final XmldbURI childName = i.next();
-                        if (childName.equals("system")) {
-                            continue;
-                        }
-
-                        try(final Collection childColl = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI.append(childName), Lock.LockMode.WRITE_LOCK);) {
-                            assertNotNull(childColl);
-                            broker.removeCollection(transaction, childColl);
-                        }
-                    }
-                    broker.saveCollection(transaction, root);
+            // Remove all collections below the /db root, except /db/system
+            try(final Collection root = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI, Lock.LockMode.WRITE_LOCK)) {
+                if(root == null) {
+                    transaction.commit();
+                    return;
                 }
 
-                // Remove /db/system/config/db and all collection configurations with it
-                try(final Collection dbConfig = broker.openCollection(XmldbURI.CONFIG_COLLECTION_URI.append("/db"), Lock.LockMode.WRITE_LOCK)) {
-                    if(dbConfig == null) {
-                        transaction.commit();
-                        return;
-                    }
-                    broker.removeCollection(transaction, dbConfig);
+                for (final Iterator<DocumentImpl> i = root.iterator(broker); i.hasNext(); ) {
+                    final DocumentImpl doc = i.next();
+                    root.removeXMLResource(transaction, broker, doc.getURI().lastSegment());
                 }
+                broker.saveCollection(transaction, root);
 
-                pool.getTransactionManager().commit(transaction);
+                for (final Iterator<XmldbURI> i = root.collectionIterator(broker); i.hasNext(); ) {
+                    final XmldbURI childName = i.next();
+                    if (childName.equals("system")) {
+                        continue;
+                    }
+
+                    try(final Collection childColl = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI.append(childName), Lock.LockMode.WRITE_LOCK);) {
+                        broker.removeCollection(transaction, childColl);
+                    }
+                }
+                broker.saveCollection(transaction, root);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
+
+            // Remove /db/system/config/db and all collection configurations with it
+            try(final Collection dbConfig = broker.openCollection(XmldbURI.CONFIG_COLLECTION_URI.append("/db"), Lock.LockMode.WRITE_LOCK)) {
+                if(dbConfig == null) {
+                    transaction.commit();
+                    return;
+                }
+                broker.removeCollection(transaction, dbConfig);
+            }
+
+            pool.getTransactionManager().commit(transaction);
         }
     }
 
@@ -138,7 +126,9 @@ public class TestUtils {
      * @return The content of the file
      */
     public static byte[] readFile(final Path file) throws IOException {
-        assertTrue(Files.isReadable(file));
+        if(!Files.isReadable(file)) {
+            throw new IOException("Cannot read: " + file);
+        }
         return Files.readAllBytes(file);
     }
 

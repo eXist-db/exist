@@ -11,11 +11,15 @@ import java.util.Arrays;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 
+import org.exist.EXistException;
 import org.exist.TestUtils;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.security.Account;
 import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 
+import org.exist.util.LockException;
 import org.exist.xmldb.UserManagementService;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -182,7 +186,7 @@ public class XUpdateTest {
     }
 
     @After
-    public void shutdown() throws XMLDBException {
+    public void shutdown() throws XMLDBException, LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         removeDocument();
 
         TestUtils.cleanupDB();

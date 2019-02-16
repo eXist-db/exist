@@ -129,7 +129,7 @@ public class SystemExportFiltersTest {
     }
 
     @After
-    public void cleanup() throws PermissionDeniedException, IOException, TriggerException, EXistException {
+    public void cleanup() throws PermissionDeniedException, IOException, TriggerException, EXistException, LockException {
         TestUtils.cleanupDB();
     }
 

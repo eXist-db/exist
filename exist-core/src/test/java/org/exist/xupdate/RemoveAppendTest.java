@@ -25,9 +25,14 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Random;
+
+import org.exist.EXistException;
 import org.exist.TestUtils;
 
+import org.exist.collections.triggers.TriggerException;
+import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.DBUtils;
 import org.junit.*;
@@ -157,7 +162,7 @@ public class RemoveAppendTest {
     }
     
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }
     
