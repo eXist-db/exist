@@ -174,7 +174,7 @@ public class MoveOverwriteResourceTest {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
         BrokerPool.stopAll(false);
     }

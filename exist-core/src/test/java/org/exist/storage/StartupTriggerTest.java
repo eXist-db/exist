@@ -2,11 +2,13 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.TestUtils;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.junit.After;
 import org.junit.Test;
 
@@ -38,7 +40,7 @@ public class StartupTriggerTest {
     }
 
     @After
-    public void tearDown() throws IOException, DatabaseConfigurationException {
+    public void tearDown() throws IOException, DatabaseConfigurationException, LockException, TriggerException, PermissionDeniedException, EXistException {
         TestUtils.cleanupDB();
         BrokerPool.stopAll(false);
     }

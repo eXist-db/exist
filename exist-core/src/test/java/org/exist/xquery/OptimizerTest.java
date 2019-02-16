@@ -22,9 +22,13 @@
 package org.exist.xquery;
 
 import com.googlecode.junittoolbox.ParallelRunner;
+import org.exist.EXistException;
 import org.exist.TestUtils;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.FileUtils;
+import org.exist.util.LockException;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
@@ -272,7 +276,7 @@ public class OptimizerTest {
     }
 
     @AfterClass
-    public static void cleanupDb() {
+    public static void cleanupDb() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
 	}
 }

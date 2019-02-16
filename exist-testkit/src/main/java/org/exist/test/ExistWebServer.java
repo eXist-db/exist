@@ -1,9 +1,13 @@
 package org.exist.test;
 
 import net.jcip.annotations.GuardedBy;
+import org.exist.EXistException;
 import org.exist.TestUtils;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.jetty.JettyStart;
+import org.exist.security.PermissionDeniedException;
 import org.exist.util.FileUtils;
+import org.exist.util.LockException;
 import org.junit.rules.ExternalResource;
 
 import java.io.IOException;
@@ -13,6 +17,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Random;
 
+import static org.junit.Assert.fail;
 import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
 
 /**
@@ -129,7 +134,11 @@ public class ExistWebServer extends ExternalResource {
     protected void after() {
         if(server != null) {
             if(cleanupDbOnShutdown) {
-                TestUtils.cleanupDB();
+                try {
+                    TestUtils.cleanupDB();
+                } catch (final EXistException | PermissionDeniedException | LockException | IOException | TriggerException e) {
+                    fail(e.getMessage());
+                }
             }
             server.shutdown();
             server = null;

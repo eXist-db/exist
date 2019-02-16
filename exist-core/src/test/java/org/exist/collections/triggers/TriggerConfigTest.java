@@ -19,9 +19,14 @@
  */
 package org.exist.collections.triggers;
 
+import java.io.IOException;
 import java.util.Arrays;
+
+import org.exist.EXistException;
 import org.exist.TestUtils;
+import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.LockException;
 import org.exist.xmldb.IndexQueryService;
 import org.junit.*;
 
@@ -206,7 +211,7 @@ public class TriggerConfigTest {
     }
 
     @AfterClass
-    public static void closeDB() {
+    public static void closeDB() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }
 }

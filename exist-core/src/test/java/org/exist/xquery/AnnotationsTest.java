@@ -21,8 +21,12 @@
  */
 package org.exist.xquery;
 
+import org.exist.EXistException;
 import org.exist.TestUtils;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.LockException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import static org.junit.Assert.*;
@@ -37,6 +41,8 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XPathQueryService;
 
+import java.io.IOException;
+
 public class AnnotationsTest {
 
     @ClassRule
@@ -50,7 +56,7 @@ public class AnnotationsTest {
     }
 
     @AfterClass
-    public static void tearDown() throws Exception {
+    public static void tearDown() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         // testCollection.removeResource( testCollection .getResource(file_name));
         TestUtils.cleanupDB();
     }

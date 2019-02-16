@@ -23,8 +23,10 @@ import static org.junit.Assert.*;
 
 import org.exist.EXistException;
 import org.exist.TestUtils;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.LockException;
 import org.exist.xmldb.IndexQueryService;
 import org.junit.*;
 import org.xmldb.api.DatabaseManager;
@@ -32,6 +34,8 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+
+import java.io.IOException;
 
 public class SAXTriggerTest {
 
@@ -155,7 +159,7 @@ public class SAXTriggerTest {
     }
 
     @AfterClass
-    public static void closeDB() throws XMLDBException {
+    public static void closeDB() throws XMLDBException, LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }
 }

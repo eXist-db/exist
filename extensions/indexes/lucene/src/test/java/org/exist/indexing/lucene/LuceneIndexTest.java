@@ -1372,7 +1372,7 @@ public class LuceneIndexTest {
             false);
 
     @AfterClass
-    public static void cleanupDb() {
+    public static void cleanupDb() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }
 }
