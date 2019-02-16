@@ -142,8 +142,10 @@
 	<classpathentry kind="src" path="extensions/xqdoc/src/main/java"/>
 	<classpathentry kind="src" path="extensions/xqdoc/src/test/java"/>
 	<classpathentry kind="src" path="samples/src"/>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="test/src"/>
+	<classpathentry kind="src" path="exist-core/src/main/java"/>
+	<classpathentry kind="src" path="exist-core/src/test/java"/>
+        <classpathentry kind="src" path="exist-start/src/main/java"/>
+        <classpathentry kind="src" path="exist-testkit/src/main/java"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-analyzers-icu-4.10.4.jar"/>
 	<classpathentry kind="lib" path="lib/core/deuce-annotations-1.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/core/lz4-java-1.5.0.jar"/>
