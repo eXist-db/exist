@@ -162,7 +162,9 @@
         <echo/>
         <echo message="basedir=${basedir}"/>
 
-        <mkdir dir="${build.classes}"/>
+        <mkdir dir="${module.exist-core}/${build.classes}"/>
+        <mkdir dir="${module.exist-start}/${build.classes}"/>
+        <mkdir dir="${module.exist-testkit}/${build.classes}"/>
         <mkdir dir="${jetty.dir}/logs"/>
         <mkdir dir="${jetty.dir}/work"/>
 
@@ -207,8 +209,20 @@
         <echo
             message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
 
-        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" destdir="${build.classes}"
-            encoding="UTF-8" optimize="${build.optimize}" srcdir="${src}"
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" destdir="${module.exist-start}/${build.classes}"
+               encoding="UTF-8" optimize="${build.optimize}" srcdir="${module.exist-start}/${src}"
+               source="${build.compiler.source}" target="${build.compiler.target}"
+               fork="true" memoryInitialSize="512m" memoryMaximumSize="1024m">
+
+            <include name="org/**"/>
+
+            <classpath>
+                <path refid="classpath.core"/>
+            </classpath>
+        </javac>
+
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" destdir="${module.exist-core}/${build.classes}"
+            encoding="UTF-8" optimize="${build.optimize}" srcdir="${module.exist-core}/${src}"
             source="${build.compiler.source}" target="${build.compiler.target}"
             fork="true" memoryInitialSize="512m" memoryMaximumSize="1024m">
 
@@ -218,10 +232,11 @@
             <exclude name="org/exist/security/PermissionRequiredAspect.java"/>
             <exclude name="org/exist/storage/lock/EnsureLockingAspect.java"/>
 
-        <classpath>
+            <classpath>
                 <path refid="classpath.core"/>
                 <path refid="classpath.jetty"/>
                 <path refid="classpath.aspectj"/>
+                <path path="${module.exist-start}/${build.classes}"/>
             </classpath>
         </javac>
 
@@ -229,13 +244,13 @@
     </target>
 
     <target name="compile-testkit" depends="prepare,compile" description="Compiles the Test Kit source code">
-        <mkdir dir="${build.test.classes}"/>
+        <mkdir dir="${module.exist-testkit}/${build.classes}"/>
 
         <echo
                 message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
 
-        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" destdir="${build.test.classes}"
-               encoding="UTF-8" optimize="${build.optimize}" srcdir="${src.test}"
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" destdir="${module.exist-testkit}/${build.classes}"
+               encoding="UTF-8" optimize="${build.optimize}" srcdir="${module.exist-testkit}/${src}"
                source="${build.compiler.source}" target="${build.compiler.target}"
                fork="true" memoryInitialSize="512m" memoryMaximumSize="1024m">
 
@@ -245,7 +260,7 @@
             <include name="xquery/TestRunnerMain.java"/>
 
             <classpath>
-                <path path="${build.classes}"/>
+                <path path="${module.exist-core}/${build.classes}"/>
                 <fileset dir="${lib.core}">
                     <include name="*.jar"/>
                 </fileset>
@@ -254,8 +269,8 @@
             </classpath>
         </javac>
 
-        <copy todir="${build.test.classes}/org/exist/test/runner">
-            <fileset dir="${resources.test}/org/exist/test/runner">
+        <copy todir="${module.exist-testkit}/${build.test.classes}/org/exist/test/runner">
+            <fileset dir="${module.exist-testkit}/${resources.main}/org/exist/test/runner">
                 <include name="*.xq"/>
             </fileset>
         </copy>
@@ -269,8 +284,8 @@
     <!-- =================================================================== -->
     <target name="check.aspects.uptodate">
         <uptodate property="aspectj.uptodate" targetfile="exist.jar">
-            <srcfiles dir= "${src}" includes="org/exist/security/PermissionRequiredAspect.java"/>
-            <srcfiles dir= "${src}" includes="org/exist/storage/lock/EnsureLockingAspect.java"/>
+            <srcfiles dir="${module.exist-core}/${src}" includes="org/exist/security/PermissionRequiredAspect.java"/>
+            <srcfiles dir="${module.exist-core}/${src}" includes="org/exist/storage/lock/EnsureLockingAspect.java"/>
         </uptodate>
     </target>
 
@@ -289,10 +304,10 @@
             <path refid="classpath.jetty"/>
         </path>
 
-        <iajc debug="${build.debug}" deprecation="${build.deprecation}" destdir="${build.classes}"
-            encoding="UTF-8" srcdir="${src}"
+        <iajc debug="${build.debug}" deprecation="${build.deprecation}" destdir="${module.exist-core}/${build.classes}"
+            encoding="UTF-8" srcdir="${module.exist-core}/${src}"
             source="${build.compiler.source}" target="${build.compiler.target}"
-            fork="true" maxmem="1024m" showWeaveInfo="true" inpath="${build.classes}">
+            fork="true" maxmem="1024m" showWeaveInfo="true" inpath="${module.exist-core}/${build.classes}">
 
             <include name="org/exist/security/PermissionRequiredAspect.java"/>
 
@@ -310,33 +325,33 @@
     <target depends="prepare" name="antlr">
         <echo message="Running ANTLR to generate XQuery parser"/>
         <delete failonerror="false">
-            <fileset dir="${src}/org/exist/xquery/parser">
+            <fileset dir="${module.exist-core}/${src}/org/exist/xquery/parser">
                 <include name="*.java"/>
                 <include name="*.txt"/>
                 <exclude name="XQuery*AST.java"/>
             </fileset>
         </delete>
-        <antlr target="${resources.main}/org/exist/xquery/parser/XQuery.g"
-            outputdirectory="${src}/org/exist/xquery/parser" traceparser="${antlr.traceParser}"
+        <antlr target="${module.exist-core}/${resources.main}/org/exist/xquery/parser/XQuery.g"
+            outputdirectory="${module.exist-core}/${src}/org/exist/xquery/parser" traceparser="${antlr.traceParser}"
             tracelexer="${antlr.traceLexer}">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
         </antlr>
-        <antlr target="${resources.main}/org/exist/xquery/parser/XQueryTree.g"
-            outputdirectory="${src}/org/exist/xquery/parser" tracetreewalker="${antlr.traceTreeWalker}">
+        <antlr target="${module.exist-core}/${resources.main}/org/exist/xquery/parser/XQueryTree.g"
+            outputdirectory="${module.exist-core}/${src}/org/exist/xquery/parser" tracetreewalker="${antlr.traceTreeWalker}">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
         </antlr>
-        <antlr target="${resources.main}/org/exist/xquery/parser/DeclScanner.g"
-            outputdirectory="${src}/org/exist/xquery/parser">
+        <antlr target="${module.exist-core}/${resources.main}/org/exist/xquery/parser/DeclScanner.g"
+            outputdirectory="${module.exist-core}/${src}/org/exist/xquery/parser">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
         </antlr>
-        <antlr target="${resources.main}/org/exist/xquery/xqdoc/parser/XQDocParser.g"
-            outputdirectory="${src}/org/exist/xquery/xqdoc/parser">
+        <antlr target="${module.exist-core}/${resources.main}/org/exist/xquery/xqdoc/parser/XQDocParser.g"
+            outputdirectory="${module.exist-core}/${src}/org/exist/xquery/xqdoc/parser">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
@@ -356,8 +371,8 @@
         <filter token="git.branch" value="${git.branch.full}"/>
         <filter token="git.commit" value="${git.revision}"/>
 
-        <copy todir="${build.classes}/org/exist/client">
-            <fileset dir="${resources.main}/org/exist/client">
+        <copy todir="${module.exist-core}/${build.classes}/org/exist/client">
+            <fileset dir="${module.exist-core}/${resources.main}/org/exist/client">
                 <include name="*.tmpl"/>
                 <include name="icons/**.png"/>
                 <include name="icons/**.gif"/>
@@ -365,52 +380,52 @@
                 <include name="**/*.xconf"/>
             </fileset>
         </copy>
-        <copy todir="${build.classes}/org/exist/xquery/lib">
-            <fileset dir="${resources.main}/org/exist/xquery/lib">
+        <copy todir="${module.exist-core}/${build.classes}/org/exist/xquery/lib">
+            <fileset dir="${module.exist-core}/${resources.main}/org/exist/xquery/lib">
                 <include name="**/*.xq*"/>
             </fileset>
         </copy>
-        <copy todir="${build.classes}/org/exist/http">
-            <fileset dir="${resources.main}/org/exist/http">
+        <copy todir="${module.exist-core}/${build.classes}/org/exist/http">
+            <fileset dir="${module.exist-core}/${resources.main}/org/exist/http">
                 <include name="**.xq"/>
             </fileset>
         </copy>
-        <copy file="${resources.main}/org/exist/xquery/util/messages.properties"
-            todir="${build.classes}/org/exist/xquery/util"/>
-        <copy file="${resources.main}/org/exist/ant/antlib.xml" todir="${build.classes}/org/exist/ant"/>
+        <copy file="${module.exist-core}/${resources.main}/org/exist/xquery/util/messages.properties"
+            todir="${module.exist-core}/${build.classes}/org/exist/xquery/util"/>
+        <copy file="${module.exist-core}/${resources.main}/org/exist/ant/antlib.xml" todir="${module.exist-core}/${build.classes}/org/exist/ant"/>
 
-        <copy file="${resources.main}/org/exist/start/start.config" todir="${build.classes}/org/exist/start"/>
-        <copy file="${resources.main}/org/exist/security/security.properties"
-            todir="${build.classes}/org/exist/security"/>
-        <copy file="${resources.main}/org/exist/system.properties" todir="${build.classes}/org/exist"
+        <copy file="${module.exist-start}/${resources.main}/org/exist/start/start.config" todir="${module.exist-start}/${build.classes}/org/exist/start"/>
+        <copy file="${module.exist-core}/${resources.main}/org/exist/security/security.properties"
+            todir="${module.exist-core}/${build.classes}/org/exist/security"/>
+        <copy file="${module.exist-core}/${resources.main}/org/exist/system.properties" todir="${module.exist-core}/${build.classes}/org/exist"
             filtering="true" overwrite="true"/>
-        <copy todir="${build.classes}/org/exist/validation/internal/query">
-            <fileset dir="${resources.main}/org/exist/validation/internal/query">
+        <copy todir="${module.exist-core}/${build.classes}/org/exist/validation/internal/query">
+            <fileset dir="${module.exist-core}/${resources.main}/org/exist/validation/internal/query">
                 <include name="**.xq"/>
             </fileset>
         </copy>
-        <copy file="${resources.main}/org/exist/scheduler/impl/quartz.properties"
-            todir="${build.classes}/org/exist/scheduler/impl"/>
-        <copy todir="${build.classes}/org/exist/launcher">
-            <fileset dir="${resources.main}/org/exist/launcher">
+        <copy file="${module.exist-core}/${resources.main}/org/exist/scheduler/impl/quartz.properties"
+            todir="${module.exist-core}/${build.classes}/org/exist/scheduler/impl"/>
+        <copy todir="${module.exist-core}/${build.classes}/org/exist/launcher">
+            <fileset dir="${module.exist-core}/${resources.main}/org/exist/launcher">
                 <include name="**.png"/>
                 <include name="**.xsl"/>
                 <include name="**.properties"/>
             </fileset>
         </copy>
-        <copy todir="${build.classes}/org/exist/webstart/resources">
-            <fileset dir="${resources.main}/org/exist/webstart/resources">
+        <copy todir="${module.exist-core}/${build.classes}/org/exist/webstart/resources">
+            <fileset dir="${module.exist-core}/${resources.main}/org/exist/webstart/resources">
                 <include name="*.jpg"/>
                 <include name="*.gif"/>
                 <include name="*.png"/>
             </fileset>
         </copy>
         <!-- Convert native to ascii-->
-        <native2ascii src="${resources.main}/org/exist/client" dest="${build.classes}/org/exist/client"
+        <native2ascii src="${module.exist-core}/${resources.main}/org/exist/client" dest="${module.exist-core}/${build.classes}/org/exist/client"
             encoding="UTF-8" includes="messages*.properties"/>
 
         <echo message="Creating exist.jar ..."/>
-        <jar basedir="${build.classes}" compress="true" jarfile="exist.jar">
+        <jar basedir="${module.exist-core}/${build.classes}" compress="true" jarfile="exist.jar">
             <manifest>
                 <attribute name="Implementation-Title" value="${project.name} Core"/>
                 <attribute name="Implementation-Version" value="${project.version}"/>
@@ -445,8 +460,9 @@
             <exclude name="org/exist/xquery/functions/response/**"/>
             <exclude name="org/exist/xquery/functions/session/**"/>
         </jar>
+
         <echo message="Creating start.jar ..."/>
-        <jar basedir="${build.classes}" compress="true" jarfile="start.jar">
+        <jar basedir="${module.exist-start}/${build.classes}" compress="true" jarfile="start.jar">
             <manifest>
                 <attribute name="Main-Class" value="org.exist.start.Main"/>
                 <attribute name="Package-Title" value="org.exist"/>
@@ -474,8 +490,9 @@
             </manifest>
             <include name="org/exist/start/**"/>
         </jar>
+
         <echo message="Creating exist-optional.jar ..."/>
-        <jar basedir="${build.classes}" compress="true" jarfile="exist-optional.jar">
+        <jar basedir="${module.exist-core}/${build.classes}" compress="true" jarfile="exist-optional.jar">
             <manifest>
                 <attribute name="Implementation-Title" value="${project.name} Optional"/>
                 <attribute name="Implementation-Version" value="${project.version}"/>
@@ -509,6 +526,7 @@
             <include name="org/exist/xquery/functions/response/**"/>
             <include name="org/exist/xquery/functions/session/**"/>
         </jar>
+
         <echo message="Creating exist-testkit.jar ..."/>
         <jar compress="true" jarfile="exist-testkit.jar">
             <manifest>
@@ -533,13 +551,13 @@
                 <attribute name="Description" value="eXist XML Native Database Test Kit"/>
                 <attribute name="Created-By" value="${ant.version}"/>
             </manifest>
-            <fileset dir="${build.test.classes}">
+            <fileset dir="${module.exist-testkit}/${build.test.classes}">
                 <include name="org/exist/TestUtils.class"/>
                 <include name="org/exist/test/**"/>
                 <include name="xquery/TestRunner.class"/>
                 <include name="xquery/TestRunnerMain.class"/>
             </fileset>
-            <fileset dir="${build.classes}">
+            <fileset dir="${module.exist-testkit}/${build.classes}">
                 <include name="org/exist/xquery/lib/xqsuite/xqsuite.xql"/>
             </fileset>
         </jar>
@@ -575,7 +593,7 @@
         <javadoc bottom="Copyright (C) The eXist-db Project. All rights reserved." destdir="${build.javadoc}"
             doctitle="eXist Javadocs" noindex="true" notree="true" access="public" maxmemory="1024M"
             source="${build.compiler.source}">
-            <packageset dir="${src}">
+            <packageset dir="${module.exist-core}/${src}">
                 <include name="org/**"/>
             </packageset>
             <packageset dir="${build.extensions}/webdav/src">
@@ -697,7 +715,6 @@
         <echo message="-------------------------"/>
         <echo message="Cleaning"/>
         <echo message="-------------------------"/>
-        <delete dir="${build.classes}"/>
         <delete dir="${build.examples}"/>
         <delete dir="${build.javadoc}"/>
         <delete dir="${dist.dir}"/>
@@ -714,7 +731,9 @@
         <delete dir="${junit.reports}/jdepend"/>
         <delete dir="${junit.reports}/classes"/>
 
-        <delete dir="${target}"/>
+        <delete dir="${module.exist-core}/${target}"/>
+        <delete dir="${module.exist-start}/${target}"/>
+        <delete dir="${module.exist-testkit}/${target}"/>
 
         <delete dir="samples/classes"/>
         <delete failonerror="no" file="examples.jar"/>
@@ -828,7 +847,7 @@
         <replaceregexp>
             <regexp pattern="/\*.*Description of the Method.*\*/"/>
             <substitution expression=""/>
-            <fileset dir="src/org/exist/xmldb">
+            <fileset dir="${module.core}/${src}/org/exist/xmldb">
                 <include name="*.java"/>
             </fileset>
         </replaceregexp>

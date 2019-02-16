@@ -16,6 +16,7 @@
     </path>
 
      <path id="classpath.test-libs">
+         <path path="${module.exist-testkit}/${build.classes}"/>
          <fileset dir="${lib.test}">
             <include name="*.jar"/>
         </fileset>
@@ -51,18 +52,18 @@
     <property name="jetty.port.ssl.standalone" value="8451" />
 
     <!-- Extra jUnit properties -->
-    <property name="junit.reports.dat" value="${junit.reports}/data"/>
-    <property name="junit.reports.html" value="${junit.reports}/html"/>
+    <property name="junit.reports.dat" value="${module.exist-core}/${junit.reports}/data"/>
+    <property name="junit.reports.html" value="${module.exist-core}/${junit.reports}/html"/>
 
     <target name="test-compile">
-        <mkdir dir="${build.test.classes}"/>
+        <mkdir dir="${module.exist-core}/${build.test.classes}"/>
 
          <echo
             message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
             
         <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}"
-            destdir="${build.test.classes}" encoding="UTF-8"
-            optimize="${build.optimize}" srcdir="${src.test}"
+            destdir="${module.exist-core}/${build.test.classes}" encoding="UTF-8"
+            optimize="${build.optimize}" srcdir="${module.exist-core}/${src.test}"
             source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
                 <path refid="classpath.core"/>
@@ -72,8 +73,8 @@
         </javac>
 
         <!-- copy all test resources to compiled tests output dir -->
-        <copy todir="${build.test.classes}" includeEmptyDirs="false">
-            <fileset dir="${resources.test}">
+        <copy todir="${module.exist-core}/${build.test.classes}" includeEmptyDirs="false">
+            <fileset dir="${module.exist-core}/${resources.test}">
                 <include name="**/*"/>
             </fileset>
             <file name="LICENSE"/>
@@ -89,7 +90,7 @@
                 <exclude name="build.xml"/>
             </fileset>
         </copy>
-        <copy todir="${build.test.classes}/org/exist/xquery/value" includeemptydirs="false">
+        <copy todir="${module.exist-core}/${build.test.classes}/org/exist/xquery/value" includeemptydirs="false">
             <file name="webapp/logo.jpg"/>
         </copy>
 
@@ -108,7 +109,7 @@
         <mkdir dir="${junit.reports.html}"/>
 
         <!-- create a log4j config for running the tests -->
-        <xslt in="${basedir}/log4j2.xml" out="${build.test.classes}/log4j2-test.xml" style="${build.scripts}/log4j2-test.xsl" classpathref="classpath.core">
+        <xslt in="${basedir}/log4j2.xml" out="${module.exist-core}/${build.test.classes}/log4j2-test.xml" style="${build.scripts}/log4j2-test.xsl" classpathref="classpath.core">
             <factory name="net.sf.saxon.TransformerFactoryImpl"/>
             <classpath>
                 <fileset dir="lib/endorsed">
@@ -221,7 +222,7 @@
             
             <!-- Execute all other tests except those that have to be called manually.   -->
             <batchtest todir="${junit.reports.dat}">
-                <fileset dir="${src.test}">
+                <fileset dir="${module.exist-core}/${src.test}">
                     <include name="**/*Test.java"/>
                     <include name="org/exist/*/*Test.java"/>
                     <exclude name="**/concurrent/**/*.java"/>
@@ -275,7 +276,7 @@
             <formatter type="xml"/>
 
             <batchtest todir="${junit.reports.dat}">
-                <fileset dir="${src.test}">
+                <fileset dir="${module.exist-core}/${src.test}">
                     <include name="org/exist/soap/*Test.java"/>
                 </fileset>
             </batchtest>
