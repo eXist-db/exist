@@ -147,10 +147,11 @@ public class FunUnparsedText extends BasicFunction {
             final Charset charset = getCharset(encoding, source);
             final StringWriter output = new StringWriter();
             try (final InputStream is = source.getInputStream()) {
+                // InputStream can have value NULL for data retrieved from URL
                 IOUtils.copy(is, output, charset);
             }
             return output.toString();
-        } catch (final IOException e) {
+        } catch (final IOException | NullPointerException e) {
             throw new XPathException(this, ErrorCodes.FOUT1170, e.getMessage());
         }
     }

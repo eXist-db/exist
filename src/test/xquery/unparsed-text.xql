@@ -157,6 +157,13 @@ function upt:unparsed-text-available-from-url-encoding() {
     unparsed-text-available("https://raw.githubusercontent.com/eXist-db/exist/develop/src/test/xquery/README", "UTF-8")
 };
 
+declare
+    %test:assumeInternetAccess("https://raw.githubusercontent.com")
+    %test:assertFalse
+function upt:unparsed-text-available-from-url-encoding-no-content() {
+    unparsed-text-available("https://raw.githubusercontent.com/eXist-db/exist/develop/src/test/xquery/READMEaaaa", "UTF-8")
+};
+
 declare 
     %test:assertTrue
 function upt:unparsed-text-available-from-db() {
