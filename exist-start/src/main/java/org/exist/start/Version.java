@@ -4,8 +4,6 @@
 // ========================================================================
 package org.exist.start;
 
-import org.exist.xquery.Constants;
-
 /**
  * Utility class for parsing and comparing version strings.
  * JDK 1.1 compatible.
@@ -13,6 +11,10 @@ import org.exist.xquery.Constants;
  */
  
 public class Version {
+
+    private static final int INFERIOR = -1;
+    private static final int EQUAL = 0;
+    private static final int SUPERIOR = 1;
  
     int _version = 0;
     int _revision = 0;
@@ -78,13 +80,13 @@ public class Version {
      */
     public int compare(Version other) {
         if (other == null) {throw new NullPointerException("other version is null");}
-        if (this._version < other._version) {return Constants.INFERIOR;}
-        if (this._version > other._version) {return Constants.SUPERIOR;}
-        if (this._revision < other._revision) {return Constants.INFERIOR;}
-        if (this._revision > other._revision) {return Constants.SUPERIOR;}
-        if (this._subrevision < other._subrevision) {return Constants.INFERIOR;}
-        if (this._subrevision > other._subrevision) {return Constants.SUPERIOR;}
-        return Constants.EQUAL;
+        if (this._version < other._version) {return INFERIOR;}
+        if (this._version > other._version) {return SUPERIOR;}
+        if (this._revision < other._revision) {return INFERIOR;}
+        if (this._revision > other._revision) {return SUPERIOR;}
+        if (this._subrevision < other._subrevision) {return INFERIOR;}
+        if (this._subrevision > other._subrevision) {return SUPERIOR;}
+        return EQUAL;
     }
     
     /**

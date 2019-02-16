@@ -367,7 +367,7 @@ public class LuceneMatchListenerTest {
     }
 
     @AfterClass
-    public static void closeDB() {
+    public static void closeDB() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
     }
 

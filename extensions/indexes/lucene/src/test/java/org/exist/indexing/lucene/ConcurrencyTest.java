@@ -32,9 +32,13 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.exist.EXistException;
 import org.exist.TestUtils;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.FileUtils;
+import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.EXistXQueryService;
@@ -211,7 +215,7 @@ public class ConcurrencyTest {
     }
 
     @AfterClass
-    public static void closeDB() throws XMLDBException {
+    public static void closeDB() throws XMLDBException, LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         test.close();
         TestUtils.cleanupDB();
     }

@@ -4,12 +4,15 @@ import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.LockException;
 import org.xmldb.api.base.Collection;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
 import org.xmldb.api.base.XMLDBException;
+
+import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -70,7 +73,7 @@ public class CollectionTriggerTest {
     }
 
     @AfterClass
-    public static void shutdownDB() {
+    public static void shutdownDB() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         TestUtils.cleanupDB();
         testCollection = null;
         rootSrv = null;
