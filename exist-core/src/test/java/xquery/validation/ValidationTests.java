@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-        "src/test/xquery/validation"
+        "exist-core/src/test/xquery/validation"
 })
 public class ValidationTests {
 }
