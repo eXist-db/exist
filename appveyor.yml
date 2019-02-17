@@ -26,9 +26,9 @@ test_script:
 after_test:
   - ps: |
       $wc = New-Object 'System.Net.WebClient'
-      foreach ($file in Get-ChildItem -Path "$($env:APPVEYOR_BUILD_FOLDER)\target\junit-reports\data\" -Filter *.xml) {
+      foreach ($file in Get-ChildItem -Path "$($env:APPVEYOR_BUILD_FOLDER)\exist-core\target\junit-reports\data\" -Filter *.xml) {
         $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", $file.FullName)
       }
 
 artifacts:
-  - path: target\junit-reports
+  - path: exist-core\target\junit-reports

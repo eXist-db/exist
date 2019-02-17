@@ -12,7 +12,7 @@
     <import file="../../build.xml"/>
 
     <path id="classpath.junit">
-        <pathelement path="${build.test.classes}"/>
+        <pathelement path="${module.exist-core}/${build.test.classes}"/>
     </path>
 
      <path id="classpath.test-libs">

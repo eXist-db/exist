@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-    "src/test/xquery/modules/compression"
+    "exist-core/src/test/xquery/modules/compression"
 })
 public class CompressionTests  {
 }
