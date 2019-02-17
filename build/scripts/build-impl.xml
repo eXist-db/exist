@@ -254,6 +254,7 @@
                source="${build.compiler.source}" target="${build.compiler.target}"
                fork="true" memoryInitialSize="512m" memoryMaximumSize="1024m">
 
+            <include name="org/exist/ant/**"/>
             <include name="org/exist/test/**"/>
             <include name="org/exist/TestUtils.java"/>
             <include name="xquery/TestRunner.java"/>
@@ -264,12 +265,13 @@
                 <fileset dir="${lib.core}">
                     <include name="*.jar"/>
                 </fileset>
+                <path refid="classpath.external"/>
                 <path refid="classpath.jetty"/>
                 <path refid="classpath.test-libs"/>
             </classpath>
         </javac>
 
-        <copy todir="${module.exist-testkit}/${build.test.classes}/org/exist/test/runner">
+        <copy todir="${module.exist-testkit}/${build.classes}/org/exist/test/runner">
             <fileset dir="${module.exist-testkit}/${resources.main}/org/exist/test/runner">
                 <include name="*.xq"/>
             </fileset>
@@ -551,13 +553,12 @@
                 <attribute name="Description" value="eXist XML Native Database Test Kit"/>
                 <attribute name="Created-By" value="${ant.version}"/>
             </manifest>
-            <fileset dir="${module.exist-testkit}/${build.test.classes}">
+            <fileset dir="${module.exist-testkit}/${build.classes}">
+                <include name="org/exist/ant/**"/>
                 <include name="org/exist/TestUtils.class"/>
                 <include name="org/exist/test/**"/>
                 <include name="xquery/TestRunner.class"/>
                 <include name="xquery/TestRunnerMain.class"/>
-            </fileset>
-            <fileset dir="${module.exist-testkit}/${build.classes}">
                 <include name="org/exist/xquery/lib/xqsuite/xqsuite.xql"/>
             </fileset>
         </jar>

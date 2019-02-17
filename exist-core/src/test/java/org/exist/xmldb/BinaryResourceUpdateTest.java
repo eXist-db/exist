@@ -51,8 +51,8 @@ public class BinaryResourceUpdateTest  {
 
     private static final int REPEAT = 10;
 
-    private final URL binFile = getClass().getResource("test.bin");
-    private final URL xmlFile = getClass().getResource("/samples/examples.xml");
+    private URL binFile;
+    private URL xmlFile;
 
     @Test
     public void updateBinary() throws XMLDBException, URISyntaxException {
@@ -100,6 +100,10 @@ public class BinaryResourceUpdateTest  {
         final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
         testCollection = service.createCollection(TEST_COLLECTION);
         assertNotNull(testCollection);
+        binFile = getClass().getClassLoader().getResource("org/exist/xmldb/test.bin");
+        assertNotNull(binFile);
+        xmlFile = getClass().getClassLoader().getResource("org/exist/xmldb/test.xml");
+        assertNotNull(xmlFile);
     }
 
     @After
@@ -107,5 +111,7 @@ public class BinaryResourceUpdateTest  {
         //delete the test collection
         final CollectionManagementService service = (CollectionManagementService)testCollection.getParentCollection().getService("CollectionManagementService", "1.0");
         service.removeCollection(TEST_COLLECTION);
+        binFile = null;
+        xmlFile = null;
     }
 }
