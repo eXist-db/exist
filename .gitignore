@@ -1,9 +1,11 @@
 # Alphabetical order
 .exist_history
 .exist_query_history
-.idea/workspace.xml
-/backup/
+.idea/
+*.iml
+target/
 autodeploy/
+/backup/
 build/intellij
 classes/
 client.properties
