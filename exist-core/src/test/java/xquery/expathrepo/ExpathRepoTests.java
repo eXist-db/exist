@@ -5,7 +5,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-        "src/test/xquery/expathrepo"
+        "exist-core/src/test/xquery/expathrepo"
 })
 public class ExpathRepoTests {
 }

@@ -5,7 +5,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-    "src/test/xquery/xinclude"
+    "exist-core/src/test/xquery/xinclude"
 })
 public class XIncludeTests {
 }

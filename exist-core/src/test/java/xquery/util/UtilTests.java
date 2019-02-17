@@ -5,7 +5,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-        "src/test/xquery/util"
+        "exist-core/src/test/xquery/util"
 })
 public class UtilTests {
 }
