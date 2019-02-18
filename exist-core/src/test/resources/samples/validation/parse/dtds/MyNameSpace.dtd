@@ -1,0 +1,25 @@
+<?xml encoding="UTF-8"?>
+
+<!ELEMENT A (b,c,Z)>
+<!ATTLIST A
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT b (#PCDATA)>
+<!ATTLIST b
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT c (#PCDATA)>
+<!ATTLIST c
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT Z (X,Y)>
+<!ATTLIST Z
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT X (#PCDATA)>
+<!ATTLIST X
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT Y (#PCDATA)>
+<!ATTLIST Y
+  xmlns CDATA #FIXED ''>

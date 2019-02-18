@@ -1,0 +1,16 @@
+<?xml version='1.0'?>
+<!-- $Id$ -->
+<addressBook xmlns="http://jmvanel.free.fr/xsd/addressBook">
+    <owner>
+        <cname>John Punin</cname>
+        <email>puninj@cs.rpi.edu</email>
+    </owner>
+    <person>
+        <cname>Harrison Ford</cname>
+        <email>hford@famous.org</email>
+    </person>
+    <person>
+        <name>Julia Roberts</name>
+        <email>jr@pw.com</email>
+    </person>
+</addressBook> 

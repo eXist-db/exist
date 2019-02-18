@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
+
+	<!-- create a variable -->
+	<xu:variable name="company" select="//address[lname |= 'hyde']/company"/>
+	
+	<!-- append a set of new addresses -->
+	<xu:append select="/addressbook">
+		<xu:element name="address">
+			<fname>George</fname>
+			<lname>Spencer</lname>
+			<xu:value-of select="$company"/>
+			<city>Darksdale</city>
+		</xu:element>
+		<xu:element name="address">
+			<fname>Henry</fname>
+			<lname>Useless</lname>
+			<company>Useless Things</company>
+			<city>Milwaukee</city>
+		</xu:element>
+	</xu:append>
+	
+	<!-- rename element fname to first-name -->
+	<xu:rename select="//address/fname">
+		first-name
+	</xu:rename>
+	
+	<!-- rename element lname to last-name -->
+	<xu:rename select="//address/lname">
+		last-name
+	</xu:rename>
+	
+	<!-- insert work phone after last-name -->
+	<xu:insert-after select="//address/last-name[. = 'spencer']">
+		<email type="work">spencer@nulldevices.com</email>
+		<phone type="home">(0) 666 777</phone>
+	</xu:insert-after>
+
+	<!-- add email before phone -->
+	<xu:insert-before select="//address[last-name |= 'useless']/city">
+		<xu:element name="email">
+			<xu:attribute name="type">home</xu:attribute>
+			<xu:text>useless@home.com</xu:text>
+		</xu:element>
+	</xu:insert-before>
+	
+	<!-- remove an address -->
+	<xu:remove select="//address[city |= 'washing*']"/>
+	
+	<!-- update a node value -->
+	<xu:update select="//address[last-name |= 'useless']/first-name/text()">
+		Toby
+	</xu:update>
+	
+	<!-- update attribute -->
+	<xu:update select="//address[last-name |= 'jekyll']/email/@type">
+		home
+	</xu:update>
+	
+	<xu:insert-before select="/addressbook">
+		<?test This is a processing-instruction ?>
+	</xu:insert-before>
+</xu:modifications>
