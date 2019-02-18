@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+    <public publicId="-//PLAY//EN" uri="entities/play.dtd"/>
+    <system systemId="play.dtd" uri="entities/play.dtd"/>
+    <system systemId="mondial.dtd" uri="entities/mondial.dtd"/> 
+	
+	<!-- eXist-db internals entries -->
+    <uri name="http://exist-db.org/collection-config/1.0" uri="../../../schema/collection.xconf.xsd"/>
+	
+	<!-- W3C XHTML DTD entries --> 
+	
+	<public publicId="-//W3C//DTD XHTML 1.0 Strict//EN" uri="entities/xhtml1-strict.dtd"/> 
+	<system systemId="xhtml1-strict.dtd" uri="entities/xhtml1-strict.dtd"/> 
+	<public publicId="-//W3C//ENTITIES Latin 1 for XHTML//EN" uri="entities/xhtml-lat1.ent"/> 
+	<system systemId="xhtml-lat1.ent" uri="entities/xhtml-lat1.ent"/> 
+	<public publicId="-//W3C//ENTITIES Symbols for XHTML//EN" uri="entities/xhtml-symbol.ent"/> 
+	<system systemId="xhtml-symbol.ent" uri="entities/xhtml-symbol.ent"/> 
+	<public publicId="-//W3C//ENTITIES Special for XHTML//EN" uri="entities/xhtml-special.ent"/>
+	<system systemId="xhtml-special.ent" uri="entities/xhtml-special.ent"/>
+    <public publicId="-//W3C//DTD XHTML 1.0 Transitional//EN" uri="entities/xhtml1-transitional.dtd"/>
+    <system systemId="xhtml1-transitional.dtd" uri="entities/xhtml1-transitional.dtd"/>
+
+    <public publicId="-//W3C//DTD XHTML Basic 1.0//EN" uri="entities/xhtml-basic10.dtd"/>
+    <system systemId="xhtml-basic10.dtd" uri="entities/xhtml-basic10.dtd"/> 
+
+    <!-- XHTML Modularization 1.1 - Second Edition -->
+    <public publicId="-//W3C//ENTITIES XHTML Modular Framework 1.0//EN" uri="entities/xhtmlmod11/xhtml-framework-1.mod"/>
+    <system systemId="xhtml-framework-1.mod" uri="entities/xhtmlmod11/xhtml-framework-1.mod"/>
+    <public publicId="-//W3C//NOTATIONS XHTML Notations 1.0//EN" uri="entities/xhtmlmod11/xhtml-notations-1.mod"/>
+    <system systemId="xhtml-notations-1.mod" uri="entities/xhtmlmod11/xhtml-notations-1.mod"/>
+    <public publicId="-//W3C//ENTITIES XHTML Datatypes 1.0//EN" uri="entities/xhtmlmod11/xhtml-datatypes-1.mod"/>           
+    <system systemId="xhtml-datatypes-1.mod" uri="entities/xhtmlmod11/xhtml-datatypes-1.mod"/>
+    <public publicId="-//W3C//ENTITIES XHTML Qualified Names 1.0//EN" uri="entities/xhtmlmod11/xhtml-qname-1.mod"/>       
+    <system systemId="xhtml-qname-1.mod" uri="entities/xhtmlmod11/xhtml-qname-1.mod"/>
+    <public publicId="-//W3C//ENTITIES XHTML Common Attributes 1.0//EN" uri="entities/xhtmlmod11/xhtml-attribs-1.mod"/>    
+    <system systemId="xhtml-attribs-1.mod" uri="entities/xhtmlmod11/xhtml-attribs-1.mod"/>
+    <public publicId="-//W3C//ENTITIES XHTML Character Entities 1.0//EN" uri="entities/xhtmlmod11/xhtml-charent-1.mod"/>    
+    <system systemId="xhtml-charent-1.mod" uri="entities/xhtmlmod11/xhtml-charent-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Redeclarations 1.0//EN" uri="entities/xhtmlmod11/xhtml-redecl-1.mod"/>       
+    <system systemId="xhtml-redecl-1.mod" uri="entities/xhtmlmod11/xhtml-redecl-1.mod"/>
+    
+    <!-- XHTML Modularization 1.1 - Second Edition : XHTML modules -->
+    <public publicId="-//W3C//ELEMENTS XHTML Document Structure 1.0//EN" uri="entities/xhtmlmod11/xhtml-struct-1.mod"/>
+    <system systemId="xhtml-struct-1.mod" uri="entities/xhtmlmod11/xhtml-struct-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Text 1.0//EN" uri="entities/xhtmlmod11/xhtml-text-1.mod" />
+    <system systemId="xhtml-text-1.mod" uri="entities/xhtmlmod11/xhtml-text-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Hypertext 1.0//EN" uri="entities/xhtmlmod11/xhtml-hypertext-1.mod" />
+    <system systemId="xhtml-hypertext-1.mod" uri="entities/xhtmlmod11/xhtml-hypertext-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Lists 1.0//EN" uri="entities/xhtmlmod11/xhtml-list-1.mod"/>
+    <system systemId="xhtml-list-1.mod" uri="entities/xhtmlmod11/xhtml-list-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Inline Structural 1.0//EN" uri="entities/xhtmlmod11/xhtml-inlstruct-1.mod"/>
+    <system systemId="xhtml-inlstruct-1.mod" uri="entities/xhtmlmod11/xhtml-inlstruct-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Inline Presentation 1.0//EN" uri="entities/xhtmlmod11/xhtml-inlpres-1.mod"/>
+    <system systemId="xhtml-inlpres-1.mod" uri="entities/xhtmlmod11/xhtml-inlpres-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Inline Phrasal 1.0//EN" uri="entities/xhtmlmod11/xhtml-inlphras-1.mod"/>
+    <system systemId="xhtml-inlphras-1.mod" uri="entities/xhtmlmod11/xhtml-inlphras-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Block Structural 1.0//EN" uri="entities/xhtmlmod11/xhtml-blkstruct-1.mod"/>
+    <system systemId="xhtml-blkstruct-1.mod" uri="entities/xhtmlmod11/xhtml-blkstruct-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Block Presentation 1.0//EN" uri="entities/xhtmlmod11/xhtml-blkpres-1.mod"/>
+    <system systemId="xhtml-blkpres-1.mod" uri="entities/xhtmlmod11/xhtml-blkpres-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Block Phrasal 1.0//EN" uri="entities/xhtmlmod11/xhtml-blkphras-1.mod"/>
+    <system systemId="xhtml-blkphras-1.mod" uri="entities/xhtmlmod11/xhtml-blkphras-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Ruby 1.0//EN" uri="entities/xhtmlmod11/xhtml-ruby-1.mod"/>
+    <system systemId="xhtml-ruby-1.mod" uri="entities/xhtmlmod11/xhtml-ruby-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Java Applets 1.0//EN" uri="entities/xhtmlmod11/xhtml-applet-1.mod"/>
+    <system systemId="xhtml-applet-1.mod" uri="entities/xhtmlmod11/xhtml-applet-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Base Architecture 1.0//EN" uri="entities/xhtmlmod11/xhtml-arch-1.mod"/>
+    <system systemId="xhtml-arch-1.mod" uri="entities/xhtmlmod11/xhtml-arch-1.mod"/>
+    <public publicId="-//W3C//DTD XHTML Architecture 1.1//EN" uri="entities/xhtmlmod11/xhtml11-arch.dtd"/>
+    <system systemId="xhtml11-arch.dtd" uri="entities/xhtmlmod11/xhtml11-arch.dtd"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Param Element 1.0//EN" uri="entities/xhtmlmod11/xhtml-param-1.mod"/>
+    <system systemId="xhtml-param-1.mod" uri="entities/xhtmlmod11/xhtml-param-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Presentation 1.0//EN" uri="entities/xhtmlmod11/xhtml-pres-1.mod"/>
+    <system systemId="xhtml-pres-1.mod" uri="entities/xhtmlmod11/xhtml-pres-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Editing Elements 1.0//EN" uri="entities/xhtmlmod11/xhtml-edit-1.mod"/>
+    <system systemId="xhtml-edit-1.mod" uri="entities/xhtmlmod11/xhtml-edit-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML BIDI Override Element 1.0//EN"  uri="entities/xhtmlmod11/xhtml-bdo-1.mod"/>
+    <system systemId="xhtml-bdo-1.mod" uri="entities/xhtmlmod11/xhtml-bdo-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Basic Forms 1.0//EN" uri="entities/xhtmlmod11/xhtml-basic-form-1.mod"/>
+    <system systemId="xhtml-basic-form-1.mod" uri="entities/xhtmlmod11/xhtml-basic-form-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Forms 1.0//EN" uri="entities/xhtmlmod11/xhtml-form-1.mod"/>
+    <system systemId="xhtml-form-1.mod" uri="entities/xhtmlmod11/xhtml-form-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Basic Tables 1.0//EN" uri="entities/xhtmlmod11/xhtml-basic-table-1.mod"/>
+    <system systemId="xhtml-basic-table-1.mod" uri="entities/xhtmlmod11/xhtml-basic-table-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Tables 1.0//EN" uri="entities/xhtmlmod11/xhtml-table-1.mod"/>
+    <system systemId="xhtml-table-1.mod" uri="entities/xhtmlmod11/xhtml-table-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Images 1.0//EN" uri="entities/xhtmlmod11/xhtml-image-1.mod"/>
+    <system systemId="xhtml-image-1.mod" uri="entities/xhtmlmod11/xhtml-image-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Client-side Image Maps 1.0//EN" uri="entities/xhtmlmod11/xhtml-csismap-1.mod"/>
+    <system systemId="xhtml-csismap-1.mod" uri="entities/xhtmlmod11/xhtml-csismap-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Server-side Image Maps 1.0//EN" uri="entities/xhtmlmod11/xhtml-ssismap-1.mod"/>
+    <system systemId="xhtml-ssismap-1.mod" uri="entities/xhtmlmod11/xhtml-ssismap-1.mod"/>
+    <public publicId="-//W3C//ENTITIES XHTML Intrinsic Events 1.0//EN" uri="entities/xhtmlmod11/xhtml-events-1.mod"/>
+    <system systemId="xhtml-events-1.mod" uri="entities/xhtmlmod11/xhtml-events-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Metainformation 1.0//EN" uri="entities/xhtmlmod11/xhtml-meta-1.mod"/>
+    <system systemId="xhtml-meta-1.mod" uri="entities/xhtmlmod11/xhtml-meta-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Scripting 1.0//EN" uri="entities/xhtmlmod11/xhtml-script-1.mod"/>
+    <system systemId="xhtml-script-1.mod" uri="entities/xhtmlmod11/xhtml-script-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Style Sheets 1.0//EN" uri="entities/xhtmlmod11/xhtml-style-1.mod"/>
+    <system systemId="html-style-1.mod" uri="entities/xhtmlmod11/xhtml-style-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Link Element 1.0//EN" uri="entities/xhtmlmod11/xhtml-link-1.mod"/>
+    <system systemId="xhtml-link-1.mod" uri="entities/xhtmlmod11/xhtml-link-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Base Element 1.0//EN" uri="entities/xhtmlmod11/xhtml-base-1.mod"/>
+    <system systemId="xhtml-base-1.mod" uri="entities/xhtmlmod11/xhtml-base-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Legacy Redeclarations 1.0//EN" uri="entities/xhtmlmod11/xhtml-legacy-redecl-1.mod"/>
+    <system systemId="xhtml-legacy-redecl-1.mod" uri="entities/xhtmlmod11/xhtml-legacy-redecl-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Legacy Markup 1.0//EN" uri="entities/xhtmlmod11/xhtml-legacy-1.mod"/>
+    <system systemId="xhtml-legacy-1.mod" uri="entities/xhtmlmod11/xhtml-legacy-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Embedded Object 1.0//EN" uri="entities/xhtmlmod11/xhtml-object-1.mod"/>
+    <system systemId="xhtml-object-1.mod" uri="entities/xhtmlmod11/xhtml-object-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Frames 1.0//EN" uri="entities/xhtmlmod11/xhtml-frames-1.mod"/>
+    <system systemId="xhtml-frames-1.mod" uri="entities/xhtmlmod11/xhtml-frames-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Target 1.0//EN" uri="entities/xhtmlmod11/xhtml-target-1.mod"/>
+    <system systemId="xhtml-target-1.mod" uri="entities/xhtmlmod11/xhtml-target-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Inline Frame Element 1.0//EN" uri="entities/xhtmlmod11/xhtml-iframe-1.mod"/>
+    <system systemId="xhtml-iframe-1.mod" uri="entities/xhtmlmod11/xhtml-iframe-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Inline Style 1.0//EN" uri="entities/xhtmlmod11/xhtml-inlstyle-1.mod"/>
+    <system systemId="xhtml-inlstyle-1.mod" uri="entities/xhtmlmod11/xhtml-inlstyle-1.mod"/>
+    <public publicId="-//W3C//ELEMENTS XHTML Name Identifier 1.0//EN" uri="entities/xhtmlmod11/xhtml-nameident-1.mod"/>
+    <system systemId="xhtml-nameident-1.mod" uri="entities/xhtmlmod11/xhtml-nameident-1.mod"/>
+    
+    <!-- XHTML Modularization 1.1 - Second Edition : XHTML entity sets -->
+    <public publicId="-//W3C//ENTITIES Latin 1 for XHTML//EN" uri="entities/xhtmlmod11/xhtml-lat1.ent"/>
+    <system systemId="xhtml-lat1.ent" uri="entities/xhtmlmod11/xhtml-lat1.ent"/>
+    <public publicId="-//W3C//ENTITIES Special for XHTML//EN" uri="entities/xhtmlmod11/xhtml-special.ent"/>
+    <system systemId="xhtml-special.ent" uri="entities/xhtmlmod11/xhtml-special.ent"/>
+    <public publicId="-//W3C//ENTITIES Symbols for XHTML//EN" uri="entities/xhtmlmod11/xhtml-symbol.ent"/>
+    <system systemId="xhtml-symbol.ent" uri="entities/xhtmlmod11/xhtml-symbol.ent"/>
+
+    <!-- xhtml 1.1 -->
+    <public publicId="-//W3C//DTD XHTML 1.1//EN" uri="entities/xhtml11.dtd"/> 
+    <system systemId="xhtml11.dtd" uri="entities/xhtml11.dtd"/> 
+    <public publicId="-//W3C//DTD XHTML Basic 1.1//EN" uri="entities/xhtml-basic11.dtd"/>
+    <system systemId="xhtml-basic11.dtd" uri="entities/xhtml-basic11.dtd"/> 
+
+    <!-- svg 1.0 -->
+    <public publicId="-//W3C//DTD SVG 1.0//EN" uri="entities/svg10.dtd"/>
+    <system systemId="svg10.dtd" uri="entities/svg10.dtd"/>
+	
+    <!-- svg 1.1 -->
+    <public publicId="-//W3C//DTD SVG 1.1//EN" uri="entities/svg11.dtd"/>
+    <system systemId="svg11.dtd" uri="entities/svg11.dtd"/>
+    <public publicId="-//W3C//DTD SVG 1.1 Basic//EN" uri="entities/svg11-basic.dtd"/>
+    <system systemId="svg11-basic.dtd" uri="entities/svg11-basic.dtd"/>
+    <public publicId="-//W3C//DTD SVG 1.1 Tiny//EN" uri="entities/svg11-tiny.dtd"/>
+    <system systemId="svg11-tiny.dtd" uri="entities/svg11-tiny.dtd"/>
+
+    <!-- mathml 1.01 -->
+    <system systemId="mathml.dtd" uri="entities/mathml.dtd"/>
+
+    <!-- mathml 2.0 -->
+    <public publicId="-//W3C//DTD MathML 2.0//EN" uri="entities/mathml2.dtd"/>
+    <system systemId="mathml2.dtd" uri="entities/mathml2.dtd"/>
+
+    <!-- xhtml 1.1 + mathml 2.0 + svg 1.1 -->
+    <public publicId="-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN" 
+	    uri="entities/xhtml-math-svg.dtd"/>
+    <system systemId="xhtml-math-svg.dtd" uri="entities/xhtml-math-svg.dtd"/>
+
+
+
+    <uri name="http://exist-db.org/samples/shakespeare" uri="entities/play.xsd"/>
+    
+    <uri name="http://www.w3.org/XML/1998/namespace" uri="entities/xml.xsd"/>
+	<uri name="http://www.w3.org/2001/XMLSchema" uri="entities/XMLSchema.xsd"/>
+	
+    <uri name="urn:oasis:names:tc:entity:xmlns:xml:catalog" uri="entities/catalog.xsd" />
+
+    <!-- imdi 3.0 -->
+    <uri name="http://www.mpi.nl/IMDI/Schema/IMDI" uri="entities/IMDI_3.0.xsd"/>
+    <system systemId="standard-session.cfg" uri="entities/imdi-standard-session.cfg"/>
+    <!-- CMDI imdi -->
+    <uri name="http://www.clarin.eu/cmd/components/imdi/imdi_md_schema.xsd" uri="entities/imdi_md_schema.xsd"/>
+</catalog>
