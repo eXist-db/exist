@@ -269,7 +269,9 @@
             <fileset dir="bin"/>
         </copy>
         <copy todir="${dist.dir}/src">
-            <fileset dir="src"/>
+            <fileset dir="${module.exist-core}/src"/>
+            <fileset dir="${module.exist-start}/src"/>
+            <fileset dir="${module.exist-testkit}/src"/>
         </copy>
         <copy todir="${dist.dir}/lib">
             <fileset dir="lib"/>
