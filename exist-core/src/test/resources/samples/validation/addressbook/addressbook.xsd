@@ -1,0 +1,19 @@
+<?xml version='1.0'?>
+<!-- $Id$ -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://jmvanel.free.fr/xsd/addressBook" xmlns="http://jmvanel.free.fr/xsd/addressBook" elementFormDefault="qualified">
+    <xsd:attribute name="uselessAttribute" type="xsd:string"/>
+    <xsd:complexType name="record">
+        <xsd:sequence>
+            <xsd:element name="cname" type="xsd:string"/>
+            <xsd:element name="email" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="addressBook">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="owner" type="record"/>
+                <xsd:element name="person" type="record" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema> 

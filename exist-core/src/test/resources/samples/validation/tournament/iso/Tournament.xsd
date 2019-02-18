@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (c) 2001 Eddie Robertsson, Allette Systems Pty. Ltd. 
+
+ This software is provided 'as-is', without any express or implied warranty. 
+ In no event will the authors be held liable for any damages arising from 
+ the use of this software.
+
+ Permission is granted to anyone to use this software for any purpose, 
+ including commercial applications, and to alter it and redistribute it freely,
+ subject to the following restrictions:
+
+ 1. The origin of this software must not be misrepresented; you must not claim
+ that you wrote the original software. If you use this software in a product, 
+ an acknowledgment in the product documentation would be appreciated but is 
+ not required.
+
+ 2. Altered source versions must be plainly marked as such, and must not be 
+ misrepresented as being the original software.
+
+ 3. This notice may not be removed or altered from any source distribution.
+ 
+ Changes:
+ April 27 2007 George Bina Converted to ISO Schematron.
+-->
+<xsd:schema targetNamespace="www.allette.com.au/Tournament" xmlns:sch="http://purl.oclc.org/dsdl/schematron" xmlns="www.allette.com.au/Tournament" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	<xsd:annotation>
+		<xsd:appinfo>
+			<sch:title>Schematron validation schema for the Tournament</sch:title>
+			<sch:ns prefix="t" uri="www.allette.com.au/Tournament"/>
+		</xsd:appinfo>
+	</xsd:annotation>
+	<xsd:element name="Tournament">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="Name" type="xsd:string"/>
+				<xsd:element name="Type">
+					<xsd:annotation>
+						<xsd:appinfo>
+							<sch:pattern name="Check participants for single and double matches.">
+								<sch:rule context="t:Type[text() = 'Singles']">
+									<sch:assert test="../t:Participants/@nbrParticipants &gt;= 2">If you're playing single matches there must be at least 2 participants.</sch:assert>
+									<sch:assert test="../t:Participants/@nbrParticipants = ../t:Teams/@nbrTeams">If you're playing single matches the number of participants must equal the number of teams.</sch:assert>
+								</sch:rule>
+								<sch:rule context="t:Type[text() = 'Doubles']">
+									<sch:assert test="../t:Participants/@nbrParticipants &gt;= 4">If you're playing doubles you must have at least 4 participants.</sch:assert>
+									<sch:assert test="../t:Participants/@nbrParticipants mod 2 = 0">If you're playing doubles the number of particiapants must be a multiple of 2.</sch:assert>
+									<sch:assert test="../t:Participants/@nbrParticipants = ../t:Teams/@nbrTeams * 2">If you're playing doubles the number of participants must equal the number of teams x 2.</sch:assert>
+								</sch:rule>
+							</sch:pattern>
+							<sch:pattern name="Check Teams." id="Teams">
+								<sch:rule context="t:Teams">
+									<sch:assert diagnostics="d1" test="count(t:Team) = @nbrTeams">The number of Team elements in <sch:name/> should match the @nbrTeams attribute.</sch:assert>
+								</sch:rule>
+							</sch:pattern>
+							<sch:diagnostics>
+								<sch:diagnostic id="d1"> Value of nbrTeams attribute = <sch:value-of
+									select="@nbrTeams"/> and number of Team elements = <sch:value-of
+										select="count(t:Team)"/></sch:diagnostic>
+							</sch:diagnostics>
+						</xsd:appinfo>
+					</xsd:annotation>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="Singles"/>
+							<xsd:enumeration value="Doubles"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:element>
+				<xsd:element name="Date" type="xsd:date"/>
+				<xsd:element ref="Participants"/>
+				<xsd:element name="Teams" type="Teams"/>
+				<xsd:element name="Matches" type="Matches"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="Participants">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="Name" minOccurs="2" maxOccurs="unbounded">
+					<xsd:complexType>
+						<xsd:simpleContent>
+							<xsd:extension base="xsd:string">
+								<xsd:attribute name="id" type="xsd:ID" use="required"/>
+							</xsd:extension>
+						</xsd:simpleContent>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:attribute name="nbrParticipants" type="xsd:positiveInteger" use="required"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:complexType name="Teams">
+		<xsd:sequence>
+			<xsd:element name="Team" minOccurs="2" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="Member" type="xsd:IDREF" maxOccurs="2"/>
+					</xsd:sequence>
+					<xsd:attribute name="id" type="xsd:ID" use="required"/>
+					<xsd:attribute name="Name" type="xsd:string"/>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="nbrTeams" type="xsd:positiveInteger" use="required"/>
+	</xsd:complexType>
+	<xsd:complexType name="Matches">
+		<xsd:sequence>
+			<xsd:element name="Match" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="Team" type="xsd:IDREF" minOccurs="2" maxOccurs="2"/>
+					</xsd:sequence>
+					<xsd:attribute name="id" type="xsd:ID" use="required"/>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="nbrMatches" type="xsd:positiveInteger" use="required"/>
+	</xsd:complexType>
+</xsd:schema>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
+	<xu:insert-after select="//SPEECH/LINE[. &amp;= 'loving']">
+		<XXX>Inserted line here</XXX>
+	</xu:insert-after>
+</xu:modifications>
