@@ -56,7 +56,7 @@ to add: -pre-compile steps
    <property name="dist.extension.jar" value="${dist.dir}/exist-${extension.name}-${project.version}.jar"/>
    <property name="dist.webfragment.jar" value="${existhome.dir}/webapp/WEB-INF/lib/metainf-${extension.name}.jar"/>
 
-   <property name="junit.report.dir" value="${existhome.dir}/target/junit-reports/data"/>
+   <property name="junit.report.dir" value="${existhome.dir}/exist-core/target/junit-reports/data"/>
 
    <property name="extension.include" value="yes"/>
 
@@ -119,7 +119,7 @@ to add: -pre-compile steps
       </fileset>
       <pathelement path="${test.classes.dir}"/>
       <!-- needed for org/exist/TestUtils -->
-      <pathelement path="${existhome.dir}/target/test-classes"/>
+      <pathelement path="${existhome.dir}/${module.exist-testkit}/${build.classes}"/>
    </path>
 
    <path id="classpath.extensions">
