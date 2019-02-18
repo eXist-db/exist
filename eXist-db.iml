@@ -85,6 +85,23 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/security/activedirectory/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/security/iprange/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/security/ldap/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/exist-optional/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/exist-optional/src/test/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/exist-optional/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/exist-optional/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/exist-core/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/exist-core/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/exist-core/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/exist-core/src/test/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/exist-core/src/test/xquery" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/exist-start/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/exist-start/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/exist-start/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/exist-start/src/test/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/exist-testkit/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/exist-testkit/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/exist-testkit/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/exist-testkit/src/test/resources" type="java-test-resource" />
       <excludeFolder url="file://$MODULE_DIR$/autodeploy" />
       <excludeFolder url="file://$MODULE_DIR$/backup" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
