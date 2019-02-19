@@ -86,7 +86,7 @@ wrapper.java.app.mainclass=org.exist.yajsw.Main
 # Java Classpath (include wrapper.jar)  Add class path elements as
 #  needed starting from 1
 # YAJSW: all libs required by YAJSW are in the manifest of the wrapper.jar -> only classpath of your application is required
-wrapper.java.classpath.1=@server.dir@/tools/yajsw/classes
+wrapper.java.classpath.1=@server.dir@/tools/yajsw/target/classes
 wrapper.java.classpath.2=start.jar
 
 # Java Library Path
