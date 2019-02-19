@@ -35,12 +35,12 @@
     <!--
        Special targets for simpleql module
     -->
-    <uptodate property="parser.uptodate" srcfile="${src.dir}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
+    <uptodate property="parser.uptodate" srcfile="${antlr.dir}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
               targetfile="${src.dir}/org/exist/xquery/modules/simpleql/SimpleQLParser.java"/>
 
     <target name="prepare"  if="${include.module.simpleql}">
         <echo message="Running ANTLR to generate XQuery parser"/>
-        <antlr target="${src.dir}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
+        <antlr target="${antlr.dir}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
                outputdirectory="${src.dir}/org/exist/xquery/modules/simpleql" traceparser="${antlr.traceParser}"
                tracelexer="${antlr.traceLexer}">
             <classpath>
