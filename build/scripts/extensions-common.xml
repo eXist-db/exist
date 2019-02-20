@@ -34,9 +34,11 @@ to add: -pre-compile steps
    <property file="new.properties"/>
 
    <!-- set global properties for this build -->
+   <property name="main.dir" location="src/main"/>
+   <property name="src.dir" location="${main.dir}/java"/>
+   <property name="resources.dir" location="${main.dir}/resources"/>
+   <property name="antlr.dir" location="${main.dir}/antlr"/>
 
-   <property name="src.dir" location="src/main/java"/>
-   <property name="resources.dir" location="src/main/resources"/>
    <property name="dat.dir" location="dat"/>
    <property name="metainf.dir" location="${dat.dir}/metainf"/>
 
