@@ -193,7 +193,7 @@
             filtering="true"/>
         <copy file="${basedir}/mime-types.xml.tmpl" tofile="${basedir}/mime-types.xml"
             filtering="true"/>
-        <copy file="${basedir}/mime-types.xml" tofile="${build.classes}/org/exist/util/mime-types.xml"/>
+        <copy file="${basedir}/mime-types.xml" tofile="${module.exist-core}/${build.classes}/org/exist/util/mime-types.xml"/>
 
         <copy file="${src.webapp}/WEB-INF/web.xml.tmpl" tofile="${src.webapp}/WEB-INF/web.xml"
             filtering="true" overwrite="true"/>
