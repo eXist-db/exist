@@ -172,10 +172,11 @@ public class Serialize extends BasicFunction {
             outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             while (siSerializeParams.hasNext()) {
                 final String serializeParams = siSerializeParams.nextItem().getStringValue();
-                final String params[] = serializeParams.split(" ");
-                for (final String param : params) {
-                    final String opt[] = Option.parseKeyValuePair(param);
+                final String opt[] = serializeParams.split("=", 2);
+                if(opt.length==2) {
                     outputProperties.setProperty(opt[0], opt[1]);
+                } else {
+                    LOG.error("Unable to parse serialization parameters '{}'. key=value is expected.", serializeParams);
                 }
             }
         }
