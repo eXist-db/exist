@@ -26,7 +26,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.source.StringSource;
-import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -57,7 +56,7 @@ public class LogFunction extends BasicFunction {
     public static final String FUNCTION_LOGAPP = "log-app";
     public static final String FUNCTION_LOG_SYSTEM_OUT = "log-system-out";
     public static final String FUNCTION_LOG_SYSTEM_ERR = "log-system-err";
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName(FUNCTION_LOG, UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                     "Logs the message to the current logger.",
@@ -147,13 +146,21 @@ public class LogFunction extends BasicFunction {
         // Iterate over all input
         while (i.hasNext()) {
             final Item next = i.nextItem();
-            try (StringWriter writer = new StringWriter()) {
-                XQuerySerializer xqs = new XQuerySerializer(context.getBroker(), props, writer);
-                xqs.serialize(next.toSequence());
-                buf.append(writer.toString());
 
-            } catch (IOException | SAXException e) {
-                throw new XPathException(this, e.getMessage());
+            if(next instanceof StringValue){
+                // Use simple string value
+                buf.append(next.getStringValue());
+
+            } else {
+                // Serialize data
+                try (StringWriter writer = new StringWriter()) {
+                    XQuerySerializer xqs = new XQuerySerializer(context.getBroker(), props, writer);
+                    xqs.serialize(next.toSequence());
+                    buf.append(writer.toString());
+
+                } catch (IOException | SAXException e) {
+                    throw new XPathException(this, e.getMessage());
+                }
             }
 
         }
