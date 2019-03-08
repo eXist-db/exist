@@ -247,12 +247,12 @@ public class XMLWriter {
         try {
             if (tagIsOpen) {
                 closeStartTag(true);
-                elementName.pop();
             } else {
                 writer.write("</");
                 writer.write(qname);
                 writer.write('>');
             }
+            elementName.pop();
         } catch(final IOException ioe) {
             throw new TransformerException(ioe.getMessage(), ioe);
         }
@@ -262,7 +262,6 @@ public class XMLWriter {
         try {
             if(tagIsOpen) {
                 closeStartTag(true);
-                elementName.pop();
             } else {
                 writer.write("</");
                 if(qname.getPrefix() != null && qname.getPrefix().length() > 0) {
@@ -272,6 +271,7 @@ public class XMLWriter {
                 writer.write(qname.getLocalPart());
                 writer.write('>');
             }
+            elementName.pop();
         } catch(final IOException ioe) {
             throw new TransformerException(ioe.getMessage(), ioe);
         }
