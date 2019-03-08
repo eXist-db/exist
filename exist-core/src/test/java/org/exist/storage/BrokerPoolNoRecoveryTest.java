@@ -19,6 +19,8 @@
  */
 package org.exist.storage;
 
+import static org.junit.Assert.assertNotNull;
+
 import org.exist.test.ExistEmbeddedServer;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,15 +34,16 @@ public class BrokerPoolNoRecoveryTest {
 
     @Rule
     public final ExistEmbeddedServer existEmbeddedServer =
-        new ExistEmbeddedServer( createConfigProperties(), true, false);
+            new ExistEmbeddedServer(createConfigProperties(), true, false);
 
     @Test
-    public void testIt(){
+    public void testSync_Recovery_Disabled() {
         // For this test it is sufficient to have startDb() called in ExistEmbeddedServer.
         // With disabled recovery, this used to fail with a java.util.NoSuchElementException: No value present
+        assertNotNull(existEmbeddedServer.getBrokerPool()); // for Codacy alone
     }
 
-    private static Properties createConfigProperties(){
+    private static Properties createConfigProperties() {
         Properties configProperties = new Properties();
         configProperties.put(BrokerPoolConstants.PROPERTY_RECOVERY_ENABLED, Boolean.FALSE);
         return configProperties;
