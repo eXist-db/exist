@@ -1433,7 +1433,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
          *            made by some transaction T, it is necessary that the update record
          *            <T,X,v,w> appear on disk.
          */
-        journalManager.get().flush(true, true);
+        if(journalManager.isPresent()) {
+            journalManager.get().flush(true, true);
+        }
 
         // sync various DBX files
         broker.sync(syncEvent);
