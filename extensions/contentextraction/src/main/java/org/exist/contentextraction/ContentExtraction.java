@@ -42,7 +42,6 @@ import org.xml.sax.SAXException;
  * @version 1.0
  */
 public class ContentExtraction {
-
     final Parser parser = new AutoDetectParser();
     final ParseContext parseContext = new ParseContext();
 
@@ -50,14 +49,12 @@ public class ContentExtraction {
         parseContext.set(Parser.class, parser);
     }
 
-    public void extractContentAndMetadata(BinaryValue binaryValue, ContentHandler contentHandler) throws IOException, SAXException, ContentExtractionException {
-        
-        Metadata metadata = new Metadata();
-
-        try (InputStream is = binaryValue.getInputStream()) {
+    public Metadata extractContentAndMetadata(final BinaryValue binaryValue, final ContentHandler contentHandler) throws IOException, SAXException, ContentExtractionException {
+        try (final InputStream is = binaryValue.getInputStream()) {
+            final Metadata metadata = new Metadata();
             parser.parse(is, contentHandler, metadata, parseContext);
-            
-        } catch (TikaException e) {
+            return metadata;
+        } catch (final TikaException e) {
             throw new ContentExtractionException("Problem with content extraction library: " + e.getMessage(), e);
         }
     }
@@ -68,17 +65,13 @@ public class ContentExtraction {
         extractContentAndMetadata(binaryValue, new SAXToReceiver(receiver, false));
     }
 
-    public void extractMetadata(BinaryValue binaryValue, ContentHandler contentHandler) throws IOException, SAXException, ContentExtractionException {
-        Metadata metadata = new Metadata();
-
-        try (InputStream is = binaryValue.getInputStream()) {
-            parser.parse(is, new AbortAfterMetadataContentHandler(contentHandler), metadata, parseContext);
-            
-        } catch (TikaException e) {
+    public Metadata extractMetadata(final BinaryValue binaryValue) throws IOException, SAXException, ContentExtractionException {
+        try (final InputStream is = binaryValue.getInputStream()) {
+            final Metadata metadata = new Metadata();
+            parser.parse(is, null, metadata, parseContext);
+            return metadata;
+        } catch (final TikaException e) {
             throw new ContentExtractionException("Problem with content extraction library: " + e.getMessage(), e);
-            
-        } catch (AbortedAfterMetadataException ame) {
-            //do nothing, we have finished with the document
         }
     }
 }
