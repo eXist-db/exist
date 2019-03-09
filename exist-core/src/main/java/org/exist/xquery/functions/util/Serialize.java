@@ -46,6 +46,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.fn.FunSerialize;
 import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -57,17 +58,32 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
 
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Serialize extends BasicFunction {
 
     protected static final Logger logger = LogManager.getLogger(Serialize.class);
 
+    private static final FunctionParameterSequenceType paramParameters = new FunctionParameterSequenceType(
+            "parameters",
+            Type.ITEM,
+            Cardinality.ZERO_OR_MORE,
+            "The serialization parameters: either a sequence of key=value pairs or an " +
+                    "output:serialization-parameters element as defined by the standard " +
+                    "fn:serialize function.");
+
+    private static final FunctionParameterSequenceType paramNodeSet = new FunctionParameterSequenceType(
+            "node-set",
+            Type.NODE,
+            Cardinality.ZERO_OR_MORE,
+            "The node set to serialize");
+
     public final static FunctionSignature signatures[] = {
             new FunctionSignature(
                     new QName("serialize", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-                    "Writes the node set passed in parameter $a into a file on the file system. The " +
-                            "full path to the file is specified in parameter $b. $c contains a " +
+                    "Writes the node set passed in parameter $node-set into a file on the file system. The " +
+                            "full path to the file is specified in parameter $file. $parameters contains a " +
                             "sequence of zero or more serialization parameters specified as key=value pairs. The " +
                             "serialization options are the same as those recognized by \"declare option exist:serialize\". " +
                             "The function does NOT automatically inherit the serialization options of the XQuery it is " +
@@ -75,9 +91,9 @@ public class Serialize extends BasicFunction {
                             "specified file can not be created or is not writable, true on success. The empty " +
                             "sequence is returned if the argument sequence is empty.",
                     new SequenceType[]{
-                            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                            new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
+                            paramNodeSet,
+                            new FunctionParameterSequenceType("file", Type.STRING, Cardinality.EXACTLY_ONE, "The output file path"),
+                            paramParameters
                     },
                     new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE),
                     "Use the file:serialize() function in the file extension module instead!"
@@ -90,13 +106,11 @@ public class Serialize extends BasicFunction {
                             "The function does NOT automatically inherit the serialization options of the XQuery it is " +
                             "called from.",
                     new SequenceType[]{
-                            new FunctionParameterSequenceType("node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "The node set to serialize"),
-                            new FunctionParameterSequenceType("parameters", Type.ITEM, Cardinality.ZERO_OR_MORE,
-                                    "The serialization parameters: either a sequence of key=value pairs or an output:serialization-parameters " +
-                                            "element as defined by the standard fn:serialize function.")
+                            paramNodeSet,
+                            paramParameters
                     },
                     new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ZERO_OR_ONE, "the string containing the serialized node set."),
-                    "Use the fn:serialize() function instead!"
+                    FunSerialize.signatures[1]
             )
     };
 
