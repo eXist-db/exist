@@ -26,11 +26,14 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+
+import org.apache.tika.metadata.Metadata;
 import org.exist.contentextraction.ContentExtraction;
 import org.exist.contentextraction.ContentExtractionException;
 import org.exist.contentextraction.ContentReceiver;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.storage.NodePath;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -48,6 +51,9 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
+import static org.exist.Namespaces.XHTML_NS;
 
 /**
  * @author Dulip Withanage <dulip.withanage@gmail.com>
@@ -130,18 +136,34 @@ public class ContentFunctions extends BasicFunction {
         } else {
 
             try {
-                DocumentBuilderReceiver builder = new DocumentBuilderReceiver();
-                builder.setSuppressWhitespace(false);
-
                 if (isCalledAs("get-metadata")) {
-                    ce.extractMetadata((BinaryValue) args[0].itemAt(0), builder);
+                    final MemTreeBuilder builder = new MemTreeBuilder(context);
+                    builder.startDocument();
+                    builder.startElement(new QName("html", XHTML_NS), null);
+                    builder.startElement(new QName("head", XHTML_NS), null);
 
+                    final QName qnMeta = new QName("meta", XHTML_NS);
+                    final Metadata metadata = ce.extractMetadata((BinaryValue) args[0].itemAt(0));
+                    for (final String name : metadata.names()) {
+                        for (final String value : metadata.getValues(name)) {
+                            final AttributesImpl attributes = new AttributesImpl();
+                            attributes.addAttribute("", "name", "name", "string", name);
+                            attributes.addAttribute("", "content", "content", "string", value);
+                            builder.startElement(qnMeta, attributes);
+                            builder.endElement();
+                        }
+                    }
+
+                    builder.endElement();
+                    builder.endElement();
+                    builder.endDocument();
+                    return builder.getDocument();
                 } else {
-                    ce.extractContentAndMetadata((BinaryValue) args[0].itemAt(0), (ContentHandler) builder);
+                    final DocumentBuilderReceiver builder = new DocumentBuilderReceiver();
+                    builder.setSuppressWhitespace(false);
+                    final Metadata metadata = ce.extractContentAndMetadata((BinaryValue) args[0].itemAt(0), (ContentHandler) builder);
+                    return (NodeValue) builder.getDocument();
                 }
-
-                return (NodeValue) builder.getDocument();
-
             } catch (IOException | SAXException | ContentExtractionException ex) {
                 LOG.error(ex.getMessage(), ex);
                 throw new XPathException(this, ex.getMessage(), ex);
