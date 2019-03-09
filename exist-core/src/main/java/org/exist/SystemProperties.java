@@ -3,6 +3,8 @@ package org.exist;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
+import com.evolvedbinary.j8fu.lazy.LazyVal;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -12,10 +14,10 @@ import org.apache.logging.log4j.Logger;
  */
 public class SystemProperties {
 
-    private final static Logger LOG = LogManager.getLogger(SystemProperties.class);
+    private static final Logger LOG = LogManager.getLogger(SystemProperties.class);
+    private static final SystemProperties instance = new SystemProperties();
 
-    private final static SystemProperties instance = new SystemProperties();
-    private Properties properties = null;
+    private final LazyVal<Properties> properties = new LazyVal<>(this::load);
 
     public final static SystemProperties getInstance() {
         return instance;
@@ -24,25 +26,23 @@ public class SystemProperties {
     private SystemProperties() {
     }
 
-    public synchronized String getSystemProperty(String propertyName, String defaultValue) {
-
-        if(properties == null) {
-            properties = new Properties();
-            InputStream is = null;
-            try {
-                is = SystemProperties.class.getResourceAsStream("system.properties");
-                if(is != null) {
-                    properties.load(is);
-                }
-            } catch (final IOException ioe) {
-                LOG.debug("Unable to load system.properties from class loader: " +  ioe.getMessage(), ioe);
-            } finally {
-                if(is != null) {
-                    try { is.close(); } catch(final IOException ioe) { }
-                }
+    private Properties load() {
+        final Properties properties = new Properties();
+        try (final InputStream is = SystemProperties.class.getResourceAsStream("system.properties")) {
+            if (is != null) {
+                properties.load(is);
             }
+        } catch (final IOException ioe) {
+            LOG.error("Unable to load system.properties from class loader: " +  ioe.getMessage(), ioe);
         }
+        return properties;
+    }
 
-        return properties.getProperty(propertyName, defaultValue);
+    public String getSystemProperty(final String propertyName) {
+        return properties.get().getProperty(propertyName);
+    }
+
+    public String getSystemProperty(final String propertyName, final String defaultValue) {
+        return properties.get().getProperty(propertyName, defaultValue);
     }
 }
