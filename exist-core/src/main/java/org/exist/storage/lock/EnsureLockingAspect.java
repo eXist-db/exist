@@ -624,6 +624,11 @@ public class EnsureLockingAspect {
                     throw new UnsupportedOperationException("Currently only READ or WRITE lock modes are supported");
             }
 
+            if (uri.numSegments() == 2 && uri.getCollectionPath().equals("/db")) {
+                // we are at the root!
+                break;
+            }
+
             // loop round to parent collection
             uri = uri.removeLastSegment();
         }
