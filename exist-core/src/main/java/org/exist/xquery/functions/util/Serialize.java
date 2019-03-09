@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.util;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,6 +32,8 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
@@ -43,7 +46,6 @@ import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.fn.FunSerialize;
@@ -180,16 +182,16 @@ public class Serialize extends BasicFunction {
         final Properties outputProperties = new Properties();
         if (sSerializeParams.hasOne() && Type.subTypeOf(sSerializeParams.getItemType(), Type.NODE)) {
             SerializerUtils.getSerializationOptions(this, (NodeValue) sSerializeParams.itemAt(0), outputProperties);
+
         } else {
-            SequenceIterator siSerializeParams = sSerializeParams.iterate();
             outputProperties.setProperty(OutputKeys.INDENT, "yes");
             outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+
+            final SequenceIterator siSerializeParams = sSerializeParams.iterate();
             while (siSerializeParams.hasNext()) {
-                final String serializeParams = siSerializeParams.nextItem().getStringValue();
-                final String params[] = serializeParams.split(" ");
-                for (final String param : params) {
-                    final String opt[] = Option.parseKeyValuePair(param);
-                    outputProperties.setProperty(opt[0], opt[1]);
+                final String serializeParam = siSerializeParams.nextItem().getStringValue();
+                for (final Tuple2<String, String> option : parseOption(serializeParam)) {
+                    outputProperties.setProperty(option._1, option._2);
                 }
             }
         }
@@ -222,5 +224,25 @@ public class Serialize extends BasicFunction {
         } finally {
             SerializerPool.getInstance().returnObject(sax);
         }
+    }
+
+    protected static List<Tuple2<String, String>> parseOption(final String options) {
+        final List<Tuple2<String, String>> keyValues = new ArrayList<>();
+
+        final String[] tokens = options.split(" ");
+        for (int i = 0; i < tokens.length; i++) {
+            final String token = tokens[i];
+            final int sep = token.indexOf('=');
+            if (sep > -1) {
+                final String key = token.substring(0, sep);
+                final String value = token.substring(sep + 1);
+                keyValues.add(Tuple(key, value));
+            } else {
+                final Tuple2<String, String> prev = keyValues.remove(keyValues.size() - 1);
+                keyValues.add(Tuple(prev._1, prev._2 + ' ' + token));
+            }
+        }
+
+        return keyValues;
     }
 }
