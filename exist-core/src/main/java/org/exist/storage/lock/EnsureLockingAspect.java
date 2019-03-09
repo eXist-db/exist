@@ -141,8 +141,6 @@ public class EnsureLockingAspect {
 
         final List<AnnotatedParameterConstraint<EnsureLocked>> ensureLockedParameters = getAllParameterAnnotations(method, EnsureLocked.class);
         for (final AnnotatedParameterConstraint<EnsureLocked> ensureLockedConstraint : ensureLockedParameters) {
-            final EnsureLockDetail ensureLockDetail = resolveLockDetail(ensureLockedConstraint, args);
-            traceln(() -> "Checking: method=" + ms.getDeclaringType().getName() + "#" + ms.getName() + "( " + toAnnotationString(EnsureLocked.class, ensureLockDetail) + " " + ensureLockedConstraint.getParameter().getName() + ") ...");
 
             // check the lock constraint holds
             final LockManager lockManager = getLockManager();
@@ -156,6 +154,9 @@ public class EnsureLockingAspect {
                     traceln(() -> "Skipping method=" + ms.getDeclaringType().getName() + "#" + ms.getName() + " for null argument(idx=" + idx + ") with @EnsureLocked @Nullable");
                     continue;
                 }
+
+                final EnsureLockDetail ensureLockDetail = resolveLockDetail(ensureLockedConstraint, args);
+                traceln(() -> "Checking: method=" + ms.getDeclaringType().getName() + "#" + ms.getName() + "( " + toAnnotationString(EnsureLocked.class, ensureLockDetail) + " " + ensureLockedConstraint.getParameter().getName() + ") ...");
 
                 switch (ensureLockDetail.type) {
                     case COLLECTION:
