@@ -694,9 +694,11 @@ public class EnsureLockingAspect {
         final Lock.LockType type;
         if (lockConstraint.getAnnotation().type() != Lock.LockType.UNKNOWN) {
             type = lockConstraint.getAnnotation().type();
-        } else if (Collection.class.isAssignableFrom(lockConstraint.getParameter().getType())) {
+        } else if (Collection.class.isAssignableFrom(lockConstraint.getParameter().getType())
+                || args[lockConstraint.getParameterIndex()] instanceof Collection) {
             type = Lock.LockType.COLLECTION;
-        } else if (Document.class.isAssignableFrom(lockConstraint.getParameter().getType())) {
+        } else if (Document.class.isAssignableFrom(lockConstraint.getParameter().getType())
+                || args[lockConstraint.getParameterIndex()] instanceof Document) {
             type = Lock.LockType.DOCUMENT;
         } else if (XmldbURI.class.isAssignableFrom(lockConstraint.getParameter().getType())) {
             throw new IllegalArgumentException("@EnsureLocked is specified on an XmldbURI method parameter, but is missing the `lockType` value");
