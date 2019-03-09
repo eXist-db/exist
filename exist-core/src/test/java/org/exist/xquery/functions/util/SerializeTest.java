@@ -38,7 +38,7 @@ public class SerializeTest {
                 "util:serialize($xml,'method=xml')";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
-        assertXMLEqual(r,"<test/>");
+        assertXMLEqual("<test/>", r);
     }
 
     @Test
@@ -48,7 +48,7 @@ public class SerializeTest {
                 "util:serialize($xml,'method=xml indent=no')";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
-        assertXMLEqual(r,"<test><a/><b/></test>");
+        assertXMLEqual("<test><a/><b/></test>", r);
     }
 
     @Test
@@ -58,7 +58,7 @@ public class SerializeTest {
                 "util:serialize($xml,'method=text indent=no')";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
-        assertEquals(r,"test");
+        assertEquals("test", r);
     } 
 
     @Test
@@ -69,7 +69,7 @@ public class SerializeTest {
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
         XMLUnit.setIgnoreWhitespace(true);
-        assertXMLEqual(r,"<test><a/><b/></test>");
+        assertXMLEqual("<test><a/><b/></test>", r);
     }
 
     @Test
