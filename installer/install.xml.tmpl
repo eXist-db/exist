@@ -81,26 +81,18 @@
     <packs>
         <pack name="Sources" required="no" installGroups="Group1">
             <description>Java source files and build scripts. Install this package if you want to customize the build, create extensions or contribute to eXist-db.</description>
-            <fileset targetdir="$INSTALL_PATH/src/exist-core" dir="exist-core/src">
-                <exclude name="**/*~"/>
-                <exclude name="**/.*"/>
-                <exclude name="**/CVS/"/>
-                <exclude name=".*"/>
+            <fileset targetdir="$INSTALL_PATH/exist-core" dir="exist-core">
+                <include name="src/"/>
             </fileset>
-            <fileset targetdir="$INSTALL_PATH/src/exist-start" dir="exist-start/src">
-                <exclude name="**/*~"/>
-                <exclude name="**/.*"/>
-                <exclude name="**/CVS/"/>
-                <exclude name=".*"/>
+            <fileset targetdir="$INSTALL_PATH/exist-start" dir="exist-start">
+                <include name="src/"/>
             </fileset>
-            <fileset targetdir="$INSTALL_PATH/src/exist-testkit" dir="exist-testkit/src">
-                <exclude name="**/*~"/>
-                <exclude name="**/.*"/>
-                <exclude name="**/CVS/"/>
-                <exclude name=".*"/>
+            <fileset targetdir="$INSTALL_PATH/exist-testkit" dir="exist-testkit">
+                <include name="src/"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/extensions" dir="extensions">
                 <include name="**/src/"/>
+                <exclude name="**/target/"/>
                 <exclude name="**/*~"/>
                 <exclude name="**/.*"/>
                 <exclude name="**/CVS/"/>
