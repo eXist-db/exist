@@ -20,11 +20,6 @@
  */
 package org.exist;
 
-import java.io.IOException;
-import java.util.Properties;
-
-import org.exist.xquery.functions.system.GetVersion;
-
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -39,17 +34,13 @@ public final class Version {
 	private static final String GIT_COMMIT;
 	
 	static {
-        final Properties properties = new Properties();
-		try {
-			properties.load(GetVersion.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
-		} catch (final IOException e) {
-		}
 
-		NAME = properties.getProperty("product-name", "eXist");
-		VERSION = properties.getProperty("product-version");
-		BUILD = properties.getProperty("product-build");
-		GIT_BRANCH = properties.getProperty("git-branch");
-		GIT_COMMIT = properties.getProperty("git-commit");
+		final SystemProperties systemProperties = SystemProperties.getInstance();
+		NAME = systemProperties.getSystemProperty("product-name", "eXist");
+		VERSION = systemProperties.getSystemProperty("product-version");
+		BUILD = systemProperties.getSystemProperty("product-build");
+		GIT_BRANCH = systemProperties.getSystemProperty("git-branch");
+		GIT_COMMIT = systemProperties.getSystemProperty("git-commit");
 	}
 	
 	public static String getProductName() {
