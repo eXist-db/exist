@@ -156,7 +156,10 @@ public class Deploy extends BasicFunction {
                 if (getArgumentCount() == 2) {
                     userTarget = args[1].getStringValue();
                 }
-                target = deployment.deploy(context.getBroker(), context.getBroker().getCurrentTransaction(), pkgName, context.getRepository(), userTarget);
+                try (final Txn transaction = context.getBroker().continueOrBeginTransaction()) {
+                    target = deployment.deploy(context.getBroker(), transaction, pkgName, context.getRepository(), userTarget);
+                    transaction.commit();
+                }
             } else if (isCalledAs("install-and-deploy")) {
                 String version = null;
                 final String repoURI;
@@ -166,18 +169,24 @@ public class Deploy extends BasicFunction {
                 } else {
                     repoURI = args[1].getStringValue();
                 }
-                target = installAndDeploy(pkgName, version, repoURI);
+                try (final Txn transaction = context.getBroker().continueOrBeginTransaction()) {
+                    target = installAndDeploy(transaction, pkgName, version, repoURI);
+                    transaction.commit();
+                }
             } else if (isCalledAs("install-and-deploy-from-db")) {
                 String repoURI = null;
                 if (getArgumentCount() == 2) {
                     repoURI = args[1].getStringValue();
                 }
-                try (final Txn transaction = context.getBroker().getBrokerPool().getTransactionManager().beginTransaction()) {
+                try (final Txn transaction = context.getBroker().continueOrBeginTransaction()) {
                     target = installAndDeployFromDb(transaction, pkgName, repoURI);
                     transaction.commit();
                 }
             } else {
-                target = deployment.undeploy(context.getBroker(), context.getBroker().getCurrentTransaction(), pkgName, context.getRepository());
+                try (final Txn transaction = context.getBroker().continueOrBeginTransaction()) {
+                    target = deployment.undeploy(context.getBroker(), transaction, pkgName, context.getRepository());
+                    transaction.commit();
+                }
 	        }
 	        target.orElseThrow(() -> new XPathException("expath repository is not available."));
             return statusReport(target);
@@ -190,13 +199,13 @@ public class Deploy extends BasicFunction {
         }
     }
 
-    private Optional<String> installAndDeploy(final String pkgName, final String version, final String repoURI) throws XPathException {
+    private Optional<String> installAndDeploy(final Txn transaction, final String pkgName, final String version, final String repoURI) throws XPathException {
         try {
             final RepoPackageLoader loader = new RepoPackageLoader(repoURI);
             final Deployment deployment = new Deployment();
             final XarSource xar = loader.load(pkgName, new PackageLoader.Version(version, false));
             if (xar != null) {
-                return deployment.installAndDeploy(context.getBroker(), context.getBroker().getCurrentTransaction(), xar, loader);
+                return deployment.installAndDeploy(context.getBroker(), transaction, xar, loader);
             }
             return Optional.empty();
         } catch (final MalformedURLException e) {
@@ -226,7 +235,7 @@ public class Deploy extends BasicFunction {
 
             final XarSource xarSource =  new BinaryDocumentXarSource(context.getBroker().getBrokerPool(), transaction, (BinaryDocument)doc);
             final Deployment deployment = new Deployment();
-            return deployment.installAndDeploy(context.getBroker(), context.getBroker().getCurrentTransaction(), xarSource, loader);
+            return deployment.installAndDeploy(context.getBroker(), transaction, xarSource, loader);
         } catch (PackageException | IOException | PermissionDeniedException e) {
             LOG.error(e.getMessage(), e);
             throw new XPathException(this, EXPathErrorCode.EXPDY007, "Package installation failed: " + e.getMessage(), new StringValue(e.getMessage()));
