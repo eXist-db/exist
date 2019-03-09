@@ -25,6 +25,9 @@
 
         <dependency org="org.apache.xmlgraphics" name="fop" rev="2.3" conf="*->*,!sources,!javadoc"/>
 
+        <!-- override the version of fontbox used with fop to use the newer one required by eXist-db contentextraction module -->
+        <dependency org="org.apache.pdfbox" name="fontbox" rev="2.0.13" conf="*->*,!sources,!javadoc"/>
+
         <!-- provided by eXist-db -->
         <exclude module="xercesImpl"/>
         <exclude module="xml-apis"/>

@@ -8,16 +8,18 @@
 
     <dependencies>
 
-        <dependency org="org.apache.tika" name="tika-parsers" rev="1.16" conf="*->*,!sources,!javadoc"/>
+        <dependency org="org.apache.tika" name="tika-parsers" rev="1.20" conf="*->*,!sources,!javadoc"/>
 
         <!-- identified as provided by eXist-db -->
         <exclude module="asm"/>
         <exclude module="aspectjrt"/>
+        <exclude module="bcprov-jdk15on"/>
         <exclude module="commons-codec"/>
         <exclude module="commons-compress"/>
         <exclude module="commons-httpclient"/>
         <exclude module="commons-io"/>
         <exclude module="commons-lang"/>
+        <exclude module="commons-lang3"/>
         <exclude module="commons-logging"/>
         <exclude module="commons-logging-api"/>
         <exclude module="ehcache-core"/>
