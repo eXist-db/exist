@@ -206,7 +206,11 @@ public class AccountManagementFunction extends BasicFunction {
                         subGroups = getGroups(args[2]);
                     } else {
                         //add the primary group as the primary group
-                        user.addGroup(args[2].getStringValue());
+                        final String primaryGroup = args[2].getStringValue();
+                        if (primaryGroup == null || primaryGroup.isEmpty()) {
+                            throw new XPathException(this, "You must specify a primary group for the user.");
+                        }
+                        user.addGroup(primaryGroup);
 
                         subGroups = getGroups(args[3]);
                     }
