@@ -17,52 +17,84 @@ public class XMLStringTest {
 	 */
 	@Test
 	public void appendcharArrayintint() {
-		XMLString s = new XMLString();
-		char ch[] = "Hello".toCharArray();
-		s.append(ch, 0, 5);
-		assertEquals(s.toString(), "Hello");
+		final XMLString s = new XMLString();
+		try {
+			char ch[] = "Hello".toCharArray();
+			s.append(ch, 0, 5);
+			assertEquals(s.toString(), "Hello");
+		} finally {
+			s.reset();
+		}
 	}
 
 	@Test
 	public void normalize() {
-		XMLString s = new XMLString();
-		char ch[] = "\n	Hello World\r\n".toCharArray();
-		s.append(ch, 0, ch.length);
-		s = s.normalize(XMLString.SUPPRESS_BOTH);
-		String r = s.toString();
-		assertEquals(r, "Hello World");
+		final XMLString s = new XMLString();
+		XMLString normalized =  null;
+		try {
+			final char ch[] = "\n	Hello World\r\n".toCharArray();
+			s.append(ch, 0, ch.length);
+			normalized = s.normalize(XMLString.SUPPRESS_BOTH);
+			final String r = normalized.toString();
+			assertEquals(r, "Hello World");
+		} finally {
+			if (normalized != s) {
+				normalized.reset();
+			}
+			s.reset();
+		}
 	}
 
 	@Test
     public void collapse() {
-        XMLString s = new XMLString();
-        char ch[] = "\n	Hello   World\r\n".toCharArray();
-        s.append(ch, 0, ch.length);
-        s = s.normalize(XMLString.NORMALIZE);
-        String r = s.toString();
-        assertEquals(r, "Hello World");
+		final XMLString s = new XMLString();
+		XMLString normalized =  null;
+		try {
+			final char ch[] = "\n	Hello   World\r\n".toCharArray();
+			s.append(ch, 0, ch.length);
+			normalized = s.normalize(XMLString.NORMALIZE);
+			final String r = normalized.toString();
+			assertEquals(r, "Hello World");
+		} finally {
+			if (normalized != s) {
+				normalized.reset();
+			}
+			s.reset();
+		}
     }
 
 	@Test
 	public void substring() {
-		XMLString s = new XMLString();
-		char ch[] = "\n	Hello World\r\n".toCharArray();
-		s.append(ch, 0, ch.length);
-		s = s.normalize(XMLString.SUPPRESS_BOTH);
-		String r = s.substring(6, 5);
-		assertEquals(r, "World");
+		final XMLString s = new XMLString();
+		XMLString normalized =  null;
+		try {
+			final char ch[] = "\n	Hello World\r\n".toCharArray();
+			s.append(ch, 0, ch.length);
+			normalized = s.normalize(XMLString.SUPPRESS_BOTH);
+			final String r = normalized.substring(6, 5);
+			assertEquals(r, "World");
+		} finally {
+			if (normalized != s) {
+				normalized.reset();
+			}
+			s.reset();
+		}
 	}
 
 	@Test
 	public void insert() {
-		XMLString s = new XMLString();
-		char ch[] = "Hello World".toCharArray();
-		s.append(ch, 0, ch.length);
-		s.insert(5, " happy");
-		String r = s.toString();
-		assertEquals(r, "Hello happy World");
-		s = s.delete(5, 6);
-		r = s.toString();
-		assertEquals(r, "Hello World");
+		final XMLString s = new XMLString();
+		try {
+			final char ch[] = "Hello World".toCharArray();
+			s.append(ch, 0, ch.length);
+			s.insert(5, " happy");
+			String r = s.toString();
+			assertEquals(r, "Hello happy World");
+			s.delete(5, 6);
+			r = s.toString();
+			assertEquals(r, "Hello World");
+		} finally {
+			s.reset();
+		}
 	}
 }

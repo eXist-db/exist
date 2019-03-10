@@ -1321,12 +1321,14 @@ public class NativeValueIndex implements ContentLoadingObserver {
             } else {
                 offset = QNameValue.OFFSET_VALUE + NativeValueIndex.LENGTH_VALUE_TYPE;
             }
-            key.reuse();
             UTF8.decode(value.data(), value.start() + offset, value.getLength() - offset, key);
 
             if (matcher.matches(key)) {
                 super.indexInfo(value, pointer);
             }
+
+            key.reuse();
+
             return true;
         }
     }
@@ -1634,6 +1636,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 if (qSpec != null) {
                     storeElement(element, content.toString(), RangeIndexSpec.indexTypeToXPath(qSpec.getIndexType()), IndexType.QNAME, false);
                 }
+
+                content.reset();
             }
             super.endElement(transaction, element, path);
         }
