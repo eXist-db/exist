@@ -25,6 +25,11 @@ EXECUTABLE=installDaemonNoPriv.sh
 source "$PRGDIR"/setenv.sh
 export PRGDIR
 
+if [ -n "${WRAPPER_UNATTENDED}" ]; then
+  echo "Using unattended installation mode..."
+fi
+
+
 # Check that target executable exists
 if [ ! -x "$PRGDIR"/"$EXECUTABLE" ]; then
   echo "Cannot find $PRGDIR/$EXECUTABLE"
@@ -95,15 +100,20 @@ function install_systemd_config {
 function systemd_user {
     if [ -z "${RUN_AS_USER}" ]; then
         echo -e "\nNo RUN_AS_USER environment variable found!"
-        read -p "Which user should eXist run as for the systemd service (${USER})? " eval_response;
-        case $eval_response in
-            "")
-                RUN_AS_USER="${USER}"
-                ;;
-             *)
-                RUN_AS_USER="${eval_response}"
-                ;;
-        esac
+        if [ -z "${WRAPPER_UNATTENDED}" ]; then
+            read -p "Which user should eXist run as for the systemd service (${USER})? " eval_response;
+            case $eval_response in
+                "")
+                    RUN_AS_USER="${USER}"
+                    ;;
+                 *)
+                    RUN_AS_USER="${eval_response}"
+                    ;;
+            esac
+        else
+            echo "Using current user: ${USER}"
+            RUN_AS_USER="${USER}"
+        fi
     fi
 }
 
@@ -119,7 +129,7 @@ function use_systemd {
     echo "JAVA_HOME=${JAVA_HOME}"
     echo "EXIST_HOME=${EXIST_HOME}"
     echo -e "RUN_AS_USER=${RUN_AS_USER}\n"
-    if [ -z ${WRAPPER_UNATTENDED} ]; then
+    if [ -z "${WRAPPER_UNATTENDED}" ]; then
       read -p "Continue (Y/n)? " eval_response;
       case $eval_response in
           [Yy])
@@ -143,7 +153,7 @@ export w_wrapper_pid_file;
 
 if [ `pgrep -P 1 systemd | head -n 1` ]; then
     echo -e "Detected systemd running.\n";
-    if [ -n ${WRAPPER_UNATTENDED} -a -z ${WRAPPER_USE_SYSTEMD} -a -z ${WRAPPER_USE_SYSTEMV} ]; then
+    if [ -z "${WRAPPER_UNATTENDED}" ]; then
       read -p "Do you want to use it (Y=Run service with non-privileged systemd/N=continue with privileged systemV-init)? " systemd_response;
       case $systemd_response in
       	[Yy][Ee][Ss]|[YyJj])
@@ -154,10 +164,13 @@ if [ `pgrep -P 1 systemd | head -n 1` ]; then
       	    ;;
       esac
     else
-      if [ -z ${WRAPPER_USE_SYSTEMD} ]; then
+      if [ -z "${WRAPPER_USE_SYSTEMD}" -a -n "${WRAPPER_USE_SYSTEMV}" ]; then
         sudo "$PRGDIR"/"$EXECUTABLE"
-      else
+      elif [ -z "${WRAPPER_USE_SYSTEMV}" -a -n "${WRAPPER_USE_SYSTEMD}" -o `pgrep -P 1 systemd | head -n 1` ]; then
         use_systemd;
+      else
+        echo -e "\nWRAPPER_UNATTENDED was set, but neither WRAPPER_USE_SYSTEMD or WRAPPER_USE_SYSTEMV was set. One is required!"
+        exit 1
       fi
     fi
 else
