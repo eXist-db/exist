@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="jmh">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/exist-core-jmh/lib" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+    <jarDirectory url="file://$PROJECT_DIR$/exist-core-jmh/lib" recursive="false" />
+  </library>
+</component>
