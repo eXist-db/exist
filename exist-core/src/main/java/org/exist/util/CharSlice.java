@@ -1,5 +1,7 @@
 package org.exist.util;
 
+import net.jcip.annotations.ThreadSafe;
+
 import java.io.Serializable;
 import java.io.Writer;
 
@@ -16,27 +18,28 @@ import java.io.Writer;
  * generally result in exceptions from lower-level classes.
  *
  */
+@ThreadSafe
 public final class CharSlice implements CharSequence, Serializable {
 
 	private static final long serialVersionUID = -2668084569793755681L;
 
-	private char[] array;
-    private int offset;
-    private int count;
+	private final char[] array;
+    private final int offset;
+    private final int len;
 
-    public CharSlice(char[] array) {
+    public CharSlice(final char[] array) {
         this.array = array;
         this.offset = 0;
-        this.count = array.length;
+        this.len = array.length;
     }
 
-    public CharSlice(char[] array, int start, int length) {
+    public CharSlice(final char[] array, final int offset, final int len) {
         this.array = array;
-        this.offset = start;
-        this.count = length;
-        if (start + length > array.length) {
-            throw new IndexOutOfBoundsException("start(" + start +
-                    ") + length(" + length + ") > size(" + array.length + ')');
+        this.offset = offset;
+        this.len = len;
+        if (offset + len > array.length) {
+            throw new IndexOutOfBoundsException("offset(" + offset +
+                    ") + length(" + len + ") > size(" + array.length + ')');
         }
     }
 
@@ -46,16 +49,9 @@ public final class CharSlice implements CharSequence, Serializable {
      *
      * @return  the number of characters in this sequence
      */
+    @Override
     public int length() {
-        return count;
-    }
-
-    /**
-     * Set the length of this character sequence, without changing the array and start offset
-     * to which it is bound
-     */
-    public void setLength(int length) {
-        count = length;
+        return len;
     }
 
     /**
@@ -72,7 +68,8 @@ public final class CharSlice implements CharSequence, Serializable {
      *          if the <tt>index</tt> argument is negative or not less than
      *          <tt>length()</tt>
      */
-    public char charAt(int index) {
+    @Override
+    public char charAt(final int index) {
         return array[offset+index];
     }
 
@@ -93,33 +90,35 @@ public final class CharSlice implements CharSequence, Serializable {
      *          if <tt>end</tt> is greater than <tt>length()</tt>,
      *          or if <tt>start</tt> is greater than <tt>end</tt>
      */
-    public CharSequence subSequence(int start, int end) {
-        return new CharSlice(array, offset+start, end-start);
+    @Override
+    public CharSequence subSequence(final int start, final int end) {
+        return new CharSlice(array, offset + start, end - start);
     }
 
     /**
      * Convert to a string
      */
-
+    @Override
     public String toString() {
-        return new String(array, offset, count);
+        return new String(array, offset, len);
     }
 
     /**
      * Compare equality
      */
 
-    public boolean equals(Object other) {
+    @Override
+    public boolean equals(final Object other) {
         return toString().equals(other);
     }
 
     /**
      * Generate a hash code
      */
-
+    @Override
     public int hashCode() {
         // Same algorithm as String#hashCode(), but not cached
-        final int end = offset+count;
+        final int end = offset + len;
         int h = 0;
         for (int i = offset; i < end; i++) {
             h = 31 * h + array[i];
@@ -133,9 +132,8 @@ public final class CharSlice implements CharSequence, Serializable {
      * @param c the character to be found
      * @return the position of the first occurrence of that character, or -1 if not found.
      */
-
-    public int indexOf(char c) {
-        final int end = offset+count;
+    public int indexOf(final char c) {
+        final int end = offset + len;
         for (int i = offset; i < end; i++) {
             if (array[i] == c) {
                 return i-offset;
@@ -149,8 +147,8 @@ public final class CharSlice implements CharSequence, Serializable {
      * Unlike subSequence, this is guaranteed to return a String.
      */
 
-    public String substring(int start, int end) {
-        return new String(array, offset+start, end-start);
+    public String substring(final int start, final int end) {
+        return new String(array, offset + start, end - start);
     }
 
     /**
@@ -159,19 +157,16 @@ public final class CharSlice implements CharSequence, Serializable {
      * @param destination the array to which the characters will be copied
      * @param destOffset the offset in the target array where the copy will start
      */
-
-    public void copyTo(char[] destination, int destOffset) {
-        System.arraycopy(array, offset, destination, destOffset, count);
+    public void copyTo(final char[] destination, final int destOffset) {
+        System.arraycopy(array, offset, destination, destOffset, len);
     }
 
     /**
      * Write the value to a writer
      */
-
-    public void write(Writer writer) throws java.io.IOException {
-        writer.write(array, offset, count);
+    public void write(final Writer writer) throws java.io.IOException {
+        writer.write(array, offset, len);
     }
-
 }
 
 //
