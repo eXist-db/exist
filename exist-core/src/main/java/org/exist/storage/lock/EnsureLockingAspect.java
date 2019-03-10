@@ -141,8 +141,6 @@ public class EnsureLockingAspect {
 
         final List<AnnotatedParameterConstraint<EnsureLocked>> ensureLockedParameters = getAllParameterAnnotations(method, EnsureLocked.class);
         for (final AnnotatedParameterConstraint<EnsureLocked> ensureLockedConstraint : ensureLockedParameters) {
-            final EnsureLockDetail ensureLockDetail = resolveLockDetail(ensureLockedConstraint, args);
-            traceln(() -> "Checking: method=" + ms.getDeclaringType().getName() + "#" + ms.getName() + "( " + toAnnotationString(EnsureLocked.class, ensureLockDetail) + " " + ensureLockedConstraint.getParameter().getName() + ") ...");
 
             // check the lock constraint holds
             final LockManager lockManager = getLockManager();
@@ -156,6 +154,9 @@ public class EnsureLockingAspect {
                     traceln(() -> "Skipping method=" + ms.getDeclaringType().getName() + "#" + ms.getName() + " for null argument(idx=" + idx + ") with @EnsureLocked @Nullable");
                     continue;
                 }
+
+                final EnsureLockDetail ensureLockDetail = resolveLockDetail(ensureLockedConstraint, args);
+                traceln(() -> "Checking: method=" + ms.getDeclaringType().getName() + "#" + ms.getName() + "( " + toAnnotationString(EnsureLocked.class, ensureLockDetail) + " " + ensureLockedConstraint.getParameter().getName() + ") ...");
 
                 switch (ensureLockDetail.type) {
                     case COLLECTION:
@@ -623,6 +624,11 @@ public class EnsureLockingAspect {
                     throw new UnsupportedOperationException("Currently only READ or WRITE lock modes are supported");
             }
 
+            if (uri.numSegments() == 2 && uri.getCollectionPath().equals("/db")) {
+                // we are at the root!
+                break;
+            }
+
             // loop round to parent collection
             uri = uri.removeLastSegment();
         }
@@ -688,9 +694,11 @@ public class EnsureLockingAspect {
         final Lock.LockType type;
         if (lockConstraint.getAnnotation().type() != Lock.LockType.UNKNOWN) {
             type = lockConstraint.getAnnotation().type();
-        } else if (Collection.class.isAssignableFrom(lockConstraint.getParameter().getType())) {
+        } else if (Collection.class.isAssignableFrom(lockConstraint.getParameter().getType())
+                || args[lockConstraint.getParameterIndex()] instanceof Collection) {
             type = Lock.LockType.COLLECTION;
-        } else if (Document.class.isAssignableFrom(lockConstraint.getParameter().getType())) {
+        } else if (Document.class.isAssignableFrom(lockConstraint.getParameter().getType())
+                || args[lockConstraint.getParameterIndex()] instanceof Document) {
             type = Lock.LockType.DOCUMENT;
         } else if (XmldbURI.class.isAssignableFrom(lockConstraint.getParameter().getType())) {
             throw new IllegalArgumentException("@EnsureLocked is specified on an XmldbURI method parameter, but is missing the `lockType` value");
