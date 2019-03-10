@@ -109,6 +109,10 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
         append(ch, offset, len);
     }
 
+    /**
+     * @return may return `this` or a new XMLString. The caller should be prepared to cleanup one or
+     *     two XMLString instances!
+     */
     public final XMLString normalize(final int mode) {
         if (length_ == 0) {
             return this;
@@ -188,6 +192,9 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
         return new String(value_, start_ + start, count);
     }
 
+    /**
+     * @return this
+     */
     public final XMLString delete(final int start, final int count) {
         System.arraycopy(value_, start + count + start_, value_, start, length_ - (start + count));
         start_ = 0;
@@ -195,6 +202,9 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
         return this;
     }
 
+    /**
+     * @return this
+     */
     public final XMLString insert(final int offset, final String data) {
         ensureCapacity(length_ + data.length());
         System.arraycopy(value_, offset, value_, offset + data.length(), length_ - offset);
@@ -203,6 +213,9 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
         return this;
     }
 
+    /**
+     * return `this`
+     */
     public final XMLString replace(final int offset, final int count, final String data) {
         if (offset < 0 || count < 0 || offset >= length_ || offset + count > length_) {
             throw new StringIndexOutOfBoundsException();
@@ -248,9 +261,12 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
 
     @Override
     public final CharSequence subSequence(final int start, final int end) {
-        return new XMLString(value_, start_ + start, end - start);
+        return new String(value_, start_ + start, end - start);
     }
 
+    /**
+     * @return `this`
+     */
     public final XMLString transformToLower() {
         final int end = start_ + length_;
         for (int i = start_; i < end; i++) {
