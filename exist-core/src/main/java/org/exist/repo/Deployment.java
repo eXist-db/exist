@@ -282,7 +282,7 @@ public class Deployment {
             return deploy(pkgName, repo, null);
         }
 
-	    // Totally unneccessary to do the above if repo is unavailable.
+	    // Totally unnecessary to do the above if repo is unavailable.
 	    return Optional.empty();
     }
 
