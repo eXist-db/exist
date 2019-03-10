@@ -125,6 +125,9 @@ public class AttrImpl extends NamedNode implements Attr {
      * value = eUtf8
      *
      * eUtf8 = {@see org.exist.util.UTF8#encode(java.lang.String, byte[], int)}
+     *
+     * @return the returned byte array after use must be returned to the ByteArrayPool
+     *     by calling {@link ByteArrayPool#releaseByteArray(byte[])}
      */
     @Override
     public byte[] serialize() {
