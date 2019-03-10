@@ -242,44 +242,8 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
         return value_[start_ + pos];
     }
 
-    public final void reset() {
-        CharArrayPool.releaseCharArray(value_);
-        value_ = null;
-        start_ = 0;
-        length_ = 0;
-    }
-
-    public final void reuse() {
-        start_ = 0;
-        length_ = 0;
-    }
-
-    private void ensureCapacity(final int capacity) {
-        if (value_ == null) {
-            value_ = CharArrayPool.getCharArray(capacity);
-        } else if (value_.length - start_ < capacity) {
-            int newCapacity = (length_ + 1) * 2;
-            if (newCapacity < capacity) {
-                newCapacity = capacity;
-            }
-            final char[] temp = CharArrayPool.getCharArray(newCapacity);
-            System.arraycopy(value_, start_, temp, 0, length_);
-            CharArrayPool.releaseCharArray(value_);
-            value_ = temp;
-            start_ = 0;
-        }
-    }
-
     public static boolean isWhiteSpace(final char ch) {
         return (ch == 0x20) || (ch == 0x09) || (ch == 0xD) || (ch == 0xA);
-    }
-
-    /**
-     * Release all resources hold by this XMLString.
-     */
-    public final void release() {
-        CharArrayPool.releaseCharArray(value_);
-        value_ = null;
     }
 
     @Override
@@ -369,5 +333,33 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
             h = 31 * h + value_[off++];
         }
         return h;
+    }
+
+    private void ensureCapacity(final int capacity) {
+        if (value_ == null) {
+            value_ = CharArrayPool.getCharArray(capacity);
+        } else if (value_.length - start_ < capacity) {
+            int newCapacity = (length_ + 1) * 2;
+            if (newCapacity < capacity) {
+                newCapacity = capacity;
+            }
+            final char[] temp = CharArrayPool.getCharArray(newCapacity);
+            System.arraycopy(value_, start_, temp, 0, length_);
+            CharArrayPool.releaseCharArray(value_);
+            value_ = temp;
+            start_ = 0;
+        }
+    }
+
+    public final void reset() {
+        CharArrayPool.releaseCharArray(value_);
+        value_ = null;
+        start_ = 0;
+        length_ = 0;
+    }
+
+    public final void reuse() {
+        start_ = 0;
+        length_ = 0;
     }
 }
