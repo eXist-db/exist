@@ -102,6 +102,7 @@
       <sourceFolder url="file://$MODULE_DIR$/exist-testkit/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/exist-testkit/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/exist-testkit/src/test/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/sort/src/test/java" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/autodeploy" />
       <excludeFolder url="file://$MODULE_DIR$/backup" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
