@@ -2988,6 +2988,7 @@ public class NativeBroker extends DBBroker {
                 return null;
             }
         }.run();
+        ByteArrayPool.releaseByteArray(data);
     }
 
     private <T extends IStoredNode> void copyNodes(final Txn transaction, final INodeIterator iterator, final IStoredNode<T> node,
