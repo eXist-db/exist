@@ -25,7 +25,7 @@ import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 import org.exist.dom.QName;
-import org.exist.util.XMLString;
+import org.exist.util.CharSlice;
 import org.exist.util.serializer.encodings.CharacterSet;
 
 /**
@@ -138,9 +138,7 @@ public class TEXTWriter extends XMLWriter {
     
     @Override
     public void characters(final char[] ch, final int start, final int len) throws TransformerException {
-        final XMLString s = new XMLString(ch, start, len);
-        characters(s);
-        s.release();
+        characters(new CharSlice(ch, start, len));
     }
     
     @Override
