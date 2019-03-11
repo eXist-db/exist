@@ -691,7 +691,7 @@ declare %private function test:assertEqualsPermutation($values as item()*, $resu
                     ()
                 else
                    <report>
-                        <failure message="assertEquals failed."
+                        <failure message="assertEqualsPermutation failed."
                             type="failure-error-code-1">
                         { $values }
                         </failure>
@@ -699,7 +699,7 @@ declare %private function test:assertEqualsPermutation($values as item()*, $resu
                     </report>
         else
             <report>
-                <failure message="assertEquals failed: wrong number of items returned by function. Expected: {count($values)}. Got: {count($result)}"
+                <failure message="assertEqualsPermutation failed: wrong number of items returned by function. Expected: {count($values)}. Got: {count($result)}"
                     type="failure-error-code-1">
                 { $values }
                 </failure>
