@@ -40,37 +40,37 @@ function npt:cleanup() {
 };
 
 declare
-    %test:assertEquals("<c>correct</c><c>wrong</c>")
+    %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
 function npt:in-memory() {
     $npt:DATA//c[../preceding-sibling::a]
 };
 
 declare
-    %test:assertEquals("<c>correct</c><c>wrong</c>")
+    %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
 function npt:in-database() {
     doc($npt:TEST_DOC_URI)//c[../preceding-sibling::a]
 };
 
 declare
-    %test:assertEquals("<c>correct</c><c>wrong</c>")
+    %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
 function npt:in-memory-predicate() {
     $npt:DATA//c[../preceding-sibling::a[1]]
 };
 
 declare
-    %test:assertEquals("<c>correct</c><c>wrong</c>")
+    %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
 function npt:in-database-predicate() {
     doc($npt:TEST_DOC_URI)//c[../preceding-sibling::a[1]]
 };
 
 declare
-    %test:assertEquals("<c>correct</c><c>wrong</c>")
+    %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
 function npt:in-memory-position() {
     $npt:DATA//c[../preceding-sibling::a[position() eq 1]]
 };
 
 declare
-    %test:assertEquals("<c>correct</c><c>wrong</c>")
+    %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
 function npt:in-database-position() {
     doc($npt:TEST_DOC_URI)//c[../preceding-sibling::a[position() eq 1]]
 };
