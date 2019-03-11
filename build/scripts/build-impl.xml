@@ -45,6 +45,7 @@
     <!-- <import file="../../build.xml"/> -->
     <import file="git-support.xml"/>
     <import file="./junit.xml"/>
+    <import file="./jmh.xml"/>
     <import file="./antlr3.xml"/>
 
     <!-- setup conditional properties -->

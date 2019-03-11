@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ======================================================================= -->
+<!-- eXist-db build file : Run JMH Benchmarks                                -->
+<!-- ======================================================================= -->
+
+<project basedir="../.." default="test" name="JMH Benhmarks">
+
+    <description>JMH Benchmarks for eXist-db</description>
+
+    <!-- import common targets -->
+    <import file="../../build.xml"/>
+
+    <property name="exist-core-jmh.dir" location="${module.exist-core-jmh}"/>
+
+    <property name="exist-core-jmh.lib" location="${exist-core-jmh.dir}/lib"/>
+    <property name="exist-core-jmh.src" location="${exist-core-jmh.dir}/src/main/java"/>
+    <property name="exist-core-jmh.target" location="${exist-core-jmh.dir}/target"/>
+    <property name="exist-core-jmh.target.classes" location="${exist-core-jmh.target}/classes"/>
+
+
+    <target name="jmh-get-deps" description="Download dependencies with Ivy" xmlns:ivy="antlib:org.apache.ivy.ant">
+        <echo>Retrieving JMH jar files</echo>
+        <mkdir dir="${exist-core-jmh.lib}"/>
+
+        <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="classpath.core"/>
+        <ivy:resolve file="${exist-core-jmh.dir}/ivy.xml"/>
+        <ivy:retrieve sync="true" pattern="${exist-core-jmh.lib}/[artifact].[ext]"/>
+        <ivy:cachepath pathid="jmh-deps.classpath" conf="default" />
+    </target>
+
+    <!-- Only remove jars from lib if ivy.xml file is present -->
+    <target name="jmh-rm-deps" description="Remove dependencies downloaded with Ivy">
+        <echo>Removing JMH jar files</echo>
+        <delete dir="${exist-core-jmh.lib}" verbose="true"/>
+    </target>
+
+    <target name="exist-core-jmh-compile" depends="compile,jmh-get-deps" description="Generate the self-contained JMH JAR">
+        <mkdir dir="${exist-core-jmh.target.classes}"/>
+
+        <javac includeantruntime="false" srcdir="${exist-core-jmh.src}" destdir="${exist-core-jmh.target.classes}"
+               encoding="UTF-8" source="${build.compiler.source}" target="${build.compiler.target}">
+            <classpath>
+                <path refid="jmh-deps.classpath"/>
+                <path refid="classpath.core"/>
+                <path path="${module.exist-core}/${build.classes}"/>
+            </classpath>
+        </javac>
+
+    </target>
+
+    <!--
+        The workflow is as follows:
+          - Compile the benchmarks with JMH and JMH Annotation processor in classpath.
+              * Annotation processors will run and generate synthetic code.
+              * Annotation processors will create the list of discovered benchmarks.
+          - Pack the classes, generated code, benchmark lists in a JAR
+              * Bring the dependencies along in the JAR; Annotation processor is not
+                required in final JAR
+              * (You might be able to run JMH without the self-contained JAR,
+                take note of the META-INF/* files in that case)
+              * Filter out META-INF/services/ to disable JMH processors for the future
+    -->
+    <target name="exist-core-jmh-jar" depends="jar,exist-core-jmh-compile" description="Generate the self-contained JMH JAR">
+
+        <jar jarfile="${exist-core-jmh.target}/exist-core-jmh-benchmarks.jar" basedir="${exist-core-jmh.target.classes}">
+            <manifest>
+                <attribute name="Main-Class" value="org.openjdk.jmh.Main"/>
+            </manifest>
+            <zipfileset src="${exist-core-jmh.lib}/jmh-core.jar" excludes="**/META-INF/services/**" />
+            <zipfileset src="${exist-core-jmh.lib}/jopt-simple.jar" />
+            <zipfileset src="${exist-core-jmh.lib}/commons-math3.jar" />
+
+            <zipfileset src="exist.jar" excludes="**/META-INF/**" />
+            <zipfileset src="${lib.core}/log4j-api-2.11.0.jar" excludes="**/META-INF/**" />
+            <zipfileset src="${lib.core}/j8fu-1.21.jar" excludes="**/META-INF/**" />
+            <zipfileset src="${lib.core}/jctools-core-2.1.2.jar" excludes="**/META-INF/**" />
+        </jar>
+    </target>
+
+    <target name="clean-exist-core-jmh" depends="jmh-rm-deps">
+        <delete dir="${exist-core-jmh.target}" verbose="true"/>
+    </target>
+
+</project>
