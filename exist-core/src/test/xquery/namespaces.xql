@@ -236,15 +236,181 @@ declare function nt:getNSNode() {
 };
 
 declare
+    %test:assertEquals('<root/>')
+function nt:prefix-xml-ns-1() {
+   element root {
+       namespace xml {"http://www.w3.org/XML/1998/namespace"}
+   }
+};
+
+declare
+    %test:assertEquals('<root/>')
+function nt:prefix-xml-ns-2() {
+   <root>{
+       namespace xml {"http://www.w3.org/XML/1998/namespace"}
+   }</root>
+};
+
+declare
+    %test:assertError("XQDY0101")
+function nt:prefix-xml-ns-wrong-1() {
+   element root {
+       namespace xml {"http://www.w3.org/XML/1998/namespace/NOT"}
+   }
+};
+
+declare
+    %test:assertError("XQDY0101")
+function nt:prefix-xml-ns-wrong-2() {
+   <root>{
+       namespace xml {"http://www.w3.org/XML/1998/namespace/NOT"}
+   }</root>
+};
+
+declare
+    %test:assertError("XQDY0101")
+function nt:prefix-xml-ns-wrong-3() {
+   element root {
+       namespace not {"http://www.w3.org/XML/1998/namespace"}
+   }
+};
+
+declare
+    %test:assertError("XQDY0101")
+function nt:prefix-xml-ns-wrong-4() {
+   <root>{
+       namespace not {"http://www.w3.org/XML/1998/namespace"}
+   }</root>
+};
+
+declare
+    %test:assertError("XQDY0101")
+function nt:prefix-xmlns-wrong-1() {
+   element root {
+       namespace xmlns {"http://anything"}
+   }
+};
+
+declare
+    %test:assertError("XQDY0101")
+function nt:prefix-xmlns-wrong-2() {
+   <root>{
+       namespace xmlns {"http://anything"}
+   }</root>
+};
+
+declare
+    %test:assertError("XQDY0101")
+function nt:prefix-xmlns-wrong-3() {
+   element root {
+       namespace anything {"http://www.w3.org/2000/xmlns/"}
+   }
+};
+
+declare
+    %test:assertError("XQDY0101")
+function nt:prefix-xmlns-wrong-4() {
+   <root>{
+       namespace anything {"http://www.w3.org/2000/xmlns/"}
+   }</root>
+};
+
+declare
+    %test:assertError("XQDY0101")
+function nt:prefix-empty-uri-1() {
+   element root {
+       namespace anything {""}
+   }
+};
+
+declare
+    %test:assertError("XQDY0101")
+function nt:prefix-empty-uri-2() {
+   <root>{
+       namespace anything {""}
+   }</root>
+};
+
+declare
+    %test:assertEquals('<z:root xmlns="http://also-on-interwebz.com/problem" xmlns:z="http://www.zorba-xquery.com/"/>')
+function nt:set-default-ns-1() {
+   element z:root {
+       namespace {""} {"http://also-on-interwebz.com/problem"}
+   }
+};
+
+declare
+    %test:assertEquals('<z:root xmlns:z="http://www.zorba-xquery.com/"/>')
+function nt:set-default-ns-2() {
+   element z:root {
+       namespace z {"http://www.zorba-xquery.com/"}
+   }
+};
+
+declare
+    %test:assertEquals('<z:root xmlns="http://also-on-interwebz.com/problem" xmlns:z="http://www.zorba-xquery.com/"/>')
+function nt:set-default-ns-3() {
+   <z:root>{
+       namespace {""} {"http://also-on-interwebz.com/problem"}
+   }</z:root>
+};
+
+declare
+    %test:assertEquals('<z:root xmlns:z="http://www.zorba-xquery.com/"/>')
+function nt:set-default-ns-4() {
+   <z:root>{
+       namespace z {"http://www.zorba-xquery.com/"}
+   }</z:root>
+};
+
+declare
     %test:assertError("XQDY0102")
-function nt:cannot-override-no-ns() {
+function nt:cannot-override-no-ns-1() {
     element root {
-        namespace {""} {"http://also-on-interwebz.com/problem"},
-        namespace ok {"http://place-on-interwebz.com/a-ok"},
-        for $n in 1 to 3
-        return
-            element stuff {$n}
+        namespace {""} {"http://also-on-interwebz.com/problem"}
     }
+};
+
+declare
+    %test:assertError("XQDY0102")
+function nt:cannot-override-no-ns-2() {
+    <root>{
+        namespace {""} {"http://also-on-interwebz.com/problem"}
+    }</root>
+};
+
+declare
+    %test:assertError("XQDY0102")
+function nt:cannot-override-no-ns-3() {
+    element root {
+        namespace ok {"http://place-on-interwebz.com/a-ok"},
+        namespace {""} {"http://also-on-interwebz.com/problem"}
+    }
+};
+
+declare
+    %test:assertError("XQDY0102")
+function nt:cannot-override-no-ns-4() {
+    <root>{
+        namespace ok {"http://place-on-interwebz.com/a-ok"},
+        namespace {""} {"http://also-on-interwebz.com/problem"}
+    }</root>
+};
+
+declare
+    %test:assertError("XQDY0102")
+function nt:cannot-override-no-ns-5() {
+    <root xmlns="hello">{
+       namespace {""} {"http://also-on-interwebz.com/problem"}
+    }</root>
+};
+
+declare
+    %test:assetEquals('<root xmlns="hello"/>')
+function nt:cannot-override-no-ns-6() {
+    <root xmlns="hello">{
+       namespace {""} {"hello"}
+    }</root>
 };
 
 declare
