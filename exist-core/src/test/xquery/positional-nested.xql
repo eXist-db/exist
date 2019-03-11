@@ -4,6 +4,11 @@ module namespace npt="http://exist-db.org/test/nested-positional-predicate";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
+declare variable $npt:TEST_COLLECTION_NAME := "test-positional-nested";
+declare variable $npt:TEST_COLLECTION_URI := "/db/" || $npt:TEST_COLLECTION_NAME;
+declare variable $npt:TEST_DOC_NAME := "test.xml";
+declare variable $npt:TEST_DOC_URI := $npt:TEST_COLLECTION_URI || "/" || $npt:TEST_DOC_NAME;
+
 declare variable $npt:DATA :=
     document {
         <xml>
@@ -24,14 +29,14 @@ declare variable $npt:DATA :=
 declare
     %test:setUp
 function npt:setup() {
-    xmldb:create-collection("/db", "test"),
-    xmldb:store("/db/test", "test.xml", $npt:DATA)
+    xmldb:create-collection("/db", $npt:TEST_COLLECTION_NAME),
+    xmldb:store($npt:TEST_COLLECTION_URI, $npt:TEST_DOC_NAME, $npt:DATA)
 };
 
 declare
     %test:tearDown
 function npt:cleanup() {
-    xmldb:remove("/db/test")
+    xmldb:remove($npt:TEST_COLLECTION_URI)
 };
 
 declare
@@ -43,9 +48,8 @@ function npt:in-memory() {
 declare
     %test:assertEquals("<c>correct</c><c>wrong</c>")
 function npt:in-database() {
-    doc("/db/test.xml")//c[../preceding-sibling::a]
+    doc($npt:TEST_DOC_URI)//c[../preceding-sibling::a]
 };
-
 
 declare
     %test:assertEquals("<c>correct</c><c>wrong</c>")
@@ -56,7 +60,7 @@ function npt:in-memory-predicate() {
 declare
     %test:assertEquals("<c>correct</c><c>wrong</c>")
 function npt:in-database-predicate() {
-    doc("/db/test.xml")//c[../preceding-sibling::a[1]]
+    doc($npt:TEST_DOC_URI)//c[../preceding-sibling::a[1]]
 };
 
 declare
@@ -68,7 +72,7 @@ function npt:in-memory-position() {
 declare
     %test:assertEquals("<c>correct</c><c>wrong</c>")
 function npt:in-database-position() {
-    doc("/db/test.xml")//c[../preceding-sibling::a[position() eq 1]]
+    doc($npt:TEST_DOC_URI)//c[../preceding-sibling::a[position() eq 1]]
 };
 
 declare
@@ -80,7 +84,7 @@ function npt:in-memory-predicate-and-path() {
 declare
     %test:assertEquals("<c>correct</c>")
 function npt:in-database-predicate-and-path() {
-    doc("/db/test.xml")//c[../preceding-sibling::a[1]/b = 'B1']
+    doc($npt:TEST_DOC_URI)//c[../preceding-sibling::a[1]/b = 'B1']
 };
 
 declare
@@ -92,5 +96,5 @@ function npt:in-memory-position-and-path() {
 declare
     %test:assertEquals("<c>correct</c>")
 function npt:in-database-position-and-path() {
-    doc("/db/test.xml")//c[../preceding-sibling::a[position() eq 1]/b = 'B1']
+    doc($npt:TEST_DOC_URI)//c[../preceding-sibling::a[position() eq 1]/b = 'B1']
 };
