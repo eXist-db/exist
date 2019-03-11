@@ -387,9 +387,10 @@ declare function test:expected-strings($report as element(report)+) {
 };
 
 declare function test:actual-strings($report as element(report)+) {
-    string-join(
-        string-join($report[failure]/output/text(), ", ")
-    , ", ")
+    fn:serialize($report[failure]/output/*, map {
+        "method": "xml",
+        "item-separator": ","
+    })
 };
 
 declare function test:enable-tracing($meta as element(function)) {
