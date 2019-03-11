@@ -229,7 +229,7 @@ public abstract class AbstractCharacterData extends StoredNode implements Charac
      */
     @Override
     public void release() {
-        cdata.release();
+        cdata.reset();
         super.release();
     }
 

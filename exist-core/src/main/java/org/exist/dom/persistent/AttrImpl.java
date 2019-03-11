@@ -80,13 +80,14 @@ public class AttrImpl extends NamedNode implements Attr {
     public AttrImpl(final AttrImpl other) {
         super(other);
         this.attributeType = other.attributeType;
-        this.value = other.value;
+        this.value = new XMLString(other.value);
     }
 
     @Override
     public void clear() {
         super.clear();
         this.attributeType = DEFAULT_ATTRIBUTE_TYPE;
+        this.value.reset();
         this.value = null;
     }
 
@@ -124,6 +125,9 @@ public class AttrImpl extends NamedNode implements Attr {
      * value = eUtf8
      *
      * eUtf8 = {@see org.exist.util.UTF8#encode(java.lang.String, byte[], int)}
+     *
+     * @return the returned byte array after use must be returned to the ByteArrayPool
+     *     by calling {@link ByteArrayPool#releaseByteArray(byte[])}
      */
     @Override
     public byte[] serialize() {
@@ -200,7 +204,7 @@ public class AttrImpl extends NamedNode implements Attr {
             pos += prefixLen;
         }
         final String namespace = nsId == 0 ? "" : doc.getBrokerPool().getSymbols().getNamespace(nsId);
-        XMLString value = UTF8.decode(data, pos, len - (pos - start));
+        final XMLString value = UTF8.decode(data, pos, len - (pos - start));
 
         //OK : we have the necessary material to build the attribute
         final AttrImpl attr;
@@ -210,6 +214,9 @@ public class AttrImpl extends NamedNode implements Attr {
             attr = new AttrImpl();
         }
         attr.setNodeName(doc.getBrokerPool().getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix));
+        if (attr.value != null) {
+            attr.value.reset();
+        }
         attr.value = value;
         attr.setNodeId(dln);
         attr.setType(attrType);
@@ -302,7 +309,12 @@ public class AttrImpl extends NamedNode implements Attr {
 
     @Override
     public void setValue(final String value) throws DOMException {
-        this.value = new XMLString(value.toCharArray());
+        if (this.value != null) {
+            this.value.reset();
+            this.value.append(value);
+        } else {
+            this.value = new XMLString(value.toCharArray());
+        }
     }
 
     @Override

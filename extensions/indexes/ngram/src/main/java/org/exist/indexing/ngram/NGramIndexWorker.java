@@ -104,7 +104,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private char[] buf = new char[1024];
     private DocumentImpl currentDoc = null;
     private Map<QName, ?> config;
-    private Deque<XMLString> contentStack = new ArrayDeque<>();
+    private final Deque<XMLString> contentStack = new ArrayDeque<>();
 
     @SuppressWarnings("unused")
     private IndexController controller;
@@ -618,7 +618,9 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public void setDocument(final DocumentImpl document, final ReindexMode newMode) {
         currentDoc = document;
         //config = null;
-        contentStack = null;
+        while (!contentStack.isEmpty()) {
+            contentStack.pop().reset();
+        }
         final IndexSpec indexConf = document.getCollection().getIndexConfiguration(broker);
         if (indexConf != null) {
             config = (Map<QName, ?>) indexConf.getCustomIndexSpec(org.exist.indexing.ngram.NGramIndex.ID);
@@ -636,9 +638,6 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         @Override
         public void startElement(final Txn transaction, final ElementImpl element, final NodePath path) {
             if (config != null && config.get(element.getQName()) != null) {
-                if (contentStack == null) {
-                    contentStack = new ArrayDeque<>();
-                }
                 final XMLString contentBuf = new XMLString();
                 contentStack.push(contentBuf);
             }
@@ -658,6 +657,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             if (config != null && config.get(element.getQName()) != null) {
                 final XMLString content = contentStack.pop();
                 indexText(element.getNodeId(), element.getQName(), content.toString());
+                content.reset();
             }
             super.endElement(transaction, element, path);
         }
