@@ -55,7 +55,6 @@ public class CharArrayPool {
                 }
             }
         }
-        //System.out.println("creating new char[" + size + "]");
         return new char[size];
     }
 
@@ -79,7 +78,6 @@ public class CharArrayPool {
     }
 
     private static final class PoolThreadLocal extends ThreadLocal<char[][]> {
-
         @Override
         protected char[][] initialValue() {
             return new char[POOL_SIZE][];

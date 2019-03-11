@@ -43,7 +43,7 @@ public class ComplexTextCollector implements TextCollector {
         RangeIndexConfigField fieldConf = config.getField(parentPath, path);
         if (fieldConf != null) {
             Field field = new Field(fieldConf.getName(), true, fieldConf.whitespaceTreatment(), fieldConf.isCaseSensitive());
-            field.content.append(attribute.getValue());
+            field.append(attribute.getValue());
             fields.add(0, field);
         }
     }
@@ -53,7 +53,7 @@ public class ComplexTextCollector implements TextCollector {
         if (currentField != null) {
             Field field = fields.get(fields.size() - 1);
             if (!field.isAttribute() && (currentField.includeNested() || currentField.match(path))) {
-                field.content.append(text.getXMLString());
+                field.append(text.getXMLString());
                 length += text.getXMLString().length();
             }
         }

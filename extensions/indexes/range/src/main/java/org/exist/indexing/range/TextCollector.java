@@ -10,28 +10,28 @@ import java.util.List;
 
 public interface TextCollector {
 
-    public void startElement(QName qname, NodePath path);
+    void startElement(QName qname, NodePath path);
 
-    public void endElement(QName qname, NodePath path);
+    void endElement(QName qname, NodePath path);
 
-    public void characters(AbstractCharacterData text, NodePath path);
+    void characters(AbstractCharacterData text, NodePath path);
 
-    public void attribute(AttrImpl attribute, NodePath path);
+    void attribute(AttrImpl attribute, NodePath path);
 
-    public int length();
+    int length();
 
-    public List<Field> getFields();
+    List<Field> getFields();
 
-    public boolean hasFields();
+    boolean hasFields();
 
-    public static class Field {
-        protected final boolean attribute;
-        protected final String name;
-        protected final int wsTreatment;
-        protected final boolean caseSensitive;
-        protected XMLString content;
+    class Field {
+        private final boolean attribute;
+        private final String name;
+        private final int wsTreatment;
+        private final boolean caseSensitive;
+        private XMLString content;
 
-        public Field(XMLString content, int wsTreatment, boolean caseSensitive) {
+        public Field(final XMLString content, final int wsTreatment, final boolean caseSensitive) {
             this.content = content;
             this.attribute = false;
             this.name = null;
@@ -39,7 +39,7 @@ public interface TextCollector {
             this.caseSensitive = caseSensitive;
         }
 
-        public Field(String name, boolean isAttribute, int wsTreatment, boolean caseSensitive) {
+        public Field(final String name, final boolean isAttribute, final int wsTreatment, final boolean caseSensitive) {
             this.name = name;
             this.attribute = isAttribute;
             this.wsTreatment = wsTreatment;
@@ -52,7 +52,14 @@ public interface TextCollector {
                 content = content.transformToLower();
             }
             if (wsTreatment != XMLString.SUPPRESS_NONE) {
-                return content.normalize(wsTreatment).toString();
+                final XMLString normalized = content.normalize(wsTreatment);
+                try {
+                    return normalized.toString();
+                } finally {
+                    if (normalized != content) {
+                        normalized.reset();
+                    }
+                }
             }
             return content.toString();
         }
@@ -67,6 +74,13 @@ public interface TextCollector {
 
         public boolean isAttribute() {
             return attribute;
+        }
+
+        public void append(final String value) {
+            content.append(value);
+        }
+        public void append(final XMLString value) {
+            content.append(value);
         }
     }
 }

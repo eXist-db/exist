@@ -383,8 +383,8 @@ public class BTreeTest {
 
         @Override
         public boolean indexInfo(Value value, long pointer) throws TerminatedException {
-            @SuppressWarnings("unused")
-			XMLString key = UTF8.decode(value.data(), value.start(), value.getLength());
+//            @SuppressWarnings("unused")
+//			XMLString key = UTF8.decode(value.data(), value.start(), value.getLength());
             count++;
             return false;
         }

@@ -211,6 +211,9 @@ public class ElementImpl extends NamedNode implements Element {
      * namespacePrefix = jUtf8
      *
      * jUtf8 = {@see java.io.DataOutputStream#writeUTF(java.lang.String)}
+     *
+     * @return the returned byte array after use must be returned to the ByteArrayPool
+     *     by calling {@link ByteArrayPool#releaseByteArray(byte[])}
      */
     @Override
     public byte[] serialize() {
