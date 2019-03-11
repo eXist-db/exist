@@ -29,10 +29,7 @@ import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  *
@@ -142,15 +139,15 @@ public class AccountManagementFunction extends BasicFunction {
             if(isCalledAs(qnRemoveAccount.getLocalPart())) {
                 /* remove account */
                 if(!currentUser.hasDbaRole()) {
-                    throw new XPathException("Only a DBA user may remove accounts.");
+                    throw new XPathException(this, "Only a DBA user may remove accounts.");
                 }
                 
                 if(!securityManager.hasAccount(username)) {
-                    throw new XPathException("The user account with username " + username + " does not exist.");
+                    throw new XPathException(this, "The user account with username " + username + " does not exist.");
                 }
 
                 if(currentUser.getName().equals(username)) {
-                    throw new XPathException("You cannot remove yourself i.e. the currently logged in user.");
+                    throw new XPathException(this, "You cannot remove yourself i.e. the currently logged in user.");
                 }
 
                 securityManager.deleteAccount(username);
@@ -163,7 +160,7 @@ public class AccountManagementFunction extends BasicFunction {
                     /* change password */
 
                     if(!(currentUser.getName().equals(username) || currentUser.hasDbaRole())) {
-                        throw new XPathException("You may only change your own password, unless you are a DBA.");
+                        throw new XPathException(this, "You may only change your own password, unless you are a DBA.");
                     }
 
                     final Account account = securityManager.getAccount(username);
@@ -179,11 +176,11 @@ public class AccountManagementFunction extends BasicFunction {
                 } else if(isCalledAs(qnCreateAccount.getLocalPart())) {
                     /* create account */
                     if(!currentUser.hasDbaRole()) {
-                        throw new XPathException("You must be a DBA to create a User Account.");
+                        throw new XPathException(this, "You must be a DBA to create a User Account.");
                     }
                     
                     if(securityManager.hasAccount(username)) {
-                        throw new XPathException("The user account with username " + username + " already exists.");
+                        throw new XPathException(this, "The user account with username " + username + " already exists.");
                     }
 
                     final Account user = new UserAider(username);
@@ -209,7 +206,11 @@ public class AccountManagementFunction extends BasicFunction {
                         subGroups = getGroups(args[2]);
                     } else {
                         //add the primary group as the primary group
-                        user.addGroup(args[2].getStringValue());
+                        final String primaryGroup = args[2].getStringValue();
+                        if (primaryGroup == null || primaryGroup.isEmpty()) {
+                            throw new XPathException(this, "You must specify a primary group for the user.");
+                        }
+                        user.addGroup(primaryGroup);
 
                         subGroups = getGroups(args[3]);
                     }
@@ -228,17 +229,13 @@ public class AccountManagementFunction extends BasicFunction {
                         securityManager.updateGroup(group);
                     }
                 } else {
-                    throw new XPathException("Unknown function call: " + getSignature());
+                    throw new XPathException(this, "Unknown function call: " + getSignature());
                 }
             }
-        } catch(final PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException | EXistException pde) {
             throw new XPathException(this, pde);
-        } catch(final ConfigurationException ce) {
-            throw new XPathException(this, ce);
-        } catch(final EXistException ee) {
-            throw new XPathException(this, ee);
         }
-		return Sequence.EMPTY_SEQUENCE;
+        return Sequence.EMPTY_SEQUENCE;
     }
 
     private String[] getGroups(final Sequence seq) {
