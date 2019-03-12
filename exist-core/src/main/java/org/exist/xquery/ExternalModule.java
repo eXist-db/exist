@@ -63,6 +63,11 @@ public interface ExternalModule extends Module {
 
     public void declareVariable(QName qname, VariableDeclaration decl) throws XPathException;
 
+    /**
+     * Analyze declared variables. Needs to be called when the module was imported dynamically.
+     *
+     * @throws XPathException
+     */
     public void analyzeGlobalVars() throws XPathException;
 
     public Collection<VariableDeclaration> getVariableDeclarations();

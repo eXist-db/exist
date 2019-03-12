@@ -242,8 +242,7 @@ public class ExternalModuleImpl implements ExternalModule {
 
     public void analyzeGlobalVars() throws XPathException {
         for (final VariableDeclaration decl : mGlobalVariables.values()) {
-            decl.resetState(false);
-            decl.analyze(new AnalyzeContextInfo());
+            decl.analyzeExpression(new AnalyzeContextInfo());
         }
     }
 
