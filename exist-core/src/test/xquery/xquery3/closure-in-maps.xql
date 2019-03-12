@@ -1,5 +1,5 @@
 (:~
- : See https://github.com/eXist-db/exist/issues/1550
+ : @see https://github.com/eXist-db/exist/issues/1550
  :)
 xquery version "3.1";
 
@@ -15,9 +15,9 @@ declare variable $ct:model := function($param) {
     }
     return
         map {
-        'test1' : $func,
-        'test2' : $func(),
-        'test3' : function() {
+        'test1': $func,
+        'test2': $func(),
+        'test3': function() {
             $param
         }
         }
