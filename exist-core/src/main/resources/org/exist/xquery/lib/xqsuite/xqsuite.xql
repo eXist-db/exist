@@ -273,6 +273,21 @@ declare %private function test:test($func as function(*), $meta as element(funct
                 let $assertResult := test:check-assertions($assertions, $result)
                 return
                     if ($assertError) then
+                    (
+                        if(not(empty($test-failure-function))) then
+                            $test-failure-function(test:get-test-name($meta),
+                                    (: expected :)
+                                    map {
+                                        "error": $assertError/value/string()
+                                    },
+                                    (: actual :)
+                                    map {
+                                        "error": map {
+                                            "value": $result
+                                        }
+                                    }
+                            )
+                        else (),
                         test:print-result($meta, $result,
                             <report>
                                 <failure message="Expected error {$assertError/value/string()}."
@@ -280,15 +295,33 @@ declare %private function test:test($func as function(*), $meta as element(funct
                                 <output>{ $result }</output>
                             </report>
                         )
-                    else
+                    ) else (
+                        if ($assertResult[failure] and not(empty($test-failure-function))) then
+                            $test-failure-function(test:get-test-name($meta),
+                                    (: expected :)
+                                    map {
+                                        "value": test:expected-strings($assertResult)
+                                    },
+                                    (: actual :)
+                                    map {
+                                        "result": test:actual-strings($assertResult)
+                                    }
+                            )
+                        else(),
                         test:print-result($meta, $result, $assertResult)
+                    )
             } catch * {
                 if ($assertError) then
                     if ($assertError/value and not(contains($err:code, $assertError/value/string())
                             or matches($err:description, $assertError/value/string())))then
                     (
                         if(not(empty($test-failure-function))) then
-                            $test-failure-function(test:get-test-name($meta), map { "error": $assertError/value/string() },
+                            $test-failure-function(test:get-test-name($meta),
+                                    (: expected :)
+                                    map {
+                                        "error": $assertError/value/string()
+                                    },
+                                    (: actual :)
                                     map {
                                         "error": map {
                                             "code": $err:code,
@@ -343,6 +376,21 @@ declare %private function test:test($func as function(*), $meta as element(funct
         )
         else
             ()
+};
+
+declare function test:expected-strings($report as element(report)+) {
+    string-join(
+        for $report-failure in $report/failure
+        return
+            string-join($report-failure/text(), ", ") || " (" || $report-failure/@message || ")"
+    , ", ")
+};
+
+declare function test:actual-strings($report as element(report)+) {
+    fn:serialize($report[failure]/output/*, map {
+        "method": "xml",
+        "item-separator": ","
+    })
 };
 
 declare function test:enable-tracing($meta as element(function)) {
@@ -458,11 +506,11 @@ declare %private function test:map-arguments($testArgs as xs:string*, $funcArgs 
                 "The number of arguments specified in test:args must match the arguments of the function to test"
             )
         else
-            map-pairs(function($targ as xs:string, $farg as element(argument)) {
+            fn:for-each-pair($testArgs, $funcArgs, function($targ as xs:string, $farg as element(argument)) {
                 let $data := test:cast($targ, $farg)
                 return
                     function() { $data }
-            }, $testArgs, $funcArgs)
+            })
     else
         ()
 };
@@ -601,7 +649,7 @@ declare %private function test:check-assertions($assertions as element(annotatio
 declare %private function test:assertEquals($values as item()*, $result as item()*) as element(report)? {
     if (exists($values)) then
         if (count($values) eq count($result)) then
-            let $tests := map-pairs(test:equals#2, $values, $result)
+            let $tests := fn:for-each-pair($values, $result, test:equals#2)
             let $equal := every $test in $tests satisfies $test
             return
                 if ($equal) then
@@ -643,7 +691,7 @@ declare %private function test:assertEqualsPermutation($values as item()*, $resu
                     ()
                 else
                    <report>
-                        <failure message="assertEquals failed."
+                        <failure message="assertEqualsPermutation failed."
                             type="failure-error-code-1">
                         { $values }
                         </failure>
@@ -651,7 +699,7 @@ declare %private function test:assertEqualsPermutation($values as item()*, $resu
                     </report>
         else
             <report>
-                <failure message="assertEquals failed: wrong number of items returned by function. Expected: {count($values)}. Got: {count($result)}"
+                <failure message="assertEqualsPermutation failed: wrong number of items returned by function. Expected: {count($values)}. Got: {count($result)}"
                     type="failure-error-code-1">
                 { $values }
                 </failure>
