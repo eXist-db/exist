@@ -1878,7 +1878,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     private void resetDocumentBuilder() {
-        setDocumentBuilder(null);
+        this.documentBuilder = null;
     }
 
     private void setDocumentBuilder(final MemTreeBuilder documentBuilder) {

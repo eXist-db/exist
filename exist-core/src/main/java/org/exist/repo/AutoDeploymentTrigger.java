@@ -76,10 +76,10 @@ public class AutoDeploymentTrigger implements StartupTrigger {
                     if(name.isPresent()) {
                         packages.put(name.get(), xar);
                     } else {
-                        LOG.warn("No descriptor name for: " + xar.toAbsolutePath().toString());
+                        LOG.error("No descriptor name for: " + xar.toAbsolutePath().toString());
                     }
                 } catch (final IOException | PackageException e) {
-                    LOG.warn("Caught exception while reading app package " + xar.toAbsolutePath().toString(), e);
+                    LOG.error("Caught exception while reading app package " + xar.toAbsolutePath().toString(), e);
                 }
             }
 
@@ -92,7 +92,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
                 try {
                     deployment.installAndDeploy(new XarFileSource(xar), loader, false);
                 } catch (final PackageException | IOException e) {
-                    LOG.warn("Exception during deployment of app " + FileUtils.fileName(xar) + ": " + e.getMessage(), e);
+                    LOG.error("Exception during deployment of app " + FileUtils.fileName(xar) + ": " + e.getMessage(), e);
                     sysBroker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
                 }
             }

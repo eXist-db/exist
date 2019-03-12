@@ -66,11 +66,41 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     private final Deque<Runnable> lockReleasers = new ArrayDeque<>();
     private Set<Collection> cachedCollections = null;
 
-    private int documentIds[] = new int[16];
-    private int documentOffsets[] = new int[16];
-    private int documentLengths[] = new int[16];
     private int documentCount = 0;
 
+    /**
+     * An array of Document IDs of length {@link #documentCount}
+     */
+    private int documentIds[] = new int[16];
+
+    /**
+     * An array of offsets into {@link #nodes},
+     * the index is the index from {@link #documentNodesOffset}.
+     */
+    private int documentNodesOffset[] = new int[16];
+
+    /**
+     * An array of the node count for each document,
+     * each value is a count of the nodes for a specific document,
+     * the index is the index from {@link #documentNodesOffset}.
+     */
+    private int documentNodesCount[] = new int[16];
+
+    /**
+     * An array of nodes from documents,
+     * the range of nodes for a document is retrieved
+     * by:
+     * <pre>{@code
+     * int docId = ...;
+     * int docIdx = findDoc(docId);  // lookup in documentIds
+     *
+     * int nodeStartIdx = documentNodesOffset[docIdx];
+     * int nodeCount = documentNodesCount[docIdx];
+     *
+     * NodeProxy docNodes[] = new NodeProxy[nodeCount];
+     * System.arraycopy(nodes, nodeStartIdx, docNodes, 0, nodeCount);
+     * }</pre>
+     */
     private NodeProxy nodes[];
 
     public NewArrayNodeSet() {
@@ -87,10 +117,10 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         documentCount = other.documentCount;
         documentIds = new int[other.documentIds.length];
         System.arraycopy(other.documentIds, 0, documentIds, 0, documentIds.length);
-        documentOffsets = new int[other.documentOffsets.length];
-        System.arraycopy(other.documentOffsets, 0, documentOffsets, 0, documentOffsets.length);
-        documentLengths = new int[other.documentLengths.length];
-        System.arraycopy(other.documentLengths, 0, documentLengths, 0, documentLengths.length);
+        documentNodesOffset = new int[other.documentNodesOffset.length];
+        System.arraycopy(other.documentNodesOffset, 0, documentNodesOffset, 0, documentNodesOffset.length);
+        documentNodesCount = new int[other.documentNodesCount.length];
+        System.arraycopy(other.documentNodesCount, 0, documentNodesCount, 0, documentNodesCount.length);
     }
 
     private void ensureCapacity() {
@@ -149,7 +179,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             sort();
         }
         final int idx = findDoc(doc);
-        return idx < 0 ? Constants.NO_SIZE_HINT : documentLengths[idx];
+        return idx < 0 ? Constants.NO_SIZE_HINT : documentNodesCount[idx];
     }
 
     @Override
@@ -216,8 +246,8 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         if(!isSorted()) {
             sort();
         }
-        int low = documentOffsets[docIdx];
-        int high = low + (documentLengths[docIdx] - 1);
+        int low = documentNodesOffset[docIdx];
+        int high = low + (documentNodesCount[docIdx] - 1);
         int mid;
         int cmp;
         NodeProxy p;
@@ -270,8 +300,8 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         final NodeId parentId = parent.getNodeId();
         // document nodes are treated specially
         if(parentId == NodeId.DOCUMENT_NODE) {
-            final int end = documentOffsets[docIdx] + documentLengths[docIdx];
-            for(int i = documentOffsets[docIdx]; i < end; i++) {
+            final int end = documentNodesOffset[docIdx] + documentNodesCount[docIdx];
+            for(int i = documentNodesOffset[docIdx]; i < end; i++) {
                 boolean add;
                 if(childOnly) {
                     add = nodes[i].getNodeId().getTreeLevel() == 1;
@@ -310,9 +340,9 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         } else {
             // do a binary search to pick some node in the range of valid
             // child ids
-            int low = documentOffsets[docIdx];
-            int high = low + (documentLengths[docIdx] - 1);
-            final int end = low + documentLengths[docIdx];
+            int low = documentNodesOffset[docIdx];
+            int high = low + (documentNodesCount[docIdx] - 1);
+            final int end = low + documentNodesCount[docIdx];
             int mid = low;
             int cmp;
             while(low <= high) {
@@ -332,7 +362,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                 return result; // no node found
             }
             // find the first child node in the range
-            while(mid > documentOffsets[docIdx] && nodes[mid - 1].getNodeId().compareTo(parentId) > -1) {
+            while(mid > documentNodesOffset[docIdx] && nodes[mid - 1].getNodeId().compareTo(parentId) > -1) {
                 --mid;
             }
             // walk through the range of child nodes we found
@@ -401,9 +431,9 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     private NodeProxy hasDescendantsInSet(final int docIdx, final NodeId ancestorId,
             final int contextId, final boolean includeSelf, final boolean copyMatches) {
         // do a binary search to pick some node in the range of valid child ids
-        int low = documentOffsets[docIdx];
-        int high = low + (documentLengths[docIdx] - 1);
-        final int end = low + documentLengths[docIdx];
+        int low = documentNodesOffset[docIdx];
+        int high = low + (documentNodesCount[docIdx] - 1);
+        final int end = low + documentNodesCount[docIdx];
         int mid = 0;
         int cmp;
         NodeId id;
@@ -424,10 +454,10 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             return null; // no node found
         }
         // find the first child node in the range
-        while(mid > documentOffsets[docIdx] && nodes[mid - 1].getNodeId().compareTo(ancestorId) >= 0) {
+        while(mid > documentNodesOffset[docIdx] && nodes[mid - 1].getNodeId().compareTo(ancestorId) >= 0) {
             --mid;
         }
-        final NodeProxy ancestor = new NodeProxy(nodes[documentOffsets[docIdx]].getOwnerDocument(),
+        final NodeProxy ancestor = new NodeProxy(nodes[documentNodesOffset[docIdx]].getOwnerDocument(),
             ancestorId, Node.ELEMENT_NODE);
         // we need to check if self should be included
         boolean foundOne = false;
@@ -505,8 +535,8 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     private void updateDocs() {
         if(size == 1) {
             documentIds[0] = nodes[0].getOwnerDocument().getDocId();
-            documentOffsets[0] = 0;
-            documentLengths[0] = 1;
+            documentNodesOffset[0] = 0;
+            documentNodesCount[0] = 1;
             documentCount = 1;
         } else {
             documentCount = 0;
@@ -514,18 +544,18 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                 if(i == 0) {
                     // first document in the set
                     documentIds[0] = nodes[0].getOwnerDocument().getDocId();
-                    documentOffsets[0] = 0;
-                    documentLengths[0] = 1;
+                    documentNodesOffset[0] = 0;
+                    documentNodesCount[0] = 1;
                     ++documentCount;
                 } else if(documentIds[documentCount - 1] == nodes[i].getOwnerDocument().getDocId()) {
                     // node belongs to same document as previous node
-                    ++documentLengths[documentCount - 1];
+                    ++documentNodesCount[documentCount - 1];
                 } else {
                     // new document
                     ensureDocCapacity();
                     documentIds[documentCount] = nodes[i].getOwnerDocument().getDocId();
-                    documentOffsets[documentCount] = i;
-                    documentLengths[documentCount++] = 1;
+                    documentNodesOffset[documentCount] = i;
+                    documentNodesCount[documentCount++] = 1;
                 }
             }
         }
@@ -538,11 +568,11 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             System.arraycopy(documentIds, 0, temp, 0, documentCount);
             documentIds = temp;
             temp = new int[nlen];
-            System.arraycopy(documentOffsets, 0, temp, 0, documentCount);
-            documentOffsets = temp;
+            System.arraycopy(documentNodesOffset, 0, temp, 0, documentCount);
+            documentNodesOffset = temp;
             temp = new int[nlen];
-            System.arraycopy(documentLengths, 0, temp, 0, documentCount);
-            documentLengths = temp;
+            System.arraycopy(documentNodesCount, 0, temp, 0, documentCount);
+            documentNodesCount = temp;
         }
     }
 
@@ -589,9 +619,9 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             }
             // do a binary search to pick some node in the range of valid
             // child ids
-            int low = documentOffsets[docIdx];
-            int high = low + (documentLengths[docIdx] - 1);
-            final int end = low + documentLengths[docIdx];
+            int low = documentNodesOffset[docIdx];
+            int high = low + (documentNodesCount[docIdx] - 1);
+            final int end = low + documentNodesCount[docIdx];
             int mid = low;
             int cmp;
             NodeProxy p = null;
@@ -624,12 +654,19 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             --mid;
 
             final NodeId refId = reference.getNodeId();
-            for(int i = mid; i >= documentOffsets[docIdx]; i--) {
+            for(int i = mid; i >= documentNodesOffset[docIdx]; i--) {
                 final NodeId currentId = nodes[i].getNodeId();
                 if(!(currentId.isDescendantOf(parentId) || (p != null && parentId.equals(NodeId.DOCUMENT_NODE) && p.getNodeId().getTreeLevel() == 1))) {
                     break;
                 }
                 if(currentId.getTreeLevel() == refId.getTreeLevel() && currentId.compareTo(refId) < 0) {
+                    if (contextId != Expression.IGNORE_CONTEXT
+                            && nodes[i].getContext() != null
+                            && reference.getContext() != null
+                            && nodes[i].getContext().getContextId() == reference.getContext().getContextId()) {
+                        continue;
+                    }
+
                     if(Expression.IGNORE_CONTEXT != contextId) {
                         if(Expression.NO_CONTEXT_ID == contextId) {
                             nodes[i].copyContext(reference);
@@ -663,9 +700,9 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             } //BUG: can't be null, make trouble @LocationStep line 388 -shabanovd
             // do a binary search to pick some node in the range of valid
             // child ids
-            int low = documentOffsets[docIdx];
-            int high = low + (documentLengths[docIdx] - 1);
-            final int end = low + documentLengths[docIdx];
+            int low = documentNodesOffset[docIdx];
+            int high = low + (documentNodesCount[docIdx] - 1);
+            final int end = low + documentNodesCount[docIdx];
             int mid = low;
             int cmp;
             NodeProxy p = null;
@@ -687,7 +724,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                 continue; // no node found
             }
             // find the first child node in the range
-            while(mid > documentOffsets[docIdx] && nodes[mid - 1].getNodeId().compareTo(parentId) > -1) {
+            while(mid > documentNodesOffset[docIdx] && nodes[mid - 1].getNodeId().compareTo(parentId) > -1) {
                 --mid;
             }
             final NodeId refId = reference.getNodeId();
@@ -697,6 +734,13 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                     continue;
                 }
                 if(currentId.getTreeLevel() == refId.getTreeLevel() && currentId.compareTo(refId) > 0) {
+                    if (contextId != Expression.IGNORE_CONTEXT
+                            && nodes[i].getContext() != null
+                            && reference.getContext() != null
+                            && nodes[i].getContext().getContextId() == reference.getContext().getContextId()) {
+                        continue;
+                    }
+
                     if(Expression.IGNORE_CONTEXT != contextId) {
                         if(Expression.NO_CONTEXT_ID == contextId) {
                             nodes[i].copyContext(reference);
@@ -725,7 +769,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             if(idx < 0) {
                 continue;
             }
-            int i = documentOffsets[idx];
+            int i = documentNodesOffset[idx];
             for(; i < size; i++) {
                 if(nodes[i].getOwnerDocument().getDocId() != reference.getOwnerDocument().getDocId() ||
                     (nodes[i].compareTo(reference) > 0 &&
@@ -740,6 +784,13 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                 }
                 if(!reference.getNodeId().isDescendantOf(nodes[j].getNodeId())) {
                     if(position < 0 || ++n == position) {
+                        if (contextId != Expression.IGNORE_CONTEXT
+                                && nodes[j].getContext() != null
+                                && reference.getContext() != null
+                                && nodes[j].getContext().getContextId() == reference.getContext().getContextId()) {
+                            continue;
+                        }
+
                         if(Expression.IGNORE_CONTEXT != contextId) {
                             if(Expression.NO_CONTEXT_ID == contextId) {
                                 nodes[j].copyContext(reference);
@@ -775,7 +826,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             if(idx < 0) {
                 continue;
             }
-            int i = documentOffsets[idx];
+            int i = documentNodesOffset[idx];
             // TODO: check document id
             for(; i < size; i++) {
                 if(nodes[i].compareTo(reference) >= 0) {
@@ -784,9 +835,16 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             }
             --i;
             int n = 0;
-            for(int j = i; j >= documentOffsets[idx]; j--) {
+            for(int j = i; j >= documentNodesOffset[idx]; j--) {
                 if(!reference.getNodeId().isDescendantOf(nodes[j].getNodeId())) {
                     if(position < 0 || ++n == position) {
+                        if (contextId != Expression.IGNORE_CONTEXT
+                                && nodes[j].getContext() != null
+                                && reference.getContext() != null
+                                && nodes[j].getContext().getContextId() == reference.getContext().getContextId()) {
+                            continue;
+                        }
+
                         if(Expression.IGNORE_CONTEXT != contextId) {
                             if(Expression.NO_CONTEXT_ID == contextId) {
                                 nodes[j].copyContext(reference);
@@ -953,7 +1011,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         if(cachedCollections == null) {
             cachedCollections = new HashSet<>();
             for(int i = 0; i < documentCount; i++) {
-                final DocumentImpl doc = nodes[documentOffsets[i]].getOwnerDocument();
+                final DocumentImpl doc = nodes[documentNodesOffset[i]].getOwnerDocument();
                 if(!cachedCollections.contains(doc.getCollection())) {
                     cachedCollections.add(doc.getCollection());
                 }
@@ -981,7 +1039,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         if(idx < 0) {
             return null;
         }
-        return nodes[documentOffsets[idx]].getOwnerDocument();
+        return nodes[documentNodesOffset[idx]].getOwnerDocument();
     }
 
     @Override
@@ -989,7 +1047,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         sort();
         final XmldbURI[] uris = new XmldbURI[documentCount];
         for(int i = 0; i < documentCount; i++) {
-            uris[i] = nodes[documentOffsets[i]].getOwnerDocument().getURI();
+            uris[i] = nodes[documentNodesOffset[i]].getOwnerDocument().getURI();
         }
         return uris;
     }
@@ -1001,7 +1059,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
 
         //left
         for(int i = 0; i < documentCount; i++) {
-            final DocumentImpl doc = nodes[documentOffsets[i]].getOwnerDocument();
+            final DocumentImpl doc = nodes[documentNodesOffset[i]].getOwnerDocument();
             if(other.contains(doc.getDocId())) {
                 set.add(doc);
             }
@@ -1046,7 +1104,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         final NodeSet result = new NewArrayNodeSet();
         DocumentImpl doc;
         for(int i = 0; i < documentCount; i++) {
-            doc = nodes[documentOffsets[i]].getOwnerDocument();
+            doc = nodes[documentNodesOffset[i]].getOwnerDocument();
             if(doc.getResourceType() == DocumentImpl.XML_FILE) { // skip binary resources
                 result.add(new NodeProxy(doc, NodeId.DOCUMENT_NODE));
             }
@@ -1058,7 +1116,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     public void lock(final DBBroker broker, final boolean exclusive) throws LockException {
         sort();
         for(int idx = 0; idx < documentCount; idx++) {
-            final DocumentImpl doc = nodes[documentOffsets[idx]].getOwnerDocument();
+            final DocumentImpl doc = nodes[documentNodesOffset[idx]].getOwnerDocument();
             final Lock docLock = doc.getUpdateLock();
             docLock.acquire(exclusive ? LockMode.WRITE_LOCK : LockMode.READ_LOCK);
             lockReleasers.push(() -> docLock.release(exclusive ? LockMode.WRITE_LOCK : LockMode.READ_LOCK));
@@ -1087,7 +1145,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             if(currentDoc == documentCount) {
                 throw new NoSuchElementException();
             } else {
-                return nodes[documentOffsets[currentDoc++]].getOwnerDocument();
+                return nodes[documentNodesOffset[currentDoc++]].getOwnerDocument();
             }
         }
 
@@ -1163,8 +1221,8 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         public void setPosition(final NodeProxy proxy) {
             final int docIdx = findDoc(proxy.getOwnerDocument());
             if(docIdx > -1) {
-                int low = documentOffsets[docIdx];
-                int high = low + (documentLengths[docIdx] - 1);
+                int low = documentNodesOffset[docIdx];
+                int high = low + (documentNodesCount[docIdx] - 1);
                 int mid, cmp;
                 NodeProxy p;
                 while(low <= high) {
