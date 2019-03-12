@@ -41,14 +41,50 @@ function npt:cleanup() {
 
 declare
     %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
-function npt:in-memory() {
+function npt:in-memory-1() {
     $npt:DATA//c[../preceding-sibling::a]
 };
 
 declare
     %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
-function npt:in-database() {
+function npt:in-memory-2() {
+    $npt:DATA//c[parent::node()/preceding-sibling::a]
+};
+
+declare
+    %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
+function npt:in-memory-3() {
+    $npt:DATA//c/..[preceding-sibling::a]/c
+};
+
+declare
+    %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
+function npt:in-memory-4() {
+    $npt:DATA//c/parent::node()[preceding-sibling::a]/c
+};
+
+declare
+    %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
+function npt:in-database-1() {
     doc($npt:TEST_DOC_URI)//c[../preceding-sibling::a]
+};
+
+declare
+    %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
+function npt:in-database-2() {
+    doc($npt:TEST_DOC_URI)//c[parent::node()/preceding-sibling::a]
+};
+
+declare
+    %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
+function npt:in-database-3() {
+    doc($npt:TEST_DOC_URI)//c/..[preceding-sibling::a]/c
+};
+
+declare
+    %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
+function npt:in-database-4() {
+    doc($npt:TEST_DOC_URI)//c/parent::node()[preceding-sibling::a]/c
 };
 
 declare
