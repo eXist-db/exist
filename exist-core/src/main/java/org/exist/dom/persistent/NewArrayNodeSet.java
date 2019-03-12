@@ -660,6 +660,13 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                     break;
                 }
                 if(currentId.getTreeLevel() == refId.getTreeLevel() && currentId.compareTo(refId) < 0) {
+                    if (contextId != Expression.IGNORE_CONTEXT
+                            && nodes[i].getContext() != null
+                            && reference.getContext() != null
+                            && nodes[i].getContext().getContextId() == reference.getContext().getContextId()) {
+                        continue;
+                    }
+
                     if(Expression.IGNORE_CONTEXT != contextId) {
                         if(Expression.NO_CONTEXT_ID == contextId) {
                             nodes[i].copyContext(reference);
@@ -727,6 +734,13 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                     continue;
                 }
                 if(currentId.getTreeLevel() == refId.getTreeLevel() && currentId.compareTo(refId) > 0) {
+                    if (contextId != Expression.IGNORE_CONTEXT
+                            && nodes[i].getContext() != null
+                            && reference.getContext() != null
+                            && nodes[i].getContext().getContextId() == reference.getContext().getContextId()) {
+                        continue;
+                    }
+
                     if(Expression.IGNORE_CONTEXT != contextId) {
                         if(Expression.NO_CONTEXT_ID == contextId) {
                             nodes[i].copyContext(reference);
@@ -770,6 +784,13 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                 }
                 if(!reference.getNodeId().isDescendantOf(nodes[j].getNodeId())) {
                     if(position < 0 || ++n == position) {
+                        if (contextId != Expression.IGNORE_CONTEXT
+                                && nodes[j].getContext() != null
+                                && reference.getContext() != null
+                                && nodes[j].getContext().getContextId() == reference.getContext().getContextId()) {
+                            continue;
+                        }
+
                         if(Expression.IGNORE_CONTEXT != contextId) {
                             if(Expression.NO_CONTEXT_ID == contextId) {
                                 nodes[j].copyContext(reference);
@@ -817,6 +838,13 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             for(int j = i; j >= documentNodesOffset[idx]; j--) {
                 if(!reference.getNodeId().isDescendantOf(nodes[j].getNodeId())) {
                     if(position < 0 || ++n == position) {
+                        if (contextId != Expression.IGNORE_CONTEXT
+                                && nodes[j].getContext() != null
+                                && reference.getContext() != null
+                                && nodes[j].getContext().getContextId() == reference.getContext().getContextId()) {
+                            continue;
+                        }
+
                         if(Expression.IGNORE_CONTEXT != contextId) {
                             if(Expression.NO_CONTEXT_ID == contextId) {
                                 nodes[j].copyContext(reference);
