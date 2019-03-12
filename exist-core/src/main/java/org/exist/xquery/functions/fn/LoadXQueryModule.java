@@ -177,6 +177,12 @@ public class LoadXQueryModule extends BasicFunction {
         final Module module = loadedModule;
         module.setContextItem(contextItem);
         setExternalVars(externalVars, module::declareVariable);
+        if (!module.isInternalModule()) {
+            // ensure variable declarations in the imported module are analyzed.
+            // unlike when using a normal import statement, this is not done automatically
+            ((ExternalModule)module).analyzeGlobalVars();
+        }
+
         final MapType result = new MapType(context);
 
         final ValueSequence functionSeq = new ValueSequence();

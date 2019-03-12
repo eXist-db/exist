@@ -96,10 +96,21 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
             }
             analyzeDone = true;
         }
+        analyzeExpression(contextInfo);
+        var.setIsInitialized(true);
+    }
+
+    /**
+     * Analyze just the expression. For dynamically imported modules this needs to be done one time
+     * after import.
+     *
+     * @param contextInfo
+     * @throws XPathException
+     */
+    public void analyzeExpression(AnalyzeContextInfo contextInfo) throws XPathException {
         if (expression.isPresent()) {
             expression.get().analyze(contextInfo);
         }
-        var.setIsInitialized(true);
     }
 
     @Override

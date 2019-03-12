@@ -47,7 +47,8 @@ public class PrologFunctions extends BasicFunction {
 				new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.EXACTLY_ONE, "The prefix to be assigned to the namespace"),
 				new FunctionParameterSequenceType("location", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The location of the module")
 			},
-			new SequenceType(Type.ITEM, Cardinality.EMPTY)),
+			new SequenceType(Type.ITEM, Cardinality.EMPTY),
+			"Prefer fn:load-xquery-module"),
 		new FunctionSignature(
 			new QName("declare-namespace", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Dynamically declares a namespace/prefix mapping for the current context.",
@@ -115,9 +116,11 @@ public class PrologFunctions extends BasicFunction {
 
 		context.getRootContext().resolveForwardReferences();
 
-		if( !module.isInternalModule() ) {
-        	((ExternalModule)module).getRootExpression().analyze( new AnalyzeContextInfo() );
-        }
+		if (!module.isInternalModule()) {
+			// ensure variable declarations in the imported module are analyzed.
+			// unlike when using a normal import statement, this is not done automatically
+			((ExternalModule)module).analyzeGlobalVars();
+		}
 		
 //		context.getRootContext().analyzeAndOptimizeIfModulesChanged((PathExpr) context.getRootExpression());
 	}
