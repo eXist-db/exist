@@ -30,6 +30,8 @@ import org.exist.xquery.util.*;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.value.*;
 
+import javax.xml.XMLConstants;
+
 
 /**
  * XQuery 3.0 computed namespace constructor.
@@ -96,15 +98,21 @@ public class NamespaceConstructor extends NodeConstructor {
         if (!(Type.subTypeOf(prefixSeq.getItemType(), Type.STRING) || prefixSeq.getItemType() == Type.UNTYPED_ATOMIC)) {
             throw new XPathException(this, ErrorCodes.XPTY0004, "Prefix needs to be xs:string or xs:untypedAtomic");
         }
-        String prefix = "";
+        String prefix = XMLConstants.DEFAULT_NS_PREFIX;
         if (!prefixSeq.isEmpty()) {
             prefix = prefixSeq.getStringValue();
             if (!(prefix.length() == 0 || XMLNames.isNCName(prefix))) {
                 throw new XPathException(this, ErrorCodes.XQDY0074, "Prefix cannot be cast to xs:NCName");
             }
         }
+
         final Sequence uriSeq = content.eval(contextSequence, contextItem);
         final String value = uriSeq.getStringValue();
+
+        final String inscopeNsUri = context.getInScopeNamespace(prefix);
+        if (inscopeNsUri != null && !inscopeNsUri.equals(value)) {
+            throw new XPathException(this, ErrorCodes.XQDY0102, "Cannot override already defined ns");
+        }
 
         if (prefix.equals("xmlns")) {
             throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind xmlns prefix");
