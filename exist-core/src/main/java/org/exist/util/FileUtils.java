@@ -38,6 +38,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.function.Predicate;
 
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
@@ -479,4 +480,21 @@ public class FileUtils {
             }
         }
     }
+    
+    /**
+     * Provides a filter for entries in a directory.
+     *
+     * @param path the entry to be filtered.
+     * @param prefix the prefix used for filtering.
+     * @param prefix the suffix used for filtering.
+     * 
+     * @return The filter.
+     */
+	public static Predicate<Path> getPrefixSuffixFilter(final String prefix, final String suffix) {
+		return path -> {
+			String entryName = path.getFileName().toString();
+			
+			return entryName.startsWith(prefix) && entryName.endsWith(suffix);
+		};
+	}    
 }
