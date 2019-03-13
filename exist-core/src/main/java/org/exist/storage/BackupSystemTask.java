@@ -119,6 +119,15 @@ public class BackupSystemTask implements SystemTask {
 
     @Override
     public void execute(final DBBroker broker) throws EXistException {
+        // see if old zip files need to be purged
+        if (zipFilesMax > 0) {
+            try {
+                purgeZipFiles();
+            } catch(final IOException ioe) {
+                throw new EXistException("Unable to purge zip files", ioe);
+            }
+        } 
+        
         final String dateTime = creationDateFormat.format(Calendar.getInstance().getTime());
         final Path dest = directory.resolve(prefix + dateTime + suffix);
 
@@ -129,49 +138,38 @@ public class BackupSystemTask implements SystemTask {
             LOG.error(e.getMessage(), e);
             throw new EXistException(e.getMessage(), e);
         }
-
-        // see if old zip files need to be purged
-        if (".zip".equals(suffix) && zipFilesMax > 0) {
-            try {
-                purgeZipFiles();
-            } catch(final IOException ioe) {
-                throw new EXistException("Unable to purge zip files", ioe);
-            }
-        }
     }
 
     public void purgeZipFiles() throws IOException {
         if (LOG.isDebugEnabled()) {LOG.debug("starting purgeZipFiles()");}
+		
+		List<Path> entriesPaths = FileUtils.list(directory, FileUtils.getPrefixSuffixFilter(prefix, suffix));
+		int entriesNumber = entriesPaths.size();
+		int numberOfEntriesToBeDeleted = entriesNumber - zipFilesMax + 1;
 
-        // get all files in target directory
-        final List<Path> files = FileUtils.list(directory);
+		Comparator<Path> timestampComparator = new Comparator<Path>() {
+			public int compare(Path path1, Path path2) {
+				int result = 0;
 
-        if (!files.isEmpty()) {
-            final Map<String, Path> sorted = new TreeMap<>();
-            for (final Path file : files) {
-                //check for prefix and suffix match
-                if (file.getFileName().startsWith(prefix) && FileUtils.fileName(file).endsWith(suffix)) {
-                    sorted.put(Long.toString(Files.getLastModifiedTime(file).toMillis()), file);
-                }
-            }
+				try {
+					result = Files.getLastModifiedTime(path1).compareTo(Files.getLastModifiedTime(path2));
+				} catch (IOException e) {
+					LOG.error("Cannot compare files by timestamp: " + path1 + ", " + path2, e);
+				}
 
+				return result;
+			}
+		};
 
-            if (sorted.size() > zipFilesMax) {
-                final Set<String> keys = sorted.keySet();
-                final Iterator<String> ki = keys.iterator();
-                int i = sorted.size() - zipFilesMax;
-                while (ki.hasNext()) {
-                    final Path f = sorted.get(ki.next());
-                    if (i > 0) {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Purging backup : " + FileUtils.fileName(f));
-                        }
-                        FileUtils.deleteQuietly(f);
-                    }
-                    i--;
-                }
-            }
-        }
+		if (numberOfEntriesToBeDeleted > 0) {
+			entriesPaths.stream().sorted(timestampComparator).limit(numberOfEntriesToBeDeleted).forEach(path -> {
+	            if (LOG.isDebugEnabled()) {
+	                LOG.debug("Purging backup : " + FileUtils.fileName(path));
+	            }
+	            
+	            FileUtils.deleteQuietly(path);
+			});	
+		}
     }
 
     @Override
