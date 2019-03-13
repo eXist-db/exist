@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.Module;
+import org.exist.xquery.functions.fn.LoadXQueryModule;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -48,7 +49,7 @@ public class PrologFunctions extends BasicFunction {
 				new FunctionParameterSequenceType("location", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The location of the module")
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY),
-			"Prefer fn:load-xquery-module"),
+			LoadXQueryModule.LOAD_XQUERY_MODULE_2),
 		new FunctionSignature(
 			new QName("declare-namespace", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Dynamically declares a namespace/prefix mapping for the current context.",
