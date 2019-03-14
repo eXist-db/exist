@@ -95,7 +95,7 @@ public class NamespaceConstructor extends NodeConstructor {
 		context.proceed(this, builder);
 
         final Sequence prefixSeq = qnameExpr.eval(contextSequence, contextItem);
-        if (!(Type.subTypeOf(prefixSeq.getItemType(), Type.STRING) || prefixSeq.getItemType() == Type.UNTYPED_ATOMIC)) {
+        if (!(prefixSeq.isEmpty() || Type.subTypeOf(prefixSeq.getItemType(), Type.STRING) || prefixSeq.getItemType() == Type.UNTYPED_ATOMIC)) {
             throw new XPathException(this, ErrorCodes.XPTY0004, "Prefix needs to be xs:string or xs:untypedAtomic");
         }
         String prefix = XMLConstants.DEFAULT_NS_PREFIX;
