@@ -24,9 +24,11 @@ package org.exist.util.serializer;
 import java.io.IOException;
 import java.io.Writer;
 import javax.xml.transform.TransformerException;
+
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.util.hashtable.ObjectHashSet;
 
 /**
  * @author wolf
@@ -34,7 +36,7 @@ import org.exist.util.hashtable.ObjectHashSet;
  */
 public class XHTMLWriter extends IndentingXMLWriter {
 
-    protected final static ObjectHashSet<String> EMPTY_TAGS = new ObjectHashSet<String>(31);
+    protected static final ObjectSet<String> EMPTY_TAGS = new ObjectOpenHashSet<>(31);
     static {
         EMPTY_TAGS.add("area");
         EMPTY_TAGS.add("base");
@@ -51,7 +53,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
         EMPTY_TAGS.add("param");
     }
     
-    protected final static ObjectHashSet<String> INLINE_TAGS = new ObjectHashSet<String>(31);
+    protected static final ObjectSet<String> INLINE_TAGS = new ObjectOpenHashSet<>(31);
     
     static {
     	INLINE_TAGS.add("a");
@@ -87,8 +89,8 @@ public class XHTMLWriter extends IndentingXMLWriter {
     
     protected String currentTag;
 
-    protected ObjectHashSet<String> emptyTags;
-    protected ObjectHashSet<String> inlineTags;
+    protected final ObjectSet<String> emptyTags;
+    protected final ObjectSet<String> inlineTags;
 
     /**
      * 
@@ -97,7 +99,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
         this(EMPTY_TAGS, INLINE_TAGS);
     }
 
-    public XHTMLWriter(ObjectHashSet<String> emptyTags, ObjectHashSet<String> inlineTags) {
+    public XHTMLWriter(ObjectSet<String> emptyTags, ObjectSet<String> inlineTags) {
         super();
         this.emptyTags = emptyTags;
         this.inlineTags = inlineTags;
@@ -110,7 +112,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
     /**
      * @param writer
      */
-    public XHTMLWriter(final Writer writer, ObjectHashSet<String> emptyTags, ObjectHashSet<String> inlineTags) {
+    public XHTMLWriter(final Writer writer, ObjectSet<String> emptyTags, ObjectSet<String> inlineTags) {
         super(writer);
         this.emptyTags = emptyTags;
         this.inlineTags = inlineTags;

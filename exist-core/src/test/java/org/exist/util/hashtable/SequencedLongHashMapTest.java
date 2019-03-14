@@ -92,6 +92,22 @@ public class SequencedLongHashMapTest extends AbstractHashtableTest<SequencedLon
 		assertEquals(4, (int) vi.next());
 		assertFalse(vi.hasNext());
 	}
-	
-	
+
+	@Test
+	public void sequencedMap2() {
+		long[] l = { 10, 100, 50, 250, 100, 15, 35, 250, 100, 65, 45, 50, 65, 80, 90, 70, 250, 100 };
+		long[] expected = { 15, 35, 45, 50, 65, 80, 90, 70, 250, 100 };
+		SequencedLongHashMap<String> table = new SequencedLongHashMap<>(100000);
+		for (int i = 0; i < l.length; i++) {
+			table.put(l[i], "k" + l[i]);
+		}
+		table.removeFirst();
+		SequencedLongHashMap.Entry<String> next = table.getFirstEntry();
+		int i = 0;
+		while(next != null) {
+			assertEquals(next.getKey(), expected[i]);
+			next = next.getNext();
+			i++;
+		}
+	}
 }

@@ -22,12 +22,13 @@ package org.exist.storage.journal;
 
 import java.util.function.BiFunction;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Checkpoint;
 import org.exist.storage.txn.TxnAbort;
 import org.exist.storage.txn.TxnCommit;
 import org.exist.storage.txn.TxnStart;
-import org.exist.util.hashtable.Int2ObjectHashMap;
 
 /**
  * Registry for log entry types. All classes that can be read from or written to the journal
@@ -43,7 +44,7 @@ public class LogEntryTypes {
     public final static byte CHECKPOINT = 2;
     public final static byte TXN_ABORT = 3;
 
-    private final static Int2ObjectHashMap<BiFunction<DBBroker, Long, Loggable>> entryTypes = new Int2ObjectHashMap<>();
+    private final static Int2ObjectMap<BiFunction<DBBroker, Long, Loggable>> entryTypes = new Int2ObjectOpenHashMap<>();
 
     static {
         // register the common entry types

@@ -31,6 +31,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.DBBroker;
@@ -42,7 +44,6 @@ import org.exist.storage.txn.Checkpoint;
 import org.exist.util.FileUtils;
 import org.exist.util.ProgressBar;
 import com.evolvedbinary.j8fu.function.SupplierE;
-import org.exist.util.hashtable.Long2ObjectHashMap;
 import org.exist.util.sanity.SanityCheck;
 
 /**
@@ -116,7 +117,7 @@ public class RecoveryManager {
                     LOG.info("Unclean shutdown detected. Scanning journal...");
                     broker.getBrokerPool().reportStatus("Unclean shutdown detected. Scanning log...");
     				reader.positionFirst();
-    				final Long2ObjectHashMap<Loggable> txnsStarted = new Long2ObjectHashMap<>();
+    				final Long2ObjectMap<Loggable> txnsStarted = new Long2ObjectOpenHashMap<>();
 	    			Checkpoint lastCheckpoint = null;
 	    			Lsn lastLsn = Lsn.LSN_INVALID;
 	                Loggable next;
@@ -250,7 +251,7 @@ public class RecoveryManager {
 
         try {
             // map to track running transactions
-            final Long2ObjectHashMap<Loggable> runningTxns = new Long2ObjectHashMap<>();
+            final Long2ObjectMap<Loggable> runningTxns = new Long2ObjectOpenHashMap<>();
 
             // ------- REDO ---------
             if (LOG.isInfoEnabled())

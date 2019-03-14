@@ -21,12 +21,14 @@
  */
 package org.exist.xquery.value;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.util.hashtable.Int2ObjectHashMap;
-import org.exist.util.hashtable.Object2IntHashMap;
 import org.exist.xquery.XPathException;
 
 import java.util.HashSet;
@@ -104,9 +106,11 @@ public class Type {
     public final static int ARRAY = 103;
     private final static Logger LOG = LogManager.getLogger(Type.class);
     private final static int[] superTypes = new int[512];
-    private final static Int2ObjectHashMap<String[]> typeNames = new Int2ObjectHashMap<>(100);
-    //private final static Map<Integer, String[]> typeNames= new HashMap<Integer, String[]>(100);
-    private final static Object2IntHashMap<String> typeCodes = new Object2IntHashMap<>(100);
+    private final static Int2ObjectMap<String[]> typeNames = new Int2ObjectOpenHashMap<>(100);
+    private final static Object2IntMap<String> typeCodes = new Object2IntOpenHashMap<>(100);
+    static {
+        typeCodes.defaultReturnValue(-1);
+    }
 
     static {
         defineSubType(ANY_TYPE, ANY_SIMPLE_TYPE);
@@ -311,8 +315,8 @@ public class Type {
     public static int getType(String name) throws XPathException {
         //if (name.equals("node"))
         //	return NODE;
-        final int code = typeCodes.get(name);
-        if (code == Object2IntHashMap.UNKNOWN_KEY) {
+        final int code = typeCodes.getInt(name);
+        if (code == -1) {
             throw new XPathException("Type: " + name + " is not defined");
         }
         return code;

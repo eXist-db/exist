@@ -19,6 +19,8 @@
  */
 package org.exist.security.internal;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.exist.scheduler.JobDescription;
 import org.exist.security.AbstractRealm;
 import java.util.ArrayList;
@@ -64,7 +66,6 @@ import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -987,13 +988,12 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     }
    
     protected static class PrincipalDbById<V extends Principal> {
-    
-        private final Int2ObjectHashMap<V> db = new Int2ObjectHashMap<>(65);
+        private final Int2ObjectMap<V> db = new Int2ObjectOpenHashMap<>(65);
         private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         private final ReadLock readLock = lock.readLock();
         private final WriteLock writeLock = lock.writeLock();
 
-        public <R> R read(final Function<Int2ObjectHashMap<V>, R> readFn) {
+        public <R> R read(final Function<Int2ObjectMap<V>, R> readFn) {
             readLock.lock();
             try {
                 return readFn.apply(db);
@@ -1002,7 +1002,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             }
         }
 
-        public final void modify(final Consumer<Int2ObjectHashMap<V>> writeOp) {
+        public final void modify(final Consumer<Int2ObjectMap<V>> writeOp) {
             writeLock.lock();
             try {
                 writeOp.accept(db);

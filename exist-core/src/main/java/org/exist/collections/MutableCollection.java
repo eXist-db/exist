@@ -20,6 +20,8 @@
 package org.exist.collections;
 
 import com.evolvedbinary.j8fu.function.Consumer2E;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.NotThreadSafe;
 import org.exist.dom.QName;
@@ -61,7 +63,6 @@ import org.exist.util.MimeType;
 import org.exist.util.SyntaxException;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.XMLReaderObjectFactory.VALIDATION_SETTING;
-import org.exist.util.hashtable.ObjectHashSet;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.xmldb.XmldbURI;
@@ -89,7 +90,7 @@ public class MutableCollection implements Collection {
     private XmldbURI path;
     private final Lock lock;
     @GuardedBy("lock") private final Map<String, DocumentImpl> documents = new TreeMap<>();
-    @GuardedBy("lock") private ObjectHashSet<XmldbURI> subCollections = new ObjectHashSet<>(19);
+    @GuardedBy("lock") private ObjectSet<XmldbURI> subCollections = new ObjectOpenHashSet<>(19);
     private long address = BFile.UNKNOWN_ADDRESS;  // Storage address of the collection in the BFile
     private long created = 0;
     private boolean triggersEnabled = true;
@@ -187,7 +188,7 @@ public class MutableCollection implements Collection {
         final Iterator<XmldbURI> subCollectionIterator;
         getLock().acquire(LockMode.READ_LOCK);
         try {
-            subCollectionIterator = subCollections.stableIterator();
+            subCollectionIterator = new ObjectOpenHashSet<>(subCollections).iterator();
         } finally {
             getLock().release(LockMode.READ_LOCK);
         }
@@ -328,7 +329,7 @@ public class MutableCollection implements Collection {
 
         getLock().acquire(LockMode.READ_LOCK);
         try {
-            return subCollections.stableIterator();
+            return new ObjectOpenHashSet<>(subCollections).iterator();
         } finally {
             getLock().release(LockMode.READ_LOCK);
         }
@@ -339,7 +340,7 @@ public class MutableCollection implements Collection {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission to list sub-collections denied on " + this.getURI());
         }
-        return subCollections.stableIterator();
+        return new ObjectOpenHashSet<>(subCollections).iterator();
     }
 
     @Override
@@ -354,7 +355,7 @@ public class MutableCollection implements Collection {
             getLock().acquire(LockMode.READ_LOCK);
             try {
                 collectionList = new ArrayList<>(subCollections.size());
-                i = subCollections.stableIterator();
+                i = new ObjectOpenHashSet<>(subCollections).iterator();
             } finally {
                 getLock().release(LockMode.READ_LOCK);
             }
@@ -397,7 +398,8 @@ public class MutableCollection implements Collection {
                     getDocuments(broker, docs);
                     //Get a list of sub-collection URIs. We will process them
                     //after unlocking this collection. otherwise we may deadlock ourselves
-                    subColls = subCollections.keys();
+                    subColls = new ArrayList<>();
+                    subColls.addAll(subCollections);
                 } finally {
                     getLock().release(LockMode.READ_LOCK);
                 }
@@ -438,7 +440,7 @@ public class MutableCollection implements Collection {
                 //Get a list of sub-collection URIs. We will process them
                 //after unlocking this collection.
                 //otherwise we may deadlock ourselves
-                final List<XmldbURI> subColls = subCollections.keys();
+                final List<XmldbURI> subColls = new ArrayList<>(subCollections);
                 if (subColls != null) {
                     uris = new XmldbURI[subColls.size()];
                     for(int i = 0; i < subColls.size(); i++) {
@@ -887,7 +889,7 @@ public class MutableCollection implements Collection {
         getLock().acquire(LockMode.READ_LOCK);
         try {
             size = subCollections.size();
-            i = subCollections.stableIterator();
+            i = new ObjectOpenHashSet<>(subCollections).iterator();
         } finally {
             getLock().release(LockMode.READ_LOCK);
         }
@@ -919,7 +921,7 @@ public class MutableCollection implements Collection {
 
         getLock().acquire(LockMode.WRITE_LOCK);
         try {
-            subCollections = new ObjectHashSet<>(collLen == 0 ? 19 : collLen); //TODO(AR) why is this number 19?
+            subCollections = new ObjectOpenHashSet<>(collLen == 0 ? 19 : collLen); //TODO(AR) why is this number 19?
             for (int i = 0; i < collLen; i++) {
                 subCollections.add(XmldbURI.create(istream.readUTF()));
             }
