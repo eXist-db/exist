@@ -1,6 +1,9 @@
 package org.exist.xquery.regex;
 
-import org.exist.util.hashtable.Int2ObjectHashMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 /**
  * This class holds data about the case-variants of Unicode characters. The data is automatically
@@ -15,8 +18,8 @@ public class CaseVariants {
     // Use one hashmap for characters with a single case variant, another for characters with multiple
     // case variants, to reduce the number of objects that need to be allocated
 
-    private static Int2ObjectHashMap monoVariants = new Int2ObjectHashMap(2500);
-    private static Int2ObjectHashMap<int[]> polyVariants = new Int2ObjectHashMap<int[]>(100);
+    private static Int2IntMap monoVariants = new Int2IntOpenHashMap(2500);
+    private static Int2ObjectMap<int[]> polyVariants = new Int2ObjectOpenHashMap<int[]>(100);
 
     private static void cv(int a, int b) {
         monoVariants.put(a, b);

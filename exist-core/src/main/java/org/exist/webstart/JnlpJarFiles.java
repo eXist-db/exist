@@ -59,6 +59,7 @@ public class JnlpJarFiles {
             "commons-pool-%latest%",
             "jargo-%latest%",
             "bcprov-jdk15on-%latest%",
+            "fastutil-%latest%-min",
             "j8fu-%latest%",
             "jackson-core-%latest%",
             "jcip-annotations-%latest%",

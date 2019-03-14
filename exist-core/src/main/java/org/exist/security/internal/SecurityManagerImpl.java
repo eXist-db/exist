@@ -20,6 +20,8 @@
 package org.exist.security.internal;
 
 import com.evolvedbinary.j8fu.lazy.AtomicLazyVal;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.jcip.annotations.ThreadSafe;
 import org.exist.scheduler.JobDescription;
 import org.exist.security.AbstractRealm;
@@ -66,7 +68,6 @@ import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ConcurrentValueWrapper;
 import org.exist.util.WeakLazyStripes;
-import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -897,11 +898,11 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     }
 
     @ThreadSafe
-    private static class PrincipalDbById<V extends Principal> extends ConcurrentValueWrapper<Int2ObjectHashMap<V>> {
+    private static class PrincipalDbById<V extends Principal> extends ConcurrentValueWrapper<Int2ObjectMap<V>> {
         private int principalId;
 
         public PrincipalDbById(final int initialLastId) {
-            super(new Int2ObjectHashMap<>(65));
+            super(new Int2ObjectOpenHashMap<>(65));
             this.principalId = initialLastId;
         }
 
@@ -924,7 +925,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
          *
          * @param updateFn A function which updates the principal db and returns a new principal id.
          */
-        public void update(final BiFunction<Int2ObjectHashMap<V>, Integer, Integer> updateFn) {
+        public void update(final BiFunction<Int2ObjectMap<V>, Integer, Integer> updateFn) {
             write(principalDb -> {
                 this.principalId = updateFn.apply(principalDb, principalId);
             });

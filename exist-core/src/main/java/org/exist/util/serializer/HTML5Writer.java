@@ -21,8 +21,9 @@
  */
 package org.exist.util.serializer;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.exist.dom.QName;
-import org.exist.util.hashtable.ObjectHashSet;
 
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
@@ -45,7 +46,7 @@ public class HTML5Writer extends XHTML5Writer {
      * 
      * See https://github.com/eXist-db/exist/issues/777 for details. 
      */
-    private final static ObjectHashSet<String> BOOLEAN_ATTRIBUTE_NAMES = new ObjectHashSet<String>(68);
+    private static final ObjectSet<String> BOOLEAN_ATTRIBUTE_NAMES = new ObjectOpenHashSet<>(68);
     static {
         BOOLEAN_ATTRIBUTE_NAMES.add("allowFullscreen");
         BOOLEAN_ATTRIBUTE_NAMES.add("async");
@@ -117,7 +118,7 @@ public class HTML5Writer extends XHTML5Writer {
         BOOLEAN_ATTRIBUTE_NAMES.add("willValidate");
     }
 
-    private final static ObjectHashSet<String> EMPTY_TAGS = new ObjectHashSet<String>(31);
+    private static final ObjectSet<String> EMPTY_TAGS = new ObjectOpenHashSet<>(31);
     static {
         EMPTY_TAGS.add("area");
         EMPTY_TAGS.add("base");
@@ -136,7 +137,7 @@ public class HTML5Writer extends XHTML5Writer {
         EMPTY_TAGS.add("wbr");
     }
 
-    private final static ObjectHashSet<String> RAW_TEXT_ELEMENTS = new ObjectHashSet<String>(31);
+    private static final ObjectSet<String> RAW_TEXT_ELEMENTS = new ObjectOpenHashSet<>(31);
     static {
         RAW_TEXT_ELEMENTS.add("script");
         RAW_TEXT_ELEMENTS.add("style");
