@@ -474,3 +474,26 @@ declare
 function nt:right_empty_sequence-boolean() {
     false() = ()
 };
+
+declare
+    %test:assertEquals('<b/>', '<xs:e xmlns="X" xmlns:xs="http://www.w3.org/2001/XMLSchema"/>', '<x><t:e xmlns:t="T" xmlns="S"/></x>')
+function nt:ns-grün-1() {
+    <a xmlns='a'><b xmlns=''/></a>/b,
+    <xs:e>{ namespace { <a/>/* } { 'X' } }</xs:e>,
+    <x><t:e xmlns:t='T'>{ namespace { '' } { 'S' } }</t:e></x>
+};
+
+declare
+    %test:assertError("XQDY0102")
+function nt:ns-grün-2() {
+   <root>
+       <e>{ namespace { '' } { 'U' } }</e>
+       <e xmlns='x'>{ namespace { '' } { 'U' } }</e>
+   </root>
+};
+
+declare
+    %test:assertError("XQDY0102")
+function nt:ns-grün-3() {
+    <e xmlns:p='x'>{ namespace { 'p' } { 'U' } }</e>
+};
