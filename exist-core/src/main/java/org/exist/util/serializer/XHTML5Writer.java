@@ -2,14 +2,16 @@ package org.exist.util.serializer;
 
 import java.io.Writer;
 import javax.xml.transform.TransformerException;
-import org.exist.util.hashtable.ObjectHashSet;
+
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 /**
  * A writer which produces well-formed XHTML5.
  */
 public class XHTML5Writer extends XHTMLWriter {
 
-    protected final static ObjectHashSet<String> EMPTY_TAGS = new ObjectHashSet<>(31);
+    protected static final ObjectSet<String> EMPTY_TAGS = new ObjectOpenHashSet<>(31);
     static {
         //https://www.w3.org/TR/html5/syntax.html#void-elements
         EMPTY_TAGS.add("area");
@@ -29,7 +31,7 @@ public class XHTML5Writer extends XHTMLWriter {
         EMPTY_TAGS.add("wbr");
     }
 
-    protected final static ObjectHashSet<String> XHTML_INLINE_TAGS = new ObjectHashSet<String>(31);
+    protected static final ObjectSet<String> XHTML_INLINE_TAGS = new ObjectOpenHashSet<>(31);
     
     static {
     	XHTML_INLINE_TAGS.add("a");
@@ -91,11 +93,11 @@ public class XHTML5Writer extends XHTMLWriter {
         this(writer, EMPTY_TAGS, XHTML_INLINE_TAGS);
     }
 
-    public XHTML5Writer(ObjectHashSet<String> emptyTags, ObjectHashSet<String> inlineTags) {
+    public XHTML5Writer(ObjectSet<String> emptyTags, ObjectSet<String> inlineTags) {
         super(emptyTags, inlineTags);
     }
 
-    public XHTML5Writer(Writer writer, ObjectHashSet<String> emptyTags, ObjectHashSet<String> inlineTags) {
+    public XHTML5Writer(Writer writer, ObjectSet<String> emptyTags, ObjectSet<String> inlineTags) {
         super(writer, emptyTags, inlineTags);
     }
 

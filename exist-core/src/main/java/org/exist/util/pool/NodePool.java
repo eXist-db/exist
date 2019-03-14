@@ -23,6 +23,8 @@ package org.exist.util.pool;
 
 import java.util.LinkedList;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.jcip.annotations.ThreadSafe;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.CDATASectionImpl;
@@ -31,7 +33,6 @@ import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.NodeImpl;
 import org.exist.dom.persistent.ProcessingInstructionImpl;
 import org.exist.dom.persistent.TextImpl;
-import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.w3c.dom.Node;
 
 /**
@@ -46,7 +47,7 @@ public class NodePool {
     private static final ThreadLocal<NodePool> pools = new PoolThreadLocal();
 
     private int maxActive;
-    private Int2ObjectHashMap<Pool> poolMap = new Int2ObjectHashMap<>(17);
+    private final Int2ObjectMap<Pool> poolMap = new Int2ObjectOpenHashMap<>(17);
 
     private NodePool(final int maxObjects) {
         this.maxActive = maxObjects;

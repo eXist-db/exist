@@ -21,6 +21,8 @@
  */
 package org.exist.dom.persistent;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -32,7 +34,6 @@ import org.exist.storage.io.VariableByteInputStream;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
-import org.exist.util.hashtable.Object2IntHashMap;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -441,7 +442,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
         /**
          * Maps mimetype names to an integer id (persisted to disk)
          */
-        private final Object2IntHashMap<String> symbolsByName;
+        private final Object2IntMap<String> symbolsByName;
 
         /**
          * Maps int ids to mimetype names (transient map for fast reverse lookup of symbolsByName)
@@ -455,7 +456,8 @@ public class SymbolTable implements BrokerPoolService, Closeable {
 
         public SymbolCollection(final SymbolType symbolType, final int initialSize) {
             this.symbolType = symbolType;
-            symbolsByName = new Object2IntHashMap<>(initialSize);
+            symbolsByName = new Object2IntOpenHashMap<>(initialSize);
+            symbolsByName.defaultReturnValue(-1);
             symbolsById = new String[initialSize];
         }
 
@@ -502,7 +504,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
         }
 
         public synchronized int getId(final String name) {
-            int id = symbolsByName.get(name);
+            int id = symbolsByName.getInt(name);
             if(id != -1) {
                 return id;
             }
@@ -520,12 +522,11 @@ public class SymbolTable implements BrokerPoolService, Closeable {
         }
 
         protected final void write(final VariableByteOutputStream os) throws IOException {
-            for(final Iterator<String> i = symbolsByName.iterator(); i.hasNext(); ) {
+            for(final Iterator<String> i = symbolsByName.keySet().iterator(); i.hasNext(); ) {
                 final String symbol = i.next();
-                final int id = symbolsByName.get(symbol);
+                final int id = symbolsByName.getInt(symbol);
                 if(id < 0) {
-                    LOG.error("Symbol Table: symbolTypeId=" + getSymbolType() +
-                        ", symbol='" + symbol + "', id=" + id);
+                    LOG.error("Symbol Table: symbolTypeId=" + getSymbolType() + ", symbol='" + symbol + "', id=" + id);
                     //TODO : raise exception ? -pb
                 }
                 writeEntry(id, symbol, os);
