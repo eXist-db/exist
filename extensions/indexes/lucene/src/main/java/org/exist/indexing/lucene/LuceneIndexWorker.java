@@ -28,6 +28,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
+import org.apache.lucene.facet.*;
+import org.apache.lucene.facet.taxonomy.FastTaxonomyFacetCounts;
+import org.apache.lucene.facet.taxonomy.SearcherTaxonomyManager;
 import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -554,10 +557,20 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     private void searchAndProcess(int contextId, QName qname, DocumentSet docs,
-            NodeSet contextSet, NodeSet resultSet, boolean returnAncestor,
-            IndexSearcher searcher, Query query, XQueryWatchDog watchDog) throws IOException, TerminatedException {
-        LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, returnAncestor, contextId, watchDog);
-        searcher.search(query, collector);
+                                  NodeSet contextSet, NodeSet resultSet, boolean returnAncestor,
+                                  SearcherTaxonomyManager.SearcherAndTaxonomy searcher, Query query, XQueryWatchDog watchDog) throws IOException, TerminatedException {
+        FacetsCollector facetsCollector = new FacetsCollector();
+        LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, returnAncestor, contextId, watchDog, facetsCollector);
+        searcher.searcher.search(query, collector);
+
+        List<FacetResult> results = new ArrayList<>();
+
+        Facets facets = new FastTaxonomyFacetCounts(searcher.taxonomyReader, new FacetsConfig(), facetsCollector);
+        FacetResult children = facets.getTopChildren(10, "person");
+
+        for (LabelAndValue entry : children.labelValues) {
+            System.out.println('"' + entry.label + "\": " + entry.value);
+        }
     }
 
     public NodeSet queryField(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
@@ -696,12 +709,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             // extract all used fields from query
             final String[] fields;
             if (fieldsToGet == null) {
-                fields = LuceneUtil.extractFields(query, searcher.getIndexReader());
+                fields = LuceneUtil.extractFields(query, searcher.searcher.getIndexReader());
             } else {
                 fields = fieldsToGet;
             }
 
-            final PlainTextHighlighter highlighter = new PlainTextHighlighter(query, searcher.getIndexReader());
+            final PlainTextHighlighter highlighter = new PlainTextHighlighter(query, searcher.searcher.getIndexReader());
 
             final MemTreeBuilder builder = new MemTreeBuilder();
             builder.startDocument();
@@ -710,7 +723,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final int nodeNr = builder.startElement("", "results", "results", null);
 
             // Perform actual search
-            searcher.search(query, new Collector() {
+            searcher.searcher.search(query, new Collector() {
                 private Scorer scorer;
                 private AtomicReader reader;
 
@@ -884,9 +897,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private final int contextId;
         private final Query query;
         private final XQueryWatchDog watchdog;
+        private final Collector chainedCollector;
 
         private LuceneHitCollector(QName qname, Query query, DocumentSet docs, NodeSet contextSet, NodeSet resultSet, boolean returnAncestor,
-                                   int contextId, XQueryWatchDog watchDog) {
+                                   int contextId, XQueryWatchDog watchDog, Collector nextCollector) {
             this.qname = qname;
             this.docs = docs;
             this.contextSet = contextSet;
@@ -895,11 +909,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             this.contextId = contextId;
             this.query = query;
             this.watchdog = watchDog;
+            this.chainedCollector = nextCollector;
         }
 
         @Override
         public void setScorer(Scorer scorer) throws IOException {
             this.scorer = scorer;
+            chainedCollector.setScorer(scorer);
         }
 
         @Override
@@ -907,6 +923,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             this.reader = atomicReaderContext.reader();
             this.docIdValues = this.reader.getNumericDocValues(FIELD_DOC_ID);
             this.nodeIdValues = this.reader.getBinaryDocValues(LuceneUtil.FIELD_NODE_ID);
+            chainedCollector.setNextReader(atomicReaderContext);
         }
 
         @Override
@@ -947,18 +964,21 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                 parentNode.deepCopyContext(storedNode, contextId);
                             } else
                                 parentNode.copyContext(storedNode);
+                            chainedCollector.collect(doc);
                         }
                     } else {
                         LuceneMatch match = new LuceneMatch(contextId, nodeId, query);
                         match.setScore(score);
                         storedNode.addMatch(match);
                         resultSet.add(storedNode, sizeHint);
+                        chainedCollector.collect(doc);
                     }
                 } else {
                     LuceneMatch match = new LuceneMatch(contextId, nodeId, query);
                     match.setScore(score);
                     storedNode.addMatch(match);
                     resultSet.add(storedNode);
+                    chainedCollector.collect(doc);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -1265,6 +1285,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
             for (PendingDoc pending : nodesToWrite) {
                 final Document doc = new Document();
+
+
+                List<LuceneFacetConfig> facetConfigs = pending.idxConf.getFacets();
+                facetConfigs.forEach(config ->
+                    config.builder.build(broker, currentDoc, pending.nodeId, doc)
+                );
+
                 fDocId.setLongValue(currentDoc.getDocId());
                 doc.add(fDocId);
 
@@ -1311,9 +1338,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 doc.add(fDocNodeId);
 
                 if (pending.idxConf.getAnalyzer() == null) {
-                    writer.addDocument(doc);
+                    writer.addDocument(config.facetsConfig.build(index.getTaxonomyWriter(), doc));
                 } else {
-                    writer.addDocument(doc, pending.idxConf.getAnalyzer());
+                    writer.addDocument(config.facetsConfig.build(index.getTaxonomyWriter(), doc), pending.idxConf.getAnalyzer());
 		        }
 	        }
         } catch (final IOException e) {

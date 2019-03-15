@@ -31,6 +31,7 @@ import java.util.TreeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.facet.FacetsConfig;
 import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.exist.dom.QName;
 import org.exist.indexing.lucene.analyzers.NoDiacriticsStandardAnalyzer;
@@ -71,6 +72,8 @@ public class LuceneConfig {
 
     private String queryParser = null;
 
+    protected FacetsConfig facetsConfig = new FacetsConfig();
+
     public LuceneConfig(NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
         parseConfig(configNodes, namespaces);
     }
@@ -90,6 +93,7 @@ public class LuceneConfig {
     	this.ignoreNodes = other.ignoreNodes;
     	this.boost = other.boost;
     	this.analyzers = other.analyzers;
+    	this.facetsConfig = other.facetsConfig;
     }
     
     public boolean matches(NodePath path) {
@@ -269,7 +273,7 @@ public class LuceneConfig {
                             case INDEX_ELEMENT: {
                                 // found an index definition
                                 Element elem = (Element) node;
-                                LuceneIndexConfig config = new LuceneIndexConfig(elem, namespaces, analyzers, fieldTypes);
+                                LuceneIndexConfig config = new LuceneIndexConfig(elem, namespaces, analyzers, fieldTypes, facetsConfig);
                                 // if it is a named index, add it to the namedIndexes map
                                 if (config.getName() != null) {
                                     namedIndexes.put(config.getName(), config);
