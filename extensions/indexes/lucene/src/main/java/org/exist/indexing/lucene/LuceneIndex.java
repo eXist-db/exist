@@ -23,6 +23,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.facet.taxonomy.SearcherTaxonomyManager;
+import org.apache.lucene.facet.taxonomy.TaxonomyWriter;
+import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyWriter;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.SearcherManager;
@@ -57,15 +60,19 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     public final static String ID = LuceneIndex.class.getName();
 
 	private static final String DIR_NAME = "lucene";
+	private static final String TAXONOMY_DIR_NAME = "taxonomy";
 
     protected Directory directory;
+    protected Directory taxoDirectory;
+
     protected Analyzer defaultAnalyzer;
 
     protected double bufferSize = IndexWriterConfig.DEFAULT_RAM_BUFFER_SIZE_MB;
 
     protected IndexWriter cachedWriter = null;
+    protected DirectoryTaxonomyWriter cachedTaxonomyWriter = null;
 
-    protected SearcherManager searcherManager = null;
+    protected SearcherTaxonomyManager searcherManager = null;
     protected ReaderManager readerManager = null;
 
     public String getDirName() {
@@ -104,6 +111,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     @Override
     public void open() throws DatabaseConfigurationException {
         Path dir = getDataDir().resolve(getDirName());
+        Path taxoDir = dir.resolve(TAXONOMY_DIR_NAME);
         if (LOG.isDebugEnabled())
             LOG.debug("Opening Lucene index directory: " + dir.toAbsolutePath().toString());
 
@@ -114,16 +122,18 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
                     throw new DatabaseConfigurationException("Lucene index location is not a directory: " +
                         dir.toAbsolutePath().toString());
             } else {
-                Files.createDirectories(dir);
+                Files.createDirectories(taxoDir);
             }
 
             directory = FSDirectory.open(dir.toFile());
+            taxoDirectory = FSDirectory.open(taxoDir.toFile());
 
             final IndexWriterConfig idxWriterConfig = new IndexWriterConfig(LUCENE_VERSION_IN_USE, defaultAnalyzer);
             idxWriterConfig.setRAMBufferSizeMB(bufferSize);
             cachedWriter = new IndexWriter(directory, idxWriterConfig);
+            cachedTaxonomyWriter = new DirectoryTaxonomyWriter(taxoDirectory);
 
-            searcherManager = new SearcherManager(cachedWriter, true, null);
+            searcherManager = new SearcherTaxonomyManager(cachedWriter, true, null, cachedTaxonomyWriter);
             readerManager = new ReaderManager(cachedWriter, true);
         } catch (IOException e) {
             throw new DatabaseConfigurationException("Exception while reading lucene index directory: " +
@@ -146,10 +156,13 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             }
             if (cachedWriter != null) {
             	commit();
+            	cachedTaxonomyWriter.close();
                 cachedWriter.close();
+                cachedTaxonomyWriter = null;
                 cachedWriter = null;
             }
 
+            taxoDirectory.close();
             directory.close();
         } catch (IOException e) {
             throw new DBException("Caught exception while closing lucene indexes: " + e.getMessage());
@@ -200,6 +213,10 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         return cachedWriter;
     }
 
+    public TaxonomyWriter getTaxonomyWriter() {
+        return cachedTaxonomyWriter;
+    }
+
     public synchronized void releaseWriter(IndexWriter writer) {
         if (writer == null)
             return;
@@ -214,8 +231,8 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Committing lucene index");
             }
-            
         	if (cachedWriter != null) {
+                cachedTaxonomyWriter.commit();
                 cachedWriter.commit();
             }
             needsCommit = false;
@@ -236,9 +253,9 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         }
     }
 
-    public <R> R withSearcher(Function2E<IndexSearcher, R, IOException, XPathException> consumer) throws IOException, XPathException {
+    public <R> R withSearcher(Function2E<SearcherTaxonomyManager.SearcherAndTaxonomy, R, IOException, XPathException> consumer) throws IOException, XPathException {
         searcherManager.maybeRefreshBlocking();
-        final IndexSearcher searcher = searcherManager.acquire();
+        final SearcherTaxonomyManager.SearcherAndTaxonomy searcher = searcherManager.acquire();
         try {
             return consumer.apply(searcher);
         } finally {
