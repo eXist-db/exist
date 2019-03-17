@@ -5,7 +5,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-    "extensions/indexes/sort/test/src/xquery/sort"
+    "extensions/indexes/sort/src/test/xquery/sort"
 })
 public class SortTests {
 }
