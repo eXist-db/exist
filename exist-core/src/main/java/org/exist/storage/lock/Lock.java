@@ -28,12 +28,22 @@ public interface Lock extends Debuggable {
      * The modes of a {@link Lock}
      */
     enum LockMode {
-        NO_LOCK,
-        READ_LOCK,
-        WRITE_LOCK,
+        NO_LOCK((byte)0x0),
+        READ_LOCK((byte)0x1),
+        WRITE_LOCK((byte)0x2),
 
-        INTENTION_READ,
-        INTENTION_WRITE
+        INTENTION_READ((byte)0x3),
+        INTENTION_WRITE((byte)0x4);
+
+        private final byte val;
+
+        LockMode(final byte val) {
+            this.val = val;
+        }
+
+        public byte getVal() {
+            return val;
+        }
     }
 
     /**
@@ -44,15 +54,25 @@ public interface Lock extends Debuggable {
         /**
          * Should not be used outside of {@link EnsureLocked}!
          */
-        @Deprecated UNKNOWN,
+        @Deprecated UNKNOWN((byte) 0x5),
 
-        @Deprecated LEGACY_COLLECTION,
-        @Deprecated LEGACY_DOCUMENT,
+        @Deprecated LEGACY_COLLECTION((byte) 0x4),
+        @Deprecated LEGACY_DOCUMENT((byte) 0x3),
 
-        COLLECTION,
-        DOCUMENT,
+        COLLECTION((byte) 0x2),
+        DOCUMENT((byte) 0x1),
 
-        BTREE
+        BTREE((byte) 0x0);
+
+        private final byte val;
+
+        LockType(final byte val) {
+            this.val = val;
+        }
+
+        public byte getVal() {
+            return val;
+        }
     }
 
     /**

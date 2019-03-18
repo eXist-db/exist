@@ -19,7 +19,6 @@
  */
 package org.exist.storage.lock;
 
-import com.evolvedbinary.j8fu.Either;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -28,15 +27,15 @@ import org.exist.storage.NativeBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.Lock.LockType;
 import org.exist.storage.txn.Txn;
+import org.exist.util.RingBuffer;
 
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
-import static org.exist.storage.lock.LockTable.LockAction.Action.*;
-import static org.exist.util.ThreadUtils.newInstanceThread;
+import static org.exist.storage.lock.LockTable.LockEventType.*;
 
 /**
  * The Lock Table holds the details of
@@ -76,38 +75,38 @@ public class LockTable {
             .orElse(0);
 
     /**
+     * Lock event listeners
+     */
+    private final List<LockEventListener> listeners = new CopyOnWriteArrayList<>();
+
+    // thread local object pools
+    private static final ThreadLocal<RingBuffer<char[]>> THREADLOCAL_CHAR_ARRAY_POOL = ThreadLocal.withInitial(() -> new RingBuffer<>(24, () -> new char[42]));
+    private static final ThreadLocal<RingBuffer<EntryKey>> THREADLOCAL_ENTRY_KEY_POOL = ThreadLocal.withInitial(() -> new RingBuffer<>(24, EntryKey::new));
+    private static final ThreadLocal<RingBuffer<Entry>> THREADLOCAL_ENTRY_POOL = ThreadLocal.withInitial(() -> new RingBuffer<>(12, Entry::new));
+
+    /**
      * List of threads attempting to acquire a lock
      *
      * Map<Id, Map<Lock Type, List<LockModeOwner>>>
      */
-    private final ConcurrentMap<String, Map<LockType, List<LockModeOwner>>> attempting = new ConcurrentHashMap<>();
+    private final Map<EntryKey, Entry> attempting = new ConcurrentHashMap<>();
 
     /**
      * Reference count of acquired locks by id and type
      *
      * Map<Id, Map<Lock Type, Map<Lock Mode, Map<Owner, LockCountTraces>>>>
      */
-    private final ConcurrentMap<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> acquired = new ConcurrentHashMap<>();
+    private final Map<EntryKey, Entry> acquired = new ConcurrentHashMap<>();
 
     /**
-     * The {@link #queue} holds lock events and lock listener events
-     * and is processed by the single thread {@link #queueConsumer} which uses
-     * {@link QueueConsumer} to ensure serializability of locking events and monitoring
+     * Holds a count of READ and WRITE locks by {@link Entry#id}
+     * Only used for debugging,see {@link #sanityCheckLockLifecycles(LockEventType, long, String, LockType,
+     *     LockMode, String, int, long, StackTraceElement[])}.
      */
-    private final TransferQueue<Either<ListenerAction, LockAction>> queue = new LinkedTransferQueue<>();
-    private final ExecutorService executorService;
-    private final Future<?> queueConsumer;
+    @GuardedBy("this") private final Map<String, Tuple2<Long, Long>> lockCounts = new HashMap<>();
 
-    /**
-     * Holds a count of READ and WRITE locks by {@link LockAction#id}
-     * Only used for debugging, see {@link #sanityCheckLockLifecycles(LockAction)}.
-     */
-    private final Map<String, Tuple2<Long, Long>> lockCounts = new HashMap<>();
 
-    LockTable(final String brokerPoolId, final ThreadGroup threadGroup) {
-        this.executorService = Executors.newSingleThreadExecutor(runnable -> newInstanceThread(threadGroup, brokerPoolId, "lock-table.processor", runnable));
-        this.queueConsumer = executorService.submit(new QueueConsumer(queue, attempting, acquired));
-
+    LockTable() {
         // add a log listener if trace level logging is enabled
         if(LOG.isTraceEnabled()) {
             registerListener(new LockEventLogListener(LOG, Level.TRACE));
@@ -121,9 +120,6 @@ public class LockTable {
      * events will be reported.
      */
     public void shutdown() {
-        if (!executorService.isShutdown()) {
-            executorService.shutdownNow();
-        }
     }
 
     /**
@@ -151,39 +147,167 @@ public class LockTable {
         event(Released, groupId, id, lockType, mode);
     }
 
-    @Deprecated
-    public void released(final long groupId, final String id, final LockType lockType, final LockMode mode, final int count) {
-        event(Released, groupId, id, lockType, mode, count);
-    }
-
-    private void event(final LockAction.Action action, final long groupId, final String id, final LockType lockType, final LockMode mode) {
-        event(action, groupId, id, lockType, mode, 1);
-    }
-
-    private void event(final LockAction.Action action, final long groupId, final String id, final LockType lockType, final LockMode mode, final int count) {
+    private void event(final LockEventType lockEventType, final long groupId, final String id, final LockType lockType, final LockMode lockMode) {
         if(disableEvents) {
             return;
         }
 
-        final long timestamp = System.nanoTime();
         final Thread currentThread = Thread.currentThread();
         final String threadName = currentThread.getName();
-        @Nullable final StackTraceElement[] stackTrace = getStackTrace(currentThread);
+        final long threadId = currentThread.getId();
 
         if(ignoreEvent(threadName, id)) {
             return;
         }
 
-        final LockAction lockAction = new LockAction(action, groupId, id, lockType, mode, threadName, count, timestamp, stackTrace);
+        final long timestamp = System.nanoTime();
+
+        @Nullable final StackTraceElement[] stackTrace;
+        if(traceStackDepth == 0) {
+            stackTrace = null;
+        } else {
+            stackTrace = getStackTrace(currentThread);
+        }
 
         /**
          * Very useful for debugging Lock life cycles
          */
-        if(sanityCheck) {
-            sanityCheckLockLifecycles(lockAction);
+        if (sanityCheck) {
+            sanityCheckLockLifecycles(lockEventType, groupId, id, lockType, lockMode, threadName, 1, timestamp, stackTrace);
         }
 
-        queue.add(Either.Right(lockAction));
+        switch (lockEventType) {
+            case Attempt:
+                Entry entry = THREADLOCAL_ENTRY_POOL.get().takeEntry();
+                if (entry == null) {
+                    entry = new Entry();
+                }
+                entry.id = id;
+                entry.lockType = lockType;
+                entry.lockMode = lockMode;
+                entry.owner = threadName;
+                if (stackTrace != null) {
+                    entry.stackTraces = new ArrayList<>();
+                    entry.stackTraces.add(stackTrace);
+                } else {
+                    entry.stackTraces = null;
+                }
+                // write count last to ensure reader-thread visibility of above fields
+                entry.count = 1;
+
+                final EntryKey entryKey = key(threadId, id, lockType, lockMode);
+                entry.entryKey = entryKey;
+
+                notifyListeners(lockEventType, timestamp, groupId, entry);
+
+                attempting.put(entryKey, entry);
+                break;
+
+
+            case AttemptFailed:
+                final EntryKey attemptFailedEntryKey = key(threadId, id, lockType, lockMode);
+                final Entry attemptFailedEntry = attempting.remove(attemptFailedEntryKey);
+                if (attemptFailedEntry == null) {
+                    LOG.error("No entry found when trying to remove failed attempt for: id={}" + id);
+
+                } else {
+                    notifyListeners(lockEventType, timestamp, groupId, attemptFailedEntry);
+
+                    // release the key in the map
+                    THREADLOCAL_ENTRY_KEY_POOL.get().returnEntry(attemptFailedEntry.entryKey);
+                    THREADLOCAL_CHAR_ARRAY_POOL.get().returnEntry(attemptFailedEntry.entryKey.buf);
+
+                    // release the value in the map
+                    THREADLOCAL_ENTRY_POOL.get().returnEntry(attemptFailedEntry);
+                }
+
+                // release the key that we used for the lookup
+                THREADLOCAL_ENTRY_KEY_POOL.get().returnEntry(attemptFailedEntryKey);
+                THREADLOCAL_CHAR_ARRAY_POOL.get().returnEntry(attemptFailedEntryKey.buf);
+
+                break;
+
+
+            case Acquired:
+                final EntryKey attemptEntryKey = key(threadId, id, lockType, lockMode);
+                final Entry attemptEntry = attempting.remove(attemptEntryKey);
+                if (attemptEntry == null) {
+                    LOG.error("No entry found when trying to remove acquired attempt for: id={}" + id);
+                    attempting.remove(attemptEntryKey);
+
+                    // release the key that we used for the lookup
+                    THREADLOCAL_ENTRY_KEY_POOL.get().returnEntry(attemptEntryKey);
+                    THREADLOCAL_CHAR_ARRAY_POOL.get().returnEntry(attemptEntryKey.buf);
+                    break;
+                }
+
+                // release the key that we used for the lookup
+                THREADLOCAL_ENTRY_KEY_POOL.get().returnEntry(attemptEntryKey);
+                THREADLOCAL_CHAR_ARRAY_POOL.get().returnEntry(attemptEntryKey.buf);
+
+                // we now either add or merge the `attemptEntry` with the `acquired` table
+                 Entry acquiredEntry = acquired.get(attemptEntry.entryKey);
+                if (acquiredEntry == null) {
+                    acquired.put(attemptEntry.entryKey, attemptEntry);
+                    acquiredEntry = attemptEntry;
+                } else {
+                    if (attemptEntry.stackTraces != null) {
+                        acquiredEntry.stackTraces.addAll(attemptEntry.stackTraces);
+                    }
+                    acquiredEntry.count += attemptEntry.count;
+
+                    // release the attempt entry (as we merged, rather than added)
+                    THREADLOCAL_ENTRY_POOL.get().returnEntry(attemptEntry);
+                    THREADLOCAL_ENTRY_KEY_POOL.get().returnEntry(attemptEntry.entryKey);
+                    THREADLOCAL_CHAR_ARRAY_POOL.get().returnEntry(attemptEntry.entryKey.buf);
+                }
+
+                notifyListeners(lockEventType, timestamp, groupId, acquiredEntry);
+
+                break;
+
+
+            case Released:
+                final EntryKey acquiredEntryKey = key(threadId, id, lockType, lockMode);
+
+                final Entry releasedEntry = acquired.get(acquiredEntryKey);
+                if (releasedEntry == null) {
+                    LOG.error("No entry found when trying to release for: id={}" + id);
+
+                    // release the key that we used for the lookup
+                    THREADLOCAL_ENTRY_KEY_POOL.get().returnEntry(acquiredEntryKey);
+                    THREADLOCAL_CHAR_ARRAY_POOL.get().returnEntry(acquiredEntryKey.buf);
+                    break;
+                }
+
+                // release the key that we used for the lookup
+                THREADLOCAL_ENTRY_KEY_POOL.get().returnEntry(acquiredEntryKey);
+                THREADLOCAL_CHAR_ARRAY_POOL.get().returnEntry(acquiredEntryKey.buf);
+
+                final int localCount = releasedEntry.count;
+
+                // decrement
+                if (releasedEntry.stackTraces != null) {
+                    releasedEntry.stackTraces.remove(releasedEntry.stackTraces.size() - 1);
+                }
+                releasedEntry.count = localCount - 1;
+
+                notifyListeners(lockEventType, timestamp, groupId, releasedEntry);
+
+                if (releasedEntry.count == 0) {
+                    // remove the entry
+                    if (acquired.remove(releasedEntry.entryKey) == null) {
+                        LOG.error("Unable to remove entry for: id={}" + id);
+                    }
+
+                    // release the entry
+                    THREADLOCAL_ENTRY_POOL.get().returnEntry(releasedEntry);
+                    THREADLOCAL_ENTRY_KEY_POOL.get().returnEntry(releasedEntry.entryKey);
+                    THREADLOCAL_CHAR_ARRAY_POOL.get().returnEntry(releasedEntry.entryKey.buf);
+                }
+
+                break;
+        }
     }
 
     /**
@@ -209,27 +333,23 @@ public class LockTable {
 
     @Nullable
     private StackTraceElement[] getStackTrace(final Thread thread) {
-        if(traceStackDepth == 0) {
-            return null;
-        } else {
-            final StackTraceElement[] stackTrace = thread.getStackTrace();
-            final int lastStackTraceElementIdx = stackTrace.length - 1;
+        final StackTraceElement[] stackTrace = thread.getStackTrace();
+        final int lastStackTraceElementIdx = stackTrace.length - 1;
 
-            final int from = findFirstExternalFrame(stackTrace);
-            final int to;
-            if (traceStackDepth == -1) {
+        final int from = findFirstExternalFrame(stackTrace);
+        final int to;
+        if (traceStackDepth == -1) {
+            to = lastStackTraceElementIdx;
+        } else {
+            final int calcTo = from + traceStackDepth;
+            if (calcTo > lastStackTraceElementIdx) {
                 to = lastStackTraceElementIdx;
             } else {
-                final int calcTo = from + traceStackDepth;
-                if (calcTo > lastStackTraceElementIdx) {
-                    to = lastStackTraceElementIdx;
-                } else {
-                    to = calcTo;
-                }
+                to = calcTo;
             }
-
-            return Arrays.copyOfRange(stackTrace, from, to);
         }
+
+        return Arrays.copyOfRange(stackTrace, from, to);
     }
 
     private int findFirstExternalFrame(final StackTraceElement[] stackTrace) {
@@ -243,17 +363,13 @@ public class LockTable {
     }
 
     public void registerListener(final LockEventListener lockEventListener) {
-        final ListenerAction listenerAction = new ListenerAction(ListenerAction.Action.Register, lockEventListener);
-        queue.add(Either.Left(listenerAction));
+        listeners.add(lockEventListener);
+        lockEventListener.registered();
     }
 
     public void deregisterListener(final LockEventListener lockEventListener) {
-        final ListenerAction listenerAction = new ListenerAction(ListenerAction.Action.Deregister, lockEventListener);
-        queue.add(Either.Left(listenerAction));
-    }
-
-    public boolean hasPendingEvents() {
-        return !queue.isEmpty();
+        listeners.remove(lockEventListener);
+        lockEventListener.unregistered();
     }
 
     /**
@@ -262,7 +378,33 @@ public class LockTable {
      * @return lock attempt information
      */
     public Map<String, Map<LockType, List<LockModeOwner>>> getAttempting() {
-        return new HashMap<>(attempting);
+        final Map<String, Map<LockType, List<LockModeOwner>>> result = new HashMap<>();
+
+        final Iterator<Entry> it = attempting.values().iterator();
+        while (it.hasNext()) {
+            final Entry entry = it.next();
+
+            // read count (volatile) first to ensure visibility
+            final int localCount = entry.count;
+
+            result.compute(entry.id, (_k, v) -> {
+                if (v == null) {
+                    v = new HashMap<>();
+                }
+
+                v.compute(entry.lockType, (_k1, v1) -> {
+                    if (v1 == null) {
+                        v1 = new ArrayList<>();
+                    }
+                    v1.add(new LockModeOwner(entry.lockMode, entry.owner));
+                    return v1;
+                });
+
+                return v;
+            });
+        }
+
+        return result;
     }
 
     /**
@@ -271,7 +413,55 @@ public class LockTable {
      * @return acquired lock information
      */
     public Map<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> getAcquired() {
-        return new HashMap<>(acquired);
+        final Map<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> result = new HashMap<>();
+
+        final Iterator<Entry> it = acquired.values().iterator();
+        while (it.hasNext()) {
+            final Entry entry = it.next();
+
+            // read count (volatile) first to ensure visibility
+            final int localCount = entry.count;
+
+            result.compute(entry.id, (_k, v) -> {
+                if (v == null) {
+                    v = new EnumMap<>(LockType.class);
+                }
+
+                v.compute(entry.lockType, (_k1, v1) -> {
+                    if (v1 == null) {
+                        v1 = new EnumMap<>(LockMode.class);
+                    }
+
+                    v1.compute(entry.lockMode, (_k2, v2) -> {
+                        if (v2 == null) {
+                            v2 = new HashMap<>();
+                        }
+
+                        v2.compute(entry.owner, (_k3, v3) -> {
+                            if (v3 == null) {
+                                v3 = new LockCountTraces(localCount, entry.stackTraces);
+                            } else {
+                                v3.count += localCount;
+                                if (entry.stackTraces != null) {
+                                    v3.traces.addAll(entry.stackTraces);
+                                }
+                            }
+
+                            return v3;
+                        });
+
+                        return v2;
+
+                    });
+
+                    return v1;
+                });
+
+                return v;
+            });
+        }
+
+        return result;
     }
 
     public static class LockModeOwner {
@@ -311,406 +501,48 @@ public class LockTable {
         }
     }
 
-    private static class QueueConsumer implements Runnable {
-        private final TransferQueue<Either<ListenerAction, LockAction>> queue;
-        private final ConcurrentMap<String, Map<LockType, List<LockModeOwner>>> attempting;
-        private final ConcurrentMap<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> acquired;
-        private final List<LockEventListener> listeners = new ArrayList<>();
-
-        QueueConsumer(final TransferQueue<Either<ListenerAction, LockAction>> queue,
-                      final ConcurrentMap<String, Map<LockType, List<LockModeOwner>>> attempting,
-                      final ConcurrentMap<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> acquired) {
-            this.queue = queue;
-            this.attempting = attempting;
-            this.acquired = acquired;
-        }
-
-        @Override
-        public void run() {
+    private void notifyListeners(final LockEventType lockEventType, final long timestamp, final long groupId, final Entry entry) {
+        for (final LockEventListener listener : listeners) {
             try {
-                while (true) {
-                    final Either<ListenerAction, LockAction> event = queue.take();
-
-                    if (event.isLeft()) {
-                        processListenerAction(event.left().get());
-                    } else {
-                        processLockAction(event.right().get());
-                    }
-                }
-            } catch (final InterruptedException e) {
-                LOG.warn("LockTable.QueueConsumer was interrupted. LockTable will no longer report lock events!");
-                // Restore the interrupted status
-                Thread.currentThread().interrupt();
+                listener.accept(lockEventType, timestamp, groupId, entry);
+            } catch (final Exception e) {
+                LOG.error("Listener '{}' error: ", listener.getClass().getName(), e);
             }
         }
+    }
 
-        private void processListenerAction(final ListenerAction listenerAction) {
-            if(listenerAction.action == ListenerAction.Action.Register) {
-                listeners.add(listenerAction.lockEventListener);
-                listenerAction.lockEventListener.registered();
-            } else if(listenerAction.action == ListenerAction.Action.Deregister) {
-                listeners.remove(listenerAction.lockEventListener);
-                listenerAction.lockEventListener.unregistered();
-            }
+//        private void notifyListenersOfAcquire(final LockAction lockAction, final int newReferenceCount) {
+//            final LockAction newLockAction = lockAction.withCount(newReferenceCount);
+//            for(final LockEventListener listener : listeners) {
+//                try {
+//                    listener.accept(newLockAction);
+//                } catch (final Exception e) {
+//                    LOG.error("Listener '{}' error: ", listener.getClass().getName(), e);
+//                }
+//            }
+//        }
+
+    private static @Nullable <T> List<T> List(@Nullable final T item) {
+        if (item == null) {
+            return null;
         }
 
-        private void processLockAction(final LockAction lockAction) {
-            if (lockAction.action == Attempt) {
-                notifyListenersOfAttempt(lockAction);
-                addToAttempting(lockAction);
-
-            } else if (lockAction.action == AttemptFailed) {
-                removeFromAttempting(lockAction);
-                notifyListenersOfAttemptFailed(lockAction);
-
-            } else if (lockAction.action == Acquired) {
-                removeFromAttempting(lockAction);
-                incrementAcquired(lockAction);
-
-            } else if (lockAction.action == Released) {
-                decrementAcquired(lockAction);
-            }
-        }
-
-        private void notifyListenersOfAttempt(final LockAction lockAction) {
-            for(final LockEventListener listener : listeners) {
-                try {
-                    listener.accept(lockAction);
-                } catch (final Exception e) {
-                    LOG.error("Listener '{}' error: ", listener.getClass().getName(), e);
-                }
-            }
-        }
-
-        private void notifyListenersOfAttemptFailed(final LockAction lockAction) {
-            for(final LockEventListener listener : listeners) {
-                try {
-                    listener.accept(lockAction);
-                } catch (final Exception e) {
-                    LOG.error("Listener '{}' error: ", listener.getClass().getName(), e);
-                }
-            }
-        }
-
-        private void notifyListenersOfAcquire(final LockAction lockAction, final int newReferenceCount) {
-            final LockAction newLockAction = lockAction.withCount(newReferenceCount);
-            for(final LockEventListener listener : listeners) {
-                try {
-                    listener.accept(newLockAction);
-                } catch (final Exception e) {
-                    LOG.error("Listener '{}' error: ", listener.getClass().getName(), e);
-                }
-            }
-        }
-
-        private void notifyListenersOfRelease(final LockAction lockAction, final int newReferenceCount) {
-            final LockAction newLockAction = lockAction.withCount(newReferenceCount);
-            for(final LockEventListener listener : listeners) {
-                try {
-                    listener.accept(newLockAction);
-                } catch (final Exception e) {
-                    LOG.error("Listener '{}' error: ", listener.getClass().getName(), e);
-                }
-            }
-        }
-
-        private void addToAttempting(final LockAction lockAction) {
-            attempting.compute(lockAction.id, (id, attempts) -> {
-                if (attempts == null) {
-                    attempts = new HashMap<>();
-                }
-
-                attempts.compute(lockAction.lockType, (lockType, v) -> {
-                    if (v == null) {
-                        v = new ArrayList<>();
-                    }
-
-                    v.add(new LockModeOwner(lockAction.mode, lockAction.threadName));
-                    return v;
-                });
-
-                return attempts;
-            });
-        }
-
-        private void removeFromAttempting(final LockAction lockAction) {
-            attempting.compute(lockAction.id, (id, attempts) -> {
-                if (attempts == null) {
-                    return null;
-                } else {
-                    attempts.compute(lockAction.lockType, (lockType, v) -> {
-                        if (v == null) {
-                            return null;
-                        }
-
-                        v.removeIf(val -> val.getLockMode() == lockAction.mode && val.getOwnerThread().equals(lockAction.threadName));
-                        if (v.isEmpty()) {
-                            return null;
-                        } else {
-                            return v;
-                        }
-                    });
-
-                    if (attempts.isEmpty()) {
-                        return null;
-                    } else {
-                        return attempts;
-                    }
-                }
-            });
-        }
-
-        private void incrementAcquired(final LockAction lockAction) {
-            acquired.compute(lockAction.id, (id, acqu) -> {
-                if (acqu == null) {
-                    acqu = new HashMap<>();
-                }
-
-                acqu.compute(lockAction.lockType, (lockType, v) -> {
-                    if (v == null) {
-                        v = new HashMap<>();
-                    }
-
-                    v.compute(lockAction.mode, (mode, ownerHolds) -> {
-                        if (ownerHolds == null) {
-                            ownerHolds = new HashMap<>();
-                        }
-
-                        ownerHolds.compute(lockAction.threadName, (threadName, holdCount) -> {
-                            if(holdCount == null) {
-                                holdCount = new LockCountTraces(1, List(lockAction.stackTrace));
-                            } else {
-                                holdCount = append(holdCount, lockAction.stackTrace);
-                            }
-                            return holdCount;
-                        });
-
-                        final int lockModeHolds = ownerHolds.values().stream()
-                                .map(LockCountTraces::getCount)
-                                .collect(Collectors.summingInt(Integer::intValue));
-                        notifyListenersOfAcquire(lockAction, lockModeHolds);
-
-                        return ownerHolds;
-                    });
-
-                    return v;
-                });
-
-                return acqu;
-            });
-        }
-
-        private static @Nullable <T> List<T> List(@Nullable final T item) {
-            if (item == null) {
-                return null;
-            }
-
-            final List<T> list = new ArrayList<>();
-            list.add(item);
-            return list;
-        }
-
-        private static LockCountTraces append(final LockCountTraces holdCount, @Nullable final StackTraceElement[] trace) {
-            List<StackTraceElement[]> traces = holdCount.traces;
-            if (traces != null) {
-                traces.add(trace);
-            }
-            holdCount.count++;
-            return holdCount;
-        }
-
-        private static LockCountTraces removeLast(final LockCountTraces holdCount) {
-            List<StackTraceElement[]> traces = holdCount.traces;
-            if (traces != null) {
-                traces.remove(traces.size() - 1);
-            }
-            holdCount.count--;
-            return holdCount;
-        }
-
-        private void decrementAcquired(final LockAction lockAction) {
-            acquired.compute(lockAction.id, (id, acqu) -> {
-                if (acqu == null) {
-                    LOG.error("No entry found when trying to decrementAcquired for: id={}" + lockAction.id);
-                    return null;
-                }
-
-                acqu.compute(lockAction.lockType, (lockType, v) -> {
-                    if (v == null) {
-                        LOG.error("No entry found when trying to decrementAcquired for: id={}, lockType={}", lockAction.id, lockAction.lockType);
-                        return null;
-                    }
-
-                    v.compute(lockAction.mode, (mode, ownerHolds) -> {
-                        if (ownerHolds == null) {
-                            LOG.error("No entry found when trying to decrementAcquired for: id={}, lockType={}, lockMode={}", lockAction.id, lockAction.lockType, lockAction.mode);
-                            return null;
-                        } else {
-                            ownerHolds.compute(lockAction.threadName, (threadName, holdCount) -> {
-                                if(holdCount == null) {
-                                    LOG.error("No entry found when trying to decrementAcquired for: id={}, lockType={}, lockMode={}, threadName={}", lockAction.id, lockAction.lockType, lockAction.mode, lockAction.threadName);
-                                    return null;
-                                } else if(holdCount.count == 0) {
-                                    LOG.error("Negative release when trying to decrementAcquired for: id={}, lockType={}, lockMode={}, threadName={}", lockAction.id, lockAction.lockType, lockAction.mode, lockAction.threadName);
-                                    return null;
-                                } else if(holdCount.count == 1) {
-                                    return null;
-                                } else {
-                                    return removeLast(holdCount);
-                                }
-                            });
-
-                            final int lockModeHolds = ownerHolds.values().stream().map(LockCountTraces::getCount).collect(Collectors.summingInt(Integer::intValue));
-
-                            notifyListenersOfRelease(lockAction, lockModeHolds);
-
-                            if (ownerHolds.isEmpty()) {
-                                return null;
-                            } else {
-                                return ownerHolds;
-                            }
-                        }
-                    });
-
-                    if (v.isEmpty()) {
-                        return null;
-                    } else {
-                        return v;
-                    }
-                });
-
-                if (acqu.isEmpty()) {
-                    return null;
-                } else {
-                    return acqu;
-                }
-            });
-        }
+        final List<T> list = new ArrayList<>();
+        list.add(item);
+        return list;
     }
 
     public interface LockEventListener {
         default void registered() {}
-        void accept(final LockAction lockAction);
+        void accept(final LockEventType lockEventType, final long timestamp, final long groupId, final Entry entry);
         default void unregistered() {}
     }
 
-    private static class ListenerAction {
-        enum Action {
-            Register,
-            Deregister
-        }
-
-        private final Action action;
-        private final LockEventListener lockEventListener;
-
-        public ListenerAction(final Action action, final LockEventListener lockEventListener) {
-            this.action = action;
-            this.lockEventListener = lockEventListener;
-        }
-
-        @Override
-        public String toString() {
-            return action.name() + " " + lockEventListener.getClass().getName();
-        }
-    }
-
-    public static class LockAction {
-        private static final String NATIVE_BROKER_CLASS_NAME = NativeBroker.class.getName();
-        private static final String COLLECTION_STORE_CLASS_NAME = NativeBroker.class.getName();
-        private static final String TXN_CLASS_NAME = Txn.class.getName();
-
-        public enum Action {
-            Attempt,
-            AttemptFailed,
-            Acquired,
-            Released
-        }
-
-        public final Action action;
-        public final long groupId;
-        public final String id;
-        public final LockType lockType;
-        public final LockMode mode;
-        public final String threadName;
-        public final int count;
-        /**
-         * System#nanoTime()
-         */
-        public final long timestamp;
-        @Nullable public final StackTraceElement[] stackTrace;
-
-        LockAction(final Action action, final long groupId, final String id, final LockType lockType, final LockMode mode, final String threadName, final int count, final long timestamp, @Nullable final StackTraceElement[] stackTrace) {
-            this.action = action;
-            this.groupId = groupId;
-            this.id = id;
-            this.lockType = lockType;
-            this.mode = mode;
-            this.threadName = threadName;
-            this.count = count;
-            this.timestamp = timestamp;
-            this.stackTrace = stackTrace;
-        }
-
-        public LockAction withCount(final int count) {
-            return new LockAction(action, groupId, id, lockType, mode, threadName, count, timestamp, stackTrace);
-        }
-
-        @Override
-        public String toString() {
-            final StringBuilder builder = new StringBuilder()
-                    .append(action.toString())
-                    .append(' ')
-                    .append(lockType.name());
-
-                if(groupId > -1) {
-                    builder
-                            .append("#")
-                            .append(groupId);
-                }
-
-                builder.append('(')
-                    .append(mode.toString())
-                    .append(") of ")
-                    .append(id);
-
-            if(stackTrace != null) {
-                final String reason = getSimpleStackReason();
-                if(reason != null) {
-                    builder
-                            .append(" for #")
-                            .append(reason);
-                }
-            }
-
-            builder
-                    .append(" by ")
-                    .append(threadName)
-                    .append(" at ")
-                    .append(timestamp);
-
-            if (action == Acquired || action == Released) {
-                builder
-                    .append(". count=")
-                    .append(Integer.toString(count));
-            }
-
-            return builder.toString();
-        }
-
-        @Nullable
-        public String getSimpleStackReason() {
-            for (final StackTraceElement stackTraceElement : stackTrace) {
-                final String className = stackTraceElement.getClassName();
-
-                if (className.equals(NATIVE_BROKER_CLASS_NAME) || className.equals(COLLECTION_STORE_CLASS_NAME) || className.equals(TXN_CLASS_NAME)) {
-                    if (!(stackTraceElement.getMethodName().endsWith("LockCollection") || stackTraceElement.getMethodName().equals("lockCollectionCache"))) {
-                        return stackTraceElement.getMethodName() + '(' + stackTraceElement.getLineNumber() + ')';
-                    }
-                }
-            }
-
-            return null;
-        }
+    public enum LockEventType {
+        Attempt,
+        AttemptFailed,
+        Acquired,
+        Released
     }
 
     /** debugging tools below **/
@@ -718,30 +550,32 @@ public class LockTable {
     /**
      * Checks that there are not more releases that there are acquires
      */
-    private void sanityCheckLockLifecycles(final LockAction lockAction) {
+    private void sanityCheckLockLifecycles(final LockEventType lockEventType, final long groupId, final String id,
+            final LockType lockType, final LockMode lockMode, final String threadName, final int count,
+            final long timestamp, @Nullable final StackTraceElement[] stackTrace) {
         synchronized(lockCounts) {
             long read = 0;
             long write = 0;
 
-            final Tuple2<Long, Long> lockCount = lockCounts.get(lockAction.id);
+            final Tuple2<Long, Long> lockCount = lockCounts.get(id);
             if(lockCount != null) {
                 read = lockCount._1;
                 write = lockCount._2;
             }
 
-            if(lockAction.action == LockAction.Action.Acquired) {
-                if(lockAction.mode == LockMode.READ_LOCK) {
+            if(lockEventType == Acquired) {
+                if(lockMode == LockMode.READ_LOCK) {
                     read++;
-                } else if(lockAction.mode == LockMode.WRITE_LOCK) {
+                } else if(lockMode == LockMode.WRITE_LOCK) {
                     write++;
                 }
-            } else if(lockAction.action == LockAction.Action.Released) {
-                if(lockAction.mode == LockMode.READ_LOCK) {
+            } else if(lockEventType == Released) {
+                if(lockMode == LockMode.READ_LOCK) {
                     if(read == 0) {
                         LOG.error("Negative READ_LOCKs", new IllegalStateException());
                     }
                     read--;
-                } else if(lockAction.mode == LockMode.WRITE_LOCK) {
+                } else if(lockMode == LockMode.WRITE_LOCK) {
                     if(write == 0) {
                         LOG.error("Negative WRITE_LOCKs", new IllegalStateException());
                     }
@@ -750,10 +584,267 @@ public class LockTable {
             }
 
             if(LOG.isTraceEnabled()) {
-                LOG.trace("QUEUE: {} (read={} write={})", lockAction.toString(), read, write);
+                LOG.trace("QUEUE: {} (read={} write={})", formatString(lockEventType, groupId, id, lockType, lockMode,
+                        threadName, count, timestamp, stackTrace), read, write);
             }
 
-            lockCounts.put(lockAction.id, Tuple(read, write));
+            lockCounts.put(id, Tuple(read, write));
+        }
+    }
+
+    public static String formatString(final LockEventType lockEventType, final long groupId, final String id,
+            final LockType lockType, final LockMode lockMode, final String threadName, final int count,
+            final long timestamp, @Nullable final StackTraceElement[] stackTrace) {
+        final StringBuilder builder = new StringBuilder()
+                .append(lockEventType.name())
+                .append(' ')
+                .append(lockType.name());
+
+        if(groupId > -1) {
+            builder
+                    .append("#")
+                    .append(groupId);
+        }
+
+        builder.append('(')
+                .append(lockMode.toString())
+                .append(") of ")
+                .append(id);
+
+        if(stackTrace != null) {
+            final String reason = getSimpleStackReason(stackTrace);
+            if(reason != null) {
+                builder
+                        .append(" for #")
+                        .append(reason);
+            }
+        }
+
+        builder
+                .append(" by ")
+                .append(threadName)
+                .append(" at ")
+                .append(timestamp);
+
+        if (lockEventType == Acquired || lockEventType == Released) {
+            builder
+                    .append(". count=")
+                    .append(Integer.toString(count));
+        }
+
+        return builder.toString();
+    }
+
+    private static final String NATIVE_BROKER_CLASS_NAME = NativeBroker.class.getName();
+    private static final String COLLECTION_STORE_CLASS_NAME = NativeBroker.class.getName();
+    private static final String TXN_CLASS_NAME = Txn.class.getName();
+
+    @Nullable
+    public static String getSimpleStackReason(final StackTraceElement[] stackTrace) {
+        for (final StackTraceElement stackTraceElement : stackTrace) {
+            final String className = stackTraceElement.getClassName();
+
+            if (className.equals(NATIVE_BROKER_CLASS_NAME) || className.equals(COLLECTION_STORE_CLASS_NAME) || className.equals(TXN_CLASS_NAME)) {
+                if (!(stackTraceElement.getMethodName().endsWith("LockCollection") || stackTraceElement.getMethodName().equals("lockCollectionCache"))) {
+                    return stackTraceElement.getMethodName() + '(' + stackTraceElement.getLineNumber() + ')';
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static EntryKey key(final long threadId, final String id, final LockType lockType, final LockMode lockMode) {
+        final boolean idIsUri = lockType == LockType.COLLECTION || lockType == LockType.DOCUMENT;
+
+        final int requiredLen = 8 + 1 + (id.length() - (idIsUri ? (id.equals("/db") ? 3 : 4) : 0));
+
+        char[] buf = THREADLOCAL_CHAR_ARRAY_POOL.get().takeEntry();
+        if (buf == null || buf.length < requiredLen) {
+            buf = new char[requiredLen];
+        }
+
+        longToChar(threadId, buf);
+        buf[8] = (char) ((lockMode.getVal() << 4) | lockType.getVal());
+
+        if (idIsUri) {
+            appendUri(buf, 9, requiredLen, id);
+        } else {
+            id.getChars(0, id.length(), buf, 9);
+        }
+
+        EntryKey key = THREADLOCAL_ENTRY_KEY_POOL.get().takeEntry();
+        if (key == null) {
+            key = new EntryKey();
+        }
+        key.setBuf(buf, requiredLen);
+
+        return key;
+    }
+
+    private static void longToChar(final long v, final char[] data) {
+        data[0] = (char) ((v >>> 0) & 0xff);
+        data[1] = (char) ((v >>> 8) & 0xff);
+        data[2] = (char) ((v >>> 16) & 0xff);
+        data[3] = (char) ((v >>> 24) & 0xff);
+        data[4] = (char) ((v >>> 32) & 0xff);
+        data[5] = (char) ((v >>> 40) & 0xff);
+        data[6] = (char) ((v >>> 48) & 0xff);
+        data[7] = (char) ((v >>> 56) & 0xff);
+    }
+
+    private static void appendUri(final char[] buf, int bufOffset, final int bufLen, final String id) {
+        int partEnd = id.length() - 1;
+        for (int i = partEnd; bufOffset < bufLen; i--) {
+            final char c = id.charAt(i);
+            if (c == '/') {
+                id.getChars(i + 1, partEnd + 1, buf, bufOffset);
+                bufOffset += partEnd - i;
+                partEnd = i - 1;
+                if (bufOffset < bufLen) {
+                    buf[bufOffset++] = '/';
+                }
+            }
+        }
+    }
+
+    private static class EntryKey {
+        private char[] buf;
+        private int bufLen;
+        private int hashCode;
+
+        public void setBuf(final char buf[], final int bufLen) {
+            this.buf = buf;
+            this.bufLen = bufLen;
+
+            // calculate hashcode
+            hashCode = 1;
+            for (int i = 0; i < bufLen; i++)
+                hashCode = 31 * hashCode + buf[i];
+        }
+
+        @Override
+        public int hashCode() {
+            return hashCode;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || EntryKey.class != o.getClass()) return false;
+
+            final EntryKey other = ((EntryKey) o);
+
+            if (buf == other.buf)
+                return true;
+
+            if (other.bufLen != bufLen)
+                return false;
+
+            for (int i = 0; i < bufLen; i++)
+                if (buf[i] != other.buf[i])
+                    return false;
+
+            return true;
+        }
+    }
+
+    /**
+     * Represents an entry in the {@link #attempting} or {@link #acquired} lock table.
+     *
+     * All class members are only written from a single
+     * thread.
+     *
+     * However, they may be read from the same writer thread or a different read-only thread.
+     * The member `count` is written last by the writer thread
+     * and read first by the read-only reader thread to ensure correct visibility
+     * of the member values.
+     */
+    public static class Entry {
+        String id;
+        LockType lockType;
+        LockMode lockMode;
+        String owner;
+
+        @Nullable List<StackTraceElement[]> stackTraces;
+
+        /**
+         * Intentionally marked volatile.
+         * All variables visible before this point become available
+         * to the reading thread.
+         */
+        volatile int count;
+
+        /**
+         * Used as a reference so that we can recycle the Map entry
+         * key for reuse when we are done with this value.
+         *
+         * NOTE: Only ever read and written from the same thread
+         */
+        EntryKey entryKey;
+
+        private Entry() {
+        }
+
+        private Entry(final String id, final LockType lockType, final LockMode lockMode, final String owner,
+                      @Nullable final StackTraceElement[] stackTrace) {
+            this.id = id;
+            this.lockType = lockType;
+            this.lockMode = lockMode;
+            this.owner = owner;
+            if (stackTrace != null) {
+                this.stackTraces = new ArrayList<>();
+                this.stackTraces.add(stackTrace);
+            } else {
+                this.stackTraces = null;
+            }
+            // write last to ensure reader visibility of above fields!
+            this.count = 1;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || Entry.class != o.getClass()) return false;
+            Entry entry = (Entry) o;
+            return id.equals(entry.id) &&
+                    lockType == entry.lockType &&
+                    lockMode == entry.lockMode &&
+                    owner.equals(entry.owner);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = id.hashCode();
+            result = 31 * result + lockType.hashCode();
+            result = 31 * result + lockMode.hashCode();
+            result = 31 * result + owner.hashCode();
+            return result;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public LockType getLockType() {
+            return lockType;
+        }
+
+        public LockMode getLockMode() {
+            return lockMode;
+        }
+
+        public String getOwner() {
+            return owner;
+        }
+
+        @Nullable
+        public List<StackTraceElement[]> getStackTraces() {
+            return stackTraces;
+        }
+
+        public int getCount() {
+            return count;
         }
     }
 }
