@@ -961,7 +961,7 @@ public class MutableCollection implements Collection {
     }
 
     @Override
-public void removeXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name)
+    public void removeXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name)
             throws PermissionDeniedException, TriggerException, LockException, IOException {
         final BrokerPool db = broker.getBrokerPool();
 
@@ -972,7 +972,7 @@ public void removeXMLResource(final Txn transaction, final DBBroker broker, fina
             }
 
             final XmldbURI docUri = XmldbURI.create(name.getRawCollectionPath());
-            try(final ManagedDocumentLock docUpdateLock = lockManager.acquireDocumentWriteLock(docUri)) {
+            try(final ManagedDocumentLock docUpdateLock = lockManager.acquireDocumentWriteLock(path.append(docUri))) {
 
                 final DocumentImpl doc = documents.get(docUri);
 
