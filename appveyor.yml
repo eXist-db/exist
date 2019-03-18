@@ -30,5 +30,10 @@ after_test:
         $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", $file.FullName)
       }
 
+on_failure:
+  - cmd: 7z a junit-failed-data.zip %APPVEYOR_BUILD_FOLDER%\exist-core\target\junit-reports\data\ && appveyor PushArtifact junit-failed-data.zip
+  - sh: tar czvf junit-failed-data.tgz $APPVEYOR_BUILD_FOLDER/exist-core/target/junit-reports/data/ && appveyor PushArtifact junit-failed-data.tgz
+
 artifacts:
   - path: exist-core\target\junit-reports
+    name: junit-reports
