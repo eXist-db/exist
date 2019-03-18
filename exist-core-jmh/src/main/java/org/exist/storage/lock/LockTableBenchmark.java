@@ -64,7 +64,7 @@ public class LockTableBenchmark {
                 lockTableState.lockTable.attempt(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                 lockTableState.lockTable.acquired(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                 eventsState.btreeReads++;
-                lockTableState.lockTable.acquired(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
+                lockTableState.lockTable.released(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
             }
 
             boolean didCollectionIntentionRead = false;
@@ -77,7 +77,7 @@ public class LockTableBenchmark {
                     lockTableState.lockTable.attempt(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                     lockTableState.lockTable.acquired(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                     eventsState.btreeReads++;
-                    lockTableState.lockTable.acquired(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
+                    lockTableState.lockTable.released(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                 }
 
                 lockTableState.lockTable.attempt(groupId, "/db/apps", Lock.LockType.COLLECTION, Lock.LockMode.INTENTION_READ);
@@ -89,7 +89,7 @@ public class LockTableBenchmark {
                     lockTableState.lockTable.attempt(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                     lockTableState.lockTable.acquired(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                     eventsState.btreeReads++;
-                    lockTableState.lockTable.acquired(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
+                    lockTableState.lockTable.released(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                 }
 
                 lockTableState.lockTable.attempt(groupId, "/db/apps/docs", Lock.LockType.COLLECTION, Lock.LockMode.INTENTION_READ);
@@ -101,7 +101,7 @@ public class LockTableBenchmark {
                     lockTableState.lockTable.attempt(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                     lockTableState.lockTable.acquired(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                     eventsState.btreeReads++;
-                    lockTableState.lockTable.acquired(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
+                    lockTableState.lockTable.released(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                 }
 
                 lockTableState.lockTable.attempt(groupId, "/db/apps/docs/data", Lock.LockType.COLLECTION, Lock.LockMode.INTENTION_READ);
@@ -113,7 +113,7 @@ public class LockTableBenchmark {
                     lockTableState.lockTable.attempt(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                     lockTableState.lockTable.acquired(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                     eventsState.btreeReads++;
-                    lockTableState.lockTable.acquired(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
+                    lockTableState.lockTable.released(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                 }
 
                 didCollectionIntentionRead = true;
@@ -131,7 +131,7 @@ public class LockTableBenchmark {
                     lockTableState.lockTable.attempt(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                     lockTableState.lockTable.acquired(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                     eventsState.btreeReads++;
-                    lockTableState.lockTable.acquired(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
+                    lockTableState.lockTable.released(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                 }
 
                 lockTableState.lockTable.attempt(groupId, dataSubCollection, Lock.LockType.COLLECTION, Lock.LockMode.READ_LOCK);
@@ -150,7 +150,7 @@ public class LockTableBenchmark {
                     lockTableState.lockTable.attempt(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                     lockTableState.lockTable.acquired(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                     eventsState.btreeReads++;
-                    lockTableState.lockTable.acquired(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
+                    lockTableState.lockTable.released(groupId, "BTREE", Lock.LockType.BTREE, Lock.LockMode.READ_LOCK);
                 }
 
                 if (eventsState.documentsIndex > DOCUMENTS) {
