@@ -22,10 +22,12 @@ package org.exist.xquery.modules.lucene;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.lucene.facet.FacetsCollector;
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.FunctionDef;
+import org.exist.xquery.XQueryContext;
 
 /**
  * Module function definitions for Lucene-based full text indexed searching.
@@ -61,7 +63,9 @@ public class LuceneModule extends AbstractInternalModule {
         new FunctionDef(Search.signatures[0], Search.class),
         new FunctionDef(Search.signatures[1], Search.class),
         new FunctionDef(Search.signatures[2], Search.class),
-        new FunctionDef(GetField.signatures[0], GetField.class)
+        new FunctionDef(GetField.signatures[0], GetField.class),
+        new FunctionDef(Facets.signatures[0], Facets.class),
+        new FunctionDef(Facets.signatures[1], Facets.class)
     };
 
     public LuceneModule(Map<String, List<? extends Object>> parameters) {
