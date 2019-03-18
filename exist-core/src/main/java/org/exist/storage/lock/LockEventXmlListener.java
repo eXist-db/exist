@@ -109,7 +109,8 @@ public class LockEventXmlListener implements LockTable.LockEventListener {
     }
 
     @Override
-    public void accept(final LockTable.LockAction lockAction) {
+    public void accept(final LockTable.LockEventType lockEventType, final long timestamp, final long groupId,
+            final LockTable.Entry entry) {
         if(!registered) {
             return;
         }
@@ -118,17 +119,24 @@ public class LockEventXmlListener implements LockTable.LockEventListener {
             try {
                 xmlStreamWriter.writeStartElement("lockEvent");
 
-                    writeLongElement("timestamp", lockAction.timestamp);
-                    writeStringElement("action", lockAction.action.name());
-                    writeLongElement("groupId", lockAction.groupId);
-                    writeStringElement("id", lockAction.id);
-                    writeStringElement("thread", lockAction.threadName);
-                    stackTraceToJson(lockAction.stackTrace);
+                    // read count first to ensure memory visibility from volatile!
+                    final int localCount = entry.count;
+
+                    writeLongElement("timestamp", timestamp);
+                    writeStringElement("lockEventType", lockEventType.name());
+                    writeLongElement("groupId", groupId);
+                    writeStringElement("id", entry.id);
+                    writeStringElement("thread", entry.owner);
+                    if (entry.stackTraces != null) {
+                        for (final StackTraceElement[] stackTrace : entry.stackTraces) {
+                            stackTraceToXml(stackTrace);
+                        }
+                    }
 
                     xmlStreamWriter.writeStartElement("lock");
-                        writeStringElement("type", lockAction.lockType.name());
-                        writeStringElement("mode", lockAction.mode.name());
-                        writeIntElement("holdCount", lockAction.count);
+                        writeStringElement("type", entry.lockType.name());
+                        writeStringElement("mode", entry.lockMode.name());
+                        writeIntElement("holdCount", localCount);
                     xmlStreamWriter.writeEndElement();
 
                 xmlStreamWriter.writeEndElement();
@@ -156,7 +164,7 @@ public class LockEventXmlListener implements LockTable.LockEventListener {
         xmlStreamWriter.writeEndElement();
     }
 
-    private void stackTraceToJson(@Nullable final StackTraceElement[] stackTrace) throws XMLStreamException {
+    private void stackTraceToXml(@Nullable final StackTraceElement[] stackTrace) throws XMLStreamException {
         xmlStreamWriter.writeStartElement("trace");
 
             if(stackTrace != null) {

@@ -111,7 +111,8 @@ public class LockEventJsonListener implements LockTable.LockEventListener {
     }
 
     @Override
-    public void accept(final LockTable.LockAction lockAction) {
+    public void accept(final LockTable.LockEventType lockEventType, final long timestamp, final long groupId,
+            final LockTable.Entry entry) {
         if(!registered) {
             return;
         }
@@ -120,17 +121,24 @@ public class LockEventJsonListener implements LockTable.LockEventListener {
             try {
                 jsonGenerator.writeStartObject();
 
-                    jsonGenerator.writeNumberField("timestamp", lockAction.timestamp);
-                    jsonGenerator.writeStringField("action", lockAction.action.name());
-                    jsonGenerator.writeNumberField("groupId", lockAction.groupId);
-                    jsonGenerator.writeStringField("id", lockAction.id);
-                    jsonGenerator.writeStringField("thread", lockAction.threadName);
-                    stackTraceToJson(lockAction.stackTrace);
+                    // read count first to ensure memory visibility from volatile!
+                    final int localCount = entry.count;
+
+                    jsonGenerator.writeNumberField("timestamp", timestamp);
+                    jsonGenerator.writeStringField("lockEventType", lockEventType.name());
+                    jsonGenerator.writeNumberField("groupId", groupId);
+                    jsonGenerator.writeStringField("id", entry.id);
+                    jsonGenerator.writeStringField("thread", entry.owner);
+                    if (entry.stackTraces != null) {
+                        for (final StackTraceElement[] stackTrace : entry.stackTraces) {
+                            stackTraceToJson(stackTrace);
+                        }
+                    }
 
                     jsonGenerator.writeObjectFieldStart("lock");
-                        jsonGenerator.writeStringField("type", lockAction.lockType.name());
-                        jsonGenerator.writeStringField("mode", lockAction.mode.name());
-                        jsonGenerator.writeNumberField("holdCount", lockAction.count);
+                        jsonGenerator.writeStringField("type", entry.lockType.name());
+                        jsonGenerator.writeStringField("mode", entry.lockMode.name());
+                        jsonGenerator.writeNumberField("holdCount", localCount);
                     jsonGenerator.writeEndObject();
 
                 jsonGenerator.writeEndObject();
