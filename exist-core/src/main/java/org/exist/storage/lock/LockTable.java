@@ -85,16 +85,12 @@ public class LockTable {
     private static final ThreadLocal<RingBuffer<Entry>> THREADLOCAL_ENTRY_POOL = ThreadLocal.withInitial(() -> new RingBuffer<>(12, Entry::new));
 
     /**
-     * List of threads attempting to acquire a lock
-     *
-     * Map<Id, Map<Lock Type, List<LockModeOwner>>>
+     * Table of threads attempting to acquire a lock
      */
     private final Map<EntryKey, Entry> attempting = new ConcurrentHashMap<>();
 
     /**
-     * Reference count of acquired locks by id and type
-     *
-     * Map<Id, Map<Lock Type, Map<Lock Mode, Map<Owner, LockCountTraces>>>>
+     * Table of threads which have acquired lock(s)
      */
     private final Map<EntryKey, Entry> acquired = new ConcurrentHashMap<>();
 
@@ -195,6 +191,7 @@ public class LockTable {
                 // write count last to ensure reader-thread visibility of above fields
                 entry.count = 1;
 
+                // this key will be released in either `AttemptFailed`, `Acquired` (if merging), or `Released`
                 final EntryKey entryKey = key(threadId, id, lockType, lockMode);
                 entry.entryKey = entryKey;
 
@@ -206,60 +203,59 @@ public class LockTable {
 
             case AttemptFailed:
                 final EntryKey attemptFailedEntryKey = key(threadId, id, lockType, lockMode);
+
                 final Entry attemptFailedEntry = attempting.remove(attemptFailedEntryKey);
                 if (attemptFailedEntry == null) {
-                    LOG.error("No entry found when trying to remove failed attempt for: id={}" + id);
+                    LOG.error("No entry found when trying to remove failed `attempt` for: id={}", id);
 
-                } else {
-                    notifyListeners(lockEventType, timestamp, groupId, attemptFailedEntry);
+                    // release the key that we used for the lookup
+                    releaseEntryKey(attemptFailedEntryKey);
 
-                    // release the key in the map
-                    THREADLOCAL_ENTRY_KEY_POOL.get().returnEntry(attemptFailedEntry.entryKey);
-                    THREADLOCAL_CHAR_ARRAY_POOL.get().returnEntry(attemptFailedEntry.entryKey.buf);
-
-                    // release the value in the map
-                    THREADLOCAL_ENTRY_POOL.get().returnEntry(attemptFailedEntry);
+                    break;
                 }
 
                 // release the key that we used for the lookup
-                THREADLOCAL_ENTRY_KEY_POOL.get().returnEntry(attemptFailedEntryKey);
-                THREADLOCAL_CHAR_ARRAY_POOL.get().returnEntry(attemptFailedEntryKey.buf);
+                releaseEntryKey(attemptFailedEntryKey);
+
+                notifyListeners(lockEventType, timestamp, groupId, attemptFailedEntry);
+
+                // release the failed attempt entry
+                releaseEntry(attemptFailedEntry);
 
                 break;
 
 
             case Acquired:
                 final EntryKey attemptEntryKey = key(threadId, id, lockType, lockMode);
+
                 final Entry attemptEntry = attempting.remove(attemptEntryKey);
                 if (attemptEntry == null) {
-                    LOG.error("No entry found when trying to remove acquired attempt for: id={}" + id);
-                    attempting.remove(attemptEntryKey);
+                    LOG.error("No entry found when trying to remove `attempt` to promote to `acquired` for: id={}, EntryKey.hashCode={}", id, attemptEntryKey.hashCode());
 
                     // release the key that we used for the lookup
-                    THREADLOCAL_ENTRY_KEY_POOL.get().returnEntry(attemptEntryKey);
-                    THREADLOCAL_CHAR_ARRAY_POOL.get().returnEntry(attemptEntryKey.buf);
+                    releaseEntryKey(attemptEntryKey);
+
                     break;
                 }
 
                 // release the key that we used for the lookup
-                THREADLOCAL_ENTRY_KEY_POOL.get().returnEntry(attemptEntryKey);
-                THREADLOCAL_CHAR_ARRAY_POOL.get().returnEntry(attemptEntryKey.buf);
+                releaseEntryKey(attemptEntryKey);
 
                 // we now either add or merge the `attemptEntry` with the `acquired` table
-                 Entry acquiredEntry = acquired.get(attemptEntry.entryKey);
+                Entry acquiredEntry = acquired.get(attemptEntry.entryKey);
+
                 if (acquiredEntry == null) {
                     acquired.put(attemptEntry.entryKey, attemptEntry);
                     acquiredEntry = attemptEntry;
                 } else {
+
                     if (attemptEntry.stackTraces != null) {
                         acquiredEntry.stackTraces.addAll(attemptEntry.stackTraces);
                     }
                     acquiredEntry.count += attemptEntry.count;
 
                     // release the attempt entry (as we merged, rather than added)
-                    THREADLOCAL_ENTRY_POOL.get().returnEntry(attemptEntry);
-                    THREADLOCAL_ENTRY_KEY_POOL.get().returnEntry(attemptEntry.entryKey);
-                    THREADLOCAL_CHAR_ARRAY_POOL.get().returnEntry(attemptEntry.entryKey.buf);
+                    releaseEntry(attemptEntry);
                 }
 
                 notifyListeners(lockEventType, timestamp, groupId, acquiredEntry);
@@ -272,17 +268,16 @@ public class LockTable {
 
                 final Entry releasedEntry = acquired.get(acquiredEntryKey);
                 if (releasedEntry == null) {
-                    LOG.error("No entry found when trying to release for: id={}" + id);
+                    LOG.error("No entry found when trying to `release` for: id={}, EntryKey.hashCode={}", id, acquiredEntryKey.hashCode());
 
                     // release the key that we used for the lookup
-                    THREADLOCAL_ENTRY_KEY_POOL.get().returnEntry(acquiredEntryKey);
-                    THREADLOCAL_CHAR_ARRAY_POOL.get().returnEntry(acquiredEntryKey.buf);
+                    releaseEntryKey(acquiredEntryKey);
+
                     break;
                 }
 
                 // release the key that we used for the lookup
-                THREADLOCAL_ENTRY_KEY_POOL.get().returnEntry(acquiredEntryKey);
-                THREADLOCAL_CHAR_ARRAY_POOL.get().returnEntry(acquiredEntryKey.buf);
+                releaseEntryKey(acquiredEntryKey);
 
                 final int localCount = releasedEntry.count;
 
@@ -297,17 +292,28 @@ public class LockTable {
                 if (releasedEntry.count == 0) {
                     // remove the entry
                     if (acquired.remove(releasedEntry.entryKey) == null) {
-                        LOG.error("Unable to remove entry for: id={}" + id);
+                        LOG.error("Unable to remove entry for `release`: id={}, EntryKey.hashCode={}", id, releasedEntry.entryKey.hashCode());
                     }
 
                     // release the entry
-                    THREADLOCAL_ENTRY_POOL.get().returnEntry(releasedEntry);
-                    THREADLOCAL_ENTRY_KEY_POOL.get().returnEntry(releasedEntry.entryKey);
-                    THREADLOCAL_CHAR_ARRAY_POOL.get().returnEntry(releasedEntry.entryKey.buf);
+                    //TODO(AR) why can't  we have this line?
+                    releaseEntry(releasedEntry);
                 }
 
                 break;
         }
+    }
+
+    private void releaseEntryKey(final EntryKey entryKey) {
+        THREADLOCAL_CHAR_ARRAY_POOL.get().returnEntry(entryKey.buf);
+        entryKey.setBuf(null, 0);
+        THREADLOCAL_ENTRY_KEY_POOL.get().returnEntry(entryKey);
+    }
+
+    private void releaseEntry(final Entry entry) {
+        releaseEntryKey(entry.entryKey);
+        entry.entryKey = null;
+        THREADLOCAL_ENTRY_POOL.get().returnEntry(entry);
     }
 
     /**
@@ -713,7 +719,7 @@ public class LockTable {
         private int bufLen;
         private int hashCode;
 
-        public void setBuf(final char buf[], final int bufLen) {
+        public void setBuf(@Nullable final char buf[], final int bufLen) {
             this.buf = buf;
             this.bufLen = bufLen;
 
@@ -733,7 +739,7 @@ public class LockTable {
             if (this == o) return true;
             if (o == null || EntryKey.class != o.getClass()) return false;
 
-            final EntryKey other = ((EntryKey) o);
+            final EntryKey other = (EntryKey)o;
 
             if (buf == other.buf)
                 return true;
@@ -782,6 +788,7 @@ public class LockTable {
          * NOTE: Only ever read and written from the same thread
          */
         EntryKey entryKey;
+
 
         private Entry() {
         }
