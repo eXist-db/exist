@@ -32,7 +32,7 @@ function devar:read-function () {
 };
 
 declare
-%test:assertEquals('I am the return of a arrow expression.')
+%test:assertEquals('I am the return of an arrow expression.')
 function devar:read-arrow () {
     $devar:arrow
 };
