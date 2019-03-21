@@ -1633,9 +1633,27 @@ public class MutableCollection implements Collection {
     }
 
     @Override
-    public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputStream is, final String mimeType, final long size, final Date created, final Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
-        final BinaryDocument blob = new BinaryDocument(broker.getBrokerPool(), this, name);
-        return addBinaryResource(transaction, broker, blob, is, mimeType, size, created, modified);
+    public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name,
+            final InputStream is, final String mimeType, final long size, final Date created, final Date modified)
+            throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
+
+        final Database db = broker.getBrokerPool();
+        if (db.isReadOnly()) {
+            throw new IOException("Database is read-only");
+        }
+
+        final XmldbURI uri = getURI().append(name);
+
+        getLock().acquire(LockMode.WRITE_LOCK);
+        try {
+
+            final DocumentImpl oldDoc = getDocument(broker, name);
+            final BinaryDocument blob = new BinaryDocument(broker.getBrokerPool(), this, name);
+
+            return addBinaryResource(db, transaction, broker, blob, is, mimeType, size, created, modified, oldDoc);
+        } finally {
+            getLock().release(LockMode.WRITE_LOCK);
+        }
     }
 
     @Override
@@ -1649,13 +1667,30 @@ public class MutableCollection implements Collection {
         if (db.isReadOnly()) {
             throw new IOException("Database is read-only");
         }
+
         final XmldbURI docUri = blob.getFileURI();
-        //TODO : move later, i.e. after the collection lock is acquired ?
-        final DocumentImpl oldDoc = getDocument(broker, docUri);
-        final DocumentTriggers trigger = new DocumentTriggers(broker, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
 
         getLock().acquire(LockMode.WRITE_LOCK);
         try {
+
+            final DocumentImpl oldDoc = getDocument(broker, docUri);
+
+            return addBinaryResource(db, transaction, broker, blob, is, mimeType, size, created, modified,
+                    oldDoc);
+        } finally {
+            getLock().release(LockMode.WRITE_LOCK);
+        }
+    }
+
+    private BinaryDocument addBinaryResource(final Database db, final Txn transaction, final DBBroker broker,
+            final BinaryDocument blob, final InputStream is, final String mimeType, final long size, final Date created,
+            final Date modified, final DocumentImpl oldDoc) throws EXistException, PermissionDeniedException, LockException,
+            TriggerException, IOException {
+
+        final DocumentTriggers trigger = new DocumentTriggers(broker, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
+        final XmldbURI docUri = blob.getFileURI();
+        try {
+
             db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_BINARY, docUri);
             checkPermissionsForAddDocument(broker, oldDoc);
             checkCollectionConflict(docUri);
@@ -1669,7 +1704,7 @@ public class MutableCollection implements Collection {
                 metadata.setLastModified(modified.getTime());
             }
             blob.setContentLength(size);
-            
+
             if (oldDoc == null) {
                 trigger.beforeCreateDocument(broker, transaction, blob.getURI());
             } else {
@@ -1701,20 +1736,19 @@ public class MutableCollection implements Collection {
             }
 
             blob.getUpdateLock().acquire(LockMode.READ_LOCK);
+            try {
+                if (oldDoc == null) {
+                    trigger.afterCreateDocument(broker, transaction, blob);
+                } else {
+                    trigger.afterUpdateDocument(broker, transaction, blob);
+                }
+            } finally {
+                blob.getUpdateLock().release(LockMode.READ_LOCK);
+            }
+            return blob;
         } finally {
             broker.getBrokerPool().getProcessMonitor().endJob();
-            getLock().release(LockMode.WRITE_LOCK);
         }
-        try {
-            if (oldDoc == null) {
-                trigger.afterCreateDocument(broker, transaction, blob);
-            } else {
-                trigger.afterUpdateDocument(broker, transaction, blob);
-            }
-        } finally {
-            blob.getUpdateLock().release(LockMode.READ_LOCK);
-        }
-        return blob;
     }
 
     @Override
