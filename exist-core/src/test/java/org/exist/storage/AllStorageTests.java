@@ -55,7 +55,8 @@ import org.junit.runners.Suite;
         StoreBinaryTest.class,
         ModificationTimeTest.class,
         StartupTriggerTest.class,
-        ConcurrentBrokerPoolTest.class
+        ConcurrentBrokerPoolTest.class,
+        StoreResourceTest.class
 })
 public class AllStorageTests {
 }

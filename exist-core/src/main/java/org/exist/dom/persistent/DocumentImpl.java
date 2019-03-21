@@ -367,11 +367,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         final long timestamp = System.currentTimeMillis();
         if(prev != null) {
             // replaced file should have same owner user:group as prev file
-            if (permissions.getOwner().getId() != prev._1.getOwner().getId()) {
-                permissions.setOwner(prev.get_1().getOwner());
-            }
             if (permissions.getGroup().getId() != prev._1.getGroup().getId()) {
                 permissions.setGroup(prev.get_1().getGroup());
+            }
+            if (permissions.getOwner().getId() != prev._1.getOwner().getId()) {
+                permissions.setOwner(prev.get_1().getOwner());
             }
 
             //copy mode and acl from prev file
