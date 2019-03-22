@@ -30,10 +30,7 @@ import org.exist.storage.lock.LockTable;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.IOException;
 import java.util.Map;
@@ -62,29 +59,22 @@ public class StartupLockingTest {
 
     private static LockTable lockTable;
 
-    @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+    @Rule
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @BeforeClass
-    public static void addListener() {
+    @Before
+    public void addListener() {
         lockTable = existEmbeddedServer.getBrokerPool().getLockManager().getLockTable();
         lockTable.registerListener(lockCountListener);
         while(!lockCountListener.isRegistered()) {}
-//        lockTable.registerListener(lockEventJsonListener);
-//        while(!lockEventJsonListener.isRegistered()) {}
-//        lockTable.registerListener(lockEventXmlListener);
-//        while(!lockEventXmlListener.isRegistered()) {}
     }
 
-    @AfterClass
-    public static void removeListener() {
-        lockTable.deregisterListener(lockCountListener);
-//        lockTable.deregisterListener(lockEventJsonListener);
-//        lockTable.deregisterListener(lockEventXmlListener);
-
-        while(lockCountListener.isRegistered()) {}
-//        while(lockEventJsonListener.isRegistered()) {}
-//        while(lockEventXmlListener.isRegistered()) {}
+    @After
+    public void removeListener() {
+        if (lockCountListener.isRegistered()) {
+            lockTable.deregisterListener(lockCountListener);
+            while (lockCountListener.isRegistered()) {}
+        }
     }
 
     /**
