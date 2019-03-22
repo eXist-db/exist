@@ -466,8 +466,6 @@ public class LockTable {
         final long stamp = listenersLock.writeLock();
         try {
             // reduce listeners by 1
-            //final int newSize = listeners.length - 1;
-            //final LockEventListener[] newListeners = new LockEventListener[newSize];
             for (int i = listeners.length - 1; i > -1; i--) {
                 // intentionally compare by identity!
                 if (listeners[i] == lockEventListener) {
