@@ -1595,9 +1595,32 @@ public class MutableCollection implements Collection {
     }
 
     @Override
-    public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputStream is, final String mimeType, final long size, final Date created, final Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
-        final BinaryDocument blob = new BinaryDocument(broker.getBrokerPool(), this, name);
-        return addBinaryResource(transaction, broker, blob, is, mimeType, size, created, modified);
+    public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name,
+            final InputStream is, final String mimeType, final long size, final Date created, final Date modified)
+            throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
+
+        final Database db = broker.getBrokerPool();
+        if (db.isReadOnly()) {
+            throw new IOException("Database is read-only");
+        }
+
+        final XmldbURI uri = getURI().append(name);
+
+        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path);
+            final ManagedDocumentLock docLock = lockManager.acquireDocumentWriteLock(uri)) {
+
+            final DocumentImpl oldDoc = getDocument(broker, name);
+
+            final BinaryDocument blob;
+            if (oldDoc != null) {
+                blob = new BinaryDocument(oldDoc);
+            } else {
+                blob = new BinaryDocument(broker.getBrokerPool(), this, name);
+            }
+
+            return addBinaryResource(db, transaction, broker, blob, is, mimeType, size, created, modified,
+                    DBBroker.PreserveType.DEFAULT, oldDoc, collectionLock);
+        }
     }
 
     @Override
@@ -1616,14 +1639,27 @@ public class MutableCollection implements Collection {
         if (db.isReadOnly()) {
             throw new IOException("Database is read-only");
         }
-        final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
+
         final XmldbURI docUri = blob.getFileURI();
 
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path);
                 final ManagedDocumentLock docLock = lockManager.acquireDocumentWriteLock(blob.getURI())) {
-            //TODO : move later, i.e. after the collection lock is acquired ?
+
             final DocumentImpl oldDoc = getDocument(broker, docUri);
 
+            return addBinaryResource(db, transaction, broker, blob, is, mimeType, size, created, modified, preserve,
+                    oldDoc, collectionLock);
+        }
+    }
+
+    private BinaryDocument addBinaryResource(final Database db, final Txn transaction, final DBBroker broker,
+            final BinaryDocument blob, final InputStream is, final String mimeType, final long size, final Date created,
+            final Date modified, final DBBroker.PreserveType preserve, final DocumentImpl oldDoc,
+            final ManagedCollectionLock collectionLock) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
+
+        final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
+        final XmldbURI docUri = blob.getFileURI();
+        try {
             db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_BINARY, docUri);
             checkPermissionsForAddDocument(broker, oldDoc);
             checkCollectionConflict(docUri);
@@ -1675,7 +1711,6 @@ public class MutableCollection implements Collection {
             } finally {
                 indexController.endIndexDocument(transaction, listener);
             }
-
 
             if (oldDoc == null) {
                 trigger.afterCreateDocument(broker, transaction, blob);
