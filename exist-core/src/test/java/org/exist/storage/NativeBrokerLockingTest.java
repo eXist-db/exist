@@ -5,10 +5,9 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.LockTable;
-import org.exist.storage.lock.LockTable.LockAction;
-import org.exist.storage.lock.LockTable.LockAction.Action;
 import org.exist.storage.lock.LockTable.LockEventListener;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
@@ -19,6 +18,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Stack;
@@ -82,7 +82,7 @@ public class NativeBrokerLockingTest {
     }
 
     @Test
-    public void openCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
+    public void openCollection() throws EXistException, PermissionDeniedException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
@@ -117,7 +117,7 @@ public class NativeBrokerLockingTest {
     }
 
     @Test
-    public void openCollection_doesntExist() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
+    public void openCollection_doesntExist() throws EXistException, PermissionDeniedException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
@@ -152,7 +152,7 @@ public class NativeBrokerLockingTest {
     }
 
     @Test
-    public void getCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
+    public void getCollection() throws EXistException, PermissionDeniedException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
@@ -186,7 +186,7 @@ public class NativeBrokerLockingTest {
     }
 
     @Test
-    public void getCollection_doesntExist() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
+    public void getCollection_doesntExist() throws EXistException, PermissionDeniedException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
@@ -220,7 +220,7 @@ public class NativeBrokerLockingTest {
     }
 
     @Test
-    public void getOrCreateCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
+    public void getOrCreateCollection() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
@@ -256,7 +256,7 @@ public class NativeBrokerLockingTest {
     }
 
     @Test
-    public void moveCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
+    public void moveCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
@@ -292,7 +292,7 @@ public class NativeBrokerLockingTest {
     }
 
     @Test
-    public void copyEmptyCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
+    public void copyEmptyCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
@@ -328,7 +328,7 @@ public class NativeBrokerLockingTest {
     }
 
     @Test
-    public void removeEmptyCollection() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
+    public void removeEmptyCollection() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final LockTable lockTable = brokerPool.getLockManager().getLockTable();
         lockTable.setTraceStackDepth(TRACE_STACK_DEPTH);
@@ -365,7 +365,7 @@ public class NativeBrokerLockingTest {
 
     @ThreadSafe
     private static class LockSymmetryListener implements LockEventListener {
-        private final Stack<LockTable.LockAction> events = new Stack<>();
+        private final Stack<LockAction> events = new Stack<>();
         private final Stack<LockAction> eventsAfterError = new Stack<>();
 
         private final AtomicBoolean registered = new AtomicBoolean();
@@ -390,22 +390,39 @@ public class NativeBrokerLockingTest {
         }
 
         @Override
-        public void accept(final LockTable.LockAction lockAction) {
+        public void accept(final LockTable.LockEventType lockEventType, final long timestamp, final long groupId,
+                final LockTable.Entry entry) {
+
+            // read count first to ensure memory visibility from volatile!
+            final int localCount = entry.getCount();
 
             // ignore sync events
-            final String reason = lockAction.getSimpleStackReason();
-            if(reason != null && (reason.equals("sync") || reason.equals("notifySync"))) {
-                return;
+            final StackTraceElement[] stackTrace;
+            if (entry.getStackTraces() != null && !entry.getStackTraces().isEmpty()) {
+                stackTrace = entry.getStackTraces().get(0);
+
+                final String reason = LockTable.getSimpleStackReason(stackTrace);
+                if (reason != null && (reason.equals("sync") || reason.equals("notifySync"))) {
+                    return;
+                }
+            } else {
+                stackTrace = null;
             }
 
-            System.out.println(lockAction.toString());
+            System.out.println(LockTable.formatString(lockEventType, groupId, entry.getId(), entry.getLockType(),
+                    entry.getLockMode(), entry.getOwner(), localCount, timestamp,
+                    stackTrace));
+
+            final LockAction lockAction = new LockAction(lockEventType, groupId, entry.getId(), entry.getLockType(),
+                    entry.getLockMode(), entry.getOwner(), localCount, timestamp,
+                    stackTrace);
 
             if(error.get()) {
                 eventsAfterError.push(lockAction);
                 return;
             }
 
-            switch(lockAction.action) {
+            switch(lockEventType) {
                 case Attempt:
                     events.push(lockAction);
                     break;
@@ -436,25 +453,55 @@ public class NativeBrokerLockingTest {
                     break;
 
                 default:
-                    throw new IllegalStateException(lockAction.action + " should not happen!");
+                    throw new IllegalStateException(lockEventType + " should not happen!");
             }
         }
 
         private boolean isAcquireAfterAttempt(final LockAction current) {
             final LockAction previous = events.peek();
-            return previous.action == Action.Attempt
+            return previous.lockEventType == LockTable.LockEventType.Attempt
                     && isRelated(previous, current);
         }
 
         private boolean isSymmetricalRelease(final LockAction current) {
             final LockAction previous = events.peek();
-            return previous.action == Action.Acquired
+            return previous.lockEventType == LockTable.LockEventType.Acquired
                     && isRelated(previous, current);
         }
 
         private boolean isRelated(final LockAction lockAction1, final LockAction lockAction2) {
             return lockAction1.lockType.equals(lockAction2.lockType)
                     && lockAction1.id.equals(lockAction2.id);
+        }
+    }
+
+    private static class LockAction {
+        public final LockTable.LockEventType lockEventType;
+        public final long groupId;
+        public final String id;
+        public final Lock.LockType lockType;
+        public final Lock.LockMode mode;
+        public final String threadName;
+        public final int count;
+        /**
+         * System#nanoTime()
+         */
+        public final long timestamp;
+        @Nullable
+        public final StackTraceElement[] stackTrace;
+
+        private LockAction(final LockTable.LockEventType lockEventType, final long groupId, final String id,
+                final Lock.LockType lockType, final Lock.LockMode mode, final String threadName, final int count,
+                final long timestamp, @Nullable final StackTraceElement[] stackTrace) {
+            this.lockEventType = lockEventType;
+            this.groupId = groupId;
+            this.id = id;
+            this.lockType = lockType;
+            this.mode = mode;
+            this.threadName = threadName;
+            this.count = count;
+            this.timestamp = timestamp;
+            this.stackTrace = stackTrace;
         }
     }
 }

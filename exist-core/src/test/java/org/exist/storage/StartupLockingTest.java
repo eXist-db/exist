@@ -22,25 +22,17 @@ package org.exist.storage;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import net.jcip.annotations.ThreadSafe;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.LockEventJsonListener;
-import org.exist.storage.lock.LockEventXmlListener;
 import org.exist.storage.lock.LockTable;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -67,29 +59,22 @@ public class StartupLockingTest {
 
     private static LockTable lockTable;
 
-    @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+    @Rule
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @BeforeClass
-    public static void addListener() {
+    @Before
+    public void addListener() {
         lockTable = existEmbeddedServer.getBrokerPool().getLockManager().getLockTable();
         lockTable.registerListener(lockCountListener);
         while(!lockCountListener.isRegistered()) {}
-//        lockTable.registerListener(lockEventJsonListener);
-//        while(!lockEventJsonListener.isRegistered()) {}
-//        lockTable.registerListener(lockEventXmlListener);
-//        while(!lockEventXmlListener.isRegistered()) {}
     }
 
-    @AfterClass
-    public static void removeListener() {
-        lockTable.deregisterListener(lockCountListener);
-//        lockTable.deregisterListener(lockEventJsonListener);
-//        lockTable.deregisterListener(lockEventXmlListener);
-
-        while(lockCountListener.isRegistered()) {}
-//        while(lockEventJsonListener.isRegistered()) {}
-//        while(lockEventXmlListener.isRegistered()) {}
+    @After
+    public void removeListener() {
+        if (lockCountListener.isRegistered()) {
+            lockTable.deregisterListener(lockCountListener);
+            while (lockCountListener.isRegistered()) {}
+        }
     }
 
     /**
@@ -192,10 +177,15 @@ public class StartupLockingTest {
         }
 
         @Override
-        public void accept(final LockTable.LockAction lockAction) {
+        public void accept(final LockTable.LockEventType lockEventType, final long timestamp, final long groupId,
+                final LockTable.Entry entry) {
+
+            // read count first to ensure memory visibility from volatile!
+            final int localCount = entry.getCount();
+
             synchronized (lockReadWriteCount) {
                 final long change;
-                switch(lockAction.action) {
+                switch(lockEventType) {
                     case Acquired:
                         change = 1;
                         break;
@@ -208,12 +198,12 @@ public class StartupLockingTest {
                         change = 0;
                 }
 
-                Tuple2<Long, Long> value = lockReadWriteCount.get(lockAction.id);
+                Tuple2<Long, Long> value = lockReadWriteCount.get(entry.getId());
                 if(value == null) {
                     value = new Tuple2<>(0l, 0l);
                 }
 
-                switch(lockAction.mode) {
+                switch(entry.getLockMode()) {
                     case READ_LOCK:
                         value = new Tuple2<>(value._1 + change, value._2);
                         break;
@@ -228,9 +218,9 @@ public class StartupLockingTest {
                 }
 
                 if(value._1 == 0 && value._2 == 0) {
-                    lockReadWriteCount.remove(lockAction.id);
+                    lockReadWriteCount.remove(entry.getId());
                 } else {
-                    lockReadWriteCount.put(lockAction.id, value);
+                    lockReadWriteCount.put(entry.getId(), value);
                 }
             }
         }

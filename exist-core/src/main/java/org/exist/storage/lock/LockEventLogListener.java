@@ -43,9 +43,14 @@ public class LockEventLogListener implements LockTable.LockEventListener {
     }
 
     @Override
-    public void accept(final LockTable.LockAction lockAction) {
+    public void accept(final LockTable.LockEventType lockEventType, final long timestamp, final long groupId,
+            final LockTable.Entry entry) {
         if(log.isEnabled(level)) {
-            log.log(level, lockAction);
+            // read count first to ensure memory visibility from volatile!
+            final int localCount = entry.count;
+
+            log.log(level, LockTable.formatString(lockEventType, groupId, entry.id, entry.lockType, entry.lockMode,
+                    entry.owner, localCount, timestamp, entry.stackTraces == null ? null : entry.stackTraces.get(0)));
         }
     }
 }
