@@ -21,6 +21,11 @@
  */
 package org.exist.storage.lock;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.jcip.annotations.NotThreadSafe;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DefaultDocumentSet;
@@ -28,52 +33,46 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.storage.lock.Lock.LockMode;
-import org.exist.util.hashtable.Int2ObjectHashMap;
+
+import javax.annotation.Nullable;
 
 /**
  * This map is used by the XQuery engine to track how many read locks were
  * acquired for a document during query execution.
  */
 @NotThreadSafe
-public class LockedDocumentMap extends Int2ObjectHashMap<Object> {
+public class LockedDocumentMap {
 
     private final static int DEFAULT_SIZE = 29;
-    private final static double DEFAULT_GROWTH = 1.75;
 
-    public LockedDocumentMap() {
-        super(DEFAULT_SIZE, DEFAULT_GROWTH);
-    }
+    private final Int2ObjectMap<LockedDocument> map = new Int2ObjectOpenHashMap<>(DEFAULT_SIZE);
 
     public void add(final DocumentImpl document) {
-        LockedDocument entry = (LockedDocument) get(document.getDocId());
+        LockedDocument entry = map.get(document.getDocId());
         if (entry == null) {
             entry = new LockedDocument(document);
-            put(document.getDocId(), entry);
+            map.put(document.getDocId(), entry);
         }
         entry.locksAcquired++;
     }
 
     public MutableDocumentSet toDocumentSet() {
-        final MutableDocumentSet docs = new DefaultDocumentSet(size());
-        for (int idx = 0; idx < tabSize; idx++) {
-            if (values[idx] == null || values[idx] == REMOVED) {
-                continue;
-            }
-            final LockedDocument lockedDocument = (LockedDocument) values[idx];
+        final MutableDocumentSet docs = new DefaultDocumentSet(map.size());
+        final ObjectIterator<LockedDocument> iterator = map.values().iterator();
+        while (iterator.hasNext()) {
+            final LockedDocument lockedDocument = iterator.next();
             docs.add(lockedDocument.document);
         }
         return docs;
     }
 
-    public DocumentSet getDocsByCollection(final Collection collection, MutableDocumentSet targetSet) {
+    public DocumentSet getDocsByCollection(final Collection collection, @Nullable MutableDocumentSet targetSet) {
         if (targetSet == null) {
-            targetSet = new DefaultDocumentSet(size());
+            targetSet = new DefaultDocumentSet(map.size());
         }
-        for (int idx = 0; idx < tabSize; idx++) {
-            if (values[idx] == null || values[idx] == REMOVED) {
-                continue;
-            }
-            final LockedDocument lockedDocument = (LockedDocument) values[idx];
+        final ObjectIterator<LockedDocument> iterator = map.values().iterator();
+        while (iterator.hasNext()) {
+            final LockedDocument lockedDocument = iterator.next();
             if (lockedDocument.document.getCollection().getURI().startsWith(collection.getURI())) {
                 targetSet.add(lockedDocument.document);
             }
@@ -82,32 +81,43 @@ public class LockedDocumentMap extends Int2ObjectHashMap<Object> {
     }
 
     public void unlock() {
-        for (int idx = 0; idx < tabSize; idx++) {
-            if (values[idx] == null || values[idx] == REMOVED) {
-                continue;
-            }
-            final LockedDocument lockedDocument = (LockedDocument) values[idx];
+        final ObjectIterator<LockedDocument> iterator = map.values().iterator();
+        while (iterator.hasNext()) {
+            final LockedDocument lockedDocument = iterator.next();
             unlockDocument(lockedDocument);
         }
     }
 
     public LockedDocumentMap unlockSome(final DocumentSet keep) {
-        for (int idx = 0; idx < tabSize; idx++) {
-            if (values[idx] == null || values[idx] == REMOVED) {
-                continue;
-            }
-            final LockedDocument lockedDocument = (LockedDocument) values[idx];
+        final IntList remove = new IntArrayList();
+        final ObjectIterator<Int2ObjectMap.Entry<LockedDocument>> iterator = map.int2ObjectEntrySet().iterator();
+        while (iterator.hasNext()) {
+            final Int2ObjectMap.Entry<LockedDocument> entry = iterator.next();
+            final LockedDocument lockedDocument = entry.getValue();
             if (!keep.contains(lockedDocument.document.getDocId())) {
-                values[idx] = REMOVED;
+                remove.add(entry.getIntKey());
                 unlockDocument(lockedDocument);
             }
         }
+
+        for (int key : remove) {
+            map.remove(key);
+        }
+
         return this;
     }
 
     private void unlockDocument(final LockedDocument lockedDocument) {
         final Lock documentLock = lockedDocument.document.getUpdateLock();
         documentLock.release(LockMode.WRITE_LOCK, lockedDocument.locksAcquired);
+    }
+
+    public int size() {
+        return map.size();
+    }
+
+    public boolean containsKey(final int docId) {
+        return map.containsKey(docId);
     }
 
     private static class LockedDocument {

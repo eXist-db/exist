@@ -21,11 +21,12 @@ package org.exist.dom;
 
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.QName.IllegalQNameException;
-import org.exist.util.hashtable.Object2ObjectHashMap;
 import org.w3c.dom.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Adam Retter <adam.retter@googlemail.com>
@@ -142,11 +143,11 @@ public class NamedNodeMapImpl implements NamedNodeMap {
     }
 
     private static final class IndexedHashMap<K, V> {
-        private final Object2ObjectHashMap<K, V> map;
+        private final Map<K, V> map;
         private final List<K> keys;
 
         public IndexedHashMap(final int initialSize) {
-            this.map = new Object2ObjectHashMap<>(initialSize);
+            this.map = new HashMap<>(initialSize);
             this.keys = new ArrayList<>(initialSize);
         }
 

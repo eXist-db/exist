@@ -21,10 +21,11 @@
  */
 package org.exist.dom.memtree;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
-import org.exist.util.hashtable.Object2IntHashMap;
 import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
@@ -505,13 +506,18 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
      * opposed to a stack.
      */
     private static class InScopeNamespaces implements NamespaceContext {
-        private final Object2IntHashMap<QName> namespaces = new Object2IntHashMap<>(4);
+        private final Object2IntMap<QName> namespaces;
 
         // uri -> prefix(s)
         private final Map<String, Set<String>> byUri = new HashMap<>();
 
         // prefix -> url
         private final Map<String, String> byPrefix = new HashMap<>();
+
+        public InScopeNamespaces() {
+            this.namespaces = new Object2IntOpenHashMap<>(4);
+            this.namespaces.defaultReturnValue(-1);
+        }
 
         /**
          * Push an in-scope namespace.
@@ -525,7 +531,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
 
             final int count;
             if (namespaces.containsKey(qname)) {
-                count = namespaces.get(qname) + 1;
+                count = namespaces.getInt(qname) + 1;
             } else {
                 count = 1;
             }
@@ -554,11 +560,11 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
                 return;
             }
 
-            final int newCount = namespaces.get(qname) - 1;
+            final int newCount = namespaces.getInt(qname) - 1;
             if (newCount >= 1) {
                 namespaces.put(qname, newCount);
             } else {
-                namespaces.remove(qname);
+                namespaces.removeInt(qname);
                 byUri.remove(qname);
                 byPrefix.remove(qname);
             }

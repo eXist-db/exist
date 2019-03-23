@@ -21,6 +21,8 @@
  */
 package org.exist.dom.persistent;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
@@ -29,7 +31,6 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.ArrayUtils;
 import org.exist.util.FastQSort;
 import org.exist.util.LockException;
-import org.exist.util.hashtable.ObjectHashSet;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
@@ -502,7 +503,7 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
 
         CollectionIterator() {
             if(partCount > 0) {
-                final ObjectHashSet<Collection> collections = new ObjectHashSet<>(partCount);
+                final ObjectSet<Collection> collections = new ObjectOpenHashSet<>(partCount);
                 for (int i = 0; i < partCount; i++) {
                     collections.add(parts[i].getOwnerDocument().getCollection());
                 }

@@ -19,8 +19,9 @@
  */
 package org.exist.collections;
 
-import java.util.Iterator;
-
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,7 +31,6 @@ import org.exist.storage.CacheManager;
 import org.exist.storage.cache.LRUCache;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
-import org.exist.util.hashtable.Object2LongHashMap;
 import org.exist.util.hashtable.SequencedLongHashMap;
 import org.exist.xmldb.XmldbURI;
 
@@ -47,12 +47,13 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
     private final static Logger LOG = LogManager.getLogger(CollectionCache.class);
 
     private final BrokerPool pool;
-    private Object2LongHashMap<String> names;
+    private Object2LongMap<String> names;
 
     public CollectionCache(final BrokerPool pool, final int blockBuffers, final double growthThreshold) {
         super("collection cache", blockBuffers, 2.0, growthThreshold, CacheManager.DATA_CACHE);
         this.pool = pool;
-        this.names = new Object2LongHashMap<>(blockBuffers);
+        this.names = new Object2LongOpenHashMap<>(blockBuffers);
+        this.names.defaultReturnValue(-1);
     }
 
     @Override
@@ -78,7 +79,7 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
     }
 
     public Collection get(final XmldbURI name) {
-        final long key = names.get(name.getRawCollectionPath());
+        final long key = names.getLong(name.getRawCollectionPath());
         if (key < 0) {
             return null;
         }
@@ -104,7 +105,7 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
                             if(pool.getConfigurationManager() != null) { // might be null during db initialization
                                 pool.getConfigurationManager().invalidate(cached.getURI(), null);
                             }
-                            names.remove(cached.getURI().getRawCollectionPath());
+                            names.removeLong(cached.getURI().getRawCollectionPath());
                             cached.sync(true);
                             map.remove(cached.getKey());
                             removed = true;
@@ -131,7 +132,7 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
     @Override
     public void remove(final Collection item) {
         super.remove(item);
-        names.remove(item.getURI().getRawCollectionPath());
+        names.removeLong(item.getURI().getRawCollectionPath());
 
         // might be null during db initialization
         if(pool.getConfigurationManager() != null) {
@@ -148,8 +149,8 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
      */
     public int getRealSize() {
         int size = 0;
-        for (final Iterator<Long> i = names.valueIterator(); i.hasNext(); ) {
-            final Collection collection = get(i.next());
+        for (final LongIterator i = names.values().iterator(); i.hasNext(); ) {
+            final Collection collection = get(i.nextLong());
             if (collection != null) {
                 size += collection.getMemorySize();
             }
@@ -166,7 +167,8 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
                 LOG.debug("Growing collection cache to " + newSize);
             }
             final SequencedLongHashMap<Collection> newMap = new SequencedLongHashMap<>(newSize * 2);
-            final Object2LongHashMap<String> newNames = new Object2LongHashMap<>(newSize);
+            final Object2LongMap<String> newNames = new Object2LongOpenHashMap<>(newSize);
+            newNames.defaultReturnValue(-1);
             for(SequencedLongHashMap.Entry<Collection> next = map.getFirstEntry(); next != null; next = next.getNext()) {
                 final Collection cacheable = next.getValue();
                 newMap.put(cacheable.getKey(), cacheable);
@@ -183,6 +185,7 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
     @Override
     protected void shrink(final int newSize) {
         super.shrink(newSize);
-        names = new Object2LongHashMap<>(newSize);
+        names = new Object2LongOpenHashMap<>(newSize);
+        names.defaultReturnValue(-1);
     }
 }

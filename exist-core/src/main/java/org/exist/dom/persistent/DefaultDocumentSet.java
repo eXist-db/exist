@@ -21,6 +21,9 @@
  */
 package org.exist.dom.persistent;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.jcip.annotations.NotThreadSafe;
 import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
@@ -28,7 +31,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.LockException;
-import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Node;
 
@@ -45,10 +47,9 @@ import java.util.*;
  * @author aretter
  */
 @NotThreadSafe
-public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocumentSet {
+public class DefaultDocumentSet implements MutableDocumentSet {
 
     private final static int DEFAULT_SIZE = 29;
-    private final static double DEFAULT_GROWTH = 1.75;
 
     private final BitSet docIds = new BitSet();
     private final BitSet collectionIds = new BitSet();
@@ -56,17 +57,19 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 
     private final Deque<Runnable> lockReleasers = new ArrayDeque<>();
 
+    private final Int2ObjectMap<DocumentImpl> map;
+
     public DefaultDocumentSet() {
-        super(DEFAULT_SIZE, DEFAULT_GROWTH);
+        this.map = new Int2ObjectOpenHashMap<>(DEFAULT_SIZE);
     }
 
     public DefaultDocumentSet(final int initialSize) {
-        super(initialSize, DEFAULT_GROWTH);
+        this.map =  new Int2ObjectOpenHashMap<>(initialSize);
     }
 
     @Override
     public void clear() {
-        super.clear();
+        map.clear();
         this.docIds.clear();
         this.collectionIds.clear();
         this.collections.clear();
@@ -85,7 +88,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         }
 
         docIds.set(docId);
-        put(docId, doc);
+        map.put(docId, doc);
         final Collection collection = doc.getCollection();
         if (collection != null && !collectionIds.get(collection.getId())) {
             collectionIds.set(collection.getId());
@@ -118,7 +121,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
     @SuppressWarnings("unchecked")
     @Override
     public Iterator<DocumentImpl> getDocumentIterator() {
-        return valueIterator();
+        return map.values().iterator();
     }
 
     @Override
@@ -128,7 +131,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 
     @Override
     public int getDocumentCount() {
-        return size();
+        return map.size();
     }
 
     public int getCollectionCount() {
@@ -137,12 +140,12 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 
     @Override
     public DocumentImpl getDoc(final int docId) {
-        return (DocumentImpl)get(docId);
+        return map.get(docId);
     }
 
     @Override
     public XmldbURI[] getNames() {
-        final XmldbURI result[] = new XmldbURI[size()];
+        final XmldbURI result[] = new XmldbURI[map.size()];
         int j = 0;
         for (final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); j++) {
             final DocumentImpl d = i.next();
@@ -184,7 +187,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 
     @Override
     public boolean contains(final DocumentSet other) {
-        if (other.getDocumentCount() > size()) {
+        if (other.getDocumentCount() > map.size()) {
             return false;
         }
 
@@ -279,11 +282,9 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 
     @Override
     public void lock(final DBBroker broker, final boolean exclusive) throws LockException {
-        for (int idx = 0; idx < tabSize; idx++) {
-            if (values[idx] == null || values[idx] == REMOVED) {
-                continue;
-            }
-            final DocumentImpl d = (DocumentImpl)values[idx];
+        final ObjectIterator<DocumentImpl> iterator = map.values().iterator();
+        while (iterator.hasNext()) {
+            final DocumentImpl d = iterator.next();
             final Lock dlock = d.getUpdateLock();
             dlock.acquire(exclusive ? LockMode.WRITE_LOCK : LockMode.READ_LOCK);
             lockReleasers.push(() -> dlock.release(exclusive ? LockMode.WRITE_LOCK : LockMode.READ_LOCK));

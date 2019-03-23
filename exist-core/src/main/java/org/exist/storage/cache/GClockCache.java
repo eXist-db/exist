@@ -19,11 +19,12 @@
  */
 package org.exist.storage.cache;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.CacheManager;
-import org.exist.util.hashtable.Long2ObjectHashMap;
 
 import java.lang.reflect.Array;
 
@@ -53,7 +54,7 @@ public class GClockCache<T extends Cacheable> implements Cache<T> {
     Accounting accounting;
     private final String type;
 	protected T[] items;
-    protected Long2ObjectHashMap<T> map;
+    protected Long2ObjectMap<T> map;
 	protected int count = 0;
 	protected int used = 0;
     private int hitsOld = 0;
@@ -68,7 +69,7 @@ public class GClockCache<T extends Cacheable> implements Cache<T> {
         accounting.setTotalSize(size);
         this.type = type;
         this.items = createArray(cacheableClazz, size);
-		this.map = new Long2ObjectHashMap<>(size * 2);
+		this.map = new Long2ObjectOpenHashMap<>(size * 2);
     }
 
     @SuppressWarnings("unchecked")
@@ -249,7 +250,7 @@ public class GClockCache<T extends Cacheable> implements Cache<T> {
             shrink(newSize);
         } else {
             final T[] newItems = createArray(cacheableClazz, newSize);
-            final Long2ObjectHashMap<T> newMap = new Long2ObjectHashMap<>(newSize * 2);
+            final Long2ObjectMap<T> newMap = new Long2ObjectOpenHashMap<>(newSize * 2);
             for (int i = 0; i < count; i++) {
                 newItems[i] = items[i];
                 newMap.put(items[i].getKey(), items[i]);
@@ -265,7 +266,7 @@ public class GClockCache<T extends Cacheable> implements Cache<T> {
     private void shrink(final int newSize) {
         flush();
         items = createArray(cacheableClazz, newSize);
-        map = new Long2ObjectHashMap<>(newSize * 2);
+        map = new Long2ObjectOpenHashMap<>(newSize * 2);
         size = newSize;
         count = 0;
         used = 0;

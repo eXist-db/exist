@@ -28,6 +28,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -49,7 +51,6 @@ import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
-import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -89,7 +90,7 @@ public abstract class Modification {
 	protected Map<String, Object> variables;
 	protected DocumentSet lockedDocuments = null;
 	protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
-    protected Int2ObjectHashMap<DocumentTrigger> triggers;
+    protected Int2ObjectMap<DocumentTrigger> triggers;
 
 	@SuppressWarnings("unused")
 	private Modification() {}
@@ -103,7 +104,7 @@ public abstract class Modification {
 		this.docs = docs;
 		this.namespaces = new HashMap<String, String>(namespaces);
 		this.variables = new TreeMap<String, Object>(variables);
-        this.triggers = new Int2ObjectHashMap<DocumentTrigger>(97);
+        this.triggers = new Int2ObjectOpenHashMap<>(97);
         // DESIGN_QUESTION : wouldn't that be nice to apply selectStmt right here ?
 	}
 
