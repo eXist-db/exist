@@ -96,8 +96,8 @@ public class LockManager {
     private final WeakLazyStripes<String, ReentrantLock> btreeLocks;
 
 
-    public LockManager(final String brokerPoolId, final ThreadGroup threadGroup, final int concurrencyLevel) {
-        this.lockTable = new LockTable(brokerPoolId, threadGroup);
+    public LockManager(final int concurrencyLevel) {
+        this.lockTable = new LockTable();
         this.collectionLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createCollectionLock);
         this.documentLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createDocumentLock);
         this.btreeLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createBtreeLock);

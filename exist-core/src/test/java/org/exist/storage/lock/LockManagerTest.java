@@ -10,11 +10,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.*;
 
@@ -29,9 +29,6 @@ public class LockManagerTest {
     private static final int CONCURRENCY_LEVEL = 100;
     private static String previousLockEventsState = null;
     private static String previousCollectionsMultiWriterState = null;
-
-    private final String instanceId = "test.lock-manager-test";
-    private final ThreadGroup threadGroup = new ThreadGroup("lock-manager-test");
 
     @Parameterized.Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
@@ -69,7 +66,7 @@ public class LockManagerTest {
 
     @Test
     public void getCollectionLock_isStripedByPath() {
-        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
 
         final MultiLock dbLock1 = lockManager.getCollectionLock("/db");
         assertNotNull(dbLock1);
@@ -97,8 +94,8 @@ public class LockManagerTest {
      */
     @Test
     public void acquireCollectionReadLock_root() throws LockException {
-        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
-        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockAction> events = recordLockEvents(lockManager, () -> {
             try(final ManagedCollectionLock rootLock
                         = lockManager.acquireCollectionReadLock(XmldbURI.ROOT_COLLECTION_URI)) {
                 assertNotNull(rootLock);
@@ -106,20 +103,20 @@ public class LockManagerTest {
         });
 
         assertEquals(3, events.size());
-        final LockTable.LockAction event3 = events.pop();
-        final LockTable.LockAction event2 = events.pop();
-        final LockTable.LockAction event1 = events.pop();
+        final LockAction event3 = events.pop();
+        final LockAction event2 = events.pop();
+        final LockAction event1 = events.pop();
 
-        assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
+        assertEquals(LockTable.LockEventType.Attempt, event1.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event1.id);
         assertEquals(Lock.LockMode.READ_LOCK, event1.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
+        assertEquals(LockTable.LockEventType.Acquired, event2.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event2.id);
         assertEquals(Lock.LockMode.READ_LOCK, event2.mode);
 
         // we now expect to release the lock on /db (as the managed lock was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event3.action);
+        assertEquals(LockTable.LockEventType.Released, event3.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event3.id);
         assertEquals(Lock.LockMode.READ_LOCK, event3.mode);
     }
@@ -135,8 +132,8 @@ public class LockManagerTest {
     public void acquireCollectionReadLock_depth2() throws LockException {
         final String collectionPath = "/db/colA";
 
-        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
-        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedCollectionLock colALock
                          = lockManager.acquireCollectionReadLock(XmldbURI.create(collectionPath))) {
                 assertNotNull(colALock);
@@ -144,37 +141,37 @@ public class LockManagerTest {
         });
 
         assertEquals(6, events.size());
-        final LockTable.LockAction event6 = events.pop();
-        final LockTable.LockAction event5 = events.pop();
-        final LockTable.LockAction event4 = events.pop();
-        final LockTable.LockAction event3 = events.pop();
-        final LockTable.LockAction event2 = events.pop();
-        final LockTable.LockAction event1 = events.pop();
+        final LockAction event6 = events.pop();
+        final LockAction event5 = events.pop();
+        final LockAction event4 = events.pop();
+        final LockAction event3 = events.pop();
+        final LockAction event2 = events.pop();
+        final LockAction event1 = events.pop();
 
-        assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
+        assertEquals(LockTable.LockEventType.Attempt, event1.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event1.id);
         assertEquals(Lock.LockMode.INTENTION_READ, event1.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
+        assertEquals(LockTable.LockEventType.Acquired, event2.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event2.id);
         assertEquals(Lock.LockMode.INTENTION_READ, event2.mode);
 
         // we now expect to couple /db with /db/colA by acquiring /db/colA whilst holding /db
-        assertEquals(LockTable.LockAction.Action.Attempt, event3.action);
+        assertEquals(LockTable.LockEventType.Attempt, event3.lockEventType);
         assertEquals(collectionPath, event3.id);
         assertEquals(Lock.LockMode.READ_LOCK, event3.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event4.action);
+        assertEquals(LockTable.LockEventType.Acquired, event4.lockEventType);
         assertEquals(collectionPath, event4.id);
         assertEquals(Lock.LockMode.READ_LOCK, event4.mode);
 
         // we now expect to release the lock on /db/colA (as the managed lock was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event5.action);
+        assertEquals(LockTable.LockEventType.Released, event5.lockEventType);
         assertEquals(collectionPath, event5.id);
         assertEquals(Lock.LockMode.READ_LOCK, event5.mode);
 
         // we now expect to release the lock on /db (as the managed lock was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event6.action);
+        assertEquals(LockTable.LockEventType.Released, event6.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event6.id);
         assertEquals(Lock.LockMode.INTENTION_READ, event6.mode);
     }
@@ -191,8 +188,8 @@ public class LockManagerTest {
         final String collectionAPath = "/db/colA";
         final String collectionBPath = collectionAPath + "/colB";
 
-        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
-        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedCollectionLock colBLock
                          = lockManager.acquireCollectionReadLock(XmldbURI.create(collectionBPath))) {
                 assertNotNull(colBLock);
@@ -200,54 +197,54 @@ public class LockManagerTest {
         });
 
         assertEquals(9, events.size());
-        final LockTable.LockAction event9 = events.pop();
-        final LockTable.LockAction event8 = events.pop();
-        final LockTable.LockAction event7 = events.pop();
-        final LockTable.LockAction event6 = events.pop();
-        final LockTable.LockAction event5 = events.pop();
-        final LockTable.LockAction event4 = events.pop();
-        final LockTable.LockAction event3 = events.pop();
-        final LockTable.LockAction event2 = events.pop();
-        final LockTable.LockAction event1 = events.pop();
+        final LockAction event9 = events.pop();
+        final LockAction event8 = events.pop();
+        final LockAction event7 = events.pop();
+        final LockAction event6 = events.pop();
+        final LockAction event5 = events.pop();
+        final LockAction event4 = events.pop();
+        final LockAction event3 = events.pop();
+        final LockAction event2 = events.pop();
+        final LockAction event1 = events.pop();
 
-        assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
+        assertEquals(LockTable.LockEventType.Attempt, event1.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event1.id);
         assertEquals(Lock.LockMode.INTENTION_READ, event1.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
+        assertEquals(LockTable.LockEventType.Acquired, event2.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event2.id);
         assertEquals(Lock.LockMode.INTENTION_READ, event2.mode);
 
         // we now expect to couple /db with /db/colA by acquiring /db/colA whilst holding /db
-        assertEquals(LockTable.LockAction.Action.Attempt, event3.action);
+        assertEquals(LockTable.LockEventType.Attempt, event3.lockEventType);
         assertEquals(collectionAPath, event3.id);
         assertEquals(Lock.LockMode.INTENTION_READ, event3.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event4.action);
+        assertEquals(LockTable.LockEventType.Acquired, event4.lockEventType);
         assertEquals(collectionAPath, event4.id);
         assertEquals(Lock.LockMode.INTENTION_READ, event4.mode);
 
         // we now expect to couple /db/colA with /db/colA/colB by acquiring /db/colA/colB whilst holding /db/colA
-        assertEquals(LockTable.LockAction.Action.Attempt, event5.action);
+        assertEquals(LockTable.LockEventType.Attempt, event5.lockEventType);
         assertEquals(collectionBPath, event5.id);
         assertEquals(Lock.LockMode.READ_LOCK, event5.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event6.action);
+        assertEquals(LockTable.LockEventType.Acquired, event6.lockEventType);
         assertEquals(collectionBPath, event6.id);
         assertEquals(Lock.LockMode.READ_LOCK, event6.mode);
 
         // we now expect to release the lock on /db/colA/colB (as the managed lock was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event7.action);
+        assertEquals(LockTable.LockEventType.Released, event7.lockEventType);
         assertEquals(collectionBPath, event7.id);
         assertEquals(Lock.LockMode.READ_LOCK, event7.mode);
 
         // we now expect to release the lock on /db/colA (as the managed lock was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event8.action);
+        assertEquals(LockTable.LockEventType.Released, event8.lockEventType);
         assertEquals(collectionAPath, event8.id);
         assertEquals(Lock.LockMode.INTENTION_READ, event8.mode);
 
         // we now expect to release the lock on /db (as the managed lock was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event9.action);
+        assertEquals(LockTable.LockEventType.Released, event9.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event9.id);
         assertEquals(Lock.LockMode.INTENTION_READ, event9.mode);
     }
@@ -273,8 +270,8 @@ public class LockManagerTest {
     }
 
     private void acquireCollectionWriteLock_root(final boolean lockParent) throws LockException {
-        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
-        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedCollectionLock rootLock
                          = lockManager.acquireCollectionWriteLock(XmldbURI.ROOT_COLLECTION_URI, lockParent)) {
                 assertNotNull(rootLock);
@@ -282,20 +279,20 @@ public class LockManagerTest {
         });
 
         assertEquals(3, events.size());
-        final LockTable.LockAction event3 = events.pop();
-        final LockTable.LockAction event2 = events.pop();
-        final LockTable.LockAction event1 = events.pop();
+        final LockAction event3 = events.pop();
+        final LockAction event2 = events.pop();
+        final LockAction event1 = events.pop();
 
-        assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
+        assertEquals(LockTable.LockEventType.Attempt, event1.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event1.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event1.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
+        assertEquals(LockTable.LockEventType.Acquired, event2.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event2.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event2.mode);
 
         // we now expect to release the lock on /db (as the managed lock was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event3.action);
+        assertEquals(LockTable.LockEventType.Released, event3.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event3.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event3.mode);
     }
@@ -310,8 +307,8 @@ public class LockManagerTest {
     public void acquireCollectionWriteLock_depth2_withoutLockParent() throws LockException {
         final String collectionPath = "/db/colA";
 
-        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
-        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockAction> events = recordLockEvents(lockManager, () -> {
             final boolean lockParent = false;
             try (final ManagedCollectionLock colALock
                          = lockManager.acquireCollectionWriteLock(XmldbURI.create(collectionPath), lockParent)) {
@@ -320,37 +317,37 @@ public class LockManagerTest {
         });
 
         assertEquals(6, events.size());
-        final LockTable.LockAction event6 = events.pop();
-        final LockTable.LockAction event5 = events.pop();
-        final LockTable.LockAction event4 = events.pop();
-        final LockTable.LockAction event3 = events.pop();
-        final LockTable.LockAction event2 = events.pop();
-        final LockTable.LockAction event1 = events.pop();
+        final LockAction event6 = events.pop();
+        final LockAction event5 = events.pop();
+        final LockAction event4 = events.pop();
+        final LockAction event3 = events.pop();
+        final LockAction event2 = events.pop();
+        final LockAction event1 = events.pop();
 
-        assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
+        assertEquals(LockTable.LockEventType.Attempt, event1.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event1.id);
         assertIntentionWriteOrWriteMode(event1.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
+        assertEquals(LockTable.LockEventType.Acquired, event2.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event2.id);
         assertIntentionWriteOrWriteMode(event2.mode);
 
         // we now expect to couple /db with /db/colA by acquiring /db/colA whilst holding /db
-        assertEquals(LockTable.LockAction.Action.Attempt, event3.action);
+        assertEquals(LockTable.LockEventType.Attempt, event3.lockEventType);
         assertEquals(collectionPath, event3.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event3.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event4.action);
+        assertEquals(LockTable.LockEventType.Acquired, event4.lockEventType);
         assertEquals(collectionPath, event4.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event4.mode);
 
         // we now expect to release the lock on /db/colA (as the managed lock was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event5.action);
+        assertEquals(LockTable.LockEventType.Released, event5.lockEventType);
         assertEquals(collectionPath, event5.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event5.mode);
 
         // we now expect to release the lock on /db (as the managed lock was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event6.action);
+        assertEquals(LockTable.LockEventType.Released, event6.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event6.id);
         assertIntentionWriteOrWriteMode(event6.mode);
     }
@@ -366,8 +363,8 @@ public class LockManagerTest {
     public void acquireCollectionWriteLock_depth2_withLockParent() throws LockException {
         final String collectionPath = "/db/colA";
 
-        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
-        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockAction> events = recordLockEvents(lockManager, () -> {
             final boolean lockParent = true;
             try (final ManagedCollectionLock colALock
                          = lockManager.acquireCollectionWriteLock(XmldbURI.create(collectionPath), lockParent)) {
@@ -376,36 +373,36 @@ public class LockManagerTest {
         });
 
         assertEquals(6, events.size());
-        final LockTable.LockAction event6 = events.pop();
-        final LockTable.LockAction event5 = events.pop();
-        final LockTable.LockAction event4 = events.pop();
-        final LockTable.LockAction event3 = events.pop();
-        final LockTable.LockAction event2 = events.pop();
-        final LockTable.LockAction event1 = events.pop();
+        final LockAction event6 = events.pop();
+        final LockAction event5 = events.pop();
+        final LockAction event4 = events.pop();
+        final LockAction event3 = events.pop();
+        final LockAction event2 = events.pop();
+        final LockAction event1 = events.pop();
 
-        assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
+        assertEquals(LockTable.LockEventType.Attempt, event1.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event1.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event1.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
+        assertEquals(LockTable.LockEventType.Acquired, event2.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event2.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event2.mode);
 
         // we now expect to couple /db with /db/colA by acquiring /db/colA whilst holding /db
-        assertEquals(LockTable.LockAction.Action.Attempt, event3.action);
+        assertEquals(LockTable.LockEventType.Attempt, event3.lockEventType);
         assertEquals(collectionPath, event3.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event3.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event4.action);
+        assertEquals(LockTable.LockEventType.Acquired, event4.lockEventType);
         assertEquals(collectionPath, event4.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event4.mode);
 
         // we now expect to release the lock on /db/colA and then /db (as the managed lock (of both locks) was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event5.action);
+        assertEquals(LockTable.LockEventType.Released, event5.lockEventType);
         assertEquals(collectionPath, event5.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event5.mode);
 
-        assertEquals(LockTable.LockAction.Action.Released, event6.action);
+        assertEquals(LockTable.LockEventType.Released, event6.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event6.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event6.mode);
     }
@@ -421,8 +418,8 @@ public class LockManagerTest {
         final String collectionAPath = "/db/colA";
         final String collectionBPath = collectionAPath + "/colB";
 
-        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
-        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockAction> events = recordLockEvents(lockManager, () -> {
             final boolean lockParent = false;
             try (final ManagedCollectionLock colBLock
                          = lockManager.acquireCollectionWriteLock(XmldbURI.create(collectionBPath), lockParent)) {
@@ -432,54 +429,54 @@ public class LockManagerTest {
         });
 
         assertEquals(9, events.size());
-        final LockTable.LockAction event9 = events.pop();
-        final LockTable.LockAction event8 = events.pop();
-        final LockTable.LockAction event7 = events.pop();
-        final LockTable.LockAction event6 = events.pop();
-        final LockTable.LockAction event5 = events.pop();
-        final LockTable.LockAction event4 = events.pop();
-        final LockTable.LockAction event3 = events.pop();
-        final LockTable.LockAction event2 = events.pop();
-        final LockTable.LockAction event1 = events.pop();
+        final LockAction event9 = events.pop();
+        final LockAction event8 = events.pop();
+        final LockAction event7 = events.pop();
+        final LockAction event6 = events.pop();
+        final LockAction event5 = events.pop();
+        final LockAction event4 = events.pop();
+        final LockAction event3 = events.pop();
+        final LockAction event2 = events.pop();
+        final LockAction event1 = events.pop();
 
-        assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
+        assertEquals(LockTable.LockEventType.Attempt, event1.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event1.id);
         assertIntentionWriteOrWriteMode(event1.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
+        assertEquals(LockTable.LockEventType.Acquired, event2.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event2.id);
         assertIntentionWriteOrWriteMode(event2.mode);
 
         // we now expect to couple /db with /db/colA by acquiring /db/colA whilst holding /db
-        assertEquals(LockTable.LockAction.Action.Attempt, event3.action);
+        assertEquals(LockTable.LockEventType.Attempt, event3.lockEventType);
         assertEquals(collectionAPath, event3.id);
         assertIntentionWriteOrWriteMode(event3.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event4.action);
+        assertEquals(LockTable.LockEventType.Acquired, event4.lockEventType);
         assertEquals(collectionAPath, event4.id);
         assertIntentionWriteOrWriteMode(event4.mode);
 
         // we now expect to couple /db/colA with /db/colA/colB by acquiring /db/colA/colB whilst holding /db/colA
-        assertEquals(LockTable.LockAction.Action.Attempt, event5.action);
+        assertEquals(LockTable.LockEventType.Attempt, event5.lockEventType);
         assertEquals(collectionBPath, event5.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event5.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event6.action);
+        assertEquals(LockTable.LockEventType.Acquired, event6.lockEventType);
         assertEquals(collectionBPath, event6.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event6.mode);
 
         // we now expect to release the lock on /db/colA/colB (as the managed lock was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event7.action);
+        assertEquals(LockTable.LockEventType.Released, event7.lockEventType);
         assertEquals(collectionBPath, event7.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event7.mode);
 
         // we now expect to release the lock on /db/colA (as the managed lock was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event8.action);
+        assertEquals(LockTable.LockEventType.Released, event8.lockEventType);
         assertEquals(collectionAPath, event8.id);
         assertIntentionWriteOrWriteMode(event8.mode);
 
         // we now expect to release the lock on /db (as the managed lock was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event9.action);
+        assertEquals(LockTable.LockEventType.Released, event9.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event9.id);
         assertIntentionWriteOrWriteMode(event9.mode);
     }
@@ -496,8 +493,8 @@ public class LockManagerTest {
         final String collectionAPath = "/db/colA";
         final String collectionBPath = collectionAPath + "/colB";
 
-        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
-        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockAction> events = recordLockEvents(lockManager, () -> {
             final boolean lockParent = true;
             try (final ManagedCollectionLock colBLock
                          = lockManager.acquireCollectionWriteLock(XmldbURI.create(collectionBPath), lockParent)) {
@@ -507,61 +504,61 @@ public class LockManagerTest {
         });
 
         assertEquals(9, events.size());
-        final LockTable.LockAction event9 = events.pop();
-        final LockTable.LockAction event8 = events.pop();
-        final LockTable.LockAction event7 = events.pop();
-        final LockTable.LockAction event6 = events.pop();
-        final LockTable.LockAction event5 = events.pop();
-        final LockTable.LockAction event4 = events.pop();
-        final LockTable.LockAction event3 = events.pop();
-        final LockTable.LockAction event2 = events.pop();
-        final LockTable.LockAction event1 = events.pop();
+        final LockAction event9 = events.pop();
+        final LockAction event8 = events.pop();
+        final LockAction event7 = events.pop();
+        final LockAction event6 = events.pop();
+        final LockAction event5 = events.pop();
+        final LockAction event4 = events.pop();
+        final LockAction event3 = events.pop();
+        final LockAction event2 = events.pop();
+        final LockAction event1 = events.pop();
 
-        assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
+        assertEquals(LockTable.LockEventType.Attempt, event1.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event1.id);
         assertIntentionWriteOrWriteMode(event1.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
+        assertEquals(LockTable.LockEventType.Acquired, event2.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event2.id);
         assertIntentionWriteOrWriteMode(event2.mode);
 
         // we now expect to couple /db with /db/colA by acquiring /db/colA whilst holding /db
-        assertEquals(LockTable.LockAction.Action.Attempt, event3.action);
+        assertEquals(LockTable.LockEventType.Attempt, event3.lockEventType);
         assertEquals(collectionAPath, event3.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event3.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event4.action);
+        assertEquals(LockTable.LockEventType.Acquired, event4.lockEventType);
         assertEquals(collectionAPath, event4.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event4.mode);
 
         // we now expect to couple /db/colA with /db/colA/colB by acquiring /db/colA/colB whilst holding /db/colA
-        assertEquals(LockTable.LockAction.Action.Attempt, event5.action);
+        assertEquals(LockTable.LockEventType.Attempt, event5.lockEventType);
         assertEquals(collectionBPath, event5.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event5.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event6.action);
+        assertEquals(LockTable.LockEventType.Acquired, event6.lockEventType);
         assertEquals(collectionBPath, event6.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event6.mode);
 
         // we now expect to release the lock on /db/colA/colB and then /db/colA (as the managed lock (of both locks) was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event7.action);
+        assertEquals(LockTable.LockEventType.Released, event7.lockEventType);
         assertEquals(collectionBPath, event7.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event7.mode);
 
         // we now expect to release the lock on /db/colA  (as the managed lock (of both locks) was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event8.action);
+        assertEquals(LockTable.LockEventType.Released, event8.lockEventType);
         assertEquals(collectionAPath, event8.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event8.mode);
 
         // we now expect to release the lock on /db  (as the managed lock (of both locks) was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event9.action);
+        assertEquals(LockTable.LockEventType.Released, event9.lockEventType);
         assertEquals(XmldbURI.ROOT_COLLECTION, event9.id);
         assertIntentionWriteOrWriteMode(event9.mode);
     }
 
     @Test
     public void getDocumentLock_isStripedByPath() {
-        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
 
         final DocumentLock doc1Lock1 = lockManager.getDocumentLock("/db/1.xml");
         assertNotNull(doc1Lock1);
@@ -591,8 +588,8 @@ public class LockManagerTest {
     public void acquireDocumentReadLock() throws LockException {
         final XmldbURI docUri = XmldbURI.create("/db/a/b/c/1.xml");
 
-        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
-        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedDocumentLock doc1Lock
                          = lockManager.acquireDocumentReadLock(docUri)) {
                 assertNotNull(doc1Lock);
@@ -600,20 +597,20 @@ public class LockManagerTest {
         });
 
         assertEquals(3, events.size());
-        final LockTable.LockAction event3 = events.pop();
-        final LockTable.LockAction event2 = events.pop();
-        final LockTable.LockAction event1 = events.pop();
+        final LockAction event3 = events.pop();
+        final LockAction event2 = events.pop();
+        final LockAction event1 = events.pop();
 
-        assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
+        assertEquals(LockTable.LockEventType.Attempt, event1.lockEventType);
         assertEquals(docUri, event1.id);
         assertEquals(Lock.LockMode.READ_LOCK, event1.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
+        assertEquals(LockTable.LockEventType.Acquired, event2.lockEventType);
         assertEquals(docUri, event2.id);
         assertEquals(Lock.LockMode.READ_LOCK, event2.mode);
 
         // we now expect to release the lock on the document (as the managed lock was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event3.action);
+        assertEquals(LockTable.LockEventType.Released, event3.lockEventType);
         assertEquals(docUri, event3.id);
         assertEquals(Lock.LockMode.READ_LOCK, event3.mode);
     }
@@ -627,8 +624,8 @@ public class LockManagerTest {
     public void acquireDocumentWriteLock() throws LockException {
         final XmldbURI docUri = XmldbURI.create("/db/a/b/c/1.xml");
 
-        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
-        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedDocumentLock doc1Lock
                          = lockManager.acquireDocumentWriteLock(docUri)) {
                 assertNotNull(doc1Lock);
@@ -636,27 +633,27 @@ public class LockManagerTest {
         });
 
         assertEquals(3, events.size());
-        final LockTable.LockAction event3 = events.pop();
-        final LockTable.LockAction event2 = events.pop();
-        final LockTable.LockAction event1 = events.pop();
+        final LockAction event3 = events.pop();
+        final LockAction event2 = events.pop();
+        final LockAction event1 = events.pop();
 
-        assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
+        assertEquals(LockTable.LockEventType.Attempt, event1.lockEventType);
         assertEquals(docUri, event1.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event1.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
+        assertEquals(LockTable.LockEventType.Acquired, event2.lockEventType);
         assertEquals(docUri, event2.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event2.mode);
 
         // we now expect to release the lock on the document (as the managed lock was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event3.action);
+        assertEquals(LockTable.LockEventType.Released, event3.lockEventType);
         assertEquals(docUri, event3.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event3.mode);
     }
 
     @Test
     public void getBtreeLock_isStripedByPath() {
-        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
 
         final ReentrantLock btree1Lock1 = lockManager.getBTreeLock("btree1.dbx");
         assertNotNull(btree1Lock1);
@@ -686,8 +683,8 @@ public class LockManagerTest {
     public void acquireBTreeReadLock() throws LockException {
         final String btree1Name = "btree1.dbx";
 
-        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
-        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedLock<ReentrantLock> btree1Lock
                          = lockManager.acquireBtreeReadLock(btree1Name)) {
                 assertNotNull(btree1Lock);
@@ -695,20 +692,20 @@ public class LockManagerTest {
         });
 
         assertEquals(3, events.size());
-        final LockTable.LockAction event3 = events.pop();
-        final LockTable.LockAction event2 = events.pop();
-        final LockTable.LockAction event1 = events.pop();
+        final LockAction event3 = events.pop();
+        final LockAction event2 = events.pop();
+        final LockAction event1 = events.pop();
 
-        assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
+        assertEquals(LockTable.LockEventType.Attempt, event1.lockEventType);
         assertEquals(btree1Name, event1.id);
         assertEquals(Lock.LockMode.READ_LOCK, event1.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
+        assertEquals(LockTable.LockEventType.Acquired, event2.lockEventType);
         assertEquals(btree1Name, event2.id);
         assertEquals(Lock.LockMode.READ_LOCK, event2.mode);
 
         // we now expect to release the lock on the document (as the managed lock was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event3.action);
+        assertEquals(LockTable.LockEventType.Released, event3.lockEventType);
         assertEquals(btree1Name, event3.id);
         assertEquals(Lock.LockMode.READ_LOCK, event3.mode);
     }
@@ -722,8 +719,8 @@ public class LockManagerTest {
     public void acquireBTreeWriteLock() throws LockException {
         final String btree1Name = "btree1.dbx";
 
-        final LockManager lockManager = new LockManager(instanceId, threadGroup, CONCURRENCY_LEVEL);
-        final Stack<LockTable.LockAction> events = recordLockEvents(lockManager, () -> {
+        final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
+        final Stack<LockAction> events = recordLockEvents(lockManager, () -> {
             try (final ManagedLock<ReentrantLock> btree1Lock
                          = lockManager.acquireBtreeWriteLock(btree1Name)) {
                 assertNotNull(btree1Lock);
@@ -731,26 +728,26 @@ public class LockManagerTest {
         });
 
         assertEquals(3, events.size());
-        final LockTable.LockAction event3 = events.pop();
-        final LockTable.LockAction event2 = events.pop();
-        final LockTable.LockAction event1 = events.pop();
+        final LockAction event3 = events.pop();
+        final LockAction event2 = events.pop();
+        final LockAction event1 = events.pop();
 
-        assertEquals(LockTable.LockAction.Action.Attempt, event1.action);
+        assertEquals(LockTable.LockEventType.Attempt, event1.lockEventType);
         assertEquals(btree1Name, event1.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event1.mode);
 
-        assertEquals(LockTable.LockAction.Action.Acquired, event2.action);
+        assertEquals(LockTable.LockEventType.Acquired, event2.lockEventType);
         assertEquals(btree1Name, event2.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event2.mode);
 
         // we now expect to release the lock on the document (as the managed lock was closed)
-        assertEquals(LockTable.LockAction.Action.Released, event3.action);
+        assertEquals(LockTable.LockEventType.Released, event3.lockEventType);
         assertEquals(btree1Name, event3.id);
         assertEquals(Lock.LockMode.WRITE_LOCK, event3.mode);
     }
 
 
-    private Stack<LockTable.LockAction> recordLockEvents(final LockManager lockManager, final RunnableE<LockException> runnable) throws LockException{
+    private Stack<LockAction> recordLockEvents(final LockManager lockManager, final RunnableE<LockException> runnable) throws LockException{
         final LockTable lockTable = lockManager.getLockTable();
         final LockEventRecordingListener lockEventRecordingListener = new LockEventRecordingListener();
         lockTable.registerListener(lockEventRecordingListener);
@@ -775,7 +772,7 @@ public class LockManagerTest {
 
     @ThreadSafe
     private static class LockEventRecordingListener implements LockTable.LockEventListener {
-        private final Stack<LockTable.LockAction> events = new Stack<>();
+        private final Stack<LockAction> events = new Stack<>();
         private final AtomicBoolean registered = new AtomicBoolean();
 
         @Override
@@ -793,12 +790,45 @@ public class LockManagerTest {
         }
 
         @Override
-        public void accept(final LockTable.LockAction lockAction) {
-            events.push(lockAction);
+        public void accept(final LockTable.LockEventType lockEventType, final long timestamp, final long groupId,
+                final LockTable.Entry entry) {
+            // read count first to ensure memory visibility from volatile!
+            final int localCount = entry.getCount();
+            events.push(new LockAction(lockEventType, groupId, entry.getId(), entry.getLockType(), entry.getLockMode(),
+                    entry.getOwner(), localCount, timestamp, entry.stackTraces == null ? null : entry.stackTraces.get(0)));
         }
 
-        public Stack<LockTable.LockAction> getEvents() {
+        public Stack<LockAction> getEvents() {
             return events;
+        }
+    }
+
+    private static class LockAction {
+        public final LockTable.LockEventType lockEventType;
+        public final long groupId;
+        public final String id;
+        public final Lock.LockType lockType;
+        public final Lock.LockMode mode;
+        public final String threadName;
+        public final int count;
+        /**
+         * System#nanoTime()
+         */
+        public final long timestamp;
+        @Nullable
+        public final StackTraceElement[] stackTrace;
+
+        private LockAction(final LockTable.LockEventType lockEventType, final long groupId, final String id,
+                final Lock.LockType lockType, final Lock.LockMode mode, final String threadName, final int count, final long timestamp, @Nullable final StackTraceElement[] stackTrace) {
+            this.lockEventType = lockEventType;
+            this.groupId = groupId;
+            this.id = id;
+            this.lockType = lockType;
+            this.mode = mode;
+            this.threadName = threadName;
+            this.count = count;
+            this.timestamp = timestamp;
+            this.stackTrace = stackTrace;
         }
     }
 }

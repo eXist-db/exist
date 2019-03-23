@@ -36,7 +36,7 @@ public class LockTableBenchmark {
 
     @State(Scope.Benchmark)
     public static class LockTableState {
-        private final LockTable lockTable = new LockTable("jmh-LockTableBenchmark", new ThreadGroup("jmh-locktable"));
+        private final LockTable lockTable = new LockTable();
     }
 
     @State(Scope.Thread)
