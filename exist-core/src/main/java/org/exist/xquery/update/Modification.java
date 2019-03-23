@@ -21,6 +21,8 @@ package org.exist.xquery.update;
 
 import java.util.Iterator;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -45,7 +47,6 @@ import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
-import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xquery.*;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -75,7 +76,7 @@ public abstract class Modification extends AbstractExpression
 
     protected ManagedLocks<ManagedDocumentLock> lockedDocumentsLocks;
     protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
-    protected Int2ObjectHashMap<DocumentTrigger> triggers;
+    protected final Int2ObjectMap<DocumentTrigger> triggers;
 
     /**
      * @param context
@@ -84,7 +85,7 @@ public abstract class Modification extends AbstractExpression
         super(context);
         this.select = select;
         this.value = value;
-        this.triggers = new Int2ObjectHashMap<>(10);
+        this.triggers = new Int2ObjectOpenHashMap<>(10);
     }
 
     public int getCardinality() {
