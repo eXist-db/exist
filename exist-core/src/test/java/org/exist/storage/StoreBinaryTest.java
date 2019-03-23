@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 public class StoreBinaryTest {
 
     @Test
-    public void check_MimeType_is_preserved() throws EXistException, InterruptedException, PermissionDeniedException, LockException, IOException, TriggerException, DatabaseConfigurationException {
+    public void check_MimeType_is_preserved() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, DatabaseConfigurationException {
 
         final String xqueryMimeType = "application/xquery";
         final String xqueryFilename = "script.xql";

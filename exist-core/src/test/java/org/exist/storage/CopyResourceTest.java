@@ -70,26 +70,35 @@ public class CopyResourceTest {
     private static final String USER1_PWD = USER1_NAME;
     private static final String USER2_NAME = "user2";
     private static final String USER2_PWD = USER2_NAME;
+    private static final String GROUP1_NAME = "group1";
 
     private static final XmldbURI USER1_DOC1 = XmldbURI.create("u1d1.xml");
     private static final XmldbURI USER1_DOC2 = XmldbURI.create("u1d2.xml");
+    private static final XmldbURI USER1_DOC3 = XmldbURI.create("u1d3.xml");
     private static final XmldbURI USER1_NEW_DOC = XmldbURI.create("u1nx.xml");
     private static final XmldbURI USER1_BIN_DOC1 = XmldbURI.create("u1d1.bin");
     private static final XmldbURI USER1_BIN_DOC2 = XmldbURI.create("u1d2.bin");
+    private static final XmldbURI USER1_BIN_DOC3 = XmldbURI.create("u1d3.bin");
     private static final XmldbURI USER1_NEW_BIN_DOC = XmldbURI.create("u1nx.bin");
 
     private static final XmldbURI USER2_DOC2 = XmldbURI.create("u2d2.xml");
+    private static final XmldbURI USER2_DOC3 = XmldbURI.create("u2d3.xml");
     private static final XmldbURI USER2_NEW_DOC = XmldbURI.create("u2nx.xml");
     private static final XmldbURI USER2_BIN_DOC2 = XmldbURI.create("u2d2.bin");
+    private static final XmldbURI USER2_BIN_DOC3 = XmldbURI.create("u2d3.bin");
     private static final XmldbURI USER2_NEW_BIN_DOC = XmldbURI.create("u2nx.bin");
 
     private static final int USER1_DOC1_MODE = 0444;  // r--r--r--
     private static final int USER1_DOC2_MODE = 0644;  // rw-r--r--
+    private static final int USER1_DOC3_MODE = 0664;  // rw-rw--r--
     private static final int USER1_BIN_DOC1_MODE = 0444;  // r--r--r--
     private static final int USER1_BIN_DOC2_MODE = 0644;  // rw-r--r--
+    private static final int USER1_BIN_DOC3_MODE = 0664;  // rw-rw--r--
 
     private static final int USER2_DOC2_MODE = 0644;  // rw-r--r--
+    private static final int USER2_DOC3_MODE = 0664;  // rw-rw--r--
     private static final int USER2_BIN_DOC2_MODE = 0644;  // rw-r--r--
+    private static final int USER2_BIN_DOC3_MODE = 0664;  // rw-rw--r--
 
     @ClassRule
     public static final ExistEmbeddedServer existWebServer = new ExistEmbeddedServer(true, true);
@@ -207,6 +216,28 @@ public class CopyResourceTest {
         final long originalDoc2LastModified = getLastModified(USER2_DOC2);
         copyDoc(user2, NO_PRESERVE, USER1_DOC1, USER2_DOC2);
         checkAttributes(USER2_DOC2, USER2_NAME, USER2_NAME, USER2_DOC2_MODE, equalTo(getCreated(USER2_DOC2)), allOf(not(getLastModified(USER1_DOC1)), not(originalDoc2LastModified)));
+    }
+
+    /**
+     * As owner user copy {@link #USER1_DOC3} from {@link TestConstants#TEST_COLLECTION_URI} to already existing {@link #USER2_DOC3} owned by someone else.
+     */
+    @Test
+    public void copyXmlToExistentAsOwner() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+        final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
+        final long originalDoc3LastModified = getLastModified(USER2_DOC3);
+        copyDoc(user1, NO_PRESERVE, USER1_DOC3, USER2_DOC3);
+        checkAttributes(USER2_DOC3, USER2_NAME, GROUP1_NAME, USER2_DOC3_MODE, equalTo(getCreated(USER2_DOC3)), allOf(not(getLastModified(USER1_DOC3)), not(originalDoc3LastModified)));
+    }
+
+    /**
+     * As owner user copy {@link #USER1_BIN_DOC3} from {@link TestConstants#TEST_COLLECTION_URI} to already existing {@link #USER2_BIN_DOC3} owned by someone else.
+     */
+    @Test
+    public void copyBinaryToExistentAsOwner() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+        final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
+        final long originalDoc3LastModified = getLastModified(USER2_DOC3);
+        copyDoc(user1, NO_PRESERVE, USER1_BIN_DOC3, USER2_BIN_DOC3);
+        checkAttributes(USER2_BIN_DOC3, USER2_NAME, GROUP1_NAME, USER2_BIN_DOC3_MODE, equalTo(getCreated(USER2_BIN_DOC3)), allOf(not(getLastModified(USER1_BIN_DOC3)), not(originalDoc3LastModified)));
     }
 
     /**
@@ -379,7 +410,6 @@ public class CopyResourceTest {
             transaction.commit();
         }
 
-
         // check the copy of the document is the same as the original
         try (final DBBroker broker = pool.get(Optional.of(execAsUser));
                 final LockedDocument lockedOriginal = broker.getXMLResource(src, LockMode.READ_LOCK);
@@ -439,8 +469,9 @@ public class CopyResourceTest {
             chmod(broker, transaction, collection.getURI(), 511);
             broker.saveCollection(transaction, collection);
 
-            createUser(broker, sm, USER1_NAME, USER1_PWD);
-            createUser(broker, sm, USER2_NAME, USER2_PWD);
+            createGroup(broker, sm, GROUP1_NAME);
+            createUser(broker, sm, USER1_NAME, USER1_PWD, GROUP1_NAME);
+            createUser(broker, sm, USER2_NAME, USER2_PWD, GROUP1_NAME);
 
             transaction.commit();
         }
@@ -466,6 +497,12 @@ public class CopyResourceTest {
             collection.store(transaction, broker, u1d2ii, u1d2xml);
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_DOC2), USER1_DOC2_MODE);
 
+            final String u1d3xml = "<empty3/>";
+            final IndexInfo u1d3ii = collection.validateXMLResource(transaction, broker, USER1_DOC3, u1d3xml);
+            collection.store(transaction, broker, u1d3ii, u1d3xml);
+            chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_DOC3), USER1_DOC3_MODE);
+            chgrp(broker, transaction, TEST_COLLECTION_URI.append(USER1_DOC3), GROUP1_NAME);
+
             final String u1d1bin = "bin1";
             collection.addBinaryResource(transaction, broker, USER1_BIN_DOC1, u1d1bin.getBytes(UTF_8), "text/plain");
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC1), USER1_BIN_DOC1_MODE);
@@ -473,6 +510,11 @@ public class CopyResourceTest {
             final String u1d2bin = "bin2";
             collection.addBinaryResource(transaction, broker, USER1_BIN_DOC2, u1d2bin.getBytes(UTF_8), "text/plain");
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC2), USER1_BIN_DOC2_MODE);
+
+            final String u1d3bin = "bin3";
+            collection.addBinaryResource(transaction, broker, USER1_BIN_DOC3, u1d3bin.getBytes(UTF_8), "text/plain");
+            chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC3), USER1_BIN_DOC3_MODE);
+            chgrp(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC3), GROUP1_NAME);
 
             broker.saveCollection(transaction, collection);
 
@@ -490,9 +532,20 @@ public class CopyResourceTest {
             collection.store(transaction, broker, u2d2ii, u2d2xml);
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER2_DOC2), USER2_DOC2_MODE);
 
+            final String u2d3xml = "<empty3/>";
+            final IndexInfo u2d3ii = collection.validateXMLResource(transaction, broker, USER2_DOC3, u2d3xml);
+            collection.store(transaction, broker, u2d3ii, u2d3xml);
+            chmod(broker, transaction, TEST_COLLECTION_URI.append(USER2_DOC3), USER2_DOC3_MODE);
+            chgrp(broker, transaction, TEST_COLLECTION_URI.append(USER2_DOC3), GROUP1_NAME);
+
             final String u2d2bin = "bin2";
             collection.addBinaryResource(transaction, broker, USER2_BIN_DOC2, u2d2bin.getBytes(UTF_8), "text/plain");
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER2_BIN_DOC2), USER2_BIN_DOC2_MODE);
+
+            final String u2d3bin = "bin3";
+            collection.addBinaryResource(transaction, broker, USER2_BIN_DOC3, u2d3bin.getBytes(UTF_8), "text/plain");
+            chmod(broker, transaction, TEST_COLLECTION_URI.append(USER2_BIN_DOC3), USER2_BIN_DOC3_MODE);
+            chgrp(broker, transaction, TEST_COLLECTION_URI.append(USER2_BIN_DOC3), GROUP1_NAME);
 
             broker.saveCollection(transaction, collection);
 
@@ -508,16 +561,20 @@ public class CopyResourceTest {
 
             removeDocument(broker, transaction, TEST_COLLECTION_URI.append(USER1_DOC1));
             removeDocument(broker, transaction, TEST_COLLECTION_URI.append(USER1_DOC2));
+            removeDocument(broker, transaction, TEST_COLLECTION_URI.append(USER1_DOC3));
             removeDocument(broker, transaction, TEST_COLLECTION_URI.append(USER1_NEW_DOC));
 
             removeDocument(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC1));
             removeDocument(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC2));
+            removeDocument(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC3));
             removeDocument(broker, transaction, TEST_COLLECTION_URI.append(USER1_NEW_BIN_DOC));
 
             removeDocument(broker, transaction, TEST_COLLECTION_URI.append(USER2_DOC2));
+            removeDocument(broker, transaction, TEST_COLLECTION_URI.append(USER2_DOC3));
             removeDocument(broker, transaction, TEST_COLLECTION_URI.append(USER2_NEW_DOC));
 
             removeDocument(broker, transaction, TEST_COLLECTION_URI.append(USER2_BIN_DOC2));
+            removeDocument(broker, transaction, TEST_COLLECTION_URI.append(USER2_BIN_DOC3));
             removeDocument(broker, transaction, TEST_COLLECTION_URI.append(USER2_NEW_BIN_DOC));
 
             transaction.commit();
@@ -533,6 +590,7 @@ public class CopyResourceTest {
 
             removeUser(sm, USER2_NAME);
             removeUser(sm, USER1_NAME);
+            removeGroup(sm, GROUP1_NAME);
 
             removeCollection(broker, transaction, TEST_COLLECTION_URI);
 
@@ -540,7 +598,7 @@ public class CopyResourceTest {
         }
     }
 
-    private static void createUser(final DBBroker broker, final SecurityManager sm, final String username, final String password) throws PermissionDeniedException, EXistException {
+    private static void createUser(final DBBroker broker, final SecurityManager sm, final String username, final String password, final String... supplementalGroups) throws PermissionDeniedException, EXistException {
         Group userGroup = new GroupAider(username);
         sm.addGroup(broker, userGroup);
         final Account user = new UserAider(username);
@@ -551,15 +609,34 @@ public class CopyResourceTest {
         userGroup = sm.getGroup(username);
         userGroup.addManager(sm.getAccount(username));
         sm.updateGroup(userGroup);
+
+        for (final String supplementalGroup : supplementalGroups) {
+            userGroup = sm.getGroup(supplementalGroup);
+            user.addGroup(userGroup);
+        }
+        sm.updateAccount(user);
+    }
+
+    private static void createGroup(final DBBroker broker, final SecurityManager sm, final String group) throws PermissionDeniedException, EXistException {
+        Group userGroup = new GroupAider(group);
+        sm.addGroup(broker, userGroup);
     }
 
     private static void chmod(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final int mode) throws PermissionDeniedException {
         PermissionFactory.chmod(broker, transaction, pathUri, Optional.of(mode), Optional.empty());
     }
 
+    private static void chgrp(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final String group) throws PermissionDeniedException {
+        PermissionFactory.chown(broker, transaction, pathUri, Optional.empty(), Optional.of(group));
+    }
+
     private static void removeUser(final SecurityManager sm, final String username) throws PermissionDeniedException, EXistException {
         sm.deleteAccount(username);
         sm.deleteGroup(username);
+    }
+
+    private static void removeGroup(final SecurityManager sm, final String group) throws PermissionDeniedException, EXistException {
+        sm.deleteGroup(group);
     }
 
     private static void removeDocument(final DBBroker broker, final Txn transaction, final XmldbURI documentUri) throws PermissionDeniedException, LockException, IOException, TriggerException {
