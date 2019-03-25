@@ -178,6 +178,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
                     waitTime = timeOut_ - (System.currentTimeMillis() - start);
                     if (waitTime <= 0) {
                         LOG.error("Time out while trying to get connection");
+                        return null;
                     }
                 }
             } catch (InterruptedException ex) {
@@ -199,7 +200,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
         System.setProperty("hsqldb.cache_size_scale", "12");
         System.setProperty("hsqldb.default_table_type", "cached");
         //Get a connection to the DB... and keep it
-        this.conn = DriverManager.getConnection("jdbc:hsqldb:" + getDataDir() + "/" + db_file_name_prefix /* + ";shutdown=true" */, "sa", "");
+        this.conn = DriverManager.getConnection("jdbc:hsqldb:" + getDataDir() + "/" + db_file_name_prefix + ";sql.enforce_size=false" /* + ";shutdown=true" */, "sa", "");
         if (LOG.isDebugEnabled())
             LOG.debug("Connected to GML index: " + getDataDir() + "/" + db_file_name_prefix);
         ResultSet rs = null;
@@ -218,7 +219,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
                     /*3*/ "NODE_ID BINARY, " +
                     /*4*/ "GEOMETRY_TYPE VARCHAR, " +
                     /*5*/ "SRS_NAME VARCHAR, " +
-                    /*6*/ "WKT VARCHAR, " +
+                    /*6*/ "WKT VARCHAR(500000), " +
                     /*7*/ "WKB BINARY, " +
                     /*8*/ "MINX DOUBLE, " +
                     /*9*/ "MAXX DOUBLE, " +
@@ -228,7 +229,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
                     /*13*/ "CENTROID_Y DOUBLE, " +
                     /*14*/ "AREA DOUBLE, " +
                     //Boundary ?
-                    /*15*/ "EPSG4326_WKT VARCHAR, " +
+                    /*15*/ "EPSG4326_WKT VARCHAR(500000), " +
                     /*16*/ "EPSG4326_WKB BINARY, " +
                     /*17*/ "EPSG4326_MINX DOUBLE, " +
                     /*18*/ "EPSG4326_MAXX DOUBLE, " +
