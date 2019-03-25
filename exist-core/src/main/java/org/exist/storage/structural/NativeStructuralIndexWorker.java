@@ -693,7 +693,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
      * Process the map of pending entries and store them into the btree.
      */
     private void processPending() {
-        if (pending.size() == 0)
+        if (pending.size() == 0 || index.btree == null)
             {return;}
 
         try {
