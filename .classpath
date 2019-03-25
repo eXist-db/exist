@@ -132,7 +132,6 @@
 	<classpathentry kind="src" path="exist-core/src/test/java"/>
 	<classpathentry kind="src" path="exist-start/src/main/java"/>
 	<classpathentry kind="src" path="exist-testkit/src/main/java"/>
-	<classpathentry kind="src" path="extensions/commands/src/main/java"/>
 	<classpathentry kind="src" path="extensions/debuggee/src/main/java"/>
 	<classpathentry kind="src" path="extensions/debuggee/src/test/java"/>
 	<classpathentry kind="src" path="extensions/expath/src/main/java"/>
