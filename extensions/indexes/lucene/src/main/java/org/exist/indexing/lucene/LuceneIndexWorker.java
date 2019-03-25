@@ -20,33 +20,33 @@
  */
 package org.exist.indexing.lucene;
 
-import java.io.IOException;
-import java.util.*;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.document.*;
-import org.apache.lucene.facet.*;
+import org.apache.lucene.facet.DrillDownQuery;
+import org.apache.lucene.facet.FacetsCollector;
+import org.apache.lucene.facet.FacetsConfig;
 import org.apache.lucene.facet.taxonomy.FastTaxonomyFacetCounts;
 import org.apache.lucene.facet.taxonomy.SearcherTaxonomyManager;
 import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.queryparser.classic.QueryParserBase;
-import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfiguration;
 import org.apache.lucene.search.*;
-import org.apache.lucene.util.*;
+import org.apache.lucene.util.Bits;
+import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.BytesRefBuilder;
+import org.apache.lucene.util.NumericUtils;
 import org.exist.collections.Collection;
+import org.exist.dom.QName;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.persistent.*;
 import org.exist.indexing.*;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.PlainTextHighlighter.Offset;
 import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextField;
-import org.exist.dom.QName;
-import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.*;
@@ -60,16 +60,15 @@ import org.exist.util.Occurrences;
 import org.exist.util.pool.NodePool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
+import org.exist.xquery.modules.lucene.QueryOptions;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.*;
 import org.xml.sax.helpers.AttributesImpl;
 
 import javax.xml.XMLConstants;
+import java.io.IOException;
+import java.util.*;
 
 
 /**
@@ -80,13 +79,6 @@ import javax.xml.XMLConstants;
  * @author Leif-Jöran Olsson (ljo@exist-db.org)
  */
 public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
-
-    public static final String OPTION_DEFAULT_OPERATOR = "default-operator";
-    public static final String OPTION_PHRASE_SLOP = "phrase-slop";
-    public static final String OPTION_LEADING_WILDCARD = "leading-wildcard";
-    public static final String OPTION_FILTER_REWRITE = "filter-rewrite";
-    public static final String DEFAULT_OPERATOR_OR = "or";
-    public static final String OPTION_LOWERCASE_EXPANDED_TERMS = "lowercase-expanded-terms";
 
     public static final org.apache.lucene.document.FieldType TYPE_NODE_ID = new org.apache.lucene.document.FieldType();
     static {
@@ -435,7 +427,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @throws ParseException
      */
     public NodeSet query(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
-        List<QName> qnames, String queryStr, int axis, Properties options)
+        List<QName> qnames, String queryStr, int axis, QueryOptions options)
             throws IOException, ParseException, XPathException {
         return index.withSearcher(searcher -> {
             final List<QName> definedIndexes = getDefinedIndexes(qnames);
@@ -445,52 +437,20 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 Analyzer analyzer = getAnalyzer(null, qname, context.getBroker(), docs);
                 QueryParserWrapper parser = getQueryParser(field, analyzer, docs);
-                try {
-                    setOptions(options, parser.getConfiguration());
-                    Query query = parser.parse(queryStr);
-                    searchAndProcess(contextId, qname, docs, contextSet, resultSet,
-                            returnAncestor, searcher, query);
-                } catch(ParseException e) {
-                    throw new XPathException("Lucene query syntax error: " + e.getMessage());
+                options.configureParser(parser.getConfiguration());
+                Query query = parser.parse(queryStr);
+                Optional<Map<String, String>> facets = options.getFacets();
+                if (facets.isPresent()) {
+                    LuceneConfig config = getLuceneConfig(field, qname, broker, docs);
+                    if (config != null) {
+                        query = drilldown(facets.get(), query, config);
+                    }
                 }
+                searchAndProcess(contextId, qname, docs, contextSet, resultSet,
+                        returnAncestor, searcher, query);
             }
             return resultSet;
         });
-    }
-
-    protected void setOptions(Properties options, CommonQueryParserConfiguration parser) throws ParseException {
-        if (options == null)
-            return;
-        String option = options.getProperty(OPTION_DEFAULT_OPERATOR);
-        if (option != null && parser instanceof QueryParserBase) {
-            if (DEFAULT_OPERATOR_OR.equals(option))
-                ((QueryParserBase)parser).setDefaultOperator(QueryParser.OR_OPERATOR);
-            else
-                ((QueryParserBase)parser).setDefaultOperator(QueryParser.AND_OPERATOR);
-        }
-        option = options.getProperty(OPTION_LEADING_WILDCARD);
-        if (option != null)
-            parser.setAllowLeadingWildcard(option.equalsIgnoreCase("yes"));
-        option = options.getProperty(OPTION_PHRASE_SLOP);
-        if (option != null) {
-            try {
-                int slop = Integer.parseInt(option);
-                parser.setPhraseSlop(slop);
-            } catch (NumberFormatException e) {
-                throw new ParseException("value for option " + OPTION_PHRASE_SLOP + " needs to be a number");
-            }
-        }
-        option = options.getProperty(OPTION_FILTER_REWRITE);
-        if (option != null) {
-            if (option.equalsIgnoreCase("yes"))
-                parser.setMultiTermRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
-            else
-                parser.setMultiTermRewriteMethod(MultiTermQuery.CONSTANT_SCORE_BOOLEAN_QUERY_REWRITE);
-        }
-        option = options.getProperty(OPTION_LOWERCASE_EXPANDED_TERMS);
-        if (option != null) {
-            parser.setLowercaseExpandedTerms("yes".equalsIgnoreCase(option));
-        }        
     }
 
     /**
@@ -512,7 +472,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @throws ParseException
      */
     public NodeSet query(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
-                         List<QName> qnames, Element queryRoot, int axis, Properties options)
+                         List<QName> qnames, Element queryRoot, int axis, QueryOptions options)
             throws IOException, ParseException, XPathException {
         return index.withSearcher(searcher -> {
             final List<QName> definedIndexes = getDefinedIndexes(qnames);
@@ -522,6 +482,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 analyzer = getAnalyzer(null, qname, context.getBroker(), docs);
                 Query query = queryTranslator.parse(field, queryRoot, analyzer, options);
+                Optional<Map<String, String>> facets = options.getFacets();
+                if (facets.isPresent()) {
+                    LuceneConfig config = getLuceneConfig(field, qname, broker, docs);
+                    if (config != null) {
+                        query = drilldown(facets.get(), query, config);
+                    }
+                }
                 if (query != null) {
                     searchAndProcess(contextId, qname, docs, contextSet, resultSet,
                             returnAncestor, searcher, query);
@@ -532,7 +499,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public NodeSet queryField(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
-            String field, Element queryRoot, int axis, Properties options)
+            String field, Element queryRoot, int axis, QueryOptions options)
             throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             final NodeSet resultSet = new NewArrayNodeSet();
@@ -545,6 +512,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             return resultSet;
         });
+    }
+
+    private Query drilldown(Map<String, String> facets, Query baseQuery, LuceneConfig config) {
+        final DrillDownQuery drillDownQuery = new DrillDownQuery(config.facetsConfig, baseQuery);
+        for (Map.Entry<String, String> facet : facets.entrySet()) {
+            drillDownQuery.add(facet.getKey(), facet.getValue());
+        }
+        return drillDownQuery;
     }
 
     private void searchAndProcess(int contextId, QName qname, DocumentSet docs,
@@ -560,22 +535,18 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public NodeSet queryField(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
-            String field, String queryString, int axis, Properties options)
-            throws IOException, ParseException, XPathException {
+            String field, String queryString, int axis, QueryOptions options)
+            throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             NodeSet resultSet = new NewArrayNodeSet();
             boolean returnAncestor = axis == NodeSet.ANCESTOR;
             Analyzer analyzer = getAnalyzer(field, null, context.getBroker(), docs);
             LOG.debug("Using analyzer " + analyzer + " for " + queryString);
             QueryParserWrapper parser = getQueryParser(field, analyzer, docs);
-            try {
-                setOptions(options, parser.getConfiguration());
-                Query query = parser.parse(queryString);
-                searchAndProcess(contextId, null, docs, contextSet, resultSet,
-                        returnAncestor, searcher, query);
-            } catch(ParseException e) {
-                throw new XPathException("Lucene query syntax error: " + e.getMessage());
-            }
+            options.configureParser(parser.getConfiguration());
+            Query query = parser.parse(queryString);
+            searchAndProcess(contextId, null, docs, contextSet, resultSet,
+                    returnAncestor, searcher, query);
             return resultSet;
         });
     }
@@ -677,7 +648,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @param queryText
      * @return search report
      */
-    public NodeImpl search(final XQueryContext context, final List<String> toBeMatchedURIs, String queryText, String[] fieldsToGet, Properties options) throws XPathException, IOException {
+    public NodeImpl search(final XQueryContext context, final List<String> toBeMatchedURIs, String queryText, String[] fieldsToGet, QueryOptions options) throws XPathException, IOException {
 
         return index.withSearcher(searcher -> {
             // Get analyzer : to be retrieved from configuration
@@ -685,11 +656,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
             // Setup query Version, default field, analyzer
             final QueryParserWrapper parser = getQueryParser("", searchAnalyzer, null);
-            try {
-                setOptions(options, parser.getConfiguration());
-            } catch (ParseException e) {
-                throw new XPathException("Lucene query syntax error: " + e.getMessage());
-            }
+            options.configureParser(parser.getConfiguration());
             final Query query = parser.parse(queryText);
 
             // extract all used fields from query
@@ -1031,6 +998,24 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
         }
         return index.getDefaultAnalyzer();
+    }
+
+    /**
+     * Return the analyzer to be used for the given field or qname. Either field
+     * or qname should be specified.
+     */
+    protected LuceneConfig getLuceneConfig(String field, QName qname, DBBroker broker, DocumentSet docs) {
+        for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
+            Collection collection = i.next();
+            IndexSpec idxConf = collection.getIndexConfiguration(broker);
+            if (idxConf != null) {
+                LuceneConfig config = (LuceneConfig) idxConf.getCustomIndexSpec(LuceneIndex.ID);
+                if (config != null) {
+                    return config;
+                }
+            }
+        }
+        return null;
     }
 
     protected QueryParserWrapper getQueryParser(String field, Analyzer analyzer, DocumentSet docs) {

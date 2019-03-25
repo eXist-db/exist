@@ -19,34 +19,23 @@
  */
 package org.exist.xquery.modules.lucene;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.QName;
 import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
-import org.exist.numbering.NodeId;
-import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.ElementValue;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.functions.map.AbstractMapType;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Query extends Function implements Optimizable {
 	
@@ -89,7 +78,7 @@ public class Query extends Function implements Optimizable {
                 new FunctionParameterSequenceType("query", Type.ITEM, Cardinality.EXACTLY_ONE,
                 		"The query to search for, provided either as a string or text in Lucene's default query " +
                 		"syntax or as an XML fragment to bypass Lucene's default query parser"),
-                new FunctionParameterSequenceType("options", Type.NODE, Cardinality.ZERO_OR_ONE,
+                new FunctionParameterSequenceType("options", Type.ITEM, Cardinality.ZERO_OR_ONE,
                 		"An XML fragment containing options to be passed to Lucene's query parser. The following " +
                         "options are supported (a description can be found in the docs):\n" +
                         "<options>\n" +
@@ -131,7 +120,6 @@ public class Query extends Function implements Optimizable {
             arg = arguments.get(2).simplify();
             arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
                 new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
-            arg = new DynamicTypeCheck(context, Type.ELEMENT, arg);
             steps.add(arg);
         }
     }
@@ -221,7 +209,7 @@ public class Query extends Function implements Optimizable {
         Item key = getKey(contextSequence, null);
         List<QName> qnames = new ArrayList<>(1);
         qnames.add(contextQName);
-        Properties options = parseOptions(this, contextSequence, null, 3);
+        QueryOptions options = parseOptions(this, contextSequence, null, 3);
         try {
             if (Type.subTypeOf(key.getType(), Type.ELEMENT))
                 preselectResult = index.query(context, getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
@@ -265,7 +253,7 @@ public class Query extends Function implements Optimizable {
                     qnames = new ArrayList<>(1);
                     qnames.add(contextQName);
                 }
-                Properties options = parseOptions(this, contextSequence, contextItem, 3);
+                QueryOptions options = parseOptions(this, contextSequence, contextItem, 3);
                 try {
                     if (Type.subTypeOf(key.getType(), Type.ELEMENT))
                         result = index.query(context, getExpressionId(), docs, inNodes, qnames,
@@ -311,33 +299,16 @@ public class Query extends Function implements Optimizable {
         return Type.NODE;
     }
 
-    protected static Properties parseOptions(Function funct, Sequence contextSequence, Item contextItem, int position) throws XPathException {
+    protected static QueryOptions parseOptions(Function funct, Sequence contextSequence, Item contextItem, int position) throws XPathException {
         if (funct.getArgumentCount() < position)
-            return null;
-        Properties options = new Properties();
-        Sequence optSeq = funct.getArgument(position-1).eval(contextSequence, contextItem);
-        NodeValue optRoot = (NodeValue) optSeq.itemAt(0);
-        try {
-            final int thisLevel = optRoot.getNodeId().getTreeLevel();
-            final XMLStreamReader reader = funct.getContext().getXMLStreamReader(optRoot);
-            reader.next();
-            reader.next();
-            while (reader.hasNext()) {
-                int status = reader.next();
-                if (status == XMLStreamReader.START_ELEMENT) {
-                    options.put(reader.getLocalName(), reader.getElementText());
-                } else if (status == XMLStreamReader.END_ELEMENT) {
-                    final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
-                    final int otherLevel = otherId.getTreeLevel();
-                    if (otherLevel == thisLevel) {
-                        // finished `optRoot` element...
-                        break;  // exit-while
-                    }
-                }
-            }
-            return options;
-        } catch (XMLStreamException | IOException e) {
-            throw new XPathException(funct, "Error while parsing options to ft:query: " + e.getMessage(), e);
+            return new QueryOptions();
+        Sequence optSeq = funct.getArgument(position - 1).eval(contextSequence, contextItem);
+        if (Type.subTypeOf(optSeq.getItemType(), Type.ELEMENT)) {
+            return new QueryOptions(funct.getContext(), (NodeValue) optSeq.itemAt(0));
+        } else if (Type.subTypeOf(optSeq.getItemType(), Type.MAP)) {
+            return new QueryOptions((AbstractMapType) optSeq.itemAt(0));
+        } else {
+            throw new XPathException(funct, LuceneModule.EXXQDYFT0004, "Argument 3 should be either a map or an XML element");
         }
     }
 
