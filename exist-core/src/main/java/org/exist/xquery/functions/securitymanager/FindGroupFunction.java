@@ -47,8 +47,6 @@ public class FindGroupFunction extends BasicFunction {
     private final static QName qnGetUserGroups = new QName("get-user-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnGetUserPrimaryGroup = new QName("get-user-primary-group", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnGroupExists = new QName("group-exists", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    // deprecated sm:get-groups
-    private final static QName qnGetGroups = new QName("get-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     
     
     public final static FunctionSignature FNS_LIST_GROUPS = new FunctionSignature(
@@ -56,14 +54,6 @@ public class FindGroupFunction extends BasicFunction {
         "List all groups",
         null,
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of groups")
-    );
-
-    public final static FunctionSignature FNS_GET_GROUPS = new FunctionSignature(
-        qnGetGroups,
-        "List all groups",
-        null,
-        new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of groups"),
-        FNS_LIST_GROUPS
     );
 
     public final static FunctionSignature FNS_FIND_GROUPS_BY_GROUPNAME = new FunctionSignature(
@@ -122,7 +112,7 @@ public class FindGroupFunction extends BasicFunction {
         final Subject currentUser = broker.getCurrentSubject();
         
         if(!isCalledAs(qnGetUserGroups.getLocalPart()) && currentUser.getName().equals(SecurityManager.GUEST_USER)) {
-            throw new XPathException("You must be an authenticated user");
+            throw new XPathException(this, "You must be an authenticated user");
         }
 
         
@@ -138,7 +128,7 @@ public class FindGroupFunction extends BasicFunction {
             result = BooleanValue.valueOf(securityManager.hasGroup(groupName));
         } else {
             final List<String> groupNames;
-            if(isCalledAs(qnListGroups.getLocalPart()) || isCalledAs(qnGetGroups.getLocalPart())) {
+            if(isCalledAs(qnListGroups.getLocalPart())) {
                 groupNames = securityManager.findAllGroupNames();
             } else if(isCalledAs(qnFindGroupsByGroupname.getLocalPart())) {
                 final String startsWith = args[0].getStringValue();
@@ -150,13 +140,13 @@ public class FindGroupFunction extends BasicFunction {
                 final String username = args[0].getStringValue();
 
                 if(!currentUser.hasDbaRole() && !currentUser.getName().equals(username)) {
-                    throw new XPathException("You must be a DBA or enquiring about your own user account!");
+                    throw new XPathException(this, "You must be a DBA or enquiring about your own user account!");
                 }
 
                 final Account user = securityManager.getAccount(username);
                 groupNames = Arrays.asList(user.getGroups());
             } else {
-                throw new XPathException("Unknown function");
+                throw new XPathException(this, "Unknown function");
             }
 
             //order a-z
