@@ -336,7 +336,7 @@ to add: -pre-compile steps
    -->
    <target name="test-prepare" description="....." if="${run.tests}"> </target>
 
-   <target name="test" description="....." if="${run.tests}">
+   <target name="test" depends="test-prepare" description="....." if="${run.tests}">
        
       <antcall target="compile-test"/>
       
