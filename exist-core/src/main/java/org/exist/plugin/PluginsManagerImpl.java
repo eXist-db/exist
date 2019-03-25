@@ -92,7 +92,6 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
 		//Temporary for testing
 		addPlugin("org.exist.scheduler.SchedulerManager");
 		addPlugin("org.exist.storage.md.MDStorageManager");
-		addPlugin("org.exist.monitoring.MonitoringManager");
 	}
 
 	@Override
