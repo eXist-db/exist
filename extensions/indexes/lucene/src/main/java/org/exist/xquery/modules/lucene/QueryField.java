@@ -114,7 +114,7 @@ public class QueryField extends Query implements Optimizable {
         String field = getArgument(0).eval(contextSequence).getStringValue();
         DocumentSet docs = contextSequence.getDocumentSet();
         Item query = getKey(contextSequence, null);
-        Properties options = parseOptions(this, contextSequence, null, 3);
+        QueryOptions options = parseOptions(this, contextSequence, null, 3);
         try {
             if (Type.subTypeOf(query.getType(), Type.ELEMENT))
                 preselectResult = index.queryField(context, getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
@@ -122,7 +122,7 @@ public class QueryField extends Query implements Optimizable {
             else
                 preselectResult = index.queryField(context, getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
                     field, query.getStringValue(), NodeSet.DESCENDANT, options);
-        } catch (IOException | ParseException e) {
+        } catch (IOException e) {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
         LOG.debug("Lucene query took " + (System.currentTimeMillis() - start));
@@ -156,7 +156,7 @@ public class QueryField extends Query implements Optimizable {
         	
         	LuceneIndexWorker index = (LuceneIndexWorker)
         		context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        	Properties options = parseOptions(this, contextSequence, contextItem, 3);
+        	QueryOptions options = parseOptions(this, contextSequence, contextItem, 3);
         	try {
         		if (Type.subTypeOf(query.getType(), Type.ELEMENT))
         			result = index.queryField(context, getExpressionId(), docs, contextSet, field,
@@ -164,7 +164,7 @@ public class QueryField extends Query implements Optimizable {
         		else
         			result = index.queryField(context, getExpressionId(), docs, contextSet, field,
         					query.getStringValue(), NodeSet.ANCESTOR, options);
-            } catch (IOException | ParseException e) {
+            } catch (IOException e) {
         		throw new XPathException(this, e.getMessage());
         	}
         	if( context.getProfiler().traceFunctions() ) {
