@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.QName;
 import org.exist.xquery.*;
 
 /**
@@ -42,18 +41,6 @@ public class ResponseModule extends AbstractInternalModule {
     public static final String PREFIX = "response";
     public final static String INCLUSION_DATE = "2006-04-09";
     public final static String RELEASED_IN_VERSION = "eXist-1.0";
-
-    /**
-     * Referencing the HTTP Response directly
-     * via the $response:response variable should
-     * not be done.
-     * The HTTP Response is available internally
-     * through {@link XQueryContext#getHttpContext()}.
-     *
-     * @deprecated Use {@link XQueryContext#getHttpContext()} instead.
-     */
-    @Deprecated
-    public static final QName RESPONSE_VAR = new QName("response", NAMESPACE_URI, PREFIX);
 
     public static final FunctionDef[] functions = {
             new FunctionDef(RedirectTo.signature, RedirectTo.class),
