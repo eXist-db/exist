@@ -27,11 +27,6 @@
   <!-- RESTXQ -->
   <forward pattern="/restxq/" servlet="RestXqServlet"/>
   
-  <!-- OAuth servlet -->
-  <!-- 
-  <forward pattern="/oauth" servlet="OAuthServlet"/>
-  -->
-  
   <!-- scale images on the fly and cache the output. -->
   <!-- 
   <forward pattern="/images" servlet="ScaleImageJAI"/>
