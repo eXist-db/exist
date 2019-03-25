@@ -55,14 +55,6 @@ public class SetHeader extends StrictResponseFunction {
                     new SequenceType[]{NAME_PARAM, VALUE_PARAM},
                     new SequenceType(Type.EMPTY, Cardinality.EMPTY));
 
-    public final static FunctionSignature deprecated =
-            new FunctionSignature(
-                    new QName("set-response-header", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-                    "Set's a HTTP Header on the HTTP Response.",
-                    new SequenceType[]{NAME_PARAM, VALUE_PARAM},
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY),
-                    SetHeader.signature);
-
     public SetHeader(final XQueryContext context) {
         super(context, signature);
     }
