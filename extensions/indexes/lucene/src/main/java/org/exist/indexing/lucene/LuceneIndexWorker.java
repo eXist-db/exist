@@ -438,8 +438,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 Analyzer analyzer = getAnalyzer(null, qname, context.getBroker(), docs);
                 QueryParserWrapper parser = getQueryParser(field, analyzer, docs);
                 options.configureParser(parser.getConfiguration());
-                Query query = parser.parse(queryStr);
-                Optional<Map<String, String>> facets = options.getFacets();
+                Query query = queryStr == null ? new MatchAllDocsQuery() : parser.parse(queryStr);
+                Optional<Map<String, List<String>>> facets = options.getFacets();
                 if (facets.isPresent()) {
                     LuceneConfig config = getLuceneConfig(field, qname, broker, docs);
                     if (config != null) {
@@ -481,8 +481,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             for (QName qname : definedIndexes) {
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 analyzer = getAnalyzer(null, qname, context.getBroker(), docs);
-                Query query = queryTranslator.parse(field, queryRoot, analyzer, options);
-                Optional<Map<String, String>> facets = options.getFacets();
+                Query query = queryRoot == null ? new MatchAllDocsQuery() : queryTranslator.parse(field, queryRoot, analyzer, options);
+                Optional<Map<String, List<String>>> facets = options.getFacets();
                 if (facets.isPresent()) {
                     LuceneConfig config = getLuceneConfig(field, qname, broker, docs);
                     if (config != null) {
@@ -514,10 +514,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         });
     }
 
-    private Query drilldown(Map<String, String> facets, Query baseQuery, LuceneConfig config) {
+    private Query drilldown(Map<String, List<String>> facets, Query baseQuery, LuceneConfig config) {
         final DrillDownQuery drillDownQuery = new DrillDownQuery(config.facetsConfig, baseQuery);
-        for (Map.Entry<String, String> facet : facets.entrySet()) {
-            drillDownQuery.add(facet.getKey(), facet.getValue());
+        for (Map.Entry<String, List<String>> facet : facets.entrySet()) {
+            for (String value : facet.getValue()) {
+                drillDownQuery.add(facet.getKey(), value);
+            }
         }
         return drillDownQuery;
     }
