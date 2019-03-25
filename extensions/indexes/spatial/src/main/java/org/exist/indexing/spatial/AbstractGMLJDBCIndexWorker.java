@@ -44,10 +44,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Base64Decoder;
-import org.exist.util.Base64Encoder;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.Occurrences;
+import org.exist.util.*;
 import org.exist.util.serializer.Receiver;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -77,18 +74,13 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 
@@ -260,6 +252,10 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         Connection conn = null;
         try {
             conn = acquireConnection();
+            if (conn == null) {
+                LOG.error("Unable to acquired connection for flush");
+                return;
+            }
             conn.setAutoCommit(false);
             switch (currentMode) {
                 case STORE :
@@ -346,8 +342,10 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
                 srsGeometry = entry.getValue();
                 
                 try {
-                    saveGeometryNode(srsGeometry.getGeometry(), srsGeometry.getSRSName(), 
-                            currentDoc, nodeId, ps);
+                    if (!saveGeometryNode(srsGeometry.getGeometry(), srsGeometry.getSRSName(),
+                            currentDoc, nodeId, ps)) {
+                        LOG.error("Unable to save geometry for node: " + nodeId);
+                    }
                 } finally {
                     //Help the garbage collector
                     srsGeometry = null;
@@ -367,9 +365,9 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             return;
         try {
             boolean removed = removeDocumentNode(currentDoc, currentNodeId, conn);
-            if (!removed)
+            if (!removed) {
                 LOG.error("No data dropped for node " + currentNodeId.toString() + " from GML index");
-            else {
+            } else {
                 if (LOG.isDebugEnabled())
                     LOG.debug("Dropped data for node " + currentNodeId.toString() + " from GML index");
             }
@@ -642,7 +640,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             throw new SpatialIndexException(e);
         }
 
-        final XMLReaderPool parserPool = pool.getParserPool();
+        final XMLReaderPool parserPool = broker.getBrokerPool().getParserPool();
         XMLReader reader = null;
         try {
             InputSource src = new InputSource(new StringReader(gmlString));
@@ -650,12 +648,8 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             reader.setContentHandler((ContentHandler)receiver);
             reader.parse(src);
             Document doc = receiver.getDocument();
-            return doc.getDocumentElement(); 
-        } catch (ParserConfigurationException e) {
-            throw new SpatialIndexException(e);
-        } catch (SAXException e) {
-            throw new SpatialIndexException(e);
-        } catch (IOException e) {
+            return doc.getDocumentElement();
+        } catch (final SAXException | IOException e) {
             throw new SpatialIndexException(e);
         } finally {
             if (reader != null) {
@@ -673,15 +667,16 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         MathTransform transform = transformations.get(sourceCRS + "_" + targetCRS);
         if (transform == null) {
             try {
+
                 try {
                     transform = CRS.findMathTransform(CRS.decode(sourceCRS), CRS.decode(targetCRS), useLenientMode);
-                } catch (OperationNotFoundException e) {
-                    LOG.info(e);
+                } catch (final OperationNotFoundException e) {
+                    LOG.debug(e);
                     LOG.info("Switching to lenient mode... beware of precision loss !");
                     //Last parameter set to true ; won't bail out if it can't find the Bursa Wolf parameters
                     //as it is the case in current gt2-epsg-wkt-2.4-M1.jar
                     useLenientMode = true;
-                    transform = CRS.findMathTransform(CRS.decode(sourceCRS), CRS.decode(targetCRS), useLenientMode);	
+                    transform = CRS.findMathTransform(CRS.decode(sourceCRS), CRS.decode(targetCRS), useLenientMode);
                 }
                 transformations.put(sourceCRS + "_" + targetCRS, transform);
                 LOG.debug("Instantiated transformation from '" + sourceCRS + "' to '" + targetCRS + "'");
@@ -704,7 +699,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 
     private class GMLStreamListener extends AbstractStreamListener {
 
-        private final Deque<String> srsNamesStack = new ArrayDeque<String>();
+        private final Stack<String> srsNamesStack = new Stack<>();
         private ElementImpl deferredElement;
 
         @Override
@@ -810,15 +805,10 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
                         //number of nodes in the DOM file ; would need refactorings
                         //currentDoc.getBroker().checkAvailableMemory();
                         ((AbstractGMLJDBCIndexWorker)getWorker()).getBroker().flush();
-                        ///Aaaaaargl !
-                        final double percent = ((double) Runtime.getRuntime().freeMemory() / (double) Runtime.getRuntime().maxMemory()) * 100;
-                        if (percent < 30) {
-                            System.gc();
-                        }
                     }
                 }
             } catch (Exception e) {
-                LOG.error("Unable to collect geometry for node: " + currentNodeId + ". Indexing will be skipped", e);        		
+                LOG.error("Unable to collect geometry for node: " + currentNodeId + ". Indexing will be skipped");
             } finally {
                 streamedGeometry = null;
             }
@@ -826,13 +816,15 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     }
 
     private class GeometryHandler extends XMLFilterImpl implements GMLHandlerJTS {
+        @Override
         public void geometry(Geometry geometry) {
             streamedGeometry = geometry;
             //TODO : null geometries can be returned for many reasons, including a (too) strict
             //topology check done by the Geotools SAX parser.
             //It would be nice to have static classes extending Geometry to report such geometries
-            if (geometry == null)
+            if (geometry == null) {
                 LOG.error("Collected null geometry for node: " + currentNodeId + ". Indexing will be skipped");
+            }
         }
     }
 
