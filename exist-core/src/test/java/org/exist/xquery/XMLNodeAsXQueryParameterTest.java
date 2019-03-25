@@ -150,7 +150,7 @@ public class XMLNodeAsXQueryParameterTest {
 		final StringBuilder query = new StringBuilder();
 		query.append("xquery version \"1.0\";");
 		query.append("declare variable $local:document external;");
-		query.append("let $survey := xmldb:document(string-join(('" + XmldbURI.ROOT_COLLECTION + "', $local:document), '/'))");
+		query.append("let $survey := doc(string-join(('" + XmldbURI.ROOT_COLLECTION + "', $local:document), '/'))");
 		query.append("return $survey");
 
 		final Map<String, Object> externalVariables = new HashMap<>();

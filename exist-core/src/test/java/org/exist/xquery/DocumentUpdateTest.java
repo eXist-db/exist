@@ -47,10 +47,10 @@ public class DocumentUpdateTest {
         String result = execQuery(query);
         assertEquals(result, "0 false");
 
-        //TEST 2: xmldb:document()
+        //TEST 2: doc()
         query = imports +
             "declare function local:get-doc($path as xs:string) {\n" +
-            "    if (doc-available($path)) then xmldb:document($path) else ()\n" +
+            "    if (doc-available($path)) then doc($path) else ()\n" +
             "};\n" +
             "let $col := xdb:create-collection('/db', 'testup')\n" +
             "let $path := '/db/testup/test1.xml'\n" +

@@ -42,7 +42,7 @@ import org.junit.ClassRule;
 public class RestApiSecurityTest extends AbstractApiSecurityTest {
 
     @ClassRule
-    public static ExistWebServer existWebServer = new ExistWebServer(true, false, true);
+    public static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     private final static String baseUri = "/db";
 
@@ -111,22 +111,22 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
 
     @Override
     protected void removeAccount(final String account_uid, final String uid, final String pwd) throws ApiException {
-        executeQuery("xmldb:delete-user('" + account_uid + "')", uid, pwd);
+        executeQuery("if(sm:user-exists('" + account_uid + "'))then sm:remove-account('" + account_uid + "') else()", uid, pwd);
     }
 
     @Override
     protected void removeGroup(final String group_uid, final String uid, final String pwd) throws ApiException {
-        executeQuery("if(sm:group-exists('" + group_uid + "'))then sm:delete-group('" + group_uid + "') else()", uid, pwd);
+        executeQuery("if(sm:group-exists('" + group_uid + "'))then sm:remove-group('" + group_uid + "') else()", uid, pwd);
     }
 
     @Override
     protected void createAccount(final String account_uid, final String account_pwd, final String group_gid, final String uid, final String pwd) throws ApiException {
-        executeQuery("xmldb:create-user('" + account_uid + "', '" + account_pwd + "', ('" + group_gid + "'))", uid, pwd);
+        executeQuery("sm:create-account('" + account_uid + "', '" + account_pwd + "', ('" + group_gid + "'))", uid, pwd);
     }
 
     @Override
     protected void createGroup(final String group_gid, final String uid, final String pwd) throws ApiException {
-        executeQuery("xmldb:create-group('" + group_gid + "', '" + uid + "')", uid, pwd);
+        executeQuery("sm:create-group('" + group_gid + "', '" + uid + "', '" + group_gid + "')", uid, pwd);
     }
 
     @Override
