@@ -48,7 +48,6 @@ public class CacheModule extends AbstractInternalModule {
 
     public static final FunctionDef[] functions = functionDefs(
             CacheFunctions.class,
-            CacheFunctions.FS_CACHE,
             CacheFunctions.FS_CREATE_CACHE,
             CacheFunctions.FS_NAMES,
             CacheFunctions.FS_PUT,
