@@ -245,13 +245,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
             //TODO: use pluggable interface
             
-            Class<?> oauth = null;
-            try {
-            	oauth = Class.forName("org.exist.security.realm.oauth.OAuthServlet");
-            } catch (final NoClassDefFoundError | ClassNotFoundException e) {
-                logger.warn("Could not find OAuthServlet extension. OAuth will be disabled!");
-			}
-            
             Class<?> iprange = null;
             try {
             	iprange = Class.forName("org.exist.security.realm.iprange.IPRangeServlet");
@@ -278,24 +271,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 if (handler instanceof ContextHandler) {
                     final ContextHandler contextHandler = (ContextHandler) handler;
                     logger.info("\t{}", contextHandler.getContextPath());
-                }
-            	
-                //TODO(AR) openid and oauth servlet configs should be moved to the exist-webapp-context or into $EXIST_HOME/webapp/WEB-INF/web.xml
-
-                if (oauth != null) {
-                    if (handler instanceof ServletContextHandler) {
-                        final ServletContextHandler contextHandler = (ServletContextHandler) handler;
-                        contextHandler.addServlet(new ServletHolder((Class<? extends Servlet>) oauth), "/oauth/*");
-
-                        String suffix;
-                        if (contextHandler.getContextPath().endsWith("/")) {
-                            suffix = "oauth";
-                        } else {
-                            suffix = "/oauth";
-                        }
-
-                        logger.info("\t{}", contextHandler.getContextPath() + suffix);
-                    }
                 }
                 
                 if (iprange != null) {
