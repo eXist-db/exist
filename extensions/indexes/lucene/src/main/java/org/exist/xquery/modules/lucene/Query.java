@@ -54,7 +54,7 @@ public class Query extends Function implements Optimizable {
             new SequenceType[] {
                 new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, 
                 		"The node set to search using a Lucene full text index which is defined on those nodes"),
-                new FunctionParameterSequenceType("query", Type.ITEM, Cardinality.EXACTLY_ONE, 
+                new FunctionParameterSequenceType("query", Type.ITEM, Cardinality.ZERO_OR_ONE,
                 		"The query to search for, provided either as a string or text in Lucene's default query " +
                 		"syntax or as an XML fragment to bypass Lucene's default query parser")
             },
@@ -75,7 +75,7 @@ public class Query extends Function implements Optimizable {
             new SequenceType[] {
                 new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
                 		"The node set to search using a Lucene full text index which is defined on those nodes"),
-                new FunctionParameterSequenceType("query", Type.ITEM, Cardinality.EXACTLY_ONE,
+                new FunctionParameterSequenceType("query", Type.ITEM, Cardinality.ZERO_OR_ONE,
                 		"The query to search for, provided either as a string or text in Lucene's default query " +
                 		"syntax or as an XML fragment to bypass Lucene's default query parser"),
                 new FunctionParameterSequenceType("options", Type.ITEM, Cardinality.ZERO_OR_ONE,
@@ -112,7 +112,7 @@ public class Query extends Function implements Optimizable {
         steps.add(path);
 
         Expression arg = arguments.get(1).simplify();
-        arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
+        arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, arg,
                 new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
         add(arg);
 
@@ -211,12 +211,15 @@ public class Query extends Function implements Optimizable {
         qnames.add(contextQName);
         QueryOptions options = parseOptions(this, contextSequence, null, 3);
         try {
-            if (Type.subTypeOf(key.getType(), Type.ELEMENT))
+            if (key != null && Type.subTypeOf(key.getType(), Type.ELEMENT)) {
+                final Element queryXML = key == null ? null : (Element) ((NodeValue) key).getNode();
                 preselectResult = index.query(context, getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
-                    qnames, (Element) ((NodeValue)key).getNode(), NodeSet.DESCENDANT, options);
-            else
+                        qnames, queryXML, NodeSet.DESCENDANT, options);
+            } else {
+                final String query = key == null ? null : key.getStringValue();
                 preselectResult = index.query(context, getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
-                    qnames, key.getStringValue(), NodeSet.DESCENDANT, options);
+                        qnames, query, NodeSet.DESCENDANT, options);
+            }
         } catch (IOException | org.apache.lucene.queryparser.classic.ParseException e) {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
@@ -255,12 +258,15 @@ public class Query extends Function implements Optimizable {
                 }
                 QueryOptions options = parseOptions(this, contextSequence, contextItem, 3);
                 try {
-                    if (Type.subTypeOf(key.getType(), Type.ELEMENT))
+                    if (Type.subTypeOf(key.getType(), Type.ELEMENT)) {
+                        final Element queryXML = key == null ? null : (Element) ((NodeValue) key).getNode();
                         result = index.query(context, getExpressionId(), docs, inNodes, qnames,
-                                (Element)((NodeValue)key).getNode(), NodeSet.ANCESTOR, options);
-                    else
+                                queryXML, NodeSet.ANCESTOR, options);
+                    } else {
+                        final String query = key == null ? null : key.getStringValue();
                         result = index.query(context, getExpressionId(), docs, inNodes, qnames,
-                                key.getStringValue(), NodeSet.ANCESTOR, options);
+                                query, NodeSet.ANCESTOR, options);
+                    }
                 } catch (IOException | org.apache.lucene.queryparser.classic.ParseException e) {
                     throw new XPathException(this, e.getMessage());
                 }
@@ -278,6 +284,9 @@ public class Query extends Function implements Optimizable {
 
     protected Item getKey(Sequence contextSequence, Item contextItem) throws XPathException {
         Sequence keySeq = getArgument(1).eval(contextSequence, contextItem);
+        if (keySeq.isEmpty()) {
+            return null;
+        }
         Item key = keySeq.itemAt(0);
         if (!(Type.subTypeOf(key.getType(), Type.STRING) || Type.subTypeOf(key.getType(), Type.NODE)))
             throw new XPathException(this, "Second argument to ft:query should either be a query string or " +
