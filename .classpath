@@ -127,12 +127,10 @@
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-util-9.4.14.v20181114.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-webapp-9.4.14.v20181114.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-xml-9.4.14.v20181114.jar"/>
-	<classpathentry kind="output" path="test/classes"/>
 	<classpathentry kind="src" path="exist-core/src/main/java"/>
 	<classpathentry kind="src" path="exist-core/src/test/java"/>
 	<classpathentry kind="src" path="exist-start/src/main/java"/>
 	<classpathentry kind="src" path="exist-testkit/src/main/java"/>
-	<classpathentry kind="src" path="extensions/commands/src/main/java"/>
 	<classpathentry kind="src" path="extensions/debuggee/src/main/java"/>
 	<classpathentry kind="src" path="extensions/debuggee/src/test/java"/>
 	<classpathentry kind="src" path="extensions/expath/src/main/java"/>
