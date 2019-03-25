@@ -244,12 +244,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             }
 
             //TODO: use pluggable interface
-            Class<?> openid = null;
-            try {
-            	openid = Class.forName("org.exist.security.realm.openid.AuthenticatorOpenIdServlet");
-            } catch (final NoClassDefFoundError | ClassNotFoundException e) {
-                logger.warn("Could not find OpenID extension. OpenID will be disabled!");
-			}
             
             Class<?> oauth = null;
             try {
@@ -287,21 +281,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 }
             	
                 //TODO(AR) openid and oauth servlet configs should be moved to the exist-webapp-context or into $EXIST_HOME/webapp/WEB-INF/web.xml
-                if (openid != null) {
-                    if (handler instanceof ServletContextHandler) {
-                        final ServletContextHandler contextHandler = (ServletContextHandler) handler;
-                        contextHandler.addServlet(new ServletHolder((Class<? extends Servlet>) openid), "/openid");
-
-                        String suffix;
-                        if (contextHandler.getContextPath().endsWith("/")) {
-                            suffix = "openid";
-                        } else {
-                            suffix = "/openid";
-                        }
-
-                        logger.info("\t{}", contextHandler.getContextPath() + suffix);
-                    }
-                }
 
                 if (oauth != null) {
                     if (handler instanceof ServletContextHandler) {
