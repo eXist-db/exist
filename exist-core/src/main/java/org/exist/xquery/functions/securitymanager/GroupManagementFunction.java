@@ -43,7 +43,6 @@ public class GroupManagementFunction extends BasicFunction {
 
     private final static QName qnCreateGroup = new QName("create-group", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnRemoveGroup = new QName("remove-group", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnDeleteGroup = new QName("delete-group", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
     public final static FunctionSignature FNS_CREATE_GROUP = new FunctionSignature(
         qnCreateGroup,
@@ -84,16 +83,6 @@ public class GroupManagementFunction extends BasicFunction {
         new SequenceType(Type.ITEM, Cardinality.EMPTY)
     );
 
-    public final static FunctionSignature FNS_DELETE_GROUP = new FunctionSignature(
-        qnDeleteGroup,
-        "Removes a User Group. Any resources owned by the group will be moved to the 'guest' group.",
-        new SequenceType[]{
-            new FunctionParameterSequenceType("group-id", Type.STRING, Cardinality.EXACTLY_ONE, "The group-id to delete")
-        },
-        new SequenceType(Type.ITEM, Cardinality.EMPTY),
-            FNS_REMOVE_GROUP
-    );
-
     //TODO implement later
     /* public final static FunctionSignature FNS_DELETE_GROUP_WITH_SUCCESSOR = new FunctionSignature(
         qnRemoveGroup
@@ -120,11 +109,11 @@ public class GroupManagementFunction extends BasicFunction {
 
             if(isCalledAs(qnCreateGroup.getLocalPart())) {
                 if(securityManager.hasGroup(groupName)) {
-                    throw new XPathException("The group with name " + groupName + " already exists.");
+                    throw new XPathException(this, "The group with name " + groupName + " already exists.");
                 }
 
                 if(!currentSubject.hasDbaRole()) {
-                    throw new XPathException("Only DBA users may create a user group.");
+                    throw new XPathException(this, "Only DBA users may create a user group.");
                 }
 
                 final Group group = new GroupAider(groupName);
@@ -143,10 +132,10 @@ public class GroupManagementFunction extends BasicFunction {
 
                 securityManager.addGroup(context.getBroker(), group);
 
-            } else if(isCalledAs(qnRemoveGroup.getLocalPart()) || isCalledAs(qnDeleteGroup.getLocalPart())) {
+            } else if(isCalledAs(qnRemoveGroup.getLocalPart())) {
 
                 if(!securityManager.hasGroup(groupName)) {
-                    throw new XPathException("The group with name " + groupName + " does not exist.");
+                    throw new XPathException(this, "The group with name " + groupName + " does not exist.");
                 }
 
                 final Group successorGroup;
@@ -167,21 +156,17 @@ public class GroupManagementFunction extends BasicFunction {
                     throw new XPathException(this, ee);
                 }
             } else {
-                throw new XPathException("Unknown function call: " + getSignature());
+                throw new XPathException(this, "Unknown function call: " + getSignature());
             }
 
             return Sequence.EMPTY_SEQUENCE;
-        } catch(final PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException | EXistException pde) {
             throw new XPathException(this, pde);
-        } catch(final ConfigurationException ce) {
-            throw new XPathException(this, ce);
-        } catch(final EXistException ee) {
-            throw new XPathException(this, ee);
         }
     }
 
     private List<Account> getGroupManagers(final SecurityManager securityManager, final Sequence seq) {
-        final List<Account> managers = new ArrayList<Account>();
+        final List<Account> managers = new ArrayList<>();
         for(int i = 0; i < seq.getItemCount(); i++) {
             final Account account = securityManager.getAccount(seq.itemAt(i).toString());
             managers.add(account);
