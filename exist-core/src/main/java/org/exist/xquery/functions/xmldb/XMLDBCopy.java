@@ -73,17 +73,6 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
             )
     );
 
-    static final FunctionSignature FS_LEGACY_COPY_COLLECTION = deprecated(
-            FS_COPY_COLLECTION[0],
-            functionSignature(
-                    FS_COPY_NAME,
-                    "Copy the collection $source-collection-uri to the collection $target-collection-uri.",
-                    returnsNothing(),
-                    FS_PARAM_SOURCE_COLLECTION_URI,
-                    FS_PARAM_TARGET_COLLECTION_URI
-            )
-    );
-
     static final FunctionSignature[] FS_COPY_RESOURCE = functionSignatures(
             FS_COPY_RESOURCE_NAME,
             "Copy the resource $source-collection-uri/$source-resource-name to collection $target-collection-uri/$target-resource-name. If the $target-resource-name is omitted, the $source-resource-name will be used.",
@@ -102,18 +91,6 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
                             FS_PARAM_TARGET_RESOURCE_NAME,
                             FS_PARAM_PRESERVE
                     )
-            )
-    );
-
-    static final FunctionSignature FS_LEGACY_COPY_RESOURCE = deprecated(
-            FS_COPY_RESOURCE[0],
-            functionSignature(
-                    FS_COPY_NAME,
-                    "Copy the resource $resource in $source-collection-uri to collection $target-collection-uri.",
-                    returnsNothing(),
-                    FS_PARAM_SOURCE_COLLECTION_URI,
-                    FS_PARAM_TARGET_COLLECTION_URI,
-                    FS_PARAM_SOURCE_RESOURCE_NAME
             )
     );
 
