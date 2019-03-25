@@ -29,17 +29,12 @@ import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.map.AbstractMapType;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.exist.xquery.modules.lucene.QueryOptions.DefaultOperator.OR;
 
@@ -64,7 +59,7 @@ public class QueryOptions {
 
     protected boolean filterRewrite = false;
     protected boolean lowercaseExpandedTerms = false;
-    protected Optional<Map<String, String>> facets = Optional.empty();
+    protected Optional<Map<String, List<String>>> facets = Optional.empty();
 
     public QueryOptions() {
         // default options
@@ -99,9 +94,13 @@ public class QueryOptions {
             final String key = entry.getKey().getStringValue();
             if (key.equals(OPTION_FACETS)) {
                 if (entry.getValue().hasOne() && entry.getValue().getItemType() == Type.MAP) {
-                    final Map<String, String> tf = new HashMap<>();
+                    final Map<String, List<String>> tf = new HashMap<>();
                     for (Map.Entry<AtomicValue, Sequence> facet: (AbstractMapType) entry.getValue().itemAt(0)) {
-                        tf.put(facet.getKey().getStringValue(), facet.getValue().getStringValue());
+                        final List<String> values = new ArrayList<>(5);
+                        for (SequenceIterator si = facet.getValue().unorderedIterator(); si.hasNext(); ) {
+                            values.add(si.nextItem().getStringValue());
+                        }
+                        tf.put(facet.getKey().getStringValue(), values);
                     }
                     facets = Optional.of(tf);
                 }
@@ -111,7 +110,7 @@ public class QueryOptions {
         }
     }
 
-    public Optional<Map<String, String>> getFacets() {
+    public Optional<Map<String, List<String>>> getFacets() {
         return facets;
     }
 
