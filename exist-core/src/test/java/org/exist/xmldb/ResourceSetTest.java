@@ -47,7 +47,7 @@ public class ResourceSetTest {
 	@Ignore
     @Test
 	public void intersection1() throws XMLDBException {
-		final String xpathPrefix = "doc('/db/" + TEST_COLLECTION + "/shakes.xsl')/*/*"; // "xmldb:document('" + DBBroker.ROOT_COLLECTION + "/test/macbeth.xml')/*/*";
+		final String xpathPrefix = "doc('/db/" + TEST_COLLECTION + "/shakes.xsl')/*/*";
 		final String query1 = xpathPrefix + "[position() >= 5 ]";
 		final String query2 = xpathPrefix + "[position() <= 10]";
 		final int expected = 87;

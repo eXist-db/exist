@@ -103,14 +103,14 @@ public class DeepEqualTest {
     public void documents1() throws XMLDBException {
         createDocument("test1", "<test key='value'>hello</test>");
         createDocument("test2", "<test key='value'>hello</test>");
-        assertQuery(true, "deep-equal(xmldb:document('test1'), xmldb:document('test2'))");
+        assertQuery(true, "deep-equal(doc('test1'), doc('test2'))");
     }
 
     @Test
     public void documents2() throws XMLDBException {
         createDocument("test1", "<test key='value'>hello</test>");
         createDocument("test2", "<notatest/>");
-        assertQuery(false, "deep-equal(xmldb:document('test1'), xmldb:document('test2'))");
+        assertQuery(false, "deep-equal(doc('test1'), doc('test2'))");
     }
 
     @Test

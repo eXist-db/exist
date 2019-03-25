@@ -60,8 +60,8 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
 
 	@Override
 	public List<Runner> getRunners() {
-		//String query0 = "xmldb:document('" + DBBroker.ROOT_COLLECTION + "/C1/R1.xml')/ROOT-ELEMENT//ELEMENT-1[@attribute-3]";
-		//String query1 = "xmldb:document()/ROOT-ELEMENT//ELEMENT-2[@attribute-2]";
+		//String query0 = "doc('" + DBBroker.ROOT_COLLECTION + "/C1/R1.xml')/ROOT-ELEMENT//ELEMENT-1[@attribute-3]";
+		//String query1 = "/ROOT-ELEMENT//ELEMENT-2[@attribute-2]";
 
 		return Arrays.asList(
 				new Runner(new RemoveAppendAction(XmldbURI.LOCAL_DB + "/C1", "R1.xml", wordList), 50, 0, 200)
