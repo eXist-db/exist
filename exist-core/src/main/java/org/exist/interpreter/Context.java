@@ -800,22 +800,6 @@ public interface Context {
 
     Object getAttribute(String attribute);
 
-    /**
-     * Set an XQuery Context variable. General variable storage in the xquery context
-     *
-     * @param name  The variable name
-     * @param xqVar The variable value, may be of any xs: type
-     */
-    void setXQueryContextVar(String name, Object xqVar);
-
-    /**
-     * Get an XQuery Context variable. General variable storage in the xquery context
-     *
-     * @param name The variable name
-     * @return The variable value indicated by name.
-     */
-    Object getXQueryContextVar(String name);
-
     void registerUpdateListener(UpdateListener listener);
 
     /**

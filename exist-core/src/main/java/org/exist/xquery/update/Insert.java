@@ -111,14 +111,14 @@ public class Insert extends Modification {
             ValueSequence prevUpdateErrors = null;
 
             final XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
-            final Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
+            final Object ctxVarObj = context.getAttribute(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
             if(ctxVarObj == null) {
                 prevUpdateErrors = new ValueSequence();
             } else {
                 prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context);
             }
             prevUpdateErrors.add(new StringValue(xpe.getMessage()));
-            context.setXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
+            context.setAttribute(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 
             if(!inSeq.isEmpty()) {
                 //TODO: should we trap this instead of throwing an exception - deliriumsky?

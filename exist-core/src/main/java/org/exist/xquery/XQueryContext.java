@@ -358,9 +358,6 @@ public class XQueryContext implements BinaryValueManager, Context {
      */
     protected Profiler profiler;
 
-    //For holding XQuery Context variables for general storage in the XQuery Context
-    private Map<String, Object> XQueryContextVars = new HashMap<>();
-
     //For holding the environment variables
     private Map<String, String> envs;
 
@@ -1377,13 +1374,6 @@ public class XQueryContext implements BinaryValueManager, Context {
         }
 
         savedState.restore();
-
-        //remove the context-vars, subsequent execution of the query
-        //may generate different values for the vars based on the
-        //content of the db
-        if (!keepGlobals) {
-            XQueryContextVars.clear();
-        }
 
         attributes.clear();
 
@@ -2809,16 +2799,6 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public Object getAttribute(final String attribute) {
         return attributes.get(attribute);
-    }
-
-    @Override
-    public void setXQueryContextVar(final String name, final Object xqVar) {
-        XQueryContextVars.put(name, xqVar);
-    }
-
-    @Override
-    public Object getXQueryContextVar(final String name) {
-        return XQueryContextVars.get(name);
     }
 
     /**
