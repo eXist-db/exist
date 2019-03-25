@@ -23,10 +23,7 @@
  */
 package org.exist.indexing.spatial;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -87,44 +84,74 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                 throw ee;
             }
             ps.clearParameters();
-            
-            /*DOCUMENT_URI*/ ps.setString(1, doc.getURI().toString());	
-            /*NODE_ID_UNITS*/ ps.setInt(2, nodeId.units());
+
+            /*DOCUMENT_URI*/
+            ps.setString(1, doc.getURI().toString());
+            /*NODE_ID_UNITS*/
+            ps.setInt(2, nodeId.units());
             byte[] bytes = new byte[nodeId.size()];
             nodeId.serialize(bytes, 0);
-            /*NODE_ID*/ ps.setBytes(3, bytes);
-            /*GEOMETRY_TYPE*/ ps.setString(4, geometry.getGeometryType());
-            /*SRS_NAME*/ ps.setString(5, srsName);
-            /*WKT*/ ps.setString(6, wktWriter.write(geometry));
-            /*WKB*/ ps.setBytes(7, wkbWriter.write(geometry));
-            /*MINX*/ ps.setDouble(8, geometry.getEnvelopeInternal().getMinX());
-            /*MAXX*/ ps.setDouble(9, geometry.getEnvelopeInternal().getMaxX());
-            /*MINY*/ ps.setDouble(10, geometry.getEnvelopeInternal().getMinY());
-            /*MAXY*/ ps.setDouble(11, geometry.getEnvelopeInternal().getMaxY());
-            /*CENTROID_X*/ ps.setDouble(12, geometry.getCentroid().getCoordinate().x);
-            /*CENTROID_Y*/ ps.setDouble(13, geometry.getCentroid().getCoordinate().y);
+            /*NODE_ID*/
+            ps.setBytes(3, bytes);
+            /*GEOMETRY_TYPE*/
+            ps.setString(4, geometry.getGeometryType());
+            /*SRS_NAME*/
+            ps.setString(5, srsName);
+            /*WKT*/
+            ps.setString(6, wktWriter.write(geometry));
+            /*WKB*/
+            ps.setBytes(7, wkbWriter.write(geometry));
+            /*MINX*/
+            ps.setDouble(8, geometry.getEnvelopeInternal().getMinX());
+            /*MAXX*/
+            ps.setDouble(9, geometry.getEnvelopeInternal().getMaxX());
+            /*MINY*/
+            ps.setDouble(10, geometry.getEnvelopeInternal().getMinY());
+            /*MAXY*/
+            ps.setDouble(11, geometry.getEnvelopeInternal().getMaxY());
+            /*CENTROID_X*/
+            ps.setDouble(12, geometry.getCentroid().getCoordinate().x);
+            /*CENTROID_Y*/
+            ps.setDouble(13, geometry.getCentroid().getCoordinate().y);
             //geometry.getRepresentativePoint()
-            /*AREA*/ ps.setDouble(14, geometry.getArea());
+            /*AREA*/
+            ps.setDouble(14, geometry.getArea());
             //Boundary ?
-            /*EPSG4326_WKT*/ ps.setString(15, wktWriter.write(EPSG4326_geometry));
-            /*EPSG4326_WKB*/ ps.setBytes(16, wkbWriter.write(EPSG4326_geometry));
-            /*EPSG4326_MINX*/ ps.setDouble(17, EPSG4326_geometry.getEnvelopeInternal().getMinX());
-            /*EPSG4326_MAXX*/ ps.setDouble(18, EPSG4326_geometry.getEnvelopeInternal().getMaxX());
-            /*EPSG4326_MINY*/ ps.setDouble(19, EPSG4326_geometry.getEnvelopeInternal().getMinY());
-            /*EPSG4326_MAXY*/ ps.setDouble(20, EPSG4326_geometry.getEnvelopeInternal().getMaxY());
-            /*EPSG4326_CENTROID_X*/ ps.setDouble(21, EPSG4326_geometry.getCentroid().getCoordinate().x);
-            /*EPSG4326_CENTROID_Y*/ ps.setDouble(22, EPSG4326_geometry.getCentroid().getCoordinate().y);
+            /*EPSG4326_WKT*/
+            ps.setString(15, wktWriter.write(EPSG4326_geometry));
+            /*EPSG4326_WKB*/
+            ps.setBytes(16, wkbWriter.write(EPSG4326_geometry));
+            /*EPSG4326_MINX*/
+            ps.setDouble(17, EPSG4326_geometry.getEnvelopeInternal().getMinX());
+            /*EPSG4326_MAXX*/
+            ps.setDouble(18, EPSG4326_geometry.getEnvelopeInternal().getMaxX());
+            /*EPSG4326_MINY*/
+            ps.setDouble(19, EPSG4326_geometry.getEnvelopeInternal().getMinY());
+            /*EPSG4326_MAXY*/
+            ps.setDouble(20, EPSG4326_geometry.getEnvelopeInternal().getMaxY());
+            /*EPSG4326_CENTROID_X*/
+            ps.setDouble(21, EPSG4326_geometry.getCentroid().getCoordinate().x);
+            /*EPSG4326_CENTROID_Y*/
+            ps.setDouble(22, EPSG4326_geometry.getCentroid().getCoordinate().y);
             //EPSG4326_geometry.getRepresentativePoint()
-            /*EPSG4326_AREA*/ ps.setDouble(23, EPSG4326_geometry.getArea());
+            /*EPSG4326_AREA*/
+            ps.setDouble(23, EPSG4326_geometry.getArea());
             //Boundary ?
             //As discussed earlier, all instances of SFS geometry classes
             //are topologically closed by definition.
             //For empty Curves, isClosed is defined to have the value false.
-            /*IS_CLOSED*/ ps.setBoolean(24, !geometry.isEmpty());
-            /*IS_SIMPLE*/ ps.setBoolean(25, geometry.isSimple());
+            /*IS_CLOSED*/
+            ps.setBoolean(24, !geometry.isEmpty());
+            /*IS_SIMPLE*/
+            ps.setBoolean(25, geometry.isSimple());
             //Should always be true (the GML SAX parser makes a too severe check)
-            /*IS_VALID*/ ps.setBoolean(26, geometry.isValid());
-            return (ps.executeUpdate() == 1);
+            /*IS_VALID*/
+            ps.setBoolean(26, geometry.isValid());
+            try {
+                return (ps.executeUpdate() == 1);
+            } catch (final SQLDataException e) {
+                throw e;
+            }
         } finally {
             //Let's help the garbage collector...
             geometry = null;
@@ -134,6 +161,14 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 
     @Override
     protected boolean removeDocumentNode(DocumentImpl doc, NodeId nodeId, Connection conn) throws SQLException {
+//        final Statement s = conn.createStatement();
+//        ResultSet rs = s.executeQuery("SELECT NODE_ID_UNITS, NODE_ID FROM " + GMLHSQLIndex.TABLE_NAME);
+//        while (rs.next()) {
+//            int units = rs.getInt(1);
+//            byte[] data = rs.getBytes(2);
+//            System.out.println(new DLN(units, data, 0).toString());
+//        }
+
         PreparedStatement ps = conn.prepareStatement(
                 "DELETE FROM " + GMLHSQLIndex.TABLE_NAME + 
                 " WHERE DOCUMENT_URI = ? AND NODE_ID_UNITS = ? AND NODE_ID = ?;"
@@ -601,7 +636,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                         } else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
                             result.add(new StringValue(rs.getString(1)));
                         } else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
-                            result.add(BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(rs.getBytes(1))));
+                            result.add(BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new FastByteArrayInputStream(rs.getBytes(1))));
                         } else 
                             throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");
                     }

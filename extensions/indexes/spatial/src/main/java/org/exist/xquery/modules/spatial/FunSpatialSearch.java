@@ -126,7 +126,7 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
                     context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
                 if (indexWorker == null) {
                     logger.error("Unable to find a spatial index worker");
-                    throw new XPathException("Unable to find a spatial index worker");
+                    throw new XPathException(this, "Unable to find a spatial index worker");
                 }
                 Geometry EPSG4326_geometry = null;
                 NodeValue geometryNode = (NodeValue) args[1].itemAt(0);
