@@ -282,17 +282,6 @@ public class ModuleContext extends XQueryContext {
         parentContext.setBaseURI(uri);
     }
 
-
-    @Override
-    public void setXQueryContextVar(final String name, final Object xqVar) {
-        parentContext.setXQueryContextVar(name, xqVar);
-    }
-
-    @Override
-    public Object getXQueryContextVar(final String name) {
-        return (parentContext.getXQueryContextVar(name));
-    }
-
     @Override
     public MemTreeBuilder getDocumentBuilder() {
         return parentContext.getDocumentBuilder();

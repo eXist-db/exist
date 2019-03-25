@@ -119,7 +119,7 @@ public class JNDIModule extends AbstractInternalModule
 		Context jndiContext = null;
 		
 		// get the existing connections map from the context
-		HashMap contexts = (HashMap)context.getXQueryContextVar( JNDIModule.JNDICONTEXTS_VARIABLE );
+		HashMap contexts = (HashMap)context.getAttribute( JNDIModule.JNDICONTEXTS_VARIABLE );
 		
 		if( contexts != null ) {	
 		 	jndiContext = (Context)contexts.get(ctxID);
@@ -142,7 +142,7 @@ public class JNDIModule extends AbstractInternalModule
 	public final static synchronized long storeJNDIContext( XQueryContext context, Context jndiContext ) 
 	{
 		// get the existing connections map from the context
-		HashMap contexts = (HashMap)context.getXQueryContextVar( JNDIModule.JNDICONTEXTS_VARIABLE );
+		HashMap contexts = (HashMap)context.getAttribute( JNDIModule.JNDICONTEXTS_VARIABLE );
 		
 		if( contexts == null ) {
 			// if there is no connections map, create a new one
@@ -156,7 +156,7 @@ public class JNDIModule extends AbstractInternalModule
 		contexts.put(ctxID, jndiContext );
 
 		// store the updated connections map back in the context
-		context.setXQueryContextVar( JNDIModule.JNDICONTEXTS_VARIABLE, contexts );
+		context.setAttribute( JNDIModule.JNDICONTEXTS_VARIABLE, contexts );
 
 		return( ctxID );
 	}
@@ -172,12 +172,12 @@ public class JNDIModule extends AbstractInternalModule
 	public final static void closeJNDIContext( XQueryContext context, long ctxID ) 
 	{
 		// get the existing connections map from the context
-		HashMap contexts = (HashMap)context.getXQueryContextVar( JNDIModule.JNDICONTEXTS_VARIABLE );
+		HashMap contexts = (HashMap)context.getAttribute( JNDIModule.JNDICONTEXTS_VARIABLE );
 		
 		closeJNDIContext( context, ctxID, contexts );
 		
 		// update the context
-		context.setXQueryContextVar( JNDIModule.JNDICONTEXTS_VARIABLE, contexts );
+		context.setAttribute( JNDIModule.JNDICONTEXTS_VARIABLE, contexts );
 	}
 	
 	
@@ -221,7 +221,7 @@ public class JNDIModule extends AbstractInternalModule
 	private final static void closeAllJNDIContexts( XQueryContext xqueryContext ) 
 	{
 		// get the existing connections map from the context
-		HashMap contexts = (HashMap)xqueryContext.getXQueryContextVar( JNDIModule.JNDICONTEXTS_VARIABLE );
+		HashMap contexts = (HashMap)xqueryContext.getAttribute( JNDIModule.JNDICONTEXTS_VARIABLE );
 		
 		if( contexts != null ) {
 			// iterate over each connection
@@ -234,7 +234,7 @@ public class JNDIModule extends AbstractInternalModule
 			}
 
 			// update the context
-			xqueryContext.setXQueryContextVar( JNDIModule.JNDICONTEXTS_VARIABLE, contexts );
+			xqueryContext.setAttribute( JNDIModule.JNDICONTEXTS_VARIABLE, contexts );
 		}
 	}
 

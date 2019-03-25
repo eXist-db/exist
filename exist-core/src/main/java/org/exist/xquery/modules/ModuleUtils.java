@@ -313,7 +313,7 @@ public class ModuleUtils {
     public static <T> T retrieveObjectFromContextMap(XQueryContext context, String contextMapName, long objectUID) {
         try(final ManagedLock<ReadWriteLock> readLock = ManagedLock.acquire(contextMapLocks.getLock(contextMapName), LockMode.READ_LOCK)){
             // get the existing object map from the context
-            final Map<Long, T> map = (HashMap<Long, T>)context.getXQueryContextVar(contextMapName);
+            final Map<Long, T> map = (HashMap<Long, T>)context.getAttribute(contextMapName);
 
             if(map == null) {
                 return null;
@@ -327,11 +327,11 @@ public class ModuleUtils {
     public static <T> void modifyContextMap(XQueryContext context, String contextMapName, ContextMapModifier<T> modifier) {
         try(final ManagedLock<ReadWriteLock> writeLock = ManagedLock.acquire(contextMapLocks.getLock(contextMapName), LockMode.WRITE_LOCK)) {
             // get the existing map from the context
-            Map<Long, T> map = (Map<Long, T>)context.getXQueryContextVar(contextMapName);
+            Map<Long, T> map = (Map<Long, T>)context.getAttribute(contextMapName);
             if(map == null) {
                 //create a new map if it doesnt exist
                 map = new HashMap<Long, T>();
-                context.setXQueryContextVar(contextMapName, map);
+                context.setAttribute(contextMapName, map);
             }
             
             //modify the map
@@ -370,7 +370,7 @@ public class ModuleUtils {
         try(final ManagedLock<ReadWriteLock> writeLock = ManagedLock.acquire(contextMapLocks.getLock(contextMapName), LockMode.WRITE_LOCK)) {
 
             // get the existing map from the context
-            Map<Long, T> map = (Map<Long, T>)context.getXQueryContextVar(contextMapName);
+            Map<Long, T> map = (Map<Long, T>)context.getAttribute(contextMapName);
 
             if(map == null) {
                 // if there is no map, create a new one
@@ -387,7 +387,7 @@ public class ModuleUtils {
             map.put(uid, o);
 
             // store the map back in the context
-            context.setXQueryContextVar(contextMapName, map);
+            context.setAttribute(contextMapName, map);
 
             return (uid);
         }
