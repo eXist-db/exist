@@ -1,6 +1,5 @@
 package org.exist.http;
 
-import org.apache.commons.httpclient.HttpClient;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XmldbURI;
 import org.junit.ClassRule;
@@ -17,6 +16,4 @@ public abstract class RESTTest {
     protected static String getCollectionRootUri() {
         return getRestUrl() + XmldbURI.ROOT_COLLECTION;
     }
-
-    protected static HttpClient client = new HttpClient();
 }

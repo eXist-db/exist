@@ -2,15 +2,15 @@ package org.exist.xquery.functions.response;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.URLEncoder;
+
 import org.apache.commons.codec.binary.Base64;
 
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.fluent.Request;
 import org.exist.http.RESTTest;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.junit.Test;
@@ -24,33 +24,20 @@ import org.junit.Test;
 public class StreamBinaryTest extends RESTTest {
 
 	@Test
-	public void testStreamBinary() {
+	public void testStreamBinary() throws IOException {
 		
 		final String testValue = "hello world";
 		final String xquery = "response:stream-binary(xs:base64Binary('" +  Base64.encodeBase64String(testValue.getBytes())  + "'), 'application/octet-stream', 'test.bin')";
 
-		GetMethod get = new GetMethod(getCollectionRootUri());
+		final Request get = Request.Get(getCollectionRootUri() + "?_query=" + URLEncoder.encode(xquery, "UTF-8") + "&_indent=no");
 
-		NameValuePair qsParams[] = { new NameValuePair("_query", xquery),
-				new NameValuePair("_indent", "no") };
-		get.setQueryString(qsParams);
+		final HttpResponse response = get.execute().returnResponse();
+		assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
-		try {
-			int httpResult = client.executeMethod(get);
+		try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+			response.getEntity().writeTo(os);
 
-			try (final InputStream is = get.getResponseBodyAsStream();
-				 	final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
-				baos.write(is);
-
-				assertEquals(httpResult, HttpStatus.SC_OK);
-
-				assertArrayEquals(testValue.getBytes(), baos.toByteArray());
-			}
-
-		} catch (IOException ioe) {
-			fail(ioe.getMessage());
-		} finally {
-			get.releaseConnection();
+			assertArrayEquals(testValue.getBytes(), os.toByteArray());
 		}
 	}
 }

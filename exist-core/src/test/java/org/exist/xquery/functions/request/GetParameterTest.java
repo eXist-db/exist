@@ -1,25 +1,21 @@
 package org.exist.xquery.functions.request;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.PartSource;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.fluent.Request;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.message.BasicNameValuePair;
 import org.exist.http.RESTTest;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.UserManagementService;
 import org.junit.AfterClass;
@@ -29,6 +25,8 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
+
+import javax.annotation.Nullable;
 
 /**
  * Tests expected behaviour of request:get-parameter() XQuery function
@@ -65,31 +63,31 @@ public class GetParameterTest extends RESTTest {
     }
 
     @Test
-    public void testGetNoParameter() throws XMLDBException {
+    public void testGetNoParameter() throws IOException {
         testGet(null);
     }
 
     @Test
-    public void testPostNoParameter() throws XMLDBException {
+    public void testPostNoParameter() throws IOException {
         testPost(null);
     }
 
     @Test
-    public void testGetEmptyParameter() {
+    public void testGetEmptyParameter() throws IOException{
         testGet(new NameValues[] {
             new NameValues("param1", new String[]{})
         });
     }
 
     @Test
-    public void testPostEmptyParameter() {
+    public void testPostEmptyParameter() throws IOException{
         testPost(new NameValues[] {
             new NameValues("param1", new String[]{})
         });
     }
 
     @Test
-    public void testGetSingleValueParameter() {
+    public void testGetSingleValueParameter() throws IOException {
         testGet(new NameValues[] {
             new NameValues("param1", new String[] {
                 "value1"
@@ -98,7 +96,7 @@ public class GetParameterTest extends RESTTest {
     }
 
     @Test
-    public void testPostSingleValueParameter() {
+    public void testPostSingleValueParameter() throws IOException {
         testPost(new NameValues[] {
             new NameValues("param1", new String[] {
                 "value1"
@@ -107,7 +105,7 @@ public class GetParameterTest extends RESTTest {
     }
 
     @Test
-    public void testGetMultiValueParameter() {
+    public void testGetMultiValueParameter() throws IOException {
         testGet(new NameValues[]{
             new NameValues("param1", new String[] {
                 "value1",
@@ -119,7 +117,7 @@ public class GetParameterTest extends RESTTest {
     }
 
     @Test
-    public void testPostMultiValueParameter() {
+    public void testPostMultiValueParameter() throws IOException {
         testPost(new NameValues[]{
             new NameValues("param1", new String[] {
                 "value1",
@@ -131,7 +129,7 @@ public class GetParameterTest extends RESTTest {
     }
 
     @Test
-    public void testPostMultiValueParameterWithQueryStringMultiValueParameter() {
+    public void testPostMultiValueParameterWithQueryStringMultiValueParameter() throws IOException {
         testPost(
             new NameValues[]{
                 new NameValues("param1", new String[] {
@@ -153,7 +151,7 @@ public class GetParameterTest extends RESTTest {
     }
 
    @Test
-    public void testPostMultiValueParameterWithQueryStringMultiValueParameterMerge() {
+    public void testPostMultiValueParameterWithQueryStringMultiValueParameterMerge() throws IOException {
         testPost(
             new NameValues[]{
                 new NameValues("param1", new String[] {
@@ -175,7 +173,7 @@ public class GetParameterTest extends RESTTest {
     }
 
     @Test
-    public void testMultipartPostMultiValueParameterAndFile() {
+    public void testMultipartPostMultiValueParameterAndFile() throws IOException {
         testMultipartPost(
             new Param[]{
                 new NameValues("param1", new String[] {
@@ -190,7 +188,7 @@ public class GetParameterTest extends RESTTest {
     }
 
     @Test
-    public void testMultipartPostFileAndMultiValueParameter() {
+    public void testMultipartPostFileAndMultiValueParameter() throws IOException {
         testMultipartPost(
             new Param[]{
                 new TextFileUpload(TEST_FILE_NAME, TEST_FILE_CONTENT),
@@ -205,7 +203,7 @@ public class GetParameterTest extends RESTTest {
     }
 
     @Test
-    public void testMultipartPostMultiValueParameterAndFileAndMultiValueParameter() {
+    public void testMultipartPostMultiValueParameterAndFileAndMultiValueParameter() throws IOException {
         testMultipartPost(
             new Param[]{
                 new NameValues("param1", new String[] {
@@ -226,7 +224,7 @@ public class GetParameterTest extends RESTTest {
     }
 
     @Test
-    public void testMultipartPostAndMultiValueParameterAndFileAndMultiValueParameterWithQueryStringMultiValueParameters() {
+    public void testMultipartPostAndMultiValueParameterAndFileAndMultiValueParameterWithQueryStringMultiValueParameters() throws IOException {
         testMultipartPost(
             new NameValues[]{
                 new NameValues("param1", new String[] {
@@ -255,7 +253,7 @@ public class GetParameterTest extends RESTTest {
     }
 
     @Test
-    public void testMultipartPostAndMultiValueParameterAndFileAndMultiValueParameterWithQueryStringMultiValueParametersMerged() {
+    public void testMultipartPostAndMultiValueParameterAndFileAndMultiValueParameterWithQueryStringMultiValueParametersMerged() throws IOException {
         testMultipartPost(
             new NameValues[]{
                 new NameValues("param1", new String[] {
@@ -283,181 +281,141 @@ public class GetParameterTest extends RESTTest {
         );
     }
 
-    private void testGet(NameValues queryStringParams[]) {
+    private void testGet(@Nullable final NameValues[] queryStringParams) throws IOException {
+        final StringBuilder buf = new StringBuilder();
 
-        StringBuilder expectedResponse = new StringBuilder();
-        NameValuePair qsParams[] = convertNameValuesToNameValuePairs(queryStringParams, expectedResponse);
-
-        GetMethod get = new GetMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
-        if(qsParams.length > 0) {
-            get.setQueryString(qsParams);
+        if (queryStringParams != null) {
+            boolean first = true;
+            for (final NameValues queryStringParam : queryStringParams) {
+                if (!first) {
+                    buf.append('&');
+                }
+                buf.append(queryStringParam.toString());
+                first = false;
+            }
         }
 
-        testRequest(get, expectedResponse);
+        Request get = Request.Get(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams == null || queryStringParams.length == 0 ? "" : "?" + buf.toString()));
+
+        testRequest(get, buf.toString().replaceAll("&", ""));
     }
 
-    private void testPost(NameValues formParams[]) {
+    private void testPost(@Nullable final NameValues[] formParams) throws IOException {
+        final StringBuilder buf = new StringBuilder();
+        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME);
 
-        StringBuilder expectedResponse = new StringBuilder();
-        NameValuePair fParams[] = convertNameValuesToNameValuePairs(formParams, expectedResponse);
+        if (formParams != null) {
+            final List<NameValuePair> bodyPairs = new ArrayList<>();
+            for (final NameValues formParam : formParams) {
+                for (final String value : formParam.getData()) {
+                    bodyPairs.add(new BasicNameValuePair(formParam.getName(), value));
+                    buf.append(formParam.getName()).append('=').append(value);
+                }
+            }
 
-        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
-
-        if(fParams.length > 0) {
-            post.setRequestBody(fParams);
+            post = post.bodyForm(bodyPairs);
         }
 
-        testRequest(post, expectedResponse);
+        testRequest(post, buf.toString());
     }
 
-    private void testPost(NameValues queryStringParams[], NameValues formParams[]) {
+    private void testPost(final NameValues[] queryStringParams, final NameValues[] formParams) throws IOException {
+        StringBuilder queryStringBuf = new StringBuilder();
+        StringBuilder formBuf = new StringBuilder();
 
-        StringBuilder expectedResponse = new StringBuilder();
-        NameValuePair qsParams[] = convertNameValuesToNameValuePairs(queryStringParams, expectedResponse);
-        NameValuePair fParams[] = convertNameValuesToNameValuePairs(formParams, expectedResponse);
-
-        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
-
-        if(qsParams.length > 0) {
-            post.setQueryString(qsParams);
+        boolean first = true;
+        for (final NameValues queryStringParam : queryStringParams) {
+            if (!first) {
+                queryStringBuf.append('&');
+            }
+            queryStringBuf.append(queryStringParam.toString());
+            first = false;
         }
 
-        if(fParams.length > 0) {
-            post.setRequestBody(fParams);
+        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams.length == 0 ? "" : "?" + queryStringBuf.toString()));
+
+        final List<NameValuePair> bodyPairs = new ArrayList<>();
+        for (final NameValues formParam : formParams) {
+            for (final String value : formParam.getData()) {
+                bodyPairs.add(new BasicNameValuePair(formParam.getName(), value));
+                formBuf.append(formParam.getName()).append('=').append(value);
+            }
         }
 
-        testRequest(post, expectedResponse);
+        post = post.bodyForm(bodyPairs);
+
+        testRequest(post, queryStringBuf.toString().replaceAll("&", "") + formBuf.toString());
     }
 
-    private void testMultipartPost(Param multipartParams[]) {
-       
-        List<Part> parts = new ArrayList<Part>();
+    private void testMultipartPost(final Param[] multipartParams) throws IOException {
+        MultipartEntityBuilder multipart = MultipartEntityBuilder.create();
 
-        StringBuilder expectedResponse = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
 
-        for(Param multipartParam : multipartParams) {
+        for (final Param multipartParam : multipartParams) {
             if(multipartParam instanceof NameValues) {
-                for(NameValuePair nameValuePair : convertNameValueToNameValuePairs((NameValues)multipartParam, expectedResponse)) {
-                    parts.add(new StringPart(nameValuePair.getName(), nameValuePair.getValue()));
+                final NameValues nameValues = (NameValues) multipartParam;
+                for(final String value : nameValues.getData()) {
+                    multipart = multipart.addTextBody(nameValues.getName(), value);
+                    buf.append(nameValues.getName()).append('=').append(value);
                 }
             } else if(multipartParam instanceof TextFileUpload) {
-                parts.add(convertFileUploadToFilePart((TextFileUpload)multipartParam, expectedResponse));
+                final TextFileUpload textFileUpload = (TextFileUpload) multipartParam;
+                multipart = multipart.addBinaryBody("fileUpload", textFileUpload.getData().getBytes(UTF_8), ContentType.TEXT_PLAIN, textFileUpload.getName());
+                buf.append("fileUpload=" + textFileUpload.getData());
             }
         }
 
-        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
-        post.setRequestEntity(new MultipartRequestEntity(parts.toArray(new Part[parts.size()]), post.getParams()));
+        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+            .body(multipart.build());
 
-        testRequest(post, expectedResponse);
+        testRequest(post, buf.toString());
     }
 
-    private void testMultipartPost(NameValues queryStringParams[], Param multipartParams[]) {
+    private void testMultipartPost(final NameValues[] queryStringParams, final Param[] multipartParams) throws IOException {
+        final StringBuilder queryStringBuf = new StringBuilder();
 
-        List<Part> parts = new ArrayList<Part>();
+        boolean first = true;
+        for (final NameValues queryStringParam : queryStringParams) {
+            if (!first) {
+                queryStringBuf.append('&');
+            }
+            queryStringBuf.append(queryStringParam.toString());
+            first = false;
+        }
 
-        StringBuilder expectedResponse = new StringBuilder();
+        MultipartEntityBuilder multipart = MultipartEntityBuilder.create();
 
-        NameValuePair qsParams[] = convertNameValuesToNameValuePairs(queryStringParams, expectedResponse);
+        final StringBuilder bodyBuf = new StringBuilder();
 
-        for(Param multipartParam : multipartParams) {
+        for (final Param multipartParam : multipartParams) {
             if(multipartParam instanceof NameValues) {
-                for(NameValuePair nameValuePair : convertNameValueToNameValuePairs((NameValues)multipartParam, expectedResponse)) {
-                    parts.add(new StringPart(nameValuePair.getName(), nameValuePair.getValue()));
+                final NameValues nameValues = (NameValues) multipartParam;
+                for(final String value : nameValues.getData()) {
+                    multipart = multipart.addTextBody(nameValues.getName(), value);
+                    bodyBuf.append(nameValues.getName()).append('=').append(value);
                 }
             } else if(multipartParam instanceof TextFileUpload) {
-                parts.add(convertFileUploadToFilePart((TextFileUpload)multipartParam, expectedResponse));
+                final TextFileUpload textFileUpload = (TextFileUpload) multipartParam;
+                multipart = multipart.addBinaryBody("fileUpload", textFileUpload.getData().getBytes(UTF_8), ContentType.TEXT_PLAIN, textFileUpload.getName());
+                bodyBuf.append("fileUpload=" + textFileUpload.getData());
             }
         }
 
-        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
+        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams.length == 0 ? "" : "?" + queryStringBuf.toString()))
+                .body(multipart.build());
 
-        if(qsParams.length > 0) {
-            post.setQueryString(qsParams);
-        }
-
-        post.setRequestEntity(new MultipartRequestEntity(parts.toArray(new Part[parts.size()]), post.getParams()));
-
-        testRequest(post, expectedResponse);
+        testRequest(post, queryStringBuf.toString().replaceAll("&", "") + bodyBuf.toString());
     }
 
-    private void testRequest(HttpMethod method, StringBuilder expectedResponse) {
+    private void testRequest(final Request request, final String expected) throws IOException {
+        final HttpResponse response = request.execute().returnResponse();
+        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
-        try {
-            int httpResult = client.executeMethod(method);
-
-            byte buf[] = new byte[1024];
-            int read = -1;
-            StringBuilder responseBody = new StringBuilder();
-            InputStream is = method.getResponseBodyAsStream();
-            while((read = is.read(buf)) > -1) {
-                responseBody.append(new String(buf, 0, read));
-            }
-
-            assertEquals(HttpStatus.SC_OK, httpResult);
-
-            assertEquals(expectedResponse.toString(), responseBody.toString());
-
-        } catch(IOException ioe) {
-            fail(ioe.getMessage());
-        } finally {
-            method.releaseConnection();
+        try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+            response.getEntity().writeTo(os);
+            assertEquals(expected, new String(os.toByteArray(), UTF_8));
         }
-    }
-
-    private NameValuePair[] convertNameValuesToNameValuePairs(final NameValues nameValues[], final StringBuilder expectedResponse) {
-        final List<NameValuePair> nameValuePairs = new ArrayList<>();
-
-        if(nameValues != null) {
-            for(final NameValues param : nameValues) {
-                nameValuePairs.addAll(convertNameValueToNameValuePairs(param, expectedResponse));
-            }
-        }
-
-        return nameValuePairs.toArray(new NameValuePair[nameValuePairs.size()]);
-    }
-
-    private List<NameValuePair> convertNameValueToNameValuePairs(final NameValues nameValues, final StringBuilder expectedResponse) {
-        final List<NameValuePair> nameValuePairs = new ArrayList<>();
-
-        for(final String paramValue : nameValues.getData()) {
-            nameValuePairs.add(new NameValuePair(nameValues.getName(), paramValue));
-
-            expectedResponse.append(nameValues.getName());
-            expectedResponse.append("=");
-            expectedResponse.append(paramValue);
-        }
-
-        return nameValuePairs;
-    }
-
-    private FilePart convertFileUploadToFilePart(final TextFileUpload txtFileUpload, final StringBuilder expectedResponse) {
-
-        final String filePartName = "fileUpload";
-
-        final FilePart filePart = new FilePart(filePartName, new PartSource() {
-            private byte data[] = txtFileUpload.getData().getBytes();
-
-            @Override
-            public long getLength() {
-                return data.length;
-            }
-
-            @Override
-            public String getFileName() {
-                return txtFileUpload.getName();
-            }
-
-            @Override
-            public InputStream createInputStream() throws IOException {
-                return new FastByteArrayInputStream(data);
-            }
-        });
-
-        expectedResponse.append(filePartName);
-        expectedResponse.append("=");
-        expectedResponse.append(txtFileUpload.getData());
-
-        return filePart;
     }
 
     public class NameValues implements Param<String[]> {
@@ -478,6 +436,20 @@ public class GetParameterTest extends RESTTest {
         @Override
         public String[] getData() {
             return values;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder();
+            boolean first = true;
+            for (final String value : values) {
+                if (!first) {
+                    builder.append('&');
+                }
+                builder.append(name).append('=').append(value);
+                first = false;
+            }
+            return builder.toString();
         }
     }
 
