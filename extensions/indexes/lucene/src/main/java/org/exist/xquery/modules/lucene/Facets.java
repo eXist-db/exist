@@ -99,13 +99,17 @@ public class Facets extends BasicFunction {
                     final org.apache.lucene.facet.Facets facets = index.getFacets(collector);
                     final FacetResult result = facets.getTopChildren(count, dimension);
 
-                    final MapType map = new MapType(context);
-                    for (int i = 0; i < result.labelValues.length; i++) {
-                        final String label = result.labelValues[i].label;
-                        final Number value = result.labelValues[i].value;
-                        map.add(new StringValue(label), new IntegerValue(value.longValue()));
+                    if (result == null) {
+                        return new MapType(context);
+                    } else {
+                        final MapType map = new MapType(context);
+                        for (int i = 0; i < result.labelValues.length; i++) {
+                            final String label = result.labelValues[i].label;
+                            final Number value = result.labelValues[i].value;
+                            map.add(new StringValue(label), new IntegerValue(value.longValue()));
+                        }
+                        return map;
                     }
-                    return map;
                 }
                 match = match.getNextMatch();
             }

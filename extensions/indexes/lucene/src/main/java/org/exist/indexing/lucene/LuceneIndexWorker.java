@@ -516,9 +516,16 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private Query drilldown(Map<String, List<String>> facets, Query baseQuery, LuceneConfig config) {
         final DrillDownQuery drillDownQuery = new DrillDownQuery(config.facetsConfig, baseQuery);
-        for (Map.Entry<String, List<String>> facet : facets.entrySet()) {
-            for (String value : facet.getValue()) {
-                drillDownQuery.add(facet.getKey(), value);
+        for (final Map.Entry<String, List<String>> facet : facets.entrySet()) {
+            final FacetsConfig.DimConfig dimConfig = config.facetsConfig.getDimConfig(facet.getKey());
+            if (dimConfig.hierarchical) {
+                final String[] values = new String[facet.getValue().size()];
+                facet.getValue().toArray(values);
+                drillDownQuery.add(facet.getKey(), values);
+            } else {
+                for (String value : facet.getValue()) {
+                    drillDownQuery.add(facet.getKey(), value);
+                }
             }
         }
         return drillDownQuery;
@@ -533,7 +540,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public Facets getFacets(FacetsCollector facetsCollector) throws IOException, XPathException {
-        return index.withSearcher(searcher -> new FastTaxonomyFacetCounts(searcher.taxonomyReader, new FacetsConfig(), facetsCollector));
+        return index.withSearcher(searcher -> new FastTaxonomyFacetCounts(searcher.taxonomyReader, config.facetsConfig, facetsCollector));
     }
 
     public NodeSet queryField(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
