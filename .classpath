@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="org/exist/xquery/modules/cqlparser/**|org/exist/xquery/modules/jfreechart/**|org/exist/xquery/modules/memcached/**|org/exist/xquery/modules/oracle/**|org/exist/xquery/modules/xmlcalabash/**|org/exist/xquery/modules/xmpp/**|org/exist/xquery/modules/xslfo/**" kind="src" path="extensions/modules/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.5.jar"/>
 	<classpathentry kind="lib" path="extensions/expath/lib/http-client-java-1.0-SNAPSHOT.jar"/>
@@ -18,6 +17,7 @@
 	<classpathentry kind="lib" path="extensions/fluent/lib/jmock-2.4.0.jar"/>
 	<classpathentry kind="lib" path="extensions/fluent/lib/jmock-junit4-2.4.0.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-analyzers-common-4.10.4.jar"/>
+	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-analyzers-icu-4.10.4.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-4.10.4.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-queries-4.10.4.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-queryparser-4.10.4.jar"/>
@@ -45,30 +45,30 @@
 	<classpathentry kind="lib" path="lib/core/jackson-core-2.9.5.jar"/>
 	<classpathentry kind="lib" path="lib/core/jansi-1.17.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/jargo-0.4.14.jar"/>
+	<classpathentry kind="lib" path="lib/core/java-uuid-generator-3.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/core/jcip-annotations-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/jctools-core-2.1.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/jline-3.9.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/jsr305-3.0.2.jar"/>
-    <classpathentry kind="lib" path="lib/core/java-uuid-generator-3.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/core/jta-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-api-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-core-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-jul-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-slf4j-impl-2.11.0.jar"/>
-	<classpathentry kind="lib" path="lib/core/multilock-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/core/lz4-java-1.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/pkg-java-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/quartz-2.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/rsyntaxtextarea-2.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/slf4j-api-1.7.25.jar"/>
 	<classpathentry kind="lib" path="lib/core/ws-commons-util-1.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/core/xmldb-api-1.7.0.jar" sourcepath="/home/pr/git/xmldb-org/xmldb-api/src/main/java"/>
+	<classpathentry kind="lib" path="lib/core/xmldb-api-1.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmlrpc-client-3.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmlrpc-common-3.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmlrpc-server-3.1.3.jar"/>
-	<classpathentry kind="lib" path="lib/endorsed/Saxon-HE-9.8.0-12.jar"/>
+	<classpathentry kind="lib" path="lib/endorsed/Saxon-HE-9.6.0-7.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/serializer-2.7.2.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xalan-2.7.2.jar"/>
-	<classpathentry kind="lib" path="lib/endorsed/xercesImpl-2.12.0.jar"/>
+	<classpathentry kind="lib" path="lib/endorsed/xercesImpl-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xml-apis-1.4.01.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xml-resolver-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-compress-1.17.jar"/>
@@ -83,6 +83,7 @@
 	<classpathentry kind="lib" path="lib/optional/httpcore-4.4.9.jar"/>
 	<classpathentry kind="lib" path="lib/optional/httpmime-4.5.5.jar"/>
 	<classpathentry kind="lib" path="lib/optional/isorelax-20041111.jar"/>
+	<classpathentry kind="lib" path="lib/optional/jaxb-api-2.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jaxrpc-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jing-20151127.jar"/>
 	<classpathentry kind="lib" path="lib/optional/saaj-1.2.jar"/>
@@ -124,6 +125,11 @@
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-util-9.4.14.v20181114.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-webapp-9.4.14.v20181114.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-xml-9.4.14.v20181114.jar"/>
+	<classpathentry kind="output" path="test/classes"/>
+	<classpathentry kind="src" path="exist-core/src/main/java"/>
+	<classpathentry kind="src" path="exist-core/src/test/java"/>
+	<classpathentry kind="src" path="exist-start/src/main/java"/>
+	<classpathentry kind="src" path="exist-testkit/src/main/java"/>
 	<classpathentry kind="src" path="extensions/commands/src/main/java"/>
 	<classpathentry kind="src" path="extensions/debuggee/src/main/java"/>
 	<classpathentry kind="src" path="extensions/debuggee/src/test/java"/>
@@ -136,20 +142,37 @@
 	<classpathentry kind="src" path="extensions/indexes/ngram/src/main/java"/>
 	<classpathentry kind="src" path="extensions/indexes/ngram/src/test/java"/>
 	<classpathentry kind="src" path="extensions/indexes/sort/src/main/java"/>
-	<classpathentry kind="src" path="extensions/indexes/sort/src/test/java"/>
+	<classpathentry kind="src" path="extensions/modules/cache/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/compression/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/context/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/counter/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/cqlparser/src/main/java" excluding="**" />
+	<classpathentry kind="src" path="extensions/modules/datetime/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/example/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/exi/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/expathrepo/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/file/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/ftpclient/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/httpclient/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/image/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/jndi/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/mail/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/math/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/memcached/src/main/java" excluding="**"/>
+	<classpathentry kind="src" path="extensions/modules/persistentlogin/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/process/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/scheduler/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/simpleql/src/main/java" excluding="**"/>
+	<classpathentry kind="src" path="extensions/modules/sql-oracle/src/main/java" excluding="**"/>
+	<classpathentry kind="src" path="extensions/modules/sql/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/xmldiff/src/main/java"/>
+	<classpathentry kind="src" path="extensions/modules/xmpp/src/main/java" excluding="**"/>
+	<classpathentry kind="src" path="extensions/modules/xslfo/src/main/java" excluding="**"/>
 	<classpathentry kind="src" path="extensions/security/activedirectory/src/main/java"/>
 	<classpathentry kind="src" path="extensions/security/ldap/src/main/java"/>
 	<classpathentry kind="src" path="extensions/webdav/src/main/java"/>
 	<classpathentry kind="src" path="extensions/xqdoc/src/main/java"/>
 	<classpathentry kind="src" path="extensions/xqdoc/src/test/java"/>
-	<classpathentry kind="src" path="samples/src"/>
-	<classpathentry kind="src" path="exist-core/src/main/java"/>
-	<classpathentry kind="src" path="exist-core/src/test/java"/>
-        <classpathentry kind="src" path="exist-start/src/main/java"/>
-        <classpathentry kind="src" path="exist-testkit/src/main/java"/>
-	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-analyzers-icu-4.10.4.jar"/>
-	<classpathentry kind="lib" path="lib/core/deuce-annotations-1.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="lib/core/lz4-java-1.5.0.jar"/>
-	<classpathentry kind="lib" path="lib/optional/jaxb-api-2.3.0.jar"/>
-	<classpathentry kind="output" path="test/classes"/>
+	<classpathentry kind="src" path="samples/src/main/java"/>
+	<classpathentry kind="src" path="samples/src/main/resources"/>
 </classpath>

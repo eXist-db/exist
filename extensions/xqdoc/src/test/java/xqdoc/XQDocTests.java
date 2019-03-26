@@ -1,4 +1,4 @@
-package xquery.xqdoc;
+package xqdoc;
 
 import org.exist.test.runner.XSuite;
 import org.junit.runner.RunWith;
