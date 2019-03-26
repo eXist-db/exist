@@ -61,9 +61,9 @@ function testSort:undefined_context() {
 declare
     %test:assertTrue
 function testSort:sort_context() {
-    let $sort := sort((<a/>,<c/>,<b/>,<d/>), (), function ($a) { xs:string(node-name($a)) })
-    return
-        fn:deep-equal($sort , "<a/><b/><c/><d/>")
+  let $sort := sort((<a/>,<c/>,<b/>,<d/>), (), function ($a) { xs:string(node-name($a)) })
+     return
+         fn:deep-equal($sort , (<a/>,<b/>,<c/>,<d/>))
 };
 
 declare
@@ -71,7 +71,7 @@ declare
 function testSort:sort_context_ao() {
     let $sort := (<a/>,<c/>,<b/>,<d/>) => sort((), function ($a) { xs:string(node-name($a)) })
     return
-        fn:deep-equal($sort , "<a/><b/><c/><d/>")
+        fn:deep-equal($sort , (<a/>,<b/>,<c/>,<d/>))
 };
 
 declare
