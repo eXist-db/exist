@@ -66,7 +66,8 @@ public class LuceneModule extends AbstractInternalModule {
         new FunctionDef(Search.signatures[2], Search.class),
         new FunctionDef(GetField.signatures[0], GetField.class),
         new FunctionDef(Facets.signatures[0], Facets.class),
-        new FunctionDef(Facets.signatures[1], Facets.class)
+        new FunctionDef(Facets.signatures[1], Facets.class),
+        new FunctionDef(Facets.signatures[2], Facets.class)
     };
 
     public LuceneModule(Map<String, List<? extends Object>> parameters) {
