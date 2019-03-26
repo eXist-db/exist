@@ -16,6 +16,12 @@ declare variable $lxm:EXTERNAL_CONTEXT as xs:string := upper-case(.);
 
 declare variable $lxm:EXTERNAL_NO_DEFAULT external;
 
+declare variable $lxm:GLOBAL_VAR :=
+    (: Call to inline function will fail if global variable was not properly analyzed :)
+    function($param) {
+        $param
+    };
+
 declare function lxm:func($arg as xs:string) {
     upper-case($arg)
 };
@@ -24,7 +30,11 @@ declare function lxm:func($arg1 as xs:string, $arg2 as xs:string) {
     lxm:func($arg1) || lxm:func($arg2)
 };
 
-declare 
+declare function lxm:access-var($param as xs:string) {
+    $lxm:GLOBAL_VAR($param)
+};
+
+declare
     %test:assertEquals(4)
 function lxm:import-standard() {
     let $module := load-xquery-module("http://www.w3.org/2005/xpath-functions")
@@ -34,7 +44,7 @@ function lxm:import-standard() {
 };
 
 declare 
-    %test:assertEquals(14, 2, "OK", "OK", 6, "OK")
+    %test:assertEquals(16, 2, "OK", "OK", 7, "OK")
 function lxm:import-with-location() {
     let $module := load-xquery-module("http://exist-db.org/xquery/test/load-xquery-module", map {
         "location-hints": "load-xquery-module.xql",
@@ -52,7 +62,7 @@ function lxm:import-with-location() {
     )
 };
 
-declare 
+declare
     %test:assertError("err:FOQM0003")
 function lxm:import-wrong-version() {
     let $module := load-xquery-module("http://exist-db.org/xquery/test/load-xquery-module", map {
@@ -183,4 +193,18 @@ function lxm:import-with-context-item() {
     })
     return
         $module?variables(xs:QName("lxm:EXTERNAL_CONTEXT"))
+};
+
+(: See https://github.com/eXist-db/exist/issues/1550 :)
+declare
+    %test:name("check if global var has been analyzed properly")
+    %test:assertEquals("Hello World!")
+function lxm:import-with-var-decl() as xs:string {
+    let $module := load-xquery-module("http://exist-db.org/xquery/test/load-xquery-module", map {
+        "location-hints": "load-xquery-module.xql",
+        "xquery-version": 3.1,
+        "variables": map { xs:QName("lxm:EXTERNAL_NO_DEFAULT"): "OK" }
+    })
+    return
+        $module?functions(xs:QName("lxm:access-var"))?1("Hello World!")
 };
