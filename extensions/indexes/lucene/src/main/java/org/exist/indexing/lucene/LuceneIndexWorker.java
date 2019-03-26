@@ -527,7 +527,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private void searchAndProcess(int contextId, QName qname, DocumentSet docs,
                                   NodeSet contextSet, NodeSet resultSet, boolean returnAncestor,
-                                  SearcherTaxonomyManager.SearcherAndTaxonomy searcher, Query query) throws IOException, TerminatedException {
+                                  SearcherTaxonomyManager.SearcherAndTaxonomy searcher, Query query) throws IOException {
         FacetsCollector facetsCollector = new FacetsCollector();
         LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, returnAncestor, contextId, facetsCollector);
         searcher.searcher.search(query, collector);
