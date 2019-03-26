@@ -75,7 +75,7 @@ public interface RpcAPI {
      * @param delay The delay in milliseconds
      * @return true if the shutdown was scheduled, false otherwise
      * @throws PermissionDeniedException
-     * @Deprecated {@see org.exist.xmlrpc.RpcAPI#shutdown(long)
+     * @deprecated {@see org.exist.xmlrpc.RpcAPI#shutdown(long)
      */
     @Deprecated
     boolean shutdown(String delay) throws PermissionDeniedException;

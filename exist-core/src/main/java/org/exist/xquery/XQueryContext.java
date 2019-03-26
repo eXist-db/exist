@@ -1902,17 +1902,6 @@ public class XQueryContext implements BinaryValueManager, Context {
         return db.getActiveBroker();
     }
 
-    /**
-     * Get the user which executes the current query.
-     *
-     * @return user
-     * @deprecated Use {@link #getSubject()}.
-     */
-    @Deprecated
-    public Subject getUser() {
-        return getSubject();
-    }
-
     @Override
     public Subject getSubject() {
         return getBroker().getCurrentSubject();

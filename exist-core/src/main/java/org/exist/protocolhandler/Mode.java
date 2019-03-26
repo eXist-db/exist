@@ -23,24 +23,14 @@ package org.exist.protocolhandler;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public enum Mode {
-  /**
-   * low memory requirements, but it have design bugs:
-   *  - broker hold while io stream in "use";
-   *  - require 2 threads per operation.
-   *
-   * @deprecated Threads are no longer used. This is now just an acronym for {@link #DISK}.
-   */
-  @Deprecated
-  THREADS,
 
   /**
-   * Keep stream's data on disk to solve {@link #THREADS} design bugs,
-   * and issues with memory use of {@link #MEMORY}.
+   * Keep stream's data on disk to solve issues with memory use of {@link #MEMORY}.
    */
   DISK,
 
   /**
-   * Keep stream's data in memory to solve {@link #THREADS} design bugs.
+   * Keep stream's data in memory.
    */
   MEMORY
 }

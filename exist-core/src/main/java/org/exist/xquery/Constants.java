@@ -66,11 +66,7 @@ public interface Constants {
     int DESCENDANT_SELF_AXIS = 8;
     int FOLLOWING_AXIS = 9;
     int FOLLOWING_SIBLING_AXIS = 10;
-    /**
-     * @deprecated in xpath 2.0, removed in xpath 3.0
-     */
-    @Deprecated
-    int NAMESPACE_AXIS = 11;
+
     int SELF_AXIS = 12;
     //combines /descendant-or-self::node()/attribute:*
 	int DESCENDANT_ATTRIBUTE_AXIS = 13;

@@ -71,12 +71,18 @@ public interface IPathExpr extends Expression {
 
 	public DocumentSet getDocumentSet();
 
-	//TODO: @Deprecated //use getSubExpression
+	/**
+	 * @deprecated use {@link #getSubExpression(int)}
+	 */
+	@Deprecated
 	public Expression getExpression(int pos);
 
 	public Expression getLastExpression();
 
-	//TODO: @Deprecated //use getSubExpressionCount
+	/**
+	 * @deprecated use {@link #getSubExpressionCount()}
+	 */
+	@Deprecated
 	public int getLength();
 
 	public void setUseStaticContext(boolean staticContext);
@@ -87,21 +93,10 @@ public interface IPathExpr extends Expression {
 
 	public String getLiteralValue();
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.exist.xmldb.CompiledExpression#reset()
-	 */
 	public void reset();
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.CompiledXQuery#isValid()
-	 */
 	public boolean isValid();
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.CompiledXQuery#dump(java.io.Writer)
-	 */
 	public void dump(Writer writer);
 
 	public void setContext(Context context);

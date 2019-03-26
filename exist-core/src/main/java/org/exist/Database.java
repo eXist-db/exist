@@ -110,7 +110,6 @@ public interface Database {
     public DBBroker authenticate(String username, Object credentials) throws AuthenticationException;
 
     /*
-     * @Deprecated ? 
      * 
      * try { 
      *     broker = database.authenticate(account, credentials);

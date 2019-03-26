@@ -340,7 +340,10 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         return steps.isEmpty() ? null : steps.get(steps.size() - 1);
     }
 
-    //TODO: @Deprecated //use getSubExpressionCount
+    /**
+     * @deprecated use {@link #getSubExpressionCount()}
+     */
+    @Deprecated
     public int getLength() {
         return steps.size();
     }

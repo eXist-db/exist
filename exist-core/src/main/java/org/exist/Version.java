@@ -55,14 +55,6 @@ public final class Version {
 		return BUILD;
 	}
 
-	/**
-	 * @deprecated Use {@link #getGitCommit()}
-	 */
-	@Deprecated
-	public static String getSvnRevision() {
-		return GIT_COMMIT;
-	}
-
 	public static String getGitBranch() {
 		return GIT_BRANCH;
 	}
