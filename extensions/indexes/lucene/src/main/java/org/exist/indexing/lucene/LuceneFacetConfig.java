@@ -111,12 +111,18 @@ public class LuceneFacetConfig {
                     String paths[] = new String[result.getItemCount()];
                     int j = 0;
                     for (SequenceIterator i = result.unorderedIterator(); i.hasNext(); j++) {
-                        paths[j] = i.nextItem().getStringValue();
+                        final String value = i.nextItem().getStringValue();
+                        if (value.length() > 0) {
+                            paths[j] = value;
+                        }
                     }
                     luceneDoc.add(new FacetField(dimension, paths));
                 } else {
                     for (SequenceIterator i = result.unorderedIterator(); i.hasNext(); ) {
-                        luceneDoc.add(new FacetField(dimension, i.nextItem().getStringValue()));
+                        final String value = i.nextItem().getStringValue();
+                        if (value.length() > 0) {
+                            luceneDoc.add(new FacetField(dimension, value));
+                        }
                     }
                 }
             }
