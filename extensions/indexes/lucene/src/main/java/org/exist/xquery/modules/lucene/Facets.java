@@ -68,6 +68,27 @@ public class Facets extends BasicFunction {
             },
             new FunctionReturnSequenceType(Type.MAP, Cardinality.ZERO_OR_ONE,
                     "A map having the facet label as key and the facet count as value")
+        ),
+        new FunctionSignature(
+            new QName("facets", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
+            "Return a map of facet labels and counts for the result of a Lucene query. Facets and facet counts apply " +
+                    "to the entire sequence returned by ft:query, so the same map will be returned for all nodes in the sequence. " +
+                    "It is thus sufficient to specify one node from the sequence as first argument to this function.",
+            new SequenceType[] {
+                    new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE,
+                            "A single node resulting from a call to ft:query for which facet information should be retrieved. " +
+                                    "If the node has no facet information attached, an empty sequence will be returned."),
+                    new FunctionParameterSequenceType("dimension", Type.STRING, Cardinality.EXACTLY_ONE,
+                            "The facet dimension. This should correspond to a dimension defined in the index configuration"),
+                    new FunctionParameterSequenceType("count", Type.INTEGER, Cardinality.EXACTLY_ONE,
+                            "The number of facet labels to be returned. Facets with more occurrences in the result will be returned " +
+                                    "first."),
+                    new FunctionParameterSequenceType("paths", Type.STRING, Cardinality.ONE_OR_MORE,
+                            "For hierarchical facets, specify a sequence of paths leading to the position in the hierarchy you" +
+                                    "would like to get facet counts for.")
+            },
+                new FunctionReturnSequenceType(Type.MAP, Cardinality.ZERO_OR_ONE,
+                        "A map having the facet label as key and the facet count as value")
         )
     };
 
@@ -82,12 +103,21 @@ public class Facets extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         }
 
+        final String dimension = args[1].getStringValue();
+
         int count = Integer.MAX_VALUE;
         if (getArgumentCount() == 3) {
             count = ((IntegerValue) args[2]).getInt();
         }
 
-        final String dimension = args[1].getStringValue();
+        String[] paths = null;
+        if (getArgumentCount() == 4 && !args[3].isEmpty()) {
+            paths = new String[args[3].getItemCount()];
+            int j = 0;
+            for (SequenceIterator i = args[3].unorderedIterator(); i.hasNext(); j++) {
+                paths[j] = i.nextItem().getStringValue();
+            }
+        }
 
         final NodeProxy proxy = (NodeProxy) nv;
         try {
@@ -97,7 +127,12 @@ public class Facets extends BasicFunction {
                     final FacetsCollector collector = ((LuceneIndexWorker.LuceneMatch)match).getFacetsCollector();
                     final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
                     final org.apache.lucene.facet.Facets facets = index.getFacets(collector);
-                    final FacetResult result = facets.getTopChildren(count, dimension);
+                    final FacetResult result;
+                    if (paths == null) {
+                        result = facets.getTopChildren(count, dimension);
+                    } else {
+                        result = facets.getTopChildren(count, dimension, paths);
+                    }
 
                     if (result == null) {
                         return new MapType(context);
