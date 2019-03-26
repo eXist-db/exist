@@ -43,12 +43,6 @@ public interface Realm extends AuthenticatingRealm, AuthorizingRealm, AccountsMa
 
     Collection<Group> getGroups();
 
-    /**
-     * @deprecated Use {@link #getGroups()}.
-     */
-    @Deprecated //use getGroups (remove after 1.6)
-    Collection<Group> getRoles();
-
     Database getDatabase();
 
     Group getExternalGroup(final String name);

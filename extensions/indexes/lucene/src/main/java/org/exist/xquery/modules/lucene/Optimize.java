@@ -44,9 +44,9 @@ public class Optimize extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        if (!context.getUser().hasDbaRole())
+        if (!context.getSubject().hasDbaRole())
             throw new XPathException(this, "user has to be a member of the dba group to call " +
-                "the optimize function. Calling user was " + context.getUser().getName());
+                "the optimize function. Calling user was " + context.getSubject().getName());
         LuceneIndexWorker index = (LuceneIndexWorker)
                 context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         index.optimize();

@@ -44,9 +44,7 @@ public interface Authenticator {
      * @return The authenticated user or null if the user isn't autenticated
      * @throws IOException
      */
-	public Subject authenticate(HttpServletRequest request, HttpServletResponse response, boolean sendChallenge) throws IOException;
-	@Deprecated
-	public Subject authenticate(HttpServletRequest request, HttpServletResponse response) throws IOException;
+	Subject authenticate(HttpServletRequest request, HttpServletResponse response, boolean sendChallenge) throws IOException;
 	
 	/**
 	 * Send an WWW-Authenticate header back to client.
@@ -55,5 +53,5 @@ public interface Authenticator {
 	 * @param response
 	 * @throws IOException
 	 */
-	public void sendChallenge(HttpServletRequest request, HttpServletResponse response) throws IOException;
+	void sendChallenge(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }

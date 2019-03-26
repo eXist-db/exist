@@ -198,44 +198,4 @@ public class InternalModuleTest {
             return "99";
         }
     }
-
-    /**
-     * This uses the old eXist-db 4.x.x API approach.
-     * It can be removed in 5.0.0 in favour of only testing
-     * {@link TestModuleWithVariables}.
-     *
-     * @deprecated remove in eXist-db 5.0.0.
-     */
-    @Deprecated
-    public static class TestModuleWithVariables_Old_API extends AbstractInternalModule {
-        public static final String NS = "http://TestModuleWithVariables";
-        public static final String PREFIX = "tmwv";
-
-        public static final QName VAR1_NAME = new QName("var1", NS);
-
-        public TestModuleWithVariables_Old_API(final Map<String, List<?>> parameters) throws XPathException {
-            super(new FunctionDef[0], parameters);
-            declareVariable(VAR1_NAME, COUNTER.getAndIncrement());
-        }
-
-        @Override
-        public String getNamespaceURI() {
-            return NS;
-        }
-
-        @Override
-        public String getDefaultPrefix() {
-            return PREFIX;
-        }
-
-        @Override
-        public String getDescription() {
-            return "mod1";
-        }
-
-        @Override
-        public String getReleaseVersion() {
-            return "99";
-        }
-    }
 }

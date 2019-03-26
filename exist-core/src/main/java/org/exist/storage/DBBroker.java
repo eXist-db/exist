@@ -597,7 +597,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     /**
      * Stores the given data under the given binary resource descriptor
      * (BinaryDocument).
-     * 
+     *
      * @param blob
      *            the binary document descriptor
      * @param data
@@ -1037,14 +1037,6 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
         pool.release(this);
     }
 
-    /**
-     * @deprecated Use {@link DBBroker#close()}
-     */
-    @Deprecated
-    public void release() {
-        pool.release(this);
-    }
-
     public final static String PROP_DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS = "exist.disable-single-thread-overlapping-transaction-checks";
     private final static boolean DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS = Boolean.valueOf(System.getProperty(PROP_DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS, "false"));
     private Txn currentTransaction = null;
@@ -1076,7 +1068,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * eventually be closed by the creator of the original transaction (i.e. the code
      * site that began the first transaction)
      *
-     * @Deprecated This is a stepping-stone; Transactions should be explicitly passed
+     * @deprecated This is a stepping-stone; Transactions should be explicitly passed
      *   around. This will be removed in the near future.
      */
     @Deprecated
