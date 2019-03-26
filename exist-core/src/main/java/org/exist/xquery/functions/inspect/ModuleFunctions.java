@@ -95,6 +95,11 @@ public class ModuleFunctions extends BasicFunction {
             if (module == null) {
                 return Sequence.EMPTY_SEQUENCE;
             }
+            if (!module.isInternalModule()) {
+                // ensure variable declarations in the imported module are analyzed.
+                // unlike when using a normal import statement, this is not done automatically
+                ((ExternalModule)module).analyzeGlobalVars();
+            }
             LoadXQueryModule.addFunctionRefsFromModule(this, tempContext, list, module);
         } else {
             addFunctionRefsFromContext(list);
