@@ -210,7 +210,7 @@ declare function t:run-test($test as element(test), $count as xs:integer,
                         if(not(empty($expanded("error")))) then
                             if(not(empty($test-error-function))) then $test-error-function($test/task, $expanded("error")) else ()
                         else
-                            if(not(empty($test-failure-function))) then $test-failure-function($test/task, map { "value": $test/expected/*, "xpath": $test/xpath/*, "error": $test/error/* }, $expanded) else ()
+                            if(not(empty($test-failure-function))) then $test-failure-function($test/task, map { "value": $test/expected/node(), "xpath": $test/xpath/node(), "error": $test/error/node() }, $expanded) else ()
                     return
                         ($test/task, $test/expected, $test/xpath, <result>{$expanded("result"), if(not(empty($expanded("error")))) then $expanded("error")("description") else ()}</result>)
                 else
