@@ -124,9 +124,8 @@ public class Facets extends BasicFunction {
             Match match = proxy.getMatches();
             while (match != null) {
                 if (match.getIndexId().equals(LuceneIndex.ID)) {
-                    final FacetsCollector collector = ((LuceneIndexWorker.LuceneMatch)match).getFacetsCollector();
                     final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-                    final org.apache.lucene.facet.Facets facets = index.getFacets(collector);
+                    final org.apache.lucene.facet.Facets facets = index.getFacets((LuceneIndexWorker.LuceneMatch) match);
                     final FacetResult result;
                     if (paths == null) {
                         result = facets.getTopChildren(count, dimension);
