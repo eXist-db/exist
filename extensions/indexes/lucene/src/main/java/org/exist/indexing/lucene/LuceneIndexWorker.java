@@ -437,18 +437,18 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             for (QName qname : definedIndexes) {
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 Analyzer analyzer = getAnalyzer(null, qname, context.getBroker(), docs);
+                LuceneConfig config = getLuceneConfig(field, qname, broker, docs);
                 QueryParserWrapper parser = getQueryParser(field, analyzer, docs);
                 options.configureParser(parser.getConfiguration());
                 Query query = queryStr == null ? new MatchAllDocsQuery() : parser.parse(queryStr);
                 Optional<Map<String, List<String>>> facets = options.getFacets();
                 if (facets.isPresent()) {
-                    LuceneConfig config = getLuceneConfig(field, qname, broker, docs);
                     if (config != null) {
                         query = drilldown(facets.get(), query, config);
                     }
                 }
                 searchAndProcess(contextId, qname, docs, contextSet, resultSet,
-                        returnAncestor, searcher, query);
+                        returnAncestor, searcher, query, config);
             }
             return resultSet;
         });
@@ -481,18 +481,18 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final boolean returnAncestor = axis == NodeSet.ANCESTOR;
             for (QName qname : definedIndexes) {
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
+                LuceneConfig config = getLuceneConfig(field, qname, broker, docs);
                 analyzer = getAnalyzer(null, qname, context.getBroker(), docs);
                 Query query = queryRoot == null ? new MatchAllDocsQuery() : queryTranslator.parse(field, queryRoot, analyzer, options);
                 Optional<Map<String, List<String>>> facets = options.getFacets();
                 if (facets.isPresent()) {
-                    LuceneConfig config = getLuceneConfig(field, qname, broker, docs);
                     if (config != null) {
                         query = drilldown(facets.get(), query, config);
                     }
                 }
                 if (query != null) {
                     searchAndProcess(contextId, qname, docs, contextSet, resultSet,
-                            returnAncestor, searcher, query);
+                            returnAncestor, searcher, query, config);
                 }
             }
             return resultSet;
@@ -506,10 +506,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final NodeSet resultSet = new NewArrayNodeSet();
             final boolean returnAncestor = axis == NodeSet.ANCESTOR;
             analyzer = getAnalyzer(field, null, context.getBroker(), docs);
+            LuceneConfig config = getLuceneConfig(field, null, context.getBroker(), docs);
             Query query = queryTranslator.parse(field, queryRoot, analyzer, options);
             if (query != null) {
                 searchAndProcess(contextId, null, docs, contextSet, resultSet,
-                        returnAncestor, searcher, query);
+                        returnAncestor, searcher, query, config);
             }
             return resultSet;
         });
@@ -534,13 +535,30 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private void searchAndProcess(int contextId, QName qname, DocumentSet docs,
                                   NodeSet contextSet, NodeSet resultSet, boolean returnAncestor,
-                                  SearcherTaxonomyManager.SearcherAndTaxonomy searcher, Query query) throws IOException {
-        FacetsCollector facetsCollector = new FacetsCollector();
-        LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, returnAncestor, contextId, facetsCollector);
+                                  SearcherTaxonomyManager.SearcherAndTaxonomy searcher, Query query,
+                                  LuceneConfig config) throws IOException {
+        final ExtFacetsCollector facetsCollector = new ExtFacetsCollector(config);
+        final LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, returnAncestor, contextId, facetsCollector);
         searcher.searcher.search(query, collector);
     }
 
-    public Facets getFacets(FacetsCollector facetsCollector) throws IOException, XPathException {
+    private static class ExtFacetsCollector extends FacetsCollector {
+
+        private final LuceneConfig config;
+
+        public ExtFacetsCollector(LuceneConfig config) {
+            super();
+            this.config = config;
+        }
+
+        public LuceneConfig getConfig() {
+            return config;
+        }
+    }
+
+    public Facets getFacets(final LuceneMatch match) throws IOException, XPathException {
+        final ExtFacetsCollector facetsCollector = match.getFacetsCollector();
+        final LuceneConfig config = facetsCollector.getConfig();
         return index.withSearcher(searcher -> new FastTaxonomyFacetCounts(searcher.taxonomyReader, config.facetsConfig, facetsCollector));
     }
 
@@ -550,13 +568,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return index.withSearcher(searcher -> {
             NodeSet resultSet = new NewArrayNodeSet();
             boolean returnAncestor = axis == NodeSet.ANCESTOR;
+            LuceneConfig config = getLuceneConfig(field, null, context.getBroker(), docs);
             Analyzer analyzer = getAnalyzer(field, null, context.getBroker(), docs);
             LOG.debug("Using analyzer " + analyzer + " for " + queryString);
             QueryParserWrapper parser = getQueryParser(field, analyzer, docs);
             options.configureParser(parser.getConfiguration());
             Query query = parser.parse(queryString);
             searchAndProcess(contextId, null, docs, contextSet, resultSet,
-                    returnAncestor, searcher, query);
+                    returnAncestor, searcher, query, config);
             return resultSet;
         });
     }
@@ -858,10 +877,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private final boolean returnAncestor;
         private final int contextId;
         private final Query query;
-        private final FacetsCollector chainedCollector;
+        private final ExtFacetsCollector chainedCollector;
 
         private LuceneHitCollector(QName qname, Query query, DocumentSet docs, NodeSet contextSet, NodeSet resultSet, boolean returnAncestor,
-                                   int contextId, FacetsCollector nextCollector) {
+                                   int contextId, ExtFacetsCollector nextCollector) {
             this.qname = qname;
             this.docs = docs;
             this.contextSet = contextSet;
@@ -1537,13 +1556,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private float score = 0.0f;
         private final Query query;
 
-        private FacetsCollector facetsCollector;
+        private ExtFacetsCollector facetsCollector;
 
         public LuceneMatch(int contextId, NodeId nodeId, Query query) {
             this(contextId, nodeId, query, null);
         }
 
-        public LuceneMatch(int contextId, NodeId nodeId, Query query, FacetsCollector facetsCollector) {
+        public LuceneMatch(int contextId, NodeId nodeId, Query query, ExtFacetsCollector facetsCollector) {
             super(contextId, nodeId, null);
             this.query = query;
             this.facetsCollector = facetsCollector;
@@ -1587,7 +1606,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             this.score = score;
         }
 
-        public FacetsCollector getFacetsCollector() {
+        public ExtFacetsCollector getFacetsCollector() {
             return this.facetsCollector;
         }
 
