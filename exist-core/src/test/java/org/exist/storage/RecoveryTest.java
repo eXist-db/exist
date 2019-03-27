@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,7 +57,6 @@ import org.junit.*;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -125,30 +125,23 @@ public class RecoveryTest {
 
                 files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
                 assertNotNull(files);
+                files.sort(Comparator.comparing(FileUtils::fileName));
 
                 binaryDocument = test2.addBinaryResource(transaction, broker, TestConstants.TEST_BINARY_URI, "Some text data".getBytes(), null);
                 assertNotNull(binaryDocument);
 
                 // store some documents. Will be replaced below
                 for (final Path f : files) {
-                    try {
-                        final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
-                        assertNotNull(info);
-                        test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
-                    } catch (SAXException e) {
-                        fail("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
-                    }
+                    final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
+                    assertNotNull(info);
+                    test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
                 }
 
                 // replace some documents
                 for (final Path f : files) {
-                    try {
-                        final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
-                        assertNotNull(info);
-                        test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
-                    } catch (SAXException e) {
-                        fail("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
-                    }
+                    final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
+                    assertNotNull(info);
+                    test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
                 }
 
                 final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), TEST_XML);
@@ -156,6 +149,7 @@ public class RecoveryTest {
                 //TODO : unlock the collection here ?
 
                 test2.store(transaction, broker, info, TEST_XML);
+
                 // remove last document
                 test2.removeXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(files.get(files.size() - 1))));
 
@@ -200,6 +194,7 @@ public class RecoveryTest {
             }
             
             final List<Path> files = FileUtils.list(dir);
+            files.sort(Comparator.comparing(FileUtils::fileName));
             assertNotNull(files);
             
             doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(FileUtils.fileName(files.get(files.size() - 1))), LockMode.READ_LOCK);
