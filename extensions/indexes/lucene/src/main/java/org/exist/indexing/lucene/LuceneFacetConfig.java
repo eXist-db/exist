@@ -127,9 +127,12 @@ public class LuceneFacetConfig {
                 }
             }
         } catch (PermissionDeniedException e) {
-            e.printStackTrace();
+            isValid = false;
+            LOG.warn("Permission denied while evaluating expression for facet '" + dimension + "': " + expression, e);
         } catch (XPathException e) {
-            e.printStackTrace();
+            isValid = false;
+            LOG.warn("XPath error while evaluating expression for facet '" + dimension + "': " + expression +
+                    ": " + e.getMessage(), e);
         }
     }
 
