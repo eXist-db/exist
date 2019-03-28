@@ -54,7 +54,8 @@ declare
 
 
 declare
-%test:assertEquals("Act 1")
+    %test:pending("https://github.com/eXist-db/exist/issues/1348")
+    %test:assertEquals("Act 1")
 function excepttest:except-wildcard() {
  ($excepttest:COLLECTION/* except $excepttest:SUBCOL2/*)//tei:head/text()
 };
