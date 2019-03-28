@@ -31,38 +31,54 @@ declare variable $ct:xconf :=
         </index> 
     </collection>;
 
-declare %test:setUp function ct:setup() {
+declare
+        %test:setUp
+function ct:setup() {
     xmldb:create-collection("/db/system/config/db", "test"),
     xmldb:store("/db/system/config/db/test", "collection.xconf", $ct:xconf),
     xmldb:create-collection("/db", "test"),
     xmldb:store("/db/test", "test.xml", $ct:test)
 };
 
-declare %test:tearDown function ct:teardown() {
+declare
+        %test:tearDown
+function ct:teardown() {
     xmldb:remove("/db/test"),
     xmldb:remove("/db/system/config/db/test")
 };
 
-declare %test:assertEquals(1) %test:pending("https://github.com/eXist-db/exist/issues/1379") function ct:element-contains-question-mark() {
+declare
+        %test:pending("https://github.com/eXist-db/exist/issues/1379")
+        %test:assertEquals(1)
+function ct:element-contains-question-mark() {
     let $hits := doc("/db/test/test.xml")//tei:forename[fn:contains(., "?")]
     return
         count($hits)
 };
 
-declare %test:assertEquals(0) %test:pending("https://github.com/eXist-db/exist/issues/1379") function ct:element-contains-escaped-question-mark() {
+declare
+        %test:pending("https://github.com/eXist-db/exist/issues/1379")
+        %test:assertEquals(0)
+function ct:element-contains-escaped-question-mark() {
     let $hits := doc("/db/test/test.xml")//tei:forename[fn:contains(., "\?")]
     return
         count($hits)
 };
 
-declare %test:assertEquals(1) %test:pending("https://github.com/eXist-db/exist/issues/1379") function ct:parent-element-contains-question-mark() {
+declare
+        %test:pending("https://github.com/eXist-db/exist/issues/1379")
+        %test:assertEquals(1)
+function ct:parent-element-contains-question-mark() {
     let $hits := doc("/db/test/test.xml")//tei:persName[fn:contains(., "?")]
     return
         count($hits)
 };
 
-declare %test:assertEquals(0) function ct:parent-element-contains-escaped-question-mark() {
+declare
+        %test:assertEquals(0)
+function ct:parent-element-contains-escaped-question-mark() {
     let $hits := doc("/db/test/test.xml")//tei:persName[fn:contains(., "\?")]
     return
         count($hits)
 };
+
