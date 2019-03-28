@@ -47,21 +47,21 @@ function excepttest:setup() {
 };
 
 declare
- %test:tearDown 
- function excepttest:cleanup() { 
- xmldb:remove($excepttest:COLLECTION_NAME)
- }; 
+    %test:tearDown
+function excepttest:cleanup() {
+    xmldb:remove($excepttest:COLLECTION_NAME)
+};
 
 
 declare
     %test:pending("https://github.com/eXist-db/exist/issues/1348")
     %test:assertEquals("Act 1")
 function excepttest:except-wildcard() {
- ($excepttest:COLLECTION/* except $excepttest:SUBCOL2/*)//tei:head/text()
+    ($excepttest:COLLECTION/* except $excepttest:SUBCOL2/*)//tei:head/text()
 };
 
 declare
-%test:assertEquals("Act 1")
+    %test:assertEquals("Act 1")
 function excepttest:except-node-name() {
- ($excepttest:COLLECTION/tei:TEI except $excepttest:SUBCOL2/tei:TEI)//tei:head/text()
+    ($excepttest:COLLECTION/tei:TEI except $excepttest:SUBCOL2/tei:TEI)//tei:head/text()
 };
