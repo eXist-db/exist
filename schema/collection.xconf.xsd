@@ -256,6 +256,7 @@
             <xs:element name="inline" minOccurs="0" maxOccurs="unbounded" type="singleQnameAttrType"/>
             <xs:element name="ignore" minOccurs="0" maxOccurs="unbounded" type="singleQnameAttrType"/>
        	    <xs:element name="match-attribute" minOccurs="0" maxOccurs="unbounded" type="matchAttrBoostType"/>
+            <xs:element name="facet" minOccurs="0" maxOccurs="unbounded" type="facetAttrType"/>
        	    <xs:element name="has-attribute" minOccurs="0" maxOccurs="unbounded" type="hasAttrBoostType"/>
        	    <xs:element name="match-sibling-attribute" minOccurs="0" maxOccurs="unbounded" type="matchAttrBoostType"/>
        	    <xs:element name="has-sibling-attribute" minOccurs="0" maxOccurs="unbounded" type="hasAttrBoostType"/>
@@ -278,6 +279,12 @@
         <xs:attribute name="field" use="optional" type="xs:string"/>
     </xs:complexType>
 
+    <xs:complexType name="facetAttrType">
+        <xs:attributeGroup ref="dimensionReq"/>
+        <xs:attributeGroup ref="expressionReq"/>
+        <xs:attributeGroup ref="hierarchicalOpt"/>
+    </xs:complexType>
+    
     <xs:complexType name="matchAttrBoostType">
         <xs:annotation>
             <xs:documentation>text element children match-attr or match-sibling-attr</xs:documentation>
@@ -421,6 +428,30 @@
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="dimensionReq">
+        <xs:attribute name="dimension" type="xs:string" use="optional" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="expressionReq">
+        <xs:attribute name="expression" type="xs:string" use="optional" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="hierarchicalOpt">
+        <xs:attribute name="hierarchical" use="optional">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="yes">
+                        <xs:annotation>
+                            <xs:documentation>Is hierarchical</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="no">
+                        <xs:annotation>
+                            <xs:documentation>Is not hierarchical</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>    
     </xs:attributeGroup>
     <xs:attributeGroup name="pathOpt">
         <xs:attribute name="path" type="xs:string" use="optional" form="unqualified"/>
