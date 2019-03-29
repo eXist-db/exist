@@ -789,7 +789,7 @@ public class LDAPRealm extends AbstractRealm {
         return null;
     }
 
-    private SearchResult findGroupByGroupName(final DirContext ctx, final String groupName) throws NamingException {
+    private @Nullable SearchResult findGroupByGroupName(final DirContext ctx, final String groupName) throws NamingException {
 
         if (!checkGroupRestrictionList(groupName)) {
             return null;
@@ -1238,6 +1238,11 @@ public class LDAPRealm extends AbstractRealm {
 
             //find the dn of the group
             SearchResult searchResult = findGroupByGroupName(ctx, removeDomainPostfix(name));
+            if (searchResult == null) {
+                // no such group
+                return groupMembers;
+            }
+
             final LDAPSearchContext search = ensureContextFactory().getSearch();
             final String dnGroup = (String) searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.DN)).get();
 
