@@ -50,6 +50,7 @@ public class LuceneIndexConfig {
     private final static String MATCH_SIBLING_ATTR_ELEMENT = "match-sibling-attribute";
     private final static String HAS_SIBLING_ATTR_ELEMENT = "has-sibling-attribute";
     private final static String FACET_ELEMENT = "facet";
+    private final static String FIELD_ELEMENT = "field";
 
     public static final String QNAME_ATTR = "qname";
     public static final String MATCH_ATTR = "match";
@@ -65,7 +66,7 @@ public class LuceneIndexConfig {
 
     private Map<QName, String> specialNodes = null;
 
-    private List<LuceneFacetConfig> facets = new ArrayList<>();
+    private List<AbstractFieldConfig> facetsAndFields = new ArrayList<>();
 
     private LuceneIndexConfig nextConfig = null;
 
@@ -118,7 +119,11 @@ public class LuceneIndexConfig {
 		    Element configElement = (Element) child;
                     switch (localName) {
                         case FACET_ELEMENT: {
-                            facets.add(new LuceneFacetConfig(configElement, facetsConfig, namespaces));
+                            facetsAndFields.add(new LuceneFacetConfig(configElement, facetsConfig, namespaces));
+                            break;
+                        }
+                        case FIELD_ELEMENT: {
+                            facetsAndFields.add(new LuceneFieldConfig(configElement, namespaces));
                             break;
                         }
                         case IGNORE_ELEMENT: {
@@ -290,8 +295,8 @@ public class LuceneIndexConfig {
         return specialNodes != null && specialNodes.get(qname) == N_INLINE;
     }
 
-    public List<LuceneFacetConfig> getFacets() {
-        return facets;
+    public List<AbstractFieldConfig> getFacetsAndFields() {
+        return facetsAndFields;
     }
 
     public static QName parseQName(Element config, Map<String, String> namespaces) throws DatabaseConfigurationException {

@@ -20,67 +20,37 @@
 
 package org.exist.indexing.lucene;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.facet.FacetField;
 import org.apache.lucene.facet.FacetsConfig;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.util.DatabaseConfigurationException;
-import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Element;
 
 import java.util.Map;
 
-public class LuceneFacetConfig {
-
-    static final Logger LOG = LogManager.getLogger(LuceneFacetConfig.class);
+public class LuceneFacetConfig extends AbstractFieldConfig {
 
     public final static String DIMENSION = "dimension";
-    public final static String XPATH_ATTR = "expression";
     public final static String HIERARCHICAL = "hierarchical";
 
     protected String dimension;
 
-    protected String expression;
-
     protected boolean isHierarchical = false;
 
-    private boolean isValid = true;
-
-    private CompiledXQuery compiled = null;
-
     public LuceneFacetConfig(Element configElement, FacetsConfig facetsConfig, Map<String, String> namespaces) throws DatabaseConfigurationException {
+        super(configElement, namespaces);
         this.dimension = configElement.getAttribute(DIMENSION);
-
-        final String xpath = configElement.getAttribute(XPATH_ATTR);
-        if (xpath == null || xpath.isEmpty()) {
-            throw new DatabaseConfigurationException("facet definition needs an attribute 'xpath': " + configElement.toString());
-        }
 
         final String hierarchicalOpt = configElement.getAttribute(HIERARCHICAL);
         isHierarchical = hierarchicalOpt != null &&
                 (hierarchicalOpt.equalsIgnoreCase("true") || hierarchicalOpt.equalsIgnoreCase("yes"));
-
-        final StringBuilder sb = new StringBuilder();
-        namespaces.forEach((prefix, uri) -> {
-            if (!prefix.equals("xml")) {
-                sb.append("declare namespace ").append(prefix);
-                sb.append("=\"").append(uri).append("\";\n");
-            }
-        });
-        sb.append(xpath);
-
-        this.expression = sb.toString();
 
         facetsConfig.setHierarchical(dimension, isHierarchical);
         facetsConfig.setMultiValued(dimension, !isHierarchical);
@@ -90,62 +60,37 @@ public class LuceneFacetConfig {
         return dimension;
     }
 
-    public String getExpression() {
-        return expression;
-    }
-
-    public void build(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc) {
-        compile(broker);
-
-        if (!isValid) {
-            return;
-        }
-
-        final XQuery xquery = broker.getBrokerPool().getXQueryService();
-        final NodeProxy currentNode = new NodeProxy(document, nodeId);
-        try {
-            Sequence result = xquery.execute(broker, compiled, currentNode);
-
-            if (!result.isEmpty()) {
-                if (isHierarchical) {
-                    String paths[] = new String[result.getItemCount()];
-                    int j = 0;
-                    for (SequenceIterator i = result.unorderedIterator(); i.hasNext(); j++) {
-                        final String value = i.nextItem().getStringValue();
-                        if (value.length() > 0) {
-                            paths[j] = value;
-                        }
-                    }
-                    luceneDoc.add(new FacetField(dimension, paths));
-                } else {
-                    for (SequenceIterator i = result.unorderedIterator(); i.hasNext(); ) {
-                        final String value = i.nextItem().getStringValue();
-                        if (value.length() > 0) {
-                            luceneDoc.add(new FacetField(dimension, value));
-                        }
-                    }
+    @Override
+    void processResult(Sequence result, Document luceneDoc) throws XPathException {
+        if (isHierarchical) {
+            String paths[] = new String[result.getItemCount()];
+            int j = 0;
+            for (SequenceIterator i = result.unorderedIterator(); i.hasNext(); j++) {
+                final String value = i.nextItem().getStringValue();
+                if (value.length() > 0) {
+                    paths[j] = value;
                 }
             }
-        } catch (PermissionDeniedException e) {
-            isValid = false;
-            LOG.warn("Permission denied while evaluating expression for facet '" + dimension + "': " + expression, e);
-        } catch (XPathException e) {
-            isValid = false;
-            LOG.warn("XPath error while evaluating expression for facet '" + dimension + "': " + expression +
-                    ": " + e.getMessage(), e);
+            luceneDoc.add(new FacetField(dimension, paths));
+        } else {
+            for (SequenceIterator i = result.unorderedIterator(); i.hasNext(); ) {
+                final String value = i.nextItem().getStringValue();
+                if (value.length() > 0) {
+                    luceneDoc.add(new FacetField(dimension, value));
+                }
+            }
         }
     }
 
-    private void compile(DBBroker broker) {
-        if (compiled == null && isValid) {
-            final XQuery xquery = broker.getBrokerPool().getXQueryService();
-            final XQueryContext context = new XQueryContext(broker.getBrokerPool());
-            try {
-                this.compiled = xquery.compile(broker, context, expression);
-            } catch (XPathException | PermissionDeniedException e) {
-                LOG.error("Failed to compile facet expression: " + expression + ": " + e.getMessage(), e);
-                isValid = false;
-            }
+
+    public void build(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc) {
+        try {
+            doBuild(broker, document, nodeId, luceneDoc);
+        } catch (PermissionDeniedException e) {
+            LOG.warn("Permission denied while evaluating expression for facet '" + dimension + "': " + expression, e);
+        } catch (XPathException e) {
+            LOG.warn("XPath error while evaluating expression for facet '" + dimension + "': " + expression +
+                    ": " + e.getMessage(), e);
         }
     }
 }

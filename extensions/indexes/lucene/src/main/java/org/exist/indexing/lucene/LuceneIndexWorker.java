@@ -1278,7 +1278,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 final Document doc = new Document();
 
 
-                List<LuceneFacetConfig> facetConfigs = pending.idxConf.getFacets();
+                List<AbstractFieldConfig> facetConfigs = pending.idxConf.getFacetsAndFields();
                 facetConfigs.forEach(config ->
                     config.build(broker, currentDoc, pending.nodeId, doc)
                 );
