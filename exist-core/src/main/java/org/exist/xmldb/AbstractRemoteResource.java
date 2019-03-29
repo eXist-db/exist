@@ -49,7 +49,7 @@ import static org.exist.util.io.InputStreamUtil.copy;
 
 public abstract class AbstractRemoteResource extends AbstractRemote
         implements EXistResource, ExtendedResource, Resource {
-    private static final int DEFAULT_IN_MEMOTY_SIZE = 0x400_0000; // 4 MB
+    private static final int DEFAULT_IN_MEMORY_SIZE = 0x400_0000; // 4 MB
 
     protected final Leasable<XmlRpcClient>.Lease xmlRpcClientLease;
     protected final XmldbURI path;
@@ -361,7 +361,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     private static int getInMemorySize(Properties properties) {
         final String inMemoryBufferSize = properties.getProperty("in-memory-buffer-size");
         if (inMemoryBufferSize == null) {
-            return DEFAULT_IN_MEMOTY_SIZE;
+            return DEFAULT_IN_MEMORY_SIZE;
         }
         return Integer.parseInt(inMemoryBufferSize);
     }
