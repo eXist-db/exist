@@ -34,30 +34,29 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
 import org.exist.util.Leasable;
-import org.exist.util.ZipEntryInputSource;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.io.TemporaryFileManager;
+import org.exist.util.io.VirtualTempPath;
 import org.xml.sax.InputSource;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
-import javax.annotation.Nullable;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.util.io.InputStreamUtil.copy;
 
 public abstract class AbstractRemoteResource extends AbstractRemote
         implements EXistResource, ExtendedResource, Resource {
+    private static final int DEFAULT_IN_MEMOTY_SIZE = 0x400_0000; // 4 MB
 
     protected final Leasable<XmlRpcClient>.Lease xmlRpcClientLease;
     protected final XmldbURI path;
     private String mimeType;
 
     protected Path file = null;
-    private Path contentFile = null;
+    private VirtualTempPath contentFile = null;
     protected InputSource inputSource = null;
     private long contentLen = -1L;
     private Permission permissions = null;
@@ -78,7 +77,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     }
 
     @Override
-    @Nullable public Properties getProperties() {
+    public Properties getProperties() {
         return collection.getProperties();
     }
 
@@ -95,6 +94,8 @@ public abstract class AbstractRemoteResource extends AbstractRemote
                 return readFile(((java.io.File) res).toPath());
             } else if (res instanceof InputSource) {
                 return readFile((InputSource) res);
+            } else if (res instanceof VirtualTempPath) {
+                return ((VirtualTempPath)res).getBytes();
             }
         }
         return res;
@@ -116,6 +117,8 @@ public abstract class AbstractRemoteResource extends AbstractRemote
                 return readFile((InputSource) res);
             } else if (res instanceof String) {
                 return ((String) res).getBytes(UTF_8);
+            } else if (res instanceof VirtualTempPath) {
+                return ((VirtualTempPath)res).getBytes();
             }
         }
 
@@ -147,7 +150,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
                 throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Modification time must be after creation time.");
             }
 
-            final List params = new ArrayList(2);
+            final List<Object> params = new ArrayList<>(2);
             params.add(path.toString());
             params.add(dateModified.getTime());
 
@@ -264,13 +267,14 @@ public abstract class AbstractRemoteResource extends AbstractRemote
             command = "getDocumentData";
             params.add(path.toString());
         }
-        params.add(getProperties());
+        Properties properties = getProperties();
+        params.add(properties);
 
         try {
             final TemporaryFileManager tempFileManager = TemporaryFileManager.getInstance();
-            final Path tempFile = tempFileManager.getTemporaryFile();
+            final VirtualTempPath tempFile = new VirtualTempPath(getInMemorySize(properties), tempFileManager);
 
-            Map table = (Map) xmlRpcClientLease.get().execute(command, params);
+            Map<?,?> table = (Map<?,?>) xmlRpcClientLease.get().execute(command, params);
 
             final String method;
             final boolean useLongOffset;
@@ -284,9 +288,9 @@ public abstract class AbstractRemoteResource extends AbstractRemote
 
             long offset = ((Integer) table.get("offset")).intValue();
             byte[] data = (byte[]) table.get("data");
-            final boolean isCompressed = "yes".equals(getProperties().getProperty(EXistOutputKeys.COMPRESS_OUTPUT, "no"));
+            final boolean isCompressed = "yes".equals(properties.getProperty(EXistOutputKeys.COMPRESS_OUTPUT, "no"));
 
-            try(final OutputStream osTempFile = Files.newOutputStream(tempFile)) {
+            try(final OutputStream osTempFile = tempFile.newOutputStream()) {
 
                 // One for the local cached file
                 Inflater dec = null;
@@ -354,6 +358,14 @@ public abstract class AbstractRemoteResource extends AbstractRemote
         }
     }
 
+    private static int getInMemorySize(Properties properties) {
+        final String inMemoryBufferSize = properties.getProperty("in-memory-buffer-size");
+        if (inMemoryBufferSize == null) {
+            return DEFAULT_IN_MEMOTY_SIZE;
+        }
+        return Integer.parseInt(inMemoryBufferSize);
+    }
+
     protected static InputStream getAnyStream(final Object obj)
             throws XMLDBException {
         if (obj instanceof String) {
@@ -378,7 +390,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
                 } else if (obj != null) {
                     bis = getAnyStream(obj);
                 } else {
-                    bis = Files.newInputStream(contentFile);
+                    bis = contentFile.newInputStream();
                 }
                 copy(bis, os);
             } catch (final IOException ioe) {
@@ -443,7 +455,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
                 if (contentFile == null) {
                     getRemoteContentIntoLocalFile(null, isRetrieve, handle, pos);
                 }
-                retval = Files.newInputStream(contentFile);
+                retval = contentFile.newInputStream();
             }
         } catch (final IOException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
@@ -469,13 +481,13 @@ public abstract class AbstractRemoteResource extends AbstractRemote
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "don't know how to handle value of type " + obj.getClass().getName());
             }
         } else if (contentFile != null) {
-            retval = FileUtils.sizeQuietly(contentFile);
+            retval = contentFile.size();
         } else {
             final List<Object> params = new ArrayList<>();
             params.add(path.toString());
             params.add(getProperties());
             try {
-                final Map table = (Map) xmlRpcClientLease.get().execute("describeResource", params);
+                final Map<?,?> table = (Map<?,?>) xmlRpcClientLease.get().execute("describeResource", params);
                 if (table.containsKey("content-length-64bit")) {
                     final Object o = table.get("content-length-64bit");
                     if (o instanceof Long) {
@@ -545,7 +557,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
                 file = null;
                 inputSource = null;
                 if (contentFile != null) {
-                    TemporaryFileManager.getInstance().returnTemporaryFile(contentFile);
+                    contentFile.close();
                     contentFile = null;
                 }
                 xmlRpcClientLease.close();

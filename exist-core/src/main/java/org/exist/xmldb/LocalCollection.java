@@ -478,6 +478,9 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
     }
 
     public void setProperties(final Properties properties) {
+        if (properties == null) {
+            return;
+        }
         this.properties = properties;
     }
 
