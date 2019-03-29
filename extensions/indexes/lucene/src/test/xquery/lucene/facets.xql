@@ -26,15 +26,21 @@ declare variable $facet:XML :=
         </letter>
         <letter>
             <from>Heinz</from>
-            <to>Babsi</to>
+            <to>Babsi Müller</to>
             <place></place>
             <date>2017-03-11</date>
         </letter>
         <letter>
             <from>Heinz</from>
-            <to>Basia</to>
+            <to>Basia Müller</to>
             <place>Wrocław</place>
             <date>2015-06-22</date>
+        </letter>
+        <letter>
+            <from>Heinz</from>
+            <to>Basia Kowalska</to>
+            <place>Wrocław</place>
+            <date>2013-06-22</date>
         </letter>
     </letters>;
 
@@ -54,12 +60,16 @@ declare variable $facet:XCONF1 :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
             <lucene>
+                <analyzer class="org.exist.indexing.lucene.analyzers.NoDiacriticsStandardAnalyzer"/>
                 <text qname="letter">
                     <facet dimension="place" expression="place"/>
                     <facet dimension="location" expression="let $key := place return doc('/db/lucenetest/places.xml')//place[@name=$key]/ancestor-or-self::place/@name" hierarchical="yes"/>
                     <facet dimension="from" expression="from"/>
                     <facet dimension="to" expression="to"/>
                     <facet dimension="date" expression="tokenize(date, '-')" hierarchical="yes"/>
+                    <field name="place" expression="place"/>
+                    <field name="from" expression="from"/>
+                    <field name="to" expression="to"/>
                 </text>
             </lucene>
         </index>
@@ -163,7 +173,7 @@ function facet:hierarchical-facets-retrieve($paths as xs:string*) {
 };
 
 declare
-    %test:assertEquals('{"Berlin":2,"Hamburg":1}','{"Wrocław":1}')
+    %test:assertEquals('{"Berlin":2,"Hamburg":1}','{"Wrocław":2}')
 function facet:hierarchical-place() {
     let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
     let $facets := ft:facets(head($result), "location", 10) (: Returns facet counts for "Germany" and "Poland" :)
@@ -174,4 +184,23 @@ function facet:hierarchical-place() {
             ft:facets(head($result), "location", 10, $country), (: Get facet counts for sub-categories :)
             map { "method": "json" }
         )
+};
+
+declare
+    %test:args("place:hamburg")
+    %test:assertEquals(1)
+    %test:args("place:berlin")
+    %test:assertEquals(2)
+    %test:args("from:rudi and place:berlin")
+    %test:assertEquals(1)
+    %test:args("from:susi and place:berlin")
+    %test:assertEquals(0)
+    %test:args("basia and place:wrocław")
+    %test:assertEquals(2)
+    %test:args("place:wroclaw")
+    %test:assertEquals(2)
+    %test:args('to:(ba* müller)')
+    %test:assertEquals(2)
+function facet:query-field($query as xs:string) {
+    count(collection("/db/lucenetest")//letter[ft:query(., $query)])
 };
