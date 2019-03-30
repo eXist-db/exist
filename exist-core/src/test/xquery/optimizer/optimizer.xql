@@ -399,30 +399,3 @@ declare
 function ot:optimize-self-element($name as xs:string) {
     collection($ot:COLLECTION)//address/name[self::* = $name]
 };
-
-declare
-    %test:stats
-    %test:args("Rudi Rüssel")
-    %test:assertXPath("$result//stats:index[@calls = 1]")
-function ot:optimize-grouped-context($name as xs:string) {
-    collection($ot:COLLECTION)//(name)[ft:query(., $name)]
-};
-
-declare
-    %test:stats
-    %test:args("Rudi Rüssel")
-    %test:assertXPath("$result//stats:index[@calls = 1]")
-function ot:optimize-grouped-context2($name as xs:string) {
-    collection($ot:COLLECTION)//(name|foo)[ft:query(., $name)]
-};
-
-declare %private function ot:collection-helper($path as xs:string) {
-    collection($path)//address
-};
-
-declare
-    %test:args("Rudi Rüssel")
-    %test:assertEquals("Rüsselsheim")
-function ot:do-not-simplify($name as xs:string) {
-    ot:collection-helper($ot:COLLECTION)[ft:query(name, $name)]/city/string()
-};

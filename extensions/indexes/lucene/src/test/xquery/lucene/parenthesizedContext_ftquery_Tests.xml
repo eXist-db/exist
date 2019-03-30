@@ -1,0 +1,505 @@
+<TestSet>
+    <testName>tests for queries on entirely parenthesized contexts</testName>
+    <description>
+        <p>Tests for behaviour of retrieval, query and index functions on different index types, on entirely parenthesised contexts.
+            Three major sections:
+            <ul>
+                <li>[retrieval]: bare retrieval of parenthesized nodes (tests #1-#6)</li>
+                <li>[query]: queries on different index types (tests #7-#54)</li>
+                <li>[index]: lookup of index terms on different index types (tests #55-#78)</li>
+            </ul></p>
+        <p>The degree of the problems depends on the type of index and search context. Influencing factors are:
+            <ul>
+                <li>index definition: qname / path-based</li>
+                <li>type of query: expressed directly (XPath expression) / indirectly (FLWR expression)</li>
+                <li>context node: parenthesized context node / parenthesized location step + self axis location step</li>
+                <li>type of node: element / attribute</li>
+                <li>location step: parenthesized attribute node in child step / parenthesized attribute node in descendant step (attributes only)</li>
+            </ul>
+        </p>
+        <author>Ron Van den Branden</author>
+    </description>
+    <setup>
+        <create-collection parent="/db/system" name="config"/>
+        <create-collection parent="/db/system/config" name="db"/>
+        <create-collection parent="/db/system/config/db" name="coll"/>
+        <store collection="/db/system/config/db/coll" name="collection.xconf">
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+                <index>
+                    <lucene>
+                        <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+                        <analyzer id="ws" class="org.apache.lucene.analysis.core.WhitespaceAnalyzer"/>
+                        <text qname="qname"/>
+                        <text qname="@att.qname"/>
+                        <text match="//path"/>
+                        <text match="//@att.path"/>
+                    </lucene>
+                    <create qname="qname" type="xs:string"/>
+                    <create qname="@att.qname" type="xs:string"/>
+                    <create path="//path" type="xs:string"/>
+                    <create path="//@att.path" type="xs:string"/>
+                </index>
+            </collection>
+        </store>
+        <create-collection parent="/db" name="coll"/>
+        <store collection="/db/coll" name="test.xml">
+            <test>
+                <qname att.qname="test">this is a test document</qname>
+                <path att.path="test">this is a test document</path>
+            </test>
+        </store>
+    </setup>
+    <functions><![CDATA[
+        declare function local:term-callback($term as xs:string, $data as xs:int+) as element() {
+        <term freq="{$data[1]}" docs="{$data[2]}" n="{$data[3]}">{$term}</term>
+        };
+        ]]></functions>    
+    <tearDown>
+        <remove-collection collection="/db/coll"/>
+        <remove-collection collection="/db/system/config/db/coll"/>
+    </tearDown>
+    <test output="xml" ignore="yes">
+        <task>[query, Lucene FT index, qname, direct] fully parenthesized element node</task>
+        <code><![CDATA[
+            (collection('/db/coll')//test/qname)[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <qname att.qname="test">this is a test document</qname>
+        </expected>
+    </test>    
+    <test output="xml">
+        <task>[query, Lucene FT index, qname, indirect] fully parenthesized element node</task>
+        <code><![CDATA[
+            let $a := (collection('/db/coll')//test/qname)
+            return $a[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <qname att.qname="test">this is a test document</qname>
+        </expected>
+    </test>    
+    <test output="xml" ignore="yes">
+        <task>[query, Lucene FT index, path, direct] fully parenthesized element node</task>
+        <code><![CDATA[
+            (collection('/db/coll')//test/path)[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <path att.path="test">this is a test document</path>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[query, Lucene FT index, path, indirect] fully parenthesized element node</task>
+        <code><![CDATA[
+            let $a := (collection('/db/coll')//test/path)
+            return $a[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <path att.path="test">this is a test document</path>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[query, Lucene FT index, qname, direct] fully parenthesized element node + self axis</task>
+        <code><![CDATA[
+            (collection('/db/coll')//test/qname/self::*)[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <qname att.qname="test">this is a test document</qname>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[query, Lucene FT index, qname, indirect] fully parenthesized element node + self axis</task>
+        <code><![CDATA[
+            let $a := (collection('/db/coll')//test/qname/self::*)
+            return $a[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <qname att.qname="test">this is a test document</qname>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[query, Lucene FT index, path, direct] fully parenthesized element node + self axis</task>
+        <code><![CDATA[
+            (collection('/db/coll')//test/path/self::*)[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <path att.path="test">this is a test document</path>
+        </expected>
+    </test>    
+    <test output="xml" ignore="yes">
+        <task>[query, Lucene FT index, path, indirect] fully parenthesized element node + self axis</task>
+        <code><![CDATA[
+            let $a := (collection('/db/coll')//test/path/self::*)
+            return $a[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <path att.path="test">this is a test document</path>
+        </expected>
+    </test>    
+    <test output="text" ignore="yes">
+        <task>[query, Lucene FT index, qname, direct] child step with fully parenthesized attribute node</task>
+        <code><![CDATA[
+            (collection('/db/coll')//test/qname/@att.qname)[ft:query(., 'test')]/string()
+            ]]></code>
+        <expected>test</expected>
+    </test>
+    <test output="text">
+        <task>[query, Lucene FT index, qname, indirect] child step with fully parenthesized attribute node</task>
+        <code><![CDATA[
+            let $a := (collection('/db/coll')//test/qname/@att.qname)
+            return $a[ft:query(., 'test')]/string()
+            ]]></code>
+        <expected>test</expected>
+    </test>
+    <test output="text" ignore="yes">
+        <task>[query, Lucene FT index, qname, direct] descendant step with fully parenthesized attribute node</task>
+        <code><![CDATA[
+            (collection('/db/coll')//test/qname//@att.qname)[ft:query(., 'test')]/string()
+            ]]></code>
+        <expected>test</expected>
+    </test>
+    <test output="text">
+        <task>[query, Lucene FT index, qname, indirect] descendant step with fully parenthesized attribute node</task>
+        <code><![CDATA[
+            let $a := (collection('/db/coll')//test/qname//@att.qname)
+            return $a[ft:query(., 'test')]/string()
+            ]]></code>
+        <expected>test</expected>
+    </test>
+    <test output="text" ignore="yes">
+        <task>[query, Lucene FT index, path, direct] child step with fully parenthesized attribute node</task>
+        <code><![CDATA[
+            (collection('/db/coll')//test/path/@att.path)[ft:query(., 'test')]/string()
+            ]]></code>
+        <expected>test</expected>
+    </test>
+    <test output="text">
+        <task>[query, Lucene FT index, path, indirect] child step with fully parenthesized attribute node</task>
+        <code><![CDATA[
+            let $a := (collection('/db/coll')//test/path/@att.path)
+            return $a[ft:query(., 'test')]/string()
+            ]]></code>
+        <expected>test</expected>
+    </test>
+    <test output="text" ignore="yes">
+        <task>[query, Lucene FT index, path, direct] descendant step with fully parenthesized attribute node</task>
+        <code><![CDATA[
+            (collection('/db/coll')//test/path/@att.path)[ft:query(., 'test')]/string()
+            ]]></code>
+        <expected>test</expected>
+    </test>
+    <test output="text">
+        <task>[query, Lucene FT index, path, indirect] descendant step with fully parenthesized attribute node</task>
+        <code><![CDATA[
+            let $a := (collection('/db/coll')//test/path/@att.path)
+            return $a[ft:query(., 'test')]/string()
+            ]]></code>
+        <expected>test</expected>
+    </test>
+
+    <!-- index retrieval tests -->    
+    <test output="xml">
+        <task>[index, Lucene FT index, qname] fully parenthesized element node</task>
+        <code><![CDATA[
+            let $a := (collection('/db/coll')//test/qname)
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100, 'lucene-index') 
+            ]]></code>
+        <expected>
+            <term freq="1" docs="1" n="1">document</term>
+            <term freq="1" docs="1" n="2">test</term>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[index, Lucene FT index, path] fully parenthesized element node</task>
+        <code><![CDATA[
+            let $a := (collection('/db/coll')//test/path)
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100, 'lucene-index') 
+            ]]></code>
+        <expected>
+            <term freq="1" docs="1" n="1">document</term>
+            <term freq="1" docs="1" n="2">test</term>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[index, Lucene FT index, qname] fully parenthesized element node + self axis</task>
+        <code><![CDATA[
+            let $a := (collection('/db/coll')//test/qname/self::*)
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100, 'lucene-index') 
+            ]]></code>
+        <expected>
+            <term freq="1" docs="1" n="1">document</term>
+            <term freq="1" docs="1" n="2">test</term>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[index, Lucene FT index, path] fully parenthesized element node + self axis</task>
+        <code><![CDATA[
+            let $a := (collection('/db/coll')//test/path/self::*)
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100, 'lucene-index') 
+            ]]></code>
+        <expected>
+            <term freq="1" docs="1" n="1">document</term>
+            <term freq="1" docs="1" n="2">test</term>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[index, Lucene FT index, qname] child step with fully parenthesized attribute node</task>
+        <code><![CDATA[
+            let $a := (collection('/db/coll')//test/qname/@att.qname)
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100, 'lucene-index') 
+            ]]></code>
+        <expected>            
+            <term freq="1" docs="1" n="1">test</term>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[index, Lucene FT index, qname] descendant step with fully parenthesized attribute node</task>
+        <code><![CDATA[
+            let $a := (collection('/db/coll')//test/qname//@att.qname)
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100, 'lucene-index') 
+            ]]></code>
+        <expected>            
+            <term freq="1" docs="1" n="1">test</term>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[index, Lucene FT index, path] child step with fully parenthesized attribute node</task>
+        <code><![CDATA[
+            let $a := (collection('/db/coll')//test/path/@att.path)
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100, 'lucene-index') 
+            ]]></code>
+        <expected>
+            <term freq="1" docs="1" n="1">test</term>
+        </expected>
+    </test>    
+    <test output="xml">
+        <task>[index, Lucene FT index, path] descendant step with fully parenthesized attribute node</task>
+        <code><![CDATA[
+            let $a := (collection('/db/coll')//test/path//@att.path)
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100, 'lucene-index') 
+            ]]></code>
+        <expected>
+            <term freq="1" docs="1" n="1">test</term>
+        </expected>
+    </test>
+
+    <test output="xml" ignore="yes">
+        <task>[query, Lucene FT index, qname, direct] parenthesized element node</task>
+        <code><![CDATA[
+            collection('/db/coll')//test/(qname)[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <qname att.qname="test">this is a test document</qname>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[query, Lucene FT index, qname, indirect] parenthesized element node</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//test/(qname)
+            return $a[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <qname att.qname="test">this is a test document</qname>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[query, Lucene FT index, path, direct] parenthesized element node</task>
+        <code><![CDATA[
+            collection('/db/coll')//test/(path)[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <path att.path="test">this is a test document</path>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[query, Lucene FT index, path, indirect] parenthesized element node</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//test/(path)
+            return $a[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <path att.path="test">this is a test document</path>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[query, Lucene FT index, qname, direct] parenthesized element node + self axis</task>
+        <code><![CDATA[
+            collection('/db/coll')//test/(qname)/self::*[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <qname att.qname="test">this is a test document</qname>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[query, Lucene FT index, qname, indirect] parenthesized element node + self axis</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//test/(qname)/self::*
+            return $a[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <qname att.qname="test">this is a test document</qname>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[query, Lucene FT index, path, direct] parenthesized element node + self axis</task>
+        <code><![CDATA[
+            collection('/db/coll')//test/(path)/self::*[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <path att.path="test">this is a test document</path>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[query, Lucene FT index, path, indirect] parenthesized element node + self axis</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//test/(path)/self::*
+            return $a[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <path att.path="test">this is a test document</path>
+        </expected>
+    </test>
+    <test output="text">
+        <task>[query, Lucene FT index, qname, direct] child step with parenthesized attribute node</task>
+        <code><![CDATA[
+            collection('/db/coll')//test/qname/(@att.qname)[ft:query(., 'test')]/string()
+            ]]></code>
+        <expected>test</expected>
+    </test>
+    <test output="text">
+        <task>[query, Lucene FT index, qname, indirect] child step with parenthesized attribute node</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//test/qname/(@att.qname)
+            return $a[ft:query(., 'test')]/string()
+            ]]></code>
+        <expected>test</expected>
+    </test>
+    <test output="text" ignore="yes">
+        <task>[query, Lucene FT index, qname, direct] descendant step with parenthesized attribute node</task>
+        <code><![CDATA[
+            collection('/db/coll')//test/qname//(@att.qname)[ft:query(., 'test')]/string()
+            ]]></code>
+        <expected>test</expected>
+    </test>
+    <test output="text" ignore="yes">
+        <task>[query, Lucene FT index, qname, indirect] descendant step with parenthesized attribute node</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//test/qname//(@att.qname)
+            return $a[ft:query(., 'test')]/string()
+            ]]></code>
+        <expected>test</expected>
+    </test>
+    <test output="text">
+        <task>[query, Lucene FT index, path, direct] child step with parenthesized attribute node</task>
+        <code><![CDATA[
+            collection('/db/coll')//test/path/(@att.path)[ft:query(., 'test')]/string()
+            ]]></code>
+        <expected>test</expected>
+    </test>
+    <test output="text">
+        <task>[query, Lucene FT index, path, indirect] child step with parenthesized attribute node</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//test/path/(@att.path)
+            return $a[ft:query(., 'test')]/string()
+            ]]></code>
+        <expected>test</expected>
+    </test>
+    <test output="text">
+        <task>[query, Lucene FT index, path, direct] descendant step with parenthesized attribute node</task>
+        <code><![CDATA[
+            collection('/db/coll')//test/path/(@att.path)[ft:query(., 'test')]/string()
+            ]]></code>
+        <expected>test</expected>
+    </test>
+    <test output="text">
+        <task>[query, Lucene FT index, path, indirect] descendant step with parenthesized attribute node</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//test/path/(@att.path)
+            return $a[ft:query(., 'test')]/string()
+            ]]></code>
+        <expected>test</expected>
+    </test>
+    <!-- index retrieval tests -->
+    <test output="xml">
+        <task>[index, Lucene FT index, qname] parenthesized element node</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//test/(qname)
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100, 'lucene-index')
+            ]]></code>
+        <expected>
+            <term freq="1" docs="1" n="1">document</term>
+            <term freq="1" docs="1" n="2">test</term>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[index, Lucene FT index, path] parenthesized element node</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//test/(path)
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100, 'lucene-index')
+            ]]></code>
+        <expected>
+            <term freq="1" docs="1" n="1">document</term>
+            <term freq="1" docs="1" n="2">test</term>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[index, Lucene FT index, qname] parenthesized element node + self axis</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//test/(qname)/self::*
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100, 'lucene-index')
+            ]]></code>
+        <expected>
+            <term freq="1" docs="1" n="1">document</term>
+            <term freq="1" docs="1" n="2">test</term>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[index, Lucene FT index, path] parenthesized element node + self axis</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//test/(path)/self::*
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100, 'lucene-index')
+            ]]></code>
+        <expected>
+            <term freq="1" docs="1" n="1">document</term>
+            <term freq="1" docs="1" n="2">test</term>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[index, Lucene FT index, qname] child step with parenthesized attribute node</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//test/qname/(@att.qname)
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100, 'lucene-index')
+            ]]></code>
+        <expected>
+            <term freq="1" docs="1" n="1">test</term>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[index, Lucene FT index, qname] descendant step with parenthesized attribute node</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//test/qname//(@att.qname)
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100, 'lucene-index')
+            ]]></code>
+        <expected>
+            <term freq="1" docs="1" n="1">test</term>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[index, Lucene FT index, path] child step with parenthesized attribute node</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//test/path/(@att.path)
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100, 'lucene-index')
+            ]]></code>
+        <expected>
+            <term freq="1" docs="1" n="1">test</term>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[index, Lucene FT index, path] descendant step with parenthesized attribute node</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//test/path//(@att.path)
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100, 'lucene-index')
+            ]]></code>
+        <expected>
+            <term freq="1" docs="1" n="1">test</term>
+        </expected>
+    </test>
+</TestSet>
