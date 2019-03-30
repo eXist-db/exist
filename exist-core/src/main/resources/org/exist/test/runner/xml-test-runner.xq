@@ -1,6 +1,7 @@
 xquery version "3.1";
 
-import module namespace t = "http://exist-db.org/xquery/testing";
+import module namespace t = "http://exist-db.org/xquery/testing"
+    at "resource:org/exist/xquery/lib/test.xq";
 
 declare variable $doc external;
 declare variable $id as xs:string? external;
