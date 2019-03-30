@@ -30,9 +30,8 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.Map;
-
-import static org.exist.indexing.range.RangeIndexConfigElement.*;
 
 public class LuceneFieldConfig extends AbstractFieldConfig {
 
@@ -123,5 +122,46 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
             // wrong type: ignore
         }
         return null;
+    }
+
+    private static long dateToLong(DateValue date) {
+        final XMLGregorianCalendar utccal = date.calendar.normalize();
+        return ((long)utccal.getYear() << 16) + ((long)utccal.getMonth() << 8) + ((long)utccal.getDay());
+    }
+
+    private static long timeToLong(TimeValue time) {
+        return time.getTimeInMillis();
+    }
+
+    private static String dateTimeToString(DateTimeValue dtv) {
+        final XMLGregorianCalendar utccal = dtv.calendar.normalize();
+        final StringBuilder sb = new StringBuilder();
+        formatNumber(utccal.getMillisecond(), 3, sb);
+        formatNumber(utccal.getSecond(), 2, sb);
+        formatNumber(utccal.getMinute(), 2, sb);
+        formatNumber(utccal.getHour(), 2, sb);
+        formatNumber(utccal.getDay(), 2, sb);
+        formatNumber(utccal.getMonth(), 2, sb);
+        formatNumber(utccal.getYear(), 4, sb);
+        return sb.toString();
+    }
+
+    private static void formatNumber(int number, int digits, StringBuilder sb) {
+        int count = 0;
+        long n = number;
+        while (n > 0) {
+            final int digit = '0' + (int)n % 10;
+            sb.insert(0, (char)digit);
+            count++;
+            if (count == digits) {
+                break;
+            }
+            n = n / 10;
+        }
+        if (count < digits) {
+            for (int i = count; i < digits; i++) {
+                sb.insert(0, '0');
+            }
+        }
     }
 }
