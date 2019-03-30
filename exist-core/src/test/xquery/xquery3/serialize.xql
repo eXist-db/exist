@@ -204,7 +204,6 @@ declare
     %test:assertEquals("fn:substring#3
 math:pi#0
 fn:exists#1
-Q{http://exist-db.org/xquery/lucene}query#2
 (anonymous-function)#1
 Q{http://exist-db.org/xquery/test/serialize}adaptive-simple-atomic#1")
 function ser:adaptive-function-item() {
@@ -212,7 +211,6 @@ function ser:adaptive-function-item() {
         substring#3,
         math:pi#0,
         Q{http://www.w3.org/2005/xpath-functions}exists#1,
-        ft:query#2,
         function ($a) { $a },
         ser:adaptive-simple-atomic#1
     )
@@ -224,7 +222,6 @@ declare
     %test:assertEquals("fn:substring#3
 math:pi#0
 fn:exists#1
-Q{http://exist-db.org/xquery/lucene}query#2
 (anonymous-function)#1
 Q{http://exist-db.org/xquery/test/serialize}adaptive-simple-atomic#1")
 function ser:adaptive-function-item-map-params() {
@@ -232,7 +229,6 @@ function ser:adaptive-function-item-map-params() {
         substring#3,
         math:pi#0,
         Q{http://www.w3.org/2005/xpath-functions}exists#1,
-        ft:query#2,
         function ($a) { $a },
         ser:adaptive-simple-atomic#1
     )
