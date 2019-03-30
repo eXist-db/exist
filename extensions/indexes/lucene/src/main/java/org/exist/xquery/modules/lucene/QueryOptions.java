@@ -31,6 +31,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.value.*;
 
+import javax.annotation.Nullable;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
@@ -47,6 +48,7 @@ public class QueryOptions {
     public static final String DEFAULT_OPERATOR_OR = "or";
     public static final String OPTION_LOWERCASE_EXPANDED_TERMS = "lowercase-expanded-terms";
     public static final String OPTION_FACETS = "facets";
+    public static final String OPTION_FIELDS = "fields";
 
     protected enum DefaultOperator {
         OR,
@@ -60,6 +62,7 @@ public class QueryOptions {
     protected boolean filterRewrite = false;
     protected boolean lowercaseExpandedTerms = false;
     protected Optional<Map<String, List<String>>> facets = Optional.empty();
+    protected Set<String> fields = null;
 
     public QueryOptions() {
         // default options
@@ -92,18 +95,21 @@ public class QueryOptions {
     public QueryOptions(AbstractMapType map) throws XPathException {
         for (Map.Entry<AtomicValue, Sequence> entry: map) {
             final String key = entry.getKey().getStringValue();
-            if (key.equals(OPTION_FACETS)) {
-                if (entry.getValue().hasOne() && entry.getValue().getItemType() == Type.MAP) {
-                    final Map<String, List<String>> tf = new HashMap<>();
-                    for (Map.Entry<AtomicValue, Sequence> facet: (AbstractMapType) entry.getValue().itemAt(0)) {
-                        final List<String> values = new ArrayList<>(5);
-                        for (SequenceIterator si = facet.getValue().unorderedIterator(); si.hasNext(); ) {
-                            values.add(si.nextItem().getStringValue());
-                        }
-                        tf.put(facet.getKey().getStringValue(), values);
-                    }
-                    facets = Optional.of(tf);
+            if (key.equals(OPTION_FIELDS) && !entry.getValue().isEmpty()) {
+                fields = new HashSet<>();
+                for (SequenceIterator i = entry.getValue().unorderedIterator(); i.hasNext(); ) {
+                    fields.add(i.nextItem().getStringValue());
                 }
+            } else if (key.equals(OPTION_FACETS) && entry.getValue().hasOne() && entry.getValue().getItemType() == Type.MAP) {
+                final Map<String, List<String>> tf = new HashMap<>();
+                for (Map.Entry<AtomicValue, Sequence> facet: (AbstractMapType) entry.getValue().itemAt(0)) {
+                    final List<String> values = new ArrayList<>(5);
+                    for (SequenceIterator si = facet.getValue().unorderedIterator(); si.hasNext(); ) {
+                        values.add(si.nextItem().getStringValue());
+                    }
+                    tf.put(facet.getKey().getStringValue(), values);
+                }
+                facets = Optional.of(tf);
             } else {
                 set(key, entry.getValue().getStringValue());
             }
@@ -112,6 +118,10 @@ public class QueryOptions {
 
     public Optional<Map<String, List<String>>> getFacets() {
         return facets;
+    }
+
+    public @Nullable Set<String> getFields() {
+        return fields;
     }
 
     public boolean filterRewrite() {
