@@ -21,12 +21,12 @@
 package org.exist.xquery.modules.lucene;
 
 import org.apache.lucene.facet.FacetResult;
-import org.apache.lucene.facet.FacetsCollector;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
+import org.exist.indexing.lucene.LuceneMatch;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
@@ -125,7 +125,7 @@ public class Facets extends BasicFunction {
             while (match != null) {
                 if (match.getIndexId().equals(LuceneIndex.ID)) {
                     final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-                    final org.apache.lucene.facet.Facets facets = index.getFacets((LuceneIndexWorker.LuceneMatch) match);
+                    final org.apache.lucene.facet.Facets facets = index.getFacets((LuceneMatch) match);
                     final FacetResult result;
                     if (paths == null) {
                         result = facets.getTopChildren(count, dimension);

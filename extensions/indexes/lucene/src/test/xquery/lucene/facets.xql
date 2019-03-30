@@ -11,36 +11,50 @@ declare variable $facet:XML :=
             <to>Egon</to>
             <place>Berlin</place>
             <date>2019-03-14</date>
+            <time>14:22:19.329+01:00</time>
+            <likes>9</likes>
+            <score>6.0</score>
         </letter>
         <letter>
             <from>Rudi</from>
             <to>Egon</to>
             <place>Berlin</place>
             <date>2017-03-13</date>
+            <time>15:22:19.329+01:00</time>
+            <likes>19</likes>
+            <score>8.25</score>
         </letter>
         <letter>
             <from>Susi</from>
             <to>Hans</to>
             <place>Hamburg</place>
             <date>2019-04-01</date>
+            <likes>29</likes>
+            <score>16.5</score>
         </letter>
         <letter>
             <from>Heinz</from>
             <to>Babsi Müller</to>
             <place></place>
             <date>2017-03-11</date>
+            <likes>1</likes>
+            <score>14.25</score>
         </letter>
         <letter>
             <from>Heinz</from>
             <to>Basia Müller</to>
             <place>Wrocław</place>
             <date>2015-06-22</date>
+            <likes>5</likes>
+            <score>29.50</score>
         </letter>
         <letter>
             <from>Heinz</from>
             <to>Basia Kowalska</to>
             <place>Wrocław</place>
             <date>2013-06-22</date>
+            <likes>3</likes>
+            <score>16.0</score>
         </letter>
     </letters>;
 
@@ -70,6 +84,10 @@ declare variable $facet:XCONF1 :=
                     <field name="place" expression="place"/>
                     <field name="from" expression="from"/>
                     <field name="to" expression="to"/>
+                    <field name="date" expression="date" type="xs:date"/>
+                    <field name="likes" expression="likes" type="xs:int"/>
+                    <field name="score" expression="score" type="xs:double"/>
+                    <field name="time" expression="time" type="xs:time"/>
                 </text>
             </lucene>
         </index>
@@ -201,6 +219,77 @@ declare
     %test:assertEquals(2)
     %test:args('to:(ba* müller)')
     %test:assertEquals(2)
+    %test:args('foo:berlin')
+    %test:assertEquals(0)
 function facet:query-field($query as xs:string) {
     count(collection("/db/lucenetest")//letter[ft:query(., $query)])
+};
+
+declare
+    %test:args("from:heinz")
+    %test:assertEquals("Babsi Müller", "Basia Kowalska", "Basia Müller")
+function facet:query-and-sort($query as xs:string) {
+    for $letter in collection("/db/lucenetest")//letter[ft:query(., $query, map { "fields": "to" })]
+    order by ft:field($letter, "to")
+    return
+        $letter/to/text()
+};
+
+declare
+    %test:args("from:heinz", "date")
+    %test:assertEquals("Basia Kowalska", "Basia Müller", "Babsi Müller")
+function facet:query-and-sort-by-date($query as xs:string, $field as xs:string) {
+    for $letter in collection("/db/lucenetest")//letter[ft:query(., $query, map { "fields": $field })]
+    order by ft:field($letter, $field, "xs:date")
+    return
+        $letter/to/text()
+};
+
+declare
+    %test:assertEquals("Hans", "Rudi")
+function facet:query-and-sort-by-date() {
+    for $letter in collection("/db/lucenetest")//letter[ft:query(., "place:berlin", map { "fields": "time" })]
+    order by ft:field($letter, "time", "xs:time")
+    return
+        $letter/from/text()
+};
+
+declare
+    %test:args("likes", "xs:int")
+    %test:assertEquals(1, 3, 5, 9, 19, 29)
+    %test:args("score", "xs:float")
+    %test:assertEquals(6, 8.25, 14.25, 16, 16.5, 29.5)
+function facet:query-and-sort-by-numeric($field as xs:string, $type as xs:string) {
+    for $letter in collection("/db/lucenetest")//letter[ft:query(., (), map { "fields": $field })]
+    let $likes := ft:field($letter, $field, $type)
+    order by $likes
+    return
+        $likes
+};
+
+declare
+    %test:assertEmpty
+function facet:retrieve-non-existant-field() {
+    for $letter in collection("/db/lucenetest")//letter[ft:query(., (), map { "fields": "foo" })]
+    return
+        ft:field($letter, "foo")
+};
+
+declare
+    %test:assertEquals("Egon", "Berlin")
+function facet:retrieve-multiple-fields() {
+    for $letter in collection("/db/lucenetest")//letter[ft:query(., "from:rudi", map { "fields": ("to", "place") })]
+    return
+        (ft:field($letter, "to"), ft:field($letter, "place"))
+};
+
+declare
+    %test:assertEquals("2017-03-13", 19, 8.25)
+function facet:test-field-type() {
+    let $letter := collection("/db/lucenetest")//letter[ft:query(., "from:rudi", map { "fields": ("date", "likes", "score") })]
+    return (
+        ft:field($letter, "date", "xs:date"),
+        ft:field($letter, "likes", "xs:integer"),
+        ft:field($letter, "score", "xs:double")
+    )
 };

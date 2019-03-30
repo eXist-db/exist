@@ -62,11 +62,11 @@ import org.exist.util.pool.NodePool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.modules.lucene.QueryOptions;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.*;
 import org.w3c.dom.*;
 import org.xml.sax.helpers.AttributesImpl;
 
+import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 import java.io.IOException;
 import java.util.*;
@@ -411,7 +411,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     /**
      * Query the index. Returns a node set containing all matching nodes. Each node
-     * in the node set has a {@link org.exist.indexing.lucene.LuceneIndexWorker.LuceneMatch}
+     * in the node set has a {@link LuceneMatch}
      * element attached, which stores the score and a link to the query which generated it.
      *
      * @param context current XQuery context
@@ -448,7 +448,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     }
                 }
                 searchAndProcess(contextId, qname, docs, contextSet, resultSet,
-                        returnAncestor, searcher, query, config);
+                        returnAncestor, searcher, query, options.getFields(), config);
             }
             return resultSet;
         });
@@ -456,7 +456,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     /**
      * Query the index. Returns a node set containing all matching nodes. Each node
-     * in the node set has a {@link org.exist.indexing.lucene.LuceneIndexWorker.LuceneMatch}
+     * in the node set has a {@link LuceneMatch}
      * element attached, which stores the score and a link to the query which generated it.
      *
      * @param context current XQuery context
@@ -492,7 +492,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
                 if (query != null) {
                     searchAndProcess(contextId, qname, docs, contextSet, resultSet,
-                            returnAncestor, searcher, query, config);
+                            returnAncestor, searcher, query, options.getFields(), config);
                 }
             }
             return resultSet;
@@ -510,7 +510,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             Query query = queryTranslator.parse(field, queryRoot, analyzer, options);
             if (query != null) {
                 searchAndProcess(contextId, null, docs, contextSet, resultSet,
-                        returnAncestor, searcher, query, config);
+                        returnAncestor, searcher, query, null, config);
             }
             return resultSet;
         });
@@ -536,13 +536,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private void searchAndProcess(int contextId, QName qname, DocumentSet docs,
                                   NodeSet contextSet, NodeSet resultSet, boolean returnAncestor,
                                   SearcherTaxonomyManager.SearcherAndTaxonomy searcher, Query query,
-                                  LuceneConfig config) throws IOException {
+                                  @Nullable Set<String> fields, LuceneConfig config) throws IOException {
         final ExtFacetsCollector facetsCollector = new ExtFacetsCollector(config);
-        final LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, returnAncestor, contextId, facetsCollector);
+        final LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, returnAncestor, contextId, facetsCollector, fields);
         searcher.searcher.search(query, collector);
     }
 
-    private static class ExtFacetsCollector extends FacetsCollector {
+    protected static class ExtFacetsCollector extends FacetsCollector {
 
         private final LuceneConfig config;
 
@@ -575,7 +575,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             options.configureParser(parser.getConfiguration());
             Query query = parser.parse(queryString);
             searchAndProcess(contextId, null, docs, contextSet, resultSet,
-                    returnAncestor, searcher, query, config);
+                    returnAncestor, searcher, query, null, config);
             return resultSet;
         });
     }
@@ -878,9 +878,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private final int contextId;
         private final Query query;
         private final ExtFacetsCollector chainedCollector;
+        private final Set<String> fields;
 
         private LuceneHitCollector(QName qname, Query query, DocumentSet docs, NodeSet contextSet, NodeSet resultSet, boolean returnAncestor,
-                                   int contextId, ExtFacetsCollector nextCollector) {
+                                   int contextId, ExtFacetsCollector nextCollector, @Nullable Set<String> fields) {
             this.qname = qname;
             this.docs = docs;
             this.contextSet = contextSet;
@@ -889,6 +890,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             this.contextId = contextId;
             this.query = query;
             this.chainedCollector = nextCollector;
+            this.fields = fields;
         }
 
         @Override
@@ -935,8 +937,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         NodeProxy parentNode = contextSet.get(storedNode);
                         // NodeProxy parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
                         if (parentNode != null) {
-                            LuceneMatch match = new LuceneMatch(contextId, nodeId, query, chainedCollector);
-                            match.setScore(score);
+                            LuceneMatch match = createMatch(doc, score, nodeId);
                             parentNode.addMatch(match);
                             resultSet.add(parentNode, sizeHint);
                             if (Expression.NO_CONTEXT_ID != contextId) {
@@ -946,15 +947,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             chainedCollector.collect(doc);
                         }
                     } else {
-                        LuceneMatch match = new LuceneMatch(contextId, nodeId, query, chainedCollector);
-                        match.setScore(score);
+                        LuceneMatch match = createMatch(doc, score, nodeId);
                         storedNode.addMatch(match);
                         resultSet.add(storedNode, sizeHint);
                         chainedCollector.collect(doc);
                     }
                 } else {
-                    LuceneMatch match = new LuceneMatch(contextId, nodeId, query, chainedCollector);
-                    match.setScore(score);
+                    LuceneMatch match = createMatch(doc, score, nodeId);
                     storedNode.addMatch(match);
                     resultSet.add(storedNode);
                     chainedCollector.collect(doc);
@@ -962,6 +961,18 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+
+        private LuceneMatch createMatch(int docId, float score, NodeId nodeId) throws IOException {
+            final LuceneMatch match = new LuceneMatch(contextId, nodeId, query, chainedCollector);
+            match.setScore(score);
+            if (fields != null && !fields.isEmpty()) {
+                final Document luceneDoc = reader.document(docId, fields);
+                for (String field : fields) {
+                    match.addField(field, luceneDoc.getFields(field));
+                }
+            }
+            return match;
         }
     }
 
@@ -1547,84 +1558,5 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 	}
     }
 
-    /**
-     * Match class containing the score of a match and a reference to
-     * the query that generated it.
-     */
-    public class LuceneMatch extends Match {
-
-        private float score = 0.0f;
-        private final Query query;
-
-        private ExtFacetsCollector facetsCollector;
-
-        public LuceneMatch(int contextId, NodeId nodeId, Query query) {
-            this(contextId, nodeId, query, null);
-        }
-
-        public LuceneMatch(int contextId, NodeId nodeId, Query query, ExtFacetsCollector facetsCollector) {
-            super(contextId, nodeId, null);
-            this.query = query;
-            this.facetsCollector = facetsCollector;
-        }
-
-        public LuceneMatch(LuceneMatch copy) {
-            super(copy);
-            this.score = copy.score;
-            this.query = copy.query;
-            this.facetsCollector = copy.facetsCollector;
-        }
-
-        @Override
-        public Match createInstance(int contextId, NodeId nodeId, String matchTerm) {
-            return null;
-        }
-
-        public Match createInstance(int contextId, NodeId nodeId, Query query) {
-            return new LuceneMatch(contextId, nodeId, query);
-        }
-
-        @Override
-        public Match newCopy() {
-            return new LuceneMatch(this);
-        }
-
-        @Override
-        public String getIndexId() {
-            return LuceneIndex.ID;
-        }
-
-        public Query getQuery() {
-            return query;
-        }
-
-        public float getScore() {
-            return score;
-        }
-
-        protected void setScore(float score) {
-            this.score = score;
-        }
-
-        public ExtFacetsCollector getFacetsCollector() {
-            return this.facetsCollector;
-        }
-
-        // DW: missing hashCode() ?
-        @Override
-        public boolean equals(Object other) {
-            if (!(other instanceof LuceneMatch)) {
-                return false;
-            }
-            LuceneMatch o = (LuceneMatch) other;
-            return (nodeId == o.nodeId || nodeId.equals(o.nodeId))
-                    && query == ((LuceneMatch) other).query;
-        }
-
-        @Override
-        public boolean matchEquals(Match other) {
-            return equals(other);
-        }
-    }
 }
 
