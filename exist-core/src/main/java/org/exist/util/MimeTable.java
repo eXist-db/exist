@@ -116,7 +116,17 @@ public class MimeTable {
     }
     
     public MimeTable(final Path path) {
-        load(path);
+        if (Files.isReadable(path)) {
+            try {
+                LOG.info("Loading mime table from file " + path.toAbsolutePath().toString());
+                try(final InputStream is = Files.newInputStream(path)) {
+                    loadMimeTypes(is);
+                }
+                this.src = path.toUri().toString();
+            } catch (final ParserConfigurationException | SAXException | IOException e) {
+                LOG.error(FILE_LOAD_FAILED_ERR + path.toAbsolutePath().toString(), e);
+            }
+        }
     }
     
     public MimeTable(final InputStream stream, final String src) {
@@ -211,7 +221,18 @@ public class MimeTable {
     }
     
     private void load() {
-        load(ConfigurationHelper.lookup(MIME_TYPES_XML));
+        final ClassLoader cl = MimeTable.class.getClassLoader();
+        final InputStream is = cl.getResourceAsStream(MIME_TYPES_XML_DEFAULT);
+        if (is == null) {
+            LOG.error(LOAD_FAILED_ERR);
+        }
+
+        try {
+            loadMimeTypes(is);
+            this.src = "resource://" + MIME_TYPES_XML_DEFAULT;
+        } catch (final ParserConfigurationException | SAXException | IOException e) {
+            LOG.error(LOAD_FAILED_ERR, e);
+        }
     }
     
     private void load(final InputStream stream, final String src) {
@@ -224,35 +245,6 @@ public class MimeTable {
             LOG.error(LOAD_FAILED_ERR, e);
         }
     	
-        if (!loaded) {
-            final ClassLoader cl = MimeTable.class.getClassLoader();
-            final InputStream is = cl.getResourceAsStream(MIME_TYPES_XML_DEFAULT);
-            if (is == null) {
-                LOG.error(LOAD_FAILED_ERR);
-            }
-            try {
-                loadMimeTypes(is);
-                this.src="resource://"+MIME_TYPES_XML_DEFAULT;
-            } catch (final ParserConfigurationException | SAXException | IOException e) {
-                LOG.error(LOAD_FAILED_ERR, e);
-            }
-        }
-    }
-    
-    private void load(final Path path) {
-        boolean loaded = false;
-        if (Files.isReadable(path)) {
-            try {
-                LOG.info("Loading mime table from file " + path.toAbsolutePath().toString());
-                try(final InputStream is = Files.newInputStream(path)) {
-                    loadMimeTypes(is);
-                }
-                loaded = true;
-                this.src = path.toUri().toString();
-            } catch (final ParserConfigurationException | SAXException | IOException e) {
-                LOG.error(FILE_LOAD_FAILED_ERR + path.toAbsolutePath().toString(), e);
-            }
-        }
         if (!loaded) {
             final ClassLoader cl = MimeTable.class.getClassLoader();
             final InputStream is = cl.getResourceAsStream(MIME_TYPES_XML_DEFAULT);
