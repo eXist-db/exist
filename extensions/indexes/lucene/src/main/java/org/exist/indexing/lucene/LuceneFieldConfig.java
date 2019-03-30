@@ -20,33 +20,43 @@
 
 package org.exist.indexing.lucene;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.TextField;
+import org.apache.lucene.document.*;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 
 import java.util.Map;
 
+import static org.exist.indexing.range.RangeIndexConfigElement.*;
+
 public class LuceneFieldConfig extends AbstractFieldConfig {
 
-    public final static String ATTR_FIELD_NAME = "name";
+    private final static String ATTR_FIELD_NAME = "name";
+    private final static String ATTR_TYPE = "type";
 
     protected String fieldName;
+    protected int type = Type.STRING;
 
-    public LuceneFieldConfig(Element configElement, Map<String, String> namespaces) throws DatabaseConfigurationException {
+    LuceneFieldConfig(Element configElement, Map<String, String> namespaces) throws DatabaseConfigurationException {
         super(configElement, namespaces);
 
         fieldName = configElement.getAttribute(ATTR_FIELD_NAME);
         if (fieldName == null || fieldName.length() == 0) {
             throw new DatabaseConfigurationException("Invalid config: attribute 'name' must be given");
+        }
+
+        String typeStr = configElement.getAttribute(ATTR_TYPE);
+        if (typeStr != null && typeStr.length() > 0) {
+            try {
+                this.type = Type.getType(typeStr);
+            } catch (XPathException e) {
+                throw new DatabaseConfigurationException("Invalid type declared for field " + fieldName + ": " + typeStr);
+            }
         }
     }
 
@@ -66,7 +76,52 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
     void processResult(Sequence result, Document luceneDoc) throws XPathException {
         for (SequenceIterator i = result.unorderedIterator(); i.hasNext(); ) {
             final String text = i.nextItem().getStringValue();
-            luceneDoc.add(new TextField(fieldName, text, Field.Store.YES));
+            final Field field = convertToField(text);
+            if (field != null) {
+                luceneDoc.add(field);
+            }
         }
+    }
+
+    private Field convertToField(String content) {
+        try {
+            switch (type) {
+                case Type.INTEGER:
+                case Type.LONG:
+                case Type.UNSIGNED_LONG:
+                    long lvalue = Long.parseLong(content);
+                    return new LongField(fieldName, lvalue, LongField.TYPE_STORED);
+                case Type.INT:
+                case Type.UNSIGNED_INT:
+                case Type.SHORT:
+                case Type.UNSIGNED_SHORT:
+                    int ivalue = Integer.parseInt(content);
+                    return new IntField(fieldName, ivalue, IntField.TYPE_STORED);
+                case Type.DECIMAL:
+                case Type.DOUBLE:
+                    double dvalue = Double.parseDouble(content);
+                    return new DoubleField(fieldName, dvalue, DoubleField.TYPE_STORED);
+                case Type.FLOAT:
+                    float fvalue = Float.parseFloat(content);
+                    return new FloatField(fieldName, fvalue, FloatField.TYPE_STORED);
+                case Type.DATE:
+                    DateValue dv = new DateValue(content);
+                    long dl = dateToLong(dv);
+                    return new LongField(fieldName, dl, LongField.TYPE_STORED);
+                case Type.TIME:
+                    TimeValue tv = new TimeValue(content);
+                    long tl = timeToLong(tv);
+                    return new LongField(fieldName, tl, LongField.TYPE_STORED);
+                case Type.DATE_TIME:
+                    DateTimeValue dtv = new DateTimeValue(content);
+                    String dateStr = dateTimeToString(dtv);
+                    return new TextField(fieldName, dateStr, Field.Store.YES);
+                default:
+                    return new TextField(fieldName, content, Field.Store.YES);
+            }
+        } catch (NumberFormatException | XPathException e) {
+            // wrong type: ignore
+        }
+        return null;
     }
 }

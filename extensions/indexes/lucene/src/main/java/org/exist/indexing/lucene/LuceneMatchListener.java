@@ -340,7 +340,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
                 Match nextMatch = this.match;
                 while (nextMatch != null) {
                     if (nextMatch.getIndexId().equals(LuceneIndex.ID)) {
-                        final Query query = ((LuceneIndexWorker.LuceneMatch) nextMatch).getQuery();
+                        final Query query = ((LuceneMatch) nextMatch).getQuery();
                         if (!queries.contains(query)) {
                             queries.add(query);
                             LuceneUtil.extractTerms(query, termMap, reader, false);
