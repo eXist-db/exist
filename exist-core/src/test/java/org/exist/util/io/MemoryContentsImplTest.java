@@ -35,12 +35,12 @@ import static org.junit.Assert.assertEquals;
  */
 public class MemoryContentsImplTest {
     private byte[] buf;
-    private MemoryContentsImpl contents;
+    private MemoryContents contents;
 
     @Before
     public void setUp() {
         buf = new byte[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-        contents = new MemoryContentsImpl(2);
+        contents = MemoryContentsImpl.createWithInitialBlocks(2);
     }
 
     @Test
@@ -49,7 +49,7 @@ public class MemoryContentsImplTest {
     }
 
     @Test
-    public void writeAtEnd() {
+    public void writeAtEnd() throws IOException {
         assertEquals(2, contents.writeAtEnd(buf, 0, 2));
         assertEquals(2, contents.size());
         assertEquals(2, contents.writeAtEnd(buf, 2, 2));
@@ -57,13 +57,13 @@ public class MemoryContentsImplTest {
     }
 
     @Test
-    public void write() {
+    public void write() throws IOException {
         assertEquals(8, contents.write(buf, 2L, 0, 8));
         assertEquals(10, contents.size());
     }
 
     @Test
-    public void read() {
+    public void read() throws IOException {
         byte[] dst = new byte[10];
         assertEquals(10, contents.write(buf, 0L, 0, 10));
         assertEquals(5, contents.read(dst, 0L, 2, 5));

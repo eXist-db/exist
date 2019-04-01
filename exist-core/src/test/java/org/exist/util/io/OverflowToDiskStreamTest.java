@@ -20,13 +20,11 @@
 
 package org.exist.util.io;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
@@ -124,7 +122,7 @@ public class OverflowToDiskStreamTest {
         private boolean closed;
         private int flushCount;
 
-        void assertClosedContent(byte[] expected, int expectedFlushes) {
+        public void assertClosedContent(byte[] expected, int expectedFlushes) {
             assertTrue("Stream not closed", closed);
             assertEquals(expectedFlushes, flushCount);
             assertArrayEquals(expected, toByteArray());
