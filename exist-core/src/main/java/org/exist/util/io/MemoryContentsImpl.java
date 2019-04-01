@@ -67,7 +67,7 @@ public final class MemoryContentsImpl implements MemoryContents {
     }
 
     public static MemoryContents createWithInMemorySize(int inMemorySize) {
-        return createWithInitialBlocks(Math.max(inMemorySize / 10 / MemoryContentsImpl.BLOCK_SIZE, 1));
+        return createWithInitialBlocks(max(inMemorySize / 10 / MemoryContentsImpl.BLOCK_SIZE, 1));
     }
 
     private MemoryContentsImpl(int initialBlocks) {
