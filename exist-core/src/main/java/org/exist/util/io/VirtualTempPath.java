@@ -71,7 +71,7 @@ public final class VirtualTempPath implements AutoCloseable {
         }
         if (content == null) {
             // initial blocks are 10 % of the specified in memory size but minimum 1
-            content = new MemoryContentsImpl(Math.max(inMemorySize / 10 / MemoryContentsImpl.BLOCK_SIZE, 1));
+            content = MemoryContentsImpl.createWithInMemorySize(inMemorySize);
         }
         return new OverflowToDiskStream(inMemorySize, content, this::initOverflowOutputStream);
     }

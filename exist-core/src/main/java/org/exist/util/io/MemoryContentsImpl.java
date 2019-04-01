@@ -62,7 +62,15 @@ public final class MemoryContentsImpl implements MemoryContents {
     private long size;
     private int indirectBlocksAllocated;
 
-    MemoryContentsImpl(int initialBlocks) {
+    public static MemoryContents createWithInitialBlocks(int initialBlocks) {
+        return new MemoryContentsImpl(initialBlocks);
+    }
+
+    public static MemoryContents createWithInMemorySize(int inMemorySize) {
+        return createWithInitialBlocks(Math.max(inMemorySize / 10 / MemoryContentsImpl.BLOCK_SIZE, 1));
+    }
+
+    private MemoryContentsImpl(int initialBlocks) {
         this.initialBlocks = initialBlocks;
         if (LOG.isDebugEnabled()) {
             LOG.debug("Initializing with " + initialBlocks + " initial blocks");
