@@ -44,8 +44,8 @@ public class LuceneFacetConfig extends AbstractFieldConfig {
 
     protected boolean isHierarchical = false;
 
-    public LuceneFacetConfig(Element configElement, FacetsConfig facetsConfig, Map<String, String> namespaces) throws DatabaseConfigurationException {
-        super(configElement, namespaces);
+    public LuceneFacetConfig(LuceneConfig config, Element configElement, FacetsConfig facetsConfig, Map<String, String> namespaces) throws DatabaseConfigurationException {
+        super(config, configElement, namespaces);
         this.dimension = configElement.getAttribute(DIMENSION);
 
         final String hierarchicalOpt = configElement.getAttribute(HIERARCHICAL);

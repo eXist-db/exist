@@ -78,7 +78,7 @@ public class LuceneIndexConfig {
     protected final static Logger LOG = LogManager.getLogger(LuceneIndexConfig.class);
 
 
-    public LuceneIndexConfig(Element config, Map<String, String> namespaces, AnalyzerConfig analyzers,
+    public LuceneIndexConfig(LuceneConfig parent, Element config, Map<String, String> namespaces, AnalyzerConfig analyzers,
                              Map<String, FieldType> fieldTypes, FacetsConfig facetsConfig) throws DatabaseConfigurationException {
         if (config.hasAttribute(QNAME_ATTR)) {
             QName qname = parseQName(config, namespaces);
@@ -107,10 +107,10 @@ public class LuceneIndexConfig {
         if (type == null)
         	type = new FieldType(config, analyzers);
 
-        parse(config, namespaces, facetsConfig);
+        parse(parent, config, namespaces, facetsConfig);
     }
 
-    private void parse(Element root, Map<String, String> namespaces, FacetsConfig facetsConfig) throws DatabaseConfigurationException {
+    private void parse(LuceneConfig parent, Element root, Map<String, String> namespaces, FacetsConfig facetsConfig) throws DatabaseConfigurationException {
         Node child = root.getFirstChild();
         while (child != null) {
             if (child.getNodeType() == Node.ELEMENT_NODE) {
@@ -119,11 +119,11 @@ public class LuceneIndexConfig {
 		    Element configElement = (Element) child;
                     switch (localName) {
                         case FACET_ELEMENT: {
-                            facetsAndFields.add(new LuceneFacetConfig(configElement, facetsConfig, namespaces));
+                            facetsAndFields.add(new LuceneFacetConfig(parent, configElement, facetsConfig, namespaces));
                             break;
                         }
                         case FIELD_ELEMENT: {
-                            facetsAndFields.add(new LuceneFieldConfig(configElement, namespaces));
+                            facetsAndFields.add(new LuceneFieldConfig(parent, configElement, namespaces));
                             break;
                         }
                         case IGNORE_ELEMENT: {
