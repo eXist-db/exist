@@ -41,8 +41,8 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
     protected String fieldName;
     protected int type = Type.STRING;
 
-    LuceneFieldConfig(Element configElement, Map<String, String> namespaces) throws DatabaseConfigurationException {
-        super(configElement, namespaces);
+    LuceneFieldConfig(LuceneConfig config, Element configElement, Map<String, String> namespaces) throws DatabaseConfigurationException {
+        super(config, configElement, namespaces);
 
         fieldName = configElement.getAttribute(ATTR_FIELD_NAME);
         if (fieldName == null || fieldName.length() == 0) {

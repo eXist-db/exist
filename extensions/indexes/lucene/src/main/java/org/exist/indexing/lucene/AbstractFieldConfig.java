@@ -23,12 +23,14 @@ package org.exist.indexing.lucene;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
+import org.exist.collections.CollectionConfigurationManager;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -36,6 +38,8 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.w3c.dom.Element;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 public abstract class AbstractFieldConfig {
@@ -48,7 +52,7 @@ public abstract class AbstractFieldConfig {
     private boolean isValid = true;
     private CompiledXQuery compiled = null;
 
-    public AbstractFieldConfig(Element configElement, Map<String, String> namespaces) throws DatabaseConfigurationException {
+    public AbstractFieldConfig(LuceneConfig config, Element configElement, Map<String, String> namespaces) throws DatabaseConfigurationException {
         final String xpath = configElement.getAttribute(XPATH_ATTR);
         if (xpath == null || xpath.isEmpty()) {
             throw new DatabaseConfigurationException("facet definition needs an attribute 'xpath': " + configElement.toString());
@@ -61,6 +65,17 @@ public abstract class AbstractFieldConfig {
                 sb.append("=\"").append(uri).append("\";\n");
             }
         });
+        if (config.getImports() != null) {
+            config.getImports().stream().forEach((moduleImport -> {
+                sb.append("import module namespace ");
+                sb.append(moduleImport.prefix);
+                sb.append("=\"");
+                sb.append(moduleImport.uri);
+                sb.append("\" at \"");
+                sb.append(resolveURI(configElement.getBaseURI(), moduleImport.at));
+                sb.append("\";\n");
+            }));
+        }
         sb.append(xpath);
 
         this.expression = sb.toString();
@@ -106,5 +121,24 @@ public abstract class AbstractFieldConfig {
                 isValid = false;
             }
         }
+    }
+
+    private String resolveURI(String baseURI, String location) {
+        try {
+            final URI uri = new URI(location);
+            if (!uri.isAbsolute()) {
+                if (baseURI != null && baseURI.startsWith(CollectionConfigurationManager.CONFIG_COLLECTION)) {
+                    baseURI = baseURI.substring(CollectionConfigurationManager.CONFIG_COLLECTION.length());
+                    final int lastSlash = baseURI.lastIndexOf('/');
+                    if (lastSlash > -1) {
+                        baseURI = baseURI.substring(0, lastSlash);
+                    }
+                    return XmldbURI.EMBEDDED_SERVER_URI_PREFIX + baseURI + '/' + location;
+                }
+            }
+        } catch (URISyntaxException e) {
+            // ignore and return location
+        }
+        return location;
     }
 }

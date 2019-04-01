@@ -54,6 +54,10 @@ public class LuceneConfig {
     private static final String IGNORE_ELEMENT = "ignore";
     private final static String BOOST_ATTRIB = "boost";
     private static final String DIACRITICS = "diacritics";
+    private static final String MODULE_ELEMENT = "module";
+    private static final String ATTR_MODULE_URI = "uri";
+    private static final String ATTR_MODULE_PREFIX = "prefix";
+    private static final String ATTR_MODULE_AT = "at";
 
     private Map<QName, LuceneIndexConfig> paths = new TreeMap<>();
     private List<LuceneIndexConfig> wildcardPaths = new ArrayList<>();
@@ -71,6 +75,8 @@ public class LuceneConfig {
     private AnalyzerConfig analyzers = new AnalyzerConfig();
 
     private String queryParser = null;
+
+    private List<ModuleImport> imports = null;
 
     protected FacetsConfig facetsConfig = new FacetsConfig();
 
@@ -223,6 +229,10 @@ public class LuceneConfig {
         return fieldTypes.get(name);
     }
 
+    public List<ModuleImport> getImports() {
+        return imports;
+    }
+
     /**
      * Parse a configuration entry. The main configuration entries for this index
      * are the &lt;text&gt; elements. They may be enclosed by a &lt;lucene&gt; element.
@@ -266,6 +276,12 @@ public class LuceneConfig {
                             case PARSER_ELEMENT:
                                 queryParser = ((Element) node).getAttribute("class");
                                 break;
+                            case MODULE_ELEMENT:
+                                if (imports == null) {
+                                    imports = new ArrayList<>(3);
+                                }
+                                imports.add(new ModuleImport((Element)node));
+                                break;
                             case FIELD_TYPE_ELEMENT:
                                 FieldType type = new FieldType((Element) node, analyzers);
                                 fieldTypes.put(type.getId(), type);
@@ -273,7 +289,7 @@ public class LuceneConfig {
                             case INDEX_ELEMENT: {
                                 // found an index definition
                                 Element elem = (Element) node;
-                                LuceneIndexConfig config = new LuceneIndexConfig(elem, namespaces, analyzers, fieldTypes, facetsConfig);
+                                LuceneIndexConfig config = new LuceneIndexConfig(this, elem, namespaces, analyzers, fieldTypes, facetsConfig);
                                 // if it is a named index, add it to the namedIndexes map
                                 if (config.getName() != null) {
                                     namedIndexes.put(config.getName(), config);
@@ -358,5 +374,25 @@ public class LuceneConfig {
             //Nothing to do
         }
 
+    }
+
+    static class ModuleImport {
+
+        String uri;
+        String prefix;
+        String at;
+
+        ModuleImport(Element config) throws DatabaseConfigurationException {
+            this.uri = config.getAttribute(ATTR_MODULE_URI);
+            this.prefix = config.getAttribute(ATTR_MODULE_PREFIX);
+            this.at = config.getAttribute(ATTR_MODULE_AT);
+
+            if (this.prefix == null || this.prefix.length() == 0) {
+                throw new DatabaseConfigurationException("Attribute prefix for <module> required");
+            }
+            if (this.uri == null || this.uri.length() == 0) {
+                throw new DatabaseConfigurationException("Attribute uri for <module> required");
+            }
+        }
     }
 }
