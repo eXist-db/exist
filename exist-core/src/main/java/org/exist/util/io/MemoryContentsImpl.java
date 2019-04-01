@@ -44,8 +44,8 @@ public final class MemoryContentsImpl implements MemoryContents {
      */
     private static final int ARRAY_HEADER = 8 + 8 + 4;
 
-    static final int BLOCK_SIZE = 4096 - ARRAY_HEADER; // make sure it fits into a 4k memory region
-    static final int NUMBER_OF_BLOCKS = BLOCK_SIZE;
+    private static final int BLOCK_SIZE = 4096 - ARRAY_HEADER; // make sure it fits into a 4k memory region
+    private static final int NUMBER_OF_BLOCKS = BLOCK_SIZE;
 
     private final int initialBlocks;
     private final ReadWriteLock lock;
