@@ -221,7 +221,7 @@ public class Query extends Function implements Optimizable {
         Item key = getKey(contextSequence, null);
         List<QName> qnames = new ArrayList<>(1);
         qnames.add(contextQName);
-        Properties options = parseOptions(contextSequence, null);
+        Properties options = parseOptions(this, contextSequence, null, 3);
         try {
             if (Type.subTypeOf(key.getType(), Type.ELEMENT))
                 preselectResult = index.query(context, getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
@@ -265,7 +265,7 @@ public class Query extends Function implements Optimizable {
                     qnames = new ArrayList<>(1);
                     qnames.add(contextQName);
                 }
-                Properties options = parseOptions(contextSequence, contextItem);
+                Properties options = parseOptions(this, contextSequence, contextItem, 3);
                 try {
                     if (Type.subTypeOf(key.getType(), Type.ELEMENT))
                         result = index.query(context, getExpressionId(), docs, inNodes, qnames,
@@ -311,15 +311,15 @@ public class Query extends Function implements Optimizable {
         return Type.NODE;
     }
 
-    protected Properties parseOptions(Sequence contextSequence, Item contextItem) throws XPathException {
-        if (getArgumentCount() < 3)
+    protected static Properties parseOptions(Function funct, Sequence contextSequence, Item contextItem, int position) throws XPathException {
+        if (funct.getArgumentCount() < position)
             return null;
         Properties options = new Properties();
-        Sequence optSeq = getArgument(2).eval(contextSequence, contextItem);
+        Sequence optSeq = funct.getArgument(position-1).eval(contextSequence, contextItem);
         NodeValue optRoot = (NodeValue) optSeq.itemAt(0);
         try {
             final int thisLevel = optRoot.getNodeId().getTreeLevel();
-            final XMLStreamReader reader = context.getXMLStreamReader(optRoot);
+            final XMLStreamReader reader = funct.getContext().getXMLStreamReader(optRoot);
             reader.next();
             reader.next();
             while (reader.hasNext()) {
@@ -337,7 +337,7 @@ public class Query extends Function implements Optimizable {
             }
             return options;
         } catch (XMLStreamException | IOException e) {
-            throw new XPathException(this, "Error while parsing options to ft:query: " + e.getMessage(), e);
+            throw new XPathException(funct, "Error while parsing options to ft:query: " + e.getMessage(), e);
         }
     }
 
