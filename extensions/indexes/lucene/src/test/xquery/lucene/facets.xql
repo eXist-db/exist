@@ -70,14 +70,28 @@ declare variable $facet:TAXONOMY :=
         </place>
     </places>;
 
+declare variable $facet:MODULE :=
+    ``[
+        xquery version "3.1";
+        module namespace idx="http://exist-db.org/lucene/test/";
+
+        declare function idx:place-hierarchy($key as xs:string?) {
+            if (exists($key)) then
+                doc('/db/lucenetest/places.xml')//place[@name=$key]/ancestor-or-self::place/@name
+            else
+                ()
+        };
+    ]``;
+
 declare variable $facet:XCONF1 :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
             <lucene>
                 <analyzer class="org.exist.indexing.lucene.analyzers.NoDiacriticsStandardAnalyzer"/>
+                <module uri="http://exist-db.org/lucene/test/" prefix="idx" at="module.xql"/>
                 <text qname="letter">
                     <facet dimension="place" expression="place"/>
-                    <facet dimension="location" expression="let $key := place return doc('/db/lucenetest/places.xml')//place[@name=$key]/ancestor-or-self::place/@name" hierarchical="yes"/>
+                    <facet dimension="location" expression="idx:place-hierarchy(place)" hierarchical="yes"/>
                     <facet dimension="from" expression="from"/>
                     <facet dimension="to" expression="to"/>
                     <facet dimension="date" expression="tokenize(date, '-')" hierarchical="yes"/>
@@ -99,6 +113,7 @@ function facet:setup() {
     let $testCol := xmldb:create-collection("/db", "lucenetest")
     let $confCol := xmldb:create-collection("/db/system/config/db", "lucenetest")
     return (
+        xmldb:store($testCol, "module.xql", $facet:MODULE, "application/xquery"),
         xmldb:store($confCol, "collection.xconf", $facet:XCONF1),
         xmldb:store($testCol, "places.xml", $facet:TAXONOMY),
         xmldb:store($testCol, "test.xml", $facet:XML)
