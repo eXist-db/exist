@@ -96,7 +96,7 @@ declare variable $facet:XCONF1 :=
                     <facet dimension="to" expression="to"/>
                     <facet dimension="date" expression="tokenize(date, '-')" hierarchical="yes"/>
                     <field name="place" expression="place"/>
-                    <field name="from" expression="from"/>
+                    <field name="from" expression="from" store="no"/>
                     <field name="to" expression="to"/>
                     <field name="date" expression="date" type="xs:date"/>
                     <field name="likes" expression="likes" type="xs:int"/>
@@ -224,11 +224,11 @@ declare
     %test:assertEquals(1)
     %test:args("place:berlin")
     %test:assertEquals(2)
-    %test:args("from:rudi and place:berlin")
+    %test:args("from:rudi AND place:berlin")
     %test:assertEquals(1)
-    %test:args("from:susi and place:berlin")
+    %test:args("from:susi AND place:berlin")
     %test:assertEquals(0)
-    %test:args("basia and place:wrocław")
+    %test:args("basia AND place:wrocław")
     %test:assertEquals(2)
     %test:args("place:wroclaw")
     %test:assertEquals(2)
@@ -241,20 +241,18 @@ function facet:query-field($query as xs:string) {
 };
 
 declare
-    %test:args("from:heinz")
     %test:assertEquals("Babsi Müller", "Basia Kowalska", "Basia Müller")
-function facet:query-and-sort($query as xs:string) {
-    for $letter in collection("/db/lucenetest")//letter[ft:query(., $query, map { "fields": "to" })]
+function facet:query-and-sort() {
+    for $letter in collection("/db/lucenetest")//letter[ft:query(., "from:heinz", map { "fields": "to" })]
     order by ft:field($letter, "to")
     return
         $letter/to/text()
 };
 
 declare
-    %test:args("from:heinz", "date")
     %test:assertEquals("Basia Kowalska", "Basia Müller", "Babsi Müller")
-function facet:query-and-sort-by-date($query as xs:string, $field as xs:string) {
-    for $letter in collection("/db/lucenetest")//letter[ft:query(., $query, map { "fields": $field })]
+function facet:query-and-sort-by-date() {
+    for $letter in collection("/db/lucenetest")//letter[ft:query(., "from:heinz", map { "fields": "date" })]
     order by ft:field($letter, $field, "xs:date")
     return
         $letter/to/text()
@@ -291,6 +289,14 @@ function facet:retrieve-non-existant-field() {
 };
 
 declare
+    %test:assertEmpty
+function facet:retrieve-not-stored() {
+    for $letter in collection("/db/lucenetest")//letter[ft:query(., (), map { "fields": "from" })]
+    return
+        ft:field($letter, "from")
+};
+
+declare
     %test:assertEquals("Egon", "Berlin")
 function facet:retrieve-multiple-fields() {
     for $letter in collection("/db/lucenetest")//letter[ft:query(., "from:rudi", map { "fields": ("to", "place") })]
@@ -307,4 +313,10 @@ function facet:test-field-type() {
         ft:field($letter, "likes", "xs:integer"),
         ft:field($letter, "score", "xs:double")
     )
+};
+
+declare
+    %test:assertEquals(4)
+function facet:index-keys() {
+    count(collection("/db/lucenetest")/ft:index-keys-for-field("from", (), function($key, $count) { $key }, 10))
 };
