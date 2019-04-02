@@ -55,7 +55,7 @@ public abstract class AbstractFieldConfig {
     public AbstractFieldConfig(LuceneConfig config, Element configElement, Map<String, String> namespaces) throws DatabaseConfigurationException {
         final String xpath = configElement.getAttribute(XPATH_ATTR);
         if (xpath == null || xpath.isEmpty()) {
-            throw new DatabaseConfigurationException("facet definition needs an attribute 'xpath': " + configElement.toString());
+            throw new DatabaseConfigurationException("facet definition needs an attribute 'expression': " + configElement.toString());
         }
 
         final StringBuilder sb = new StringBuilder();
