@@ -48,6 +48,8 @@ import org.exist.util.serializer.SAXSerializer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.exist.TestUtils.GUEST_DB_USER;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import org.w3c.dom.Document;
@@ -58,7 +60,6 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
-import static org.exist.xmldb.XmldbLocalTests.*;
 
 /**
  *
@@ -94,7 +95,7 @@ public class TestEXistXMLSerialize {
         Collection testCollection = service.createCollection(TEST_COLLECTION);
         UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
         // change ownership to guest
-        Account guest = ums.getAccount(GUEST_UID);
+        Account guest = ums.getAccount(GUEST_DB_USER);
         ums.chown(guest, guest.getPrimaryGroup());
         ums.chmod("rwxr-xr-x");
     }
@@ -108,7 +109,7 @@ public class TestEXistXMLSerialize {
 
     @Test
     public void serialize1() throws TransformerException, XMLDBException, ParserConfigurationException, SAXException, IOException, URISyntaxException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         XMLResource resource = (XMLResource) testCollection.createResource(null, "XMLResource");
 
         Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).
@@ -134,7 +135,7 @@ public class TestEXistXMLSerialize {
 
     @Test
     public void serialize2() throws ParserConfigurationException, SAXException, IOException, XMLDBException, URISyntaxException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(Paths.get(testFile.toURI()).toFile());
         XMLResource resource = (XMLResource) testCollection.createResource(null, "XMLResource");
         resource.setContentAsDOM(doc);
@@ -163,7 +164,7 @@ public class TestEXistXMLSerialize {
 
     @Test
     public void serialize3() throws ParserConfigurationException, SAXException, IOException, XMLDBException, TransformerException, URISyntaxException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(Paths.get(testFile.toURI()).toFile());
         XMLResource resource = (XMLResource) testCollection.createResource(null, "XMLResource");
         resource.setContentAsDOM(doc);
@@ -182,7 +183,7 @@ public class TestEXistXMLSerialize {
 
     @Test
     public void serialize4() throws ParserConfigurationException, SAXException, IOException, XMLDBException, URISyntaxException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
         Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(Paths.get(testFile.toURI()).toFile());
         XMLResource resource = (XMLResource) testCollection.createResource(null, "XMLResource");
@@ -203,7 +204,7 @@ public class TestEXistXMLSerialize {
 
     @Test
     public void serialize5() throws XMLDBException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         XMLResource resource = (XMLResource) testCollection.createResource("test.xml", "XMLResource");
         resource.setContent(XML_DATA);
 
