@@ -7,7 +7,6 @@ module namespace arr="http://exist-db.org/test/arrays";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
-declare namespace http="http://expath.org/ns/http-client";
 declare namespace json="http://www.json.org";
 
 declare variable $arr:SERIALIZE_JSON :=
@@ -30,9 +29,6 @@ declare variable $arr:COLLECTION_CONF :=
                 <create qname="b" type="xs:int"/>
             </range>
         </index>
-        <triggers>
-            <trigger class="org.exist.extensions.exquery.restxq.impl.RestXqTrigger"/>
-        </triggers>
     </collection>;
 
 declare variable $arr:XML_STORED :=
@@ -40,26 +36,6 @@ declare variable $arr:XML_STORED :=
         <a>1</a>
         <b>2</b>
     </test>;
-
-declare variable $arr:RESTXQ_TEST :=
-    'xquery version "3.1";
-
-     module namespace rt="http://exist-db.org/restxq/rt";
-    
-     declare namespace rest="http://exquery.org/ns/restxq";
-     declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
-    
-     declare
-         %rest:GET
-         %rest:path("/arrays-test")
-         %output:method("json")
-         %rest:produces("application/json")
-     function rt:json-test() {
-         map {
-             "status": "ok",
-             "counters": array { 1 to 10 }
-         }
-     };';
 
 declare variable $arr:primes := [2, 3, 5, 7, 11, 13, 17, 19];
 
@@ -72,9 +48,7 @@ function arr:setup() {
     return (
         xmldb:store($confColl, "collection.xconf", $arr:COLLECTION_CONF),
         xmldb:store($coll, "test.json", $json),
-        xmldb:store($coll, "test.xml", $arr:XML_STORED),
-        xmldb:store($coll, "test.xql", $arr:RESTXQ_TEST),
-        sm:chmod(xs:anyURI($coll || "/test.xql"), "r-xr-xr-x")
+        xmldb:store($coll, "test.xml", $arr:XML_STORED)
     )
 };
 
@@ -753,10 +727,9 @@ function arr:json-doc-options() {
     json-doc("/db/array-test/test.json", map { "duplicates": "reject" })
 };
 
-(: Requires running server :)
 declare
     %test:assertXPath("$result?1?key2 = 'value2'")
-    %test:pending
+    %test:pending(" Requires running server")
 function arr:json-doc-http() {
     json-doc("http://localhost:8080/exist/rest/db/array-test/test.json")
 };
@@ -966,21 +939,4 @@ function arr:lookupWildcard() {
         count($actual) eq count($expected)
         and
         (every $prime in $actual satisfies $prime = $expected)
-};
-
-(: Requires running server :)
-
-declare
-    %test:assertEquals("ok")
-    %test:pending
-function arr:restxq-serialize() {
-    let $req :=
-        <http:request href="http://localhost:8080/exist/restxq/arrays-test" method="get">
-            <http:header name="Accept" value="application/json"/>
-        </http:request>
-    return
-
-        let $json := parse-json(util:binary-to-string(http:send-request($req)[2]))
-        return
-            $json?status
 };

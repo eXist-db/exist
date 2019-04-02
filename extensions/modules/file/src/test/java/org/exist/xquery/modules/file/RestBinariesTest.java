@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-package org.exist.xquery;
+package org.exist.xquery.modules.file;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -70,15 +70,18 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
     }
 
     /**
-     * {@see https://github.com/eXist-db/exist/issues/790#error-case-2}
+     * {@see https://github.com/eXist-db/exist/issues/790#error-case-5}
      *
      * response:stream is used to return Base64 encoded binary.
      */
     @Test
-    public void streamBinarySax() throws JAXBException, IOException {
-        final String query = "import module namespace util = \"http://exist-db.org/xquery/util\";\n" +
+    public void readAndStreamBinarySax() throws IOException, JAXBException {
+        final byte[] data = randomData(1024 * 1024);  // 1MB
+        final Path tmpInFile = createTemporaryFile(data);
+
+        final String query = "import module namespace file = \"http://exist-db.org/xquery/file\";\n" +
                 "import module namespace response = \"http://exist-db.org/xquery/response\";\n" +
-                "let $bin := util:binary-doc('" + TEST_COLLECTION.append(BIN1_FILENAME).toString() + "')\n" +
+                "let $bin := file:read-binary('" +  tmpInFile.toAbsolutePath().toString() + "')\n" +
                 "return response:stream($bin, 'media-type=application/octet-stream')";
 
         final HttpResponse response = postXquery(query);
@@ -87,20 +90,23 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
             entity.writeTo(baos);
 
-            assertArrayEquals(BIN1_CONTENT, Base64.decodeBase64(baos.toByteArray()));
+            assertArrayEquals(Files.readAllBytes(tmpInFile), Base64.decodeBase64(baos.toByteArray()));
         }
     }
 
     /**
-     * {@see https://github.com/eXist-db/exist/issues/790#error-case-2}
+     * {@see https://github.com/eXist-db/exist/issues/790#error-case-5}
      *
      * response:stream-binary is used to return raw binary.
      */
     @Test
-    public void streamBinaryRaw() throws JAXBException, IOException {
-        final String query = "import module namespace util = \"http://exist-db.org/xquery/util\";\n" +
+    public void readAndStreamBinaryRaw() throws IOException, JAXBException {
+        final byte[] data = randomData(1024 * 1024);  // 1MB
+        final Path tmpInFile = createTemporaryFile(data);
+
+        final String query = "import module namespace file = \"http://exist-db.org/xquery/file\";\n" +
                 "import module namespace response = \"http://exist-db.org/xquery/response\";\n" +
-                "let $bin := util:binary-doc('" + TEST_COLLECTION.append(BIN1_FILENAME).toString() + "')\n" +
+                "let $bin := file:read-binary('" +  tmpInFile.toAbsolutePath().toString() + "')\n" +
                 "return response:stream-binary($bin, 'media-type=application/octet-stream', ())";
 
         final HttpResponse response = postXquery(query);
@@ -109,9 +115,10 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
             entity.writeTo(baos);
 
-            assertArrayEquals(BIN1_CONTENT, baos.toByteArray());
+            assertArrayEquals(Files.readAllBytes(tmpInFile), baos.toByteArray());
         }
     }
+
 
     @Override
     protected void storeBinaryFile(final XmldbURI filePath, final byte[] content) throws Exception {
