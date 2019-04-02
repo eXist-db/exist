@@ -293,11 +293,6 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
-    public final java.util.Collection<Group> getRoles() {
-        return getGroups();
-    }
-
-    @Override
     public final java.util.Collection<Group> getGroups() {
         return groupsByName.read(Map::values);
     }

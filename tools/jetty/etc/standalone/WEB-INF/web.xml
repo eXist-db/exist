@@ -30,7 +30,7 @@
 
     <!-- 
         EXistServlet provides Rest access to eXist-db
-	DatabaseAdminServlet: this servlet can be used to ensure that
+	    this servlet can be used to ensure that
         eXist-db is running in the background. Just set the start-parameter 
         to true and load-on-startup to 1 
     -->

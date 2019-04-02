@@ -114,7 +114,7 @@ public class XQueryUpdateTest {
             //testing duplicate attribute ...
             xquery.execute(broker, query, null);
 
-            seq = xquery.execute(broker, "xmldb:document('" + TEST_COLLECTION + "/attribs.xml')/test[@attr1 = 'eee']", null);
+            seq = xquery.execute(broker, "doc('" + TEST_COLLECTION + "/attribs.xml')/test[@attr1 = 'eee']", null);
             assertEquals(1, seq.getItemCount());
             serializer.serialize((NodeValue) seq.itemAt(0));
         }

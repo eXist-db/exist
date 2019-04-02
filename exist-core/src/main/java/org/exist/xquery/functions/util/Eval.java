@@ -173,17 +173,6 @@ public class Eval extends BasicFunction {
             )
     );
 
-    private static final String FS_EVAL_ASYNC_NAME = "eval-async";
-    static final FunctionSignature FS_EVAL_ASYNC = deprecated(
-            "The implementation of eval-async was unreliable. eval-async now defers to eval!",
-            functionSignature(
-                    FS_EVAL_ASYNC_NAME,
-                    "Dynamically evaluates an XPath/XQuery expression asynchronously. The ID of the executing thread is returned.",
-                    RETURN_NODE_TYPE,
-                    FS_PARAM_EXPRESSION
-            )
-    );
-
     private static final String FS_EVAL_AND_SERIALIZE_NAME = "eval-and-serialize";
     static final FunctionSignature[] FS_EVAL_AND_SERIALIZE = functionSignatures(
             FS_EVAL_AND_SERIALIZE_NAME,

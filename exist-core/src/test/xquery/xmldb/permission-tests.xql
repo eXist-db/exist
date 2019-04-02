@@ -14,7 +14,7 @@ function t:setup() {
     let $collAccess := xmldb:create-collection($t:collection, "accessible")
     let $collForbidden := xmldb:create-collection($t:collection, "inaccessible")
     return (
-        map(xmldb:store(?, "test.xml", <test/>), ($collAccess, $collForbidden)),
+        for-each(($collAccess, $collForbidden), xmldb:store(?, "test.xml", <test/>)),
         sm:chmod(xs:anyURI($collAccess), "rwxrwxrwx"),
         sm:chmod(xs:anyURI($collForbidden), "rwxrwxr--"),
         xmldb:store($t:collection, "hidden.xml", <hidden/>),

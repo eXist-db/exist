@@ -174,7 +174,7 @@ public class TreeLevelOrderTest {
     private final Node load(EXistXQueryService service, String document) throws XMLDBException {
         StringBuilder query = new StringBuilder();
         query.append("xquery version \"1.0\";");
-        query.append("let $survey := xmldb:document(string-join(('" + XmldbURI.ROOT_COLLECTION + "', $document), '/'))");
+        query.append("let $survey := doc(string-join(('" + XmldbURI.ROOT_COLLECTION + "', $document), '/'))");
         query.append("return $survey");
 
         service.declareVariable("document", document);

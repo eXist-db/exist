@@ -25,14 +25,7 @@ public class MapModule extends AbstractInternalModule {
             new FunctionDef(MapFunction.FNS_PUT, MapFunction.class),
             new FunctionDef(MapFunction.FNS_ENTRY, MapFunction.class),
             new FunctionDef(MapFunction.FNS_REMOVE, MapFunction.class),
-            new FunctionDef(MapFunction.FNS_FOR_EACH, MapFunction.class),
-
-
-            /* Deprecated below */
-            new FunctionDef(MapFunction.FNS_NEW_0, MapFunction.class),
-            new FunctionDef(MapFunction.FNS_NEW_N, MapFunction.class),
-            new FunctionDef(MapFunction.FNS_NEW_N_COLLATION, MapFunction.class),
-            new FunctionDef(MapFunction.FNS_FOR_EACH_ENTRY, MapFunction.class)
+            new FunctionDef(MapFunction.FNS_FOR_EACH, MapFunction.class)
     };
 
     public MapModule(Map<String, List<? extends Object>> parameters) {

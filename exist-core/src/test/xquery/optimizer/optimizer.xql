@@ -308,7 +308,7 @@ declare
 function ot:optimize-function-map($name as xs:string) {
     let $f := ot:find-by-name#1
     return
-        map($f, $name)
+        for-each($name, $f)
 };
 
 declare

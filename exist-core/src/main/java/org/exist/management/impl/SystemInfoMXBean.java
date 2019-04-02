@@ -31,9 +31,6 @@ public interface SystemInfoMXBean {
 
     String getExistBuild();
 
-    @Deprecated
-    String getSvnRevision();
-
     String getGitCommit();
 
     String getOperatingSystem();

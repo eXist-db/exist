@@ -49,11 +49,6 @@ public class SystemInfo implements SystemInfoMXBean {
     }
 
     @Override
-    public String getSvnRevision() {
-        return getGitCommit();
-    }
-
-    @Override
     public String getGitCommit() {
         return SystemProperties.getInstance().getSystemProperty("git-commit", "unknown Git commit ID");
     }

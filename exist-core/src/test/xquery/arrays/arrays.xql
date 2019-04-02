@@ -7,6 +7,7 @@ module namespace arr="http://exist-db.org/test/arrays";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
+declare namespace http="http://expath.org/ns/http-client";
 declare namespace json="http://www.json.org";
 
 declare variable $arr:SERIALIZE_JSON :=
@@ -973,12 +974,13 @@ declare
     %test:assertEquals("ok")
     %test:pending
 function arr:restxq-serialize() {
-    let $r := httpclient:get(
-        xs:anyURI("http://localhost:8080/exist/restxq/arrays-test"), false(),
-        <httpclient:headers>
-            <httpclient:header name="Accept" value="application/json"/>
-        </httpclient:headers>)
-    let $json := parse-json(util:binary-to-string($r/httpclient:body))
+    let $req :=
+        <http:request href="http://localhost:8080/exist/restxq/arrays-test" method="get">
+            <http:header name="Accept" value="application/json"/>
+        </http:request>
     return
-        $json?status
+
+        let $json := parse-json(util:binary-to-string(http:send-request($req)[2]))
+        return
+            $json?status
 };

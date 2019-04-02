@@ -50,10 +50,6 @@ public class DigestAuthenticator implements Authenticator {
 		this.pool = pool;
 	}
 
-	public Subject authenticate(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		return authenticate(request, response, true);
-	}
-
 	@Override
 	public Subject authenticate(
 			HttpServletRequest request,

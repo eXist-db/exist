@@ -49,16 +49,7 @@ public class BasicAuthenticator implements Authenticator {
 		this.pool = pool;
 	}
 
-	public Subject authenticate(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		return authenticate(request, response, true);
-	}
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.exist.http.servlets.Authenticator#authenticate(javax.servlet.http
-	 * .HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
+	@Override
 	public Subject authenticate(
 			HttpServletRequest request,
 			HttpServletResponse response, 

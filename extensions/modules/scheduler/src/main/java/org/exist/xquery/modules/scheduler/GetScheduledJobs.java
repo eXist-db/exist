@@ -111,7 +111,7 @@ public class GetScheduledJobs extends BasicFunction
     @Override
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
     {
-        Subject               user           = context.getUser();
+        Subject               user           = context.getSubject();
 
         boolean            userhasDBARole = user.hasDbaRole();
 
