@@ -7,13 +7,13 @@ import org.exist.security.Permission;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
+
+import static org.exist.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
-
-import static org.exist.xmldb.XmldbLocalTests.*;
 
 
 public class CopyMoveTest {
@@ -25,7 +25,7 @@ public class CopyMoveTest {
 
     @Test
     public void copyResourceChangeName() throws XMLDBException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         XMLResource original = (XMLResource) testCollection.createResource("original", XMLResource.RESOURCE_TYPE);
         original.setContent("<sample/>");
         testCollection.storeResource(original);
@@ -38,7 +38,7 @@ public class CopyMoveTest {
 
     @Test
     public void queryCopiedResource() throws XMLDBException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         XMLResource original = (XMLResource) testCollection.createResource("original", XMLResource.RESOURCE_TYPE);
         original.setContent("<sample/>");
         testCollection.storeResource(original);
@@ -53,7 +53,7 @@ public class CopyMoveTest {
     
     @Test
     public void changePermissionsAfterCopy() throws XMLDBException {
-        final String collectionURL = ROOT_URI + "/" + TEST_COLLECTION;
+        final String collectionURL = XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION;
         final String originalResource = "original.xml";
         final String copyResource = "copy.xml";
         
@@ -62,7 +62,7 @@ public class CopyMoveTest {
         //get collection & services
         EXistCollection col = (EXistCollection)DatabaseManager.getCollection(collectionURL);
         EXistCollectionManagementService service = (EXistCollectionManagementService) col.getService("CollectionManagementService", "1.0");
-        UserManagementService ums = (UserManagementService)DatabaseManager.getCollection(collectionURL, ADMIN_UID, ADMIN_PWD).getService("UserManagementService", "1.0");
+        UserManagementService ums = (UserManagementService)DatabaseManager.getCollection(collectionURL, ADMIN_DB_USER, ADMIN_DB_PWD).getService("UserManagementService", "1.0");
         
         //store xml document
         XMLResource original = (XMLResource) col.createResource(originalResource, XMLResource.RESOURCE_TYPE);
@@ -87,7 +87,7 @@ public class CopyMoveTest {
         Resource copyRes = col.getResource(copyResource);
         
         //change permission on copy
-        Account admin = ums.getAccount(ADMIN_UID);
+        Account admin = ums.getAccount(ADMIN_DB_USER);
         ums.chown(copyRes, admin, admin.getPrimaryGroup());
         ums.chmod(copyRes, "rwx--x---");
         
@@ -106,7 +106,7 @@ public class CopyMoveTest {
         final Collection testCollection = cms.createCollection(TEST_COLLECTION);
         final UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
         // change ownership to guest
-        final Account guest = ums.getAccount(GUEST_UID);
+        final Account guest = ums.getAccount(GUEST_DB_USER);
         ums.chown(guest, guest.getPrimaryGroup());
         ums.chmod("rwxr-xr-x");
     }

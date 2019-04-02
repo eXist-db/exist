@@ -39,6 +39,7 @@ import org.exist.util.XMLFilenameFilter;
 import org.junit.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.TestUtils.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
@@ -52,7 +53,6 @@ import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
-import static org.exist.xmldb.XmldbLocalTests.*;
 
 public class CreateCollectionsTest  {
 
@@ -68,7 +68,7 @@ public class CreateCollectionsTest  {
         final Collection test = cms.createCollection(TEST_COLLECTION);
         final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         // change ownership to guest
-        Account guest = ums.getAccount(GUEST_UID);
+        Account guest = ums.getAccount(GUEST_DB_USER);
         ums.chown(guest, guest.getPrimaryGroup());
         ums.chmod("rwxrwxrwx");
     }
@@ -82,20 +82,20 @@ public class CreateCollectionsTest  {
 
     @Test
     public void rootCollectionHasNoParent() throws XMLDBException {
-        final Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
+        final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, ADMIN_DB_USER, ADMIN_DB_PWD);
         assertNull("root collection has no parent", root.getParentCollection());
     }
 
     @Test
     public void collectionMustProvideAtLeastOneService() throws XMLDBException {
-        final Collection colTest = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        final Collection colTest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         final Service[] services = colTest.getServices();
         assertTrue("Collection must provide at least one Service", services != null && services.length > 0);
     }
 
     @Test
     public void createCollection_hasNoSubCollections_andIsOpen() throws XMLDBException {
-        final Collection colTest = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        final Collection colTest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         final CollectionManagementService service = (CollectionManagementService) colTest.getService("CollectionManagementService", "1.0");
         final Collection testCollection = service.createCollection("test");
         assertNotNull(testCollection);
@@ -106,7 +106,7 @@ public class CreateCollectionsTest  {
 
     @Test
     public void storeSamplesShakespeare() throws XMLDBException, IOException {
-        final Collection colTest = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        final Collection colTest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         final CollectionManagementService service = (CollectionManagementService) colTest.getService("CollectionManagementService", "1.0");
         final Collection testCollection = service.createCollection("test");
         UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
@@ -137,7 +137,7 @@ public class CreateCollectionsTest  {
 
     @Test
     public void storeRemoveStoreResource() throws XMLDBException, IOException {
-        final Collection colTest = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        final Collection colTest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         final CollectionManagementService service = (CollectionManagementService) colTest.getService("CollectionManagementService", "1.0");
         final Collection testCollection = service.createCollection("test");
         UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
@@ -164,7 +164,7 @@ public class CreateCollectionsTest  {
 
     @Test
     public void storeBinaryResource() throws XMLDBException, IOException {
-        Collection colTest = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection colTest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         CollectionManagementService service = (CollectionManagementService) colTest.getService("CollectionManagementService", "1.0");
         Collection testCollection = service.createCollection("test");
         UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
@@ -198,7 +198,7 @@ public class CreateCollectionsTest  {
     @Test
     public void testMultipleCreates() throws XMLDBException {
         
-        Collection testCol = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCol = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         CollectionManagementService cms = (CollectionManagementService)testCol.getService("CollectionManagementService", "1.0");
         assertNotNull(cms);
 
