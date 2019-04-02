@@ -122,7 +122,7 @@ public class DTMHandleTest {
     private final Node load(EXistXQueryService service, String document) throws XMLDBException {
         StringBuilder query = new StringBuilder();
         query.append("xquery version \"1.0\";");
-        query.append("let $survey := xmldb:document(concat('" + XmldbURI.ROOT_COLLECTION + "', '/', $document))");
+        query.append("let $survey := doc(concat('" + XmldbURI.ROOT_COLLECTION + "', '/', $document))");
         query.append("return ($survey)");
 
         service.declareVariable("document", document);

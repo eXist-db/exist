@@ -15,7 +15,7 @@ import org.exist.xquery.value.ValueSequence;
 
 public class FunHigherOrderFun extends BasicFunction {
 
-    public final static FunctionSignature FN_FOR_EACH =
+	public final static FunctionSignature FN_FOR_EACH =
         new FunctionSignature(
             new QName("for-each", Function.BUILTIN_FUNCTION_NS),
             "Applies the function item $function to every item from the sequence " +
@@ -26,9 +26,9 @@ public class FunHigherOrderFun extends BasicFunction {
             },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE,
                     "result of applying the function to each item of the sequence")
-        );
+		);
 
-    public final static FunctionSignature FN_FOR_EACH_PAIR =
+	public final static FunctionSignature FN_FOR_EACH_PAIR =
         new FunctionSignature(
             new QName("for-each-pair", Function.BUILTIN_FUNCTION_NS),
                 "Applies the function item $f to successive pairs of items taken one from $seq1 and one from $seq2, " +
@@ -40,31 +40,22 @@ public class FunHigherOrderFun extends BasicFunction {
             },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE,
                     "concatenation of resulting sequences")
-        );
+		);
 
-	public final static FunctionSignature signatures[] = {
-	    new FunctionSignature(
-	        new QName("map", Function.BUILTIN_FUNCTION_NS),
-	        "Applies the function item $function to every item from the sequence " +
-	        "$sequence in turn, returning the concatenation of the resulting sequences in order.",
-	        new SequenceType[] {
-	            new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "the function to call"),
-	            new FunctionParameterSequenceType("sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "the sequence on which to apply the function")
-	        },
-	        new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, 
-	        		"result of applying the function to each item of the sequence"),
-            FN_FOR_EACH
-        ),
-        FN_FOR_EACH,
+
+	public final static FunctionSignature FN_FILTER =
 		new FunctionSignature(
-	        new QName("filter", Function.BUILTIN_FUNCTION_NS),
-	        "Returns those items from the sequence $sequence for which the supplied function $function returns true.",
-	        new SequenceType[] {
-                new FunctionParameterSequenceType("sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "the sequence to filter"),
-	            new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "the function to call")
-	        },
-	        new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, 
-        		"result of filtering the sequence")),
+			new QName("filter", Function.BUILTIN_FUNCTION_NS),
+			"Returns those items from the sequence $sequence for which the supplied function $function returns true.",
+			new SequenceType[] {
+				new FunctionParameterSequenceType("sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "the sequence to filter"),
+				new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "the function to call")
+			},
+			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE,
+				"result of filtering the sequence")
+	);
+
+	public final static FunctionSignature FN_FOLD_LEFT =
 		new FunctionSignature(
 	        new QName("fold-left", Function.BUILTIN_FUNCTION_NS),
 	        "Processes the supplied sequence from left to right, applying the supplied function repeatedly to each " +
@@ -75,7 +66,10 @@ public class FunHigherOrderFun extends BasicFunction {
 	            new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "the function to call")
 	        },
 	        new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, 
-	        		"result of the fold-left operation")),
+	        		"result of the fold-left operation")
+		);
+
+	public final static FunctionSignature FN_FOLD_RIGHT =
 		new FunctionSignature(
 	        new QName("fold-right", Function.BUILTIN_FUNCTION_NS),
 	        "Processes the supplied sequence from right to left, applying the supplied function repeatedly to each " +
@@ -86,22 +80,10 @@ public class FunHigherOrderFun extends BasicFunction {
 	            new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "the function to call"),
 	        },
 	        new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, 
-	        		"result of the fold-right operation")),
-		new FunctionSignature(
-	        new QName("map-pairs", Function.BUILTIN_FUNCTION_NS),
-	        "Applies the function item $f to successive pairs of items taken one from $seq1 and one from $seq2, " +
-	        "returning the concatenation of the resulting sequences in order.",
-	        new SequenceType[] {
-	            new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "the function to call"),
-	            new FunctionParameterSequenceType("seq1", Type.ITEM, Cardinality.ZERO_OR_MORE, "first sequence to take items from"),
-	            new FunctionParameterSequenceType("seq2", Type.ITEM, Cardinality.ZERO_OR_MORE, "second sequence to take items from")
-	        },
-	        new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, 
-	        		"result of the map-pairs operation"),
-            FN_FOR_EACH_PAIR
-        ),
-        FN_FOR_EACH_PAIR,
-		new FunctionSignature(
+	        		"result of the fold-right operation")
+		);
+
+	public final static FunctionSignature FN_APPLY = new FunctionSignature(
 			new QName("apply", Function.BUILTIN_FUNCTION_NS),
 			"Processes the supplied sequence from right to left, applying the supplied function repeatedly to each " +
 					"item in turn, together with an accumulated result value.",
@@ -110,8 +92,8 @@ public class FunHigherOrderFun extends BasicFunction {
 				new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "an array containing the arguments to pass to the function")
 			},
 			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE,
-				"return value of the function call")),
-	};
+				"return value of the function call")
+	);
     
 	private AnalyzeContextInfo cachedContextInfo;
 	
@@ -140,16 +122,7 @@ public class FunHigherOrderFun extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
         Sequence result = new ValueSequence();
-        if (isCalledAs("map")) {
-            try (final FunctionReference ref = (FunctionReference) args[0].itemAt(0)) {
-				ref.analyze(cachedContextInfo);
-				for (final SequenceIterator i = args[1].iterate(); i.hasNext(); ) {
-					final Item item = i.nextItem();
-					final Sequence r = ref.evalFunction(contextSequence, null, new Sequence[]{item.toSequence()});
-					result.addAll(r);
-				}
-			}
-        } else if (isCalledAs("for-each")) {
+        if (isCalledAs("for-each")) {
             try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
 				ref.analyze(cachedContextInfo);
 				for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
@@ -200,17 +173,6 @@ public class FunHigherOrderFun extends BasicFunction {
 					result = foldRight(ref, zero, seq, contextSequence);
 				}
 			}
-        } else if (isCalledAs("map-pairs")) {
-            try (final FunctionReference ref = (FunctionReference) args[0]) {
-				ref.analyze(cachedContextInfo);
-				final SequenceIterator i1 = args[1].iterate();
-				final SequenceIterator i2 = args[2].iterate();
-				while (i1.hasNext() && i2.hasNext()) {
-					final Sequence r = ref.evalFunction(contextSequence, null,
-							new Sequence[]{i1.nextItem().toSequence(), i2.nextItem().toSequence()});
-					result.addAll(r);
-				}
-			}
         } else if (isCalledAs("for-each-pair")) {
             try (final FunctionReference ref = (FunctionReference) args[2].itemAt(0)) {
 				ref.analyze(cachedContextInfo);
@@ -248,7 +210,7 @@ public class FunHigherOrderFun extends BasicFunction {
     }
 
     /**
-     * High performance non-recurisve implementation of fold-right
+     * High performance non-recursive implementation of fold-right
      * relies on the provided iterator moving in reverse
      *
      * @param seq An iterator which moves from right to left

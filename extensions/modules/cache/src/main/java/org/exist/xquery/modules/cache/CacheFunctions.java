@@ -54,16 +54,6 @@ public class CacheFunctions extends BasicFunction {
     private static final FunctionParameterSequenceType FS_PARAM_CACHE_NAME = param("cache-name", Type.STRING, "The name of the cache");
     private static final FunctionParameterSequenceType FS_PARAM_KEY = manyParam("key", Type.ANY_TYPE, "The key");
 
-    @Deprecated private static final String FS_CACHE_NAME = "cache";
-    @Deprecated static final FunctionSignature FS_CACHE = deprecated(
-            "Deprecated as Caches are now created on demand, or by cache:create($name, $config)",
-            functionSignature(
-                FS_CACHE_NAME,
-                "Get/create a cache using the specified name.",
-                returns(Type.STRING, "The name of the cache."),
-                FS_PARAM_CACHE_NAME
-    ));
-
     private static final String FS_CREATE_NAME = "create";
     static final FunctionSignature FS_CREATE_CACHE = functionSignature(
             FS_CREATE_NAME,
@@ -168,14 +158,6 @@ public class CacheFunctions extends BasicFunction {
         }
 
         switch(getName().getLocalPart()) {
-
-            case FS_CACHE_NAME:
-                if(CacheModule.caches.containsKey(cacheName)) {
-                    return args[0];
-                }
-                createCache(cacheName, new CacheConfig());
-                return args[0];
-
 
             case FS_CREATE_NAME:
                 if(CacheModule.caches.containsKey(cacheName)) {

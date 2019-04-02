@@ -1386,7 +1386,7 @@ public class XQueryTest {
 
     @Test
     public void userEscalationForInMemoryNodes() throws XMLDBException {
-        String query = "xmldb:login(\"xmldb:exist:///db\", \"guest\", \"guest\"), xmldb:get-current-user(), let $node := <node id=\"1\">value</node>, $null := $node[@id eq '1'] return xmldb:get-current-user()";
+        String query = "xmldb:login(\"xmldb:exist:///db\", \"guest\", \"guest\"), sm:id()/sm:id/sm:effective/sm:username/text(), let $node := <node id=\"1\">value</node>, $null := $node[@id eq '1'] return sm:id()/sm:id/sm:effective/sm:username/text()";
 
         XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
         ResourceSet result = service.query(query);
@@ -1681,7 +1681,7 @@ public class XQueryTest {
                 "</xu:append>" +
                 "</xu:modifications>" +
                 "let $count := xmldb:update('/db' , $xu)" +
-                "for $textNode in xmldb:document('/db/xupdateTest.xml')/test/text()" +
+                "for $textNode in doc('/db/xupdateTest.xml')/test/text()" +
                 "	return <text id='{util:node-id($textNode)}'>{$textNode}</text>";
 
         XPathQueryService service =
@@ -1716,7 +1716,7 @@ public class XQueryTest {
                 "for $frame in $game/frame\n" +
                 "return update insert attribute points {4} into $frame\n" +
                 "};\n" +
-                "let $series := xmldb:document('bowling.xml')/series\n" +
+                "let $series := doc('bowling.xml')/series\n" +
                 "let $nul1 := for $game in $series/game return local:update-game($game)\n" +
                 "return $series/game/stats\n";
 
@@ -2516,7 +2516,7 @@ public class XQueryTest {
 
         XPathQueryService service = storeXMLStringAndGetQueryService("baseuri.xml", xmldoc);
             
-        String query="xmldb:document('/db/test/baseuri.xml')/Root/Node1/base-uri()";
+        String query="doc('/db/test/baseuri.xml')/Root/Node1/base-uri()";
 
 
         ResourceSet result = service.query(query);
@@ -2524,7 +2524,7 @@ public class XQueryTest {
         assertEquals(1, result.getSize());
         assertEquals("/db/test/baseuri.xml", result.getResource(0).getContent().toString());
 
-        query = "xmldb:document('/db/test/baseuri.xml')/Root/Node1/base-uri()";
+        query = "doc('/db/test/baseuri.xml')/Root/Node1/base-uri()";
 
         result = service.query(query);
 
@@ -2532,14 +2532,14 @@ public class XQueryTest {
         assertEquals("/db/test/baseuri.xml", result.getResource(0).getContent().toString());
 
 
-        query = "xmldb:document('/db/test/baseuri.xml')/Root/Node1/Node2/base-uri()";
+        query = "doc('/db/test/baseuri.xml')/Root/Node1/Node2/base-uri()";
 
         result = service.query(query);
 
         assertEquals(1, result.getSize());
         assertEquals("/db/test/baseuri.xml", result.getResource(0).getContent().toString());
 
-        query = "xmldb:document('/db/test/baseuri.xml')/Root/Node1/Node2/Node3/base-uri()";
+        query = "doc('/db/test/baseuri.xml')/Root/Node1/Node2/Node3/base-uri()";
 
         result = service.query(query);
 

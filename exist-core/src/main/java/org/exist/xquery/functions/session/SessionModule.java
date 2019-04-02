@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.QName;
 import org.exist.xquery.*;
 
 /**
@@ -43,18 +42,6 @@ public class SessionModule extends AbstractInternalModule {
     public static final String PREFIX = "session";
     public final static String INCLUSION_DATE = "2006-04-09";
     public final static String RELEASED_IN_VERSION = "eXist-1.0";
-
-    /**
-     * Referencing the HTTP Session directly
-     * via the $session:session variable should
-     * not be done.
-     * The HTTP Session is available internally
-     * through {@link XQueryContext#getHttpContext()}.
-     *
-     * @deprecated Use {@link XQueryContext#getHttpContext()} instead.
-     */
-    @Deprecated
-    public static final QName SESSION_VAR = new QName("session", NAMESPACE_URI, PREFIX);
 
     public static final FunctionDef[] functions = {
             new FunctionDef(Create.signature, Create.class),

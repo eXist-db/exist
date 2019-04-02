@@ -84,10 +84,7 @@ abstract class BrokerPools {
      * @param config     The configuration object for the database instance
      *
      * @throws EXistException If the initialization fails.
-     *
-     * @Deprecated Use {@link #configure(int, int, Configuration, Optional)}
      */
-    @Deprecated
     public static void configure(final int minBrokers, final int maxBrokers, final Configuration config)
             throws EXistException, DatabaseConfigurationException {
         configure(DEFAULT_INSTANCE_NAME, minBrokers, maxBrokers, config);
@@ -123,10 +120,7 @@ abstract class BrokerPools {
      * @param config       The configuration object for the database instance
      *
      * @throws EXistException If the initialization fails.
-     *
-     * @Deprecated Use {@link #configure(String, int, int, Configuration, Optional)}
      */
-    @Deprecated
     public static void configure(final String instanceName, final int minBrokers, final int maxBrokers,
             final Configuration config) throws EXistException {
         configure(instanceName, minBrokers, maxBrokers, config, Optional.empty());

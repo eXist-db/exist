@@ -258,7 +258,7 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
         if (auth == null && getDefaultUser() != null) {
             return getDefaultUser();
         }
-        return getAuthenticator().authenticate(request, response);
+        return getAuthenticator().authenticate(request, response, true);
     }
 
     protected boolean isInternalOnly() {

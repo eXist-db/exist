@@ -76,7 +76,6 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(GroupManagementFunction.FNS_CREATE_GROUP_WITH_METADATA, GroupManagementFunction.class),
         new FunctionDef(GroupManagementFunction.FNS_CREATE_GROUP_WITH_MANAGERS_WITH_METADATA, GroupManagementFunction.class),
         new FunctionDef(GroupManagementFunction.FNS_REMOVE_GROUP, GroupManagementFunction.class),
-        new FunctionDef(GroupManagementFunction.FNS_DELETE_GROUP, GroupManagementFunction.class),
 
         new FunctionDef(GroupMembershipFunction.FNS_ADD_GROUP_MEMBER, GroupMembershipFunction.class),
         new FunctionDef(GroupMembershipFunction.FNS_REMOVE_GROUP_MEMBER, GroupMembershipFunction.class),
@@ -91,7 +90,6 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(FindGroupFunction.FNS_FIND_GROUPS_BY_GROUPNAME, FindGroupFunction.class),
         new FunctionDef(FindGroupFunction.FNS_FIND_GROUPS_WHERE_GROUPNAME_CONTANINS, FindGroupFunction.class),
         new FunctionDef(FindGroupFunction.FNS_GET_USER_GROUPS, FindGroupFunction.class),
-        new FunctionDef(FindGroupFunction.FNS_GET_GROUPS, FindGroupFunction.class),
         new FunctionDef(FindGroupFunction.FNS_GET_USER_PRIMARY_GROUP, FindGroupFunction.class),
         new FunctionDef(FindGroupFunction.FNS_GROUP_EXISTS, FindGroupFunction.class),
 

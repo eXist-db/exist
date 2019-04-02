@@ -50,9 +50,8 @@ public class LexerTest {
 
 	@Test
 	public void query() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, RecognitionException, XPathException, TokenStreamException {
-		//String query = "xmldb:document()//p[. &= '\uB2E8\uACC4']";
 		String query =
-			"xmldb:document()//p[. = '\u4ED6\u4E3A\u8FD9\u9879\u5DE5\u7A0B\u6295"
+			"//p[. = '\u4ED6\u4E3A\u8FD9\u9879\u5DE5\u7A0B\u6295"
 				+ "\u5165\u4E86\u5341\u4E09\u5E74\u65F6\u95F4\u3002']";
 
 		// get a BrokerPool for access to the database engine

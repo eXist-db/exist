@@ -138,7 +138,6 @@ public class QName implements Comparable<QName> {
      * @deprecated Use for debugging purpose only,
      * use {@link #getStringValue()} for production
      */
-    @Deprecated
     @Override
     public String toString() {
         //TODO : remove this copy of getStringValue()

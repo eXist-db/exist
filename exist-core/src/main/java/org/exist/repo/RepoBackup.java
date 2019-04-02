@@ -38,14 +38,6 @@ public class RepoBackup {
         return tempFile;
     }
 
-    /**
-     * @deprecated Use {@link #restore(Txn, DBBroker)}.
-     */
-    @Deprecated
-    public static void restore(final DBBroker broker) throws IOException, PermissionDeniedException {
-        restore(null, broker);
-    }
-
     public static void restore(final Txn transaction, final DBBroker broker) throws IOException, PermissionDeniedException {
         final XmldbURI docPath = XmldbURI.createInternal(XmldbURI.ROOT_COLLECTION + "/" + REPO_ARCHIVE);
         try(final LockedDocument lockedDoc = broker.getXMLResource(docPath, LockMode.READ_LOCK)) {

@@ -1,16 +1,17 @@
 package org.exist.xquery.functions.request;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.URLEncoder;
 
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.fluent.Request;
 import org.exist.http.RESTTest;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -28,60 +29,38 @@ public class GetHeaderTest extends RESTTest {
 			+ "\")}</request-header>";
 
 	@Test
-	public void testGetNoHeader() {
+	public void testGetNoHeader() throws IOException, SAXException {
 		testGetHeader(null);
 	}
 
 	@Test
-	public void testEmptyHeader() {
+	public void testEmptyHeader() throws IOException, SAXException {
 		testGetHeader("");
 	}
 
 	@Test
-	public void testHeaderValue() {
+	public void testHeaderValue() throws IOException, SAXException {
 		testGetHeader("value1");
 	}
 
-	private void testGetHeader(String headerValue) {
-		final GetMethod get = new GetMethod(getCollectionRootUri());
-
-		final NameValuePair qsParams[] = {
-				new NameValuePair("_query", xquery),
-				new NameValuePair("_indent", "no"),
-				new NameValuePair("_wrap", "no")
-		};
+	private void testGetHeader(String headerValue) throws IOException, SAXException {
+		Request request = Request.Get(getCollectionRootUri() + "?_query=" + URLEncoder.encode(xquery, "UTF-8") + "&_indent=no&_wrap=no");
 
 		final StringBuilder xmlExpectedResponse = new StringBuilder("<request-header name=\"" + HTTP_HEADER_NAME + "\">");
 		if (headerValue != null) {
-			get.setRequestHeader(HTTP_HEADER_NAME, headerValue);
-
+			request = request.addHeader(HTTP_HEADER_NAME, headerValue);
 			xmlExpectedResponse.append(headerValue);
 		}
 		xmlExpectedResponse.append("</request-header>");
 
-		get.setQueryString(qsParams);
+		final HttpResponse response = request.execute().returnResponse();
 
-		try {
-			int httpResult = client.executeMethod(get);
+		assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
-			final StringBuilder xmlActualResponse = new StringBuilder();
-			try (final InputStream is = get.getResponseBodyAsStream()) {
-				byte buf[] = new byte[4096];
-				int read = -1;
-				while ((read = is.read(buf)) > -1) {
-					xmlActualResponse.append(new String(buf, 0, read));
-				}
-			}
-
-			assertEquals(httpResult, HttpStatus.SC_OK);
-
+		try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+			response.getEntity().writeTo(os);
 			assertXMLEqual(xmlExpectedResponse
-					.toString(), xmlActualResponse.toString());
-
-		} catch (final IOException | SAXException ioe) {
-			fail(ioe.getMessage());
-		} finally {
-			get.releaseConnection();
+					.toString(), new String(os.toByteArray(), UTF_8));
 		}
 	}
 }

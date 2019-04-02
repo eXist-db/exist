@@ -141,7 +141,7 @@ public class NodeTypeTest {
 	private final Node load(EXistXQueryService service, String document) throws XMLDBException {
 		StringBuilder query = new StringBuilder();
 		query.append("xquery version \"1.0\";");
-		query.append("let $result := xmldb:document(string-join(('" + XmldbURI.ROOT_COLLECTION + "', $document), '/'))");
+		query.append("let $result := doc(string-join(('" + XmldbURI.ROOT_COLLECTION + "', $document), '/'))");
 		query.append("return ($result)");
 
         service.declareVariable("document", document);

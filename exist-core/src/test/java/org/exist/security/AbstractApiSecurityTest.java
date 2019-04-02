@@ -102,7 +102,10 @@ public abstract class AbstractApiSecurityTest {
         chmodCol("/db", "rwxr-xr-x", ADMIN_DB_USER, ADMIN_DB_PWD); //ensure /db is always 755
         
         removeAccount(TEST_USER1_UID, ADMIN_DB_USER, ADMIN_DB_PWD);
+        removeGroup(TEST_USER1_UID, ADMIN_DB_USER, ADMIN_DB_PWD);  // remove personal group!
         removeAccount(TEST_USER2_UID, ADMIN_DB_USER, ADMIN_DB_PWD);
+        removeGroup(TEST_USER2_UID, ADMIN_DB_USER, ADMIN_DB_PWD);  // remove personal group!
+
         removeGroup(TEST_GROUP_GID, ADMIN_DB_USER, ADMIN_DB_PWD);
         
         createGroup(TEST_GROUP_GID, ADMIN_DB_USER, ADMIN_DB_PWD);

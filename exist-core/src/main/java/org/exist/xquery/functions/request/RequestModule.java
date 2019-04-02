@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.QName;
 import org.exist.xquery.*;
 
 /**
@@ -42,18 +41,6 @@ public class RequestModule extends AbstractInternalModule {
     public static final String PREFIX = "request";
     public final static String INCLUSION_DATE = "2004-09-12, 2006-04-09";
     public final static String RELEASED_IN_VERSION = "pre eXist-1.0 (Many functions originally in this module have been moved into new modules response and session.)";
-
-    /**
-     * Referencing the HTTP Request directly
-     * via the $request:request variable should
-     * not be done.
-     * The HTTP Request is available internally
-     * through {@link XQueryContext#getHttpContext()}.
-     *
-     * @deprecated Use {@link XQueryContext#getHttpContext()} instead.
-     */
-    @Deprecated
-    public static final QName REQUEST_VAR = new QName("request", NAMESPACE_URI, PREFIX);
 
     public static final FunctionDef[] functions = {
             new FunctionDef(GetRequestAttribute.signatures[0], GetRequestAttribute.class),

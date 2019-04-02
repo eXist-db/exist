@@ -28,12 +28,6 @@ import org.exist.storage.txn.TransactionException;
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public interface Transaction extends AutoCloseable {
-
-    /**
-     * @Deprecated use org.exist.Transaction#commit() instead
-     */
-    @Deprecated
-    public void success() throws TransactionException;
     
     /**
      * Performs an atomic commit of the transaction
@@ -41,18 +35,12 @@ public interface Transaction extends AutoCloseable {
      * @throws org.exist.storage.txn.TransactionException if an error occurred
      *   during writing any part of the transaction
      */
-    public void commit() throws TransactionException;
-
-    /**
-     * @Deprecated use org.exist.Transaction#abort() instead
-     */
-    @Deprecated
-    public void failure();
+    void commit() throws TransactionException;
 
     /**
      * Performs an atomic abort of the transaction
      */
-    public void abort();
+    void abort();
 
     /**
      * Closes the transaction
@@ -61,5 +49,5 @@ public interface Transaction extends AutoCloseable {
      * it will be auto-aborted.
      */
     @Override
-    public void close();
+    void close();
 }

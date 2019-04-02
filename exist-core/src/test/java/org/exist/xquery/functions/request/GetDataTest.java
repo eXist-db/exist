@@ -1,21 +1,21 @@
 package org.exist.xquery.functions.request;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.fluent.Request;
+import org.apache.http.entity.ContentType;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.UserManagementService;
 import java.io.IOException;
-import java.io.InputStream;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.exist.http.RESTTest;
 import org.exist.xmldb.EXistResource;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.fail;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
@@ -55,86 +55,71 @@ public class GetDataTest extends RESTTest {
     }
 
     @Test
-    public void retrieveEmpty() {
-        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
-
-        post.setRequestHeader("Content-Type", "application/octet-stream");
+    public void retrieveEmpty() throws IOException {
+        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+            .addHeader("Content-Type", "application/octet-stream");
 
         testRequest(post, wrapInElement("").getBytes());
     }
     
     @Test
-    public void retrieveBinary() {
-        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
-
+    public void retrieveBinary() throws IOException {
         final String testData = "12345";
 
-        post.setRequestHeader("Content-Type", "application/octet-stream");
-        post.setRequestEntity(new ByteArrayRequestEntity(testData.getBytes()));
+        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+                .bodyByteArray(testData.getBytes(UTF_8), ContentType.APPLICATION_OCTET_STREAM);
 
-        testRequest(post, wrapInElement(encodeBase64String(testData.getBytes()).trim()).getBytes());
+        testRequest(post, wrapInElement(encodeBase64String(testData.getBytes(UTF_8)).trim()).getBytes());
     }
 
     @Test
-    public void retrieveXml() {
-        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
-
+    public void retrieveXml() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
-        post.setRequestHeader("Content-Type", "text/xml");
-        post.setRequestEntity(new ByteArrayRequestEntity(testData.getBytes()));
+        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+                .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
 
         testRequest(post, wrapInElement("\n\t" + testData + "\n").getBytes(), true);
     }
 
     @Test
-    public void retrieveMalformedXmlFallbackToString() {
-        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
-
+    public void retrieveMalformedXmlFallbackToString() throws IOException {
         final String testData = "<a><b></a>";
 
-        post.setRequestHeader("Content-Type", "text/xml");
-        post.setRequestEntity(new ByteArrayRequestEntity(testData.getBytes()));
+        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+            .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
 
         testRequest(post, wrapInElement(testData.replace("<", "&lt;").replace(">", "&gt;")).getBytes());
     }
 
     @Test
-    public void retrieveString() {
-        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
-
+    public void retrieveString() throws IOException {
         final String testData = "12345";
 
-        post.setRequestEntity(new ByteArrayRequestEntity(testData.getBytes()));
+        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+                .bodyByteArray(testData.getBytes(UTF_8));
 
         testRequest(post, wrapInElement(testData).getBytes());
     }
     
-    private void testRequest(HttpMethod method, byte expectedResponse[]) {
+    private void testRequest(Request method, final byte expectedResponse[]) throws IOException {
         testRequest(method, expectedResponse, false);
     }
     
-    private void testRequest(HttpMethod method, byte expectedResponse[], boolean stripWhitespaceAndFormatting) {
-        try {
-            int httpResult = client.executeMethod(method);
+    private void testRequest(Request method, byte expectedResponse[], boolean stripWhitespaceAndFormatting) throws IOException {
+        final HttpResponse response = method.execute().returnResponse();
 
-            assertEquals(HttpStatus.SC_OK, httpResult);
+            assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
-            try (final InputStream is = method.getResponseBodyAsStream();
-                    final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
-                baos.write(is);
+            try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+                response.getEntity().writeTo(os);
 
-                byte actualResponse[] = baos.toByteArray();
+                byte actualResponse[] = os.toByteArray();
                 if(stripWhitespaceAndFormatting) {
-                    expectedResponse = new String(expectedResponse).replace("\n", "").replace("\t", "").replace(" ", "").getBytes();
-                    actualResponse = new String(actualResponse).replace("\n", "").replace("\t","").replace(" ", "").getBytes();
+                    expectedResponse = new String(expectedResponse).replace("\n", "").replace("\t", "").replace(" ", "").getBytes(UTF_8);
+                    actualResponse = new String(actualResponse).replace("\n", "").replace("\t","").replace(" ", "").getBytes(UTF_8);
                 }
                 assertArrayEquals(expectedResponse, actualResponse);
             }
-        } catch(IOException ioe) {
-            fail(ioe.getMessage());
-        } finally {
-            method.releaseConnection();
-        }
     }
 }

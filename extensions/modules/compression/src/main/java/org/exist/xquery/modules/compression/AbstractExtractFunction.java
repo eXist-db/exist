@@ -161,7 +161,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
 
                 String path = entryDataFunctionResult.itemAt(0).getStringValue();
 
-                Collection root = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), new AnyURIValue("/db").toXmldbURI());
+                Collection root = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), new AnyURIValue("/db").toXmldbURI());
 
                 if (isDirectory) {
 

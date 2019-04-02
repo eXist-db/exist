@@ -93,7 +93,7 @@ public class ResumeScheduledJob extends BasicFunction
     {
         String jobName = args[0].getStringValue();
 
-        Subject   user    = context.getUser();
+        Subject   user    = context.getSubject();
 
         //Check if the user is a DBA
         if( !user.hasDbaRole() ) {

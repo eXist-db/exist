@@ -328,7 +328,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
                     } else {
                         //xml
                         Serializer serializer = context.getBroker().getSerializer();
-                        serializer.setUser(context.getUser());
+                        serializer.setUser(context.getSubject());
                         serializer.setProperty("omit-xml-declaration", "no");
                         getDynamicSerializerOptions(serializer);
                         value = serializer.serialize((NodeValue) content).getBytes();
@@ -399,7 +399,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
 		if (doc.getResourceType() == DocumentImpl.XML_FILE) {
 			// xml file
 			Serializer serializer = context.getBroker().getSerializer();
-			serializer.setUser(context.getUser());
+			serializer.setUser(context.getSubject());
 			serializer.setProperty("omit-xml-declaration", "no");
             getDynamicSerializerOptions(serializer);
             String strDoc = serializer.serialize(doc);
