@@ -23,14 +23,14 @@ package org.exist.util.io;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author Patrick Reinhart <patrick@reini.net>
  */
 final class OverflowToDiskStream extends OutputStream {
-    private static final Log LOG = LogFactory.getLog(OverflowToDiskStream.class);
+    private static final Logger LOG = LogManager.getLogger(OverflowToDiskStream.class);
 
     private final int inMemorySize;
     private final OutputStreamSupplier overflowStreamSupplier;
@@ -50,7 +50,7 @@ final class OverflowToDiskStream extends OutputStream {
         if (overflowOutputStream == null) {
             overflowOutputStream = overflowStreamSupplier.get();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Writing in memory buffered " + count + " bytes to overflow stream");
+                LOG.debug("Writing in memory buffered {} bytes to overflow stream", Long.valueOf(count));
             }
             memoryContents.transferTo(overflowOutputStream, 0);
             memoryContents.reset();
@@ -117,7 +117,7 @@ final class OverflowToDiskStream extends OutputStream {
     public void close() throws IOException {
         if (overflowOutputStream != null) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Closing overflow stream after writing " + count + " bytes");
+                LOG.debug("Closing overflow stream after writing {} bytes", Long.valueOf(count));
             }
             overflowOutputStream.close();
         }

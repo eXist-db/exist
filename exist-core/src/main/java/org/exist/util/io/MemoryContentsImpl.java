@@ -29,14 +29,14 @@ import java.io.OutputStream;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author Patrick Reinhart <patrick@reini.net>
  */
 public final class MemoryContentsImpl implements MemoryContents {
-    private static final Log LOG = LogFactory.getLog(MemoryContentsImpl.class);
+    private static final Logger LOG = LogManager.getLogger(MemoryContentsImpl.class);
 
     /**
      * The object header size of an array. Two words (flags &amp; class oop) plus
@@ -73,7 +73,7 @@ public final class MemoryContentsImpl implements MemoryContents {
     private MemoryContentsImpl(int initialBlocks) {
         this.initialBlocks = initialBlocks;
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Initializing with " + initialBlocks + " initial blocks");
+            LOG.debug("Initializing with {} initial blocks", Integer.valueOf(initialBlocks));
         }
         lock = new ReentrantReadWriteLock();
         initialize();

@@ -27,6 +27,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import net.jcip.annotations.ThreadSafe;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.exist.util.FileUtils;
@@ -34,6 +35,7 @@ import org.exist.util.FileUtils;
 /**
  * @author Patrick Reinhart <patrick@reini.net>
  */
+@ThreadSafe
 public final class VirtualTempPath implements AutoCloseable {
     private static final Log LOG = LogFactory.getLog(VirtualTempPath.class);
     private static final byte[] EMPTY_BUFFER = new byte[0];
