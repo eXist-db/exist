@@ -678,7 +678,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @param queryText
      * @return search report
      */
-    public NodeImpl search(final XQueryContext context, final List<String> toBeMatchedURIs, String queryText, String[] fieldsToGet) throws XPathException, IOException {
+    public NodeImpl search(final XQueryContext context, final List<String> toBeMatchedURIs, String queryText, String[] fieldsToGet, Properties options) throws XPathException, IOException {
 
         return index.withSearcher(searcher -> {
             // Get analyzer : to be retrieved from configuration
@@ -686,6 +686,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
             // Setup query Version, default field, analyzer
             final QueryParserWrapper parser = getQueryParser("", searchAnalyzer, null);
+            try {
+                setOptions(options, parser.getConfiguration());
+            } catch (ParseException e) {
+                throw new XPathException("Lucene query syntax error: " + e.getMessage());
+            }
             final Query query = parser.parse(queryText);
 
             // extract all used fields from query

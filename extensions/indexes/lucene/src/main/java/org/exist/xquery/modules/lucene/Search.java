@@ -19,34 +19,20 @@
  */
 package org.exist.xquery.modules.lucene;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.dom.QName;
+import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.indexing.lucene.LuceneIndex;
+import org.exist.indexing.lucene.LuceneIndexWorker;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.QName;
-
-import org.exist.indexing.lucene.LuceneIndex;
-import org.exist.indexing.lucene.LuceneIndexWorker;
-
-import org.exist.dom.memtree.NodeImpl;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import java.util.Properties;
 
 /**
  *  Class implementing the ft:search() method
@@ -60,6 +46,28 @@ public class Search extends BasicFunction {
      * Function signatures
      */
     public final static FunctionSignature signatures[] = {
+            new FunctionSignature(
+                    new QName("search", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
+                    "Search for (non-XML) data with lucene",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("path", Type.STRING, Cardinality.ZERO_OR_MORE,
+                                    "URI paths of documents or collections in database. Collection URIs should end on a '/'."),
+                            new FunctionParameterSequenceType("query", Type.STRING, Cardinality.EXACTLY_ONE,
+                                    "query string"),
+                            new FunctionParameterSequenceType("fields", Type.STRING, Cardinality.ZERO_OR_MORE,
+                                    "Fields to return in search results"),
+                            new FunctionParameterSequenceType("options", Type.NODE, Cardinality.ZERO_OR_ONE,
+                                    "An XML fragment containing options to be passed to Lucene's query parser. The following " +
+                                            "options are supported (a description can be found in the docs):\n" +
+                                            "<options>\n" +
+                                            "   <default-operator>and|or</default-operator>\n" +
+                                            "   <phrase-slop>number</phrase-slop>\n" +
+                                            "   <leading-wildcard>yes|no</leading-wildcard>\n" +
+                                            "   <filter-rewrite>yes|no</filter-rewrite>\n" +
+                                            "</options>")
+                    },
+                    new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
+                            "All documents that are match by the query")),
         new FunctionSignature(
                 new QName("search", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
                 "Search for (non-XML) data with lucene",
@@ -150,8 +158,10 @@ public class Search extends BasicFunction {
             LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker()
                     .getIndexController().getWorkerByIndexId(LuceneIndex.ID);
 
+            Properties options = Query.parseOptions(this, contextSequence, null, 4);
+
             // Perform search
-            report = index.search(context, toBeMatchedURIs, query, fields);
+            report = index.search(context, toBeMatchedURIs, query, fields, options);
         } catch (IOException e) {
             throw new XPathException(this, e.getMessage(), e);
 
@@ -164,7 +174,7 @@ public class Search extends BasicFunction {
         // Return list of matching files.
         return report;
     }
-    
+
     public int getDependencies() {
     	return Dependency.CONTEXT_SET;
     }

@@ -66,3 +66,11 @@ function luct:check-visibility-collection-pass() {
         ft:search("/db/lucenetest/sub/", "title:admin")/search/@uri/string()
     )
 };
+
+declare
+    %test:assertEquals("/db/lucenetest/test.txt")
+function luct:check-leading-wildcard() {
+    system:as-user("admin", "",
+        ft:search("/db/lucenetest/", "title:*rem", (), <options><leading-wildcard>yes</leading-wildcard></options>)/search/@uri/string()
+    )
+};
