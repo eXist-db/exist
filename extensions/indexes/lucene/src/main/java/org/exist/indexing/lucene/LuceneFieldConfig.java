@@ -37,9 +37,11 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
 
     private final static String ATTR_FIELD_NAME = "name";
     private final static String ATTR_TYPE = "type";
+    private final static String ATTR_STORE = "store";
 
     protected String fieldName;
     protected int type = Type.STRING;
+    protected boolean store = true;
 
     LuceneFieldConfig(LuceneConfig config, Element configElement, Map<String, String> namespaces) throws DatabaseConfigurationException {
         super(config, configElement, namespaces);
@@ -49,13 +51,18 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
             throw new DatabaseConfigurationException("Invalid config: attribute 'name' must be given");
         }
 
-        String typeStr = configElement.getAttribute(ATTR_TYPE);
+        final String typeStr = configElement.getAttribute(ATTR_TYPE);
         if (typeStr != null && typeStr.length() > 0) {
             try {
                 this.type = Type.getType(typeStr);
             } catch (XPathException e) {
                 throw new DatabaseConfigurationException("Invalid type declared for field " + fieldName + ": " + typeStr);
             }
+        }
+
+        final String storeStr = configElement.getAttribute(ATTR_STORE);
+        if (storeStr != null && storeStr.length() > 0) {
+            this.store = storeStr.equalsIgnoreCase("yes") || storeStr.equalsIgnoreCase("true");
         }
     }
 
@@ -116,7 +123,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
                     String dateStr = dateTimeToString(dtv);
                     return new TextField(fieldName, dateStr, Field.Store.YES);
                 default:
-                    return new TextField(fieldName, content, Field.Store.YES);
+                    return new TextField(fieldName, content, store ? Field.Store.YES : Field.Store.NO);
             }
         } catch (NumberFormatException | XPathException e) {
             // wrong type: ignore
