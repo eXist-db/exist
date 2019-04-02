@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.locks.StampedLock;
 
 import net.jcip.annotations.ThreadSafe;
 import org.apache.commons.logging.Log;
@@ -41,73 +42,102 @@ public final class VirtualTempPath implements AutoCloseable {
     private static final byte[] EMPTY_BUFFER = new byte[0];
 
     private final int inMemorySize;
+    private final StampedLock lock;
     private final TemporaryFileManager tempFileManager;
 
     private MemoryContents content;
     private Path contentFile;
 
     public VirtualTempPath(int inMemorySize, TemporaryFileManager tempFileManager) {
-        this.tempFileManager = tempFileManager;
         this.inMemorySize = inMemorySize;
+        this.lock = new StampedLock();
+        this.tempFileManager = tempFileManager;
     }
 
     private OutputStream initOverflowOutputStream() throws IOException {
-        if (contentFile == null) {
-            contentFile = tempFileManager.getTemporaryFile();
+        long stamp = lock.writeLock();
+        try {
+            if (contentFile == null) {
+                contentFile = tempFileManager.getTemporaryFile();
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Initializing overflow to " + contentFile.toAbsolutePath());
+            }
+            return Files.newOutputStream(contentFile);
+
+        } finally {
+            lock.unlockWrite(stamp);
         }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Initializing overflow to " + contentFile.toAbsolutePath());
-        }
-        return Files.newOutputStream(contentFile);
     }
 
     public OutputStream newOutputStream() throws IOException {
-        if (inMemorySize <= 0) {
-            contentFile = tempFileManager.getTemporaryFile();
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("In memory buffering disabled writing to " + contentFile.toAbsolutePath());
+        long stamp = lock.readLock();
+        try {
+            if (inMemorySize <= 0) {
+                contentFile = tempFileManager.getTemporaryFile();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("In memory buffering disabled writing to " + contentFile.toAbsolutePath());
+                }
             }
+            if (contentFile != null) {
+                return Files.newOutputStream(contentFile);
+            }
+            if (content == null) {
+                // initial blocks are 10 % of the specified in memory size but minimum 1
+                content = MemoryContentsImpl.createWithInMemorySize(inMemorySize);
+            }
+            return new OverflowToDiskStream(inMemorySize, content, this::initOverflowOutputStream);
+        } finally {
+            lock.unlockRead(stamp);
         }
-        if (contentFile != null) {
-            return Files.newOutputStream(contentFile);
-        }
-        if (content == null) {
-            // initial blocks are 10 % of the specified in memory size but minimum 1
-            content = MemoryContentsImpl.createWithInMemorySize(inMemorySize);
-        }
-        return new OverflowToDiskStream(inMemorySize, content, this::initOverflowOutputStream);
     }
 
     public InputStream newInputStream() throws IOException {
-        if (contentFile != null) {
-            return Files.newInputStream(contentFile);
+        long stamp = lock.readLock();
+        try {
+            if (contentFile != null) {
+                return Files.newInputStream(contentFile);
+            }
+            if (content != null) {
+                return new MemoryContentsInputStream(content);
+            }
+            return new ByteArrayInputStream(EMPTY_BUFFER);
+        } finally {
+            lock.unlockRead(stamp);
         }
-        if (content != null) {
-            return new MemoryContentsInputStream(content);
-        }
-        return new ByteArrayInputStream(EMPTY_BUFFER);
     }
 
     @Override
     public void close() {
-        if (contentFile != null) {
-            tempFileManager.returnTemporaryFile(contentFile);
-            contentFile = null;
-        }
-        if (content != null) {
-            content.reset();
-            content = null;
+        long stamp = lock.writeLock();
+        try {
+            if (contentFile != null) {
+                tempFileManager.returnTemporaryFile(contentFile);
+                contentFile = null;
+            }
+            if (content != null) {
+                content.reset();
+                content = null;
+            }
+        } finally {
+            lock.unlockWrite(stamp);
         }
     }
 
     public long size() {
-        if (contentFile != null) {
-            return FileUtils.sizeQuietly(contentFile);
+        long stamp = lock.readLock();
+        try {
+            if (contentFile != null) {
+                return FileUtils.sizeQuietly(contentFile);
+            }
+            return content == null ? 0 : content.size();
+        } finally {
+            lock.unlockRead(stamp);
         }
-        return content == null ? 0 : content.size();
     }
 
     public byte[] getBytes() {
+        long stamp = lock.readLock();
         try {
             if (content != null) {
                 byte[] buffer = new byte[(int) content.size()];
@@ -118,6 +148,8 @@ public final class VirtualTempPath implements AutoCloseable {
             }
         } catch (IOException e) {
             LOG.error("Unable to get content", e);
+        } finally {
+            lock.unlockRead(stamp);
         }
         return EMPTY_BUFFER;
     }
