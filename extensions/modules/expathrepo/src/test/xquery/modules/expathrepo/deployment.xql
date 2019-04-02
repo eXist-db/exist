@@ -7,6 +7,10 @@ module namespace deploy="http://exist-db.org/test/deploy";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
+import module namespace compression = "http://exist-db.org/xquery/compression";
+import module namespace repo = "http://exist-db.org/xquery/repo";
+import module namespace xmldb = "http://exist-db.org/xquery/xmldb";
+
 declare variable $deploy:expathxml := 
     <package xmlns="http://expath.org/ns/pkg" name="http://exist-db.org/apps/dtest" abbrev="dtest" version="1.0.0" spec="1.0">
         <title>Deployment Test</title>

@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-package org.exist.xquery;
+package org.exist.xquery.modules.file;
 
 import com.evolvedbinary.j8fu.function.Consumer2E;
 import org.exist.xmldb.XmldbURI;
@@ -63,12 +63,15 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
     }
 
     /**
-     * {@see https://github.com/eXist-db/exist/issues/790#error-case-1}
+     * {@see https://github.com/eXist-db/exist/issues/790#error-case-3}
      */
     @Test
-    public void serializeBinary() throws Exception {
-        final String query = "import module namespace util = \"http://exist-db.org/xquery/util\";\n" +
-                "util:binary-doc('" + TEST_COLLECTION.append(BIN1_FILENAME).toString() + "')";
+    public void readBinary() throws Exception {
+        final byte[] data = randomData(1024 * 1024 * 10);  // 10KB
+        final Path tmpFile = createTemporaryFile(data);
+
+        final String query = "import module namespace file = \"http://exist-db.org/xquery/file\";\n" +
+                "file:read-binary('" + tmpFile.toAbsolutePath().toString() + "')";
 
         final QueryResultAccessor<T, E> resultsAccessor = executeXQuery(query);
 
@@ -77,8 +80,36 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
 
             final U item = item(results, 0);
             assertTrue(isBinaryType(item));
-            assertArrayEquals(BIN1_CONTENT, getBytes(item));
+            assertArrayEquals(data, getBytes(item));
         });
+    }
+
+    /**
+     * {@see https://github.com/eXist-db/exist/issues/790#error-case-4}
+     */
+    @Test
+    public void readAndWriteBinary() throws Exception {
+        final byte[] data = randomData(1024 * 1024);  // 1MB
+        final Path tmpInFile = createTemporaryFile(data);
+
+        final Path tmpOutFile = temporaryFolder.newFile().toPath();
+
+        final String query = "import module namespace file = \"http://exist-db.org/xquery/file\";\n" +
+                "let $bin := file:read-binary('" +  tmpInFile.toAbsolutePath().toString() + "')\n" +
+                "return\n" +
+                "    file:serialize-binary($bin, '" + tmpOutFile.toAbsolutePath().toString() + "')";
+
+        final QueryResultAccessor<T, E> resultsAccessor = executeXQuery(query);
+
+        resultsAccessor.accept(results -> {
+            assertEquals(1, size(results));
+
+            final U item = item(results, 0);
+            assertTrue(isBooleanType(item));
+            assertEquals(true, getBoolean(item));
+        });
+
+        assertArrayEquals(Files.readAllBytes(tmpInFile), Files.readAllBytes(tmpOutFile));
     }
 
     protected byte[] randomData(final int size) {
