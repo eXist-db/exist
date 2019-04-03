@@ -53,6 +53,28 @@ function testSort:order_fail3() {
 };
 
 declare
+    %test:assertError("XPDY0002")
+function testSort:undefined_context() {
+        fn:sort((<a/>,<c/>,<b/>,<d/>), (), function ($a) {.})
+};
+
+declare
+    %test:assertTrue
+function testSort:sort_context() {
+  let $sort := sort((<a/>,<c/>,<b/>,<d/>), (), function ($a) { xs:string(node-name($a)) })
+     return
+         fn:deep-equal($sort , (<a/>,<b/>,<c/>,<d/>))
+};
+
+declare
+    %test:assertTrue
+function testSort:sort_context_ao() {
+    let $sort := (<a/>,<c/>,<b/>,<d/>) => sort((), function ($a) { xs:string(node-name($a)) })
+    return
+        fn:deep-equal($sort , (<a/>,<b/>,<c/>,<d/>))
+};
+
+declare
     %test:assertTrue
 function testSort:empty() {
     fn:empty(fn:sort(()))

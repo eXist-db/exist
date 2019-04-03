@@ -119,7 +119,7 @@ public class ArrowOperator extends AbstractExpression {
             // cachedContextInfo will stay in memory
             fref.analyze(new AnalyzeContextInfo(cachedContextInfo));
             // Evaluate the function
-            return fref.eval(contextSequence);
+            return fref.eval(null);
         } finally {
             fref.close();
         }
