@@ -27,7 +27,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-    "exist-core/src/test/xquery/dates"
+    "src/test/xquery/dates"
 })
 public class DateTests {
 }
