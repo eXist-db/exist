@@ -22,13 +22,12 @@
 package org.exist.xquery.functions.validate;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.function.Predicate;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.util.FileUtils;
 import org.junit.*;
 import static org.junit.Assert.*;
 
@@ -45,6 +44,8 @@ import org.xmldb.api.base.XMLDBException;
  * @author dizzzz@exist-db.org
  */
 public class JaxvTest {
+
+    private static final String[] TEST_RESOURCES = { "personal-valid.xml", "personal-invalid.xml", "personal.xsd" };
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
@@ -71,11 +72,12 @@ public class JaxvTest {
         try {
             collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "personal");
 
-            final Path directory = TestUtils.resolveSample("validation/personal");
-            final Predicate<Path> filter = path -> FileUtils.fileName(path).startsWith("personal");
-            for (final Path file : FileUtils.list(directory, filter)) {
-                final byte[] data = TestUtils.readFile(file);
-                ExistXmldbEmbeddedServer.storeResource(collection, FileUtils.fileName(file), data);
+            for (final String testResource : TEST_RESOURCES) {
+                final URL url = JingXsdTest.class.getResource("personal/" + testResource);
+                assertNotNull(url);
+
+                final byte[] data = Files.readAllBytes(Paths.get(url.toURI()));
+                ExistXmldbEmbeddedServer.storeResource(collection, testResource, data);
             }
         } finally {
             if(collection != null) {

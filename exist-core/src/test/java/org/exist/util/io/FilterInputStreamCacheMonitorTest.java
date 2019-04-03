@@ -36,11 +36,11 @@ import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.util.Optional;
+import java.nio.file.Paths;
 
 import static junit.framework.TestCase.assertTrue;
-import static org.exist.TestUtils.getExistHomeFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -52,11 +52,12 @@ public class FilterInputStreamCacheMonitorTest {
     private static String TEST_COLLECTION_NAME = "testFilterInputStreamCacheMonitor";
 
     @BeforeClass
-    public static void setup() throws XMLDBException, IOException {
+    public static void setup() throws XMLDBException, IOException, URISyntaxException {
+        final Path icon = Paths.get(FilterInputStreamCacheMonitorTest.class.getResource("icon.png").toURI());
+
         final Collection testCollection = existXmldbEmbeddedServer.createCollection(existXmldbEmbeddedServer.getRoot(), TEST_COLLECTION_NAME);
         try(final EXistResource resource = (EXistResource)testCollection.createResource("icon.png", BinaryResource.RESOURCE_TYPE)) {
-            final Optional<Path> icon = getExistHomeFile("icon.png");
-            resource.setContent(icon.get());
+            resource.setContent(icon);
             testCollection.storeResource(resource);
         }
         testCollection.close();

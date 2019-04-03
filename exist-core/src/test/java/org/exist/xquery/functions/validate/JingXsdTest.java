@@ -22,17 +22,17 @@
 package org.exist.xquery.functions.validate;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.util.FileUtils;
 import org.junit.*;
 import static org.junit.Assert.*;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.function.Predicate;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -46,15 +46,16 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class JingXsdTest {
 
+    private static final String[] TEST_RESOURCES = { "personal-valid.xml", "personal-invalid.xml", "personal.xsd" };
+
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeClass
-    public static void prepareResources() throws Exception {
+    public static void prepareResources() throws XMLDBException, URISyntaxException, IOException {
         final String noValidation = "<?xml version='1.0'?>" +
-                "<collection xmlns=\"http://exist-db.org/collection-config/1.0" +
-                "\">" +
-                "<validation mode=\"no\"/>" +
+                "<collection xmlns='http://exist-db.org/collection-config/1.0'>" +
+                "    <validation mode='no'/>" +
                 "</collection>";
 
         Collection conf = null;
@@ -71,13 +72,12 @@ public class JingXsdTest {
         try {
             collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "personal");
 
-            final Path directory = TestUtils.resolveSample("validation/personal");
+            for (final String testResource : TEST_RESOURCES) {
+                final URL url = JingXsdTest.class.getResource("personal/" + testResource);
+                assertNotNull(url);
 
-            final Predicate<Path> filter = path -> FileUtils.fileName(path).startsWith("personal");
-
-            for (final Path file : FileUtils.list(directory, filter)) {
-                final byte[] data = TestUtils.readFile(file);
-                ExistXmldbEmbeddedServer.storeResource(collection, FileUtils.fileName(file), data);
+                final byte[] data = Files.readAllBytes(Paths.get(url.toURI()));
+                ExistXmldbEmbeddedServer.storeResource(collection, testResource, data);
             }
         } finally {
             if(collection != null) {
@@ -108,7 +108,7 @@ public class JingXsdTest {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";
-        executeAndEvaluate(query,"valid");
+        executeAndEvaluate(query, "valid");
     }
 
     @Test

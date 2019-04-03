@@ -28,7 +28,10 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.function.Predicate;
 
 import org.custommonkey.xmlunit.XMLAssert;
@@ -45,12 +48,14 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class JaxpParseTest {
 
+    private static final String[] TEST_RESOURCES = { "defaultValue.xml", "defaultValue.xsd" };
+
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String noValidation = "<?xml version='1.0'?>" +
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-            "<validation mode=\"no\"/>" +
+            "<collection xmlns='http://exist-db.org/collection-config/1.0'>" +
+            "    <validation mode='no'/>" +
             "</collection>";
 
     @BeforeClass
@@ -67,17 +72,16 @@ public class JaxpParseTest {
             }
         }
 
-        // Create filter
-        final Predicate<Path> filter = path -> FileUtils.fileName(path).startsWith("default");
-
         Collection schemasCollection = null;
         try {
             schemasCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse_validate");
-            final Path schemas = TestUtils.resolveSample("validation/parse_validate");
 
-            for (final Path file : FileUtils.list(schemas, filter)) {
-                final byte[] data = TestUtils.readFile(file);
-                ExistXmldbEmbeddedServer.storeResource(schemasCollection, FileUtils.fileName(file), data);
+            for (final String testResource : TEST_RESOURCES) {
+                final URL url = JingXsdTest.class.getResource("parse_validate/" + testResource);
+                assertNotNull(url);
+
+                final byte[] data = Files.readAllBytes(Paths.get(url.toURI()));
+                ExistXmldbEmbeddedServer.storeResource(schemasCollection, testResource, data);
             }
         } finally {
             if(schemasCollection != null) {

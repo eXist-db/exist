@@ -32,7 +32,7 @@ public class ConcurrentAttrUpdateTest extends ConcurrentTestBase {
 
     @Before
     public void setUp() throws Exception {
-        this.wordList = DBUtils.wordList(existXmldbEmbeddedServer.getRoot());
+        this.wordList = DBUtils.wordList();
         assertNotNull(wordList);
         this.tempFile = DBUtils.generateXMLFile(250, 10, wordList);
         DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
