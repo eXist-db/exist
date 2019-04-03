@@ -135,6 +135,9 @@ public class XQueryUpdateTest {
             XQuery xquery = pool.getXQueryService();
             xquery.execute(broker, query, null);
 
+            Sequence seq = xquery.execute(broker, "//product", null);
+            assertEquals(1, seq.getItemCount());
+
             query =
                 "   declare variable $i external;\n" +
                 "   update insert\n" +
@@ -151,7 +154,7 @@ public class XQueryUpdateTest {
                 xquery.execute(broker, compiled, null);
             }
 
-            Sequence seq = xquery.execute(broker, "/products", null);
+            seq = xquery.execute(broker, "/products", null);
             assertEquals(seq.getItemCount(), 1);
 
             Serializer serializer = broker.getSerializer();
@@ -182,6 +185,9 @@ public class XQueryUpdateTest {
             XQuery xquery = pool.getXQueryService();
             xquery.execute(broker, query, null);
 
+            Sequence seq = xquery.execute(broker, "//product", null);
+            assertEquals(1, seq.getItemCount());
+
             query =
                 "   declare variable $i external;\n" +
                 "   update insert\n" +
@@ -198,7 +204,7 @@ public class XQueryUpdateTest {
                 xquery.execute(broker, compiled, null);
             }
 
-            Sequence seq = xquery.execute(broker, "/products", null);
+            seq = xquery.execute(broker, "/products", null);
             assertEquals(seq.getItemCount(), 1);
 
             Serializer serializer = broker.getSerializer();
@@ -226,65 +232,40 @@ public class XQueryUpdateTest {
             	"declare option exist:output-size-limit '-1';\n" +
             	"for $prod at $i in //product return\n" +
                 "	update value $prod/description\n" +
-                "	with concat('Updated Description', $i)";
+                "	with 'Updated Description ' || $i";
             Sequence seq = xquery.execute(broker, query, null);
 
-            seq = xquery.execute(broker, "//product[starts-with(description, 'Updated')]", null);
-            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
-
-            Serializer serializer = broker.getSerializer();
-            serializer.serialize((NodeValue) seq.itemAt(0));
+            seq = xquery.execute(broker, "count(//product[starts-with(description, 'Updated')])", null);
+            assertEquals(ITEMS_TO_APPEND, (int)seq.itemAt(0).toJavaObject(int.class));
 
             for (int i = 1; i <= ITEMS_TO_APPEND; i++) {
-                seq = xquery.execute(broker, "//product[description &= 'Description" + i + "']", null);
+                seq = xquery.execute(broker, "//product[description eq 'Updated Description " + i + "']", null);
                 assertEquals(1, seq.getItemCount());
-                serializer.serialize((NodeValue) seq.itemAt(0));
             }
-            seq = xquery.execute(broker, "//product[description &= 'Updated']", null);
-            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
-            serializer.serialize((NodeValue) seq.itemAt(0));
+            seq = xquery.execute(broker, "//product[stock cast as xs:double gt 400]", null);
+            assertEquals(seq.getItemCount(), 959);
 
-            query =
-            	"declare option exist:output-size-limit '-1';\n" +
-            	"for $prod at $count in //product return\n" +
-                "	update value $prod/stock/text()\n" +
-                "	with (400 + $count)";
-            seq = xquery.execute(broker, query, null);
-
-            seq = xquery.execute(broker, "//product[stock > 400]", null);
-            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
-            seq = xquery.execute(broker, "//product[stock &= '401']", null);
+            seq = xquery.execute(broker, "//product[starts-with(stock, '401')]", null);
             assertEquals(seq.getItemCount(), 1);
-
-            serializer.serialize((NodeValue) seq.itemAt(0));
-
-            query =
-            	"declare option exist:output-size-limit '-1';\n" +
-            	"for $prod in //product return\n" +
-                "	update value $prod/@num\n" +
-                "	with xs:int($prod/@num) * 3";
-            seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "/products", null);
             assertEquals(seq.getItemCount(), 1);
 
-            seq = xquery.execute(broker, "//product[@num = 3]", null);
+            seq = xquery.execute(broker, "//product[@num cast as xs:integer eq 3]", null);
             assertEquals(seq.getItemCount(), 1);
-
-            serializer.serialize((NodeValue) seq.itemAt(0));
-
-            query =
-            	"declare option exist:output-size-limit '-1';\n" +
-            	"for $prod in //product return\n" +
-                "	update value $prod/stock\n" +
-                "	with (<local>10</local>,<external>1</external>)";
-            seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "/products", null);
             assertEquals(seq.getItemCount(), 1);
 
-            seq = xquery.execute(broker, "//product/stock/external[. = 1]", null);
+            query =
+                    "declare option exist:output-size-limit '-1';\n" +
+                            "for $prod in //product return\n" +
+                            "	update value $prod/stock\n" +
+                            "	with (<local>10</local>,<external>1</external>)";
+            seq = xquery.execute(broker, query, null);
+
+            seq = xquery.execute(broker, "//product/stock/external[. cast as xs:integer eq 1]", null);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
         }
     }
