@@ -22,20 +22,16 @@
 package org.exist.storage;
 
 import org.exist.EXistException;
-import org.exist.collections.IndexInfo;
-import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.xml.sax.InputSource;
-import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -44,72 +40,59 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.Optional;
 
 public class RenameTest extends AbstractUpdateTest {
 
-    @Test
-    public void update() throws EXistException, DatabaseConfigurationException, LockException, SAXException, PermissionDeniedException, IOException, ParserConfigurationException, XPathException {
-        BrokerPool.FORCE_CORRUPTION = true;
-        final BrokerPool pool = startDb();
-        final TransactionManager mgr = pool.getTransactionManager();
+    @Override
+    protected void doUpdate(final DBBroker broker, final TransactionManager transact, final MutableDocumentSet docs)
+            throws ParserConfigurationException, IOException, SAXException, LockException, XPathException,
+                PermissionDeniedException, EXistException {
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            final IndexInfo info = init(broker, mgr);
-            assertNotNull(info);
-            final MutableDocumentSet docs = new DefaultDocumentSet();
-            docs.add(info.getDocument());
-            final XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
-            assertNotNull(proc);
-            
-            try(final Txn transaction = mgr.beginTransaction()) {
+        final XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
+        assertNotNull(proc);
 
-                // append some new element to records
-                for (int i = 1; i <= 200; i++) {
-                    final String xupdate =
-                            "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                                    "   <xu:append select=\"/products\">" +
-                                    "       <product>" +
-                                    "           <xu:attribute name=\"id\"><xu:value-of select=\"count(/products/product) + 1\"/></xu:attribute>" +
-                                    "           <description>Product " + i + "</description>" +
-                                    "           <price>" + (i * 2.5) + "</price>" +
-                                    "           <stock>" + (i * 10) + "</stock>" +
-                                    "       </product>" +
-                                    "   </xu:append>" +
-                                    "</xu:modifications>";
-                    proc.setBroker(broker);
-                    proc.setDocumentSet(docs);
-                    final Modification modifications[] = proc.parse(new InputSource(new StringReader(xupdate)));
-                    assertNotNull(modifications);
-                    modifications[0].process(transaction);
-                    proc.reset();
-                }
+        try(final Txn transaction = transact.beginTransaction()) {
 
-                final DOMFile domDb = ((NativeBroker) broker).getDOMFile();
-                assertNotNull(domDb);
-                domDb.debugPages(info.getDocument(), false);
-
-                mgr.commit(transaction);
+            // append some new element to records
+            for (int i = 1; i <= 200; i++) {
+                final String xupdate =
+                        "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+                                "   <xu:append select=\"/products\">" +
+                                "       <product>" +
+                                "           <xu:attribute name=\"id\"><xu:value-of select=\"count(/products/product) + 1\"/></xu:attribute>" +
+                                "           <description>Product " + i + "</description>" +
+                                "           <price>" + (i * 2.5) + "</price>" +
+                                "           <stock>" + (i * 10) + "</stock>" +
+                                "       </product>" +
+                                "   </xu:append>" +
+                                "</xu:modifications>";
+                proc.setBroker(broker);
+                proc.setDocumentSet(docs);
+                final Modification modifications[] = proc.parse(new InputSource(new StringReader(xupdate)));
+                assertNotNull(modifications);
+                modifications[0].process(transaction);
+                proc.reset();
             }
-            
-            // the following transaction will not be committed and thus undone during recovery
-            final Txn transaction = mgr.beginTransaction();
 
-            // rename elements
-            final String xupdate =
-                "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                "   <xu:rename select=\"/products/product/description\">descript</xu:rename>" +
-                "</xu:modifications>";
-            proc.setBroker(broker);
-            proc.setDocumentSet(docs);
-            final Modification modifications[] = proc.parse(new InputSource(new StringReader(xupdate)));
-            assertNotNull(modifications);
-            modifications[0].process(transaction);
-            proc.reset();
-            
-//DO NOT COMMIT TRANSACTION
-            pool.getJournalManager().get().flush(true, false);
+            transact.commit(transaction);
         }
+
+        // the following transaction will not be committed and thus undone during recovery
+        final Txn transaction = transact.beginTransaction();
+
+        // rename elements
+        final String xupdate =
+            "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+            "   <xu:rename select=\"/products/product/description\">descript</xu:rename>" +
+            "</xu:modifications>";
+        proc.setBroker(broker);
+        proc.setDocumentSet(docs);
+        final Modification modifications[] = proc.parse(new InputSource(new StringReader(xupdate)));
+        assertNotNull(modifications);
+        modifications[0].process(transaction);
+        proc.reset();
+
+        //DO NOT COMMIT TRANSACTION
     }
 
 }

@@ -21,7 +21,6 @@ package org.exist.storage;
 
 import org.exist.Database;
 import org.exist.EXistException;
-import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
@@ -32,7 +31,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.Occurrences;
@@ -40,7 +39,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.NodeSelector;
 import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.XQueryContext;
-import org.junit.After;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -57,6 +56,9 @@ import static org.junit.Assert.*;
 import static org.exist.storage.ElementValue.ELEMENT;
 
 public class MoveOverwriteResourceTest {
+
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private final static String XML1 =
             "<?xml version=\"1.0\"?>" +
@@ -89,19 +91,17 @@ public class MoveOverwriteResourceTest {
      */
     @Test
     public void moveAndOverwriteXML() throws Exception  {
-        final Database db = startDB();
-
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final DefaultDocumentSet docs = new DefaultDocumentSet();
-
-        try (final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             store(broker);
             docs.add(test1.getDocument(broker, doc1Name));
             docs.add(test2.getDocument(broker, doc2Name));
         }
 
-        move(db);
+        move(pool);
 
-        try (final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             docs.add(test2.getDocument(broker, doc2Name));
 
             checkIndex(broker, docs);
@@ -165,18 +165,6 @@ public class MoveOverwriteResourceTest {
 
         nodes = index.findElementsByTagName(ELEMENT, docs, new QName("test1"), selector);
         assertFalse(nodes.isEmpty());
-    }
-
-    protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
-        Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        return BrokerPool.getInstance();
-    }
-
-    @After
-    public void tearDown() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
-        TestUtils.cleanupDB();
-        BrokerPool.stopAll(false);
     }
 
     class TestIndex implements Index {

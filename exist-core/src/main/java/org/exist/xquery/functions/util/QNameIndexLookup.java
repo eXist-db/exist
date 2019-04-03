@@ -28,7 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
-import org.exist.storage.Indexable;
+import org.exist.storage.ElementValue;
 import org.exist.storage.NativeValueIndex;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
@@ -45,12 +45,13 @@ import org.exist.xquery.util.Error;
 import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.functions.util.UtilModule.functionSignatures;
 
 /**
  * @author J.M. Vanel
@@ -60,15 +61,29 @@ public class QNameIndexLookup extends Function {
 	
 	protected static final Logger logger = LogManager.getLogger(QNameIndexLookup.class);
 
-	public final static FunctionSignature signature = new FunctionSignature(
-			new QName("qname-index-lookup", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Can be used to query existing qname indexes defined on a set of nodes. ",
-			new SequenceType[] {
-					new FunctionParameterSequenceType("qname", Type.QNAME, Cardinality.EXACTLY_ONE, "The QName"),
-					new FunctionParameterSequenceType("comparison-value", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The comparison value") },
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the result"));
+    private static final FunctionParameterSequenceType PARAM_QNAME = param("qname", Type.QNAME, "The QName");
+    private static final FunctionParameterSequenceType PARAM_COMPARISON_VALUE = param("comparison-value", Type.ATOMIC, "The comparison value");
+    private static final FunctionParameterSequenceType PARAM_ELEMENT_OR_ATTRIBUTE = param("element-or-attribute", Type.BOOLEAN, "true() to lookup an element, false to lookup an attribute");
 
-	public QNameIndexLookup(XQueryContext context) {
+	private static String FN_QNAME_INDEX_LOOKUP_NAME = "qname-index-lookup";
+	public final static FunctionSignature[] FNS_QNAME_INDEX_LOOKUP = functionSignatures(
+            FN_QNAME_INDEX_LOOKUP_NAME,
+			"Can be used to query existing qname indexes defined on a set of nodes.",
+			returnsOptMany(Type.NODE, "The result"),
+			arities(
+			        arity(
+			                PARAM_QNAME,
+                            PARAM_COMPARISON_VALUE
+                    ),
+                    arity(
+                            PARAM_QNAME,
+                            PARAM_COMPARISON_VALUE,
+                            PARAM_ELEMENT_OR_ATTRIBUTE
+                    )
+            )
+    );
+
+	public QNameIndexLookup(final XQueryContext context, final FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -99,6 +114,13 @@ public class QNameIndexLookup extends Function {
         arg = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, arg,
                 new Error(Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
         steps.add(arg);
+
+        if (arguments.size() == 3) {
+            arg = arguments.get(2);
+            arg = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, arg,
+                    new Error(Error.FUNC_PARAM_CARDINALITY, "3", mySignature));
+            steps.add(arg);
+        }
     }
     
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
@@ -120,7 +142,8 @@ public class QNameIndexLookup extends Function {
         final Sequence[] args = getArguments(null, null);
         
         final Item item = args[0].itemAt(0);
-        QNameValue qval;
+
+        final QNameValue qval;
         try {
             // attempt to convert the first argument to a QName
             qval = (QNameValue) item.convertTo(Type.QNAME);
@@ -132,14 +155,17 @@ public class QNameIndexLookup extends Function {
                             Type.getTypeName(Type.QNAME), Type.getTypeName(item.getType()) }
                     ));
         }
-        final QName qname = qval.getQName();
-        
-        final AtomicValue comparisonCriterium = args[1].itemAt(0).atomize();
+        QName qname = qval.getQName();
+        if (args.length == 3 && !(args[2].itemAt(0).toJavaObject(boolean.class))) {
+            qname = new QName(qname.getLocalPart(), qname.getNamespaceURI(), qname.getPrefix(), ElementValue.ATTRIBUTE);
+        }
+
+        final AtomicValue comparisonCriterion = args[1].itemAt(0).atomize();
 
         final NativeValueIndex valueIndex = context.getBroker().getValueIndex();
         final Sequence result =
             valueIndex.find(context.getWatchDog(), Comparison.EQ, contextSequence.getDocumentSet(), null, NodeSet.ANCESTOR,
-        qname, comparisonCriterium);
+        qname, comparisonCriterion);
 
         return result;
     }

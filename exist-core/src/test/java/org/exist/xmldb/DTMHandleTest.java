@@ -42,7 +42,7 @@ public class DTMHandleTest {
      * </ul>
      */
     @Test
-    public final void treeLevelOrder() throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
+    public void treeLevelOrder() throws XMLDBException {
         String document = "survey.xml";
 
         StringBuilder xmlDocument = new StringBuilder();
@@ -81,8 +81,7 @@ public class DTMHandleTest {
                         foundFieldText = true;
 
                         Node name = fieldChildren.item(f);
-                        //String nameText = name.getTextContent();
-                        String nameText = TreeLevelOrderTest.nodeValue(name);
+                        String nameText = name.getTextContent();
                         assertNotNull("Failed to read existing field[" + 1 + "]/name/text()", nameText);
                     }
                 }
@@ -99,7 +98,7 @@ public class DTMHandleTest {
      * @param service the xquery service
      * @param document the document name
      */
-    private final void store(String xml, EXistXQueryService service, String document) throws XMLDBException {
+    private void store(String xml, EXistXQueryService service, String document) throws XMLDBException {
         StringBuilder query = new StringBuilder();
         query.append("xquery version \"1.0\";");
         query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
@@ -119,7 +118,7 @@ public class DTMHandleTest {
      * @param service the xquery service
      * @param document the document to load
      */
-    private final Node load(EXistXQueryService service, String document) throws XMLDBException {
+    private Node load(EXistXQueryService service, String document) throws XMLDBException {
         StringBuilder query = new StringBuilder();
         query.append("xquery version \"1.0\";");
         query.append("let $survey := doc(concat('" + XmldbURI.ROOT_COLLECTION + "', '/', $document))");
@@ -139,7 +138,7 @@ public class DTMHandleTest {
      *
      * @return the xquery service
      */
-    private final EXistXQueryService getXQueryService() throws XMLDBException {
+    private EXistXQueryService getXQueryService() throws XMLDBException {
         EXistXQueryService service = (EXistXQueryService) root.getService("XQueryService", "1.0");
         return service;
     }
@@ -148,7 +147,7 @@ public class DTMHandleTest {
      * Registers a new database instance and returns it.
      */
     @Before
-    public final void registerDatabase() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    public void registerDatabase() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         String driverName = "org.exist.xmldb.DatabaseImpl";
         Class<?> driver = Class.forName(driverName);
         Database database = (Database) driver.newInstance();
@@ -159,12 +158,11 @@ public class DTMHandleTest {
     }
 
     @After
-    public final void deregisterDatabase() throws XMLDBException {
+    public void deregisterDatabase() throws XMLDBException {
         if (root != null) {
             DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
             root.close();
             mgr.shutdown();
         }
     }
-
 }

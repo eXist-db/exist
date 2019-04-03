@@ -22,9 +22,6 @@
  */
 package org.exist.xmldb;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,49 +45,9 @@ public class TreeLevelOrderTest {
     /**
      * eXist database url
      */
-    static final String eXistUrl = "xmldb:exist://";
-
-    static Method getNodeValueMethod = null;
-
-    static {
-        try {
-            getNodeValueMethod = Node.class.getMethod("getNodeValue", (Class[]) null);
-        } catch (Exception ex) {
-        }
-    }
+    private static final String eXistUrl = "xmldb:exist://";
 
     private Collection root = null;
-
-    public static String nodeValue(Node n) {
-        if (getNodeValueMethod != null) {
-            try {
-                return (String) getNodeValueMethod.invoke(n, (Object[]) null);
-            } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
-                return null;
-            } catch (InvocationTargetException ex) {
-                ex.printStackTrace();
-                return null;
-            } catch (IllegalAccessException ex) {
-                ex.printStackTrace();
-                return null;
-            }
-        }
-        if (n.getNodeType() == Node.ELEMENT_NODE) {
-            StringBuffer builder = new StringBuffer();
-            Node current = n.getFirstChild();
-            while (current != null) {
-                int type = current.getNodeType();
-                if (type == Node.CDATA_SECTION_NODE || type == Node.TEXT_NODE) {
-                    builder.append(current.getNodeValue());
-                }
-                current = current.getNextSibling();
-            }
-            return builder.toString();
-        } else {
-            return n.getNodeValue();
-        }
-    }
 
     /**
      * Test for the TreeLevelOrder function. This test
@@ -102,7 +59,7 @@ public class TreeLevelOrderTest {
      * </ul>
      */
     @Test
-    public final void treeLevelOrder() throws XMLDBException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+    public void treeLevelOrder() throws XMLDBException, IllegalAccessException, InstantiationException, ClassNotFoundException {
         String document = "survey.xml";
         EXistXQueryService service = null;
 
@@ -135,9 +92,8 @@ public class TreeLevelOrderTest {
         for (int r = 0; r < rootChildren.getLength(); r++) {
             if (rootChildren.item(r).getLocalName().equals("to")) {
                 Node to = rootChildren.item(r);
-
-                //strTo = to.getTextContent();
-                strTo = nodeValue(to);
+                strTo = to.getTextContent();
+                break;
             }
         }
 
@@ -151,7 +107,7 @@ public class TreeLevelOrderTest {
      * @param service  the xquery service
      * @param document the document name
      */
-    private final void store(String xml, EXistXQueryService service, String document) throws XMLDBException {
+    private void store(String xml, EXistXQueryService service, String document) throws XMLDBException {
         StringBuilder query = new StringBuilder();
         query.append("xquery version \"1.0\";");
         query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
@@ -171,7 +127,7 @@ public class TreeLevelOrderTest {
      * @param service  the xquery service
      * @param document the document to load
      */
-    private final Node load(EXistXQueryService service, String document) throws XMLDBException {
+    private Node load(EXistXQueryService service, String document) throws XMLDBException {
         StringBuilder query = new StringBuilder();
         query.append("xquery version \"1.0\";");
         query.append("let $survey := doc(string-join(('" + XmldbURI.ROOT_COLLECTION + "', $document), '/'))");
@@ -192,7 +148,7 @@ public class TreeLevelOrderTest {
      *
      * @return the xquery service
      */
-    private final EXistXQueryService getXQueryService() throws XMLDBException {
+    private EXistXQueryService getXQueryService() throws XMLDBException {
         EXistXQueryService service = (EXistXQueryService) root.getService("XQueryService", "1.0");
         return service;
     }
@@ -201,7 +157,7 @@ public class TreeLevelOrderTest {
      * Registers a new database instance and returns it.
      */
     @Before
-    public final void registerDatabase() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    public void registerDatabase() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         String driverName = "org.exist.xmldb.DatabaseImpl";
         Class<?> driver = Class.forName(driverName);
         Database database = (Database) driver.newInstance();
@@ -212,7 +168,7 @@ public class TreeLevelOrderTest {
     }
 
     @After
-    public final void deregisterDatabase() throws XMLDBException {
+    public void deregisterDatabase() throws XMLDBException {
         if (root != null) {
             DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
             root.close();

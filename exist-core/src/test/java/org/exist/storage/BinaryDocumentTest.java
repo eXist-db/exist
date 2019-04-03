@@ -34,8 +34,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -75,41 +73,6 @@ public class BinaryDocumentTest {
             final byte[] binaryData2 = "binary-file2".getBytes(UTF_8);
             try (final InputStream is = new FastByteArrayInputStream(binaryData2)) {
                 testCollection.addBinaryResource(transaction, broker, XmldbURI.create("thing"), is, "application/octet-stream", binaryData2.length);
-            }
-        }
-    }
-
-    @Test
-    public void overwriteCollectionFsDir() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
-        final XmldbURI testCollectionUri = XmldbURI.create("/db/overwrite-collection-fs-dir-test");
-        final XmldbURI thingUri = testCollectionUri.append("thing");
-
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-
-            // create a folder in the storage which will represent an orphaned collection folder
-            final Collection testCollection = broker.getOrCreateCollection(transaction, testCollectionUri);
-            broker.saveCollection(transaction, testCollection);
-            final Path fsThingCollection = existEmbeddedServer.getTemporaryStorage().get()
-                    .resolve("fs")
-                    .resolve(thingUri.getRawCollectionPath().substring(1));
-            Files.createDirectories(fsThingCollection);
-
-            // attempt to create a binary document with the same uri as the orphaned thingCollection (should fail)
-            final byte[] binaryData = "binary-file".getBytes(UTF_8);
-            try (final InputStream is = new FastByteArrayInputStream(binaryData)) {
-
-                try {
-                    testCollection.addBinaryResource(transaction, broker, thingUri.lastSegment(), is, "application/octet-stream", binaryData.length);
-                    fail("Should not have been able to overwrite Collection with Binary Document");
-
-                } catch (final IOException e) {
-                    assertEquals(
-                            "Cannot overwrite binary fs Collection '" + thingUri.getRawCollectionPath() + "' with Document: " + thingUri.lastSegment().toString(),
-                            e.getMessage()
-                    );
-                }
             }
         }
     }

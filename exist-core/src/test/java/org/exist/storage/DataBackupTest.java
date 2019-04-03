@@ -38,7 +38,7 @@ import static org.junit.Assert.assertTrue;
 public class DataBackupTest {
 
     @ClassRule
-    public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @ClassRule
     public static TemporaryFolder folder = new TemporaryFolder();

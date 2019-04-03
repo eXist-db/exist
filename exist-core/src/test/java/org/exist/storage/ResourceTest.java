@@ -42,6 +42,7 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Test;
 
 import static org.junit.Assert.fail;
@@ -55,17 +56,11 @@ import static org.junit.Assert.assertEquals;
  */
 public class ResourceTest {
     
-    private final static String EMPTY_BINARY_FILE="";
+    private final static String EMPTY_BINARY_FILE = "";
     private final static XmldbURI DOCUMENT_NAME_URI = XmldbURI.create("empty.txt");
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
-
-    protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
-        final Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        return BrokerPool.getInstance();
-    }
 
     @After
     public void tearDown() {
@@ -78,10 +73,9 @@ public class ResourceTest {
         BrokerPool pool = startDb();
         store(pool);
 
-        stopDb();
-
         BrokerPool.FORCE_CORRUPTION = false;
-        pool = startDb();
+        pool = restartDb();
+
         read(pool);
     }
 
@@ -145,17 +139,18 @@ public class ResourceTest {
     }
 
     @Test
-    public void store2() throws TriggerException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
+    public void storeAndRead2() throws TriggerException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
         BrokerPool.FORCE_CORRUPTION = false;
-        final BrokerPool pool = startDb();
+        BrokerPool pool = startDb();
     	store(pool);
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = restartDb();
+
+        read2(pool);
     }
 
-    @Test
-    public void removeCollection() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException {
-
-        BrokerPool.FORCE_CORRUPTION = false;
-        final BrokerPool pool = startDb();
+    private void read2(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final TransactionManager transact = pool.getTransactionManager();
 
         byte[] data = null;
@@ -194,8 +189,18 @@ public class ResourceTest {
         return existEmbeddedServer.getBrokerPool();
     }
 
+    private BrokerPool restartDb() throws DatabaseConfigurationException, IOException, EXistException {
+        existEmbeddedServer.restart(false);
+        return existEmbeddedServer.getBrokerPool();
+    }
+
     @After
     public void stopDb() {
         existEmbeddedServer.stopDb();
+    }
+
+    @AfterClass
+    public static void cleanup() {
+        BrokerPool.FORCE_CORRUPTION = false;
     }
 }
