@@ -65,7 +65,7 @@ public class CollectionTest {
         "</test>";
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
     public void storeRead() throws EXistException, IOException, PermissionDeniedException, BTreeException, DatabaseConfigurationException, TriggerException, LockException {

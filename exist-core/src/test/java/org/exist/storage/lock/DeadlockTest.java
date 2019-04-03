@@ -144,7 +144,7 @@ public class DeadlockTest {
 	public int mode;
 
 	@ClassRule
-	public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+	public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
 	@BeforeClass
 	public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {

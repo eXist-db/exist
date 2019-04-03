@@ -56,7 +56,7 @@ import static org.exist.TestUtils.*;
 public class ContentAsDOMTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String XML =
         "<root><test>ABCDEF</test></root>";

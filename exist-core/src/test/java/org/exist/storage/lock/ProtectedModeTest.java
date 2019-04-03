@@ -45,16 +45,7 @@ import java.util.Random;
 public class ProtectedModeTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
-
-    private final static String COLLECTION_CONFIG =
-		"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-		"	<index>" +
-        "       <lucene>" +
-		"		    <text qname=\"LINE\"/>" +
-        "       </lucene>" +
-		"	</index>" +
-		"</collection>";
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
     
     private final static int COLLECTION_COUNT = 20;
     private final static int DOCUMENT_COUNT = 20;

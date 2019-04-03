@@ -51,7 +51,7 @@ import static org.junit.Assert.*;
 public class HistoryTriggerTest {
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test-history-trigger");
     private static XmldbURI TEST_CONFIG_COLLECTION_URI = XmldbURI.CONFIG_COLLECTION_URI.append(TEST_COLLECTION_URI);

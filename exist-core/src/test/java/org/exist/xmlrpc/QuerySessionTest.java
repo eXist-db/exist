@@ -22,7 +22,7 @@ import static org.junit.Assert.fail;
 public class QuerySessionTest {
 
     @ClassRule
-    public final static ExistWebServer existWebServer = new ExistWebServer(true, false, true);
+    public final static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     private final static String generateXQ =
             "declare function local:random-sequence($length as xs:integer, $G as map(xs:string, item())) {\n"

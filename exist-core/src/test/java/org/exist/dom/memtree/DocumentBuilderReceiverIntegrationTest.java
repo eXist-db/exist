@@ -49,7 +49,7 @@ import static org.junit.Assert.assertNotNull;
 public class DocumentBuilderReceiverIntegrationTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Parameterized.Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {

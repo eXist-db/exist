@@ -42,7 +42,7 @@ public class NativeBrokerLockingTest {
     private final static int TRACE_STACK_DEPTH = 5;
 
     @Rule
-    public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Before
     public void setupTestData() throws EXistException, PermissionDeniedException, IOException, TriggerException {

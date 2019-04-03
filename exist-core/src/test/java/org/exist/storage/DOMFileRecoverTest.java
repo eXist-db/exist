@@ -55,7 +55,7 @@ import static org.junit.Assert.assertNotNull;
 public class DOMFileRecoverTest {
 
     @Rule
-    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
 	public void add() throws EXistException, ReadOnlyException, TerminatedException, IOException, BTreeException {

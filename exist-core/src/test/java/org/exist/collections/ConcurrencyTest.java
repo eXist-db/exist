@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ConcurrencyTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static int CONCURRENT_THREADS = Runtime.getRuntime().availableProcessors() * 3;
     private static final int DOC_COUNT = CONCURRENT_THREADS * 10;

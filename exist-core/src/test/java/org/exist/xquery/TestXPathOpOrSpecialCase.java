@@ -18,7 +18,7 @@ import org.xmldb.api.modules.XMLResource;
 public class TestXPathOpOrSpecialCase extends Assert {
 
 	@ClassRule
-	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
 	/** Database test collection (<tt>/db/blah</tt>). */
 	private Collection testCollection;

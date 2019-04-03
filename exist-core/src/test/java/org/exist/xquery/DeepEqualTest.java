@@ -500,7 +500,7 @@ public class DeepEqualTest {
     }
 
     @ClassRule
-    public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeClass
     public static void setupTestCollection() throws XMLDBException {
