@@ -33,7 +33,10 @@ import org.exist.util.FileInputSource;
 import org.exist.util.LockException;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xmlunit.builder.DiffBuilder;
@@ -43,10 +46,13 @@ import org.xmlunit.diff.Diff;
 import javax.xml.transform.Source;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Random;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
@@ -54,6 +60,20 @@ import static org.junit.Assert.assertNotNull;
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class RecoverXmlTest extends AbstractRecoverTest {
+
+    @ClassRule
+    public static final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    private static Path testFile1 = null;
+    private static Path testFile2 = null;
+
+    @BeforeClass
+    public static void storeTempXmlDocs() throws IOException {
+        testFile1 = temporaryFolder.getRoot().toPath().resolve("RecoverXmlTest.doc1.xml");
+        Files.write(testFile1, Arrays.asList("<?xml version=\"1.0\" encoding=\"UTF-8\"?><element1>text1</element1>"), CREATE_NEW);
+
+        testFile2 = temporaryFolder.getRoot().toPath().resolve("RecoverXmlTest.doc2.xml");
+        Files.write(testFile2, Arrays.asList("<?xml version=\"1.0\" encoding=\"UTF-8\"?><element2>text2</element2>"), CREATE_NEW);
+    }
 
     @Test
     public void storeLargeAndLoad() throws LockException, TriggerException, PermissionDeniedException, EXistException,
@@ -82,12 +102,12 @@ public class RecoverXmlTest extends AbstractRecoverTest {
 
     @Override
     protected Path getTestFile1() throws IOException {
-        return resolveTestFile("conf.xml");
+        return testFile1;
     }
 
     @Override
     protected Path getTestFile2() throws IOException {
-        return resolveTestFile("log4j2.xml");
+        return testFile2;
     }
 
     @Override
