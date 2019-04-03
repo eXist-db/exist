@@ -426,21 +426,24 @@ public class XQueryUpdateTest {
         }
     }
 
-    @Ignore
     @Test
-    public void insertAttribDoc_1730726() throws EXistException, PermissionDeniedException, XPathException {
+    public void insertAttrib() throws EXistException, PermissionDeniedException, XPathException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             String query =
-                "declare namespace xmldb = \"http://exist-db.org/xquery/xmldb\"; "+
-                "let $uri := xmldb:store(\"/db\", \"insertAttribDoc.xml\", <C/>) "+
+                "declare namespace xmldb = 'http://exist-db.org/xquery/xmldb'; "+
+                "let $uri := xmldb:store('/db', 'insertAttribDoc.xml', <C/>) "+
                 "let $node := doc($uri)/element() "+
-                "let $attrib := <Value f=\"ATTRIB VALUE\"/>/@* "+
+                "let $attrib := <Value f='ATTRIB VALUE'/>/@* "+
                 "return update insert $attrib into $node";
 
             XQuery xquery = pool.getXQueryService();
-            @SuppressWarnings("unused")
+			xquery.execute(broker, query, null);
+
+			query = "doc('/db/insertAttribDoc.xml')/element()[@f eq 'ATTRIB VALUE']";
 			Sequence result = xquery.execute(broker, query, null);
+
+			assertFalse(result.isEmpty());
         }
     }
 
