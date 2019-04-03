@@ -15,7 +15,6 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.NodeValue;
@@ -23,8 +22,7 @@ import org.exist.xquery.value.Sequence;
 import org.junit.*;
 import org.xml.sax.SAXException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class XQueryUpdateTest {
 
@@ -403,7 +401,6 @@ public class XQueryUpdateTest {
 
             XQuery xquery = pool.getXQueryService();
             String query =
-            	"   declare variable $i external;\n" +
             	"	update insert\n" +
             	"		<product>\n" +
             	"			<description><![CDATA[me & you <>]]></description>\n" +
@@ -448,10 +445,10 @@ public class XQueryUpdateTest {
     }
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Before
-    public void loadTestData() throws EXistException, DatabaseConfigurationException, LockException, SAXException, PermissionDeniedException, IOException {
+    public void loadTestData() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             store(broker, "test.xml", TEST_XML);
