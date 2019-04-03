@@ -4,12 +4,10 @@ import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 
 import static org.junit.Assert.*;
 
 import com.googlecode.junittoolbox.ParallelRunner;
-import org.exist.config.TwoDatabasesTest;
 import org.junit.*;
 import org.junit.runner.RunWith;
 
@@ -41,12 +39,10 @@ public class MimeTableTest  {
 	 * default mime type capability.
 	 */
     @Test
-	public void testDistributionVersionOfMimeTypesXml() {
-		Path existDir = Optional.ofNullable(System.getProperty("exist.home")).map(Paths::get).orElse(Paths.get("."));
+	public void testDistributionVersionOfMimeTypesXml() throws URISyntaxException {
+		final Path mimeTypes = Paths.get(getClass().getResource("mime-types.xml").toURI());
 
-		Path file = existDir.resolve("mime-types.xml");
-
-		MimeTable mimeTable = MimeTable.getInstance(file);
+		MimeTable mimeTable = MimeTable.getInstance(mimeTypes);
 		assertNotNull("Mime table not found", mimeTable);
 
 		MimeType mt;
@@ -79,9 +75,7 @@ public class MimeTableTest  {
 	 */
     @Test
 	public void testWithDefaultResourceTypeFeature() throws URISyntaxException {
-		final char separator = System.getProperty("file.separator").charAt(0);
-		final String packagePath = getClass().getPackage().getName().replace('.', separator);
-		final Path mimeTypes = Paths.get(getClass().getClassLoader().getResource(packagePath + separator + "mime-types-xml-default.xml").toURI());
+		final Path mimeTypes = Paths.get(getClass().getResource("mime-types-xml-default.xml").toURI());
 
 		MimeTable mimeTable = MimeTable.getInstance(mimeTypes);
 		assertNotNull("Mime table not found", mimeTable);
@@ -120,9 +114,7 @@ public class MimeTableTest  {
 	 */
     @Test
 	public void testWithDefaultMimeTypeFeature() throws URISyntaxException {
-		final char separator = System.getProperty("file.separator").charAt(0);
-		final String packagePath = getClass().getPackage().getName().replace('.', separator);
-		final Path mimeTypes = Paths.get(getClass().getClassLoader().getResource(packagePath + separator + "mime-types-foo-default.xml").toURI());
+		final Path mimeTypes = Paths.get(getClass().getResource("mime-types-foo-default.xml").toURI());
 
 		MimeTable mimeTable = MimeTable.getInstance(mimeTypes);
 		assertNotNull("Mime table not found", mimeTable);

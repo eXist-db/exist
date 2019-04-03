@@ -22,16 +22,15 @@
 package org.exist.xquery.functions.validate;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.util.FileUtils;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.function.Predicate;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -49,8 +48,8 @@ public class JaxpDtdCatalogTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String noValidation = "<?xml version='1.0'?>" +
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-            "<validation mode=\"no\"/>" +
+            "<collection xmlns='http://exist-db.org/collection-config/1.0'>" +
+            "    <validation mode='no'/>" +
             "</collection>";
 
     @BeforeClass
@@ -67,28 +66,29 @@ public class JaxpDtdCatalogTest {
             }
         }
 
-        // Create filter
-        final Predicate<Path> filter = path -> (FileUtils.fileName(path).endsWith(".dtd"));
-
         Collection dtdsCollection = null;
         try {
             dtdsCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/dtds");
-            final Path schemas = TestUtils.resolveSample("validation/parse/dtds");
-            for (final Path file : FileUtils.list(schemas, filter)) {
-                final byte[] data = TestUtils.readFile(file);
-                ExistXmldbEmbeddedServer.storeResource(dtdsCollection, FileUtils.fileName(file), data);
-            }
+
+            final URL url = JingXsdTest.class.getResource("parse/dtds/MyNameSpace.dtd");
+            assertNotNull(url);
+
+            final byte[] data = Files.readAllBytes(Paths.get(url.toURI()));
+            ExistXmldbEmbeddedServer.storeResource(dtdsCollection, "MyNameSpace.dtd", data);
         } finally {
             if(dtdsCollection != null) {
                 dtdsCollection.close();
             }
         }
 
-        final Path catalog = TestUtils.resolveSample("validation/parse");
         Collection parseCollection = null;
         try {
             parseCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse");
-            final byte[] data = TestUtils.readFile(catalog, "catalog.xml");
+
+            final URL url = JingXsdTest.class.getResource("parse/catalog.xml");
+            assertNotNull(url);
+
+            final byte[] data = Files.readAllBytes(Paths.get(url.toURI()));
             ExistXmldbEmbeddedServer.storeResource(parseCollection, "catalog.xml", data);
         } finally {
             if(parseCollection != null) {
@@ -96,16 +96,21 @@ public class JaxpDtdCatalogTest {
             }
         }
 
-        final Path instance = TestUtils.resolveSample("validation/parse/instance");
         Collection instanceCollection = null;
         try {
             instanceCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/instance");
 
-            final byte[] valid = TestUtils.readFile(instance, "valid-dtd.xml");
-            ExistXmldbEmbeddedServer.storeResource(instanceCollection, "valid-dtd.xml", valid);
+            URL url = JingXsdTest.class.getResource("parse/instance/valid-dtd.xml");
+            assertNotNull(url);
 
-            final byte[] invalid = TestUtils.readFile(instance, "invalid-dtd.xml");
-            ExistXmldbEmbeddedServer.storeResource(instanceCollection, "invalid-dtd.xml", invalid);
+            byte[] data = Files.readAllBytes(Paths.get(url.toURI()));
+            ExistXmldbEmbeddedServer.storeResource(instanceCollection, "valid-dtd.xml", data);
+
+            url = JingXsdTest.class.getResource("parse/instance/invalid-dtd.xml");
+            assertNotNull(url);
+
+            data = Files.readAllBytes(Paths.get(url.toURI()));
+            ExistXmldbEmbeddedServer.storeResource(instanceCollection, "invalid-dtd.xml", data);
         } finally {
             if(instanceCollection != null) {
                 instanceCollection.close();

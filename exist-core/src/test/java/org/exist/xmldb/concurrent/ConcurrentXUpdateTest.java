@@ -79,7 +79,7 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
             getTestCollection().getService("IndexQueryService", "1.0");
         assertNotNull(idxConf);
         idxConf.configureCollection(CONFIG);
-        this.wordList = DBUtils.wordList(existXmldbEmbeddedServer.getRoot());
+        this.wordList = DBUtils.wordList();
         assertNotNull(wordList);
         this.tempFile = DBUtils.generateXMLFile(500, 10, wordList);
         DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);

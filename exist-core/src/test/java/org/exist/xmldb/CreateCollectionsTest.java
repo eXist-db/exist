@@ -24,6 +24,7 @@ package org.exist.xmldb;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -163,14 +164,15 @@ public class CreateCollectionsTest  {
     }
 
     @Test
-    public void storeBinaryResource() throws XMLDBException, IOException {
+    public void storeBinaryResource() throws XMLDBException, IOException, URISyntaxException {
         Collection colTest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         CollectionManagementService service = (CollectionManagementService) colTest.getService("CollectionManagementService", "1.0");
         Collection testCollection = service.createCollection("test");
         UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
         ums.chmod("rwxr-xr-x");
 
-        byte[] data = storeBinaryResourceFromFile(TestUtils.getEXistHome().get().resolve("webapp/logo.jpg"), testCollection);
+        final Path fLogo = Paths.get(getClass().getClassLoader().getResource("org/exist/xquery/value/logo.jpg").toURI());
+        byte[] data = storeBinaryResourceFromFile(fLogo, testCollection);
         Object content = testCollection.getResource("logo.jpg").getContent();
         byte[] dataStored = (byte[])content;
         assertArrayEquals("After storing binary resource, data out==data in", data, dataStored);

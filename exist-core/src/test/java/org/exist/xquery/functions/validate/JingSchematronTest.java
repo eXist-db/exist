@@ -22,16 +22,15 @@
 package org.exist.xquery.functions.validate;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.util.FileUtils;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.function.Predicate;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -45,12 +44,14 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class JingSchematronTest {
 
+    private static final String[] TEST_RESOURCES = { "Tournament-valid.xml", "Tournament-invalid.xml", "tournament-schema.sch" };
+
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String noValidation = "<?xml version='1.0'?>" +
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-            "<validation mode=\"no\"/>" +
+            "<collection xmlns='http://exist-db.org/collection-config/1.0'>" +
+            "    <validation mode='no'/>" +
             "</collection>";
 
     @BeforeClass
@@ -67,44 +68,23 @@ public class JingSchematronTest {
             }
         }
 
-        // Create filter
-        final Predicate<Path> filter = path -> {
-            final String fileName = FileUtils.fileName(path);
-            return fileName.startsWith("Tournament") || fileName.startsWith("tournament");
-        };
-
         // Store schematron 1.5 test files
         Collection col15 = null;
         try {
             col15 = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "tournament/1.5");
-            final Path sch15 = TestUtils.resolveSample("validation/tournament/1.5");
 
-            for (final Path file : FileUtils.list(sch15, filter)) {
-                final byte[] data = TestUtils.readFile(file);
-                ExistXmldbEmbeddedServer.storeResource(col15, FileUtils.fileName(file), data);
+            for (final String testResource : TEST_RESOURCES) {
+                final URL url = JingXsdTest.class.getResource("tournament/1.5/" + testResource);
+                assertNotNull(url);
+
+                final byte[] data = Files.readAllBytes(Paths.get(url.toURI()));
+                ExistXmldbEmbeddedServer.storeResource(col15, testResource, data);
             }
         } finally {
             if(col15 != null) {
                 col15.close();
             }
         }
-
-        // Store schematron iso testfiles
-        Collection colISO = null;
-        try {
-            colISO = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "tournament/iso");
-            final Path schISO = TestUtils.resolveSample("validation/tournament/iso");
-
-            for (final Path file : FileUtils.list(schISO, filter)) {
-                final byte[] data = TestUtils.readFile(file);
-                ExistXmldbEmbeddedServer.storeResource(colISO, FileUtils.fileName(file), data);
-            }
-        } finally {
-            if(colISO != null) {
-                colISO.close();
-            }
-        }
-
     }
 
     @Test

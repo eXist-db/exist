@@ -45,7 +45,7 @@ public class ConcurrentQueryTest extends ConcurrentTestBase {
 
     @Before
     public void setUp() throws Exception {
-        final String[] wordList = DBUtils.wordList(existXmldbEmbeddedServer.getRoot());
+        final String[] wordList = DBUtils.wordList();
         tempFile = DBUtils.generateXMLFile(500, 7, wordList);
         DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
     }
