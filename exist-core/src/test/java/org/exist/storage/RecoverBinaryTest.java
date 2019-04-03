@@ -22,6 +22,7 @@ package org.exist.storage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 import org.apache.commons.io.input.CountingInputStream;
 import org.exist.EXistException;
@@ -34,8 +35,12 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.FileInputSource;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.rules.TemporaryFolder;
 import org.xml.sax.InputSource;
 
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -44,14 +49,28 @@ import static org.junit.Assert.assertNotNull;
  */
 public class RecoverBinaryTest extends AbstractRecoverTest {
 
+    @ClassRule
+    public static final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    private static Path testFile1 = null;
+    private static Path testFile2 = null;
+
+    @BeforeClass
+    public static void storeTempBinaryDocs() throws IOException {
+        testFile1 = temporaryFolder.getRoot().toPath().resolve("blob1.bin");
+        Files.write(testFile1, Arrays.asList("blob1"), CREATE_NEW);
+
+        testFile2 = temporaryFolder.getRoot().toPath().resolve("blob2.bin");
+        Files.write(testFile2, Arrays.asList("blob2"), CREATE_NEW);
+    }
+
     @Override
     protected Path getTestFile1() throws IOException {
-        return resolveTestFile("LICENSE");
+        return testFile1;
     }
 
     @Override
     protected Path getTestFile2() throws IOException {
-        return resolveTestFile("README.md");
+        return testFile2;
     }
 
     @Override
