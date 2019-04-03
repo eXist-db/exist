@@ -198,6 +198,7 @@
             <test name="org.exist.xupdate.StressTest" todir="${junit.reports.dat}"/>
             <test name="org.exist.xquery.AllXqueryTests" todir="${junit.reports.dat}"/>
             <test name="org.exist.xquery.OptimizerTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.xquery.XQueryUpdateTest" todir="${junit.reports.dat}"/>
             <test name="org.exist.collections.triggers.AllTriggerTests" todir="${junit.reports.dat}"/>
             <test name="org.exist.collections.AllCollectionTests" todir="${junit.reports.dat}"/>
             <test name="org.exist.security.AccountTest" todir="${junit.reports.dat}"/>
