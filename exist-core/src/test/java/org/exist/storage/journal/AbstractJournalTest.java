@@ -22,7 +22,6 @@ package org.exist.storage.journal;
 import com.evolvedbinary.j8fu.function.BiFunction5E;
 import com.evolvedbinary.j8fu.function.Supplier5E;
 import org.exist.EXistException;
-import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
@@ -57,7 +56,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -1675,14 +1673,6 @@ public abstract class AbstractJournalTest<T> {
     protected void flushJournal() {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         pool.getJournalManager().get().flush(true, false);
-    }
-
-    protected Path resolveTestFile(final String fileName) throws IOException {
-        final Path path = TestUtils.getEXistHome().orElseGet(() -> Paths.get(".")).resolve(fileName);
-        if(!Files.exists(path)) {
-            throw new IOException("No such test file: " + path.toAbsolutePath().toString());
-        }
-        return path;
     }
 
     protected static ExpectedStart Start(final long transactionId) {
