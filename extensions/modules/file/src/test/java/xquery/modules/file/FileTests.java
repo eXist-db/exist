@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-    "exist-core/src/test/xquery/modules/file"
+    "src/test/xquery/modules/file"
 })
 public class FileTests {
 }

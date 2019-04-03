@@ -5,7 +5,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-    "exist-core/src/test/xquery/arrays"
+    "src/test/xquery/arrays"
 })
 public class ArrayTests {
 }
