@@ -25,10 +25,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.exist.xquery.AbstractInternalModule;
-import org.exist.xquery.ErrorCodes;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionDef;
+import org.exist.dom.QName;
+import org.exist.xquery.*;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 
 /**
  * Module function definitions for xpath-functions module.
@@ -246,7 +246,9 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT_LINES[0], FunUnparsedText.class),
         new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT_LINES[1], FunUnparsedText.class),
         new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT_AVAILABLE[0], FunUnparsedText.class),
-        new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT_AVAILABLE[1], FunUnparsedText.class)
+        new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT_AVAILABLE[1], FunUnparsedText.class),
+        new FunctionDef(FnRandomNumberGenerator.FS_RANDOM_NUMBER_GENERATOR[0], FnRandomNumberGenerator.class),
+        new FunctionDef(FnRandomNumberGenerator.FS_RANDOM_NUMBER_GENERATOR[1], FnRandomNumberGenerator.class)
     };
 
     static {
@@ -284,6 +286,14 @@ public class FnModule extends AbstractInternalModule {
 
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
+    }
+
+    static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
+        return FunctionDSL.functionSignature(new QName(name, Function.BUILTIN_FUNCTION_NS), description, returnType, paramTypes);
+    }
+
+    static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
+        return FunctionDSL.functionSignatures(new QName(name, Function.BUILTIN_FUNCTION_NS), description, returnType, variableParamTypes);
     }
 
 }
