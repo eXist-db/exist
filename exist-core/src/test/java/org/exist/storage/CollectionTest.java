@@ -37,7 +37,6 @@ import org.exist.storage.btree.BTreeException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
@@ -50,35 +49,26 @@ import static org.junit.Assert.assertNotNull;
  *
  */
 public class CollectionTest {
-
-    @SuppressWarnings("unused")
-	private static String docs[] = { "hamlet.xml", "r_and_j.xml", "macbeth.xml" };
     
     private static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
-    
-    @SuppressWarnings("unused")
-	private static String TEST_XML =
-        "<?xml version=\"1.0\"?>" +
-        "<test>" +
-        "  <title>Hello</title>" +
-        "  <para>Hello World!</para>" +
-        "</test>";
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
     public void storeRead() throws EXistException, IOException, PermissionDeniedException, BTreeException, DatabaseConfigurationException, TriggerException, LockException {
-        store();
-
-        stopDb();
-
-        read();
-    }
-
-    private void store() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDb();
+
+        store(pool);
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = restartDb();
+
+        read(pool);
+    }
+
+    private void store(final BrokerPool pool) throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
@@ -93,10 +83,7 @@ public class CollectionTest {
         }
     }
     
-    public void read() throws EXistException, IOException, PermissionDeniedException, BTreeException, DatabaseConfigurationException, LockException {
-        BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDb();
-
+    public void read(final BrokerPool pool) throws EXistException, IOException, PermissionDeniedException, BTreeException, DatabaseConfigurationException, LockException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             BTree btree = ((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             Writer writer = new StringWriter();
@@ -115,8 +102,14 @@ public class CollectionTest {
         return existEmbeddedServer.getBrokerPool();
     }
 
+    private BrokerPool restartDb() throws EXistException, IOException, DatabaseConfigurationException {
+        existEmbeddedServer.restart(false);
+        return existEmbeddedServer.getBrokerPool();
+    }
+
     @After
     public void stopDb() {
+        BrokerPool.FORCE_CORRUPTION = false;
         existEmbeddedServer.stopDb();
     }
 }

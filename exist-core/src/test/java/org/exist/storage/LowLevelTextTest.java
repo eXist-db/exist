@@ -9,10 +9,7 @@ import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -28,8 +25,8 @@ public class LowLevelTextTest {
 
 	private static final String TEST_XQUERY_SOURCE = "/test";
 
-	@ClassRule
-	public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+	@Rule
+	public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
 	private DBBroker broker;
 
@@ -112,7 +109,7 @@ public class LowLevelTextTest {
 				compiledXQuery);
 		assertEquals(
 				"borrowCompiledXQuery should retrieve the preCompiled XQuery for this stringSource",
-				compiledXQuery, preCompiledXQuery);
+				preCompiledXQuery, compiledXQuery);
 		xqueryPool.returnCompiledXQuery(stringSourceArg, compiledXQuery);
 	}
 }

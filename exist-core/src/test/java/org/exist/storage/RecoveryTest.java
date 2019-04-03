@@ -192,7 +192,7 @@ public class RecoveryTest {
             
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
-            final Sequence seq = xquery.execute(broker, "//SPEECH[ft:query(LINE, 'king')]", null);
+            final Sequence seq = xquery.execute(broker, "//SPEECH[contains(LINE, 'king')]", null);
             assertNotNull(seq);
             for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 final Item next = i.nextItem();

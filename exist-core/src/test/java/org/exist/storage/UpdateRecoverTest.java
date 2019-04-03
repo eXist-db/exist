@@ -84,10 +84,9 @@ public class UpdateRecoverTest {
         BrokerPool pool = startDb();
         store(pool);
 
-        stopDb();
-
         BrokerPool.FORCE_CORRUPTION = false;
-        pool = startDb();
+        pool = restartDb();
+
         read(pool);
     }
 
@@ -97,10 +96,9 @@ public class UpdateRecoverTest {
         BrokerPool pool = startDb();
         xmldbStore(pool);
 
-        stopDb();
-
         BrokerPool.FORCE_CORRUPTION = false;
-        pool = startDb();
+        pool = restartDb();
+
         xmldbRead(pool);
     }
 
@@ -447,6 +445,11 @@ public class UpdateRecoverTest {
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
 
+        return existEmbeddedServer.getBrokerPool();
+    }
+
+    private BrokerPool restartDb() throws DatabaseConfigurationException, IOException, EXistException {
+        existEmbeddedServer.restart(false);
         return existEmbeddedServer.getBrokerPool();
     }
 

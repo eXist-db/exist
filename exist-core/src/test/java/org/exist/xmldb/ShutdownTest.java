@@ -22,11 +22,8 @@
  */
 package org.exist.xmldb;
 
-import java.nio.file.Path;
-
 import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.util.FileUtils;
 import org.exist.xmldb.concurrent.DBUtils;
 import org.junit.*;
 import org.xmldb.api.base.Collection;
@@ -34,7 +31,6 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -46,7 +42,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class ShutdownTest {
 
-	private final static String URI = XmldbURI.LOCAL_DB;
+	private final static int ITERATIONS = 50;
 	
 	protected final static String XML =
 		"<config>" +
@@ -67,10 +63,6 @@ public class ShutdownTest {
 	private static final String TEST_QUERY1 = "//user[@id = 'george']/phone[contains(., '69')]/text()";
 	private static final String TEST_QUERY2 = "//user[@id = 'sam']/customer-id[. = '993834']";
 	private static final String TEST_QUERY3 = "//user[email = 'sam@email.com']";
-	private static final String TEST_QUERY4 = "/ROOT-ELEMENT/ELEMENT/ELEMENT-1";
-
-	private Path tempFile;
-	private String[] wordList;
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
@@ -85,23 +77,15 @@ public class ShutdownTest {
         }
 
         DBUtils.addXMLResource(rootCol, "biblio.rdf", TestUtils.resolveSample("biblio.rdf"));
-        wordList = DBUtils.wordList(rootCol);
-        assertNotNull(wordList);
-        assertNotEquals(0, wordList.length);
+
         // store the data files
         final String xml =
                 "<data now=\"" + System.currentTimeMillis() + "\" count=\"1\">" + XML + "</data>";
         DBUtils.addXMLResource(testCol, "R1.xml", xml);
-
-        tempFile = DBUtils.generateXMLFile(5000, 7, wordList);
-        DBUtils.addXMLResource(testCol, "R2.xml", tempFile);
     }
 
     @After
     public void tearDown() throws Exception {
-        if (tempFile != null) {
-            FileUtils.deleteQuietly(tempFile);
-        }
         Collection rootCol = existXmldbEmbeddedServer.getRoot();
         DBUtils.removeCollection(rootCol, "C1");
         Resource res = rootCol.getResource("biblio.rdf");
@@ -110,7 +94,7 @@ public class ShutdownTest {
 
 	@Test
 	public void shutdown() throws Exception {
-		for (int i = 0; i < 50; i++) {
+		for (int i = 0; i < ITERATIONS; i++) {
 			existXmldbEmbeddedServer.restart();
 			final Collection rootCol = existXmldbEmbeddedServer.getRoot();
 
@@ -126,19 +110,6 @@ public class ShutdownTest {
 
 			result = DBUtils.query(testCol, TEST_QUERY3);
 			assertEquals(1, result.getSize());
-
-			result = DBUtils.query(testCol, TEST_QUERY4);
-			assertEquals(5000, result.getSize());
-
-			// now replace the data files
-			final String xml =
-				"<data now=\"" + System.currentTimeMillis() + "\" count=\"" +
-				i + "\">" + XML + "</data>";
-			DBUtils.addXMLResource(testCol, "R1.xml", xml);
-
-			final Path testTempFile = DBUtils.generateXMLFile(5000, 7, wordList);
-			DBUtils.addXMLResource(testCol, "R2.xml", tempFile);
-			FileUtils.deleteQuietly(testTempFile);
 		}
 	}
 }

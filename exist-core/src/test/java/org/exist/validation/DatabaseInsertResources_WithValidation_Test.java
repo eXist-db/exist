@@ -39,6 +39,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import static org.exist.TestUtils.*;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 
 /**
@@ -49,11 +50,6 @@ import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 public class DatabaseInsertResources_WithValidation_Test {
 
     private final static String TEST_COLLECTION = "testValidationInsert";
-
-    private final static String ADMIN_UID = "admin";
-    private final static String ADMIN_PWD = "";
-
-    private final static String GUEST_UID = "guest";
 
     private final static String VALIDATION_HOME_COLLECTION_URI = "/db/" + TEST_COLLECTION + "/" + TestTools.VALIDATION_HOME_COLLECTION;
     
@@ -67,7 +63,7 @@ public class DatabaseInsertResources_WithValidation_Test {
      *     <!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd">
      */
     @Test
-    public void testValidDocumentSystemCatalog() throws IOException{
+    public void validDocumentSystemCatalog() throws IOException{
 
         String hamletWithValid = new String(TestUtils.readHamletSampleXml());
         hamletWithValid=hamletWithValid.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
@@ -135,17 +131,17 @@ public class DatabaseInsertResources_WithValidation_Test {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD)));
             final Txn txn = transact.beginTransaction()) {
 
 
             /** create nessecary collections if they dont exist */
             Collection testCollection = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI));
-            testCollection.getPermissions().setOwner(GUEST_UID);
+            testCollection.getPermissions().setOwner(GUEST_DB_USER);
             broker.saveCollection(txn, testCollection);
 
             Collection col = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION));
-            col.getPermissions().setOwner(GUEST_UID);
+            col.getPermissions().setOwner(GUEST_DB_USER);
             broker.saveCollection(txn, col);
 
             transact.commit(txn);
@@ -156,7 +152,7 @@ public class DatabaseInsertResources_WithValidation_Test {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD)));
             final Txn txn = transact.beginTransaction()) {
 
             Collection testCollection = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI));
