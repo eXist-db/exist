@@ -79,7 +79,7 @@ public class RecoveryTest {
         "</test>";
 
     @Rule
-    public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @After
     public void cleanup() {

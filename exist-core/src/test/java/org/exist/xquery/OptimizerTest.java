@@ -171,7 +171,7 @@ public class OptimizerTest {
                     .put(FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS, Boolean.FALSE) //Since we use the deprecated text:match-all() function, we have to be sure is is enabled
                     .build(),
             true,
-            false);
+            true);
 
     @BeforeClass
     public static void initDatabase() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, IOException {

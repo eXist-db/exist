@@ -80,7 +80,7 @@ public class ConstructedNodesRecoveryTest {
 		"</fruit>";
 
 	// we don't use @ClassRule/@Rule as we want to force corruption in some tests
-	private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+	private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
 	/**
 	 * Issues a query against constructed nodes and then corrupts the database (intentionally)

@@ -57,7 +57,7 @@ import org.xmldb.api.modules.XMLResource;
 public class CreateCollectionsTest  {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String TEST_COLLECTION = "testCreateCollection";
 

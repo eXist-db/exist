@@ -58,7 +58,7 @@ import static org.junit.Assert.assertArrayEquals;
 public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value, Exception> {
 
     @ClassRule
-    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     private static Executor executor = null;
 

@@ -59,7 +59,7 @@ public class ResourceTest {
     private final static XmldbURI DOCUMENT_NAME_URI = XmldbURI.create("empty.txt");
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
         final Configuration config = new Configuration();

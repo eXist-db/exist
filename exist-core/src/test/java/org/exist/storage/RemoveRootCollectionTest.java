@@ -59,7 +59,7 @@ public class RemoveRootCollectionTest {
     }
 
     @Rule
-    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Before
     public void startDB() throws Exception {

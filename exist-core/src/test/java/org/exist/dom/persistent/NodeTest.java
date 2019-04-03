@@ -32,7 +32,7 @@ import static org.junit.Assert.assertNull;
 public class NodeTest {
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
 	private static final String XML =
 		"<!-- doc starts here -->" +

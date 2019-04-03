@@ -52,7 +52,7 @@ import static org.junit.Assert.assertFalse;
 public class AuditTrailSessionListenerTest {
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static final XmldbURI TEST_COLLECTION = XmldbURI.create("/db/test");
     private static final String CREATE_SCRIPT = "session-create.xq";

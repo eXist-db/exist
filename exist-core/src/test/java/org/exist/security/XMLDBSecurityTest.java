@@ -33,7 +33,7 @@ import org.xmldb.api.modules.XMLResource;
 public class XMLDBSecurityTest {
 
     @ClassRule
-    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
     private static final String PORT_PLACEHOLDER = "${PORT}";
 
     @Parameters(name = "{0}")
