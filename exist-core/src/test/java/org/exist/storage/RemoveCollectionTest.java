@@ -23,11 +23,9 @@
 package org.exist.storage;
 
 import org.exist.EXistException;
-import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.IndexInfo;
-import org.exist.collections.CollectionConfigurationManager;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
@@ -62,30 +60,27 @@ public class RemoveCollectionTest {
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private final static String generateXQ =
-            "<book id=\"{$filename}\" n=\"{$count}\">" +
-            "   <chapter>" +
-            "       <title>{pt:random-text(7)}</title>" +
-            "       {" +
-            "           for $section in 1 to 8 return" +
-            "               <section id=\"sect{$section}\">" +
-            "                   <title>{pt:random-text(7)}</title>" +
-            "                   {" +
-            "                       for $para in 1 to 10 return" +
-            "                           <para>{pt:random-text(40)}</para>" +
-            "                   }" +
-            "               </section>" +
-            "       }" +
-            "   </chapter>" +
-            "</book>";
-
-    private static String COLLECTION_CONFIG =
-        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-    	"	<index>" +
-        "       <lucene>" +
-        "           <text match=\"/*\"/>" +
-        "       </lucene>" +
-        "	</index>" +
-    	"</collection>";
+            "declare function local:random-sequence($length as xs:integer, $G as map(xs:string, item())) {\n"
+            + "  if ($length eq 0)\n"
+            + "  then ()\n"
+            + "  else ($G?number, local:random-sequence($length - 1, $G?next()))\n"
+            + "};\n"
+            + "let $rnd := fn:random-number-generator() return"
+            + "<book id=\"{$filename}\" n=\"{$count}\">"
+            + "   <chapter xml:id=\"chapter{$count}\">"
+            + "       <title>{local:random-sequence(7, $rnd)}</title>"
+            + "       {"
+            + "           for $section in 1 to 8 return"
+            + "               <section id=\"sect{$section}\">"
+            + "                   <title>{local:random-sequence(7, $rnd)}</title>"
+            + "                   {"
+            + "                       for $para in 1 to 10 return"
+            + "                           <para>{local:random-sequence(120, $rnd)}</para>"
+            + "                   }"
+            + "               </section>"
+            + "       }"
+            + "   </chapter>"
+            + "</book>";
     
     private final static int COUNT = 300;
 
@@ -188,14 +183,6 @@ public class RemoveCollectionTest {
             assertNotNull(test);
             broker.saveCollection(transaction, test);
 
-            final CollectionConfigurationManager mgr = broker.getBrokerPool().getConfigurationManager();
-            mgr.addConfiguration(transaction, broker, test, COLLECTION_CONFIG);
-
-            final InputSource is = new InputSource(TestUtils.resolveShakespeareSample("hamlet.xml").toUri().toASCIIString());
-            assertNotNull(is);
-            final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), is);
-            assertNotNull(info);
-            test.store(transaction, broker, info, is);
             transact.commit(transaction);
         }
 
