@@ -27,6 +27,7 @@ import org.easymock.EasyMock;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Deque;
 import java.util.List;
 
 import static org.easymock.EasyMock.*;
@@ -43,7 +44,6 @@ public class XQueryContextTest {
         //partial mock context
         XQueryContext context = EasyMock.createMockBuilder(XQueryContext.class)
                 .withConstructor()
-                .withArgs()
                 .addMockedMethod("getUserFromHttpSession")
                 .addMockedMethod("getBroker")
                 .createMock();
@@ -165,7 +165,7 @@ public class XQueryContextTest {
     private int countBinaryValueInstances(final XQueryContext context) throws NoSuchFieldException, IllegalAccessException {
         final Field fldBinaryValueInstances = context.getClass().getDeclaredField("binaryValueInstances");
         fldBinaryValueInstances.setAccessible(true);
-        final List<BinaryValue> binaryValueInstances = (List<BinaryValue>)fldBinaryValueInstances.get(context);
+        final Deque<BinaryValue> binaryValueInstances = (Deque<BinaryValue>)fldBinaryValueInstances.get(context);
         return binaryValueInstances.size();
     }
 
