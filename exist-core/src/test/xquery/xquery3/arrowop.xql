@@ -144,8 +144,116 @@ declare function ao:B($x) {
     string-length($x)
 };
 
+declare
+	%private
+function ao:wrap-with-explicit-type-conversion ($item as item()) as item() {
+    <wrap>{xs:string($item)}</wrap>
+};
+
 declare 
     %test:assertEquals(10)
 function ao:function-declared-later() {
     ao:A("hello")
 };
+
+(:~
+    the tests below (`ao:wrap-*`) were added because of
+    https://github.com/exist-db/exist/issues/1960
+~:)
+declare
+	%private
+function ao:wrap ($item as item()) as item() {
+    <wrap>{$item}</wrap>
+};
+
+declare
+	%private
+function ao:first-element-text ($s as node()*) as text() {
+    $s[1]/text()
+};
+
+declare
+    %test:assertEquals("1")
+function ao:wrap-atomic-sequence () {
+    (1, 2, 3)
+        => for-each(ao:wrap#1)
+        => ao:first-element-text()
+};
+
+declare
+    %test:assertEquals("1")
+function ao:wrap-atomic-sequence-with-explicit-type-conversion () {
+    (1, 2, 3)
+        => for-each(ao:wrap-with-explicit-type-conversion#1)
+        => ao:first-element-text()
+};
+
+declare
+	%private
+function ao:get-i-elements ($i as item()) { $i//i };
+
+(:~
+    must be 3 not 9
+    closes https://github.com/exist-db/exist/issues/1960
+ ~:)
+declare
+    %test:assertEquals(3)
+function ao:wrap-element-sequence () {
+    let $xml := <root><i/><i/><i/></root>
+    return $xml/node()
+        => for-each(ao:wrap#1)
+        => for-each(ao:get-i-elements#1)
+        => count()
+};
+
+(:~
+    must not fail with duplicate attribute exception err:XQDY0025
+    closes https://github.com/exist-db/exist/issues/1960
+ ~:)
+declare
+    %test:assertEquals('1')
+function ao:wrap-attribute-from-sequence () {
+    (<item n="1"/>, <item n="2"/>, <item n="3"/>)
+        => for-each(function ($item as item()) as element(a) { <a>{$item/@n}</a> })
+        => (function($sequence) {
+                $sequence[1]/@n/string()
+            })()
+};
+
+declare
+    %test:assertError('XPDY0002')
+function ao:filter-with-contextitem () {
+    (<item n="1"/>, <item n="2"/>, <item n="3"/>)
+         => filter(function ($item as item())  { . })
+         => count()
+};
+
+declare
+    %test:assertEquals('abcd')
+function ao:fold-left-with-contextitem () {
+    (<a/>,<b/>,<c/>,<d/>)
+        => fold-left('', function ($r, $a) { $r || xs:string(node-name($a)) })
+};
+
+declare
+    %test:assertEquals('dcba')
+function ao:fold-right-with-contextitem () {
+    (<a/>,<b/>,<c/>,<d/>)
+        => fold-right('', function ($a, $r) { $r || xs:string(node-name($a)) })
+};
+
+declare
+    %test:assertEquals('dcba')
+function ao:fold-right-with-contextitem () {
+    ('a','b','c','d')
+        => fold-right('', function ($a, $r) { $r || $a })
+};
+
+declare
+    %test:assertEquals('aabbaabb')
+function ao:for-each-pair-with-contextitem () {
+    (<a/>,<b/>,<a/>,<b/>)
+        => for-each-pair((<a/>,<b/>,<a/>,<b/>), function ($a, $b) { node-name($a) || node-name($b) })
+        => string-join()
+};
+
