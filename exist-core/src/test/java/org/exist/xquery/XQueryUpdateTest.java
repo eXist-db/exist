@@ -15,7 +15,6 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.NodeValue;
@@ -23,8 +22,7 @@ import org.exist.xquery.value.Sequence;
 import org.junit.*;
 import org.xml.sax.SAXException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class XQueryUpdateTest {
 
@@ -137,6 +135,9 @@ public class XQueryUpdateTest {
             XQuery xquery = pool.getXQueryService();
             xquery.execute(broker, query, null);
 
+            Sequence seq = xquery.execute(broker, "//product", null);
+            assertEquals(1, seq.getItemCount());
+
             query =
                 "   declare variable $i external;\n" +
                 "   update insert\n" +
@@ -153,7 +154,7 @@ public class XQueryUpdateTest {
                 xquery.execute(broker, compiled, null);
             }
 
-            Sequence seq = xquery.execute(broker, "/products", null);
+            seq = xquery.execute(broker, "/products", null);
             assertEquals(seq.getItemCount(), 1);
 
             Serializer serializer = broker.getSerializer();
@@ -184,6 +185,9 @@ public class XQueryUpdateTest {
             XQuery xquery = pool.getXQueryService();
             xquery.execute(broker, query, null);
 
+            Sequence seq = xquery.execute(broker, "//product", null);
+            assertEquals(1, seq.getItemCount());
+
             query =
                 "   declare variable $i external;\n" +
                 "   update insert\n" +
@@ -200,7 +204,7 @@ public class XQueryUpdateTest {
                 xquery.execute(broker, compiled, null);
             }
 
-            Sequence seq = xquery.execute(broker, "/products", null);
+            seq = xquery.execute(broker, "/products", null);
             assertEquals(seq.getItemCount(), 1);
 
             Serializer serializer = broker.getSerializer();
@@ -228,65 +232,40 @@ public class XQueryUpdateTest {
             	"declare option exist:output-size-limit '-1';\n" +
             	"for $prod at $i in //product return\n" +
                 "	update value $prod/description\n" +
-                "	with concat('Updated Description', $i)";
+                "	with 'Updated Description ' || $i";
             Sequence seq = xquery.execute(broker, query, null);
 
-            seq = xquery.execute(broker, "//product[starts-with(description, 'Updated')]", null);
-            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
-
-            Serializer serializer = broker.getSerializer();
-            serializer.serialize((NodeValue) seq.itemAt(0));
+            seq = xquery.execute(broker, "count(//product[starts-with(description, 'Updated')])", null);
+            assertEquals(ITEMS_TO_APPEND, (int)seq.itemAt(0).toJavaObject(int.class));
 
             for (int i = 1; i <= ITEMS_TO_APPEND; i++) {
-                seq = xquery.execute(broker, "//product[description &= 'Description" + i + "']", null);
+                seq = xquery.execute(broker, "//product[description eq 'Updated Description " + i + "']", null);
                 assertEquals(1, seq.getItemCount());
-                serializer.serialize((NodeValue) seq.itemAt(0));
             }
-            seq = xquery.execute(broker, "//product[description &= 'Updated']", null);
-            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
-            serializer.serialize((NodeValue) seq.itemAt(0));
+            seq = xquery.execute(broker, "//product[stock cast as xs:double gt 400]", null);
+            assertEquals(seq.getItemCount(), 959);
 
-            query =
-            	"declare option exist:output-size-limit '-1';\n" +
-            	"for $prod at $count in //product return\n" +
-                "	update value $prod/stock/text()\n" +
-                "	with (400 + $count)";
-            seq = xquery.execute(broker, query, null);
-
-            seq = xquery.execute(broker, "//product[stock > 400]", null);
-            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
-            seq = xquery.execute(broker, "//product[stock &= '401']", null);
+            seq = xquery.execute(broker, "//product[starts-with(stock, '401')]", null);
             assertEquals(seq.getItemCount(), 1);
-
-            serializer.serialize((NodeValue) seq.itemAt(0));
-
-            query =
-            	"declare option exist:output-size-limit '-1';\n" +
-            	"for $prod in //product return\n" +
-                "	update value $prod/@num\n" +
-                "	with xs:int($prod/@num) * 3";
-            seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "/products", null);
             assertEquals(seq.getItemCount(), 1);
 
-            seq = xquery.execute(broker, "//product[@num = 3]", null);
+            seq = xquery.execute(broker, "//product[@num cast as xs:integer eq 3]", null);
             assertEquals(seq.getItemCount(), 1);
-
-            serializer.serialize((NodeValue) seq.itemAt(0));
-
-            query =
-            	"declare option exist:output-size-limit '-1';\n" +
-            	"for $prod in //product return\n" +
-                "	update value $prod/stock\n" +
-                "	with (<local>10</local>,<external>1</external>)";
-            seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "/products", null);
             assertEquals(seq.getItemCount(), 1);
 
-            seq = xquery.execute(broker, "//product/stock/external[. = 1]", null);
+            query =
+                    "declare option exist:output-size-limit '-1';\n" +
+                            "for $prod in //product return\n" +
+                            "	update value $prod/stock\n" +
+                            "	with (<local>10</local>,<external>1</external>)";
+            seq = xquery.execute(broker, query, null);
+
+            seq = xquery.execute(broker, "//product/stock/external[. cast as xs:integer eq 1]", null);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
         }
     }
@@ -403,7 +382,6 @@ public class XQueryUpdateTest {
 
             XQuery xquery = pool.getXQueryService();
             String query =
-            	"   declare variable $i external;\n" +
             	"	update insert\n" +
             	"		<product>\n" +
             	"			<description><![CDATA[me & you <>]]></description>\n" +
@@ -426,29 +404,32 @@ public class XQueryUpdateTest {
         }
     }
 
-    @Ignore
     @Test
-    public void insertAttribDoc_1730726() throws EXistException, PermissionDeniedException, XPathException {
+    public void insertAttrib() throws EXistException, PermissionDeniedException, XPathException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             String query =
-                "declare namespace xmldb = \"http://exist-db.org/xquery/xmldb\"; "+
-                "let $uri := xmldb:store(\"/db\", \"insertAttribDoc.xml\", <C/>) "+
+                "declare namespace xmldb = 'http://exist-db.org/xquery/xmldb'; "+
+                "let $uri := xmldb:store('/db', 'insertAttribDoc.xml', <C/>) "+
                 "let $node := doc($uri)/element() "+
-                "let $attrib := <Value f=\"ATTRIB VALUE\"/>/@* "+
+                "let $attrib := <Value f='ATTRIB VALUE'/>/@* "+
                 "return update insert $attrib into $node";
 
             XQuery xquery = pool.getXQueryService();
-            @SuppressWarnings("unused")
+			xquery.execute(broker, query, null);
+
+			query = "doc('/db/insertAttribDoc.xml')/element()[@f eq 'ATTRIB VALUE']";
 			Sequence result = xquery.execute(broker, query, null);
+
+			assertFalse(result.isEmpty());
         }
     }
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Before
-    public void loadTestData() throws EXistException, DatabaseConfigurationException, LockException, SAXException, PermissionDeniedException, IOException {
+    public void loadTestData() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             store(broker, "test.xml", TEST_XML);
