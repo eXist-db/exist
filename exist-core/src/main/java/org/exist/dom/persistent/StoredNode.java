@@ -300,7 +300,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
                             }
                             last = reader.getNode();
                         }
-                    } else if (currentId.getTreeLevel() == parentLevel) {
+                    } else if (status == XMLStreamConstants.END_ELEMENT && currentId.getTreeLevel() == parentLevel) {
                         // reached the end of the parent element
                         break;  // exit while loop
                     }
@@ -355,7 +355,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
                             && currentId.getTreeLevel() == level
                             && currentId.compareTo(nodeId) > 0) {
                         return reader.getNode();
-                    } else if(currentId.getTreeLevel() == parentLevel) {
+                    } else if(status == XMLStreamConstants.END_ELEMENT && currentId.getTreeLevel() == parentLevel) {
                         // reached the end of the parent element
                         break;  // exit while loop
                     }
