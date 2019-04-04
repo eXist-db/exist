@@ -131,6 +131,20 @@ public class LuceneConfig {
         return null;
     }
 
+    protected boolean hasFieldsOrFacets() {
+        for (LuceneIndexConfig config : paths.values()) {
+            if (config.hasFieldsOrFacets()) {
+                return true;
+            }
+        }
+        for (LuceneIndexConfig config: wildcardPaths) {
+            if (config.hasFieldsOrFacets()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public Analyzer getAnalyzer(QName qname) {
         LuceneIndexConfig idxConf = paths.get(qname);
         while (idxConf != null) {
