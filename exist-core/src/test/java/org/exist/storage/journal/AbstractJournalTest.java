@@ -76,8 +76,8 @@ public abstract class AbstractJournalTest<T> {
     protected static final boolean COMMIT = true;
     protected static final boolean NO_COMMIT = false;
 
-    protected static final int FIRST_USABLE_DOC_ID = 7;
-    protected static final int FIRST_USABLE_PAGE = 7;
+    protected static final int FIRST_USABLE_DOC_ID = 5;
+    protected static final int FIRST_USABLE_PAGE = 5;
 
     /**
      * We set useTemporaryStorage=true for ExistEmbeddedServer
