@@ -409,9 +409,9 @@ public class NativeBrokerLockingTest {
                 stackTrace = null;
             }
 
-            System.out.println(LockTable.formatString(lockEventType, groupId, entry.getId(), entry.getLockType(),
-                    entry.getLockMode(), entry.getOwner(), localCount, timestamp,
-                    stackTrace));
+//            System.out.println(LockTable.formatString(lockEventType, groupId, entry.getId(), entry.getLockType(),
+//                    entry.getLockMode(), entry.getOwner(), localCount, timestamp,
+//                    stackTrace));
 
             final LockAction lockAction = new LockAction(lockEventType, groupId, entry.getId(), entry.getLockType(),
                     entry.getLockMode(), entry.getOwner(), localCount, timestamp,
