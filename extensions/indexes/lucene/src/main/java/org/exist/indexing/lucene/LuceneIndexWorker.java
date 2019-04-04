@@ -107,7 +107,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private Set<NodeId> nodesToRemove = null;
     private List<PendingDoc> nodesToWrite = null;
     private Document pendingDoc = null;
-    
+    private boolean canFlush = false;
+
     private int cachedNodesSize = 0;
 
     private int maxCachedNodesSize = 4096 * 1024;
@@ -116,8 +117,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     public static final String FIELD_DOC_ID = "docId";
     public static final String FIELD_DOC_URI = "docUri";
-
-    private boolean isReindexing;
 
     private final StreamListener listener = new LuceneStreamListener();
 
@@ -1284,9 +1283,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
     
     private void write() {
-        if (nodesToWrite == null || nodesToWrite.isEmpty()) {
+        if (nodesToWrite == null || nodesToWrite.isEmpty() || !canFlush) {
             return;
-	}
+	    }
 
         if (broker.getIndexController().isReindexing()) {
             // remove old indexed nodes
@@ -1410,6 +1409,28 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private ArrayList<PendingAttr> pendingAttrs = new ArrayList<PendingAttr>();
 	private ArrayList<AttrImpl> attributes = new ArrayList<AttrImpl>(10);
         private ElementImpl currentElement;
+
+        @Override
+        public void startReplaceDocument(Txn transaction) {
+            // if config has fields or facets, we cannot flush until the document is completely stored
+            canFlush = config == null || !config.hasFieldsOrFacets();
+        }
+
+        @Override
+        public void endReplaceDocument(Txn transaction) {
+            canFlush = true;
+        }
+
+        @Override
+        public void startIndexDocument(Txn transaction) {
+            // if config has fields or facets, we cannot flush until the document is completely stored
+            canFlush = config == null || !config.hasFieldsOrFacets();
+        }
+
+        @Override
+        public void endIndexDocument(Txn transaction) {
+            canFlush = true;
+        }
 
         @Override
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {

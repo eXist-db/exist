@@ -199,6 +199,10 @@ public class LuceneIndexConfig {
         }
     }
 
+    protected boolean hasFieldsOrFacets() {
+        return !facetsAndFields.isEmpty();
+    }
+
     // return saved Analyzer for use in LuceneMatchListener
     public Analyzer getAnalyzer() {
         return type.getAnalyzer();
