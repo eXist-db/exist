@@ -35,6 +35,12 @@ import org.w3c.dom.Element;
 
 import java.util.Map;
 
+/**
+ * Configuration for a facet definition nested inside a lucene index configuration element.
+ * A facet has a dimension and content returned by an XQuery expression.
+ *
+ * @author Wolfgang Meier
+ */
 public class LuceneFacetConfig extends AbstractFieldConfig {
 
     public final static String DIMENSION = "dimension";
@@ -44,7 +50,7 @@ public class LuceneFacetConfig extends AbstractFieldConfig {
 
     protected boolean isHierarchical = false;
 
-    public LuceneFacetConfig(LuceneConfig config, Element configElement, FacetsConfig facetsConfig, Map<String, String> namespaces) throws DatabaseConfigurationException {
+    public LuceneFacetConfig(LuceneConfig config, Element configElement, Map<String, String> namespaces) {
         super(config, configElement, namespaces);
         this.dimension = configElement.getAttribute(DIMENSION);
 
@@ -52,8 +58,8 @@ public class LuceneFacetConfig extends AbstractFieldConfig {
         isHierarchical = hierarchicalOpt != null &&
                 (hierarchicalOpt.equalsIgnoreCase("true") || hierarchicalOpt.equalsIgnoreCase("yes"));
 
-        facetsConfig.setHierarchical(dimension, isHierarchical);
-        facetsConfig.setMultiValued(dimension, !isHierarchical);
+        config.facetsConfig.setHierarchical(dimension, isHierarchical);
+        config.facetsConfig.setMultiValued(dimension, !isHierarchical);
     }
 
     public String getDimension() {
@@ -82,10 +88,16 @@ public class LuceneFacetConfig extends AbstractFieldConfig {
         }
     }
 
+    @Override
+    void processText(CharSequence text, Document luceneDoc) {
+        if (text.length() > 0) {
+            luceneDoc.add(new FacetField(dimension, text.toString()));
+        }
+    }
 
-    public void build(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc) {
+    public void build(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc, CharSequence text) {
         try {
-            doBuild(broker, document, nodeId, luceneDoc);
+            doBuild(broker, document, nodeId, luceneDoc, text);
         } catch (PermissionDeniedException e) {
             LOG.warn("Permission denied while evaluating expression for facet '" + dimension + "': " + expression, e);
         } catch (XPathException e) {

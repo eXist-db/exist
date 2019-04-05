@@ -153,9 +153,10 @@ public class LuceneConfig {
             idxConf = idxConf.getNext();
         }
         if (idxConf != null) {
-            String id = idxConf.getAnalyzerId();
-            if (id != null)
-                return analyzers.getAnalyzerById(idxConf.getAnalyzerId());
+            final Analyzer analyzer = idxConf.getAnalyzer();
+            if (analyzer != null) {
+                return analyzer;
+            }
         }
         return analyzers.getDefaultAnalyzer();
     }
@@ -303,7 +304,7 @@ public class LuceneConfig {
                             case INDEX_ELEMENT: {
                                 // found an index definition
                                 Element elem = (Element) node;
-                                LuceneIndexConfig config = new LuceneIndexConfig(this, elem, namespaces, analyzers, fieldTypes, facetsConfig);
+                                LuceneIndexConfig config = new LuceneIndexConfig(this, elem, namespaces, analyzers, fieldTypes);
                                 // if it is a named index, add it to the namedIndexes map
                                 if (config.getName() != null) {
                                     namedIndexes.put(config.getName(), config);

@@ -72,13 +72,15 @@ declare variable $facet:TAXONOMY :=
 
 declare variable $facet:DOCUMENTS :=
     <documents>
-        <document>
-            <title>Facets for all</title>
-            <category>programming</category>
+        <document id="D-37/2">
+            <title>Ruhe im Wald</title>
+            <abstract>Es zwitschern die Vögel im Walde</abstract>
+            <category>nature</category>
         </document>
-        <document>
-            <title>Lucene explained</title>
-            <category>programming</category>
+        <document id="Z-49/2">
+            <title>Streiten und Hoffen</title>
+            <abstract>Da nun einmal der Himmel zerrissen und die Götter sich streiten</abstract>
+            <category>philosophy</category>
         </document>
     </documents>;
 
@@ -99,15 +101,17 @@ declare variable $facet:XCONF1 :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
             <lucene>
-                <analyzer class="org.exist.indexing.lucene.analyzers.NoDiacriticsStandardAnalyzer"/>
+                <analyzer class="org.exist.indexing.lucene.analyzers.NoDiacriticsStandardAnalyzer" id="nodiacritics"/>
+                <analyzer class="org.apache.lucene.analysis.core.KeywordAnalyzer" id="keyword"/>
+                <analyzer class="org.apache.lucene.analysis.de.GermanAnalyzer" id="german"/>
                 <module uri="http://exist-db.org/lucene/test/" prefix="idx" at="module.xql"/>
-                <text qname="letter">
+                <text qname="letter" analyzer="nodiacritics">
                     <facet dimension="place" expression="place"/>
                     <facet dimension="location" expression="idx:place-hierarchy(place)" hierarchical="yes"/>
                     <facet dimension="from" expression="from"/>
                     <facet dimension="to" expression="to"/>
                     <facet dimension="date" expression="tokenize(date, '-')" hierarchical="yes"/>
-                    <field name="place" expression="place"/>
+                    <field name="place" expression="place" analyzer="nodiacritics"/>
                     <field name="from" expression="from" store="no"/>
                     <field name="to" expression="to"/>
                     <field name="date" expression="date" type="xs:date"/>
@@ -117,7 +121,12 @@ declare variable $facet:XCONF1 :=
                 </text>
                 <text qname="document" index="no">
                     <field name="title" expression="title"/>
+                    <field name="abstract" expression="abstract" analyzer="german"/>
+                    <field name="ident" expression="@id/string()" analyzer="keyword"/>
                     <facet dimension="cat" expression="category"/>
+                </text>
+                <text match="//document/abstract">
+                    <field name="german" analyzer="german"/>
                 </text>
             </lucene>
         </index>
@@ -245,7 +254,7 @@ declare
     %test:assertEquals(1)
     %test:args("from:susi AND place:berlin")
     %test:assertEquals(0)
-    %test:args("basia AND place:wrocław")
+    %test:args("basia AND place:wroclaw")
     %test:assertEquals(2)
     %test:args("place:wroclaw")
     %test:assertEquals(2)
@@ -339,18 +348,71 @@ function facet:index-keys() {
 };
 
 declare
-    %test:args("lucene")
+    %test:args("ruhe")
     %test:assertEmpty
-    %test:args("title:lucene")
-    %test:assertEquals("<title>Lucene explained</title>")
+    %test:args("title:ruhe")
+    %test:assertEquals("<title>Ruhe im Wald</title>")
 function facet:query-no-index($query as xs:string) {
     doc("/db/lucenetest/documents.xml")//document[ft:query(., $query)]/title
 };
 
 declare
+    %test:args("müller")
     %test:assertEquals(2)
+function facet:default-analyzer-no-diacritics($query as xs:string) {
+    count(collection("/db/lucenetest")//letter[ft:query(., $query)])
+};
+
+declare
+    %test:assertEquals(1)
 function facet:query-no-index-but-facet() {
     let $result := doc("/db/lucenetest/documents.xml")//document[ft:query(., ())]
     return
-        ft:facets(head($result), "cat")?programming
+        ft:facets(head($result), "cat")?nature
+};
+
+declare
+    (: German stemming :)
+    %test:args("abstract:vogel")
+    %test:assertEquals("<title>Ruhe im Wald</title>")
+    %test:args("abstract:wald")
+    %test:assertEquals("<title>Ruhe im Wald</title>")
+    %test:args("abstract:streit")
+    %test:assertEquals("<title>Streiten und Hoffen</title>")
+    %test:args("title:streiten AND abstract:streit")
+    %test:assertEquals("<title>Streiten und Hoffen</title>")
+    (: No stemming on title :)
+    %test:args("title:streit AND abstract:streit")
+    %test:assertEmpty
+function facet:query-field-with-analyzer($query as xs:string) {
+    doc("/db/lucenetest/documents.xml")//document[ft:query(., $query)]/title
+};
+
+(: Index on 'abstract' uses default analyzer but has a field
+ : with German analyzer indexing same content.
+ :)
+declare
+    %test:args("german:vogel")
+    %test:assertEquals("<title>Ruhe im Wald</title>")
+    %test:args("vogel")
+    %test:assertEmpty
+    %test:args("vögel")
+    %test:assertEquals("<title>Ruhe im Wald</title>")
+    %test:args("german:streit")
+    %test:assertEquals("<title>Streiten und Hoffen</title>")
+    %test:args("german:streit AND götter")
+    %test:assertEquals("<title>Streiten und Hoffen</title>")
+    %test:args("german:streit AND gott")
+    %test:assertEmpty
+    %test:args("german:(streit AND gott)")
+    %test:assertEquals("<title>Streiten und Hoffen</title>")
+function facet:query-field-no-expression($query as xs:string) {
+    doc("/db/lucenetest/documents.xml")//abstract[ft:query(., $query)]/../title
+};
+
+declare
+    %test:args('<query><term field="ident">Z-49/2</term></query>')
+    %test:assertEquals("<title>Streiten und Hoffen</title>")
+function facet:query-field-with-keyword-analyzer($query as element()) {
+    doc("/db/lucenetest/documents.xml")//document[ft:query(., $query)]/title
 };

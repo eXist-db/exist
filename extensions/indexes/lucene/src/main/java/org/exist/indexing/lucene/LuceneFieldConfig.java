@@ -20,30 +20,43 @@
 
 package org.exist.indexing.lucene;
 
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.*;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.util.CharSlice;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.Map;
 
+/**
+ * Configuration for a field definition nested inside a lucene index configuration element.
+ * A field has a name and content returned by an XQuery expression. It may be associated with
+ * an analyzer, could have a type and may be stored or not.
+ *
+ * @author Wolfgang Meier
+ */
 public class LuceneFieldConfig extends AbstractFieldConfig {
 
     private final static String ATTR_FIELD_NAME = "name";
     private final static String ATTR_TYPE = "type";
     private final static String ATTR_STORE = "store";
+    private final static String ATTR_ANALYZER = "analyzer";
 
     protected String fieldName;
     protected int type = Type.STRING;
     protected boolean store = true;
+    protected Analyzer analyzer= null;
 
-    LuceneFieldConfig(LuceneConfig config, Element configElement, Map<String, String> namespaces) throws DatabaseConfigurationException {
+    LuceneFieldConfig(LuceneConfig config, Element configElement, Map<String, String> namespaces, AnalyzerConfig analyzers) throws DatabaseConfigurationException {
         super(config, configElement, namespaces);
 
         fieldName = configElement.getAttribute(ATTR_FIELD_NAME);
@@ -64,12 +77,31 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         if (storeStr != null && storeStr.length() > 0) {
             this.store = storeStr.equalsIgnoreCase("yes") || storeStr.equalsIgnoreCase("true");
         }
+
+        final String analyzerOpt = configElement.getAttribute(ATTR_ANALYZER);
+        if (analyzerOpt != null && analyzerOpt.length() > 0) {
+            analyzer = analyzers.getAnalyzerById(analyzerOpt);
+            if (analyzer == null) {
+                throw new DatabaseConfigurationException("Analyzer for field " + fieldName + " not found");
+            }
+        }
+    }
+
+    @Nonnull
+    public String getName() {
+        return fieldName;
+    }
+
+    @Nullable
+    @Override
+    public Analyzer getAnalyzer() {
+        return analyzer;
     }
 
     @Override
-    void build(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc) {
+    void build(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc, CharSequence text) {
         try {
-            doBuild(broker, document, nodeId, luceneDoc);
+            doBuild(broker, document, nodeId, luceneDoc, text);
         } catch (XPathException e) {
             LOG.warn("XPath error while evaluating expression for field named '" + fieldName + "': " + expression +
                     ": " + e.getMessage(), e);
@@ -86,6 +118,14 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
             if (field != null) {
                 luceneDoc.add(field);
             }
+        }
+    }
+
+    @Override
+    void processText(CharSequence text, Document luceneDoc) {
+        final Field field = convertToField(text.toString());
+        if (field != null) {
+            luceneDoc.add(field);
         }
     }
 
