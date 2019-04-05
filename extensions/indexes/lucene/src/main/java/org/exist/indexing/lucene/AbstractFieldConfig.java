@@ -22,6 +22,7 @@ package org.exist.indexing.lucene;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.dom.persistent.DocumentImpl;
@@ -38,58 +39,75 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.w3c.dom.Element;
 
+import javax.annotation.Nullable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.Optional;
 
+/**
+ * Abstract configuration corresponding to either a field or facet element nested inside
+ * a index definition 'text' element. Adds the possibility to create index content based
+ * on an arbitrary XQuery expression.
+ *
+ * @author Wolfgang Meier
+ */
 public abstract class AbstractFieldConfig {
 
     public final static String XPATH_ATTR = "expression";
 
     static final Logger LOG = LogManager.getLogger(AbstractFieldConfig.class);
 
-    protected String expression;
+    protected Optional<String> expression = Optional.empty();
     private boolean isValid = true;
     private CompiledXQuery compiled = null;
 
-    public AbstractFieldConfig(LuceneConfig config, Element configElement, Map<String, String> namespaces) throws DatabaseConfigurationException {
+    public AbstractFieldConfig(LuceneConfig config, Element configElement, Map<String, String> namespaces) {
         final String xpath = configElement.getAttribute(XPATH_ATTR);
-        if (xpath == null || xpath.isEmpty()) {
-            throw new DatabaseConfigurationException("facet definition needs an attribute 'expression': " + configElement.toString());
-        }
+        if (xpath != null && !xpath.isEmpty()) {
 
-        final StringBuilder sb = new StringBuilder();
-        namespaces.forEach((prefix, uri) -> {
-            if (!prefix.equals("xml")) {
-                sb.append("declare namespace ").append(prefix);
-                sb.append("=\"").append(uri).append("\";\n");
+            final StringBuilder sb = new StringBuilder();
+            namespaces.forEach((prefix, uri) -> {
+                if (!prefix.equals("xml")) {
+                    sb.append("declare namespace ").append(prefix);
+                    sb.append("=\"").append(uri).append("\";\n");
+                }
+            });
+            if (config.getImports() != null) {
+                config.getImports().stream().forEach((moduleImport -> {
+                    sb.append("import module namespace ");
+                    sb.append(moduleImport.prefix);
+                    sb.append("=\"");
+                    sb.append(moduleImport.uri);
+                    sb.append("\" at \"");
+                    sb.append(resolveURI(configElement.getBaseURI(), moduleImport.at));
+                    sb.append("\";\n");
+                }));
             }
-        });
-        if (config.getImports() != null) {
-            config.getImports().stream().forEach((moduleImport -> {
-                sb.append("import module namespace ");
-                sb.append(moduleImport.prefix);
-                sb.append("=\"");
-                sb.append(moduleImport.uri);
-                sb.append("\" at \"");
-                sb.append(resolveURI(configElement.getBaseURI(), moduleImport.at));
-                sb.append("\";\n");
-            }));
-        }
-        sb.append(xpath);
+            sb.append(xpath);
 
-        this.expression = sb.toString();
+            this.expression = Optional.of(sb.toString());
+        }
     }
 
-    public String getExpression() {
-        return expression;
+    @Nullable
+    public Analyzer getAnalyzer() {
+        return null;
     }
 
     abstract void processResult(Sequence result, Document luceneDoc) throws XPathException;
 
-    abstract void build(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc);
+    abstract void processText(CharSequence text, Document luceneDoc);
 
-    protected void doBuild(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc) throws PermissionDeniedException, XPathException {
+    abstract void build(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc, CharSequence text);
+
+    protected void doBuild(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc, CharSequence text)
+            throws PermissionDeniedException, XPathException {
+        if (!expression.isPresent()) {
+            processText(text, luceneDoc);
+            return;
+        }
+
         compile(broker);
 
         if (!isValid) {
@@ -112,14 +130,16 @@ public abstract class AbstractFieldConfig {
 
     private void compile(DBBroker broker) {
         if (compiled == null && isValid) {
-            final XQuery xquery = broker.getBrokerPool().getXQueryService();
-            final XQueryContext context = new XQueryContext(broker.getBrokerPool());
-            try {
-                this.compiled = xquery.compile(broker, context, expression);
-            } catch (XPathException | PermissionDeniedException e) {
-                LOG.error("Failed to compile expression: " + expression + ": " + e.getMessage(), e);
-                isValid = false;
-            }
+            expression.ifPresent((code) -> {
+                final XQuery xquery = broker.getBrokerPool().getXQueryService();
+                final XQueryContext context = new XQueryContext(broker.getBrokerPool());
+                try {
+                    this.compiled = xquery.compile(broker, context, code);
+                } catch (XPathException | PermissionDeniedException e) {
+                    LOG.error("Failed to compile expression: " + expression + ": " + e.getMessage(), e);
+                    isValid = false;
+                }
+            });
         }
     }
 
