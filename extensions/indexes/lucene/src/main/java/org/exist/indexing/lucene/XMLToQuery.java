@@ -66,31 +66,31 @@ public class XMLToQuery {
                     query = parseChildren(field, root, analyzer, options);
                     break;
                 case "term":
-                    query = termQuery(field, root, analyzer);
+                    query = termQuery(getField(root, field), root, analyzer);
                     break;
                 case "wildcard":
-                    query = wildcardQuery(field, root, analyzer, options);
+                    query = wildcardQuery(getField(root, field), root, analyzer, options);
                     break;
                 case "prefix":
-                    query = prefixQuery(field, root, options);
+                    query = prefixQuery(getField(root, field), root, options);
                     break;
                 case "fuzzy":
-                    query = fuzzyQuery(field, root);
+                    query = fuzzyQuery(getField(root, field), root);
                     break;
                 case "bool":
-                    query = booleanQuery(field, root, analyzer, options);
+                    query = booleanQuery(getField(root, field), root, analyzer, options);
                     break;
                 case "phrase":
-                    query = phraseQuery(field, root, analyzer);
+                    query = phraseQuery(getField(root, field), root, analyzer);
                     break;
                 case "near":
-                    query = nearQuery(field, root, analyzer);
+                    query = nearQuery(getField(root, field), root, analyzer);
                     break;
                 case "first":
-                    query = getSpanFirst(field, root, analyzer);
+                    query = getSpanFirst(getField(root, field), root, analyzer);
                     break;
                 case "regex":
-                    query = regexQuery(field, root, options);
+                    query = regexQuery(getField(root, field), root, options);
                     break;
                 default:
                     throw new XPathException("Unknown element in lucene query expression: " + localName);
@@ -442,5 +442,13 @@ public class XMLToQuery {
             child = child.getNextSibling();
         }
         return false;
+    }
+
+    private String getField(Element node, String defaultField) {
+        final String field = node.getAttribute("field");
+        if (field != null && field.length() > 0) {
+            return field;
+        }
+        return defaultField;
     }
 }
