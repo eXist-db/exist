@@ -52,7 +52,8 @@ public class QueryField extends Query implements Optimizable {
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                 "all nodes from the input node set matching the query. match highlighting information " +
                 "will be available for all returned nodes. Lucene's match score can be retrieved via " +
-                "the ft:score function.")
+                "the ft:score function."),
+            "Use an index definition with nested fields and ft:query instead"
         ),
         new FunctionSignature(
             new QName("query-field", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
@@ -76,7 +77,8 @@ public class QueryField extends Query implements Optimizable {
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                 "all nodes from the input node set matching the query. match highlighting information " +
                 "will be available for all returned nodes. Lucene's match score can be retrieved via " +
-                "the ft:score function.")
+                "the ft:score function."),
+            "Use an index definition with nested fields and ft:query instead"
         )
     };
 
