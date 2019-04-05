@@ -70,6 +70,18 @@ declare variable $facet:TAXONOMY :=
         </place>
     </places>;
 
+declare variable $facet:DOCUMENTS :=
+    <documents>
+        <document>
+            <title>Facets for all</title>
+            <category>programming</category>
+        </document>
+        <document>
+            <title>Lucene explained</title>
+            <category>programming</category>
+        </document>
+    </documents>;
+
 declare variable $facet:MODULE :=
     ``[
         xquery version "3.1";
@@ -103,6 +115,10 @@ declare variable $facet:XCONF1 :=
                     <field name="score" expression="score" type="xs:double"/>
                     <field name="time" expression="time" type="xs:time"/>
                 </text>
+                <text qname="document" index="no">
+                    <field name="title" expression="title"/>
+                    <facet dimension="cat" expression="category"/>
+                </text>
             </lucene>
         </index>
     </collection>;
@@ -116,7 +132,8 @@ function facet:setup() {
         xmldb:store($testCol, "module.xql", $facet:MODULE, "application/xquery"),
         xmldb:store($confCol, "collection.xconf", $facet:XCONF1),
         xmldb:store($testCol, "places.xml", $facet:TAXONOMY),
-        xmldb:store($testCol, "test.xml", $facet:XML)
+        xmldb:store($testCol, "test.xml", $facet:XML),
+        xmldb:store($testCol, "documents.xml", $facet:DOCUMENTS)
     )
 };
 
@@ -319,4 +336,21 @@ declare
     %test:assertEquals(4)
 function facet:index-keys() {
     count(collection("/db/lucenetest")/ft:index-keys-for-field("from", (), function($key, $count) { $key }, 10))
+};
+
+declare
+    %test:args("lucene")
+    %test:assertEmpty
+    %test:args("title:lucene")
+    %test:assertEquals("<title>Lucene explained</title>")
+function facet:query-no-index($query as xs:string) {
+    doc("/db/lucenetest/documents.xml")//document[ft:query(., $query)]/title
+};
+
+declare
+    %test:assertEquals(2)
+function facet:query-no-index-but-facet() {
+    let $result := doc("/db/lucenetest/documents.xml")//document[ft:query(., ())]
+    return
+        ft:facets(head($result), "cat")?programming
 };
