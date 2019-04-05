@@ -387,8 +387,8 @@ declare function test:expected-strings($report as element(report)+) {
 };
 
 declare function test:actual-strings($report as element(report)+) {
-    fn:serialize($report[failure]/output/*, map {
-        "method": "xml",
+    fn:serialize($report[failure]/output/node(), map {
+        "method": "adaptive",
         "item-separator": ","
     })
 };
