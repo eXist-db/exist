@@ -57,6 +57,7 @@ public class LuceneIndexConfig {
 
     public static final String FIELD_ATTR = "field";
     public static final String TYPE_ATTR = "type";
+    public static final String INDEX_ATTR = "index";
 
     private String name = null;
 
@@ -71,6 +72,8 @@ public class LuceneIndexConfig {
     private LuceneIndexConfig nextConfig = null;
 
     private FieldType type = null;
+
+    private boolean doIndex = true;
 
     // This is for the @attr match boosting
     // and the intention is to do a proper predicate check instead in the future. /ljo
@@ -106,6 +109,11 @@ public class LuceneIndexConfig {
         	type = fieldTypes.get(fieldType);
         if (type == null)
         	type = new FieldType(config, analyzers);
+
+        String indexParam = config.getAttribute(INDEX_ATTR);
+        if (indexParam != null && indexParam.length() > 0) {
+            doIndex = "yes".equalsIgnoreCase(indexParam) || "true".equalsIgnoreCase(indexParam);
+        }
 
         parse(parent, config, namespaces, facetsConfig);
     }
@@ -218,6 +226,10 @@ public class LuceneIndexConfig {
 
     public NodePathPattern getNodePathPattern() {
         return path;
+    }
+
+    public boolean doIndex() {
+        return this.doIndex;
     }
 
     public float getBoost() {

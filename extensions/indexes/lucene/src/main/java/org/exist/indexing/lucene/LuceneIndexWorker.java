@@ -1350,23 +1350,25 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 Field fNodeIdIdx = new Field(LuceneUtil.FIELD_NODE_ID, bts, TYPE_NODE_ID);
                 doc.add(fNodeIdIdx);
 
-                String contentField;
-                // the text content is indexed in a field using either
-                // the qname of the element or attribute or the field
-                // name defined in the configuration
-                if (pending.idxConf.isNamed())
-                	contentField = pending.idxConf.getName();
-                else
-                	contentField = LuceneUtil.encodeQName(pending.qname, index.getBrokerPool().getSymbols());
+                if (pending.idxConf.doIndex()) {
+                    String contentField;
+                    // the text content is indexed in a field using either
+                    // the qname of the element or attribute or the field
+                    // name defined in the configuration
+                    if (pending.idxConf.isNamed())
+                        contentField = pending.idxConf.getName();
+                    else
+                        contentField = LuceneUtil.encodeQName(pending.qname, index.getBrokerPool().getSymbols());
 
-                Field fld = new Field(contentField, pending.text.toString(), Field.Store.NO, Field.Index.ANALYZED, Field.TermVector.YES);
-                if (pending.boost > 0) {
-                    fld.setBoost(pending.boost);
-                } else if (config.getBoost() > 0) {
-                    fld.setBoost(config.getBoost());
+                    Field fld = new Field(contentField, pending.text.toString(), Field.Store.NO, Field.Index.ANALYZED, Field.TermVector.YES);
+                    if (pending.boost > 0) {
+                        fld.setBoost(pending.boost);
+                    } else if (config.getBoost() > 0) {
+                        fld.setBoost(config.getBoost());
+                    }
+
+                    doc.add(fld);
                 }
-
-                doc.add(fld);
 
                 fDocIdIdx.setIntValue(currentDoc.getDocId());
                 doc.add(fDocIdIdx);
