@@ -19,6 +19,8 @@
  */
 package org.exist.indexing.lucene;
 
+import com.evolvedbinary.j8fu.function.Function2E;
+import com.evolvedbinary.j8fu.function.FunctionE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -27,8 +29,6 @@ import org.apache.lucene.facet.taxonomy.SearcherTaxonomyManager;
 import org.apache.lucene.facet.taxonomy.TaxonomyWriter;
 import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyWriter;
 import org.apache.lucene.index.*;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
@@ -40,14 +40,13 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.util.DatabaseConfigurationException;
-import com.evolvedbinary.j8fu.function.Function2E;
-import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.util.FileUtils;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 

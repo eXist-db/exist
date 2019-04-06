@@ -20,13 +20,13 @@
 
 package org.exist.indexing.lucene;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.*;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.util.CharSlice;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
@@ -60,12 +60,12 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         super(config, configElement, namespaces);
 
         fieldName = configElement.getAttribute(ATTR_FIELD_NAME);
-        if (fieldName == null || fieldName.length() == 0) {
+        if (StringUtils.isEmpty(fieldName)) {
             throw new DatabaseConfigurationException("Invalid config: attribute 'name' must be given");
         }
 
         final String typeStr = configElement.getAttribute(ATTR_TYPE);
-        if (typeStr != null && typeStr.length() > 0) {
+        if (StringUtils.isNotEmpty(typeStr)) {
             try {
                 this.type = Type.getType(typeStr);
             } catch (XPathException e) {
@@ -74,12 +74,12 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         }
 
         final String storeStr = configElement.getAttribute(ATTR_STORE);
-        if (storeStr != null && storeStr.length() > 0) {
+        if (StringUtils.isNotEmpty(storeStr)) {
             this.store = storeStr.equalsIgnoreCase("yes") || storeStr.equalsIgnoreCase("true");
         }
 
         final String analyzerOpt = configElement.getAttribute(ATTR_ANALYZER);
-        if (analyzerOpt != null && analyzerOpt.length() > 0) {
+        if (StringUtils.isNotEmpty(analyzerOpt)) {
             analyzer = analyzers.getAnalyzerById(analyzerOpt);
             if (analyzer == null) {
                 throw new DatabaseConfigurationException("Analyzer for field " + fieldName + " not found");
@@ -99,7 +99,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
     }
 
     @Override
-    void build(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc, CharSequence text) {
+    protected void build(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc, CharSequence text) {
         try {
             doBuild(broker, document, nodeId, luceneDoc, text);
         } catch (XPathException e) {
@@ -111,7 +111,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
     }
 
     @Override
-    void processResult(Sequence result, Document luceneDoc) throws XPathException {
+    protected void processResult(Sequence result, Document luceneDoc) throws XPathException {
         for (SequenceIterator i = result.unorderedIterator(); i.hasNext(); ) {
             final String text = i.nextItem().getStringValue();
             final Field field = convertToField(text);
@@ -122,7 +122,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
     }
 
     @Override
-    void processText(CharSequence text, Document luceneDoc) {
+    protected void processText(CharSequence text, Document luceneDoc) {
         final Field field = convertToField(text.toString());
         if (field != null) {
             luceneDoc.add(field);
