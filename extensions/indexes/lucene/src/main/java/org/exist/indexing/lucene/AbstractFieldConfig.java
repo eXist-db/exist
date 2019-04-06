@@ -20,6 +20,7 @@
 
 package org.exist.indexing.lucene;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -30,7 +31,6 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
@@ -56,7 +56,7 @@ public abstract class AbstractFieldConfig {
 
     public final static String XPATH_ATTR = "expression";
 
-    static final Logger LOG = LogManager.getLogger(AbstractFieldConfig.class);
+    protected static final Logger LOG = LogManager.getLogger(AbstractFieldConfig.class);
 
     protected Optional<String> expression = Optional.empty();
     private boolean isValid = true;
@@ -64,11 +64,11 @@ public abstract class AbstractFieldConfig {
 
     public AbstractFieldConfig(LuceneConfig config, Element configElement, Map<String, String> namespaces) {
         final String xpath = configElement.getAttribute(XPATH_ATTR);
-        if (xpath != null && !xpath.isEmpty()) {
+        if (StringUtils.isNotEmpty(xpath)) {
 
             final StringBuilder sb = new StringBuilder();
             namespaces.forEach((prefix, uri) -> {
-                if (!prefix.equals("xml")) {
+                if (!"xml".equals(prefix)) {
                     sb.append("declare namespace ").append(prefix);
                     sb.append("=\"").append(uri).append("\";\n");
                 }
@@ -95,11 +95,11 @@ public abstract class AbstractFieldConfig {
         return null;
     }
 
-    abstract void processResult(Sequence result, Document luceneDoc) throws XPathException;
+    protected abstract void processResult(Sequence result, Document luceneDoc) throws XPathException;
 
-    abstract void processText(CharSequence text, Document luceneDoc);
+    protected abstract void processText(CharSequence text, Document luceneDoc);
 
-    abstract void build(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc, CharSequence text);
+    protected abstract void build(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc, CharSequence text);
 
     protected void doBuild(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc, CharSequence text)
             throws PermissionDeniedException, XPathException {
@@ -146,15 +146,13 @@ public abstract class AbstractFieldConfig {
     private String resolveURI(String baseURI, String location) {
         try {
             final URI uri = new URI(location);
-            if (!uri.isAbsolute()) {
-                if (baseURI != null && baseURI.startsWith(CollectionConfigurationManager.CONFIG_COLLECTION)) {
-                    baseURI = baseURI.substring(CollectionConfigurationManager.CONFIG_COLLECTION.length());
-                    final int lastSlash = baseURI.lastIndexOf('/');
-                    if (lastSlash > -1) {
-                        baseURI = baseURI.substring(0, lastSlash);
-                    }
-                    return XmldbURI.EMBEDDED_SERVER_URI_PREFIX + baseURI + '/' + location;
+            if (!uri.isAbsolute() && baseURI != null && baseURI.startsWith(CollectionConfigurationManager.CONFIG_COLLECTION)) {
+                String base = baseURI.substring(CollectionConfigurationManager.CONFIG_COLLECTION.length());
+                final int lastSlash = base.lastIndexOf('/');
+                if (lastSlash > -1) {
+                    base = base.substring(0, lastSlash);
                 }
+                return XmldbURI.EMBEDDED_SERVER_URI_PREFIX + base + '/' + location;
             }
         } catch (URISyntaxException e) {
             // ignore and return location

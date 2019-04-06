@@ -213,11 +213,11 @@ public class Query extends Function implements Optimizable {
         try {
             if (key != null && Type.subTypeOf(key.getType(), Type.ELEMENT)) {
                 final Element queryXML = key == null ? null : (Element) ((NodeValue) key).getNode();
-                preselectResult = index.query(context, getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
+                preselectResult = index.query(getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
                         qnames, queryXML, NodeSet.DESCENDANT, options);
             } else {
                 final String query = key == null ? null : key.getStringValue();
-                preselectResult = index.query(context, getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
+                preselectResult = index.query(getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
                         qnames, query, NodeSet.DESCENDANT, options);
             }
         } catch (IOException | org.apache.lucene.queryparser.classic.ParseException e) {
@@ -260,11 +260,11 @@ public class Query extends Function implements Optimizable {
                 try {
                     if (Type.subTypeOf(key.getType(), Type.ELEMENT)) {
                         final Element queryXML = key == null ? null : (Element) ((NodeValue) key).getNode();
-                        result = index.query(context, getExpressionId(), docs, inNodes, qnames,
+                        result = index.query(getExpressionId(), docs, inNodes, qnames,
                                 queryXML, NodeSet.ANCESTOR, options);
                     } else {
                         final String query = key == null ? null : key.getStringValue();
-                        result = index.query(context, getExpressionId(), docs, inNodes, qnames,
+                        result = index.query(getExpressionId(), docs, inNodes, qnames,
                                 query, NodeSet.ANCESTOR, options);
                     }
                 } catch (IOException | org.apache.lucene.queryparser.classic.ParseException e) {

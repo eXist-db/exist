@@ -21,7 +21,6 @@ package org.exist.xquery.modules.lucene;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
@@ -32,7 +31,6 @@ import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 
 import java.io.IOException;
-import java.util.Properties;
 
 public class QueryField extends Query implements Optimizable {
 	
@@ -119,7 +117,7 @@ public class QueryField extends Query implements Optimizable {
         QueryOptions options = parseOptions(this, contextSequence, null, 3);
         try {
             if (Type.subTypeOf(query.getType(), Type.ELEMENT))
-                preselectResult = index.queryField(context, getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
+                preselectResult = index.queryField(getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
                     field, (Element) ((NodeValue)query).getNode(), NodeSet.DESCENDANT, options);
             else
                 preselectResult = index.queryField(context, getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
@@ -161,7 +159,7 @@ public class QueryField extends Query implements Optimizable {
         	QueryOptions options = parseOptions(this, contextSequence, contextItem, 3);
         	try {
         		if (Type.subTypeOf(query.getType(), Type.ELEMENT))
-        			result = index.queryField(context, getExpressionId(), docs, contextSet, field,
+        			result = index.queryField(getExpressionId(), docs, contextSet, field,
         					(Element)((NodeValue)query).getNode(), NodeSet.ANCESTOR, options);
         		else
         			result = index.queryField(context, getExpressionId(), docs, contextSet, field,

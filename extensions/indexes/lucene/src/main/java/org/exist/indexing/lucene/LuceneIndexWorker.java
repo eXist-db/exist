@@ -402,18 +402,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
-    private NodeId readNodeId(int doc, BinaryDocValues nodeIdValues, BrokerPool pool) {
-        final BytesRef ref = nodeIdValues.get(doc);
-        final int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
-        return pool.getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
-    }
-
     /**
      * Query the index. Returns a node set containing all matching nodes. Each node
      * in the node set has a {@link LuceneMatch}
      * element attached, which stores the score and a link to the query which generated it.
      *
-     * @param context current XQuery context
      * @param contextId current context id, identify to track the position inside nested XPath predicates
      * @param docs query will be restricted to documents in this set
      * @param contextSet if specified, returned nodes will be descendants of the nodes in this set
@@ -426,8 +419,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @throws IOException
      * @throws ParseException
      */
-    public NodeSet query(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
-        List<QName> qnames, String queryStr, int axis, QueryOptions options)
+    public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet,
+                         List<QName> qnames, String queryStr, int axis, QueryOptions options)
             throws IOException, ParseException, XPathException {
         return index.withSearcher(searcher -> {
             final List<QName> definedIndexes = getDefinedIndexes(qnames);
@@ -435,8 +428,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final boolean returnAncestor = axis == NodeSet.ANCESTOR;
             for (QName qname : definedIndexes) {
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
-                Analyzer analyzer = getAnalyzer(null, qname, context.getBroker(), docs);
-                LuceneConfig config = getLuceneConfig(field, qname, broker, docs);
+                LuceneConfig config = getLuceneConfig(broker, docs);
+                Analyzer analyzer = getAnalyzer(config,null, qname);
                 QueryParserWrapper parser = getQueryParser(field, analyzer, docs);
                 options.configureParser(parser.getConfiguration());
                 Query query = queryStr == null ? new MatchAllDocsQuery() : parser.parse(queryStr);
@@ -458,7 +451,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * in the node set has a {@link LuceneMatch}
      * element attached, which stores the score and a link to the query which generated it.
      *
-     * @param context current XQuery context
      * @param contextId current context id, identify to track the position inside nested XPath predicates
      * @param docs query will be restricted to documents in this set
      * @param contextSet if specified, returned nodes will be descendants of the nodes in this set
@@ -471,7 +463,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @throws IOException
      * @throws ParseException
      */
-    public NodeSet query(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
+    public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet,
                          List<QName> qnames, Element queryRoot, int axis, QueryOptions options)
             throws IOException, ParseException, XPathException {
         return index.withSearcher(searcher -> {
@@ -480,14 +472,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final boolean returnAncestor = axis == NodeSet.ANCESTOR;
             for (QName qname : definedIndexes) {
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
-                LuceneConfig config = getLuceneConfig(field, qname, broker, docs);
-                analyzer = getAnalyzer(null, qname, context.getBroker(), docs);
+                LuceneConfig config = getLuceneConfig(broker, docs);
+                analyzer = getAnalyzer(config, null, qname);
                 Query query = queryRoot == null ? new MatchAllDocsQuery() : queryTranslator.parse(field, queryRoot, analyzer, options);
                 Optional<Map<String, List<String>>> facets = options.getFacets();
-                if (facets.isPresent()) {
-                    if (config != null) {
-                        query = drilldown(facets.get(), query, config);
-                    }
+                if (facets.isPresent() && config != null) {
+                    query = drilldown(facets.get(), query, config);
                 }
                 if (query != null) {
                     searchAndProcess(contextId, qname, docs, contextSet, resultSet,
@@ -498,15 +488,15 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         });
     }
 
-    public NodeSet queryField(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
-            String field, Element queryRoot, int axis, QueryOptions options)
+    public NodeSet queryField(int contextId, DocumentSet docs, NodeSet contextSet,
+                              String field, Element queryRoot, int axis, QueryOptions options)
             throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             final NodeSet resultSet = new NewArrayNodeSet();
             final boolean returnAncestor = axis == NodeSet.ANCESTOR;
-            analyzer = getAnalyzer(field, null, context.getBroker(), docs);
-            LuceneConfig config = getLuceneConfig(field, null, context.getBroker(), docs);
-            Query query = queryTranslator.parse(field, queryRoot, analyzer, options);
+            final LuceneConfig config = getLuceneConfig(broker, docs);
+            analyzer = getAnalyzer(config, field, null);
+            final Query query = queryTranslator.parse(field, queryRoot, analyzer, options);
             if (query != null) {
                 searchAndProcess(contextId, null, docs, contextSet, resultSet,
                         returnAncestor, searcher, query, null, config);
@@ -567,8 +557,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return index.withSearcher(searcher -> {
             NodeSet resultSet = new NewArrayNodeSet();
             boolean returnAncestor = axis == NodeSet.ANCESTOR;
-            LuceneConfig config = getLuceneConfig(field, null, context.getBroker(), docs);
-            Analyzer analyzer = getAnalyzer(field, null, context.getBroker(), docs);
+            LuceneConfig config = getLuceneConfig(context.getBroker(), docs);
+            Analyzer analyzer = getAnalyzer(config, field, null);
             LOG.debug("Using analyzer " + analyzer + " for " + queryString);
             QueryParserWrapper parser = getQueryParser(field, analyzer, docs);
             options.configureParser(parser.getConfiguration());
@@ -1024,31 +1014,23 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * Return the analyzer to be used for the given field or qname. Either field
      * or qname should be specified.
      */
-    protected Analyzer getAnalyzer(String field, QName qname, DBBroker broker, DocumentSet docs) {
-        for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
-            Collection collection = i.next();
-            IndexSpec idxConf = collection.getIndexConfiguration(broker);
-            if (idxConf != null) {
-                LuceneConfig config = (LuceneConfig) idxConf.getCustomIndexSpec(LuceneIndex.ID);
-                if (config != null) {
-                    Analyzer analyzer;
-                    if (field == null)
-                    	analyzer = config.getAnalyzer(qname);
-                    else
-                    	analyzer = config.getAnalyzer(field);
-                    if (analyzer != null)
-                        return analyzer;
-                }
-            }
+    protected Analyzer getAnalyzer(LuceneConfig config, String field, QName qname) {
+        if (config != null) {
+            Analyzer analyzer;
+            if (field == null)
+                analyzer = config.getAnalyzer(qname);
+            else
+                analyzer = config.getAnalyzer(field);
+            if (analyzer != null)
+                return analyzer;
         }
         return index.getDefaultAnalyzer();
     }
 
     /**
-     * Return the analyzer to be used for the given field or qname. Either field
-     * or qname should be specified.
+     * Return the first configuration found for documents in the document set.
      */
-    protected LuceneConfig getLuceneConfig(String field, QName qname, DBBroker broker, DocumentSet docs) {
+    protected LuceneConfig getLuceneConfig(DBBroker broker, DocumentSet docs) {
         for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
             Collection collection = i.next();
             IndexSpec idxConf = collection.getIndexConfiguration(broker);
