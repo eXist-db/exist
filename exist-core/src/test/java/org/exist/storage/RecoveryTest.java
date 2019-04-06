@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
@@ -57,6 +58,7 @@ import org.junit.*;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static samples.Samples.SAMPLES;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -68,8 +70,6 @@ import org.xml.sax.SAXException;
  *
  */
 public class RecoveryTest {
-    
-    private static Path dir = TestUtils.shakespeareSamples();
     
     private static String TEST_XML =
         "<?xml version=\"1.0\"?>" +
@@ -88,7 +88,7 @@ public class RecoveryTest {
     }
 
     @Test
-    public void storeCommit_removeNoCommit() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException, BTreeException, XPathException {
+    public void storeCommit_removeNoCommit() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException, BTreeException, XPathException, URISyntaxException {
 
         // store, commit, and then remove without committing (remove should be undone during next recovery!)
         storeAndCommit_removeNoCommit(existEmbeddedServer.getBrokerPool());
@@ -105,7 +105,7 @@ public class RecoveryTest {
         verify(existEmbeddedServer.getBrokerPool());
     }
 
-    private void storeAndCommit_removeNoCommit(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    private void storeAndCommit_removeNoCommit(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, URISyntaxException {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
@@ -123,7 +123,7 @@ public class RecoveryTest {
                 broker.saveCollection(transaction, test2);
 
 
-                files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
+                files = FileUtils.list(SAMPLES.getShakespeareSamples(), XMLFilenameFilter.asPredicate());
                 assertNotNull(files);
                 files.sort(Comparator.comparing(FileUtils::fileName));
 
@@ -164,7 +164,7 @@ public class RecoveryTest {
         }
     }
 
-    private void verify(final BrokerPool pool) throws EXistException, PermissionDeniedException, SAXException, XPathException, IOException, BTreeException, LockException {
+    private void verify(final BrokerPool pool) throws EXistException, PermissionDeniedException, SAXException, XPathException, IOException, BTreeException, LockException, URISyntaxException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
@@ -182,7 +182,7 @@ public class RecoveryTest {
                 assertNotNull(data);
             }
             
-            final List<Path> files = FileUtils.list(dir);
+            final List<Path> files = FileUtils.list(SAMPLES.getShakespeareSamples());
             files.sort(Comparator.comparing(FileUtils::fileName));
             assertNotNull(files);
             

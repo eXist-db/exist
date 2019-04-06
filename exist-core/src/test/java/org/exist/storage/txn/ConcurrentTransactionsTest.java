@@ -38,10 +38,10 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.concurrent.*;
 
-import static org.exist.TestUtils.resolveHamletSample;
 import static org.exist.test.TransactionTestDSL.ExecutionListener;
 import static org.exist.test.TransactionTestDSL.NULL_SCHEDULE_LISTENER;
 import static org.exist.test.TransactionTestDSL.STD_OUT_SCHEDULE_LISTENER;
@@ -51,6 +51,7 @@ import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static samples.Samples.SAMPLES;
 
 /**
  * Tests for Transactional Operations on the database.
@@ -159,7 +160,7 @@ public class ConcurrentTransactionsTest {
     }
 
     @Before
-    public void setupDocs() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    public void setupDocs() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, URISyntaxException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -169,7 +170,7 @@ public class ConcurrentTransactionsTest {
             assertNotNull(test);
             broker.saveCollection(transaction, test);
 
-            final InputSource inputSource = new FileInputSource(resolveHamletSample());
+            final InputSource inputSource = new FileInputSource(SAMPLES.getHamletSample());
 
             final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), inputSource);
             assertNotNull(info);

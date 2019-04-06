@@ -1,6 +1,5 @@
 package org.exist.xmldb;
 
-import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.*;
 import org.xmldb.api.base.*;
@@ -10,6 +9,7 @@ import java.nio.file.Path;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static samples.Samples.SAMPLES;
 
 public class ResourceSetTest {
 
@@ -26,12 +26,12 @@ public class ResourceSetTest {
 		testCollection = service.createCollection(TEST_COLLECTION);
 		assertNotNull(testCollection);
 
-		final Path shakes = TestUtils.resolveShakespeareSample("shakes.xsl");
+		final Path shakes = SAMPLES.getSample("shakespeare/shakes.xsl");
 		final Resource shakesRes = testCollection.createResource("shakes.xsl", XMLResource.RESOURCE_TYPE);
 		shakesRes.setContent(shakes.toFile());
 		testCollection.storeResource(shakesRes);
 
-		final Path hamlet = TestUtils.resolveShakespeareSample("hamlet.xml");
+		final Path hamlet = SAMPLES.getHamletSample();
 		final Resource hamletRes = testCollection.createResource("hamlet.xml", XMLResource.RESOURCE_TYPE);
 		hamletRes.setContent(hamlet.toFile());
 		testCollection.storeResource(hamletRes);

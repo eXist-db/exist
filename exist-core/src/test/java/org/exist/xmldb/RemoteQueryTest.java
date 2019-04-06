@@ -21,6 +21,7 @@
  */
 package org.exist.xmldb;
 
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 
 import org.exist.TestUtils;
@@ -44,6 +45,7 @@ import org.xmldb.api.modules.XQueryService;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static samples.Samples.SAMPLES;
 
 public class RemoteQueryTest extends RemoteDBTest {
 	private Collection testCollection;
@@ -88,7 +90,7 @@ public class RemoteQueryTest extends RemoteDBTest {
 	}
 
 	@Before
-	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, URISyntaxException {
         // initialize driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         Database database = (Database) cl.newInstance();
@@ -108,7 +110,7 @@ public class RemoteQueryTest extends RemoteDBTest {
         assertNotNull(testCollection);
 
         Resource xr = testCollection.createResource("hamlet.xml", "XMLResource");
-        Path f = TestUtils.resolveShakespeareSample("hamlet.xml");
+        Path f = SAMPLES.getHamletSample();
         xr.setContent(f);
         testCollection.storeResource(xr);
 

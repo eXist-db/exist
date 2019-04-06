@@ -32,6 +32,7 @@ import org.xmldb.api.base.ResourceSet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static samples.Samples.SAMPLES;
 
 /**
  * Check if database shutdownDB/restart works properly. The test opens
@@ -76,7 +77,7 @@ public class ShutdownTest {
             assertNotNull(testCol);
         }
 
-        DBUtils.addXMLResource(rootCol, "biblio.rdf", TestUtils.resolveSample("biblio.rdf"));
+        DBUtils.addXMLResource(rootCol, "biblio.rdf", SAMPLES.getBiblioSample());
 
         // store the data files
         final String xml =

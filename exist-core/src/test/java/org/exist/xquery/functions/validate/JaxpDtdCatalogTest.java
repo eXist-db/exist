@@ -26,11 +26,11 @@ import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static samples.Samples.SAMPLES;
 
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -70,10 +70,10 @@ public class JaxpDtdCatalogTest {
         try {
             dtdsCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/dtds");
 
-            final URL url = JingXsdTest.class.getResource("parse/dtds/MyNameSpace.dtd");
-            assertNotNull(url);
+            final Path path = SAMPLES.getSample("validation/parse/dtds/MyNameSpace.dtd");
+            assertNotNull(path);
 
-            final byte[] data = Files.readAllBytes(Paths.get(url.toURI()));
+            final byte[] data = Files.readAllBytes(path);
             ExistXmldbEmbeddedServer.storeResource(dtdsCollection, "MyNameSpace.dtd", data);
         } finally {
             if(dtdsCollection != null) {
@@ -85,10 +85,10 @@ public class JaxpDtdCatalogTest {
         try {
             parseCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse");
 
-            final URL url = JingXsdTest.class.getResource("parse/catalog.xml");
-            assertNotNull(url);
+            final Path path = SAMPLES.getSample("validation/parse/catalog.xml");
+            assertNotNull(path);
 
-            final byte[] data = Files.readAllBytes(Paths.get(url.toURI()));
+            final byte[] data = Files.readAllBytes(path);
             ExistXmldbEmbeddedServer.storeResource(parseCollection, "catalog.xml", data);
         } finally {
             if(parseCollection != null) {
@@ -100,16 +100,16 @@ public class JaxpDtdCatalogTest {
         try {
             instanceCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/instance");
 
-            URL url = JingXsdTest.class.getResource("parse/instance/valid-dtd.xml");
-            assertNotNull(url);
+            Path path = SAMPLES.getSample("validation/parse/instance/valid-dtd.xml");
+            assertNotNull(path);
 
-            byte[] data = Files.readAllBytes(Paths.get(url.toURI()));
+            byte[] data = Files.readAllBytes(path);
             ExistXmldbEmbeddedServer.storeResource(instanceCollection, "valid-dtd.xml", data);
 
-            url = JingXsdTest.class.getResource("parse/instance/invalid-dtd.xml");
-            assertNotNull(url);
+            path = SAMPLES.getSample("validation/instance/invalid-dtd.xml");
+            assertNotNull(path);
 
-            data = Files.readAllBytes(Paths.get(url.toURI()));
+            data = Files.readAllBytes(path);
             ExistXmldbEmbeddedServer.storeResource(instanceCollection, "invalid-dtd.xml", data);
         } finally {
             if(instanceCollection != null) {

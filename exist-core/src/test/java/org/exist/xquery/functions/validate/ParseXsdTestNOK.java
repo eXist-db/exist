@@ -28,10 +28,10 @@ import org.exist.util.FileUtils;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static samples.Samples.SAMPLES;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.function.Predicate;
 
 import org.xml.sax.SAXException;
@@ -79,7 +79,7 @@ public class ParseXsdTestNOK {
         try {
             collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "addressbook");
 
-            final Path sources = TestUtils.resolveSample("validation/addressbook");
+            final Path sources = SAMPLES.getAddressBookSample().getParent();
             for (final Path file : FileUtils.list(sources, filter)) {
                 final byte[] data = TestUtils.readFile(file);
                 ExistXmldbEmbeddedServer.storeResource(collection, FileUtils.fileName(file), data);

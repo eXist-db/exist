@@ -20,6 +20,7 @@
 package org.exist.storage;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -46,6 +47,8 @@ import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
+import static samples.Samples.SAMPLES;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
@@ -59,7 +62,7 @@ public class CopyCollectionRecoveryTest {
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void storeAndRead() throws EXistException, DatabaseConfigurationException, LockException, PermissionDeniedException, SAXException, IOException {
+    public void storeAndRead() throws EXistException, DatabaseConfigurationException, LockException, PermissionDeniedException, SAXException, IOException, URISyntaxException {
         BrokerPool.FORCE_CORRUPTION = true;
         store();
 
@@ -70,7 +73,7 @@ public class CopyCollectionRecoveryTest {
     }
 
     @Test
-    public void storeAndReadAborted() throws EXistException, DatabaseConfigurationException, LockException, PermissionDeniedException, SAXException, IOException {
+    public void storeAndReadAborted() throws EXistException, DatabaseConfigurationException, LockException, PermissionDeniedException, SAXException, IOException, URISyntaxException {
         BrokerPool.FORCE_CORRUPTION = true;
         storeAborted();
 
@@ -81,7 +84,7 @@ public class CopyCollectionRecoveryTest {
     }
 
     @Test
-    public void storeAndReadXmldb() throws DatabaseConfigurationException, XMLDBException, EXistException, IOException {
+    public void storeAndReadXmldb() throws DatabaseConfigurationException, XMLDBException, EXistException, IOException, URISyntaxException {
         // initialize xml:db driver
         final Database database = new DatabaseImpl();
         database.setProperty("create-database", "true");
@@ -118,7 +121,7 @@ public class CopyCollectionRecoveryTest {
         }
     }
 
-    private void store() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    private void store() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, URISyntaxException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -157,7 +160,7 @@ public class CopyCollectionRecoveryTest {
         }
     }
 
-    private void storeAborted() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    private void storeAborted() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, URISyntaxException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -205,7 +208,7 @@ public class CopyCollectionRecoveryTest {
         }
     }
 
-    private void xmldbStore() throws XMLDBException {
+    private void xmldbStore() throws XMLDBException, URISyntaxException {
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         assertNotNull(root);
         EXistCollectionManagementService mgr = (EXistCollectionManagementService)
@@ -253,8 +256,8 @@ public class CopyCollectionRecoveryTest {
         mgr.removeCollection("destination");
     }
 
-    private Path getSampleData() {
-        return TestUtils.resolveSample("biblio.rdf");
+    private Path getSampleData() throws URISyntaxException {
+        return SAMPLES.getBiblioSample();
     }
 
     @After

@@ -22,6 +22,7 @@
 package org.exist.xmldb;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -46,6 +47,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
+import static samples.Samples.SAMPLES;
 
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -106,7 +108,7 @@ public class CreateCollectionsTest  {
     }
 
     @Test
-    public void storeSamplesShakespeare() throws XMLDBException, IOException {
+    public void storeSamplesShakespeare() throws XMLDBException, IOException, URISyntaxException {
         final Collection colTest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         final CollectionManagementService service = (CollectionManagementService) colTest.getService("CollectionManagementService", "1.0");
         final Collection testCollection = service.createCollection("test");
@@ -115,7 +117,7 @@ public class CreateCollectionsTest  {
 
         final List<String> storedResourceNames = new ArrayList<>();
         final List<String> filenames = new ArrayList<>();
-        try(final Stream<Path> files = Files.list(TestUtils.shakespeareSamples()).filter(XMLFilenameFilter.asPredicate())) {
+        try(final Stream<Path> files = Files.list(SAMPLES.getShakespeareSamples()).filter(XMLFilenameFilter.asPredicate())) {
             //store the samples
             for (final Path file : files.collect(Collectors.toList())) {
                 final Resource res = storeResourceFromFile(file, testCollection);
@@ -137,7 +139,7 @@ public class CreateCollectionsTest  {
     }
 
     @Test
-    public void storeRemoveStoreResource() throws XMLDBException, IOException {
+    public void storeRemoveStoreResource() throws XMLDBException, IOException, URISyntaxException {
         final Collection colTest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         final CollectionManagementService service = (CollectionManagementService) colTest.getService("CollectionManagementService", "1.0");
         final Collection testCollection = service.createCollection("test");
@@ -145,7 +147,7 @@ public class CreateCollectionsTest  {
         ums.chmod("rwxr-xr-x");
 
         final String testFile = "macbeth.xml";
-        storeResourceFromFile(TestUtils.resolveShakespeareSample(testFile), testCollection);
+        storeResourceFromFile(SAMPLES.getMacbethSample(), testCollection);
         Resource resMacbeth = testCollection.getResource(testFile);
         assertNotNull("getResource(" + testFile + "\")", resMacbeth);
 
@@ -157,7 +159,7 @@ public class CreateCollectionsTest  {
         assertNull(resMacbeth);
 
         // restore the resource just removed
-        storeResourceFromFile(TestUtils.resolveShakespeareSample(testFile), testCollection);
+        storeResourceFromFile(SAMPLES.getMacbethSample(), testCollection);
         assertEquals("After re-store resource count must increase", resourceCount, testCollection.getResourceCount());
         resMacbeth = testCollection.getResource(testFile);
         assertNotNull("getResource(" + testFile + "\")", resMacbeth);

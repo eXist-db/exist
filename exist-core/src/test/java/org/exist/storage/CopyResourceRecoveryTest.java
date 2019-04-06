@@ -20,6 +20,7 @@
 package org.exist.storage;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -42,6 +43,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static samples.Samples.SAMPLES;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -51,7 +54,7 @@ public class CopyResourceRecoveryTest {
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void storeAndRead() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException {
+    public void storeAndRead() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException, URISyntaxException {
         final String testCollectionName = "copyResource";
         final String subCollection = "storeAndRead";
 
@@ -65,7 +68,7 @@ public class CopyResourceRecoveryTest {
     }
 
     @Test
-    public void storeAndReadAborted() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException {
+    public void storeAndReadAborted() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException, URISyntaxException {
         final String testCollectionName = "copyResource";
         final String subCollection = "storeAndReadAborted";
 
@@ -78,7 +81,7 @@ public class CopyResourceRecoveryTest {
         readAborted(testCollectionName, subCollection);
     }
 
-    private void store(final String testCollectionName, final String subCollection) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    private void store(final String testCollectionName, final String subCollection) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, URISyntaxException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -99,7 +102,7 @@ public class CopyResourceRecoveryTest {
                 assertNotNull(subTestCollection);
                 broker.saveCollection(transaction, subTestCollection);
 
-                final Path f = TestUtils.resolveShakespeareSample("r_and_j.xml");
+                final Path f = SAMPLES.getRomeoAndJulietSample();
                 assertNotNull(f);
                 info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toUri().toASCIIString()));
                 assertNotNull(info);
@@ -132,7 +135,7 @@ public class CopyResourceRecoveryTest {
 		}
 	}
 
-    private void storeAborted(final String testCollectionName, final String subCollection) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    private void storeAborted(final String testCollectionName, final String subCollection) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, URISyntaxException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -154,7 +157,7 @@ public class CopyResourceRecoveryTest {
                 assertNotNull(subTestCollection);
                 broker.saveCollection(transaction, subTestCollection);
 
-                final Path f = TestUtils.resolveShakespeareSample("r_and_j.xml");
+                final Path f = SAMPLES.getRomeoAndJulietSample();
                 assertNotNull(f);
                 info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), new InputSource(f.toUri().toASCIIString()));
                 assertNotNull(info);

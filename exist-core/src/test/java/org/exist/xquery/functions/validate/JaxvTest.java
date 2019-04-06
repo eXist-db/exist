@@ -22,9 +22,8 @@
 package org.exist.xquery.functions.validate;
 
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
@@ -32,6 +31,7 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static samples.Samples.SAMPLES;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -73,10 +73,10 @@ public class JaxvTest {
             collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "personal");
 
             for (final String testResource : TEST_RESOURCES) {
-                final URL url = JingXsdTest.class.getResource("personal/" + testResource);
-                assertNotNull(url);
+                final Path path = SAMPLES.getSample("validation/personal/" + testResource);
+                assertNotNull(path);
 
-                final byte[] data = Files.readAllBytes(Paths.get(url.toURI()));
+                final byte[] data = Files.readAllBytes(path);
                 ExistXmldbEmbeddedServer.storeResource(collection, testResource, data);
             }
         } finally {

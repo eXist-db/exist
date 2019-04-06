@@ -22,6 +22,7 @@
 package org.exist.xmldb;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
@@ -67,6 +68,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static samples.Samples.SAMPLES;
 
 public class ResourceTest {
 
@@ -358,7 +360,7 @@ public class ResourceTest {
     }
 
     @Before
-    public void setUp() throws XMLDBException, IOException {
+    public void setUp() throws XMLDBException, IOException, URISyntaxException {
         //create a test collection
         final CollectionManagementService cms = (CollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
         final Collection testCollection = cms.createCollection(TEST_COLLECTION);
@@ -370,7 +372,7 @@ public class ResourceTest {
 
         //store sample files as guest
         final Collection testCollectionAsGuest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
-        try(final Stream<Path> files = Files.list(TestUtils.shakespeareSamples()).filter(XMLFilenameFilter.asPredicate())) {
+        try(final Stream<Path> files = Files.list(SAMPLES.getShakespeareSamples()).filter(XMLFilenameFilter.asPredicate())) {
             for(final Path file : files.collect(Collectors.toList())) {
                 final XMLResource res = (XMLResource) testCollectionAsGuest.createResource(file.getFileName().toString(), "XMLResource");
                 res.setContent(file.toFile());

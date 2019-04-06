@@ -22,15 +22,12 @@ package org.exist.xmlrpc;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
-import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XmldbURI;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +44,7 @@ import org.junit.Test;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static samples.Samples.SAMPLES;
 
 /**
  * Test for deadlocks when moving resources from one collection to another. Uses
@@ -97,14 +95,23 @@ public class MoveResourceTest {
         assertTrue(result);
     }
 
-    private String readData() throws IOException {
-        return new String(TestUtils.readRomeoAndJulietSampleXml(), UTF_8);
+    private String readData() throws IOException, URISyntaxException {
+        int read = -1;
+        final char buf[] = new char[4096];
+        final StringBuilder builder = new StringBuilder();
+        try (final InputStream is = Files.newInputStream(SAMPLES.getRomeoAndJulietSample());
+             final Reader reader = new InputStreamReader(is)) {
+            while ((read = reader.read(buf)) > -1) {
+                builder.append(buf, 0, read);
+            }
+        }
+        return builder.toString();
     }
 
     private class MoveThread implements Callable<Void> {
 
         @Override
-        public Void call() throws IOException, XmlRpcException, InterruptedException {
+        public Void call() throws IOException, XmlRpcException, InterruptedException, URISyntaxException {
             for (int i = 0; i < 100; i++) {
                 XmldbURI sourceColl = XmldbURI.ROOT_COLLECTION_URI.append("source" + i);
                 XmldbURI targetColl1 = XmldbURI.ROOT_COLLECTION_URI.append("target");

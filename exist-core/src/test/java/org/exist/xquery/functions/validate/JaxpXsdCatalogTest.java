@@ -27,11 +27,13 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static samples.Samples.SAMPLES;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.xml.sax.SAXException;
@@ -72,16 +74,16 @@ public class JaxpXsdCatalogTest {
         try {
             schemasCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/schemas");
 
-            URL url = JingXsdTest.class.getResource("parse/schemas/MyNameSpace.xsd");
-            assertNotNull(url);
+            Path path = SAMPLES.getSample("validation/parse/schemas/MyNameSpace.xsd");
+            assertNotNull(path);
 
-            byte[] data = Files.readAllBytes(Paths.get(url.toURI()));
+            byte[] data = Files.readAllBytes(path);
             ExistXmldbEmbeddedServer.storeResource(schemasCollection, "MyNameSpace.xsd", data);
 
-            url = JingXsdTest.class.getResource("parse/schemas/AnotherNamespace.xsd");
-            assertNotNull(url);
+            path = SAMPLES.getSample("validation/parse/schemas/AnotherNamespace.xsd");
+            assertNotNull(path);
 
-            data = Files.readAllBytes(Paths.get(url.toURI()));
+            data = Files.readAllBytes(path);
             ExistXmldbEmbeddedServer.storeResource(schemasCollection, "AnotherNamespace.xsd", data);
 
         } finally {

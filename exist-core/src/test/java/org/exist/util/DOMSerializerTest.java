@@ -23,14 +23,13 @@ package org.exist.util;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.nio.file.Path;
+import java.net.URISyntaxException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.exist.TestUtils;
 import org.exist.util.serializer.DOMSerializer;
 import org.junit.Test;
 import org.w3c.dom.Document;
@@ -38,6 +37,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import static org.junit.Assert.assertNotNull;
+import static samples.Samples.SAMPLES;
 
 /**
  * @author wolf
@@ -45,16 +45,14 @@ import static org.junit.Assert.assertNotNull;
  */
 public class DOMSerializerTest {
 
-    private final static Path file = TestUtils.resolveSample("biblio.rdf");
-
 	@Test
-	public void serialize() throws ParserConfigurationException, IOException, SAXException, TransformerException {
+	public void serialize() throws ParserConfigurationException, IOException, SAXException, TransformerException, URISyntaxException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		assertNotNull(factory);
 		factory.setNamespaceAware(true);
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		assertNotNull(builder);
-		Document doc = builder.parse(new InputSource(file.toAbsolutePath().toString()));
+		Document doc = builder.parse(new InputSource(SAMPLES.getBiblioSample().toAbsolutePath().toString()));
 		assertNotNull(doc);
 		try(final StringWriter writer = new StringWriter()) {
 			DOMSerializer serializer = new DOMSerializer(writer, null);

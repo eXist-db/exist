@@ -22,6 +22,7 @@
 package org.exist.xmldb.concurrent.action;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -34,6 +35,8 @@ import org.exist.xmldb.concurrent.DBUtils;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
+
+import static samples.Samples.SAMPLES;
 
 public class CreateCollectionAction extends Action {
     
@@ -63,18 +66,22 @@ public class CreateCollectionAction extends Action {
     }
 
     private void addFiles(final Collection col) throws XMLDBException, IOException {
-        final Path d = TestUtils.shakespeareSamples();
-        if(!(Files.isReadable(d) && Files.isDirectory(d))) {
-            throw new RuntimeException("Cannot read directory: " + d.toAbsolutePath());
-        }
+        try {
+            final Path d = SAMPLES.getShakespeareSamples();
+            if (!(Files.isReadable(d) && Files.isDirectory(d))) {
+                throw new RuntimeException("Cannot read directory: " + d.toAbsolutePath());
+            }
 
-        final List<Path> files = FileUtils.list(d);
-        for(final Path file : files) {
-            if(Files.isRegularFile(file)) {
-                if (MimeTable.getInstance().isXMLContent(FileUtils.fileName(file))) {
-                    DBUtils.addXMLResource(col, FileUtils.fileName(file), file);
+            final List<Path> files = FileUtils.list(d);
+            for (final Path file : files) {
+                if (Files.isRegularFile(file)) {
+                    if (MimeTable.getInstance().isXMLContent(FileUtils.fileName(file))) {
+                        DBUtils.addXMLResource(col, FileUtils.fileName(file), file);
+                    }
                 }
             }
+        } catch (final URISyntaxException e) {
+            throw new IOException(e);
         }
     }
 }

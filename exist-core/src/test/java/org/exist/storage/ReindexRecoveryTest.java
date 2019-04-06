@@ -1,7 +1,6 @@
 package org.exist.storage;
 
 import org.exist.EXistException;
-import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
@@ -15,6 +14,7 @@ import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import static org.junit.Assert.*;
+import static samples.Samples.SAMPLES;
 
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -22,6 +22,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -35,10 +36,8 @@ public class ReindexRecoveryTest {
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private static Path dir = TestUtils.shakespeareSamples();
-
     @Test
-    public void reindexRecoveryTest() throws EXistException, PermissionDeniedException, IOException, DatabaseConfigurationException, LockException, TriggerException {
+    public void reindexRecoveryTest() throws EXistException, PermissionDeniedException, IOException, DatabaseConfigurationException, LockException, TriggerException, URISyntaxException {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDb();
         storeDocuments(pool);
@@ -57,7 +56,7 @@ public class ReindexRecoveryTest {
     /**
      * Store some documents, reindex the collection and crash without commit.
      */
-    private void storeDocuments(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+    private void storeDocuments(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException, URISyntaxException {
         final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
@@ -70,7 +69,7 @@ public class ReindexRecoveryTest {
                 assertNotNull(root);
                 broker.saveCollection(transaction, root);
 
-                final List<Path> files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
+                final List<Path> files = FileUtils.list(SAMPLES.getShakespeareSamples(), XMLFilenameFilter.asPredicate());
                 for (final Path f : files) {
                     storeDocument(broker, transaction, root, XmldbURI.create(FileUtils.fileName(f)), () -> new InputSource(f.toUri().toASCIIString()));
                 }
