@@ -29,6 +29,7 @@ import org.exist.util.XMLFilenameFilter;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static samples.Samples.SAMPLES;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -68,10 +69,10 @@ public class ParseDtdTestNOK {
         }
 
         // Store dtd test files
+        final Path sources = SAMPLES.getSample("validation/dtd/catalog.xml").getParent();
         Collection collection = null;
         try {
             collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "hamlet");
-            final Path sources = TestUtils.resolveSample("validation/dtd");
 
             for (final Path file : FileUtils.list(sources, XMLFilenameFilter.asPredicate())) {
                 final byte[] data = TestUtils.readFile(file);
@@ -83,11 +84,10 @@ public class ParseDtdTestNOK {
             }
         }
 
-        final Path dtd = TestUtils.resolveSample("validation/dtd");
         Collection collection1 = null;
         try {
             collection1 = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "hamlet/dtd");
-            final byte[] data = TestUtils.readFile(dtd, "hamlet.dtd");
+            final byte[] data = TestUtils.readFile(sources.resolve("hamlet.dtd"));
             ExistXmldbEmbeddedServer.storeResource(collection1, "hamlet.dtd", data);
         } finally {
             if(collection1 != null) {

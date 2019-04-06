@@ -38,12 +38,14 @@ import org.xmldb.api.modules.XMLResource;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static samples.Samples.SAMPLES;
 
 /**
  * @author wolf
@@ -60,7 +62,7 @@ public class MultiDBTest {
                     "</exist>";
 
     @Test
-    public void store() throws XMLDBException, IOException {
+    public void store() throws XMLDBException, IOException, URISyntaxException {
         for (int i = 0; i < INSTANCE_COUNT; i++) {
             Collection root = DatabaseManager.getCollection("xmldb:test" + i + "://" + XmldbURI.ROOT_COLLECTION, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
             Collection test = root.getChildCollection("test");
@@ -70,7 +72,7 @@ public class MultiDBTest {
                 test = service.createCollection("test");
             }
 
-            final Path samples = TestUtils.shakespeareSamples();
+            final Path samples = SAMPLES.getShakespeareSamples();
             final List<Path> files = FileUtils.list(samples);
             final MimeTable mimeTab = MimeTable.getInstance();
             for (final Path file : files) {

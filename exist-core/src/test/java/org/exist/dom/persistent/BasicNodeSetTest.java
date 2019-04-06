@@ -67,6 +67,7 @@ import java.util.Optional;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static samples.Samples.SAMPLES;
 
 
 /**
@@ -537,7 +538,7 @@ public class BasicNodeSetTest {
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
             broker.saveCollection(transaction, root);
 
-            final Path dir = TestUtils.shakespeareSamples();
+            final Path dir = SAMPLES.getShakespeareSamples();
 
             // store some documents.
             for(final Path f : FileUtils.list(dir, XMLFilenameFilter.asPredicate())) {

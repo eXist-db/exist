@@ -1,6 +1,7 @@
 package org.exist.storage;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -25,25 +26,24 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static samples.Samples.SAMPLES;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class ShutdownTest {
 
-    private static Path dir = TestUtils.shakespeareSamples();
-
     @ClassRule
     public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-	public void shutdown() throws EXistException, LockException, TriggerException, PermissionDeniedException, XPathException, IOException {
+	public void shutdown() throws EXistException, LockException, TriggerException, PermissionDeniedException, XPathException, IOException, URISyntaxException {
 		for (int i = 0; i < 2; i++) {
 			storeAndShutdown();
 		}
 	}
 	
-	public void storeAndShutdown() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException, XPathException {
+	public void storeAndShutdown() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException, XPathException, URISyntaxException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
@@ -56,7 +56,7 @@ public class ShutdownTest {
                 assertNotNull(test);
                 broker.saveCollection(transaction, test);
 
-	            final List<Path> files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
+	            final List<Path> files = FileUtils.list(SAMPLES.getShakespeareSamples(), XMLFilenameFilter.asPredicate());
 
                 // store some documents.
 	            for(final Path f : files) {

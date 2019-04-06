@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 
-import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.concurrent.action.Action;
 import org.exist.xmldb.IndexQueryService;
@@ -38,6 +37,7 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
 import static org.junit.Assert.*;
+import static samples.Samples.SAMPLES;
 
 /**
  * Abstract base class for concurrent tests.
@@ -74,7 +74,7 @@ public abstract class ConcurrentTestBase {
         }
         testCol = DBUtils.addCollection(rootCol, getTestCollectionName());
         assertNotNull(testCol);
-        DBUtils.addXMLResource(rootCol, "biblio.rdf", TestUtils.resolveSample("biblio.rdf"));
+        DBUtils.addXMLResource(rootCol, "biblio.rdf", SAMPLES.getBiblioSample());
     }
 
     @After

@@ -22,6 +22,7 @@
 package org.exist.storage;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -45,12 +46,15 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.junit.*;
 import static org.junit.Assert.assertNotNull;
+import static samples.Samples.SAMPLES;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+import samples.Samples;
 
 public class MoveResourceRecoveryTest {
 
@@ -58,7 +62,7 @@ public class MoveResourceRecoveryTest {
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void storeAndRead() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
+    public void storeAndRead() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, URISyntaxException {
         BrokerPool.FORCE_CORRUPTION = true;
         store();
 
@@ -69,7 +73,7 @@ public class MoveResourceRecoveryTest {
     }
 
     @Test
-    public void storeAndReadAborted() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
+    public void storeAndReadAborted() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, URISyntaxException {
         BrokerPool.FORCE_CORRUPTION = true;
         storeAborted();
 
@@ -80,7 +84,7 @@ public class MoveResourceRecoveryTest {
     }
 
     @Test
-    public void storeAndReadXmldb() throws XMLDBException, DatabaseConfigurationException, IOException, EXistException {
+    public void storeAndReadXmldb() throws XMLDBException, DatabaseConfigurationException, IOException, EXistException, URISyntaxException {
         // initialize xml:db driver
         final Database database = new DatabaseImpl();
         database.setProperty("create-database", "true");
@@ -95,7 +99,7 @@ public class MoveResourceRecoveryTest {
         xmldbRead();
     }
 
-    private void store() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    private void store() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, URISyntaxException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -109,7 +113,7 @@ public class MoveResourceRecoveryTest {
             assertNotNull(test2);
             broker.saveCollection(transaction, test2);
 
-            final Path f = TestUtils.resolveShakespeareSample("r_and_j.xml");
+            final Path f = SAMPLES.getRomeoAndJulietSample();
 
             final IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toUri().toASCIIString()));
             assertNotNull(info);
@@ -148,7 +152,7 @@ public class MoveResourceRecoveryTest {
         }
     }
 
-    private void storeAborted() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    private void storeAborted() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, URISyntaxException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -159,7 +163,7 @@ public class MoveResourceRecoveryTest {
                 assertNotNull(test2);
                 broker.saveCollection(transaction, test2);
 
-                final Path f = TestUtils.resolveShakespeareSample("r_and_j.xml");
+                final Path f = SAMPLES.getRomeoAndJulietSample();
 
                 final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("new_test2.xml"),
                         new InputSource(f.toUri().toASCIIString()));
@@ -209,7 +213,7 @@ public class MoveResourceRecoveryTest {
         }
     }
 
-    private void xmldbStore() throws XMLDBException {
+    private void xmldbStore() throws XMLDBException, URISyntaxException {
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         final EXistCollectionManagementService mgr = (EXistCollectionManagementService)
                 root.getService("CollectionManagementService", "1.0");
@@ -224,7 +228,7 @@ public class MoveResourceRecoveryTest {
             test2 = mgr.createCollection("test2");
         }
 
-        final Path f = TestUtils.resolveShakespeareSample("r_and_j.xml");
+        final Path f = SAMPLES.getRomeoAndJulietSample();
 
         final Resource res = test2.createResource("test3.xml", "XMLResource");
         res.setContent(f);
