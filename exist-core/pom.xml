@@ -245,11 +245,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.ant</groupId>
-            <artifactId>ant</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.exist-db.thirdparty.xerces</groupId>
             <artifactId>xercesImpl</artifactId>
             <version>2.12.0</version>

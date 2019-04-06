@@ -24,6 +24,7 @@
 
     <modules>
         <module>exist-parent</module>
+        <module>exist-ant</module>
         <module>exist-core</module>
         <module>exist-start</module>
     </modules>
