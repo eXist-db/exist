@@ -194,10 +194,6 @@ public class LuceneConfig {
         return analyzers.getDefaultAnalyzer();
     }
 
-    public Analyzer getAnalyzerById(String id) {
-    	return analyzers.getAnalyzerById(id);
-    }
-
     /**
      * Try to instantiate the configured Lucene query parser. Lucene's parsers
      * do not all have a common base class, so we need to wrap around the implementation
@@ -393,9 +389,9 @@ public class LuceneConfig {
 
     static class ModuleImport {
 
-        String uri;
-        String prefix;
-        String at;
+        protected String uri;
+        protected String prefix;
+        protected String at;
 
         ModuleImport(Element config) throws DatabaseConfigurationException {
             this.uri = config.getAttribute(ATTR_MODULE_URI);

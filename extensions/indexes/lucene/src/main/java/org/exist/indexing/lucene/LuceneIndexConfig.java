@@ -20,15 +20,12 @@
  */
 package org.exist.indexing.lucene;
 
-import java.util.*;
-
 import org.apache.commons.collections.MultiMap;
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.facet.FacetsConfig;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.storage.ElementValue;
@@ -37,6 +34,8 @@ import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import java.util.*;
 
 public class LuceneIndexConfig {
 

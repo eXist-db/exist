@@ -45,7 +45,7 @@ public class MetaAnalyzer extends DelegatingAnalyzerWrapper {
         perFieldAnalyzers = new HashMap<>();
     }
 
-    public void addAnalyzer(String fieldName, Analyzer analyzer) {
+    public void addAnalyzer(@Nonnull String fieldName, @Nonnull Analyzer analyzer) {
         perFieldAnalyzers.put(fieldName, analyzer);
     }
 
@@ -55,5 +55,9 @@ public class MetaAnalyzer extends DelegatingAnalyzerWrapper {
             return defaultAnalyzer;
         }
         return perFieldAnalyzers.getOrDefault(fieldName, defaultAnalyzer);
+    }
+
+    public String toString() {
+        return "MetaAnalyzer(" + this.perFieldAnalyzers + ", default=" + this.defaultAnalyzer + ")";
     }
 }
