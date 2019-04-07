@@ -97,7 +97,7 @@ public class DatabaseInsertResources_WithValidation_Test {
      * needs to be modified into
      *     <!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd">
      *
-     * Aditionally all "TITLE" elements are renamed to "INVALIDTITLE"
+     * Additionally all "TITLE" elements are renamed to "INVALIDTITLE"
      */
     @Test
     public void invalidDocumentSystemCatalog() throws IOException {

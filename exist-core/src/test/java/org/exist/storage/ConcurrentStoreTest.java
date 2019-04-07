@@ -39,6 +39,7 @@ import org.exist.util.*;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -48,42 +49,40 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 public class ConcurrentStoreTest {
-    
-    //TODO : revisit !
-    private static String directory = "/home/wolf/xml/shakespeare";
+
     private static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
-    
-    private static Path dir = Paths.get(directory);
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private BrokerPool pool;
     private Collection test, test2;
 
     @Test
-    public synchronized void store() throws InterruptedException, EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException {
+    public void storeAndRead() throws InterruptedException, EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException, LockException {
         BrokerPool.FORCE_CORRUPTION = true;
-        pool = startDb();
-        setupCollections();
+        BrokerPool pool = startDb();
+        setupCollections(pool);
 
-        Thread t1 = new StoreThread1();
+        final Thread t1 = new StoreThread1(pool);
         t1.start();
 
-        wait(8000);
+        synchronized (this) {
+            wait(4000);
+        }
 
-        Thread t2 = new StoreThread2();
+        final Thread t2 = new StoreThread2(pool);
         t2.start();
 
         t1.join();
         t2.join();
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = restartDb();
+
+        read(pool);
     }
 
-    @Test
-    public void read() throws EXistException, PermissionDeniedException, DatabaseConfigurationException, LockException, IOException {
-        BrokerPool.FORCE_CORRUPTION = false;
-        pool = startDb();
-
+    private void read(final BrokerPool pool) throws EXistException, PermissionDeniedException, LockException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             test = broker.getCollection(TEST_COLLECTION_URI.append("test1"));
@@ -96,7 +95,7 @@ public class ConcurrentStoreTest {
         }
     }
     
-    protected void setupCollections() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    protected void setupCollections(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction();) {
@@ -119,12 +118,28 @@ public class ConcurrentStoreTest {
         return existEmbeddedServer.getBrokerPool();
     }
 
+    private BrokerPool restartDb() throws EXistException, IOException, DatabaseConfigurationException {
+        existEmbeddedServer.restart(false);
+        return existEmbeddedServer.getBrokerPool();
+    }
+
     @After
     public void stopDb() {
         existEmbeddedServer.stopDb();
     }
+
+    @AfterClass
+    public static void cleanup() {
+        BrokerPool.FORCE_CORRUPTION = false;
+    }
     
     class StoreThread1 extends Thread {
+        private final BrokerPool pool;
+
+        StoreThread1(final BrokerPool pool) {
+            this.pool = pool;
+        }
+
         @Override
         public void run() {
             final TransactionManager transact = pool.getTransactionManager();
@@ -159,6 +174,12 @@ public class ConcurrentStoreTest {
     }
     
     class StoreThread2 extends Thread {
+        private final BrokerPool pool;
+
+        StoreThread2(final BrokerPool pool) {
+            this.pool = pool;
+        }
+
         @Override
         public void run() {
             final TransactionManager transact = pool.getTransactionManager();

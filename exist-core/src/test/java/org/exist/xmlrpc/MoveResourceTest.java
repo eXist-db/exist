@@ -19,9 +19,13 @@
  */
 package org.exist.xmlrpc;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.fluent.Request;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
@@ -35,19 +39,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.Assert.*;
 
 /**
  * Test for deadlocks when moving resources from one collection to another. Uses
@@ -59,10 +59,13 @@ import static org.exist.samples.Samples.SAMPLES;
  */
 public class MoveResourceTest {
 
+    private static final int DELAY = 50;  // milliseconds
+    private static final long TIMEOUT = 5 * 60 * 1000;  // milliseconds
+
     @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
-    private static String getUri() {
+    private static String getXmlRpcUri() {
         return "http://localhost:" + existWebServer.getPort() + "/xmlrpc";
     }
 
@@ -73,35 +76,48 @@ public class MoveResourceTest {
     @Test
     public void testMove() throws InterruptedException, ExecutionException {
 
-        final List<Callable<Void>> tasks = new ArrayList<>();
+        final List<Callable<Boolean>> tasks = new ArrayList<>();
         tasks.add(new MoveThread());
         tasks.add(new CheckThread());
         tasks.add(new CheckThread());
 
-        final ExecutorService service = Executors.newFixedThreadPool(tasks.size());
-        final CompletionService<Void> cs = new ExecutorCompletionService<>(service);
-        tasks.stream().forEach((task) -> {
-            cs.submit(task);
-        });
+        ExecutorService service = null;
+        try {
+            service = Executors.newFixedThreadPool(tasks.size(), new ThreadFactory() {
+                final AtomicInteger id = new AtomicInteger();
+                @Override
+                public Thread newThread(final Runnable r) {
+                    return new Thread(r, "MoveResourceTest.testMove-" + id.getAndIncrement());
+                }
+            });
 
-        //wait for all tasks to complete
-        final int n = tasks.size();
-        for (int i = 0; i < n; i++) {
-            cs.take().get();
+            final CompletionService<Boolean> cs = new ExecutorCompletionService<>(service);
+            tasks.forEach(cs::submit);
+
+            //wait for all tasks to complete
+            final int n = tasks.size();
+            for (int i = 0; i < n; i++) {
+                Boolean result = cs.poll(TIMEOUT, TimeUnit.MILLISECONDS).get();
+                assertNotNull(result);
+            }
+        } finally {
+            if (service != null) {
+                service.shutdownNow();
+            }
         }
     }
 
-    private void createCollection(XmlRpcClient client, XmldbURI collection) throws IOException, XmlRpcException {
+    private void createCollection(XmlRpcClient client, XmldbURI collection) throws XmlRpcException {
         List<Object> params = new ArrayList<>();
         params.add(collection.toString());
         Boolean result = (Boolean) client.execute("createCollection", params);
         assertTrue(result);
     }
 
-    private class MoveThread implements Callable<Void> {
+    private class MoveThread implements Callable<Boolean> {
 
         @Override
-        public Void call() throws IOException, XmlRpcException, InterruptedException {
+        public Boolean call() throws IOException, XmlRpcException, InterruptedException {
             final String romeoAndJuliet = readSample();
             for (int i = 0; i < 100; i++) {
                 XmldbURI sourceColl = XmldbURI.ROOT_COLLECTION_URI.append("source" + i);
@@ -110,7 +126,7 @@ public class MoveResourceTest {
                 XmldbURI sourceResource = sourceColl.append("source.xml");
                 XmldbURI targetResource = targetColl2.append("copied.xml");
 
-                XmlRpcClient xmlrpc = getClient();
+                XmlRpcClient xmlrpc = getXmlRpcClient();
 
                 createCollection(xmlrpc, sourceColl);
                 createCollection(xmlrpc, targetColl1);
@@ -145,7 +161,7 @@ public class MoveResourceTest {
                 assertTrue(data != null && data.length > 0);
 
                 synchronized (this) {
-                    wait(250);
+                    wait(DELAY);
                 }
 
                 params.clear();
@@ -155,7 +171,8 @@ public class MoveResourceTest {
                 params.set(0, targetColl1.toString());
                 xmlrpc.execute("removeCollection", params);
             }
-            return null;
+
+            return true;
         }
 
         private String readSample() throws IOException {
@@ -165,51 +182,37 @@ public class MoveResourceTest {
         }
     }
 
-    private class CheckThread implements Callable<Void> {
+    private class CheckThread implements Callable<Boolean> {
 
         @Override
-        public Void call() throws IOException, InterruptedException {
-            String reqUrl = getRestUri() + "/db?_query=" + URLEncoder.encode("collection('/db')//SPEECH[SPEAKER = 'JULIET']");
+        public Boolean call() throws IOException, InterruptedException {
+            final String reqUrl = getRestUri() + "/db?_query=" + URLEncoder.encode("collection('/db')//SPEECH[SPEAKER = 'JULIET']", "UTF-8");
+
+            final Request request = Request.Get(reqUrl);
+
             for (int i = 0; i < 200; i++) {
-                URL url = new URL(reqUrl);
-                HttpURLConnection connect = (HttpURLConnection) url.openConnection();
-                connect.setRequestMethod("GET");
-                connect.connect();
+                final HttpResponse response = request
+                        .execute()
+                        .returnResponse();
 
-                int r = connect.getResponseCode();
-                assertEquals("Server returned response code " + r, 200, r);
-
-                try (final InputStream is = connect.getInputStream()) {
-                    readResponse(is);
-                }
+                assertEquals(response.getStatusLine().toString(), HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
                 synchronized (this) {
-                    wait(250);
+                    wait(DELAY);
                 }
             }
-            return null;
-        }
 
-        private String readResponse(final InputStream is) throws IOException {
-            final StringBuilder out = new StringBuilder();
-            try(final BufferedReader reader = new BufferedReader(new InputStreamReader(is, UTF_8))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    out.append(line);
-                    out.append("\r\n");
-                }
-            }
-            return out.toString();
+            return true;
         }
     }
 
-    protected static XmlRpcClient getClient() throws MalformedURLException {
-        XmlRpcClient client = new XmlRpcClient();
-        XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+    private static XmlRpcClient getXmlRpcClient() throws MalformedURLException {
+        final XmlRpcClient client = new XmlRpcClient();
+        final XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
         config.setEnabledForExtensions(true);
-        config.setServerURL(new URL(getUri()));
-        config.setBasicUserName("admin");
-        config.setBasicPassword("");
+        config.setServerURL(new URL(getXmlRpcUri()));
+        config.setBasicUserName(TestUtils.ADMIN_DB_USER);
+        config.setBasicPassword(TestUtils.ADMIN_DB_PWD);
         client.setConfig(config);
         return client;
     }
