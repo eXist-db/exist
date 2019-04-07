@@ -22,14 +22,13 @@ package org.exist.dom.persistent;
 
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.EXistException;
-import org.exist.TestUtils;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.FileUtils;
 import org.exist.util.LockException;
+import org.exist.util.io.InputStreamUtil;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.exist.collections.Collection;
@@ -40,7 +39,6 @@ import org.exist.storage.ElementValue;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.AncestorSelector;
 import org.exist.xquery.ChildSelector;
@@ -58,16 +56,18 @@ import org.exist.xquery.value.Type;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.nio.file.Path;
+import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.Optional;
 
 import org.junit.Test;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
-import static samples.Samples.SAMPLES;
+import static org.exist.samples.Samples.SAMPLES;
 
 
 /**
@@ -529,7 +529,7 @@ public class BasicNodeSetTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeClass
-    public static void setUp() throws Exception {
+    public static void setUp() throws EXistException, PermissionDeniedException, IOException, SAXException, URISyntaxException, LockException, XPathException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -538,12 +538,14 @@ public class BasicNodeSetTest {
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
             broker.saveCollection(transaction, root);
 
-            final Path dir = SAMPLES.getShakespeareSamples();
-
             // store some documents.
-            for(final Path f : FileUtils.list(dir, XMLFilenameFilter.asPredicate())) {
-                final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
-                root.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+            for(final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
+                final String sample;
+                try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
+                    sample = InputStreamUtil.readString(is, UTF_8);
+                }
+                final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(sampleName), sample);
+                root.store(transaction, broker, info, sample);
             }
 
             final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("nested.xml"), NESTED_XML);
@@ -553,13 +555,6 @@ public class BasicNodeSetTest {
             //for the tests
             docs = root.allDocs(broker, new DefaultDocumentSet(), true);
             seqSpeech = executeQuery(broker, "//SPEECH", 2628, null);
-
-        } catch(Exception e) {
-            if (pool != null) {
-                BrokerPool.stopAll(false);
-            }
-
-            throw e;
         }
     }
 

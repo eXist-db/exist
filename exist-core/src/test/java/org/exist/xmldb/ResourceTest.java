@@ -22,12 +22,7 @@
 package org.exist.xmldb;
 
 import java.io.*;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Properties;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -38,16 +33,16 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.exist.TestUtils;
 import org.exist.dom.QName;
 import org.exist.security.Account;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.ExistSAXParserFactory;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.XMLFilenameFilter;
 import org.junit.*;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.TestUtils.GUEST_DB_USER;
 import static org.exist.xmldb.AbstractLocal.PROP_JOIN_TRANSACTION_IF_PRESENT;
 import static org.junit.Assert.assertNotNull;
@@ -68,7 +63,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static samples.Samples.SAMPLES;
+import static org.exist.samples.Samples.SAMPLES;
 
 public class ResourceTest {
 
@@ -360,7 +355,7 @@ public class ResourceTest {
     }
 
     @Before
-    public void setUp() throws XMLDBException, IOException, URISyntaxException {
+    public void setUp() throws XMLDBException, IOException {
         //create a test collection
         final CollectionManagementService cms = (CollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
         final Collection testCollection = cms.createCollection(TEST_COLLECTION);
@@ -372,12 +367,12 @@ public class ResourceTest {
 
         //store sample files as guest
         final Collection testCollectionAsGuest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
-        try(final Stream<Path> files = Files.list(SAMPLES.getShakespeareSamples()).filter(XMLFilenameFilter.asPredicate())) {
-            for(final Path file : files.collect(Collectors.toList())) {
-                final XMLResource res = (XMLResource) testCollectionAsGuest.createResource(file.getFileName().toString(), "XMLResource");
-                res.setContent(file.toFile());
-                testCollectionAsGuest.storeResource(res);
+        for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
+            final XMLResource res = (XMLResource) testCollectionAsGuest.createResource(sampleName, "XMLResource");
+            try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
+                res.setContent(InputStreamUtil.readString(is, UTF_8));
             }
+            testCollectionAsGuest.storeResource(res);
         }
     }
 

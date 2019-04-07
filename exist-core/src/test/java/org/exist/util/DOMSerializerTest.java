@@ -22,6 +22,7 @@
 package org.exist.util;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
 
@@ -37,7 +38,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import static org.junit.Assert.assertNotNull;
-import static samples.Samples.SAMPLES;
+import static org.exist.samples.Samples.SAMPLES;
 
 /**
  * @author wolf
@@ -52,11 +53,13 @@ public class DOMSerializerTest {
 		factory.setNamespaceAware(true);
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		assertNotNull(builder);
-		Document doc = builder.parse(new InputSource(SAMPLES.getBiblioSample().toAbsolutePath().toString()));
-		assertNotNull(doc);
-		try(final StringWriter writer = new StringWriter()) {
-			DOMSerializer serializer = new DOMSerializer(writer, null);
-			serializer.serialize(doc.getDocumentElement());
+		try (final InputStream is = SAMPLES.getBiblioSample()) {
+			Document doc = builder.parse(new InputSource(is));
+			assertNotNull(doc);
+			try (final StringWriter writer = new StringWriter()) {
+				DOMSerializer serializer = new DOMSerializer(writer, null);
+				serializer.serialize(doc.getDocumentElement());
+			}
 		}
 	}
 }

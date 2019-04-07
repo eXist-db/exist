@@ -23,16 +23,17 @@ package org.exist.xquery.functions.validate;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.io.InputStreamUtil;
 import org.junit.*;
+
+import static org.exist.samples.Samples.SAMPLES;
 import static org.junit.Assert.*;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -73,11 +74,11 @@ public class JingXsdTest {
             collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "personal");
 
             for (final String testResource : TEST_RESOURCES) {
-                final URL url = JingXsdTest.class.getResource("personal/" + testResource);
-                assertNotNull(url);
-
-                final byte[] data = Files.readAllBytes(Paths.get(url.toURI()));
-                ExistXmldbEmbeddedServer.storeResource(collection, testResource, data);
+                try (final InputStream is = SAMPLES.getSample("validation/personal/" + testResource)) {
+                    assertNotNull(is);
+                    final byte[] data = InputStreamUtil.readAll(is);
+                    ExistXmldbEmbeddedServer.storeResource(collection, testResource, data);
+                }
             }
         } finally {
             if(collection != null) {

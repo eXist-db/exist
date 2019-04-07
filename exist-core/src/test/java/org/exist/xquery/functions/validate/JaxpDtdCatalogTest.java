@@ -23,14 +23,14 @@ package org.exist.xquery.functions.validate;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.io.InputStreamUtil;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static samples.Samples.SAMPLES;
+import static org.exist.samples.Samples.SAMPLES;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.InputStream;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -70,11 +70,10 @@ public class JaxpDtdCatalogTest {
         try {
             dtdsCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/dtds");
 
-            final Path path = SAMPLES.getSample("validation/parse/dtds/MyNameSpace.dtd");
-            assertNotNull(path);
-
-            final byte[] data = Files.readAllBytes(path);
-            ExistXmldbEmbeddedServer.storeResource(dtdsCollection, "MyNameSpace.dtd", data);
+            try (final InputStream is = SAMPLES.getSample("validation/parse/dtds/MyNameSpace.dtd")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(dtdsCollection, "MyNameSpace.dtd", InputStreamUtil.readAll(is));
+            }
         } finally {
             if(dtdsCollection != null) {
                 dtdsCollection.close();
@@ -85,11 +84,10 @@ public class JaxpDtdCatalogTest {
         try {
             parseCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse");
 
-            final Path path = SAMPLES.getSample("validation/parse/catalog.xml");
-            assertNotNull(path);
-
-            final byte[] data = Files.readAllBytes(path);
-            ExistXmldbEmbeddedServer.storeResource(parseCollection, "catalog.xml", data);
+            try (final InputStream is = SAMPLES.getSample("validation/parse/catalog.xml")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(parseCollection, "catalog.xml", InputStreamUtil.readAll(is));
+            }
         } finally {
             if(parseCollection != null) {
                 parseCollection.close();
@@ -100,17 +98,15 @@ public class JaxpDtdCatalogTest {
         try {
             instanceCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/instance");
 
-            Path path = SAMPLES.getSample("validation/parse/instance/valid-dtd.xml");
-            assertNotNull(path);
+            try (final InputStream is = SAMPLES.getSample("validation/parse/instance/valid-dtd.xml")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(instanceCollection, "valid-dtd.xml", InputStreamUtil.readAll(is));
+            }
 
-            byte[] data = Files.readAllBytes(path);
-            ExistXmldbEmbeddedServer.storeResource(instanceCollection, "valid-dtd.xml", data);
-
-            path = SAMPLES.getSample("validation/instance/invalid-dtd.xml");
-            assertNotNull(path);
-
-            data = Files.readAllBytes(path);
-            ExistXmldbEmbeddedServer.storeResource(instanceCollection, "invalid-dtd.xml", data);
+            try (final InputStream is = SAMPLES.getSample("validation/parse/instance/invalid-dtd.xml")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(instanceCollection, "invalid-dtd.xml", InputStreamUtil.readAll(is));
+            }
         } finally {
             if(instanceCollection != null) {
                 instanceCollection.close();

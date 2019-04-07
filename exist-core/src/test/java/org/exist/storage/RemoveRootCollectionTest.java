@@ -1,18 +1,18 @@
 package org.exist.storage;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
-import static samples.Samples.SAMPLES;
+import static org.exist.samples.Samples.SAMPLES;
 
-import java.nio.file.Paths;
+import java.io.InputStream;
 import java.util.Optional;
 
-import org.exist.TestUtils;
 import org.exist.collections.*;
 import org.exist.storage.txn.*;
 import org.exist.test.ExistEmbeddedServer;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
-import org.xml.sax.InputSource;
 
 
 public class RemoveRootCollectionTest {
@@ -79,12 +79,13 @@ public class RemoveRootCollectionTest {
     private void addDocumentToRoot() throws Exception {
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
-        try (final Txn transaction = transact.beginTransaction()) {
-            final InputSource is = new InputSource(SAMPLES.getHamletSample().toUri().toASCIIString());
+        try (final Txn transaction = transact.beginTransaction();
+             final InputStream is = SAMPLES.getHamletSample()) {
             assertNotNull(is);
-            final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), is);
+            final String sample = InputStreamUtil.readString(is, UTF_8);
+            final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), sample);
             assertNotNull(info);
-            root.store(transaction, broker, info, is);
+            root.store(transaction, broker, info, sample);
             transact.commit(transaction);
         }
     }

@@ -22,6 +22,7 @@
 package org.exist.xmldb;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,14 +31,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import org.exist.TestUtils;
-import org.exist.dom.persistent.XMLUtil;
 import org.exist.security.Account;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.util.XMLFilenameFilter;
+import org.exist.util.io.InputStreamUtil;
 import org.junit.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -47,7 +44,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
-import static samples.Samples.SAMPLES;
+import static org.exist.samples.Samples.SAMPLES;
 
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -117,13 +114,12 @@ public class CreateCollectionsTest  {
 
         final List<String> storedResourceNames = new ArrayList<>();
         final List<String> filenames = new ArrayList<>();
-        try(final Stream<Path> files = Files.list(SAMPLES.getShakespeareSamples()).filter(XMLFilenameFilter.asPredicate())) {
-            //store the samples
-            for (final Path file : files.collect(Collectors.toList())) {
-                final Resource res = storeResourceFromFile(file, testCollection);
-                storedResourceNames.add(res.getId());
-                filenames.add(file.getFileName().toString());
-            }
+
+        //store the samples
+        for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
+            final Resource res = storeResourceFromFile(SAMPLES.getShakespeareSample(sampleName), testCollection, sampleName);
+            storedResourceNames.add(res.getId());
+            filenames.add(sampleName);
         }
 
         assertEquals(filenames, storedResourceNames);
@@ -147,7 +143,9 @@ public class CreateCollectionsTest  {
         ums.chmod("rwxr-xr-x");
 
         final String testFile = "macbeth.xml";
-        storeResourceFromFile(SAMPLES.getMacbethSample(), testCollection);
+        try (final InputStream is = SAMPLES.getMacbethSample()) {
+            storeResourceFromFile(is, testCollection, testFile);
+        }
         Resource resMacbeth = testCollection.getResource(testFile);
         assertNotNull("getResource(" + testFile + "\")", resMacbeth);
 
@@ -159,7 +157,9 @@ public class CreateCollectionsTest  {
         assertNull(resMacbeth);
 
         // restore the resource just removed
-        storeResourceFromFile(SAMPLES.getMacbethSample(), testCollection);
+        try (final InputStream is = SAMPLES.getMacbethSample()) {
+            storeResourceFromFile(is, testCollection, testFile);
+        }
         assertEquals("After re-store resource count must increase", resourceCount, testCollection.getResourceCount());
         resMacbeth = testCollection.getResource(testFile);
         assertNotNull("getResource(" + testFile + "\")", resMacbeth);
@@ -180,11 +180,10 @@ public class CreateCollectionsTest  {
         assertArrayEquals("After storing binary resource, data out==data in", data, dataStored);
     }
 
-    private XMLResource storeResourceFromFile(Path file, Collection testCollection) throws XMLDBException, IOException {
-        XMLResource res = (XMLResource) testCollection.createResource(file.getFileName().toString(), "XMLResource");
+    private XMLResource storeResourceFromFile(final InputStream is, final Collection testCollection, final String fileName) throws XMLDBException, IOException {
+        XMLResource res = (XMLResource) testCollection.createResource(fileName, "XMLResource");
         assertNotNull("storeResourceFromFile", res);
-        String xml = XMLUtil.readFile(file, UTF_8);
-        res.setContent(xml);
+        res.setContent(InputStreamUtil.readString(is, UTF_8));
         testCollection.storeResource(res);
         return res;
     }

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id$ -->
-<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
-    <uri name="MyNameSpace" uri="schemas/MyNameSpace.xsd" />
-    <uri name="AnotherNamespace" uri="schemas/AnotherNamespace.xsd" />
-    
-    <public publicId="MNS" uri="dtds/MyNameSpace.dtd"/> 
-</catalog>

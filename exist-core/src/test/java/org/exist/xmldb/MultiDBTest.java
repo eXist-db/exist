@@ -22,10 +22,7 @@
 package org.exist.xmldb;
 
 import org.exist.TestUtils;
-import org.exist.util.FileUtils;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
-import org.exist.util.SingleInstanceConfiguration;
+import org.exist.util.io.InputStreamUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -37,15 +34,13 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static samples.Samples.SAMPLES;
+import static org.exist.samples.Samples.SAMPLES;
 
 /**
  * @author wolf
@@ -62,7 +57,7 @@ public class MultiDBTest {
                     "</exist>";
 
     @Test
-    public void store() throws XMLDBException, IOException, URISyntaxException {
+    public void store() throws XMLDBException, IOException {
         for (int i = 0; i < INSTANCE_COUNT; i++) {
             Collection root = DatabaseManager.getCollection("xmldb:test" + i + "://" + XmldbURI.ROOT_COLLECTION, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
             Collection test = root.getChildCollection("test");
@@ -72,26 +67,20 @@ public class MultiDBTest {
                 test = service.createCollection("test");
             }
 
-            final Path samples = SAMPLES.getShakespeareSamples();
-            final List<Path> files = FileUtils.list(samples);
-            final MimeTable mimeTab = MimeTable.getInstance();
-            for (final Path file : files) {
-                final MimeType mime = mimeTab.getContentTypeFor(FileUtils.fileName(file));
-                if (mime != null && mime.isXMLType()) {
-                    loadFile(test, file.toAbsolutePath().toString());
-                }
+            for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
+                loadFile(SAMPLES.getShakespeareSample(sampleName), test, sampleName);
             }
 
             doQuery(test, "//SPEECH[SPEAKER='HAMLET']");
         }
     }
 
-    protected static void loadFile(Collection collection, String path) throws XMLDBException {
+    protected static void loadFile(final InputStream is, final Collection collection, final String fileName) throws XMLDBException, IOException {
         // create new XMLResource; an id will be assigned to the new resource
         XMLResource document = (XMLResource)
-                collection.createResource(path.substring(path.lastIndexOf(java.io.File.separatorChar)),
+                collection.createResource(fileName,
                         "XMLResource");
-        document.setContent(Paths.get(path));
+        document.setContent(InputStreamUtil.readString(is, UTF_8));
         collection.storeResource(document);
     }
 

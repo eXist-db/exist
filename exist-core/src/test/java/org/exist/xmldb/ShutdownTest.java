@@ -22,17 +22,22 @@
  */
 package org.exist.xmldb;
 
-import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.concurrent.DBUtils;
 import org.junit.*;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static samples.Samples.SAMPLES;
+import static org.exist.samples.Samples.SAMPLES;
 
 /**
  * Check if database shutdownDB/restart works properly. The test opens
@@ -69,7 +74,7 @@ public class ShutdownTest {
     public static final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() throws XMLDBException, IOException {
         final Collection rootCol = existXmldbEmbeddedServer.getRoot();
         Collection testCol = rootCol.getChildCollection("C1");
         if(testCol == null) {
@@ -77,7 +82,9 @@ public class ShutdownTest {
             assertNotNull(testCol);
         }
 
-        DBUtils.addXMLResource(rootCol, "biblio.rdf", SAMPLES.getBiblioSample());
+        try (final InputStream is = SAMPLES.getBiblioSample()) {
+			DBUtils.addXMLResource(rootCol, "biblio.rdf", InputStreamUtil.readString(is, UTF_8));
+		}
 
         // store the data files
         final String xml =

@@ -30,8 +30,10 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.util.XMLFilenameFilter;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.FunctionFactory;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.xmldb.api.DatabaseManager;
@@ -44,11 +46,15 @@ import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 import static org.junit.Assert.assertEquals;
+
+import static org.exist.samples.Samples.SAMPLES;
 
 /**
  *
@@ -198,11 +204,11 @@ public class OptimizerTest {
         resource.setContent(XML);
         testCollection.storeResource(resource);
 
-        final Path dir = TestUtils.shakespeareSamples();
-        final List<Path> files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
-        for (Path file : files) {
-            resource = (XMLResource) testCollection.createResource(FileUtils.fileName(file), XMLResource.RESOURCE_TYPE);
-            resource.setContent(file);
+        for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
+            resource = (XMLResource) testCollection.createResource(sampleName, XMLResource.RESOURCE_TYPE);
+            try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
+                resource.setContent(InputStreamUtil.readString(is, UTF_8));
+            }
             testCollection.storeResource(resource);
         }
     }

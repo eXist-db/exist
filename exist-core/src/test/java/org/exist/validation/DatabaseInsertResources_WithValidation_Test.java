@@ -22,10 +22,7 @@
 package org.exist.validation;
 
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.Optional;
 
 import org.exist.collections.Collection;
@@ -35,6 +32,8 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.XMLReaderObjectFactory;
+import org.exist.util.io.FastByteArrayInputStream;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 
 import org.junit.AfterClass;
@@ -42,9 +41,10 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.TestUtils.*;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
-import static samples.Samples.SAMPLES;
+import static org.exist.samples.Samples.SAMPLES;
 
 /**
  *  Insert documents for validation tests.
@@ -67,32 +67,25 @@ public class DatabaseInsertResources_WithValidation_Test {
      *     <!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd">
      */
     @Test
-    public void validDocumentSystemCatalog() throws IOException, URISyntaxException {
+    public void validDocumentSystemCatalog() throws IOException {
         String hamletWithValid = getHamletXml();
         hamletWithValid = hamletWithValid.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
                 "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"" + getPlayDtdUrl() + "\">" );
 
         TestTools.insertDocumentToURL(
-                hamletWithValid.getBytes(),
+                new FastByteArrayInputStream(hamletWithValid.getBytes(UTF_8)),
                 "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION + "/hamlet_valid.xml"
         );
     }
 
-    private String getHamletXml() throws IOException, URISyntaxException {
-        int read = -1;
-        final char buf[] = new char[4096];
-        final StringBuilder builder = new StringBuilder();
-        try (final InputStream is = Files.newInputStream(SAMPLES.getHamletSample());
-             final Reader reader = new InputStreamReader(is)) {
-            while ((read = reader.read(buf)) > -1) {
-                builder.append(buf, 0, read);
-            }
+    private String getHamletXml() throws IOException {
+        try (final InputStream is = SAMPLES.getHamletSample()) {
+            return InputStreamUtil.readString(is, UTF_8);
         }
-        return builder.toString();
     }
 
-    private URL getPlayDtdUrl() throws URISyntaxException, MalformedURLException {
-        return SAMPLES.getSample("shakespeare/play.dtd").toUri().toURL();
+    private URL getPlayDtdUrl() {
+        return SAMPLES.getSampleUrl("shakespeare/play.dtd");
     }
 
     /**
@@ -107,7 +100,7 @@ public class DatabaseInsertResources_WithValidation_Test {
      * Aditionally all "TITLE" elements are renamed to "INVALIDTITLE"
      */
     @Test
-    public void invalidDocumentSystemCatalog() throws IOException, URISyntaxException {
+    public void invalidDocumentSystemCatalog() throws IOException {
         String hamletWithInvalid = getHamletXml();
         hamletWithInvalid = hamletWithInvalid.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
             "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"" + getPlayDtdUrl() + "\">" );
@@ -116,7 +109,7 @@ public class DatabaseInsertResources_WithValidation_Test {
 
         try {
             TestTools.insertDocumentToURL(
-                hamletWithInvalid.getBytes(),
+                    new FastByteArrayInputStream(hamletWithInvalid.getBytes(UTF_8)),
                 "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION + "/hamlet_invalid.xml"
                 
             );
