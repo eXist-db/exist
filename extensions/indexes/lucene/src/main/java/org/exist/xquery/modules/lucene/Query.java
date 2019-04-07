@@ -258,8 +258,8 @@ public class Query extends Function implements Optimizable {
                 }
                 QueryOptions options = parseOptions(this, contextSequence, contextItem, 3);
                 try {
-                    if (Type.subTypeOf(key.getType(), Type.ELEMENT)) {
-                        final Element queryXML = key == null ? null : (Element) ((NodeValue) key).getNode();
+                    if (key != null && Type.subTypeOf(key.getType(), Type.ELEMENT)) {
+                        final Element queryXML = (Element) ((NodeValue) key).getNode();
                         result = index.query(getExpressionId(), docs, inNodes, qnames,
                                 queryXML, NodeSet.ANCESTOR, options);
                     } else {
