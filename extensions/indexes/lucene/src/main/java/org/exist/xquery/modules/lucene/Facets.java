@@ -62,7 +62,7 @@ public class Facets extends BasicFunction {
                                     "If the node has no facet information attached, an empty sequence will be returned."),
                     new FunctionParameterSequenceType("dimension", Type.STRING, Cardinality.EXACTLY_ONE,
                             "The facet dimension. This should correspond to a dimension defined in the index configuration"),
-                    new FunctionParameterSequenceType("count", Type.INTEGER, Cardinality.EXACTLY_ONE,
+                    new FunctionParameterSequenceType("count", Type.INTEGER, Cardinality.ZERO_OR_ONE,
                             "The number of facet labels to be returned. Facets with more occurrences in the result will be returned " +
                                     "first.")
             },
@@ -80,7 +80,7 @@ public class Facets extends BasicFunction {
                                     "If the node has no facet information attached, an empty sequence will be returned."),
                     new FunctionParameterSequenceType("dimension", Type.STRING, Cardinality.EXACTLY_ONE,
                             "The facet dimension. This should correspond to a dimension defined in the index configuration"),
-                    new FunctionParameterSequenceType("count", Type.INTEGER, Cardinality.EXACTLY_ONE,
+                    new FunctionParameterSequenceType("count", Type.INTEGER, Cardinality.ZERO_OR_ONE,
                             "The number of facet labels to be returned. Facets with more occurrences in the result will be returned " +
                                     "first."),
                     new FunctionParameterSequenceType("paths", Type.STRING, Cardinality.ONE_OR_MORE,
@@ -106,8 +106,8 @@ public class Facets extends BasicFunction {
         final String dimension = args[1].getStringValue();
 
         int count = Integer.MAX_VALUE;
-        if (getArgumentCount() == 3) {
-            count = ((IntegerValue) args[2]).getInt();
+        if (getArgumentCount() == 3 && args[2].hasOne()) {
+            count = ((IntegerValue) args[2].itemAt(0)).getInt();
         }
 
         String[] paths = null;

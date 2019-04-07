@@ -157,9 +157,9 @@ declare
     %test:assertEquals(2, 1, 1, 2)
 function facet:query-all-and-facets() {
     let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
-    let $where := ft:facets(head($result), "place", 10)
-    let $from := ft:facets(head($result), "from", 10)
-    let $to := ft:facets(head($result), "to", 10)
+    let $where := ft:facets(head($result), "place", ())
+    let $from := ft:facets(head($result), "from", ())
+    let $to := ft:facets(head($result), "to", ())
     return (
         $where?Berlin, $where?Hamburg, $from?Susi, $to?Egon
     )
@@ -226,7 +226,7 @@ declare
     %test:assertEquals('{"03":1,"04":1}')
 function facet:hierarchical-facets-retrieve($paths as xs:string*) {
     let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
-    let $facets := ft:facets(head($result), "date", 10, $paths)
+    let $facets := ft:facets(head($result), "date", (), $paths)
     return
         serialize($facets, map { "method": "json" })
 };
