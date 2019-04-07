@@ -31,7 +31,6 @@
         <!-- module>images</module -->  <!-- Not used -->
         <module>indexes</module>
         <module>modules</module>
-        <!-- module>scheduler</module -->  <!-- Not used -->
         <module>security</module>
         <module>webdav</module>
         <module>xqdoc</module>
