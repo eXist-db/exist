@@ -434,10 +434,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 options.configureParser(parser.getConfiguration());
                 Query query = queryStr == null ? new MatchAllDocsQuery() : parser.parse(queryStr);
                 Optional<Map<String, List<String>>> facets = options.getFacets();
-                if (facets.isPresent()) {
-                    if (config != null) {
-                        query = drilldown(facets.get(), query, config);
-                    }
+                if (facets.isPresent() && config != null) {
+                    query = drilldown(facets.get(), query, config);
                 }
                 searchAndProcess(contextId, qname, docs, contextSet, resultSet,
                         returnAncestor, searcher, query, options.getFields(), config);
@@ -628,9 +626,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             
             // Get name from SOLR field
             String contentFieldName = field.getName();
-            
-            Analyzer fieldAnalyzer = (fieldType == null) ? null : fieldType.getAnalyzer();
-            
+
             // Actual field content ; Store flag can be set in solrField
             Field contentField = new Field(contentFieldName, field.getData().toString(),  store, Field.Index.ANALYZED, Field.TermVector.YES);
 
@@ -666,7 +662,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @param queryText
      * @return search report
      */
-    public NodeImpl search(final XQueryContext context, final List<String> toBeMatchedURIs, String queryText, String[] fieldsToGet, QueryOptions options) throws XPathException, IOException {
+    public NodeImpl search(final List<String> toBeMatchedURIs, String queryText, String[] fieldsToGet, QueryOptions options) throws XPathException, IOException {
 
         return index.withSearcher(searcher -> {
             // Get analyzer : to be retrieved from configuration
@@ -720,7 +716,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         DocumentImpl storedDoc = null;
                         try {
                             // try to read document to check if user is allowed to access it
-                            storedDoc = context.getBroker().getXMLResource(XmldbURI.createInternal(fDocUri), LockMode.READ_LOCK);
+                            storedDoc = broker.getXMLResource(XmldbURI.createInternal(fDocUri), LockMode.READ_LOCK);
                             if (storedDoc == null) {
                                 return;
                             }
