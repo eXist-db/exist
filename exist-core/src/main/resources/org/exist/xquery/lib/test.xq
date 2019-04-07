@@ -41,8 +41,20 @@ declare function t:store($action as element(store)) {
 declare function t:store-files($action as element(store-files)) {
     let $type := if ($action/@type) then $action/@type/string() else "application/xml"
     return
-        xmldb:store-files-from-pattern($action/@collection, $action/@dir, $action/@pattern, $type)
+        if ($action/@classpath)
+        then
+            let $classpath-entries := util:system-property("java.class.path")
+            let $matches := fn:tokenize($classpath-entries, ":")[fn:ends-with(., $action/@classpath)]
+            return
+                if (not(empty($matches)))
+                then
+                    xmldb:store-files-from-pattern($action/@collection, $matches[1], $action/@pattern, $type)
+                else
+                    util:log("ERROR", ("Could not match classpath with '" || $action/@classpath || "' in test.xq"))
+        else
+            xmldb:store-files-from-pattern($action/@collection, $action/@dir, $action/@pattern, $type)
 };
+
 
 declare function t:setup($setup as element(setup)?) {
     for $action in $setup/*
