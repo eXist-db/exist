@@ -139,28 +139,29 @@ public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resourc
 
     @Override
     protected QueryResultAccessor<ResourceSet, XMLDBException> executeXQuery(final String query) throws Exception {
-        Collection colRoot = null;
-        try {
-            colRoot = DatabaseManager.getCollection(getBaseUri() + "/db", ADMIN_DB_USER, ADMIN_DB_PWD);
-            final XQueryService xqueryService = (XQueryService)colRoot.getService("XQueryService", "1.0");
+        return consumer -> {
+            Collection colRoot = null;
+            try {
+                colRoot = DatabaseManager.getCollection(getBaseUri() + "/db", ADMIN_DB_USER, ADMIN_DB_PWD);
+                final XQueryService xqueryService = (XQueryService)colRoot.getService("XQueryService", "1.0");
 
-            final CompiledExpression compiledExpression = xqueryService.compile(query);
-            final ResourceSet results = xqueryService.execute(compiledExpression);
+                final CompiledExpression compiledExpression = xqueryService.compile(query);
+                final ResourceSet results = xqueryService.execute(compiledExpression);
 
-            return consumer -> {
-                try {
-//                    compiledExpression.reset();  // shows the ordering issue with binary values (see comment below)
 
-                    consumer.accept(results);
-                } finally {
-                    //the following calls cause the streams of any binary result values to be closed, so if we did so before we are finished with the results, serialization would fail.
-                    results.clear();
-                    compiledExpression.reset();
-                }
-            };
-        } finally {
-            colRoot.close();
-        }
+                    try {
+    //                    compiledExpression.reset();  // shows the ordering issue with binary values (see comment below)
+
+                        consumer.accept(results);
+                    } finally {
+                        //the following calls cause the streams of any binary result values to be closed, so if we did so before we are finished with the results, serialization would fail.
+                        results.clear();
+                        compiledExpression.reset();
+                    }
+            } finally {
+                colRoot.close();
+            }
+        };
     }
 
     @Override
