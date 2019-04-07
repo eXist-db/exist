@@ -28,6 +28,7 @@
         <module>exist-core</module>
         <module>exist-samples</module>
         <module>exist-start</module>
+        <module>extensions</module>
     </modules>
 
 </project>

@@ -53,6 +53,7 @@ import java.util.List;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 import static org.junit.Assert.assertEquals;
+import static org.exist.samples.Samples.SAMPLES;
 
 import static org.exist.samples.Samples.SAMPLES;
 

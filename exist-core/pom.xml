@@ -59,13 +59,11 @@
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
-            <version>2.6.2</version>
         </dependency>
 
         <dependency>
             <groupId>org.jctools</groupId>
             <artifactId>jctools-core</artifactId>
-            <version>2.1.2</version>
         </dependency>
 
         <dependency>
@@ -88,13 +86,11 @@
         <dependency>
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
-            <version>59.1</version>
         </dependency>
 
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
-            <version>3.0.2</version>
         </dependency>
 
         <dependency>
@@ -178,6 +174,7 @@
             <groupId>org.fusesource.jansi</groupId>
             <artifactId>jansi</artifactId>
             <version>1.17.1</version>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
@@ -193,7 +190,6 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.11</version>
         </dependency>
 
         <dependency>
@@ -249,6 +245,16 @@
             <artifactId>xercesImpl</artifactId>
             <version>2.12.0</version>
             <classifier>xml-schema-1.1</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.ws.commons.util</groupId>
+            <artifactId>ws-commons-util</artifactId>
+            <version>1.0.2</version>
         </dependency>
 
         <!-- xml-resolver is needed at runtime because xercesImpl declares this as optional,
@@ -318,6 +324,11 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-jaas</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-http</artifactId>
             <version>${jetty.version}</version>
         </dependency>
         <dependency>
@@ -403,6 +414,7 @@
         <dependency>
             <groupId>com.googlecode.junit-toolbox</groupId>
             <artifactId>junit-toolbox</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.exist-db.thirdparty.com.ettrema</groupId>
@@ -459,7 +471,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
+            <artifactId>httpcore</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

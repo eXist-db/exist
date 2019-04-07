@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-        "src/test/xquery"
+        "src/test/xquery/restxq"
 })
 public class RestXqTests {
 }

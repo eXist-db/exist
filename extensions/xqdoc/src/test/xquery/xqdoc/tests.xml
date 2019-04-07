@@ -21,25 +21,25 @@ declare function test:ttt($param as xs:integer) as xs:double {
         ]]></store>
     </setup>
     <tearDown>
-        <!--remove-collection collection="/db/test"/-->
+        <remove-collection collection="/db/xqtest"/>
     </tearDown>
-    <test output="text">
+    <test id="xqdoc-load-module-by-uri" output="text" ignore="true">
         <task>Load known module by URI</task>
         <code>xqdm:scan(xs:anyURI("http://exist-db.org/xquery/kwic"))</code>
         <xpath>//xqdoc:function/xqdoc:name = 'summarize'</xpath>
     </test>
-    <test output="text">
+    <test id="xqdoc-load-module-from-classpath" output="text" ignore="true">
         <task>Load module from classpath</task>
         <code>xqdm:scan(xs:anyURI("resource:org/exist/xquery/lib/kwic.xql"))</code>
         <xpath>//xqdoc:function/xqdoc:name = 'summarize'</xpath>
     </test>
-    <test output="text">
-        <task>Load module from database</task>
+    <test id="xqdoc-load-module-from-db-check-name" output="text" ignore="true">
+        <task>Load module from database (check name)</task>
         <code>xqdm:scan(xs:anyURI("xmldb:exist:///db/xqtest/test.xql"))</code>
         <xpath>//xqdoc:function/xqdoc:name = 'ttt'</xpath>
     </test>
-    <test output="text">
-        <task>Load module from database</task>
+    <test id="xqdoc-load-module-from-db-check-comments" output="text" ignore="true">
+        <task>Load module from database (check comments)</task>
         <code>xqdm:scan(xs:anyURI("xmldb:exist:///db/xqtest/test.xql"))</code>
         <xpath>//xqdoc:function/xqdoc:comment[contains(xqdoc:param, '$param')]</xpath>
     </test>

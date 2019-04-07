@@ -115,8 +115,7 @@ public class IntegrationTest {
         System.out.println(asString(response.getEntity().getContent()));
     }
 
-    // TODO(AR) need to figure out how to access the RESTXQ API from {@link ExistWebServer}
-    @Ignore
+    @Ignore("TODO(AR) need to figure out how to access the RESTXQ API from {@link ExistWebServer}")
     @Test
     public void mediaTypeJson1() throws IOException {
         final HttpResponse response = executor.execute(Request

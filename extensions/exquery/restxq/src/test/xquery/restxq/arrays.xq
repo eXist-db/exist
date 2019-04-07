@@ -55,6 +55,7 @@ function arr:cleanup() {
 };
 
 declare
+    %test:pending("Requires a running server")
     %test:assertEquals("ok")
 function arr:restxq-serialize() {
     let $req :=

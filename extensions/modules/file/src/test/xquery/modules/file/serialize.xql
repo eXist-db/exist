@@ -7,7 +7,8 @@ import module namespace file="http://exist-db.org/xquery/file";
 
 
 declare
-%test:assertEquals("datadata", "true", "true", "true")
+    %test:pending("need to mechanism to setup a temporary file to work with")
+    %test:assertEquals("datadata", "true", "true", "true")
 function serialization:append() {
 
     let $node-set := text {"data"}
@@ -23,7 +24,8 @@ function serialization:append() {
 };
 
 declare
-%test:assertEquals("data", "true", "true", "true")
+    %test:pending("need to mechanism to setup a temporary file to work with")
+    %test:assertEquals("data", "true", "true", "true")
 function serialization:overwrite() {
 
     let $node-set := text {"data"}

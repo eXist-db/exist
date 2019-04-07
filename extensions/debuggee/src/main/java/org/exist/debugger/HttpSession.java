@@ -21,9 +21,8 @@
  */
 package org.exist.debugger;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.http.client.fluent.Form;
+import org.apache.http.client.fluent.Request;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -43,19 +42,17 @@ public class HttpSession implements Runnable {
 	 * @see java.lang.Runnable#run()
 	 */
 	public void run() {
-		HttpClient client = new HttpClient();
-
-		PostMethod method = new PostMethod(url);
-
-		NameValuePair[] postData = new NameValuePair[1];
-        postData[0] = new NameValuePair("XDEBUG_SESSION", "default");
-        
-        method.addParameters(postData);
-
 		try {
 			System.out.println("sending http request with debugging flag");
-			
-			debugger.terminate(url, client.executeMethod(method));
+
+			final int code = Request.Post(url)
+					.bodyForm(Form.form().add("XDEBUG_SESSION", "default").build())
+					.execute()
+					.returnResponse()
+					.getStatusLine()
+					.getStatusCode();
+
+			debugger.terminate(url, code);
 
 			System.out.println("get http response");
 		} catch (Exception e) {

@@ -26,7 +26,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.exist.extensions.exquery.restxq.impl.xquery;
 
-import org.custommonkey.xmlunit.XMLAssert;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exquery.serialization.annotation.MediaTypeAnnotation;
 import org.exquery.serialization.annotation.MethodAnnotation;
@@ -37,6 +36,9 @@ import org.exquery.xquery.Type;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.builder.Input;
+import org.xmlunit.diff.Diff;
 
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
@@ -46,6 +48,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.Override;
 import java.net.URISyntaxException;
+
+import static org.junit.Assert.assertFalse;
 
 /**
  * Tests for RegistryFunctions
@@ -84,7 +88,16 @@ public class RegistryFunctionsTest {
 
         //assert result
         final String xmlResult = documentToString(builder.getDocument());
-        XMLAssert.assertXMLEqual("<media-type xmlns=\"http://www.w3.org/2010/xslt-xquery-serialization\">" + internetMediaType + "</media-type>", xmlResult);
+
+        final Source srcExpected = Input.fromString("<media-type xmlns=\"http://www.w3.org/2010/xslt-xquery-serialization\">" + internetMediaType + "</media-type>").build();
+        final Source srcActual = Input.fromString(xmlResult).build();
+
+        final Diff diff = DiffBuilder.compare(srcExpected)
+                .withTest(srcActual)
+                .checkForIdentical()
+                .build();
+
+        assertFalse(diff.toString(), diff.hasDifferences());
     }
 
     @Test
@@ -116,7 +129,16 @@ public class RegistryFunctionsTest {
 
         //assert result
         final String xmlResult = documentToString(builder.getDocument());
-        XMLAssert.assertXMLEqual("<method xmlns=\"http://www.w3.org/2010/xslt-xquery-serialization\">" + methodStr + "</method>", xmlResult);
+
+        final Source srcExpected = Input.fromString("<method xmlns=\"http://www.w3.org/2010/xslt-xquery-serialization\">" + methodStr + "</method>").build();
+        final Source srcActual = Input.fromString(xmlResult).build();
+
+        final Diff diff = DiffBuilder.compare(srcExpected)
+                .withTest(srcActual)
+                .checkForIdentical()
+                .build();
+
+        assertFalse(diff.toString(), diff.hasDifferences());
     }
 
     private String documentToString(final Document doc) throws TransformerException, IOException {

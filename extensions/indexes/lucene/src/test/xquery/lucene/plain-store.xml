@@ -13,7 +13,7 @@
         <store collection="/db/morebinary" name="index2.txt" type="text/plain">BBBBBB</store>
         <store collection="/db/morebinary" name="index3.txt" type="text/plain">CCCCCC</store>
         <create-collection parent="/db/morebinary" name="shakespeare"/>
-        <store-files collection="/db/morebinary/shakespeare" dir="samples/shakespeare" pattern="*.xml"/>
+        <store-files collection="/db/morebinary/shakespeare" classpath="exist-samples/target/classes" pattern="org/exist/samples/shakespeare/*.xml"/>
     </setup>
     
     <tearDown>
