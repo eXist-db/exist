@@ -20,12 +20,12 @@
 package org.exist.storage;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Optional;
 
 import org.exist.EXistException;
-import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.LockedDocument;
@@ -37,13 +37,16 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static samples.Samples.SAMPLES;
+import static org.exist.samples.Samples.SAMPLES;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -102,11 +105,14 @@ public class CopyResourceRecoveryTest {
                 assertNotNull(subTestCollection);
                 broker.saveCollection(transaction, subTestCollection);
 
-                final Path f = SAMPLES.getRomeoAndJulietSample();
-                assertNotNull(f);
-                info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toUri().toASCIIString()));
+                final String sample;
+                try (final InputStream is = SAMPLES.getRomeoAndJulietSample()) {
+                    assertNotNull(is);
+                    sample = InputStreamUtil.readString(is, UTF_8);
+                }
+                info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), sample);
                 assertNotNull(info);
-                subTestCollection.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+                subTestCollection.store(transaction, broker, info, sample);
 
                 transact.commit(transaction);
             }
@@ -157,11 +163,14 @@ public class CopyResourceRecoveryTest {
                 assertNotNull(subTestCollection);
                 broker.saveCollection(transaction, subTestCollection);
 
-                final Path f = SAMPLES.getRomeoAndJulietSample();
-                assertNotNull(f);
-                info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), new InputSource(f.toUri().toASCIIString()));
+                final String sample;
+                try (final InputStream is = SAMPLES.getRomeoAndJulietSample()) {
+                    assertNotNull(is);
+                    sample = InputStreamUtil.readString(is, UTF_8);
+                }
+                info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), sample);
                 assertNotNull(info);
-                subTestCollection.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+                subTestCollection.store(transaction, broker, info, sample);
 
                 transact.commit(transaction);
             }

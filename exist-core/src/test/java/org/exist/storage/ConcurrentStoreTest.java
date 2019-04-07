@@ -22,10 +22,8 @@
 package org.exist.storage;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.InputStream;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 
 import org.exist.EXistException;
@@ -38,12 +36,14 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.*;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Test;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.samples.Samples.SAMPLES;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -130,16 +130,16 @@ public class ConcurrentStoreTest {
             final TransactionManager transact = pool.getTransactionManager();
             try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                     final Txn transaction = transact.beginTransaction()) {
-                final List<Path> files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
 
                 IndexInfo info;
                 // store some documents into the test collection
-                for (final Path f : files) {
-                    try {
-                        info = test.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
-                        test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+                for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
+                    try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
+                        final String sample = InputStreamUtil.readString(is, UTF_8);
+                        info = test.validateXMLResource(transaction, broker, XmldbURI.create(sampleName), sample);
+                        test.store(transaction, broker, info, sample);
                     } catch (SAXException e) {
-                        System.err.println("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
+                        System.err.println("Error found while parsing document: " + sampleName + ": " + e.getMessage());
                     }
 //                    if (i % 5 == 0) {
 //                        transact.commit(transaction);
@@ -169,13 +169,13 @@ public class ConcurrentStoreTest {
                 DocumentImpl doc = i.next();
 
                 test.removeXMLResource(transaction, broker, doc.getFileURI());
-                
-                Path f = dir.resolve("hamlet.xml");
-                try {
-                    IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toUri().toASCIIString()));
-                    test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+
+                try (final InputStream is = SAMPLES.getHamletSample()) {
+                    final String sample = InputStreamUtil.readString(is, UTF_8);
+                    IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), sample);
+                    test.store(transaction, broker, info, sample);
                 } catch (SAXException e) {
-                    System.err.println("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
+                    System.err.println("Error found while parsing document: hamlet.xml: " + e.getMessage());
                 }
                 
                 transact.commit(transaction);

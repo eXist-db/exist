@@ -22,8 +22,8 @@
 package org.exist.storage;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
 import java.util.Optional;
 
 import org.exist.EXistException;
@@ -41,20 +41,21 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.junit.*;
-import static org.junit.Assert.assertNotNull;
-import static samples.Samples.SAMPLES;
 
-import org.xml.sax.InputSource;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertNotNull;
+import static org.exist.samples.Samples.SAMPLES;
+
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
-import samples.Samples;
 
 public class MoveResourceRecoveryTest {
 
@@ -113,11 +114,14 @@ public class MoveResourceRecoveryTest {
             assertNotNull(test2);
             broker.saveCollection(transaction, test2);
 
-            final Path f = SAMPLES.getRomeoAndJulietSample();
+            final String sample;
+            try (final InputStream is = SAMPLES.getRomeoAndJulietSample()) {
+                sample = InputStreamUtil.readString(is, UTF_8);
+            }
 
-            final IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toUri().toASCIIString()));
+            final IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, sample);
             assertNotNull(info);
-            test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+            test2.store(transaction, broker, info, sample);
 
             final DocumentImpl doc = test2.getDocument(broker, TestConstants.TEST_XML_URI);
             assertNotNull(doc);
@@ -163,12 +167,13 @@ public class MoveResourceRecoveryTest {
                 assertNotNull(test2);
                 broker.saveCollection(transaction, test2);
 
-                final Path f = SAMPLES.getRomeoAndJulietSample();
+                final String sample;
+                try (final InputStream is = SAMPLES.getRomeoAndJulietSample()) {
+                    sample = InputStreamUtil.readString(is, UTF_8);
+                }
 
-                final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("new_test2.xml"),
-                        new InputSource(f.toUri().toASCIIString()));
-                test2.store(transaction, broker, info, new InputSource(f.toUri()
-                        .toASCIIString()));
+                final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("new_test2.xml"), sample);
+                test2.store(transaction, broker, info, sample);
 
                 transact.commit(transaction);
             }
@@ -213,7 +218,7 @@ public class MoveResourceRecoveryTest {
         }
     }
 
-    private void xmldbStore() throws XMLDBException, URISyntaxException {
+    private void xmldbStore() throws XMLDBException, URISyntaxException, IOException {
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         final EXistCollectionManagementService mgr = (EXistCollectionManagementService)
                 root.getService("CollectionManagementService", "1.0");
@@ -228,10 +233,13 @@ public class MoveResourceRecoveryTest {
             test2 = mgr.createCollection("test2");
         }
 
-        final Path f = SAMPLES.getRomeoAndJulietSample();
+        final String sample;
+        try (final InputStream is = SAMPLES.getRomeoAndJulietSample()) {
+            sample = InputStreamUtil.readString(is, UTF_8);
+        }
 
         final Resource res = test2.createResource("test3.xml", "XMLResource");
-        res.setContent(f);
+        res.setContent(sample);
         test2.storeResource(res);
 
         mgr.moveResource(XmldbURI.create(XmldbURI.ROOT_COLLECTION +  "/test2/test3.xml"),

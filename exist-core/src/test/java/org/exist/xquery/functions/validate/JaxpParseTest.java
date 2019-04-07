@@ -22,13 +22,13 @@
 package org.exist.xquery.functions.validate;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.io.InputStreamUtil;
 import org.junit.*;
 import static org.junit.Assert.*;
-import static samples.Samples.SAMPLES;
+import static org.exist.samples.Samples.SAMPLES;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.InputStream;
 
 import org.custommonkey.xmlunit.XMLAssert;
 
@@ -73,11 +73,10 @@ public class JaxpParseTest {
             schemasCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse_validate");
 
             for (final String testResource : TEST_RESOURCES) {
-                final Path path = SAMPLES.getSample("validation/parse_validate/" + testResource);
-                assertNotNull(path);
-
-                final byte[] data = Files.readAllBytes(path);
-                ExistXmldbEmbeddedServer.storeResource(schemasCollection, testResource, data);
+                try (final InputStream is = SAMPLES.getSample("validation/parse_validate/" + testResource)) {
+                    assertNotNull(is);
+                    ExistXmldbEmbeddedServer.storeResource(schemasCollection, testResource, InputStreamUtil.readAll(is));
+                }
             }
         } finally {
             if(schemasCollection != null) {

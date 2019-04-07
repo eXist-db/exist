@@ -23,14 +23,15 @@ package org.exist.xquery.functions.validate;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.io.InputStreamUtil;
 import org.junit.*;
+
+import static org.exist.samples.Samples.SAMPLES;
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.InputStream;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -74,11 +75,10 @@ public class JingSchematronTest {
             col15 = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "tournament/1.5");
 
             for (final String testResource : TEST_RESOURCES) {
-                final URL url = JingXsdTest.class.getResource("tournament/1.5/" + testResource);
-                assertNotNull(url);
-
-                final byte[] data = Files.readAllBytes(Paths.get(url.toURI()));
-                ExistXmldbEmbeddedServer.storeResource(col15, testResource, data);
+                try (final InputStream is = SAMPLES.getSample("validation/tournament/1.5/" + testResource)) {
+                    assertNotNull(is);
+                    ExistXmldbEmbeddedServer.storeResource(col15, testResource, InputStreamUtil.readAll(is));
+                }
             }
         } finally {
             if(col15 != null) {

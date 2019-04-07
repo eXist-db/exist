@@ -22,21 +22,17 @@
 package org.exist.xmldb.concurrent.action;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
+import java.io.InputStream;
 
-import org.exist.TestUtils;
-import org.exist.util.FileUtils;
-import org.exist.util.MimeTable;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.concurrent.DBUtils;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
-import static samples.Samples.SAMPLES;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.samples.Samples.SAMPLES;
 
 public class CreateCollectionAction extends Action {
     
@@ -66,22 +62,12 @@ public class CreateCollectionAction extends Action {
     }
 
     private void addFiles(final Collection col) throws XMLDBException, IOException {
-        try {
-            final Path d = SAMPLES.getShakespeareSamples();
-            if (!(Files.isReadable(d) && Files.isDirectory(d))) {
-                throw new RuntimeException("Cannot read directory: " + d.toAbsolutePath());
+        for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
+            final String sample;
+            try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
+                sample = InputStreamUtil.readString(is, UTF_8);
             }
-
-            final List<Path> files = FileUtils.list(d);
-            for (final Path file : files) {
-                if (Files.isRegularFile(file)) {
-                    if (MimeTable.getInstance().isXMLContent(FileUtils.fileName(file))) {
-                        DBUtils.addXMLResource(col, FileUtils.fileName(file), file);
-                    }
-                }
-            }
-        } catch (final URISyntaxException e) {
-            throw new IOException(e);
+            DBUtils.addXMLResource(col, sampleName, sample);
         }
     }
 }

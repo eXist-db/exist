@@ -1,15 +1,16 @@
 package org.exist.xmldb;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.io.InputStreamUtil;
 import org.junit.*;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
 
-import java.nio.file.Path;
+import java.io.InputStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static samples.Samples.SAMPLES;
+import static org.exist.samples.Samples.SAMPLES;
 
 public class ResourceSetTest {
 
@@ -26,15 +27,17 @@ public class ResourceSetTest {
 		testCollection = service.createCollection(TEST_COLLECTION);
 		assertNotNull(testCollection);
 
-		final Path shakes = SAMPLES.getSample("shakespeare/shakes.xsl");
-		final Resource shakesRes = testCollection.createResource("shakes.xsl", XMLResource.RESOURCE_TYPE);
-		shakesRes.setContent(shakes.toFile());
-		testCollection.storeResource(shakesRes);
+		try (final InputStream is = SAMPLES.getSample("shakespeare/shakes.xsl")) {
+			final Resource shakesRes = testCollection.createResource("shakes.xsl", XMLResource.RESOURCE_TYPE);
+			shakesRes.setContent(InputStreamUtil.readAll(is));
+			testCollection.storeResource(shakesRes);
+		}
 
-		final Path hamlet = SAMPLES.getHamletSample();
-		final Resource hamletRes = testCollection.createResource("hamlet.xml", XMLResource.RESOURCE_TYPE);
-		hamletRes.setContent(hamlet.toFile());
-		testCollection.storeResource(hamletRes);
+		try (final InputStream is = SAMPLES.getHamletSample()) {
+			final Resource hamletRes = testCollection.createResource("hamlet.xml", XMLResource.RESOURCE_TYPE);
+			hamletRes.setContent(InputStreamUtil.readAll(is));
+			testCollection.storeResource(hamletRes);
+		}
 	}
 
 	@After

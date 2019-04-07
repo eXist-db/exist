@@ -21,10 +21,12 @@
 package org.exist.xmldb.concurrent;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.*;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.concurrent.action.Action;
 import org.exist.xmldb.IndexQueryService;
 import org.junit.After;
@@ -36,8 +38,9 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
-import static samples.Samples.SAMPLES;
+import static org.exist.samples.Samples.SAMPLES;
 
 /**
  * Abstract base class for concurrent tests.
@@ -74,7 +77,9 @@ public abstract class ConcurrentTestBase {
         }
         testCol = DBUtils.addCollection(rootCol, getTestCollectionName());
         assertNotNull(testCol);
-        DBUtils.addXMLResource(rootCol, "biblio.rdf", SAMPLES.getBiblioSample());
+        try (final InputStream is = SAMPLES.getBiblioSample()) {
+            DBUtils.addXMLResource(rootCol, "biblio.rdf", InputStreamUtil.readString(is, UTF_8));
+        }
     }
 
     @After

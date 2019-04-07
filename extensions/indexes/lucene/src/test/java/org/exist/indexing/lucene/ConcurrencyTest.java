@@ -19,13 +19,13 @@
  */
 package org.exist.indexing.lucene;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
+import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -37,10 +37,8 @@ import org.exist.TestUtils;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.util.FileUtils;
 import org.exist.util.LockException;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.IndexQueryService;
 import org.junit.AfterClass;
@@ -53,6 +51,8 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XUpdateQueryService;
+
+import static org.exist.samples.Samples.SAMPLES;
 
 public class ConcurrencyTest {
 
@@ -191,16 +191,12 @@ public class ConcurrencyTest {
             final IndexQueryService iqs = (IndexQueryService) collection.getService("IndexQueryService", "1.0");
             iqs.configureCollection(COLLECTION_CONFIG1);
 
-            final Path samples = TestUtils.shakespeareSamples();
-            final List<Path> files = FileUtils.list(samples);
-            final MimeTable mimeTab = MimeTable.getInstance();
-            for (final Path file : files) {
-                final MimeType mime = mimeTab.getContentTypeFor(FileUtils.fileName(file));
-                if (mime != null && mime.isXMLType()) {
-                    final Resource resource = collection.createResource(FileUtils.fileName(file), XMLResource.RESOURCE_TYPE);
-                    resource.setContent(file);
-                    collection.storeResource(resource);
+            for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
+                final Resource resource = collection.createResource(sampleName, XMLResource.RESOURCE_TYPE);
+                try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
+                    resource.setContent(InputStreamUtil.readString(is, UTF_8));
                 }
+                collection.storeResource(resource);
             }
         } finally {
             if(collection != null) {

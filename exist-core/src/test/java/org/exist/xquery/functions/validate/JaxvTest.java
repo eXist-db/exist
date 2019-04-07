@@ -22,16 +22,16 @@
 package org.exist.xquery.functions.validate;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.InputStream;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.io.InputStreamUtil;
 import org.junit.*;
 import static org.junit.Assert.*;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static samples.Samples.SAMPLES;
+import static org.exist.samples.Samples.SAMPLES;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -73,11 +73,10 @@ public class JaxvTest {
             collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "personal");
 
             for (final String testResource : TEST_RESOURCES) {
-                final Path path = SAMPLES.getSample("validation/personal/" + testResource);
-                assertNotNull(path);
-
-                final byte[] data = Files.readAllBytes(path);
-                ExistXmldbEmbeddedServer.storeResource(collection, testResource, data);
+                try (final InputStream is = SAMPLES.getSample("validation/personal/" + testResource)) {
+                    assertNotNull(is);
+                    ExistXmldbEmbeddedServer.storeResource(collection, testResource, InputStreamUtil.readAll(is));
+                }
             }
         } finally {
             if(collection != null) {

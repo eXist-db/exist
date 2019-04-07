@@ -22,17 +22,15 @@
 package org.exist.xquery.functions.validate;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.util.FileUtils;
+import org.exist.util.io.InputStreamUtil;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static samples.Samples.SAMPLES;
+import static org.exist.samples.Samples.SAMPLES;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.function.Predicate;
+import java.io.InputStream;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -68,21 +66,17 @@ public class ParseXsdTestNOK {
             }
         }
 
-        // Create filter
-        final Predicate<Path> filter = path -> {
-            final String fileName = FileUtils.fileName(path);
-            return fileName.endsWith("xml") || fileName.startsWith("address");
-        };
-
         // Store schematron 1.5 test files
         Collection collection = null;
         try {
             collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "addressbook");
 
-            final Path sources = SAMPLES.getAddressBookSample().getParent();
-            for (final Path file : FileUtils.list(sources, filter)) {
-                final byte[] data = TestUtils.readFile(file);
-                ExistXmldbEmbeddedServer.storeResource(collection, FileUtils.fileName(file), data);
+            final String[] xsdTestFiles = { "addressbook.xsd", "addressbook_invalid.xml", "addressbook_valid.xml"};
+
+            for (final String xsdTestFile : xsdTestFiles) {
+                try (final InputStream is = SAMPLES.getSample("validation/addressbook/" + xsdTestFile)) {
+                    ExistXmldbEmbeddedServer.storeResource(collection, xsdTestFile, InputStreamUtil.readAll(is));
+                }
             }
         } finally {
             if(collection != null) {

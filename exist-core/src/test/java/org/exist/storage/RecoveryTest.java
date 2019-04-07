@@ -25,14 +25,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 
 import org.exist.EXistException;
-import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.BinaryDocument;
@@ -47,6 +42,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.*;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -56,11 +52,11 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.junit.*;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static samples.Samples.SAMPLES;
+import static org.exist.samples.Samples.SAMPLES;
 
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
@@ -88,7 +84,7 @@ public class RecoveryTest {
     }
 
     @Test
-    public void storeCommit_removeNoCommit() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException, BTreeException, XPathException, URISyntaxException {
+    public void storeCommit_removeNoCommit() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException, BTreeException, XPathException {
 
         // store, commit, and then remove without committing (remove should be undone during next recovery!)
         storeAndCommit_removeNoCommit(existEmbeddedServer.getBrokerPool());
@@ -105,12 +101,11 @@ public class RecoveryTest {
         verify(existEmbeddedServer.getBrokerPool());
     }
 
-    private void storeAndCommit_removeNoCommit(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, URISyntaxException {
+    private void storeAndCommit_removeNoCommit(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection test2;
-            List<Path> files;
             BinaryDocument binaryDocument;
 
             try (final Txn transaction = transact.beginTransaction()) {
@@ -122,26 +117,29 @@ public class RecoveryTest {
                 test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
                 broker.saveCollection(transaction, test2);
 
-
-                files = FileUtils.list(SAMPLES.getShakespeareSamples(), XMLFilenameFilter.asPredicate());
-                assertNotNull(files);
-                files.sort(Comparator.comparing(FileUtils::fileName));
-
                 binaryDocument = test2.addBinaryResource(transaction, broker, TestConstants.TEST_BINARY_URI, "Some text data".getBytes(), null);
                 assertNotNull(binaryDocument);
 
                 // store some documents. Will be replaced below
-                for (final Path f : files) {
-                    final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
+                for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
+                    final String sample;
+                    try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
+                        sample = InputStreamUtil.readString(is, UTF_8);
+                    }
+                    final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(sampleName), sample);
                     assertNotNull(info);
-                    test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+                    test2.store(transaction, broker, info, sample);
                 }
 
                 // replace some documents
-                for (final Path f : files) {
-                    final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
+                for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
+                    final String sample;
+                    try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
+                        sample = InputStreamUtil.readString(is, UTF_8);
+                    }
+                    final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(sampleName), sample);
                     assertNotNull(info);
-                    test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+                    test2.store(transaction, broker, info, sample);
                 }
 
                 final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), TEST_XML);
@@ -151,7 +149,8 @@ public class RecoveryTest {
                 test2.store(transaction, broker, info, TEST_XML);
 
                 // remove last document
-                test2.removeXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(files.get(files.size() - 1))));
+                final String lastSampleName = SAMPLES.getShakespeareXmlSampleNames()[SAMPLES.getShakespeareXmlSampleNames().length - 1];
+                test2.removeXMLResource(transaction, broker, XmldbURI.create(lastSampleName));
 
                 transact.commit(transaction);
             }
@@ -159,12 +158,13 @@ public class RecoveryTest {
             // the following transaction will not be committed. It will thus be rolled back by recovery
             final Txn transaction = transact.beginTransaction();
 
-            test2.removeXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(files.get(0))));
+            final String firstSampleName = SAMPLES.getShakespeareXmlSampleNames()[0];
+            test2.removeXMLResource(transaction, broker, XmldbURI.create(firstSampleName));
             test2.removeBinaryResource(transaction, broker, binaryDocument);
         }
     }
 
-    private void verify(final BrokerPool pool) throws EXistException, PermissionDeniedException, SAXException, XPathException, IOException, BTreeException, LockException, URISyntaxException {
+    private void verify(final BrokerPool pool) throws EXistException, PermissionDeniedException, SAXException, XPathException, IOException, BTreeException, LockException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
@@ -181,13 +181,10 @@ public class RecoveryTest {
                 final String data = serializer.serialize(lockedDoc.getDocument());
                 assertNotNull(data);
             }
-            
-            final List<Path> files = FileUtils.list(SAMPLES.getShakespeareSamples());
-            files.sort(Comparator.comparing(FileUtils::fileName));
-            assertNotNull(files);
-            
-            try(final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(FileUtils.fileName(files.get(files.size() - 1))), LockMode.READ_LOCK)) {
-                assertNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/'" + FileUtils.fileName(files.get(files.size() - 1)) + " should not exist anymore", lockedDoc);
+
+            final String lastSampleName = SAMPLES.getShakespeareXmlSampleNames()[SAMPLES.getShakespeareXmlSampleNames().length - 1];
+            try(final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(lastSampleName), LockMode.READ_LOCK)) {
+                assertNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/'" + lastSampleName + " should not exist anymore", lockedDoc);
             }
             
             final XQuery xquery = pool.getXQueryService();

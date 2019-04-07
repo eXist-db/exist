@@ -370,6 +370,12 @@
 
         <!-- test dependencies -->
         <dependency>
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-samples</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-library</artifactId>
             <scope>test</scope>

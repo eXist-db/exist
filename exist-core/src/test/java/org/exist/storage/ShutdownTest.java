@@ -1,13 +1,10 @@
 package org.exist.storage;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.util.List;
+import java.io.InputStream;
 import java.util.Optional;
 
 import org.exist.EXistException;
-import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
@@ -17,18 +14,20 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.*;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.junit.ClassRule;
 import org.junit.Test;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-import static samples.Samples.SAMPLES;
+import static org.exist.samples.Samples.SAMPLES;
 
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class ShutdownTest {
@@ -37,13 +36,13 @@ public class ShutdownTest {
     public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-	public void shutdown() throws EXistException, LockException, TriggerException, PermissionDeniedException, XPathException, IOException, URISyntaxException {
+	public void shutdown() throws EXistException, LockException, TriggerException, PermissionDeniedException, XPathException, IOException {
 		for (int i = 0; i < 2; i++) {
 			storeAndShutdown();
 		}
 	}
 	
-	public void storeAndShutdown() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException, XPathException, URISyntaxException {
+	public void storeAndShutdown() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException, XPathException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
@@ -56,16 +55,15 @@ public class ShutdownTest {
                 assertNotNull(test);
                 broker.saveCollection(transaction, test);
 
-	            final List<Path> files = FileUtils.list(SAMPLES.getShakespeareSamples(), XMLFilenameFilter.asPredicate());
-
                 // store some documents.
-	            for(final Path f : files) {
-                    try {
-                        final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
+	            for(final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
+                    try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
+                        final String sample = InputStreamUtil.readString(is, UTF_8);
+                        final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create(sampleName), sample);
                         assertNotNull(info);
-                        test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+                        test.store(transaction, broker, info, sample);
                     } catch (SAXException e) {
-                        fail("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
+                        fail("Error found while parsing document: " + sampleName + ": " + e.getMessage());
                     }
                 }
 

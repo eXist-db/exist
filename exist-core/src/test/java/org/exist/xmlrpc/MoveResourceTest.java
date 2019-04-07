@@ -23,11 +23,14 @@ import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.exist.test.ExistWebServer;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 
-import java.io.*;
-import java.net.*;
-import java.nio.file.Files;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +47,7 @@ import org.junit.Test;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static samples.Samples.SAMPLES;
+import static org.exist.samples.Samples.SAMPLES;
 
 /**
  * Test for deadlocks when moving resources from one collection to another. Uses
@@ -95,23 +98,11 @@ public class MoveResourceTest {
         assertTrue(result);
     }
 
-    private String readData() throws IOException, URISyntaxException {
-        int read = -1;
-        final char buf[] = new char[4096];
-        final StringBuilder builder = new StringBuilder();
-        try (final InputStream is = Files.newInputStream(SAMPLES.getRomeoAndJulietSample());
-             final Reader reader = new InputStreamReader(is)) {
-            while ((read = reader.read(buf)) > -1) {
-                builder.append(buf, 0, read);
-            }
-        }
-        return builder.toString();
-    }
-
     private class MoveThread implements Callable<Void> {
 
         @Override
-        public Void call() throws IOException, XmlRpcException, InterruptedException, URISyntaxException {
+        public Void call() throws IOException, XmlRpcException, InterruptedException {
+            final String romeoAndJuliet = readSample();
             for (int i = 0; i < 100; i++) {
                 XmldbURI sourceColl = XmldbURI.ROOT_COLLECTION_URI.append("source" + i);
                 XmldbURI targetColl1 = XmldbURI.ROOT_COLLECTION_URI.append("target");
@@ -126,7 +117,7 @@ public class MoveResourceTest {
                 createCollection(xmlrpc, targetColl2);
 
                 List<Object> params = new ArrayList<>();
-                params.add(readData());
+                params.add(romeoAndJuliet);
                 params.add(sourceResource.toString());
                 params.add(1);
 
@@ -165,6 +156,12 @@ public class MoveResourceTest {
                 xmlrpc.execute("removeCollection", params);
             }
             return null;
+        }
+
+        private String readSample() throws IOException {
+            try (final InputStream is = SAMPLES.getRomeoAndJulietSample()) {
+                return InputStreamUtil.readString(is, UTF_8);
+            }
         }
     }
 
