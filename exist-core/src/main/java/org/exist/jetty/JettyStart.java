@@ -117,6 +117,8 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                     return jettyPath;
                 });
 
+        System.setProperty("org.eclipse.jetty.util.log.class?", "org.eclipse.jetty.util.log.Slf4jLog");
+
         final Path jettyConfig;
         if (standalone) {
             jettyConfig = Paths.get(jettyProperty).resolve("etc").resolve(Main.STANDALONE_ENABLED_JETTY_CONFIGS);
@@ -132,15 +134,40 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             return;
         }
 
-        final Path jettyConfig = Paths.get(args[0]);
-        if(Files.notExists(jettyConfig)) {
-            logger.error("Configuration file: {} does not exist!", jettyConfig.toAbsolutePath().toString());
-            return;
+        Path jettyConfig = Paths.get(args[0]);
+        boolean configFromClasspath = false;
+        if (Files.notExists(jettyConfig)) {
+            logger.warn("Configuration file: {} does not exist!", jettyConfig.toAbsolutePath().toString());
+
+            final String jettyConfigFileName = FileUtils.fileName(jettyConfig.getFileName());
+            logger.warn("Fallback... searching for configuration file on classpath: {}.etc/{}", getClass().getPackage().getName(), jettyConfigFileName);
+
+            final URL jettyConfigUrl = getClass().getResource("etc/" + jettyConfigFileName);
+            if (jettyConfigUrl != null) {
+                try  {
+                    jettyConfig = Paths.get(jettyConfigUrl.toURI());
+                    configFromClasspath = true;
+                } catch (final URISyntaxException e) {
+                    logger.error("Unable to retrieve configuration file from classpath: {}", e.getMessage(), e);
+                    return;
+                }
+            } else {
+                logger.error("Unable to find configuration file on classpath!");
+                return;
+            }
         }
 
         final Map<String, String> configProperties;
         try {
             configProperties = getConfigProperties(jettyConfig.getParent());
+
+            // modify JETTY_HOME and JETTY_BASE properties when running with classpath config
+            if (configFromClasspath) {
+                final String jettyClasspathHome = jettyConfig.getParent().getParent().toAbsolutePath().toString();
+                System.setProperty(JETTY_HOME_PROP, jettyClasspathHome);
+                configProperties.put(JETTY_HOME_PROP, jettyClasspathHome);
+                configProperties.put(JETTY_BASE_PROP, jettyClasspathHome);
+            }
 
             if (observer != null) {
                 addObserver(observer);
