@@ -1,10 +1,9 @@
-package org.exist.xquery.functions.util;
+package org.exist.xquery.modules.counter;
 
 import static org.junit.Assert.assertEquals;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.modules.counter.CounterModule;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.xmldb.api.base.ResourceSet;
@@ -22,7 +21,7 @@ public class CounterTest {
         "at \"java:org.exist.xquery.modules.counter.CounterModule\"; ";
     
     @Test
-    public void testCreateAndDestroyCounter() throws XPathException, XMLDBException {
+    public void createAndDestroyCounter() throws XPathException, XMLDBException {
         String query = IMPORT + "counter:create('jasper1')";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
         String r = (String) result.getResource(0).getContent();
@@ -40,7 +39,7 @@ public class CounterTest {
     }
     
     @Test
-    public void testCreateAndInitAndDestroyCounter() throws XPathException, XMLDBException {
+    public void createAndInitAndDestroyCounter() throws XPathException, XMLDBException {
         String query = IMPORT +"counter:create('jasper3',xs:long(1200))";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
         String r = (String) result.getResource(0).getContent();
@@ -58,7 +57,7 @@ public class CounterTest {
     }
     
     @Test
-    public void threadedIncrementTest() throws XPathException, InterruptedException, XMLDBException {
+    public void threadedIncrement() throws XPathException, InterruptedException, XMLDBException {
 		String query = IMPORT +"counter:create('jasper2')";
 		ResourceSet result = existEmbeddedServer.executeQuery(query);
 		

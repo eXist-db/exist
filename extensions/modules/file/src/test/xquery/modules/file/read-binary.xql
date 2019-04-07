@@ -7,6 +7,7 @@ import module namespace file="http://exist-db.org/xquery/file";
 
 
 declare
+    %test:pending("TODO need to mechanism to setup a temporary file to work with")
     %test:assertEquals("<root>bla</root>")
 function read-binary:without-serialization() {
   let $binData := file:read-binary("VERSION.txt")

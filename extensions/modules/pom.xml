@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.exist-db</groupId>
+        <artifactId>exist-parent</artifactId>
+        <version>5.0.0-SNAPSHOT</version>
+        <relativePath>../../exist-parent</relativePath>
+    </parent>
+
+    <artifactId>exist-modules</artifactId>
+    <packaging>pom</packaging>
+
+    <name>eXist-db Extension XQuery Modules</name>
+    <description>eXist-db Extension XQuery Modules</description>
+
+    <scm>
+        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
+        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
+        <url>scm:git:https://github.com/exist-db/exist.git</url>
+    </scm>
+
+    <modules>
+        <module>cache</module>
+        <module>compression</module>
+        <module>counter</module>
+        <module>cqlparser</module>
+        <module>example</module>
+        <module>exi</module>
+        <module>expathrepo</module>
+        <module>file</module>
+        <module>image</module>
+        <module>jndi</module>
+        <module>mail</module>
+        <module>persistentlogin</module>
+        <module>process</module>
+        <module>scheduler</module>
+        <module>simpleql</module>
+        <module>sql</module>
+        <!-- module>sql-oracle</module -->  <!-- Requires registration with Oracle! -->
+        <module>xmldiff</module>
+        <module>xslfo</module>
+    </modules>
+
+</project>

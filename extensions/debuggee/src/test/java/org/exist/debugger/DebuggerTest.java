@@ -30,30 +30,59 @@ import java.util.Optional;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.debuggee.CommandContinuation;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.debugger.model.Location;
 import org.exist.debugger.model.Variable;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistWebServer;
 import org.exist.test.TestConstants;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
+@Ignore
 public class DebuggerTest implements ResponseListener {
-	
+
+	private static final String script = "xquery version '1.0';\n" +
+			"(: computes the first 10 fibonacci numbers :)\n" +
+			"\n" +
+			"declare namespace f='http://exist-db.org/NS/fibo';\n" +
+			"\n" +
+			"declare function f:fibo($n as xs:integer) as item() {\n" +
+			"	if ($n = 0)\n" +
+			"	then 0\n" +
+			"	else if ($n = 1)\n" +
+			"	then 1\n" +
+			"	else (f:fibo($n - 1) + f:fibo($n -2))\n" +
+			"};\n" +
+			"\n" +
+			"for $n in 1 to 10\n" +
+			"	return\n" +
+			"		<tr>\n" +
+			"			<td>{$n}</td>\n" +
+			"			<td>{f:fibo($n)}</td>\n" +
+			"		</tr>";
+
+	@ClassRule
+	public static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
+
+	@BeforeClass
+	public static void setup() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+		store("fibo.xql", script);
+	}
+
 	@Test
 	public void testConnection() throws IOException {
-		assertNotNull("Database wasn't initilised.", database);
-		
 		Debugger debugger = DebuggerImpl.getDebugger();
 
 		Exception exception = null;
@@ -61,7 +90,7 @@ public class DebuggerTest implements ResponseListener {
 		//if resource don't exist throw exception
 		try {
 		    // jetty.port.jetty
-			debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/xquery/fibo.xql");
+			debugger.init("http://127.0.0.1:" + existWebServer.getPort() + "/xquery/fibo.xql");
 			assertNotNull("The resource don't exist, but debugger don't throw exception.", null);
 		} catch (Exception e) {
 			exception = e;
@@ -71,18 +100,16 @@ public class DebuggerTest implements ResponseListener {
 		
 		try {
 		    // jetty.port.jetty
-			DebuggingSource source = debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/fibo.xql");
+			DebuggingSource source = debugger.init("http://127.0.0.1:" + existWebServer.getPort() + "/exist/xquery/fibo.xql");
 			assertNotNull("Debugging source can't be NULL.", source);
             source.stop();
 		} catch (Exception e) {
 			assertNotNull("exception: "+e.getMessage(), null);
 		}
 	}
-	
+
 	@Test
 	public void testDebugger() {
-		assertNotNull("Database wasn't initilised.", database);
-		
 		Debugger debugger;
 		
 		try {
@@ -90,7 +117,7 @@ public class DebuggerTest implements ResponseListener {
 
 			//sending init request
 			// jetty.port.jetty
-			DebuggingSource source = debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/fibo.xql");
+			DebuggingSource source = debugger.init("http://127.0.0.1:" + existWebServer.getPort() + "/exist/xquery/fibo.xql");
 
 			assertNotNull("Debugging source can't be NULL.", source);
 			
@@ -194,13 +221,11 @@ public class DebuggerTest implements ResponseListener {
 
 	@Test
 	public void testBreakpoints() throws IOException {
-		assertNotNull("Database wasn't initilised.", database);
-		
 		Debugger debugger = DebuggerImpl.getDebugger();
 		
 		try {
 			// jetty.port.jetty
-			DebuggingSource source = debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/fibo.xql");
+			DebuggingSource source = debugger.init("http://127.0.0.1:" + existWebServer.getPort() + "/exist/xquery/fibo.xql");
 
 			assertNotNull("Debugging source can't be NULL.", source);
 			
@@ -227,14 +252,12 @@ public class DebuggerTest implements ResponseListener {
 
 	@Test
 	public void testLineBreakpoint() throws IOException {
-		assertNotNull("Database wasn't initilised.", database);
-		
 		Debugger debugger = DebuggerImpl.getDebugger();
 		
 		try {
 			//sending init request
 			// jetty.port.jetty
-			DebuggingSource source = debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/fibo.xql");
+			DebuggingSource source = debugger.init("http://127.0.0.1:" + existWebServer.getPort() + "/exist/xquery/fibo.xql");
 
 			assertNotNull("Debugging source can't be NULL.", source);
 			
@@ -265,14 +288,12 @@ public class DebuggerTest implements ResponseListener {
 
 	@Test
 	public void testEvaluation() throws IOException {
-		assertNotNull("Database wasn't initilised.", database);
-		
 		Debugger debugger = DebuggerImpl.getDebugger();
 		
 		try {
 			//sending init request
 			// jetty.port.jetty
-			DebuggingSource source = debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/fibo.xql");
+			DebuggingSource source = debugger.init("http://127.0.0.1:" + existWebServer.getPort() + "/exist/xquery/fibo.xql");
 
 			assertNotNull("Debugging source can't be NULL.", source);
 			
@@ -309,14 +330,12 @@ public class DebuggerTest implements ResponseListener {
 
     @Test
 	public void testEvaluation2() throws IOException {
-		assertNotNull("Database wasn't initilised.", database);
-
 		Debugger debugger = DebuggerImpl.getDebugger();
 
 		try {
 			//sending init request
 			// jetty.port.jetty
-			DebuggingSource source = debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/debug-test.xql");
+			DebuggingSource source = debugger.init("http://127.0.0.1:" + existWebServer.getPort() + "/exist/xquery/debug-test.xql");
 
 			assertNotNull("Debugging source can't be NULL.", source);
 
@@ -347,8 +366,6 @@ public class DebuggerTest implements ResponseListener {
 
 	@Test
 	public void testResourceNotExistOrNotRunnable() throws IOException {
-		assertNotNull("Database wasn't initilised.", database);
-		
 		Debugger debugger = DebuggerImpl.getDebugger();
 		
 		Exception exception = null;
@@ -356,7 +373,7 @@ public class DebuggerTest implements ResponseListener {
 		try {
 			//sending init request
 			// jetty.port.jetty
-			debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/logo.jpg");
+			debugger.init("http://127.0.0.1:" + existWebServer.getPort() + "/exist/logo.jpg");
 
 			fail("This point should not be reached");
 
@@ -370,7 +387,7 @@ public class DebuggerTest implements ResponseListener {
 		try {
 			//sending init request
 			// jetty.port.jetty
-			debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/notExist/fibo.xql");
+			debugger.init("http://127.0.0.1:" + existWebServer.getPort() + "/notExist/fibo.xql");
 
 			fail("This point should not be reached");
 
@@ -381,11 +398,11 @@ public class DebuggerTest implements ResponseListener {
 		}
 		assertEquals(exception.getClass().toString(), "class java.io.IOException");
 	}
-	
+
 	@Test
 	public void testStepInto() throws Exception {
 	    // jetty.port.jetty
-		String url = "http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/json-test.xql";
+		String url = "http://127.0.0.1:" + existWebServer.getPort() + "/exist/xquery/json-test.xql";
 		for (int i = 0; i < 10; i++) {
 			Debugger debugger = DebuggerImpl.getDebugger();
 			DebuggingSource debuggerSource = debugger.init(url);
@@ -407,32 +424,12 @@ public class DebuggerTest implements ResponseListener {
 			DebuggerImpl.shutdownDebugger();
 		} 
 	}
-	
-	String script = "xquery version '1.0';\n" +
-	"(: computes the first 10 fibonacci numbers :)\n" +
-	"\n" +
-	"declare namespace f='http://exist-db.org/NS/fibo';\n" +
-	"\n" +
-	"declare function f:fibo($n as xs:integer) as item() {\n" +
-	"	if ($n = 0)\n" +
-	"	then 0\n" +
-	"	else if ($n = 1)\n" +
-	"	then 1\n" +
-	"	else (f:fibo($n - 1) + f:fibo($n -2))\n" +
-	"};\n" +
-	"\n" +
-	"for $n in 1 to 10\n" +
-	"	return\n" +
-	"		<tr>\n" +
-	"			<td>{$n}</td>\n" +
-	"			<td>{f:fibo($n)}</td>\n" +
-	"		</tr>";
 
 	@Test
 	public void testStoredInDB() throws Exception {
 		store("script.xql", script);
 		// jetty.port.jetty
-		String url = "http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/rest/db/test/script.xql";
+		String url = "http://127.0.0.1:" + existWebServer.getPort() + "/exist/rest/db/test/script.xql";
 		
 		for (int i = 0; i < 10; i++) {
 			Debugger debugger = DebuggerImpl.getDebugger();
@@ -458,43 +455,25 @@ public class DebuggerTest implements ResponseListener {
 		} 
 	}
 
-	static org.exist.start.Main database;
-
-	@BeforeClass
-    public static void initDB() {
-		database = new org.exist.start.Main("jetty");
-		database.run(new String[]{"jetty"});
-    }
-
-    @AfterClass
-    public static void closeDB() {
-       	DebuggerImpl.shutdownDebugger();
-
-       	database.shutdown();
-    }
-
 	public void responseEvent(CommandContinuation command, Response response) {
 		//System.out.println("getResponse command = "+command);
 	}
 	
-    private void store(String name,  String data) throws EXistException {
-    	Database pool = BrokerPool.getInstance();
+    private static void store(String name,  String data) throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+    	final Database pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
-            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-    		broker.saveCollection(transaction, root);
-            assertNotNull(root);
+			Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+			broker.saveCollection(transaction, root);
+			assertNotNull(root);
 
-            root.addBinaryResource(transaction, broker, XmldbURI.create(name), data.getBytes(), "application/xquery");
+			root.addBinaryResource(transaction, broker, XmldbURI.create(name), data.getBytes(), "application/xquery");
 
-            transact.commit(transaction);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
+			transact.commit(transaction);
+		}
     }
 
 }

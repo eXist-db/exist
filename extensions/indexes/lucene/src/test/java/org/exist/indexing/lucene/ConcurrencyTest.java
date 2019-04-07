@@ -26,6 +26,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -84,7 +85,7 @@ public class ConcurrencyTest {
             final Runnable run = () -> {
                 try {
                     storeRemoveDocs(name);
-                } catch(final XMLDBException | IOException e) {
+                } catch(final XMLDBException | IOException | URISyntaxException e) {
                     e.printStackTrace();
                     fail(e.getMessage());
                 }
@@ -111,7 +112,7 @@ public class ConcurrencyTest {
             Runnable run = () -> {
                 try {
                     xupdateDocs(name);
-                } catch (final XMLDBException | IOException e) {
+                } catch (final XMLDBException | IOException | URISyntaxException e) {
                     e.printStackTrace();
                     fail(e.getMessage());
                 }
@@ -140,7 +141,7 @@ public class ConcurrencyTest {
         });
     }
 
-    private void storeRemoveDocs(final String collectionName) throws XMLDBException, IOException {
+    private void storeRemoveDocs(final String collectionName) throws XMLDBException, IOException, URISyntaxException {
         storeDocs(collectionName);
 
         final EXistXQueryService xqs = (EXistXQueryService) test.getService("XQueryService", "1.0");
@@ -162,7 +163,7 @@ public class ConcurrencyTest {
         assertEquals(0, result.getSize());
     }
 
-    private void xupdateDocs(final String collectionName) throws XMLDBException, IOException {
+    private void xupdateDocs(final String collectionName) throws XMLDBException, IOException, URISyntaxException {
         storeDocs(collectionName);
 
         final EXistXQueryService xqs = (EXistXQueryService) test.getService("XQueryService", "1.0");
@@ -183,7 +184,7 @@ public class ConcurrencyTest {
         assertEquals(98, result.getSize());
     }
 
-    private void storeDocs(final String collectionName) throws XMLDBException, IOException {
+    private void storeDocs(final String collectionName) throws XMLDBException, IOException, URISyntaxException {
         Collection collection = null;
         try {
             collection = existEmbeddedServer.createCollection(test, collectionName);

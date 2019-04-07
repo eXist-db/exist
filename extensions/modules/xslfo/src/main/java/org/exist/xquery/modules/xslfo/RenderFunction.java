@@ -21,14 +21,15 @@
 package org.exist.xquery.modules.xslfo;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.exist.dom.QName;
 import org.exist.util.ParametersExtractor;
+import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -131,11 +132,10 @@ public class RenderFunction extends BasicFunction {
         }
 
         ProcessorAdapter adapter = null;
-        try {
+        try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
             adapter = ((XSLFOModule)getParentModule()).getProcessorAdapter();
 
             NodeValue configFile = args.length == 4 ? (NodeValue)args[3].itemAt(0) : null;
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ContentHandler contentHandler = adapter.getContentHandler(context.getBroker(), configFile, parameters, mimeType, baos);
 
             // process the XSL-FO
@@ -145,7 +145,7 @@ public class RenderFunction extends BasicFunction {
 
             // return the result
             return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
-        } catch(SAXException se) {
+        } catch(final IOException | SAXException se) {
             throw new XPathException(this, se.getMessage(), se);
         } finally {
             if(adapter != null) {
