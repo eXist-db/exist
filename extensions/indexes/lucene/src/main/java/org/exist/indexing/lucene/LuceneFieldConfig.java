@@ -24,11 +24,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.*;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 
@@ -36,11 +39,18 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Configuration for a field definition nested inside a lucene index configuration element.
- * A field has a name and content returned by an XQuery expression. It may be associated with
- * an analyzer, could have a type and may be stored or not.
+ * A field must have a name attribute. It may have an expression attribute containing an XQuery
+ * expression, which is called to retrieve the content to be indexed. If no expression attribute
+ * is present, the field will share content with its parent expression.
+ *
+ * Optionally an if attribute may contain an XQuery expression to be evaluated. If the effective
+ * boolean value of the result is false, the field will not be created.
+ *
+ * A field may also be associated with an analyzer, could have a type and may be stored or not.
  *
  * @author Wolfgang Meier
  */
@@ -50,11 +60,14 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
     private final static String ATTR_TYPE = "type";
     private final static String ATTR_STORE = "store";
     private final static String ATTR_ANALYZER = "analyzer";
+    private final static String ATTR_IF = "if";
 
     protected String fieldName;
     protected int type = Type.STRING;
     protected boolean store = true;
     protected Analyzer analyzer= null;
+    protected Optional<String> condition = Optional.empty();
+    protected CompiledXQuery compiledCondition = null;
 
     LuceneFieldConfig(LuceneConfig config, Element configElement, Map<String, String> namespaces, AnalyzerConfig analyzers) throws DatabaseConfigurationException {
         super(config, configElement, namespaces);
@@ -85,6 +98,11 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
                 throw new DatabaseConfigurationException("Analyzer for field " + fieldName + " not found");
             }
         }
+
+        final String cond = configElement.getAttribute(ATTR_IF);
+        if (StringUtils.isNotEmpty(cond)) {
+            this.condition = Optional.of(cond);
+        }
     }
 
     @Nonnull
@@ -101,12 +119,40 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
     @Override
     protected void build(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc, CharSequence text) {
         try {
-            doBuild(broker, document, nodeId, luceneDoc, text);
+            if (checkCondition(broker, document, nodeId)) {
+                doBuild(broker, document, nodeId, luceneDoc, text);
+            }
         } catch (XPathException e) {
             LOG.warn("XPath error while evaluating expression for field named '" + fieldName + "': " + expression +
                     ": " + e.getMessage(), e);
         } catch (PermissionDeniedException e) {
             LOG.warn("Permission denied while evaluating expression for field named '" + fieldName + "': " + expression, e);
+        }
+    }
+
+    private boolean checkCondition(DBBroker broker, DocumentImpl document, NodeId nodeId) throws PermissionDeniedException, XPathException {
+        if (!condition.isPresent()) {
+            return true;
+        }
+
+        if (compiledCondition == null && isValid) {
+            compiledCondition = compile(broker, condition.get());
+        }
+        if (!isValid) {
+            return false;
+        }
+
+        final XQuery xquery = broker.getBrokerPool().getXQueryService();
+        final NodeProxy currentNode = new NodeProxy(document, nodeId);
+        try {
+            Sequence result = xquery.execute(broker, compiledCondition, currentNode);
+            return result != null && result.effectiveBooleanValue();
+        } catch (PermissionDeniedException | XPathException e) {
+            isValid = false;
+            throw e;
+        } finally {
+            compiledCondition.reset();
+            compiledCondition.getContext().reset();
         }
     }
 

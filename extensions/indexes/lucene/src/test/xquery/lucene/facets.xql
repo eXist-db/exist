@@ -84,6 +84,20 @@ declare variable $facet:DOCUMENTS :=
         </document>
     </documents>;
 
+declare variable $facet:MULTI_LANGUAGE :=
+    <text>
+        <body xml:lang="de">
+            <div>
+                <p>Es zwitschern<note>singen</note> die Vögel</p>
+            </div>
+        </body>
+        <body xml:lang="en">
+            <div>
+                <p>And the birds are singing</p>
+            </div>
+        </body>
+    </text>;
+
 declare variable $facet:MODULE :=
     ``[
         xquery version "3.1";
@@ -104,6 +118,7 @@ declare variable $facet:XCONF1 :=
                 <analyzer class="org.exist.indexing.lucene.analyzers.NoDiacriticsStandardAnalyzer" id="nodiacritics"/>
                 <analyzer class="org.apache.lucene.analysis.core.KeywordAnalyzer" id="keyword"/>
                 <analyzer class="org.apache.lucene.analysis.de.GermanAnalyzer" id="german"/>
+                <analyzer class="org.apache.lucene.analysis.en.EnglishAnalyzer" id="english"/>
                 <module uri="http://exist-db.org/lucene/test/" prefix="idx" at="module.xql"/>
                 <text qname="letter" analyzer="nodiacritics">
                     <facet dimension="place" expression="place"/>
@@ -128,6 +143,11 @@ declare variable $facet:XCONF1 :=
                 <text match="//document/abstract">
                     <field name="german" analyzer="german"/>
                 </text>
+                <text match="/text/body/div" index="no">
+                    <field name="german" if="ancestor::body[@xml:lang = 'de']" analyzer="german"/>
+                    <field name="english" if="ancestor::body[@xml:lang = 'en']" analyzer="english"/>
+                    <ignore qname="note"/>
+                </text>
             </lucene>
         </index>
     </collection>;
@@ -142,7 +162,8 @@ function facet:setup() {
         xmldb:store($confCol, "collection.xconf", $facet:XCONF1),
         xmldb:store($testCol, "places.xml", $facet:TAXONOMY),
         xmldb:store($testCol, "test.xml", $facet:XML),
-        xmldb:store($testCol, "documents.xml", $facet:DOCUMENTS)
+        xmldb:store($testCol, "documents.xml", $facet:DOCUMENTS),
+        xmldb:store($testCol, "multi-lang.xml", $facet:MULTI_LANGUAGE)
     )
 };
 
@@ -415,4 +436,26 @@ declare
     %test:assertEquals("<title>Streiten und Hoffen</title>")
 function facet:query-field-with-keyword-analyzer($query as element()) {
     doc("/db/lucenetest/documents.xml")//document[ft:query(., $query)]/title
+};
+
+declare
+    %test:args('german:vogel')
+    %test:assertEquals(1)
+    %test:args('german:vögel')
+    %test:assertEquals(1)
+    %test:args('german:birds')
+    %test:assertEquals(0)
+    %test:args('english:bird')
+    %test:assertEquals(1)
+    %test:args('english:vögel')
+    %test:assertEquals(0)
+function facet:query-field-with-condition($query as xs:string) {
+    count(doc("/db/lucenetest/multi-lang.xml")//div[ft:query(., $query)])
+};
+
+declare
+    %test:args('german:singen')
+    %test:assertEmpty
+function facet:field-respects-ignore($query as xs:string) {
+    doc("/db/lucenetest/multi-lang.xml")//div[ft:query(., $query)]
 };

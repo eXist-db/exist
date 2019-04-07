@@ -27,6 +27,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.*;
 import org.apache.lucene.facet.DrillDownQuery;
+import org.apache.lucene.facet.Facets;
 import org.apache.lucene.facet.FacetsCollector;
 import org.apache.lucene.facet.FacetsConfig;
 import org.apache.lucene.facet.taxonomy.FastTaxonomyFacetCounts;
@@ -433,10 +434,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 options.configureParser(parser.getConfiguration());
                 Query query = queryStr == null ? new MatchAllDocsQuery() : parser.parse(queryStr);
                 Optional<Map<String, List<String>>> facets = options.getFacets();
-                if (facets.isPresent()) {
-                    if (config != null) {
-                        query = drilldown(facets.get(), query, config);
-                    }
+                if (facets.isPresent() && config != null) {
+                    query = drilldown(facets.get(), query, config);
                 }
                 searchAndProcess(contextId, qname, docs, contextSet, resultSet,
                         returnAncestor, searcher, query, options.getFields(), config);
@@ -627,9 +626,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             
             // Get name from SOLR field
             String contentFieldName = field.getName();
-            
-            Analyzer fieldAnalyzer = (fieldType == null) ? null : fieldType.getAnalyzer();
-            
+
             // Actual field content ; Store flag can be set in solrField
             Field contentField = new Field(contentFieldName, field.getData().toString(),  store, Field.Index.ANALYZED, Field.TermVector.YES);
 
@@ -660,12 +657,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     /**
      *  SOLR
-     * @param context
      * @param toBeMatchedURIs
      * @param queryText
      * @return search report
      */
-    public NodeImpl search(final XQueryContext context, final List<String> toBeMatchedURIs, String queryText, String[] fieldsToGet, QueryOptions options) throws XPathException, IOException {
+    public NodeImpl search(final List<String> toBeMatchedURIs, String queryText, String[] fieldsToGet, QueryOptions options) throws XPathException, IOException {
 
         return index.withSearcher(searcher -> {
             // Get analyzer : to be retrieved from configuration
@@ -716,9 +712,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     // document is in a collection
                     if (isDocumentMatch(fDocUri, toBeMatchedURIs)) {
 
-                        try(final LockedDocument lockedStoredDoc = context.getBroker().getXMLResource(XmldbURI.createInternal(fDocUri), LockMode.READ_LOCK)) {
+                        try(final LockedDocument lockedStoredDoc = broker.getXMLResource(XmldbURI.createInternal(fDocUri), LockMode.READ_LOCK)) {
                             // try to read document to check if user is allowed to access it
-
                             if (lockedStoredDoc == null) {
                                 return;
                             }

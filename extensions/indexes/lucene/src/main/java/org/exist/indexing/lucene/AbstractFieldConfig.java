@@ -59,7 +59,7 @@ public abstract class AbstractFieldConfig {
     protected static final Logger LOG = LogManager.getLogger(AbstractFieldConfig.class);
 
     protected Optional<String> expression = Optional.empty();
-    private boolean isValid = true;
+    protected boolean isValid = true;
     private CompiledXQuery compiled = null;
 
     public AbstractFieldConfig(LuceneConfig config, Element configElement, Map<String, String> namespaces) {
@@ -125,21 +125,27 @@ public abstract class AbstractFieldConfig {
         } catch (PermissionDeniedException | XPathException e) {
             isValid = false;
             throw e;
+        } finally {
+            compiled.reset();
+            compiled.getContext().reset();
         }
     }
 
     private void compile(DBBroker broker) {
         if (compiled == null && isValid) {
-            expression.ifPresent((code) -> {
-                final XQuery xquery = broker.getBrokerPool().getXQueryService();
-                final XQueryContext context = new XQueryContext(broker.getBrokerPool());
-                try {
-                    this.compiled = xquery.compile(broker, context, code);
-                } catch (XPathException | PermissionDeniedException e) {
-                    LOG.error("Failed to compile expression: " + expression + ": " + e.getMessage(), e);
-                    isValid = false;
-                }
-            });
+            expression.ifPresent((code) -> compiled = compile(broker, code));
+        }
+    }
+
+    protected CompiledXQuery compile(DBBroker broker, String code) {
+        final XQuery xquery = broker.getBrokerPool().getXQueryService();
+        final XQueryContext context = new XQueryContext(broker.getBrokerPool());
+        try {
+            return xquery.compile(broker, context, code);
+        } catch (XPathException | PermissionDeniedException e) {
+            LOG.error("Failed to compile expression: " + code + ": " + e.getMessage(), e);
+            isValid = false;
+            return null;
         }
     }
 
