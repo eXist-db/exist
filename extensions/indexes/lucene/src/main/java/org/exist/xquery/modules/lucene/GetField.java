@@ -53,7 +53,9 @@ public class GetField extends BasicFunction {
                 "query string")
             },
 	        new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE,
-	    		"All documents that are match by the query"))
+	    		"All documents that are match by the query"),
+			"Use an index definition with nested fields and ft:field instead"
+		),
     };
 	
 	public GetField(XQueryContext context, FunctionSignature signature) {
