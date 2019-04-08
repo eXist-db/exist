@@ -124,26 +124,7 @@ public class Facets extends BasicFunction {
             Match match = proxy.getMatches();
             while (match != null) {
                 if (match.getIndexId().equals(LuceneIndex.ID)) {
-                    final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-                    final org.apache.lucene.facet.Facets facets = index.getFacets((LuceneMatch) match);
-                    final FacetResult result;
-                    if (paths == null) {
-                        result = facets.getTopChildren(count, dimension);
-                    } else {
-                        result = facets.getTopChildren(count, dimension, paths);
-                    }
-
-                    if (result == null) {
-                        return new MapType(context);
-                    } else {
-                        final MapType map = new MapType(context);
-                        for (int i = 0; i < result.labelValues.length; i++) {
-                            final String label = result.labelValues[i].label;
-                            final Number value = result.labelValues[i].value;
-                            map.add(new StringValue(label), new IntegerValue(value.longValue()));
-                        }
-                        return map;
-                    }
+                    return getFacetsMap(dimension, count, paths, (LuceneMatch) match);
                 }
                 match = match.getNextMatch();
             }
@@ -151,5 +132,28 @@ public class Facets extends BasicFunction {
             throw new XPathException(this, LuceneModule.EXXQDYFT0002, e.getMessage());
         }
         return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private Sequence getFacetsMap(String dimension, int count, String[] paths, LuceneMatch match) throws IOException, XPathException {
+        final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
+        final org.apache.lucene.facet.Facets facets = index.getFacets(match);
+        final FacetResult result;
+        if (paths == null) {
+            result = facets.getTopChildren(count, dimension);
+        } else {
+            result = facets.getTopChildren(count, dimension, paths);
+        }
+
+        if (result == null) {
+            return new MapType(context);
+        } else {
+            final MapType map = new MapType(context);
+            for (int i = 0; i < result.labelValues.length; i++) {
+                final String label = result.labelValues[i].label;
+                final Number value = result.labelValues[i].value;
+                map.add(new StringValue(label), new IntegerValue(value.longValue()));
+            }
+            return map;
+        }
     }
 }

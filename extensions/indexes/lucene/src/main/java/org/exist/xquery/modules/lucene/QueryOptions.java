@@ -151,6 +151,9 @@ public class QueryOptions {
             case OPTION_LOWERCASE_EXPANDED_TERMS:
                 lowercaseExpandedTerms = value.equalsIgnoreCase("yes");
                 break;
+            default:
+                // unknown option, ignore
+                break;
         }
     }
 
