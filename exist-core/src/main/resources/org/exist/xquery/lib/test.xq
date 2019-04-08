@@ -62,7 +62,7 @@ declare function t:declare-variable($var as element(variable)) as item()? {
         if (empty($children)) then
             string-join($var/node(), '')
         else
-            util:serialize($children, ())
+            fn:serialize($children)
 };
 
 declare function t:init-prolog($test as element(test)) {
@@ -144,10 +144,17 @@ declare function t:run-test($test as element(test), $count as xs:integer,
             $output
         else if ($test/@serialize) then
             try {
-                let $options := $test/@serialize/string()
+
+                let $ser-params := map:merge(
+                    let $options := fn:tokenize($test/@serialize/string(), " ")
+                    for $option in $options
+                    let $kv := fn:tokenize($option, "=")
+                    return
+                        map:entry($kv[1], $kv[2])
+                )
                 return
                     map {
-                        "result": normalize-space(string-join($output("result") ! util:serialize(., $options)))
+                        "result": normalize-space(string-join($output("result") ! fn:serialize(., $ser-params)))
                     }
             } catch * {
                 map {
@@ -203,7 +210,7 @@ declare function t:run-test($test as element(test), $count as xs:integer,
                         if(not(empty($expanded("error")))) then
                             if(not(empty($test-error-function))) then $test-error-function($test/task, $expanded("error")) else ()
                         else
-                            if(not(empty($test-failure-function))) then $test-failure-function($test/task, map { "value": $test/expected/*, "xpath": $test/xpath/*, "error": $test/error/* }, $expanded) else ()
+                            if(not(empty($test-failure-function))) then $test-failure-function($test/task, map { "value": $test/expected/node(), "xpath": $test/xpath/node(), "error": $test/error/node() }, $expanded) else ()
                     return
                         ($test/task, $test/expected, $test/xpath, <result>{$expanded("result"), if(not(empty($expanded("error")))) then $expanded("error")("description") else ()}</result>)
                 else
