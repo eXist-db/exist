@@ -610,6 +610,14 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+
+                    <forkCount>1</forkCount>
+                    <reuseForks>false</reuseForks>
+                    <argLine>-Dlog4j.configurationFile=${project.build.testOutputDirectory}/log4j2.xml</argLine>
+                    <systemPropertyVariables>
+                        <exist.jetty.standalone.webapp.dir>${project.build.testOutputDirectory}/standalone-webapp</exist.jetty.standalone.webapp.dir>
+                    </systemPropertyVariables>
+
                     <excludes>
 
                         <!-- NOTE: these can still exhibit deadlocks -->
