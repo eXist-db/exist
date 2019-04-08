@@ -151,7 +151,7 @@ public class IndexKeys extends BasicFunction {
                 if (indexWorker instanceof OrderedValuesIndex) {
                     hints.put(OrderedValuesIndex.START_VALUE, args[1].getStringValue());
                 } else {
-                    logger.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '" + args[1] + "' ignored.");
+                    logger.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedValuesIndex. Start value '" + args[1] + "' ignored.");
                 }
                 if (qnames != null) {
                     final List<QName> qnameList = new ArrayList<QName>(qnames.getItemCount());

@@ -268,7 +268,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                     (AbstractGMLJDBCIndexWorker)context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
                 if (indexWorker == null) {
                     logger.error("Unable to find a spatial index worker");
-                    throw new XPathException("Unable to find a spatial index worker");
+                    throw new XPathException(this, "Unable to find a spatial index worker");
                 }
                 String propertyName = null;
                 if (isCalledAs("getWKT")) {
@@ -361,7 +361,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                         result = new StringValue(wktWriter.write(geometry));
                     } else if (isCalledAs("getWKB")) {
                         byte data[] = wkbWriter.write(geometry);
-                        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(data));
+                        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new FastByteArrayInputStream(data));
                     } else if (isCalledAs("getMinX")) {
                         result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
                     } else if (isCalledAs("getMaxX")) {
