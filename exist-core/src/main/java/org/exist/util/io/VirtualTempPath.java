@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.locks.StampedLock;
 
+import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,7 +46,9 @@ public final class VirtualTempPath implements AutoCloseable {
     private final StampedLock lock;
     private final TemporaryFileManager tempFileManager;
 
+    @GuardedBy("lock")
     private MemoryContents content;
+    @GuardedBy("lock")
     private Path contentFile;
 
     public VirtualTempPath(int inMemorySize, TemporaryFileManager tempFileManager) {
@@ -71,9 +74,9 @@ public final class VirtualTempPath implements AutoCloseable {
     }
 
     public OutputStream newOutputStream() throws IOException {
-        long stamp = lock.readLock();
+        long stamp = lock.writeLock();
         try {
-            if (inMemorySize <= 0) {
+            if (inMemorySize <= 0 && contentFile == null) {
                 contentFile = tempFileManager.getTemporaryFile();
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("In memory buffering disabled writing to " + contentFile.toAbsolutePath());
@@ -88,7 +91,7 @@ public final class VirtualTempPath implements AutoCloseable {
             }
             return new OverflowToDiskStream(inMemorySize, content, this::initOverflowOutputStream);
         } finally {
-            lock.unlockRead(stamp);
+            lock.unlockWrite(stamp);
         }
     }
 
