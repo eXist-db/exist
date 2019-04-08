@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<!--
+  ~ eXist Open Source Native XML Database
+  ~ Copyright (C) 2001-2019 The eXist Project
+  ~ http://exist-db.org
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU Lesser General Public License
+  ~ as published by the Free Software Foundation; either version 2
+  ~ of the License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this library; if not, write to the Free Software
+  ~ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  -->
+
+<!DOCTYPE ivy-module [
+    <!ENTITY geotools.version "2.4.5">
+]>
+<!--
+    Ivy module to retrieve jars for Lucene 
+-->
+<ivy-module version="2.0">
+    <info organisation="org.exist" module="indexes.spatial"/>
+    <dependencies>
+        <dependency org="org.opengis" name="geoapi-nogenerics" rev="2.1.1" conf="*->default"/>
+        <dependency org="org.geotools" name="gt2-api" rev="&geotools.version;" conf="*->default"/>
+        <dependency org="org.geotools" name="gt2-epsg-extension" rev="&geotools.version;" conf="*->default"/>
+        <dependency org="org.geotools" name="gt2-epsg-wkt" rev="&geotools.version;" conf="*->default"/>
+        <dependency org="org.geotools" name="gt2-main" rev="&geotools.version;" conf="*->default"/>
+        <dependency org="org.geotools" name="gt2-metadata" rev="&geotools.version;" conf="*->default"/>
+        <dependency org="org.geotools" name="gt2-referencing" rev="&geotools.version;" conf="*->default"/>
+        <dependency org="org.geotools" name="gt2-xml" rev="&geotools.version;" conf="*->default"/>
+        <dependency org="com.vividsolutions" name="jts" rev="1.8" conf="*->default"/>
+        <dependency org="java3d" name="vecmath" rev="1.3.1" conf="*->default"/>
+        <dependency org="org.hsqldb" name="hsqldb" rev="2.4.1" conf="*->default"/>
+
+        <dependency org="javax.media" name="jai-core" rev="1.1.3" conf="*->default"/>
+
+        <exclude module="commons-logging"/>
+    </dependencies>
+</ivy-module>

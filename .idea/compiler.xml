@@ -7,23 +7,6 @@
   <component name="CompilerConfiguration">
     <option name="DEFAULT_COMPILER" value="ajc" />
     <excludeFromCompile>
-      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/main/java/org/exist/xquery/modules/spatial/FunGeometricProperties.java" />
-      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/main/java/org/exist/indexing/spatial/GMLHSQLIndexWorker.java" />
-      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/main/java/org/exist/indexing/spatial/AbstractGMLJDBCIndexWorker.java" />
-      <file url="file://$PROJECT_DIR$/tools/izpack/src/org/exist/izpack/CommandLineInstaller.java" />
-      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/main/java/org/exist/xquery/modules/spatial/FunGMLProducers.java" />
-      <file url="file://$PROJECT_DIR$/extensions/modules/src/main/java/org/exist/xquery/modules/svn/SVNLog.java" />
-      <file url="file://$PROJECT_DIR$/extensions/modules/src/main/java/org/exist/xquery/modules/xslfo/RenderFunction.java" />
-      <file url="file://$PROJECT_DIR$/tools/XFormsFilter/src/main/java/uk/gov/devonline/www/xforms/XFormsFilter.java" />
-      <file url="file://$PROJECT_DIR$/tools/izpack/src/org/exist/izpack/PasswordValidator.java" />
-      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/main/java/org/exist/xquery/modules/spatial/FunSpatialSearch.java" />
-      <file url="file://$PROJECT_DIR$/extensions/modules/src/main/java/org/exist/xquery/modules/xslfo/XSLFOModule.java" />
-      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/main/java/org/exist/xquery/modules/spatial/SpatialModule.java" />
-      <file url="file://$PROJECT_DIR$/extensions/modules/src/main/java/org/exist/xquery/modules/svn/SVNModule.java" />
-      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/main/java/org/exist/indexing/spatial/AbstractGMLJDBCIndex.java" />
-      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/main/java/org/exist/indexing/spatial/GMLHSQLIndex.java" />
-      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/test/src/main/java/org/exist/indexing/spatial/GMLIndexTest.java" />
-      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/test/src/main/java/org/exist/indexing/spatial/AllIndexTests.java" />
       <file url="file://$PROJECT_DIR$/webapp/WEB-INF/web.xml" />
       <file url="file://$PROJECT_DIR$/tools/XFormsFilter/web.xml" />
       <file url="file://$PROJECT_DIR$/build/docs/source/WEB-INF/web.xml" />
