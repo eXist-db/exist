@@ -98,7 +98,7 @@ public class LuceneMatch extends Match {
         return this.facetsCollector;
     }
 
-    void addField(String name, IndexableField[] values) {
+    protected void addField(String name, IndexableField[] values) {
         if (fields == null) {
             fields = new HashMap<>();
         }
@@ -169,19 +169,19 @@ public class LuceneMatch extends Match {
                 case Type.DATE:
                     return new DateValue(value);
                 case Type.FLOAT:
-                    return new FloatValue(value.toString());
+                    return new FloatValue(value);
                 case Type.DOUBLE:
-                    return new DoubleValue(value.toString());
+                    return new DoubleValue(value);
                 case Type.DECIMAL:
-                    return new DecimalValue(value.toString());
+                    return new DecimalValue(value);
                 case Type.INTEGER:
                 case Type.INT:
                 case Type.UNSIGNED_INT:
                 case Type.LONG:
                 case Type.UNSIGNED_LONG:
-                    return new IntegerValue(value.toString());
+                    return new IntegerValue(value);
                 default:
-                    return new StringValue(value.toString());
+                    return new StringValue(value);
             }
         }
     }

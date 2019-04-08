@@ -67,7 +67,7 @@ public class XMLToQuery {
                     query = termQuery(getField(root, field), root, analyzer);
                     break;
                 case "wildcard":
-                    query = wildcardQuery(getField(root, field), root, analyzer, options);
+                    query = wildcardQuery(getField(root, field), root, options);
                     break;
                 case "prefix":
                     query = prefixQuery(getField(root, field), root, options);
@@ -302,7 +302,7 @@ public class XMLToQuery {
 		}
     }
     
-    private Query wildcardQuery(String field, Element node, Analyzer analyzer, QueryOptions options) throws XPathException {
+    private Query wildcardQuery(String field, Element node, QueryOptions options) {
         WildcardQuery query = new WildcardQuery(new Term(field, getText(node)));
         setRewriteMethod(query, node, options);
         return query;
