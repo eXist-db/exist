@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="XmldbTaskTest" xmlns:xdb="http://exist-db.org/ant">
+
+    <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant"/>
+
+    <target name="copy" description="test the copying of resources">
+        <xdb:copy uri="xmldb:exist:///db/${test.data.test.collection}" resource="${test.data.test.resource}" destination="/db/${test.data.test.collection}" name="${test.data.test.resource2}" user="${admin.user}" password="${admin.password}"/>
+        <xdb:list uri="xmldb:exist:///db/${test.data.test.collection}" resources="true" outputproperty="test.data.result" user="${admin.user}" password="${admin.password}"/>
+    </target>
+
+    <target name="create" description="test creation of collection">
+        <xdb:create uri="xmldb:exist:///db/${test.data.test.collection}" user="${admin.user}" password="${admin.password}" collection="${test.data.test.collection2}"/>
+        <xdb:list uri="xmldb:exist:///db/${test.data.test.collection}" collections="true" outputproperty="test.data.result" user="${admin.user}" password="${admin.password}"/>
+    </target>
+
+    <target name="exists" description="test existence task">
+        <condition property="test.data.result">
+            <and>
+                <xdb:exist uri="xmldb:exist:///db/${test.data.test.collection}" resource="${test.data.test.resource}" user="${admin.user}" password="${admin.password}"/>
+                <not>
+                    <xdb:exist uri="xmldb:exist:///db/${test.data.test.collection}" resource="no-such-resource.xml" user="${admin.user}" password="${admin.password}"/>
+                </not>
+            </and>
+        </condition>
+    </target>
+
+    <target name="extract" description="test extraction of XML into files and collections">
+        <xdb:extract uri="xmldb:exist:///db/${test.data.test.collection}"  user="${admin.user}" password="${admin.password}" type="xml" resource="${test.data.test.resource}" destfile="${test.data.tmp.file}"/>
+    </target>
+
+    <target name="extractCreateDirectories" description="repeat basic extract dir/file test to test createdirectories property">
+        <xdb:extract uri="xmldb:exist:///db/${test.data.test.collection}"
+                     user="${admin.user}"
+                     password="${admin.password}"
+                     createdirectories="true"
+                     subcollections="true"
+                     overwrite="true"
+                     destdir="${test.data.tmp.dir}"/>
+    </target>
+
+    <target name="extractCreateDirectoriesDestDir" description="check that createdirectories works with single resource">
+        <xdb:extract uri="xmldb:exist:///db/${test.data.test.collection}"
+                     resource="${test.data.test.resource}"
+                     user="${admin.user}"
+                     password="${admin.password}"
+                     createdirectories="true"
+                     destfile="${test.data.tmp.file}"/>
+     </target>
+
+    <target name="extractCreateDirectoriesOverwriteFile" description="check that createdirectories works with single resource">
+        <xdb:extract uri="xmldb:exist:///db/${test.data.test.collection}"
+                     resource="${test.data.test.resource}"
+                     user="${admin.user}"
+                     password="${admin.password}"
+                     createdirectories="true"
+                     overwrite="true"
+                     destfile="${test.data.tmp.file}"/>
+    </target>
+
+     <target name="extractCreateDirectoriesOverwriteDir" description="repeat extract dir/file test to test overwritedirs property">
+         <xdb:extract uri="xmldb:exist:///db/${test.data.test.collection}"
+                     user="${admin.user}"
+                     password="${admin.password}"
+                     overwrite="true"
+                     subcollections="true"
+                     createdirectories="true"
+                     destdir="${test.data.tmp.dir}"/>
+    </target>
+
+    <target name="extractBinary" description="test extraction of XML into files and collections">
+        <xdb:extract uri="xmldb:exist:///db/${test.data.test.collection}"
+                     user="${admin.user}"
+                     password="${admin.password}"
+                     type="binary"
+                     resource="${test.data.bin.test.resource}"
+                     destfile="${test.data.tmp.file}"/>
+    </target>
+
+    <target name="list" description="test listing of resources">
+        <xdb:list uri="xmldb:exist:///db/${test.data.test.collection}" resources="true" outputproperty="test.data.result"/>
+    </target>
+
+    <target name="move" description="test moving of resources">
+        <xdb:move uri="xmldb:exist:///db/${test.data.test.collection}"
+                  resource="${test.data.test.resource}" destination="/db/${test.data.test.collection}" name="${test.data.test.resource2}"
+                  user="${admin.user}" password="${admin.password}"/>
+
+        <condition property="test.data.result">
+            <xdb:exist uri="xmldb:exist:///db/${test.data.test.collection}" resource="${test.data.test.resource2}" user="${admin.user}" password="${admin.password}"/>
+        </condition>
+    </target>
+
+    <target name="store" description="test uploading of resource">
+
+        <xdb:store uri="xmldb:exist:///db/${test.data.test.collection}"
+                   createcollection="true"
+                   srcfile="${test.data.tmp.file}"
+                   user="${admin.user}" password="${admin.password}"/>
+
+        <condition property="test.data.result">
+            <xdb:exist uri="xmldb:exist:///db/${test.data.test.collection}" resource="${test.data.tmp.file.name}" user="${admin.user}" password="${admin.password}"/>
+        </condition>
+
+    </target>
+
+    <target name="storeEmptyFile" description="test uploading of empty file">
+        <xdb:store uri="xmldb:exist:///db/${test.data.test.collection}"
+                   createcollection="true"
+                   srcfile="${test.data.tmp.file}"
+                   user="${admin.user}" password="${admin.password}"/>
+
+        <condition property="test.data.result">
+            <xdb:exist uri="xmldb:exist:///db/${test.data.test.collection}" resource="${test.data.tmp.file.name}" user="${admin.user}" password="${admin.password}"/>
+        </condition>
+    </target>
+
+    <target name="xpath" description="test xpath query">
+        <xdb:xpath uri="xmldb:exist:///db/${test.data.test.collection}" query="//subject/string(.)" outputproperty="test.data.result"/>
+    </target>
+
+    <target name="xpathXml" description="bug ID: 1774683 test xpath query with xml in output property">
+        <xdb:xpath uri="xmldb:exist:///db/${test.data.test.collection}" query="/test" outputproperty="test.data.result"/>
+    </target>
+
+    <target name="xquery" description="test xquery query">
+        <xdb:xquery uri="xmldb:exist:///db/${test.data.test.collection}" query="collection('/db/${test.data.test.collection}')//subject" outputproperty="test.data.result"/>
+    </target>
+
+    <target name="xupdate" description="test xupdate operation">
+
+    </target>
+
+</project>

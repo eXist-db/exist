@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="UserTaskTest" xmlns:xdb="http://exist-db.org/ant">
+
+    <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant"/>
+
+    <target name="addUser">
+        <xdb:adduser uri="xmldb:exist:///db" user="${admin.user}" password="${admin.password}" name="${test.data.user}" secret="${test.data.password}" primaryGroup="guest"/>
+        <xdb:users uri="xmldb:exist:///db/system" outputproperty="test.data.result"/>
+    </target>
+
+    <target name="listUser">
+        <xdb:users uri="xmldb:exist:///db/system" outputproperty="test.data.result"/>
+    </target>
+
+    <target name="changePassword" description="Bug ID: #807 Setting a users password via ant task is not working">
+      <xdb:adduser uri="xmldb:exist:///db" user="${admin.user}" password="${admin.password}" name="${test.data.user}" secret="${test.data.password}" primaryGroup="guest"/>
+      <xdb:password uri="xmldb:exist:///db" user="${admin.user}" password="${admin.password}" name="${test.data.user}" secret="${test.data.password.changed}"/>
+
+      <!-- execute xpath with new password -->
+      <xdb:xpath uri="xmldb:exist:///db" user="${test.data.user}" password="${test.data.password.changed}" query="&lt;changed&gt;${test.data.password.changed}&lt;/changed&gt;" outputproperty="test.data.result"/>
+    </target>
+
+    <target name="removeUser">
+        <xdb:adduser uri="xmldb:exist:///db" user="${admin.user}" password="${admin.password}" name="${test.data.user}" secret="${test.data.password}" primaryGroup="guest"/>
+        <xdb:rmuser uri="xmldb:exist:///db" user="${admin.user}" password="${admin.password}" name="${test.data.user}"/>
+
+        <!-- list users -->
+        <xdb:users uri="xmldb:exist:///db/system" outputproperty="test.data.result"/>
+    </target>
+</project>

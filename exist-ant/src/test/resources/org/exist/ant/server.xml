@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ServerTaskTest" xmlns:xdb="http://exist-db.org/ant">
+
+    <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant"/>
+
+    <target name="backup">
+        <xdb:backup initdb="false" uri="xmldb:exist:///db" dir="${test.data.backup.dir}" user="${admin.user}" password="${admin.password}"/>
+    </target>
+
+    <target name="restore">
+        <xdb:restore uri="xmldb:exist:///db" dir="${test.data.backup.dir}/db" user="${admin.user}" password="${admin.password}"/>
+    </target>
+
+    <target name="shutdown">
+        <xdb:shutdown uri="xmldb:exist:///db" user="${admin.user}" password="${admin.password}"/>
+    </target>
+
+</project>

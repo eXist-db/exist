@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="FileTaskTest" xmlns:xdb="http://exist-db.org/ant">
+
+    <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant"/>
+
+    <target name="chmod">
+        <xdb:chmod uri="xmldb:exist:///db/${test.data.test.collection}" resource="${test.data.test.resource}" mode="user=-read,-write,-execute,group=+read,+write,+execute,other=+read,+write,+execute" user="${admin.user}" password="${admin.password}"/>
+        <xdb:list uri="xmldb:exist:///db/${test.data.test.collection}" resources="true" outputproperty="test.data.result" user="${admin.user}" password="${admin.password}"/>
+    </target>
+
+    <target name="chown">
+        <xdb:chown uri="xmldb:exist:///db/${test.data.test.collection}" resource="${test.data.test.resource}" name="${test.data.user}" group="${test.data.group}" user="${admin.user}" password="${admin.password}"/>
+        <xdb:list uri="xmldb:exist:///db/${test.data.test.collection}" resources="true" outputproperty="test.data.result" user="${admin.user}" password="${admin.password}"/>
+    </target>
+
+    <target name="test_LockResource">
+        <echo>tbd</echo>
+    </target>
+
+</project>
