@@ -186,7 +186,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                 context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
             if (indexWorker == null) {
                 logger.error("Unable to find a spatial index worker");
-                throw new XPathException("Unable to find a spatial index worker");
+                throw new XPathException(this, "Unable to find a spatial index worker");
             }
             Geometry geometry = null;
             String targetSRS = null;
