@@ -213,6 +213,8 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
             }
         } catch (NumberFormatException | XPathException e) {
             // wrong type: ignore
+            LOG.trace("Cannot convert field " + fieldName + " to type " + Type.getTypeName(type) +
+                    ". Content was: " + content);
         }
         return null;
     }
