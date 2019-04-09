@@ -657,7 +657,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     /**
      *  SOLR
-     * @param context
      * @param toBeMatchedURIs
      * @param queryText
      * @return search report
@@ -689,84 +688,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             // start root element
             final int nodeNr = builder.startElement("", "results", "results", null);
 
+            final Collector collector = new BinarySearchCollector(toBeMatchedURIs, builder, fields, searchAnalyzer, highlighter);
             // Perform actual search
-            searcher.searcher.search(query, new Collector() {
-                private Scorer scorer;
-                private AtomicReader reader;
-
-                @Override
-                public void setScorer(Scorer scorer) throws IOException {
-                    this.scorer = scorer;
-                }
-
-                @Override
-                public void collect(int docNum) throws IOException {
-                    Document doc = reader.document(docNum);
-
-                    // Get URI field of document
-                    String fDocUri = doc.get(FIELD_DOC_URI);
-
-                    // Get score
-                    float score = scorer.score();
-
-                    // Check if document URI has a full match or if a
-                    // document is in a collection
-                    if (isDocumentMatch(fDocUri, toBeMatchedURIs)) {
-
-                        DocumentImpl storedDoc = null;
-                        try {
-                            // try to read document to check if user is allowed to access it
-                            storedDoc = broker.getXMLResource(XmldbURI.createInternal(fDocUri), LockMode.READ_LOCK);
-                            if (storedDoc == null) {
-                                return;
-                            }
-
-                            // setup attributes
-                            AttributesImpl attribs = new AttributesImpl();
-                            attribs.addAttribute("", "uri", "uri", "CDATA", fDocUri);
-                            attribs.addAttribute("", "score", "score", "CDATA", "" + score);
-
-                            // write element and attributes
-                            builder.startElement("", "search", "search", attribs);
-                            for (String field : fields) {
-                                String[] fieldContent = doc.getValues(field);
-                                attribs.clear();
-                                attribs.addAttribute("", "name", "name", "CDATA", field);
-                                for (String content : fieldContent) {
-                                    List<Offset> offsets = highlighter.getOffsets(content, searchAnalyzer);
-                                    builder.startElement("", "field", "field", attribs);
-                                    if (offsets != null) {
-                                        highlighter.highlight(content, offsets, builder);
-                                    } else {
-                                        builder.characters(content);
-                                    }
-                                    builder.endElement();
-                                }
-                            }
-                            builder.endElement();
-
-                            // clean attributes
-                            attribs.clear();
-                        } catch (PermissionDeniedException e) {
-                            // not allowed to read the document: ignore the match.
-                        } finally {
-                            if (storedDoc != null) {
-                                storedDoc.getUpdateLock().release(LockMode.READ_LOCK);
-                            }
-                        }
-                    }
-                }
-
-                @Override
-                public void setNextReader(AtomicReaderContext atomicReaderContext) throws IOException {
-                    this.reader = atomicReaderContext.reader();
-                }
-
-                @Override
-                public boolean acceptsDocsOutOfOrder() {
-                    return true;
-                }
-            });
+            searcher.searcher.search(query, collector);
 
             // finish root element
             builder.endElement();
@@ -778,7 +702,100 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         });
     }
-    
+
+    private class BinarySearchCollector extends Collector {
+
+        private final String[] fields;
+        private final Analyzer searchAnalyzer;
+        private final PlainTextHighlighter highlighter;
+        private Scorer scorer;
+        private AtomicReader reader;
+        private final List<String> toBeMatchedURIs;
+        private final MemTreeBuilder builder;
+
+        public BinarySearchCollector(List<String> toBeMatchedURIs, MemTreeBuilder builder, String[] fields, Analyzer searchAnalyzer,
+                                     PlainTextHighlighter highlighter) {
+            this.toBeMatchedURIs = toBeMatchedURIs;
+            this.builder = builder;
+            this.fields = fields;
+            this.searchAnalyzer = searchAnalyzer;
+            this.highlighter = highlighter;
+        }
+
+        @Override
+        public void setScorer(Scorer scorer) throws IOException {
+            this.scorer = scorer;
+        }
+
+        @Override
+        public void collect(int docNum) throws IOException {
+            Document doc = reader.document(docNum);
+
+            // Get URI field of document
+            String fDocUri = doc.get(FIELD_DOC_URI);
+
+            // Get score
+            float score = scorer.score();
+
+            // Check if document URI has a full match or if a
+            // document is in a collection
+            if (isDocumentMatch(fDocUri, toBeMatchedURIs)) {
+
+                DocumentImpl storedDoc = null;
+                try {
+                    // try to read document to check if user is allowed to access it
+                    storedDoc = broker.getXMLResource(XmldbURI.createInternal(fDocUri), LockMode.READ_LOCK);
+                    if (storedDoc == null) {
+                        return;
+                    }
+
+                    // setup attributes
+                    AttributesImpl attribs = new AttributesImpl();
+                    attribs.addAttribute("", "uri", "uri", "CDATA", fDocUri);
+                    attribs.addAttribute("", "score", "score", "CDATA", "" + score);
+
+                    // write element and attributes
+                    builder.startElement("", "search", "search", attribs);
+                    for (String field : fields) {
+                        String[] fieldContent = doc.getValues(field);
+                        attribs.clear();
+                        attribs.addAttribute("", "name", "name", "CDATA", field);
+                        for (String content : fieldContent) {
+                            List<Offset> offsets = highlighter.getOffsets(content, searchAnalyzer);
+                            builder.startElement("", "field", "field", attribs);
+                            if (offsets != null) {
+                                highlighter.highlight(content, offsets, builder);
+                            } else {
+                                builder.characters(content);
+                            }
+                            builder.endElement();
+                        }
+                    }
+                    builder.endElement();
+
+                    // clean attributes
+                    attribs.clear();
+                } catch (PermissionDeniedException e) {
+                    // not allowed to read the document: ignore the match.
+                } finally {
+                    if (storedDoc != null) {
+                        storedDoc.getUpdateLock().release(LockMode.READ_LOCK);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void setNextReader(AtomicReaderContext atomicReaderContext) throws IOException {
+            this.reader = atomicReaderContext.reader();
+        }
+
+        @Override
+        public boolean acceptsDocsOutOfOrder() {
+            return true;
+        }
+    }
+
     public String getFieldContent(int docId, String field) throws IOException {
         final BytesRefBuilder bytes = new BytesRefBuilder();
         NumericUtils.intToPrefixCoded(docId, 0, bytes);
