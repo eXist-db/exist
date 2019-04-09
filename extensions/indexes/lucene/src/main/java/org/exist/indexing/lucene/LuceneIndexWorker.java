@@ -689,77 +689,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final int nodeNr = builder.startElement("", "results", "results", null);
 
             // Perform actual search
-            searcher.searcher.search(query, new Collector() {
-                private Scorer scorer;
-                private AtomicReader reader;
-
-                @Override
-                public void setScorer(Scorer scorer) throws IOException {
-                    this.scorer = scorer;
-                }
-
-                @Override
-                public void collect(int docNum) throws IOException {
-                    Document doc = reader.document(docNum);
-
-                    // Get URI field of document
-                    String fDocUri = doc.get(FIELD_DOC_URI);
-
-                    // Get score
-                    float score = scorer.score();
-
-                    // Check if document URI has a full match or if a
-                    // document is in a collection
-                    if (isDocumentMatch(fDocUri, toBeMatchedURIs)) {
-
-                        try(final LockedDocument lockedStoredDoc = broker.getXMLResource(XmldbURI.createInternal(fDocUri), LockMode.READ_LOCK)) {
-                            // try to read document to check if user is allowed to access it
-                            if (lockedStoredDoc == null) {
-                                return;
-                            }
-
-                            // setup attributes
-                            AttributesImpl attribs = new AttributesImpl();
-                            attribs.addAttribute("", "uri", "uri", "CDATA", fDocUri);
-                            attribs.addAttribute("", "score", "score", "CDATA", "" + score);
-
-                            // write element and attributes
-                            builder.startElement("", "search", "search", attribs);
-                            for (String field : fields) {
-                                String[] fieldContent = doc.getValues(field);
-                                attribs.clear();
-                                attribs.addAttribute("", "name", "name", "CDATA", field);
-                                for (String content : fieldContent) {
-                                    List<Offset> offsets = highlighter.getOffsets(content, searchAnalyzer);
-                                    builder.startElement("", "field", "field", attribs);
-                                    if (offsets != null) {
-                                        highlighter.highlight(content, offsets, builder);
-                                    } else {
-                                        builder.characters(content);
-                                    }
-                                    builder.endElement();
-                                }
-                            }
-                            builder.endElement();
-
-                            // clean attributes
-                            attribs.clear();
-                        } catch (PermissionDeniedException e) {
-                            // not allowed to read the document: ignore the match.
-                        }
-                    }
-                }
-
-                @Override
-                public void setNextReader(AtomicReaderContext atomicReaderContext) throws IOException {
-                    this.reader = atomicReaderContext.reader();
-                }
-
-                @Override
-                public boolean acceptsDocsOutOfOrder() {
-                    return true;
-                }
-            });
+            final BinarySearchCollector collector = new BinarySearchCollector(toBeMatchedURIs, builder, fields, searchAnalyzer, highlighter);
+            searcher.searcher.search(query, collector);
 
             // finish root element
             builder.endElement();
@@ -771,7 +702,93 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         });
     }
-    
+
+    private class BinarySearchCollector extends Collector {
+        private final List<String> toBeMatchedURIs;
+        private final MemTreeBuilder builder;
+        private final String[] fields;
+        private final Analyzer searchAnalyzer;
+        private final PlainTextHighlighter highlighter;
+        private Scorer scorer;
+        private AtomicReader reader;
+
+        public BinarySearchCollector(List<String> toBeMatchedURIs, MemTreeBuilder builder, String[] fields, Analyzer searchAnalyzer, PlainTextHighlighter highlighter) {
+
+            this.toBeMatchedURIs = toBeMatchedURIs;
+            this.builder = builder;
+            this.fields = fields;
+            this.searchAnalyzer = searchAnalyzer;
+            this.highlighter = highlighter;
+        }
+
+        @Override
+        public void setScorer(Scorer scorer) throws IOException {
+            this.scorer = scorer;
+        }
+
+        @Override
+        public void collect(int docNum) throws IOException {
+            Document doc = reader.document(docNum);
+
+            // Get URI field of document
+            String fDocUri = doc.get(FIELD_DOC_URI);
+
+            // Get score
+            float score = scorer.score();
+
+            // Check if document URI has a full match or if a
+            // document is in a collection
+            if (isDocumentMatch(fDocUri, toBeMatchedURIs)) {
+
+                try(final LockedDocument lockedStoredDoc = broker.getXMLResource(XmldbURI.createInternal(fDocUri), LockMode.READ_LOCK)) {
+                    // try to read document to check if user is allowed to access it
+                    if (lockedStoredDoc == null) {
+                        return;
+                    }
+
+                    // setup attributes
+                    AttributesImpl attribs = new AttributesImpl();
+                    attribs.addAttribute("", "uri", "uri", "CDATA", fDocUri);
+                    attribs.addAttribute("", "score", "score", "CDATA", "" + score);
+
+                    // write element and attributes
+                    builder.startElement("", "search", "search", attribs);
+                    for (String field : fields) {
+                        String[] fieldContent = doc.getValues(field);
+                        attribs.clear();
+                        attribs.addAttribute("", "name", "name", "CDATA", field);
+                        for (String content : fieldContent) {
+                            List<Offset> offsets = highlighter.getOffsets(content, searchAnalyzer);
+                            builder.startElement("", "field", "field", attribs);
+                            if (offsets != null) {
+                                highlighter.highlight(content, offsets, builder);
+                            } else {
+                                builder.characters(content);
+                            }
+                            builder.endElement();
+                        }
+                    }
+                    builder.endElement();
+
+                    // clean attributes
+                    attribs.clear();
+                } catch (PermissionDeniedException e) {
+                    // not allowed to read the document: ignore the match.
+                }
+            }
+        }
+
+        @Override
+        public void setNextReader(AtomicReaderContext atomicReaderContext) throws IOException {
+            this.reader = atomicReaderContext.reader();
+        }
+
+        @Override
+        public boolean acceptsDocsOutOfOrder() {
+            return true;
+        }
+    }
+
     public String getFieldContent(int docId, String field) throws IOException {
         final BytesRefBuilder bytes = new BytesRefBuilder();
         NumericUtils.intToPrefixCoded(docId, 0, bytes);
