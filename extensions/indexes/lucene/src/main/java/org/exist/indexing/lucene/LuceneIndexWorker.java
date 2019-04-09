@@ -1131,54 +1131,51 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             BinaryDocValues nodeIdValues = context.reader().getBinaryDocValues(LuceneUtil.FIELD_NODE_ID);
             Bits liveDocs = context.reader().getLiveDocs();
             Terms terms = context.reader().terms(field);
-            if (terms == null)
-                continue;
-            TermsEnum termsIter = terms.iterator(null);
-            if (termsIter.next() == null) {
-                continue;
-            }
-            do {
-                if (map.size() >= max) {
-                    break;
-                }
-                BytesRef ref = termsIter.term();
-                String term = ref.utf8ToString();
-                boolean include = true;
-                if (end != null) {
-                    if (term.compareTo(end) > 0)
-                        include = false;
-                } else if (start != null && !term.startsWith(start))
-                    include = false;
-                if (include) {
-                    DocsEnum docsEnum = termsIter.docs(null, null);
-                    while (docsEnum.nextDoc() != DocsEnum.NO_MORE_DOCS) {
-                        if (liveDocs != null && !liveDocs.get(docsEnum.docID())) {
-                            continue;
+            if (terms != null) {
+                TermsEnum termsIter = terms.iterator(null);
+                if (termsIter.next() != null) {
+                    do {
+                        if (map.size() >= max) {
+                            break;
                         }
-                        int docId = (int) docIdValues.get(docsEnum.docID());
-                        DocumentImpl storedDocument = docs.getDoc(docId);
-                        if (storedDocument == null)
-                            continue;
-                        NodeId nodeId = null;
-                        if (nodes != null) {
-                            final BytesRef nodeIdRef = nodeIdValues.get(docsEnum.docID());
-                            int units = ByteConversion.byteToShort(nodeIdRef.bytes, nodeIdRef.offset);
-                            nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
-                        }
-                        // DW: warning: nodes can be null?
-                        if (nodeId == null || nodes.get(storedDocument, nodeId) != null) {
-                            Occurrences oc = map.get(term);
-                            if (oc == null) {
-                                oc = new Occurrences(term);
-                                map.put(term, oc);
+                        BytesRef ref = termsIter.term();
+                        String term = ref.utf8ToString();
+                        if ((end == null || term.compareTo(end) <= 0) && (start == null || term.startsWith(start))) {
+                            DocsEnum docsEnum = termsIter.docs(null, null);
+                            while (docsEnum.nextDoc() != DocsEnum.NO_MORE_DOCS) {
+                                if (liveDocs != null && !liveDocs.get(docsEnum.docID())) {
+                                    continue;
+                                }
+                                int docId = (int) docIdValues.get(docsEnum.docID());
+                                DocumentImpl storedDocument = docs.getDoc(docId);
+                                if (storedDocument == null)
+                                    continue;
+                                if (nodes != null) {
+                                    final BytesRef nodeIdRef = nodeIdValues.get(docsEnum.docID());
+                                    int units = ByteConversion.byteToShort(nodeIdRef.bytes, nodeIdRef.offset);
+                                    NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
+                                    if (nodes.get(storedDocument, nodeId) != null) {
+                                        addOccurrence(map, term, docsEnum.freq(), storedDocument);
+                                    }
+                                } else {
+                                    addOccurrence(map, term, docsEnum.freq(), storedDocument);
+                                }
                             }
-                            oc.addDocument(storedDocument);
-                            oc.addOccurrences(docsEnum.freq());
                         }
-                    }
+                    } while (termsIter.next() != null);
                 }
-            } while(termsIter.next() != null);
+            }
         }
+    }
+
+    private void addOccurrence(TreeMap<String, Occurrences> map, String term, int frequency, DocumentImpl storedDocument) throws IOException {
+        Occurrences oc = map.get(term);
+        if (oc == null) {
+            oc = new Occurrences(term);
+            map.put(term, oc);
+        }
+        oc.addDocument(storedDocument);
+        oc.addOccurrences(frequency);
     }
 
     /**
