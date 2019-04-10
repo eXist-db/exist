@@ -16,6 +16,8 @@ import org.exist.xmldb.DatabaseImpl;
 public class ConfigurationHelper {
     private final static Logger LOG = LogManager.getLogger(ConfigurationHelper.class); //Logger
 
+    public static final String PROP_EXIST_CONFIGURATION_FILE = "exist.configurationFile";
+
     /**
      * Returns a file handle for eXist's home directory.
      * Order of tests is designed with the idea, the more precise it is,
@@ -97,12 +99,15 @@ public class ConfigurationHelper {
         final URL configUrl = ConfigurationHelper.class.getClassLoader().getResource(config);
         if (configUrl != null) {
             try {
-                final Path existHome;
+                Path existHome;
                 if ("jar".equals(configUrl.getProtocol())) {
                     existHome = Paths.get(new URI(configUrl.getPath())).getParent().getParent();
                     LOG.warn(config + " file was found on the classpath, but inside a Jar file! Derived EXIST_HOME from Jar's parent folder: {}", existHome);
                 } else {
                     existHome = Paths.get(configUrl.toURI()).getParent();
+                    if (FileUtils.fileName(existHome).equals("etc")) {
+                        existHome = existHome.getParent();
+                    }
                     LOG.debug("Got EXIST_HOME from classpath: {}", existHome.toAbsolutePath().toString());
                 }
                 return Optional.of(existHome);
@@ -114,7 +119,11 @@ public class ConfigurationHelper {
         
         return Optional.empty();
     }
-    
+
+    public static Optional<Path> getFromSystemProperty() {
+        return Optional.ofNullable(System.getProperty(PROP_EXIST_CONFIGURATION_FILE)).map(Paths::get);
+    }
+
 	/**
      * Returns a file handle for the given path, while <code>path</code> specifies
      * the path to an eXist configuration file or directory.

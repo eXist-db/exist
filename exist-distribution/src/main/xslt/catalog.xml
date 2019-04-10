@@ -1,0 +1,4 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+    <system systemId="http://www.eclipse.org/jetty/configure_9_3.dtd"
+            uri="configure_9_3.dtd"/>
+</catalog>
