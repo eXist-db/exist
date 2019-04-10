@@ -38,7 +38,7 @@
             <version>2.9.5</version>
         </dependency>
 
-        <dependency>
+        <!-- dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
             <version>5.0.3</version>
@@ -48,7 +48,7 @@
             <groupId>org.codehaus.woodstox</groupId>
             <artifactId>stax2-api</artifactId>
             <version>3.1.4</version>
-        </dependency>
+        </dependency -->
 
         <dependency>
             <groupId>org.exist-db.thirdparty.uk.ac.ic.doc.slurp.multilock</groupId>
@@ -290,7 +290,6 @@
         <dependency>
             <groupId>net.sf.saxon</groupId>
             <artifactId>Saxon-HE</artifactId>
-            <version>9.8.0-12</version>
             <scope>runtime</scope> <!-- You can use either Xalan (XSLT 1.0) or Saxon (XSLT 1.0 and 2.0) with eXist at runtime. Saxon is preferred! -->
         </dependency>
 
@@ -360,6 +359,21 @@
             <groupId>org.quartz-scheduler</groupId>
             <artifactId>quartz</artifactId>
             <version>2.3.0</version>
+            <!-- exclude Quartz SQL connectivity options -->
+            <exclusions>
+                <exclusion>
+                    <groupId>com.mchange</groupId>
+                    <artifactId>c3p0</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.mchange</groupId>
+                    <artifactId>mchange-commons-java</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.zaxxer</groupId>
+                    <artifactId>HikariCP-java6</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -376,6 +390,11 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>compile</scope>
+            <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
             <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
         </dependency>
 
@@ -520,6 +539,32 @@
         <plugins>
 
             <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <configuration>
+                    <suppressionFiles>
+                        <suppressionFile>${basedir}/project-suppression.xml</suppressionFile>
+                    </suppressionFiles>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>analyze</id>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <failOnWarning>false</failOnWarning>  <!-- TODO(AR) this temporarily overrides the setting in exist-parent and this plugin should be removed from here -->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>antlr-maven-plugin</artifactId>
                 <version>2.2</version>
@@ -545,6 +590,7 @@
                         <configuration>
                             <excludes>
                                 <!-- compiled by the Aspectj plugin below -->
+                                <exclude>org/exist/storage/lock/EnsureLockingAspect.java</exclude>
                                 <exclude>org/exist/security/PermissionRequiredAspect.java</exclude>
                             </excludes>
                         </configuration>

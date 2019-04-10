@@ -1,0 +1,9 @@
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.2.xsd">
+    <suppress>
+        <notes><![CDATA[
+   file name: xmlrpc-common-3.1.3.jar
+   ]]></notes>
+        <gav regex="true">^org\.apache\.xmlrpc:xmlrpc-common:.*$</gav>
+        <cve>CVE-2016-5002</cve>
+    </suppress>
+</suppressions>
