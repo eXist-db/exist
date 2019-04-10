@@ -20,8 +20,9 @@ public class Main implements Observer, Comparable {
             // use the bootstrap loader to autodetect EXIST_HOME and
             // construct a correct classpath
             final org.exist.start.Main loader = new org.exist.start.Main(args[0]);
-            final Path homeDir = loader.detectHome();
-            final Classpath classpath = loader.constructClasspath(homeDir, args);
+//            final Path homeDir = loader.detectHome();
+//            final Classpath classpath = loader.constructClasspath(homeDir, args);
+            final Classpath classpath = new Classpath();
             final ClassLoader cl = classpath.getClassLoader(null);
             Thread.currentThread().setContextClassLoader(cl);
 
