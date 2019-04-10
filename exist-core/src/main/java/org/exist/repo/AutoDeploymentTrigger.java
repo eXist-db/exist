@@ -86,7 +86,11 @@ public class AutoDeploymentTrigger implements StartupTrigger {
 
             final PackageLoader loader = (name, version) -> {
                 // TODO: enforce version check
-                return new XarFileSource(packages.get(name));
+                final Path p = packages.get(name);
+                if(p == null) {
+                    return null;
+                }
+                return new XarFileSource(p);
             };
 
             for (final Path xar : xars) {
