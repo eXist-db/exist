@@ -69,7 +69,7 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
     private final XmldbURI path;
     private final Leasable<XmlRpcClient> leasableXmlRpcClient;
     private final Leasable<XmlRpcClient>.Lease xmlRpcClientLease;
-    private Properties properties = null;
+    private Properties properties = new Properties();
 
     public static RemoteCollection instance(final Leasable<XmlRpcClient> leasableXmlRpcClient, final XmldbURI path) throws XMLDBException {
         return instance(leasableXmlRpcClient, null, path);
@@ -191,20 +191,17 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
 
     @Override
     public String getProperty(final String property) throws XMLDBException {
-        if (properties == null) {
-            return null;
-        }
-        return (String) properties.get(property);
+        return properties.getProperty(property);
     }
 
     public Properties getProperties() {
-        if (properties == null) {
-            properties = new Properties();
-        }
         return properties;
     }
 
     public void setProperties(final Properties properties) {
+        if (properties == null) {
+            return;
+        }
         this.properties = properties;
     }
 
@@ -473,9 +470,6 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
 
     @Override
     public void setProperty(final String property, final String value) throws XMLDBException {
-        if (properties == null) {
-            properties = new Properties();
-        }
         properties.setProperty(property, value);
     }
 
