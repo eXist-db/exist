@@ -302,6 +302,10 @@ public class InteractiveClient {
             frame.setStatus("connected to " + uri + " as user " + properties.getProperty(USER));
         }
 
+        if (database.getProperty(CONFIGURATION) != null) {
+            System.out.println("Using config: " + database.getProperty(CONFIGURATION));
+        }
+
         System.out.println("Connected :-)");
     }
 
@@ -2136,18 +2140,23 @@ public class InteractiveClient {
         this.options = CommandlineOptions.parse(args);
         this.path = options.setCol.orElse(XmldbURI.ROOT_COLLECTION_URI);
 
-        // Get exist home directory
-        final Optional<Path> home = ConfigurationHelper.getExistHome();
-
         // initialize with default properties, before add client properties
         properties = new Properties(defaultProps);
 
+        // get eXist home
+        final Optional<Path> home = ConfigurationHelper.getExistHome();
+
         // get default configuration filename from the driver class and set it in properties
-        final Class<?> cl = Class.forName(properties.getProperty(DRIVER));
-        final Field CONF_XML = cl.getDeclaredField("CONF_XML");
-        if (CONF_XML != null && home.isPresent()) {
-            final Path configuration = ConfigurationHelper.lookup((String) CONF_XML.get(""));
-            properties.setProperty(CONFIGURATION, configuration.toAbsolutePath().toString());
+        Optional<Path> configFile = ConfigurationHelper.getFromSystemProperty();
+        if (!configFile.isPresent()) {
+            final Class<?> cl = Class.forName(properties.getProperty(DRIVER));
+            final Field CONF_XML = cl.getDeclaredField("CONF_XML");
+            if (CONF_XML != null && home.isPresent()) {
+                configFile = Optional.ofNullable(ConfigurationHelper.lookup((String) CONF_XML.get("")));
+            }
+        }
+        if (configFile.isPresent()) {
+            properties.setProperty(CONFIGURATION, configFile.get().toAbsolutePath().toString());
         }
 
         properties.putAll(loadClientProperties());
