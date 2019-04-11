@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<userInput>
-    <panel order="0">
+<izpack:userinput xmlns:izpack="http://izpack.org/schema/userinput" version="5.0">
+    <panel id="DataDirPanel">
         <field size="1.33" bold="false" txt="Set Data Directory" align="left"
             type="title"/>
         <field
@@ -11,8 +11,10 @@
                 txt="Data dir: "/>
         </field>
     </panel>
-    <panel order="1">
-        <field size="1.33" bold="false" txt="Set Admin Password and Configure Memory" align="left"
+    <panel id="AdminPasswordPanel">
+        <!-- field size="1.33" bold="false" txt="Set Admin Password and Configure Memory" align="left"
+            type="title"/ -->
+        <field size="1.33" bold="false" txt="Set Admin Password" align="left"
             type="title"/>
         <field align="left" variable="adminPasswd" type="password">
             <description txt="Please enter a password for user 'admin', the database administrator:"
@@ -21,10 +23,10 @@
                 <pwd set="" size="20" txt="Enter password: "/>
                 <pwd set="" size="20" txt="Retype password: "/>
             </spec>
-            <validator class="com.izforge.izpack.util.PasswordEqualityValidator"
+            <validator class="com.izforge.izpack.panels.userinput.validator.PasswordEqualityValidator"
                 txt="Entered passwords did not match."/>
         </field>
-        <field align="bottom" type="divider"/>
+        <!-- field align="bottom" type="divider"/>
         <field type="space"/>
         <field type="text" variable="MAX_MEMORY">
           <description align="left" txt="Configure the maximum amount of memory to be used by eXist-db. The recommended minimum memory setting is 1024m. If your machine has enough memory, using 2048m should be sufficient for most data sets. Note: 1200m is usually the limit on 32-bit systems."/>
@@ -33,6 +35,6 @@
         <field type="text" variable="cacheSize">
             <description align="left" txt="Configure the amount of memory to be reserved for internal caches. If the maximum memory is set above to 1024m, 128m is a good value; for 2048m, use 256m; for 512m, not more than 64mb. Too small settings may lead to bad upload/indexing performance."/>
           <spec txt="Cache memory in MB:" size="5" set="256"/>
-        </field>
+        </field -->
     </panel>
-</userInput>
+</izpack:userinput>
