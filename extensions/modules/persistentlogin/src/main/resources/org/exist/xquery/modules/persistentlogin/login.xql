@@ -2,6 +2,7 @@ xquery version "3.0";
 
 module namespace login="http://exist-db.org/xquery/login";
 
+import module namespace sm="http://exist-db.org/xquery/securitymanager";
 import module namespace plogin="http://exist-db.org/xquery/persistentlogin" 
     at "java:org.exist.xquery.modules.persistentlogin.PersistentLoginModule";
 
@@ -75,7 +76,7 @@ declare function login:set-user($domain as xs:string, $maxAge as xs:dayTimeDurat
 
 declare %private function login:callback($newToken as xs:string?, $user as xs:string, $password as xs:string, 
     $expiration as xs:duration, $domain as xs:string, $path as xs:string?, $asDba as xs:boolean) {
-    if (not($asDba) or xmldb:is-admin-user($user)) then (
+    if (not($asDba) or sm:is-dba($user)) then (
         request:set-attribute($domain || ".user", $user),
         request:set-attribute("xquery.user", $user),
         request:set-attribute("xquery.password", $password),
@@ -118,7 +119,7 @@ declare %private function login:clear-credentials($token as xs:string?, $domain 
 declare %private function login:fallback-to-session($domain as xs:string, $user as xs:string, $password as xs:string?, $asDba as xs:boolean) {
     let $isLoggedIn := xmldb:login("/db", $user, $password, true())
     return
-        if ($isLoggedIn and (not($asDba) or xmldb:is-admin-user($user))) then (
+        if ($isLoggedIn and (not($asDba) or sm:is-dba($user))) then (
             session:set-attribute($domain || ".user", $user),
             request:set-attribute($domain || ".user", $user),
             request:set-attribute("xquery.user", $user),
