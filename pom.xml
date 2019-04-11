@@ -27,6 +27,7 @@
         <module>exist-ant</module>
         <module>exist-core</module>
         <module>exist-distribution</module>
+        <module>exist-installer</module>
         <module>exist-jetty-config</module>
         <module>exist-samples</module>
         <module>exist-start</module>

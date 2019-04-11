@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<izpack:installation xmlns:izpack="http://izpack.org/schema/installation"
+        version="5.0">
+
+    <logging>
+        <log-file mkdirs="true" pattern="$INSTALL_PATH/logs/izpack-install-%u.log"/>
+    </logging>
+
+    <info>
+        <appname>eXist-db</appname>
+        <appversion>@{izpack.installation.info.appversion}</appversion>
+        <url>@{izpack.installation.info.url}</url>
+        <authors>
+            <author name="${izpack.installation.info.author.name}" email="${izpack.installation.info.author.email}"/>
+        </authors>
+        <javaversion>@{project.build.target}</javaversion>
+        <requiresjdk>no</requiresjdk>
+        <run-privileged condition="izpack.windowsinstall"/>
+        <pack-compression-format>xz</pack-compression-format>
+        <uninstaller name="izpack-uninstaller.jar" path="$INSTALL_PATH/lib"/>
+    </info>
+
+    <guiprefs height="510" resizable="yes" width="680">
+        <modifier key="headingPanelCounter" value="progressbar"/>
+        <modifier key="headingPanelCounterPos" value="inNavigationPanel"/>
+        <modifier key="firstYGap" value="10"/>
+        <modifier key="labelToControlYGap" value="10"/>
+        <laf name="looks">
+            <os family="unix"/>
+            <os family="mac"/>
+        </laf>
+    </guiprefs>
+
+    <locale>
+        <langpack iso3="eng"/>
+    </locale>
+
+    <resources>
+        <res id="Installer.image" src="@{izpack.resources.target}/installer-logo.png"/>
+        <res id="shortcutSpec.xml" src="@{izpack.resources.target}/shortcutSpec.xml"/>
+        <res id="Unix_shortcutSpec.xml" src="@{izpack.resources.target}/UnixShortcutSpec.xml"/>
+        <res id="HTMLInfoPanel.info" src="@{izpack.resources.target}/readme.html"/>
+        <res id="userInputSpec.xml" src="@{izpack.resources.target}/userInput.xml"/>
+        <res id="ProcessPanel.Spec.xml" src="@{izpack.resources.target}/jobs.xml"/>
+        <res id="HTMLInfoPanel.start" src="@{izpack.resources.target}/start.html"/>
+        <res id="CustomLangPack.xml_eng" src="@{izpack.resources.target}/custom.eng.xml"/>
+        <res id="logo" src="etc/webapp/logo.jpg"/>
+    </resources>
+
+    <natives>
+        <native type="izpack" name="ShellLink.dll"/>
+        <native type="izpack" name="ShellLink_x64.dll"/>
+    </natives>
+
+    <variables>
+        <variable name="JDKPathPanel.skipIfValid" value="yes"/>
+        <variable name="JDKPathPanel.minVersion" value="1.8"/>
+        <variable name="ShowCreateDirectoryMessage" value="false"/>
+    </variables>
+
+    <dynamicvariables>
+        <variable name="DATA_DIR" value="$INSTALL_PATH${FILE_SEPARATOR}data"/>
+        <variable name="tmpdir" value="${SYSTEM[java.io.tmpdir]}"/>
+    </dynamicvariables>
+
+    <conditions>
+        <condition type="variable" id="defaultDataDir">
+            <name>DATA_DIR</name>
+            <value>${dataDir}</value>
+        </condition>
+        <condition type="exists" id="dataDirExists">
+            <file>${dataDir}</file>
+        </condition>
+        <condition type="java" id="showShortCutPanel">
+            <java>
+                <class>com.izforge.izpack.util.OsVersion</class>
+                <field>IS_OSX</field>
+            </java>
+            <returnvalue type="boolean">false</returnvalue>
+        </condition>
+    </conditions>
+
+    <panels>
+        <panel classname="HTMLInfoPanel" id="start"/>
+        <panel classname="TargetPanel" id="TargetPanel.0"/>
+        <panel classname="UserInputPanel" id="DataDirPanel"/>
+        <panel classname="UserInputPanel" id="AdminPasswordPanel" condition="!dataDirExists"/>
+        <panel classname="TreePacksPanel" id="TreePacksPanel.0"/>
+        <panel classname="InstallPanel" id="InstallPanel.0"/>
+        <panel classname="ProcessPanel" id="ProcessPanel.0" condition="@!defaultDataDir||!dataDirExists"/>
+        <panel classname="ShortcutPanel" id="ShortcutPanel.0" condition="showShortCutPanel"/>
+        <panel classname="HTMLInfoPanel" id="info"/>
+    </panels>
+
+
+    <packs>
+
+        <pack name="temp" required="true" hidden="true">
+            <description>Temporary resources needed for post-processing by the Installer</description>
+            <fileset targetdir="$tmpdir" dir="@{izpack.resources.target}">
+                <include name="conf.xslt"/>
+            </fileset>
+        </pack>
+
+        <pack name="Server" required="true" installGroups="Group1">
+            <description>Everything needed for the eXist-db database</description>
+            <fileset targetdir="$INSTALL_PATH" dir=".">
+                <include name="CONTRIBUTING.md"/>
+                <include name="README.md"/>
+                <include name="LICENSE"/>
+            </fileset>
+            <fileset os="unix" targetdir="$INSTALL_PATH/bin" dir="bin">
+                <include name="*.sh"/>
+            </fileset>
+            <executable os="unix" targetfile="$INSTALL_PATH/bin/backup.sh"/>
+            <executable os="unix" targetfile="$INSTALL_PATH/bin/client.sh"/>
+            <executable os="unix" targetfile="$INSTALL_PATH/bin/launcher.sh"/>
+            <executable os="unix" targetfile="$INSTALL_PATH/bin/shutdown.sh"/>
+            <executable os="unix" targetfile="$INSTALL_PATH/bin/startup.sh"/>
+            <fileset os="windows" targetdir="$INSTALL_PATH/bin" dir="bin">
+                <include name="*.bat"/>
+            </fileset>
+            <fileset targetdir="$INSTALL_PATH/etc" dir="etc"/>
+            <fileset targetdir="$INSTALL_PATH/lib" dir="lib"/>
+            <fileset os="windows" targetdir="$INSTALL_PATH/lib" dir="@{izpack.resources.target}">
+                <include name="icon.ico"/>
+            </fileset>
+            <fileset os="unix" targetdir="$INSTALL_PATH/lib" dir="@{izpack.resources.target}">
+                <include name="icon.png"/>
+            </fileset>
+            <fileset targetdir="$INSTALL_PATH/logs" dir="logs"/>
+        </pack>
+
+        <pack name="Apps" required="false" installGroups="Group2">
+            <description>Application Packages: additional applications for XQuery development, database management,
+                documentation, examples and more. You should at least install the "dashboard" and the "shared" package to
+                be able to add more applications later.
+            </description>
+        </pack>
+
+        <pack name="shared" required="true" preselected="true" parent="Apps">
+            <description>Shared Resources: jquery, dojo, ace, templating, utilities</description>
+            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
+                <include name="shared-resources-*.xar"/>
+            </fileset>
+        </pack>
+
+        <pack name="dashboard" required="true" preselected="true" parent="Apps">
+            <description>Dashboard</description>
+            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
+                <include name="dashboard-*.xar"/>
+            </fileset>
+        </pack>
+
+        <pack name="eXide" required="false" preselected="true" parent="Apps">
+            <description>eXide - XQuery IDE</description>
+            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
+                <include name="eXide-*.xar"/>
+            </fileset>
+        </pack>
+
+        <pack name="functx" required="false" preselected="true" parent="Apps">
+            <description>FunctX library</description>
+            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
+                <include name="functx-*.xar"/>
+            </fileset>
+        </pack>
+
+        <pack name="monex" required="false" preselected="true" parent="Apps">
+            <description>Monitoring and Profiling for eXist (Monex)</description>
+            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
+                <include name="*monex-*.xar"/>
+            </fileset>
+        </pack>
+
+        <pack name="packageservice" required="false" preselected="true" parent="Apps">
+            <description>existdb-packageservice</description>
+            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
+                <include name="packageservice-*.xar"/>
+            </fileset>
+        </pack>
+
+        <pack name="exist-documentation" required="false" preselected="true" parent="Apps">
+            <description>eXist-db Documentation</description>
+            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
+                <include name="exist-documentation-*.xar"/>
+            </fileset>
+        </pack>
+
+        <pack name="fundocs" required="false" preselected="true" parent="Apps">
+            <description>XQuery Function Documentation</description>
+            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
+                <include name="fundocs-*.xar"/>
+            </fileset>
+        </pack>
+
+        <pack name="markdown" required="false" preselected="true" parent="Apps">
+            <description>Markdown Parser in XQuery</description>
+            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
+                <include name="markdown-*.xar"/>
+            </fileset>
+        </pack>
+
+    </packs>
+</izpack:installation>
