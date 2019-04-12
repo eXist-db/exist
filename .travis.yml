@@ -13,16 +13,13 @@ matrix:
       osx_image: xcode9.3
       env: JAVA_HOME=$(/usr/libexec/java_home)
 
-script: ./build.sh -Dexist.autodeploy=off -Dtest.haltonerror=true -Dtest.haltonfailure=true clean clean-all all test
-
 cache:
   directories:
-  - $HOME/.ivy2
   - $HOME/.m2
 
 after_failure:
-   - tar -cjf junit-data.tar.bz2 exist-core/target/junit-reports/data
-   - curl -v -u $CHUNK_USER:$CHUNK_PW -sT junit-data.tar.bz2 chunk.io
+   - tar -cjf surefire-reports.tar.bz2 exist-core/target/surefire-reports
+   - curl -v -u $CHUNK_USER:$CHUNK_PW -sT surefire-reports.tar.bz2 chunk.io
 
 notifications:
   slack: exist-db:IXzUdqA0n11cnxaDz43ZQgdX
