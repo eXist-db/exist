@@ -11,29 +11,28 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
 
-install:
-  - cmd: set EXIST_HOME=%APPVEYOR_BUILD_FOLDER%
-  - sh: export EXIST_HOME=$APPVEYOR_BUILD_FOLDER
-
 build_script:
-  - cmd: build.bat
-  - sh: cd $EXIST_HOME && ./build.sh clean && ./build.sh
+  - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 
 test_script:
-  - cmd: build.bat -Dexist.autodeploy=off -Dtest.haltonerror=true -Dtest.haltonfailure=true test
-  - sh:  cd $EXIST_HOME && ./build.sh -Dexist.autodeploy=off -Dtest.haltonerror=true -Dtest.haltonfailure=true test
+  - mvn test -B
 
 after_test:
   - ps: |
       $wc = New-Object 'System.Net.WebClient'
-      foreach ($file in Get-ChildItem -Path "$($env:APPVEYOR_BUILD_FOLDER)\exist-core\target\junit-reports\data\" -Filter *.xml) {
+      foreach ($file in Get-ChildItem -Path "$($env:APPVEYOR_BUILD_FOLDER)\exist-core\target\surefire-reports\" -Filter *.xml) {
         $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", $file.FullName)
       }
 
 on_failure:
-  - cmd: 7z a junit-failed-data.zip %APPVEYOR_BUILD_FOLDER%\exist-core\target\junit-reports\data\ && appveyor PushArtifact junit-failed-data.zip
-  - sh: tar czvf junit-failed-data.tgz $APPVEYOR_BUILD_FOLDER/exist-core/target/junit-reports/data/ && appveyor PushArtifact junit-failed-data.tgz
+  - cmd: 7z a surefire-failed-data.zip %APPVEYOR_BUILD_FOLDER%\exist-core\target\surefire-reports\ && appveyor PushArtifact surefire-failed-data.zip
+  - sh: tar czvf surefire-failed-data.tgz $APPVEYOR_BUILD_FOLDER/exist-core/target/surefire-reports/ && appveyor PushArtifact surefire-failed-data.tgz
 
 artifacts:
-  - path: exist-core\target\junit-reports
-    name: junit-reports
+  - path: exist-core\target\surefire-reports
+    name: surefire-reports
+
+cache:
+  - C:\Users\appveyor\.m2
+  - /home/appveyor/.m2
+
