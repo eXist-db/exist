@@ -119,7 +119,7 @@ public class MemoryContentsInputStreamTest {
 
         replay(memoryContents);
 
-        assertEquals(123L, inputStream.transferTo​(out));
+        assertEquals(123L, inputStream.transferTo(out));
 
         verify(memoryContents);
     }
