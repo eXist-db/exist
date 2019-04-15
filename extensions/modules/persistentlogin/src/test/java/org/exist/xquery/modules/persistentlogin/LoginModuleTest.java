@@ -23,17 +23,17 @@ package org.exist.xquery.modules.persistentlogin;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.exist.http.RESTTest;
+import org.exist.test.ExistWebServer;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -45,12 +45,15 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
-public class LoginModuleTest extends RESTTest {
+public class LoginModuleTest {
 
     private static String XQUERY = "import module namespace login=\"http://exist-db.org/xquery/login\" " +
             "at \"resource:org/exist/xquery/modules/persistentlogin/login.xql\";" +
             "login:set-user('org.exist.login', (), false())," +
             "sm:id()/(descendant::sm:effective,descendant::sm:real)[1]/sm:username/string()";
+
+    @ClassRule
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true);
 
     private final static String XQUERY_FILENAME = "test-login.xql";
 
@@ -93,7 +96,7 @@ public class LoginModuleTest extends RESTTest {
     }
 
     private void doGet(@Nullable String params, String expected) throws IOException {
-        final HttpGet httpGet = new HttpGet(getCollectionRootUri() + "/" + XQUERY_FILENAME +
+        final HttpGet httpGet = new HttpGet("http://localhost:" + existWebServer.getPort() + XmldbURI.ROOT_COLLECTION + '/' + XQUERY_FILENAME +
                 (params == null ? "" : "?" + params));
         HttpResponse response = client.execute(httpGet);
         assertEquals(200, response.getStatusLine().getStatusCode());
