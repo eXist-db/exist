@@ -108,7 +108,7 @@ declare
     %test:user("guest", "guest")
     %test:assertError("Permission denied|not found")
 function t:copyCollection() {
-    xmldb:copy($t:collection || "/inaccessible", $t:collection || "/copy")
+    xmldb:copy-collection($t:collection || "/inaccessible", $t:collection || "/copy")
 };
 
 declare 
