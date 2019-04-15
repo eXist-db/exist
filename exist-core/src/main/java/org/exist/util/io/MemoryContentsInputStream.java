@@ -115,7 +115,7 @@ final class MemoryContentsInputStream extends InputStream {
     }
 
     // Java 9 method, has to compile under Java 1.7 so no @Override
-    public long transferTo​(OutputStream out) throws IOException {
+    public long transferTo(OutputStream out) throws IOException {
         long positionBefore = POSITION_UPDATER.get(this);
         long written = this.memoryContents.transferTo(out, positionBefore);
         POSITION_UPDATER.set(this, this.memoryContents.size());
