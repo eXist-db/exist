@@ -22,18 +22,18 @@ package org.exist.indexing.lucene;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.index.*;
+import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.*;
-import org.apache.lucene.search.spans.SpanFirstQuery;
-import org.apache.lucene.search.spans.SpanNearQuery;
-import org.apache.lucene.search.spans.SpanQuery;
-import org.apache.lucene.search.spans.SpanTermQuery;
-import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
+import org.apache.lucene.search.spans.*;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.automaton.Automaton;
 import org.apache.lucene.util.automaton.CompiledAutomaton;
 import org.apache.lucene.util.automaton.LevenshteinAutomata;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.modules.lucene.QueryOptions;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * Parses the XML representation of a Lucene query and transforms
@@ -56,7 +55,7 @@ public class XMLToQuery {
         this.index = index;
     }
 
-    public Query parse(String field, Element root, Analyzer analyzer, Properties options) throws XPathException {
+    public Query parse(String field, Element root, Analyzer analyzer, QueryOptions options) throws XPathException {
         Query query = null;
         String localName = root.getLocalName();
         if (null != localName) {
@@ -65,31 +64,31 @@ public class XMLToQuery {
                     query = parseChildren(field, root, analyzer, options);
                     break;
                 case "term":
-                    query = termQuery(field, root, analyzer);
+                    query = termQuery(getField(root, field), root, analyzer);
                     break;
                 case "wildcard":
-                    query = wildcardQuery(field, root, analyzer, options);
+                    query = wildcardQuery(getField(root, field), root, options);
                     break;
                 case "prefix":
-                    query = prefixQuery(field, root, options);
+                    query = prefixQuery(getField(root, field), root, options);
                     break;
                 case "fuzzy":
-                    query = fuzzyQuery(field, root);
+                    query = fuzzyQuery(getField(root, field), root);
                     break;
                 case "bool":
-                    query = booleanQuery(field, root, analyzer, options);
+                    query = booleanQuery(getField(root, field), root, analyzer, options);
                     break;
                 case "phrase":
-                    query = phraseQuery(field, root, analyzer);
+                    query = phraseQuery(getField(root, field), root, analyzer);
                     break;
                 case "near":
-                    query = nearQuery(field, root, analyzer);
+                    query = nearQuery(getField(root, field), root, analyzer);
                     break;
                 case "first":
-                    query = getSpanFirst(field, root, analyzer);
+                    query = getSpanFirst(getField(root, field), root, analyzer);
                     break;
                 case "regex":
-                    query = regexQuery(field, root, options);
+                    query = regexQuery(getField(root, field), root, options);
                     break;
                 default:
                     throw new XPathException("Unknown element in lucene query expression: " + localName);
@@ -303,13 +302,13 @@ public class XMLToQuery {
 		}
     }
     
-    private Query wildcardQuery(String field, Element node, Analyzer analyzer, Properties options) throws XPathException {
+    private Query wildcardQuery(String field, Element node, QueryOptions options) {
         WildcardQuery query = new WildcardQuery(new Term(field, getText(node)));
         setRewriteMethod(query, node, options);
         return query;
     }
 
-    private Query prefixQuery(String field, Element node, Properties options) {
+    private Query prefixQuery(String field, Element node, QueryOptions options) {
         PrefixQuery query = new PrefixQuery(new Term(field, getText(node)));
         setRewriteMethod(query, node, options);
         return query;
@@ -331,13 +330,13 @@ public class XMLToQuery {
         return new FuzzyQuery(new Term(field, getText(node)), maxEdits);
     }
 
-    private Query regexQuery(String field, Element node, Properties options) {
+    private Query regexQuery(String field, Element node, QueryOptions options) {
         RegexpQuery query = new RegexpQuery(new Term(field, getText(node)));
         setRewriteMethod(query, node, options);
         return query;
     }
 
-    private Query booleanQuery(String field, Element node, Analyzer analyzer, Properties options) throws XPathException {
+    private Query booleanQuery(String field, Element node, Analyzer analyzer, QueryOptions options) throws XPathException {
         BooleanQuery query = new BooleanQuery();
         Node child = node.getFirstChild();
         while (child != null) {
@@ -354,17 +353,17 @@ public class XMLToQuery {
         return query;
     }
 
-    private void setRewriteMethod(MultiTermQuery query, Element node, Properties options) {
+    private void setRewriteMethod(MultiTermQuery query, Element node, QueryOptions options) {
+        boolean doFilterRewrite = options.filterRewrite();
         String option = node.getAttribute("filter-rewrite");
-        if (option == null)
-            option = "yes";
-        if (options != null)
-            option = options.getProperty(LuceneIndexWorker.OPTION_FILTER_REWRITE, "yes");
-
-        if (option.equalsIgnoreCase("yes"))
+        if (option != null) {
+            doFilterRewrite = option.equalsIgnoreCase("yes");
+        }
+        if (doFilterRewrite) {
             query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
-        else
+        } else {
             query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_AUTO_REWRITE_DEFAULT);
+        }
     }
 
     private BooleanClause.Occur getOccur(Element elem) {
@@ -386,7 +385,7 @@ public class XMLToQuery {
         return occur;
     }
 
-    private Query parseChildren(String field, Element root, Analyzer analyzer, Properties options) throws XPathException {
+    private Query parseChildren(String field, Element root, Analyzer analyzer, QueryOptions options) throws XPathException {
         Query query = null;
         Node child = root.getFirstChild();
         while (child != null) {
@@ -441,5 +440,13 @@ public class XMLToQuery {
             child = child.getNextSibling();
         }
         return false;
+    }
+
+    private String getField(Element node, String defaultField) {
+        final String field = node.getAttribute("field");
+        if (field != null && field.length() > 0) {
+            return field;
+        }
+        return defaultField;
     }
 }

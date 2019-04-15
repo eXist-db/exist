@@ -21,6 +21,7 @@ package org.exist.xquery.modules.lucene;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.indexing.lucene.LuceneMatch;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Cardinality;
@@ -31,7 +32,6 @@ import org.exist.dom.QName;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.Match;
 import org.exist.indexing.lucene.LuceneIndex;
-import org.exist.indexing.lucene.LuceneIndexWorker;
 
 public class Score extends BasicFunction {
 	
@@ -68,7 +68,7 @@ public class Score extends BasicFunction {
         float score = 0.0f;
         while (match != null) {
             if (match.getIndexId().equals(LuceneIndex.ID)) {
-                float currentScore = ((LuceneIndexWorker.LuceneMatch)match).getScore();
+                float currentScore = ((LuceneMatch)match).getScore();
                 score += currentScore;
             }
             match = match.getNextMatch();

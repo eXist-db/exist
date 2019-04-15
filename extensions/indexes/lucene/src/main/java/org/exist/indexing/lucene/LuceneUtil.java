@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.apache.lucene.facet.DrillDownQuery;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.Fields;
@@ -148,6 +149,8 @@ public class LuceneUtil {
             extractTermsFromPhrase((PhraseQuery) query, terms, includeFields);
         } else if (query instanceof TermRangeQuery) {
             extractTermsFromTermRange((TermRangeQuery) query, terms, reader, includeFields);
+        } else if (query instanceof DrillDownQuery) {
+            extractTermsFromDrillDown((DrillDownQuery) query, terms, reader, includeFields);
         } else {
             // fallback to Lucene's Query.extractTerms if none of the
             // above matches
@@ -161,6 +164,11 @@ public class LuceneUtil {
                 }
             }
         }
+    }
+
+    private static void extractTermsFromDrillDown(DrillDownQuery query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException {
+        final Query rewritten = query.rewrite(reader);
+        extractTerms(rewritten, terms, reader, includeFields);
     }
 
     private static void extractTermsFromBoolean(final BooleanQuery query, final Map<Object, Query> terms, final IndexReader reader, final boolean includeFields) throws IOException {
