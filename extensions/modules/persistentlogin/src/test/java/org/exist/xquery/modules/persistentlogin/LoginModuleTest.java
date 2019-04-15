@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-package org.exist.http;
+package org.exist.xquery.modules.persistentlogin;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -29,6 +29,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.exist.http.RESTTest;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.UserManagementService;
 import org.junit.AfterClass;
