@@ -24,7 +24,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-    "extensions/indexes/lucene/src/test/xquery/lucene"
+    "extensions/indexes/lucene/src/test/xquery/lucene/"
 })
 public class LuceneTests {
 }

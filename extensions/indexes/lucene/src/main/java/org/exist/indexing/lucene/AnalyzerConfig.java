@@ -35,6 +35,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.util.CharArraySet;
 import org.apache.lucene.util.Version;
 
@@ -94,7 +95,7 @@ public class AnalyzerConfig {
     private static final String PARAM_ELEMENT_NAME = "param";
 
     private Map<String, Analyzer> analyzers = new TreeMap<>();
-    private Analyzer defaultAnalyzer = null;
+    private Analyzer defaultAnalyzer = new StandardAnalyzer();
 
     public Analyzer getAnalyzerById(String id) {
         return analyzers.get(id);

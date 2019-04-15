@@ -22,6 +22,7 @@ package org.exist.indexing.lucene;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
+import org.exist.indexing.lucene.analyzers.MetaAnalyzer;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 
@@ -44,7 +45,7 @@ public class FieldType {
 	private String analyzerId = null;
 	
     // save Analyzer for later use in LuceneMatchListener
-    private Analyzer analyzer = null;
+    private final MetaAnalyzer analyzer;
 
 	private float boost = -1;
     
@@ -61,13 +62,13 @@ public class FieldType {
     	String aId = config.getAttribute(ANALYZER_ID_ATTR);
     	// save Analyzer for later use in LuceneMatchListener
         if (aId != null && aId.length() > 0) {
-        	analyzer = analyzers.getAnalyzerById(aId);
-            if (analyzer == null)
+        	final Analyzer configuredAnalyzer = analyzers.getAnalyzerById(aId);
+            if (configuredAnalyzer == null)
                 throw new DatabaseConfigurationException("No analyzer configured for id " + aId);
             analyzerId = aId;
-            
+            analyzer = new MetaAnalyzer(configuredAnalyzer);
         } else {
-        	analyzer = analyzers.getDefaultAnalyzer();
+        	analyzer = new MetaAnalyzer(analyzers.getDefaultAnalyzer());
         }
         
         String boostAttr = config.getAttribute(BOOST_ATTRIB);
@@ -96,6 +97,10 @@ public class FieldType {
 
 	public Analyzer getAnalyzer() {
 		return analyzer;
+	}
+
+	public void addAnalzer(String fieldName, Analyzer analyzer) {
+		this.analyzer.addAnalyzer(fieldName, analyzer);
 	}
 
 	public float getBoost() {

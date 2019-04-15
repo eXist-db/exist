@@ -45,6 +45,7 @@ public class LuceneModule extends AbstractInternalModule {
     public final static ErrorCode EXXQDYFT0001 = new LuceneErrorCode("EXXQDYFT0001", "Permission denied.");
     public final static ErrorCode EXXQDYFT0002 = new LuceneErrorCode("EXXQDYFT0002", "IO Exception in lucene index.");
     public final static ErrorCode EXXQDYFT0003 = new LuceneErrorCode("EXXQDYFT0003", "Document not found.");
+    public final static ErrorCode EXXQDYFT0004 = new LuceneErrorCode("EXXQDYFT0004", "Wrong configuration passed to ft:query");
     
     public static final FunctionDef[] functions = {
         new FunctionDef(Query.signatures[0], Query.class),
@@ -61,7 +62,13 @@ public class LuceneModule extends AbstractInternalModule {
         new FunctionDef(Search.signatures[0], Search.class),
         new FunctionDef(Search.signatures[1], Search.class),
         new FunctionDef(Search.signatures[2], Search.class),
-        new FunctionDef(GetField.signatures[0], GetField.class)
+        new FunctionDef(GetField.signatures[0], GetField.class),
+        new FunctionDef(Facets.signatures[0], Facets.class),
+        new FunctionDef(Facets.signatures[1], Facets.class),
+        new FunctionDef(Facets.signatures[2], Facets.class),
+        new FunctionDef(Field.signatures[0], Field.class),
+        new FunctionDef(Field.signatures[1], Field.class),
+        new FunctionDef(LuceneIndexKeys.signatures[0], LuceneIndexKeys.class)
     };
 
     public LuceneModule(Map<String, List<? extends Object>> parameters) {

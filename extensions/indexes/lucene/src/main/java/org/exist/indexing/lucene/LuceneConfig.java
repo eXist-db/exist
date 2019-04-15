@@ -19,18 +19,12 @@
  */
 package org.exist.indexing.lucene;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.facet.FacetsConfig;
 import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.exist.dom.QName;
 import org.exist.indexing.lucene.analyzers.NoDiacriticsStandardAnalyzer;
@@ -53,6 +47,10 @@ public class LuceneConfig {
     private static final String IGNORE_ELEMENT = "ignore";
     private final static String BOOST_ATTRIB = "boost";
     private static final String DIACRITICS = "diacritics";
+    private static final String MODULE_ELEMENT = "module";
+    private static final String ATTR_MODULE_URI = "uri";
+    private static final String ATTR_MODULE_PREFIX = "prefix";
+    private static final String ATTR_MODULE_AT = "at";
 
     private Map<QName, LuceneIndexConfig> paths = new TreeMap<>();
     private List<LuceneIndexConfig> wildcardPaths = new ArrayList<>();
@@ -70,6 +68,10 @@ public class LuceneConfig {
     private AnalyzerConfig analyzers = new AnalyzerConfig();
 
     private String queryParser = null;
+
+    private List<ModuleImport> imports = null;
+
+    protected FacetsConfig facetsConfig = new FacetsConfig();
 
     public LuceneConfig(NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
         parseConfig(configNodes, namespaces);
@@ -90,6 +92,7 @@ public class LuceneConfig {
     	this.ignoreNodes = other.ignoreNodes;
     	this.boost = other.boost;
     	this.analyzers = other.analyzers;
+    	this.facetsConfig = other.facetsConfig;
     }
     
     public boolean matches(NodePath path) {
@@ -121,6 +124,20 @@ public class LuceneConfig {
         return null;
     }
 
+    protected boolean hasFieldsOrFacets() {
+        for (LuceneIndexConfig config : paths.values()) {
+            if (config.hasFieldsOrFacets()) {
+                return true;
+            }
+        }
+        for (LuceneIndexConfig config: wildcardPaths) {
+            if (config.hasFieldsOrFacets()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public Analyzer getAnalyzer(QName qname) {
         LuceneIndexConfig idxConf = paths.get(qname);
         while (idxConf != null) {
@@ -129,9 +146,10 @@ public class LuceneConfig {
             idxConf = idxConf.getNext();
         }
         if (idxConf != null) {
-            String id = idxConf.getAnalyzerId();
-            if (id != null)
-                return analyzers.getAnalyzerById(idxConf.getAnalyzerId());
+            final Analyzer analyzer = idxConf.getAnalyzer();
+            if (analyzer != null) {
+                return analyzer;
+            }
         }
         return analyzers.getDefaultAnalyzer();
     }
@@ -167,10 +185,6 @@ public class LuceneConfig {
                 return analyzers.getAnalyzerById(config.getAnalyzerId());
         }
         return analyzers.getDefaultAnalyzer();
-    }
-
-    public Analyzer getAnalyzerById(String id) {
-    	return analyzers.getAnalyzerById(id);
     }
 
     /**
@@ -219,6 +233,10 @@ public class LuceneConfig {
         return fieldTypes.get(name);
     }
 
+    protected Optional<List<ModuleImport>> getImports() {
+        return Optional.ofNullable(imports);
+    }
+
     /**
      * Parse a configuration entry. The main configuration entries for this index
      * are the &lt;text&gt; elements. They may be enclosed by a &lt;lucene&gt; element.
@@ -262,6 +280,12 @@ public class LuceneConfig {
                             case PARSER_ELEMENT:
                                 queryParser = ((Element) node).getAttribute("class");
                                 break;
+                            case MODULE_ELEMENT:
+                                if (imports == null) {
+                                    imports = new ArrayList<>(3);
+                                }
+                                imports.add(new ModuleImport((Element)node));
+                                break;
                             case FIELD_TYPE_ELEMENT:
                                 FieldType type = new FieldType((Element) node, analyzers);
                                 fieldTypes.put(type.getId(), type);
@@ -269,7 +293,7 @@ public class LuceneConfig {
                             case INDEX_ELEMENT: {
                                 // found an index definition
                                 Element elem = (Element) node;
-                                LuceneIndexConfig config = new LuceneIndexConfig(elem, namespaces, analyzers, fieldTypes);
+                                LuceneIndexConfig config = new LuceneIndexConfig(this, elem, namespaces, analyzers, fieldTypes);
                                 // if it is a named index, add it to the namedIndexes map
                                 if (config.getName() != null) {
                                     namedIndexes.put(config.getName(), config);
@@ -354,5 +378,25 @@ public class LuceneConfig {
             //Nothing to do
         }
 
+    }
+
+    static class ModuleImport {
+
+        protected String uri;
+        protected String prefix;
+        protected String at;
+
+        ModuleImport(Element config) throws DatabaseConfigurationException {
+            this.uri = config.getAttribute(ATTR_MODULE_URI);
+            this.prefix = config.getAttribute(ATTR_MODULE_PREFIX);
+            this.at = config.getAttribute(ATTR_MODULE_AT);
+
+            if (this.prefix == null || this.prefix.length() == 0) {
+                throw new DatabaseConfigurationException("Attribute prefix for <module> required");
+            }
+            if (this.uri == null || this.uri.length() == 0) {
+                throw new DatabaseConfigurationException("Attribute uri for <module> required");
+            }
+        }
     }
 }

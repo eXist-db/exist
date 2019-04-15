@@ -20,9 +20,6 @@
  */
 package org.exist.indexing.lucene;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.TreeMap;
 import org.apache.commons.collections.MultiMap;
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.lang3.StringUtils;
@@ -38,6 +35,8 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import java.util.*;
+
 public class LuceneIndexConfig {
 
     private final static String N_INLINE = "inline";
@@ -49,12 +48,15 @@ public class LuceneIndexConfig {
     private final static String HAS_ATTR_ELEMENT = "has-attribute";
     private final static String MATCH_SIBLING_ATTR_ELEMENT = "match-sibling-attribute";
     private final static String HAS_SIBLING_ATTR_ELEMENT = "has-sibling-attribute";
+    private final static String FACET_ELEMENT = "facet";
+    private final static String FIELD_ELEMENT = "field";
 
     public static final String QNAME_ATTR = "qname";
     public static final String MATCH_ATTR = "match";
 
     public static final String FIELD_ATTR = "field";
     public static final String TYPE_ATTR = "type";
+    public static final String INDEX_ATTR = "index";
 
     private String name = null;
 
@@ -64,9 +66,13 @@ public class LuceneIndexConfig {
 
     private Map<QName, String> specialNodes = null;
 
+    private List<AbstractFieldConfig> facetsAndFields = new ArrayList<>();
+
     private LuceneIndexConfig nextConfig = null;
 
     private FieldType type = null;
+
+    private boolean doIndex = true;
 
     // This is for the @attr match boosting
     // and the intention is to do a proper predicate check instead in the future. /ljo
@@ -74,8 +80,8 @@ public class LuceneIndexConfig {
     protected final static Logger LOG = LogManager.getLogger(LuceneIndexConfig.class);
 
 
-    public LuceneIndexConfig(Element config, Map<String, String> namespaces, AnalyzerConfig analyzers,
-    			Map<String, FieldType> fieldTypes) throws DatabaseConfigurationException {
+    public LuceneIndexConfig(LuceneConfig parent, Element config, Map<String, String> namespaces, AnalyzerConfig analyzers,
+                             Map<String, FieldType> fieldTypes) throws DatabaseConfigurationException {
         if (config.hasAttribute(QNAME_ATTR)) {
             QName qname = parseQName(config, namespaces);
             path = new NodePathPattern(qname);
@@ -103,10 +109,16 @@ public class LuceneIndexConfig {
         if (type == null)
         	type = new FieldType(config, analyzers);
 
-        parse(config, namespaces);
+        String indexParam = config.getAttribute(INDEX_ATTR);
+        if (indexParam != null && indexParam.length() > 0) {
+            doIndex = "yes".equalsIgnoreCase(indexParam) || "true".equalsIgnoreCase(indexParam);
+        }
+
+        parse(parent, config, namespaces, analyzers);
     }
 
-    private void parse(Element root, Map<String, String> namespaces) throws DatabaseConfigurationException {
+    private void parse(LuceneConfig parent, Element root, Map<String, String> namespaces, AnalyzerConfig analyzers)
+            throws DatabaseConfigurationException {
         Node child = root.getFirstChild();
         while (child != null) {
             if (child.getNodeType() == Node.ELEMENT_NODE) {
@@ -114,6 +126,18 @@ public class LuceneIndexConfig {
                 if (null != localName) {
 		    Element configElement = (Element) child;
                     switch (localName) {
+                        case FACET_ELEMENT: {
+                            facetsAndFields.add(new LuceneFacetConfig(parent, configElement, namespaces));
+                            break;
+                        }
+                        case FIELD_ELEMENT: {
+                            final LuceneFieldConfig fieldConfig = new LuceneFieldConfig(parent, configElement, namespaces, analyzers);
+                            facetsAndFields.add(fieldConfig);
+                            if (fieldConfig.getAnalyzer() != null) {
+                                type.addAnalzer(fieldConfig.getName(), fieldConfig.getAnalyzer());
+                            }
+                            break;
+                        }
                         case IGNORE_ELEMENT: {
 			    String qnameAttr = configElement.getAttribute(QNAME_ATTR);
                             if (StringUtils.isEmpty(qnameAttr)) {
@@ -187,6 +211,10 @@ public class LuceneIndexConfig {
         }
     }
 
+    protected boolean hasFieldsOrFacets() {
+        return !facetsAndFields.isEmpty();
+    }
+
     // return saved Analyzer for use in LuceneMatchListener
     public Analyzer getAnalyzer() {
         return type.getAnalyzer();
@@ -202,6 +230,10 @@ public class LuceneIndexConfig {
 
     public NodePathPattern getNodePathPattern() {
         return path;
+    }
+
+    public boolean doIndex() {
+        return this.doIndex;
     }
 
     public float getBoost() {
@@ -281,6 +313,10 @@ public class LuceneIndexConfig {
 
     public boolean isInlineNode(QName qname) {
         return specialNodes != null && specialNodes.get(qname) == N_INLINE;
+    }
+
+    public List<AbstractFieldConfig> getFacetsAndFields() {
+        return facetsAndFields;
     }
 
     public static QName parseQName(Element config, Map<String, String> namespaces) throws DatabaseConfigurationException {
