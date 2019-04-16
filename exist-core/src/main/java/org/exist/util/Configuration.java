@@ -26,6 +26,7 @@ import org.exist.backup.SystemExport;
 import org.exist.collections.CollectionCache;
 import org.exist.repo.Deployment;
 
+import org.exist.start.Main;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -157,6 +158,10 @@ public class Configuration implements ErrorHandler
 
                     // try the passed or constructed existHome first
                     configFile = existHome.get().resolve(configFilename);
+
+                    if (!Files.exists(configFile)) {
+                        configFile = existHome.get().resolve(Main.CONFIG_DIR_NAME).resolve(configFilename);
+                    }
                 }
 
                 //if( configFile == null ) {

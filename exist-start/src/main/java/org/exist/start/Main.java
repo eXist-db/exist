@@ -35,19 +35,19 @@ public class Main {
     private static final int ERROR_CODE_GENERAL = 1;
     private static final int ERROR_CODE_NO_JETTY_CONFIG = 7;
 
-    private static final String CONFIG_DIR_NAME = "etc";
+    public static final String CONFIG_DIR_NAME = "etc";
 
     private static final String PROP_EXIST_START_DEBUG = "exist.start.debug";
-    private static final String PROP_EXIST_JETTY_CONFIG = "exist.jetty.config";
-    private static final String PROP_EXIST_HOME = "exist.home";
-    private static final String PROP_JETTY_HOME = "jetty.home";
+    public static final String PROP_EXIST_JETTY_CONFIG = "exist.jetty.config";
+    public static final String PROP_EXIST_HOME = "exist.home";
+    public static final String PROP_JETTY_HOME = "jetty.home";
     private static final String PROP_LOG4J_CONFIGURATION_FILE = "log4j.configurationFile";
     private static final String PROP_JUL_MANAGER = "java.util.logging.manager";
     private static final String PROP_JAVA_TEMP_DIR = "java.io.tmpdir";
 
-    private static final String ENV_EXIST_JETTY_CONFIG = "EXIST_JETTY_CONFIG";
-    private static final String ENV_EXIST_HOME = "EXIST_HOME";
-    private static final String ENV_JETTY_HOME = "JETTY_HOME";
+    public static final String ENV_EXIST_JETTY_CONFIG = "EXIST_JETTY_CONFIG";
+    public static final String ENV_EXIST_HOME = "EXIST_HOME";
+    public static final String ENV_JETTY_HOME = "JETTY_HOME";
 
 
     private static Main exist;
@@ -117,6 +117,14 @@ public class Main {
     }
 
     public void run(String[] args) {
+        try {
+            runEx(args);
+        } catch (final StartException e) {
+            System.exit(e.getErrorCode());
+        }
+    }
+
+    public void runEx(String[] args) throws StartException {
         final String _classname;
         if (args.length > 0) {
             if ("client".equals(args[0])) {
@@ -186,8 +194,7 @@ public class Main {
                 if (!existJettyConfigFile.isPresent()) {
                     System.err.println("ERROR: jetty config file could not be found! Make sure to set exist.jetty.config or EXIST_JETTY_CONFIG.");
                     System.err.flush();
-                    System.exit(ERROR_CODE_NO_JETTY_CONFIG);
-                    return;
+                    throw new StartException(ERROR_CODE_NO_JETTY_CONFIG);
                 }
             }
             final String[] jettyStartArgs = new String[1 + args.length];
@@ -239,8 +246,7 @@ public class Main {
             invokeMain(cl, _classname, args);
         } catch (final Exception e) {
             e.printStackTrace();
-            System.exit(ERROR_CODE_GENERAL);
-            return;
+            throw new StartException(ERROR_CODE_GENERAL);
         }
     }
 
@@ -264,12 +270,21 @@ public class Main {
     public void shutdown() {
         // only used in test suite
         try {
+            shutdownEx();
+        } catch (final StopException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void shutdownEx() throws StopException {
+        // only used in test suite
+        try {
             final Class<?> brokerPool = Class.forName("org.exist.storage.BrokerPools");
             final Method stopAll = brokerPool.getDeclaredMethod("stopAll", boolean.class);
             stopAll.setAccessible(true);
             stopAll.invoke(null, false);
         } catch (final ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+            throw new StopException(e.getMessage(), e);
         }
     }
 
