@@ -25,6 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.util.ConfigurationHelper;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedReader;
@@ -37,9 +38,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ServiceManager {
 
@@ -48,8 +52,8 @@ public class ServiceManager {
     private final static Pattern STATUS_REGEX = Pattern.compile("Installed\\s*:\\s*(.*)\n\\s*Running\\s*:\\s*(.*)\n", Pattern.MULTILINE);
 
     private Launcher launcher;
-    private final Properties wrapperProperties;
-    private final Path wrapperDir;
+    private Properties wrapperProperties;
+    private Path wrapperDir;
     private boolean canUseServices;
     private boolean isInstalled = false;
     private boolean isRunning = false;
@@ -57,14 +61,14 @@ public class ServiceManager {
     ServiceManager(Launcher launcher) {
         this.launcher = launcher;
 
-        if (SystemUtils.IS_OS_WINDOWS) {
-            canUseServices = true;
-        } else {
-            isRoot((root) -> canUseServices = root);
+        // only use the YAJSW on Windows!!!
+        this.canUseServices = SystemUtils.IS_OS_WINDOWS;
+
+        if(!canUseServices) {
+            return;
         }
 
         final Optional<Path> eXistHome = ConfigurationHelper.getExistHome();
-
         if (eXistHome.isPresent()) {
             wrapperDir = eXistHome.get().resolve("tools/yajsw");
         } else {
@@ -114,23 +118,24 @@ public class ServiceManager {
     }
 
     void installAsService() {
-        launcher.showTrayMessage("Installing service and starting eXist-db ...", TrayIcon.MessageType.INFO);
-
-        if (canUseServices) {
-            runWrapperCmd("install", (code, output) -> {
-                if (code == 0) {
-                    isRunning = false;
-                    isInstalled = true;
-                    start();
-                    launcher.showTrayMessage("Service installed and started", TrayIcon.MessageType.INFO);
-                } else {
-                    LOG.warn("Failed to install service. Exit code: " + code);
-                    JOptionPane.showMessageDialog(null, "Failed to install service. ", "Install Service Failed", JOptionPane.ERROR_MESSAGE);
-                    isInstalled = false;
-                    isRunning = false;
-                }
-            });
+        if (!canUseServices) {
+            launcher.showTrayMessage("It is not possible to use Service installation on this platform", TrayIcon.MessageType.INFO);
         }
+
+        launcher.showTrayMessage("Installing service and starting eXist-db...", TrayIcon.MessageType.INFO);
+        runWrapperCmd("install", (code, output) -> {
+            if (code == 0) {
+                isRunning = false;
+                isInstalled = true;
+                start();
+                launcher.showTrayMessage("Service installed and started", TrayIcon.MessageType.INFO);
+            } else {
+                LOG.warn("Failed to install service. Exit code: " + code);
+                JOptionPane.showMessageDialog(null, "Failed to install service. ", "Install Service Failed", JOptionPane.ERROR_MESSAGE);
+                isInstalled = false;
+                isRunning = false;
+            }
+        });
     }
 
     boolean uninstall() {
@@ -191,13 +196,14 @@ public class ServiceManager {
         return cmd + "Service.bat";
     }
 
-    private void isRoot(Consumer<Boolean> consumer) {
+    private boolean isRoot() {
         final List<String> args = new ArrayList<>(2);
         args.add("id");
         args.add("-u");
-        run(args, (code, output) -> {
-            consumer.accept("0".equals(output.trim()));
-        });
+
+        return run(args,
+                (code, output) -> "0".equals(output.trim())
+        );
     }
 
     void showServicesConsole() {
@@ -210,43 +216,52 @@ public class ServiceManager {
     }
 
     private void runWrapperCmd(final String cmd, final BiConsumer<Integer, String> consumer) {
+        runWrapperCmd(cmd, (code, output) -> {
+            consumer.accept(code, output);
+            return null;
+        });
+    }
+
+    private <T> T runWrapperCmd(final String cmd, final BiFunction<Integer, String, T> resultMapper) {
         final Path executable = wrapperDir.resolve("bin/" + getShellCmd(cmd));
         final List<String> args = new ArrayList<>(1);
         args.add(executable.toString());
 
-        run(args, (code, output) -> {
+        return run(args, (code, output) -> {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(output);
             }
-            consumer.accept(code, output);
+            return resultMapper.apply(code, output);
         });
     }
 
-    static void run(List<String> args, BiConsumer<Integer, String> consumer) {
+    static @Nullable <T> T run(final List<String> args, @Nullable final BiFunction<Integer, String, T> resultMapper) {
         final ProcessBuilder pb = new ProcessBuilder(args);
         final Optional<Path> home = ConfigurationHelper.getExistHome();
 
         pb.directory(home.orElse(Paths.get(".")).toFile());
         pb.redirectErrorStream(true);
-        if (consumer == null) {
+        if (resultMapper == null) {
             pb.inheritIO();
         }
         try {
             final Process process = pb.start();
-            if (consumer != null) {
+            if (resultMapper != null) {
                 final StringBuilder output = new StringBuilder();
                 try (final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(),
-                        "UTF-8"))) {
+                        UTF_8))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         output.append('\n').append(line);
                     }
                 }
                 final int exitValue = process.waitFor();
-                consumer.accept(exitValue, output.toString());
+                return resultMapper.apply(exitValue, output.toString());
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (final IOException | InterruptedException e) {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Error Running Process", JOptionPane.ERROR_MESSAGE);
         }
+
+        return null;
     }
 }

@@ -33,10 +33,10 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.launcher.ConfigurationUtility.LAUNCHER_PROPERTIES_FILE_NAME;
 
 /**
  * A wrapper to start a Java process using start.jar with correct VM settings.
@@ -72,20 +72,24 @@ public class LauncherWrapper {
     }
 
     public void launch() {
-        final String home = System.getProperty("exist.home", ".");
         final String debugLauncher = System.getProperty("exist.debug.launcher", "false");
-        final PropertiesConfiguration vmProperties = getVMProperties();
+        final PropertiesConfiguration vmProperties = getLauncherProperties();
 
         final List<String> args = new ArrayList<>();
         args.add(getJavaCmd());
-        getJavaOpts(args, home, vmProperties);
+        getJavaOpts(args, vmProperties);
 
-        if(Boolean.parseBoolean(debugLauncher)) {
+        if (Boolean.parseBoolean(debugLauncher) && !"client".equals(command)) {
             args.add("-Xdebug");
-            args.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=4000");
+            args.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5006");
         }
-        args.add("-jar");
-        args.add("start.jar");
+
+        // recreate the classpath
+        args.add("-cp");
+        args.add(System.getProperty("java.class.path"));
+
+        // call exist main with our new command
+        args.add("org.exist.start.Main");
         args.add(command);
 
         ServiceManager.run(args, null);
@@ -111,54 +115,70 @@ public class LauncherWrapper {
         return "java";
     }
 
-    protected void getJavaOpts(List<String> args, String home, PropertiesConfiguration vmProperties) {
-        getVMOpts(args, vmProperties);
+    protected void getJavaOpts(final List<String> args, final PropertiesConfiguration vmProperties) {
+        getLauncherOpts(args, vmProperties);
+
+        boolean foundExistHomeSysProp = false;
+        final Properties sysProps = System.getProperties();
+        for (final Map.Entry<Object, Object> entry : sysProps.entrySet()) {
+            final String key = entry.getKey().toString();
+            if (key.startsWith("exist.") || key.startsWith("log4j.") || key.startsWith("jetty.")) {
+                args.add("-D" + key + "=" + entry.getValue().toString());
+                if (key.equals("exist.home")) {
+                    foundExistHomeSysProp = true;
+                }
+            }
+        }
+
+        if (!foundExistHomeSysProp) {
+            args.add("-Dexist.home=\".\"");
+        }
 
         if (command.equals(LAUNCHER) && "mac os x".equals(OS)) {
             args.add("-Dapple.awt.UIElement=true");
         }
-        args.add("-Dexist.home=\"" + home + '"');
     }
 
-    protected void getVMOpts(List<String> args, PropertiesConfiguration vmProperties) {
-        for (final Iterator<String> i = vmProperties.getKeys(); i.hasNext(); ) {
+    protected void getLauncherOpts(final List<String> args, final PropertiesConfiguration launcherProps) {
+        for (final Iterator<String> i = launcherProps.getKeys(); i.hasNext(); ) {
             final String key = i.next();
             if (key.startsWith("memory.")) {
                 if ("memory.max".equals(key)) {
-                    args.add("-Xmx" + vmProperties.getString(key) + 'm');
+                    args.add("-Xmx" + launcherProps.getString(key) + 'm');
                 } else if ("memory.min".equals(key)) {
-                    args.add("-Xms" + vmProperties.getString(key) + 'm');
+                    args.add("-Xms" + launcherProps.getString(key) + 'm');
                 }
             } else if ("vmoptions".equals(key)) {
-                args.add(vmProperties.getString(key));
+                args.add(launcherProps.getString(key));
             } else if (key.startsWith("vmoptions.")) {
                 final String os = key.substring("vmoptions.".length()).toLowerCase();
                 if (OS.contains(os)) {
-                    final String value = vmProperties.getString(key);
+                    final String value = launcherProps.getString(key);
                     Arrays.stream(value.split("\\s+")).forEach(args::add);
                 }
             }
         }
     }
 
-    public static PropertiesConfiguration getVMProperties() {
+    public static PropertiesConfiguration getLauncherProperties() {
         final PropertiesConfiguration vmProperties = new PropertiesConfiguration();
-        final java.nio.file.Path propFile = ConfigurationHelper.lookup("vm.properties");
+        final java.nio.file.Path propFile = ConfigurationUtility.lookup(LAUNCHER_PROPERTIES_FILE_NAME, false);
         InputStream is = null;
         try {
             if (Files.isReadable(propFile)) {
                 is = Files.newInputStream(propFile);
             }
             if (is == null) {
-                is = LauncherWrapper.class.getResourceAsStream("vm.properties");
+                is = LauncherWrapper.class.getResourceAsStream(LAUNCHER_PROPERTIES_FILE_NAME);
             }
+
             if (is != null) {
-                vmProperties.read(new InputStreamReader(is, "UTF-8"));
+                vmProperties.read(new InputStreamReader(is, UTF_8));
             }
         } catch (final IOException e) {
-            System.err.println("vm.properties not found");
+            System.err.println(LAUNCHER_PROPERTIES_FILE_NAME + " not found");
         } catch (ConfigurationException e) {
-            System.err.println("exception reading vm.properties: " + e.getMessage());
+            System.err.println("Exception reading " + LAUNCHER_PROPERTIES_FILE_NAME + ": " + e.getMessage());
         } finally {
             if(is != null) {
                 try {

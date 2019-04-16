@@ -27,6 +27,7 @@ import org.exist.jetty.JettyStart;
 import org.exist.repo.ExistRepository;
 import org.exist.security.PermissionDeniedException;
 import org.exist.start.Main;
+import org.exist.start.StartException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.ConfigurationHelper;
@@ -114,7 +115,10 @@ public class Launcher extends Observable implements Observer {
 
         captureConsole();
 
-        this.jettyConfig = getJettyConfig();
+        // try and figure out exist home dir
+        final Optional<Path> existHomeDir = getFromSysPropOrEnv(Main.PROP_EXIST_HOME, Main.ENV_EXIST_HOME).map(Paths::get);
+
+        this.jettyConfig = getJettyConfig(existHomeDir);
 
         serviceManager = new ServiceManager(this);
         
@@ -164,7 +168,18 @@ public class Launcher extends Observable implements Observer {
             try {
                 if (!jetty.isPresent()) {
                     jetty = Optional.of(new JettyStart());
-                    jetty.get().run(new String[]{jettyConfig.toAbsolutePath().toString()}, splash);
+
+                    final String[] args;
+                    final Optional<Path> explicitExistConfigPath = ConfigurationHelper.getFromSystemProperty();
+                    if (explicitExistConfigPath.isPresent()) {
+                        args = new String[] {
+                                jettyConfig.toAbsolutePath().toString(),
+                                explicitExistConfigPath.get().toAbsolutePath().toString()};
+                    } else {
+                        args = new String[]{ jettyConfig.toAbsolutePath().toString() };
+                    }
+
+                    jetty.get().run(args, splash);
                 }
             } catch (final Exception e) {
                 showMessageAndExit("Error Occurred", "An error occurred during eXist-db startup. Please check console output and logs.", true);
@@ -615,20 +630,39 @@ public class Launcher extends Observable implements Observer {
         }
     }
 
-    private Path getJettyConfig() {
-        final String jettyProperty = Optional.ofNullable(System.getProperty("jetty.home"))
-                .orElseGet(() -> {
-                    final Optional<Path> home = ConfigurationHelper.getExistHome();
-                    final Path jettyHome = FileUtils.resolve(home, "tools").resolve("jetty");
-                    final String jettyPath = jettyHome.toAbsolutePath().toString();
-                    System.setProperty("jetty.home", jettyPath);
-                    return jettyPath;
-                });
+    private Path getJettyConfig(final Optional<Path> existHomeDir) {
 
-        return Paths.get(jettyProperty)
-                .normalize()
-                .resolve("etc")
-                .resolve(Main.STANDARD_ENABLED_JETTY_CONFIGS);
+        Optional<Path> existJettyConfigFile = getFromSysPropOrEnv(Main.PROP_EXIST_JETTY_CONFIG, Main.ENV_EXIST_JETTY_CONFIG).map(Paths::get);
+        if (!existJettyConfigFile.isPresent()) {
+            final Optional<Path> jettyHomeDir = getFromSysPropOrEnv(Main.PROP_JETTY_HOME, Main.ENV_JETTY_HOME).map(Paths::get);
+
+            if (jettyHomeDir.isPresent() && Files.exists(jettyHomeDir.get().resolve(Main.CONFIG_DIR_NAME))) {
+                existJettyConfigFile = jettyHomeDir.map(f -> f.resolve(Main.CONFIG_DIR_NAME).resolve(Main.STANDARD_ENABLED_JETTY_CONFIGS));
+            }
+
+            if (existHomeDir.isPresent() && Files.exists(existHomeDir.get().resolve(Main.CONFIG_DIR_NAME))) {
+                existJettyConfigFile = existHomeDir.map(f -> f.resolve(Main.CONFIG_DIR_NAME).resolve(Main.STANDARD_ENABLED_JETTY_CONFIGS));
+            }
+
+            if (!existJettyConfigFile.isPresent()) {
+                showMessageAndExit("Error Occurred", "ERROR: jetty config file could not be found! Make sure to set exist.jetty.config or EXIST_JETTY_CONFIG.", true);
+                System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
+            }
+        }
+
+        return existJettyConfigFile.get();
+    }
+
+    private Optional<String> getFromSysPropOrEnv(final String sysPropName, final String envVarName) {
+        Optional<String> value = Optional.ofNullable(System.getProperty(sysPropName));
+        if (!value.isPresent()) {
+            value = Optional.ofNullable(System.getenv().get(envVarName));
+            if (value.isPresent()) {
+                // if we managed to detect from environment, store it in a system property
+                System.setProperty(sysPropName, value.get());
+            }
+        }
+        return value;
     }
 
     void showMessageAndExit(String title, String message, boolean logs) {
@@ -706,7 +740,7 @@ public class Launcher extends Observable implements Observer {
             final Desktop desktop = Desktop.getDesktop();
             final Optional<Path> home = ConfigurationHelper.getExistHome();
 
-            final Path logFile = FileUtils.resolve(home, "webapp/WEB-INF/logs/exist.log");
+            final Path logFile = FileUtils.resolve(home, "logs/exist.log");
 
             if (!Files.isReadable(logFile)) {
                 trayIcon.displayMessage(null, "Log file not found", TrayIcon.MessageType.ERROR);
