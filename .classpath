@@ -56,7 +56,7 @@
 	<classpathentry kind="lib" path="lib/core/log4j-jul-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-slf4j-impl-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/lz4-java-1.5.0.jar"/>
-	<classpathentry kind="lib" path="lib/core/pkg-java-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/core/pkg-java-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/quartz-2.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/rsyntaxtextarea-2.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/slf4j-api-1.7.25.jar"/>
