@@ -11,6 +11,7 @@
             <outputDirectory>${file.separator}</outputDirectory>
             <excludes>
                 <exclude>bin/**.bat</exclude>
+                <exclude>bin/**.exe</exclude>
             </excludes>
         </fileSet>
     </fileSets>
