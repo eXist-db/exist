@@ -680,6 +680,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         if(size == 1) {
             return null;
         }
+        expand();
         final ElementImpl root = (ElementImpl) getDocumentElement();
         if(hasIdAttribute(root.getNodeNumber(), id)) {
             return root;
@@ -699,6 +700,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         if(size == 1) {
             return null;
         }
+        expand();
         final ElementImpl root = (ElementImpl) getDocumentElement();
         AttrImpl attr = getIdrefAttribute(root.getNodeNumber(), id);
         if(attr != null) {
@@ -1238,6 +1240,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         attrNodeId = newDoc.attrNodeId;
         attrParent = newDoc.attrParent;
         attrValue = newDoc.attrValue;
+        attrType = newDoc.attrType;
         nextAttr = newDoc.nextAttr;
         namespaceParent = newDoc.namespaceParent;
         namespaceCode = newDoc.namespaceCode;
