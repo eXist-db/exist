@@ -30,6 +30,7 @@
         <module>exist-installer</module>
         <module>exist-jetty-config</module>
         <module>exist-samples</module>
+        <module>exist-service</module>
         <module>exist-start</module>
         <module>extensions</module>
     </modules>
