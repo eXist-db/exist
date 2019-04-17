@@ -22,6 +22,7 @@
     </scm>
 
     <properties>
+        <appassembler.version>2.0.1-SNAPSHOT</appassembler.version>
         <assemble.dir>${project.build.directory}/${project.artifactId}-${project.version}-dir</assemble.dir>
         <xar.repo.download.base>http://demo.exist-db.org/exist/apps/public-repo/find?processor=${project.version}&amp;abbrev=</xar.repo.download.base>
         <expath.pkg.dir>${project.build.directory}/expath-pkgs</expath.pkg.dir>
@@ -261,6 +262,14 @@
         <dependency>
             <groupId>org.eclipse.jetty.websocket</groupId>
             <artifactId>websocket-servlet</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- needed for the AppAssembler booter approach -->
+        <dependency>
+            <groupId>org.codehaus.mojo.appassembler</groupId>
+            <artifactId>appassembler-booter</artifactId>
+            <version>${appassembler.version}</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -668,68 +677,114 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>appassembler-maven-plugin</artifactId>
-                <version>2.0.0</version>
+                <version>${appassembler.version}</version>
+                <configuration>
+                    <repositoryLayout>flat</repositoryLayout>
+                    <repositoryName>lib</repositoryName>
+                    <binFileExtensions>
+                        <unix>.sh</unix>
+                    </binFileExtensions>
+                    <defaultJvmSettings>
+                        <initialMemorySize>128m</initialMemorySize>
+
+                        <!-- Option to generate JDWP debuggable app -->
+                        <!-- extraArguments>
+                            <extraArgument>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005</extraArgument>
+                        </extraArguments -->
+
+                        <systemProperties>
+                            <systemProperty>file.encoding=UTF-8</systemProperty>
+                            <systemProperty>log4j.configurationFile=@BASEDIR@/etc/log4j2.xml</systemProperty>
+                            <systemProperty>exist.home=@BASEDIR@</systemProperty>
+                            <systemProperty>exist.configurationFile=@BASEDIR@/etc/conf.xml</systemProperty>
+                            <systemProperty>jetty.home=@BASEDIR@</systemProperty>
+                            <systemProperty>exist.jetty.config=@BASEDIR@/etc/jetty/standard.enabled-jetty-configs</systemProperty>
+                        </systemProperties>
+                    </defaultJvmSettings>
+                    <licenseHeaderFile>LGPL-21-license.txt</licenseHeaderFile>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>appassembler</id>
+                        <id>appassembler-base</id>
                         <phase>package</phase>
                         <goals>
                             <goal>assemble</goal>
                         </goals>
-                            <configuration>
-                                <assembleDirectory>${assemble.dir}</assembleDirectory>
-                                <binFileExtensions>
-                                    <unix>.sh</unix>
-                                </binFileExtensions>
-                                <binFolder>bin</binFolder>
-                                <configurationDirectory>etc</configurationDirectory>
-                                <copyConfigurationDirectory>true</copyConfigurationDirectory>
-                                <logsDirectory>logs</logsDirectory>
-                                <repositoryName>lib</repositoryName>
-                                <repositoryLayout>flat</repositoryLayout>
-                                <licenseHeaderFile>LGPL-21-license.txt</licenseHeaderFile>
-
-                                <!-- Switch to generate JDWP debuggable app -->
-                                <!-- extraJvmArguments>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005 -Xms128m -Dfile.encoding=UTF-8 -Dlog4j.configurationFile=@BASEDIR@/etc/log4j2.xml -Dexist.home=@BASEDIR@ -Dexist.configurationFile=@BASEDIR@/etc/conf.xml -Djetty.home=@BASEDIR@ -Dexist.jetty.config=@BASEDIR@/etc/jetty/standard.enabled-jetty-configs</extraJvmArguments -->
-                                <extraJvmArguments>-Xms128m -Dfile.encoding=UTF-8 -Dlog4j.configurationFile=@BASEDIR@/etc/log4j2.xml -Dexist.home=@BASEDIR@ -Dexist.configurationFile=@BASEDIR@/etc/conf.xml -Djetty.home=@BASEDIR@ -Dexist.jetty.config=@BASEDIR@/etc/jetty/standard.enabled-jetty-configs</extraJvmArguments>
-
-                                <programs>
-                                    <program>
-                                        <id>client</id>
-                                        <mainClass>org.exist.start.Main</mainClass>
-                                        <commandLineArguments>
-                                            <commandLineArgument>client</commandLineArgument>
-                                        </commandLineArguments>
-                                    </program>
-                                    <program>
-                                        <id>startup</id>
-                                        <mainClass>org.exist.start.Main</mainClass>
-                                        <commandLineArguments>
-                                            <commandLineArgument>jetty</commandLineArgument>
-                                            <commandLineArgument>@BASEDIR@/etc/conf.xml</commandLineArgument>
-                                        </commandLineArguments>
-                                    </program>
-                                    <program>
-                                        <id>shutdown</id>
-                                        <mainClass>org.exist.start.Main</mainClass>
-                                        <commandLineArguments>
-                                            <commandLineArgument>shutdown</commandLineArgument>
-                                        </commandLineArguments>
-                                    </program>
-                                    <program>
-                                        <id>launcher</id>
-                                        <mainClass>org.exist.start.Main</mainClass>
-                                        <!-- No arguments needed! Default is to start the launcher -->
-                                    </program>
-                                    <program>
-                                        <id>backup</id>
-                                        <mainClass>org.exist.start.Main</mainClass>
-                                        <commandLineArguments>
-                                            <commandLineArgument>backup</commandLineArgument>
-                                        </commandLineArguments>
-                                    </program>
-                                </programs>
-                            </configuration>
+                        <configuration>
+                            <assembleDirectory>${assemble.dir}</assembleDirectory>
+                            <programs/>
+                            <configurationDirectory>etc</configurationDirectory>
+                            <copyConfigurationDirectory>true</copyConfigurationDirectory>
+                            <logsDirectory>logs</logsDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>appassembler-booter</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>generate-daemons</goal>
+                        </goals>
+                        <configuration>
+                            <generateRepository>false</generateRepository>
+                            <target>${assemble.dir}</target>
+                            <separateTargetPlatforms>false</separateTargetPlatforms>
+                            <daemons>
+                                <daemon>
+                                    <id>client</id>
+                                    <mainClass>org.exist.start.Main</mainClass>
+                                    <commandLineArguments>
+                                        <commandLineArgument>client</commandLineArgument>
+                                    </commandLineArguments>
+                                    <platforms>
+                                        <platform>booter-unix</platform>
+                                        <platform>booter-windows</platform>
+                                    </platforms>
+                                </daemon>
+                                <daemon>
+                                    <id>startup</id>
+                                    <mainClass>org.exist.start.Main</mainClass>
+                                    <commandLineArguments>
+                                        <commandLineArgument>jetty</commandLineArgument>
+                                        <commandLineArgument>@BASEDIR@/etc/conf.xml</commandLineArgument>
+                                    </commandLineArguments>
+                                    <platforms>
+                                        <platform>booter-unix</platform>
+                                        <platform>booter-windows</platform>
+                                    </platforms>
+                                </daemon>
+                                <daemon>
+                                    <id>shutdown</id>
+                                    <mainClass>org.exist.start.Main</mainClass>
+                                    <commandLineArguments>
+                                        <commandLineArgument>shutdown</commandLineArgument>
+                                    </commandLineArguments>
+                                    <platforms>
+                                        <platform>booter-unix</platform>
+                                        <platform>booter-windows</platform>
+                                    </platforms>
+                                </daemon>
+                                <daemon>
+                                    <id>launcher</id>
+                                    <mainClass>org.exist.start.Main</mainClass>
+                                    <!-- No arguments needed! Default is to start the launcher -->
+                                    <platforms>
+                                        <platform>booter-unix</platform>
+                                        <platform>booter-windows</platform>
+                                    </platforms>
+                                </daemon>
+                                <daemon>
+                                    <id>backup</id>
+                                    <mainClass>org.exist.start.Main</mainClass>
+                                    <commandLineArguments>
+                                        <commandLineArgument>backup</commandLineArgument>
+                                    </commandLineArguments>
+                                    <platforms>
+                                        <platform>booter-unix</platform>
+                                        <platform>booter-windows</platform>
+                                    </platforms>
+                                </daemon>
+                            </daemons>
+                        </configuration>
 
                     </execution>
                 </executions>
