@@ -360,6 +360,7 @@ to add: -pre-compile steps
             <path refid="classpath.extensions"/>
             <path refid="classpath.test"/>
             <path refid="classpath.aspectj"/>
+	    <path refid="classpath.jetty"/>
             <pathelement path="${build.classes.dir}"/>
             <pathelement path="${test.classes.dir}"/>
          </classpath>
