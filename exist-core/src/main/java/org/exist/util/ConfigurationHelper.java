@@ -56,7 +56,7 @@ public class ConfigurationHelper {
     	try {
     		final BrokerPool broker = BrokerPool.getInstance();
     		if(broker != null) {
-    			final Optional<Path> existHome = broker.getConfiguration().getExistHome();
+    			final Optional<Path> existHome = broker.getConfiguration().getExistHome().map(Path::normalize);
                 if(existHome.isPresent()) {
                     LOG.debug("Got eXist home from broker: " + existHome);
                     return existHome;
@@ -69,7 +69,7 @@ public class ConfigurationHelper {
     	
         // try exist.home
         if (System.getProperty("exist.home") != null) {
-            final Path existHome = ConfigurationHelper.decodeUserHome(System.getProperty("exist.home"));
+            final Path existHome = ConfigurationHelper.decodeUserHome(System.getProperty("exist.home")).normalize();
             if (Files.isDirectory(existHome)) {
                 LOG.debug("Got eXist home from system property 'exist.home': {}", existHome.toAbsolutePath().toString());
                 return Optional.of(existHome);
@@ -80,7 +80,7 @@ public class ConfigurationHelper {
         final Path userHome = Paths.get(System.getProperty("user.home"));
         final Path userHomeRelativeConfig = userHome.resolve(config);
         if (Files.isDirectory(userHome) && Files.isRegularFile(userHomeRelativeConfig)) {
-            final Path existHome = userHomeRelativeConfig.getParent();
+            final Path existHome = userHomeRelativeConfig.getParent().normalize();
             LOG.debug("Got eXist home: {} from system property 'user.home': {}", existHome.toAbsolutePath().toString(), userHome.toAbsolutePath().toString());
             return Optional.of(existHome);
         }
@@ -90,7 +90,7 @@ public class ConfigurationHelper {
         final Path userDir = Paths.get(System.getProperty("user.dir"));
         final Path userDirRelativeConfig = userDir.resolve(config);
         if (Files.isDirectory(userDir) && Files.isRegularFile(userDirRelativeConfig)) {
-            final Path existHome = userDirRelativeConfig.getParent();
+            final Path existHome = userDirRelativeConfig.getParent().normalize();
             LOG.debug("Got eXist home: {} from system property 'user.dir': {}", existHome.toAbsolutePath().toString(), userDir.toAbsolutePath().toString());
             return Optional.of(existHome);
         }
@@ -101,12 +101,12 @@ public class ConfigurationHelper {
             try {
                 Path existHome;
                 if ("jar".equals(configUrl.getProtocol())) {
-                    existHome = Paths.get(new URI(configUrl.getPath())).getParent().getParent();
+                    existHome = Paths.get(new URI(configUrl.getPath())).getParent().getParent().normalize();
                     LOG.warn(config + " file was found on the classpath, but inside a Jar file! Derived EXIST_HOME from Jar's parent folder: {}", existHome);
                 } else {
                     existHome = Paths.get(configUrl.toURI()).getParent();
                     if (FileUtils.fileName(existHome).equals("etc")) {
-                        existHome = existHome.getParent();
+                        existHome = existHome.getParent().normalize();
                     }
                     LOG.debug("Got EXIST_HOME from classpath: {}", existHome.toAbsolutePath().toString());
                 }
