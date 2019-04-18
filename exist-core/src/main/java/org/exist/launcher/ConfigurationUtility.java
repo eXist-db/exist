@@ -1,7 +1,5 @@
 package org.exist.launcher;
 
-import org.apache.commons.configuration2.PropertiesConfiguration;
-import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FileUtils;
 
@@ -12,7 +10,6 @@ import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
-import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.*;
 import java.text.SimpleDateFormat;
@@ -85,31 +82,21 @@ public class ConfigurationUtility {
         }
     }
 
-    public static void saveProperties(Properties properties) throws ConfigurationException, IOException {
+    public static void saveProperties(final Properties properties) throws IOException {
         final Path propFile = lookup(LAUNCHER_PROPERTIES_FILE_NAME, false);
-        final PropertiesConfiguration vmProperties = LauncherWrapper.getLauncherProperties();
-        System.out.println("system properties: " + vmProperties.toString());
-        for (final Map.Entry entry: properties.entrySet()) {
-            vmProperties.setProperty(entry.getKey().toString(), entry.getValue());
+        final Properties launcherProperties = LauncherWrapper.getLauncherProperties();
+        for (final String key: properties.stringPropertyNames()) {
+            launcherProperties.setProperty(key, properties.getProperty(key));
         }
-        try (final Writer writer = Files.newBufferedWriter(propFile)) {
-            vmProperties.write(writer);
-        }
-    }
 
-    public static void saveWrapperProperties(Properties properties) throws ConfigurationException, IOException {
-        final Path propFile = lookup("yajsw/wrapper.conf", true);
-        backupOriginal(propFile);
-        final PropertiesConfiguration wrapperConf = new PropertiesConfiguration();
-        try (final Reader reader = Files.newBufferedReader(propFile)) {
-            wrapperConf.read(reader);
+        System.out.println("Launcher properties: " + launcherProperties.toString());
+        for (final String key: launcherProperties.stringPropertyNames()) {
+            System.out.println(key + "=" + launcherProperties.getProperty(key));
         }
-        wrapperConf.setProperty("wrapper.java.maxmemory",
-                properties.getProperty("memory.max", wrapperConf.getString("wrapper.java.maxmemory")));
-        wrapperConf.setProperty("wrapper.java.initmemory",
-                properties.getProperty("memory.min", wrapperConf.getString("wrapper.java.initmemory")));
+        System.out.println();
+
         try (final Writer writer = Files.newBufferedWriter(propFile)) {
-            wrapperConf.write(writer);
+            launcherProperties.store(writer, null);
         }
     }
 

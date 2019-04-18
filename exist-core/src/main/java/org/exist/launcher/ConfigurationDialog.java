@@ -15,8 +15,6 @@ import java.util.stream.Stream;
 import javax.swing.*;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.configuration2.PropertiesConfiguration;
-import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.SystemUtils;
 import org.exist.collections.CollectionCache;
 import org.exist.storage.BrokerPool;
@@ -51,10 +49,10 @@ public class ConfigurationDialog extends JDialog {
 
         this.callback = callback;
         
-        final PropertiesConfiguration vmProperties = LauncherWrapper.getLauncherProperties();
-        final int maxMemProp = vmProperties.getInt("memory.max", 1024);
+        final Properties launcherProperties = LauncherWrapper.getLauncherProperties();
+        final int maxMemProp = Integer.parseInt(launcherProperties.getProperty("memory.max", "1024"));
         maxMemory.setValue(maxMemProp);
-        final int minMemProp = vmProperties.getInt("memory.min", 64);
+        final int minMemProp = Integer.parseInt(launcherProperties.getProperty("memory.min", "64"));
         minMemory.setValue(minMemProp);
         
         try {
@@ -504,12 +502,6 @@ public class ConfigurationDialog extends JDialog {
             // save the launcher properties
             ConfigurationUtility.saveProperties(properties);
 
-            // only use the YAJSW on Windows!!!
-            if (SystemUtils.IS_OS_WINDOWS) {
-                // update the YAJSW properties
-                ConfigurationUtility.saveWrapperProperties(properties);
-            }
-
             properties.clear();
 
             // update conf.xml
@@ -518,9 +510,10 @@ public class ConfigurationDialog extends JDialog {
             properties.setProperty("dataDir", dataDir.getText());
             ConfigurationUtility.saveConfiguration("conf.xml", "conf.xsl", properties);
 
+            properties.clear();
+
             if (jettyConfigChanged) {
                 // update Jetty confs
-                properties.clear();
                 properties.setProperty("port", httpPort.getValue().toString());
                 properties.setProperty("port.ssl", sslPort.getValue().toString());
                 ConfigurationUtility.saveConfiguration("jetty/jetty-ssl.xml", "jetty.xsl", properties);
@@ -542,7 +535,7 @@ public class ConfigurationDialog extends JDialog {
                     callback.accept(true);
                 }
             }
-        } catch (final IOException | ConfigurationException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Failed to save Java settings: " + e.getMessage(),
                     "Save Error", JOptionPane.ERROR_MESSAGE);
