@@ -136,7 +136,7 @@
             <dependency>
                 <groupId>com.evolvedbinary.j8fu</groupId>
                 <artifactId>j8fu</artifactId>
-                <version>1.21</version>
+                <version>1.22</version>
             </dependency>
 
             <dependency>
@@ -751,6 +751,26 @@
         <pluginRepository>
             <id>clojars.org</id>
             <url>http://clojars.org/repo</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>exist-db</id>
+            <url>http://repo.evolvedbinary.com/repository/exist-db/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>exist-db-snapshots</id>
+            <url>http://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </pluginRepository>
     </pluginRepositories>
 
