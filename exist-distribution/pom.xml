@@ -28,6 +28,7 @@
         <expath.pkg.dir>${project.build.directory}/expath-pkgs</expath.pkg.dir>
         <mac.bundle.dir>${project.build.directory}/${project.artifactId}-${project.version}.app</mac.bundle.dir>
         <mac.bundle.resources.dir>${mac.bundle.dir}/Contents/Resources</mac.bundle.resources.dir>
+        <mac.dmg>${project.build.directory}/${project.artifactId}-${project.version}.dmg</mac.dmg>
         <mac.codesign.identity>Developer ID Application: Evolved Binary Ltd</mac.codesign.identity>
     </properties>
 
@@ -851,6 +852,7 @@
                             <mainClassName>org.exist.start.Main</mainClassName>
                             <executableName>eXist-JavaAppLauncher</executableName>
                             <jvmRequired>1.8</jvmRequired>
+                            <minimumSystemVersion>10.7</minimumSystemVersion>
                             <version>${project.version}</version>
                             <shortVersion>${project.version}</shortVersion>
                             <icon>icon.icns</icon>
@@ -889,22 +891,24 @@
         </plugins>
     </build>
 
+
     <profiles>
         <profile>
-            <id>codesign-mac</id>
+            <id>codesign-mac-app</id>
             <activation>
-                <!-- TODO(AR) should be disabled by default, and only usable from Mac -->
                 <os>
                     <family>mac</family>
                 </os>
+                <property>
+                    <name>mac-signing</name>
+                    <value>true</value>
+                </property>
             </activation>
-
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.6.0</version>
                         <executions>
                             <execution>
                                 <id>mac-codesign-app</id>
@@ -926,7 +930,124 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
 
+
+        <profile>
+            <id>mac-dmg-on-mac</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>mac-app-dmg-on-mac</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>${project.basedir}/src/main/scripts/create-dmg-mac.sh</executable>
+                                    <arguments>
+                                        <argument>${mac.bundle.dir}</argument>
+                                        <argument>eXist-db</argument>
+                                        <argument>${project.basedir}/src/dmg/background.png</argument>
+                                        <argument>${project.basedir}/src/dmg/VolumeIcon.icns</argument>
+                                        <argument>${project.basedir}/src/dmg/App_DS_Store</argument>
+                                        <argument>${mac.dmg}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+
+        <profile>
+            <id>mac-dmg-on-unix</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                    <name>Linux</name>
+                </os>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>mac-app-dmg-on-unix</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>${project.basedir}/src/main/scripts/create-dmg-unix.sh</executable>
+                                    <arguments>
+                                        <argument>${mac.bundle.dir}</argument>
+                                        <argument>eXist-db</argument>
+                                        <argument>${project.basedir}/src/dmg/background.png</argument>
+                                        <argument>${project.basedir}/src/dmg/VolumeIcon.icns</argument>
+                                        <argument>${project.basedir}/src/dmg/App_DS_Store</argument>
+                                        <argument>${mac.dmg}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+
+        <profile>
+            <id>codesign-mac-dmg</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+                <property>
+                    <name>mac-signing</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>mac-codesign-dmg</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>/usr/bin/codesign</executable>
+                                    <arguments>
+                                        <argument>--force</argument>
+                                        <argument>--sign</argument>
+                                        <argument>${mac.codesign.identity}</argument>
+                                        <argument>${mac.dmg}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
+
 </project>
