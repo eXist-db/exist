@@ -4,6 +4,7 @@ xquery version "3.1";
 module namespace xid="http://exist-db.org/xquery/test/xmlid";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
+declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 declare variable $xid:COLLECTION_NAME := "test-xmlid";
 
@@ -13,10 +14,20 @@ declare variable $xid:XML :=
         <item xml:id="123"/>
     </test>]``;
 
+declare variable $xid:XML2 :=
+    ``[<seg xmlns:tei="http://www.tei-c.org/ns/1.0">
+           <w xmlns="http://www.tei-c.org/ns/1.0" lemma="hippocratis" pos="fw-la" rendition="#hi" xml:id="A01622-005-a-05590">Hippocratis</w>
+           <w xmlns="http://www.tei-c.org/ns/1.0" lemma="&amp;" pos="cc" xml:id="A01622-005-a-05600">&amp;</w>
+           <w xmlns="http://www.tei-c.org/ns/1.0" lemma="galeni" pos="fw-la" rendition="#hi" xml:id="A01622-005-a-05610">Galeni</w>
+           <w xmlns="http://www.tei-c.org/ns/1.0" lemma="praeceptis" pos="fw-la" xml:id="A01622-005-a-05620">praeceptis</w>
+           <pc xmlns="http://www.tei-c.org/ns/1.0" xml:id="A01622-005-a-05630">,</pc>
+       </seg>]``;
+
 declare
 %test:setUp
 function xid:setup() {
-    xmldb:create-collection("/db", $xid:COLLECTION_NAME)
+    xmldb:create-collection("/db", $xid:COLLECTION_NAME),
+    xmldb:store($xid:COLLECTION_NAME, "tei.xml", $xid:XML2)
 };
 
 declare
@@ -72,4 +83,12 @@ function xid:constructed-attribute() {
     return (
         $test/id("nym_Ͷαναξιμοῦς")
     )
+};
+
+declare
+    %test:assertEquals(1)
+function xid:enclosed-expression() {
+    let $xml := <test>{doc($xid:COLLECTION_NAME || "/tei.xml")//tei:w}</test>
+    return
+    	count($xml/id("A01622-005-a-05590"))
 };
