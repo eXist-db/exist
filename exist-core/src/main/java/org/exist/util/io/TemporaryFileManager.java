@@ -33,8 +33,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.util.FileUtils;
 
 /**
@@ -74,7 +74,7 @@ import org.exist.util.FileUtils;
  */
 public class TemporaryFileManager {
 
-    private final static Log LOG = LogFactory.getLog(TemporaryFileManager.class);
+    private final static Logger LOG = LogManager.getLogger(TemporaryFileManager.class);
 
     private static final String FOLDER_PREFIX = "exist-db-temp-file-manager";
     private static final String FILE_PREFIX = "exist-db-temp";
