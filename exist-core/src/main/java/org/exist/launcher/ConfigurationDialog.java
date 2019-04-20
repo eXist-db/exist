@@ -50,7 +50,7 @@ public class ConfigurationDialog extends JDialog {
         this.callback = callback;
         
         final Properties launcherProperties = LauncherWrapper.getLauncherProperties();
-        final int maxMemProp = Integer.parseInt(launcherProperties.getProperty("memory.max", "1024"));
+        final int maxMemProp = Integer.parseInt(launcherProperties.getProperty("memory.max", "2048"));
         maxMemory.setValue(maxMemProp);
         final int minMemProp = Integer.parseInt(launcherProperties.getProperty("memory.min", "64"));
         minMemory.setValue(minMemProp);
