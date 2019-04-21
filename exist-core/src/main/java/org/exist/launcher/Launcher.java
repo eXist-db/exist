@@ -412,6 +412,7 @@ public class Launcher extends Observable implements Observer {
 
                 try {
                     serviceManager.install();
+                    serviceManager.start();
                     updateGuiServiceState();
                     showTrayInfoMessage("Service installed and started");
                 } catch (final ServiceManagerException e) {
