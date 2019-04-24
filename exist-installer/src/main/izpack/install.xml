@@ -56,6 +56,7 @@
         <variable name="JDKPathPanel.skipIfValid" value="yes"/>
         <variable name="JDKPathPanel.minVersion" value="1.8"/>
         <variable name="ShowCreateDirectoryMessage" value="false"/>
+        <variable name="TargetPanel.dir.windows" value="${ENV[SystemDrive]}\${APP_NAME}"/>
     </variables>
 
     <dynamicvariables>
