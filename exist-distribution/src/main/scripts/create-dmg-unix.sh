@@ -19,7 +19,7 @@ img_size=$(($base_size + 10))
 
 # Create a temporary Disk Image
 dd if=/dev/zero of=$tmp_dmg.dmg bs=1M count=$img_size
-/sbin/mkfs.hfsplus -v $2 tmp_dmg.dmg
+/sbin/mkfs.hfsplus -v $2 $tmp_dmg.dmg
 
 # Attach the temporary image
 username=$(whoami)
