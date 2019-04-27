@@ -52,7 +52,10 @@ public class JSONWriterTest {
     static {
         documentBuilderFactory.setIgnoringElementContentWhitespace(false);
     }
-    private static final TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
+    private static final TransformerFactory transformerFactory;
+    static {
+        transformerFactory = TransformerFactory.newInstance("net.sf.saxon.TransformerFactoryImpl", null);
+    }
 
     @Test
     public void whitespaceTextNodes() throws IOException, TransformerException, ParserConfigurationException, SAXException {
