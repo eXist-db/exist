@@ -24,9 +24,8 @@ import org.easymock.Capture;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import javax.xml.soap.Node;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -41,7 +40,7 @@ import static org.exist.indexing.lucene.LuceneIndexConfig.QNAME_ATTR;
 public class RangeIndexConfigTest {
 
     /**
-     * @see https://github.com/eXist-db/exist/issues/1339
+     * {@see https://github.com/eXist-db/exist/issues/1339}
      */
     @Test
     public void errorsHaveSourceContext() throws NoSuchFieldException, IllegalAccessException {
