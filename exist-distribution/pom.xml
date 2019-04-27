@@ -984,6 +984,11 @@
                     <family>unix</family>
                     <name>Linux</name>
                 </os>
+                <!-- Note: Travis and AppVeyor etc don't support the loopback filesystem required by create-dmg-unix.sh -->
+                <property>
+                    <name>env.CI</name>
+                    <value>!true</value>
+                </property>
             </activation>
             <build>
                 <plugins>
