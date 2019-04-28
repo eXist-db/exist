@@ -26,7 +26,11 @@ cp $4 $tmp_dmg_mount/$2/.VolumeIcon.icns
 cp $5 $tmp_dmg_mount/$2/.DS_Store
 
 # Indicate that we want a custom icon
-/Applications/Xcode.app/Contents/Developer/Tools/SetFile -a -c $tmp_dmg_mount/$2
+if [[ -f "/Applications/Xcode.app/Contents/Developer/Tools/SetFile" ]]; then
+    /Applications/Xcode.app/Contents/Developer/Tools/SetFile -a -c $tmp_dmg_mount/$2
+else
+    /usr/bin/SetFile -a -c $tmp_dmg_mount/$2
+fi
 
 # Add a symbolic link to the Applications directory
 ln -s /Applications $tmp_dmg_mount/$2/Applications
