@@ -11,6 +11,15 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
 
+# temporary prerequisites
+install:
+   - cmd: git clone --single-branch --branch adam-custom-build https://github.com/adamretter/appassembler.git C:\Users\appveyor\AppData\Local\Temp\appassembler && cd C:\Users\appveyor\AppData\Local\Temp\appassembler && mvn clean install -DskipTests
+   - cmd: git clone --single-branch --branch feature/redirect-file-name https://github.com/adamretter/maven-download-plugin.git C:\Users\appveyor\AppData\Local\Temp\maven-download-plugin && cd C:\Users\appveyor\AppData\Local\Temp\maven-download-plugin && mvn clean install -DskipTests
+   - cmd: cd %APPVEYOR_BUILD_FOLDER%
+   - sh: git clone --single-branch --branch adam-custom-build https://github.com/adamretter/appassembler.git /tmp/appassembler && cd /tmp/appassembler && mvn clean install -DskipTests
+   - sh: git clone --single-branch --branch feature/redirect-file-name https://github.com/adamretter/maven-download-plugin.git /tmp/maven-download-plugin && cd /tmp/maven-download-plugin && mvn clean install -DskipTests
+   - sh: cd $APPVEYOR_BUILD_FOLDER
+
 build_script:
   - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 
