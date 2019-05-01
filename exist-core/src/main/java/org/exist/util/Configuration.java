@@ -127,6 +127,7 @@ public class Configuration implements ErrorHandler
 
                 if(is != null) {
                     LOG.info("Reading configuration from classloader");
+                    configFilePath = Optional.of(Paths.get(Configuration.class.getClassLoader().getResource(configFilename).toURI()));
                 }
             } catch(final Exception e) {
                 // EB: ignore and go forward, e.g. in case there is an absolute
