@@ -478,6 +478,25 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>adjust-web-xml-for-appassembler</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>${assemble.dir}/etc/webapp/WEB-INF</dir>
+                                    <includes>
+                                        <include>web.xml</include>
+                                    </includes>
+                                    <stylesheet>src/main/xslt/web.xslt</stylesheet>
+                                    <outputDir>${assemble.dir}/etc/webapp/WEB-INF</outputDir>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>adjust-jetty-deploy-for-mac-bundle</id>
                         <phase>package</phase>
                         <goals>
@@ -496,6 +515,25 @@
                                     </includes>
                                     <stylesheet>src/main/xslt/jetty-deploy.xslt</stylesheet>
                                     <outputDir>${mac.bundle.resources.dir}/etc/jetty</outputDir>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>adjust-web-xml-for-mac-bundle</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>${mac.bundle.resources.dir}/etc/webapp/WEB-INF</dir>
+                                    <includes>
+                                        <include>web.xml</include>
+                                    </includes>
+                                    <stylesheet>src/main/xslt/web.xslt</stylesheet>
+                                    <outputDir>${mac.bundle.resources.dir}/etc/webapp/WEB-INF</outputDir>
                                 </transformationSet>
                             </transformationSets>
                         </configuration>
