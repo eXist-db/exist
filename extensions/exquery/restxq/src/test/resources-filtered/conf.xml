@@ -156,7 +156,7 @@
         collections, you can also increase the collectionCacheSize value 
     -->
     <db-connection cacheSize="256M" checkMaxCacheSize="true" collectionCache="64M" database="native"
-        files="webapp/WEB-INF/data" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
+        files="${basedir}/target/test-data" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
         doc-ids="default" minDiskSpace="128M">
 
         <!--
@@ -302,7 +302,7 @@
                 and if inconsistencies are found in the db, it writes an emergency
                 backup to the same directory.
         -->
-        <recovery enabled="yes"  group-commit="no"   journal-dir="webapp/WEB-INF/data" 
+        <recovery enabled="yes"  group-commit="no"   journal-dir="${basedir}/target/test-data"
                   size="100M" sync-on-commit="no"  force-restart="no"  consistency-check="yes"/>
 
         <!--
@@ -730,7 +730,11 @@
         <builtin-modules>
 
             <!-- Module under test -->
-            <module uri="http://exist-db.org/xquery/file" class="org.exist.xquery.modules.file.FileModule"/>
+            <!-- module uri="http://exist-db.org/xquery/cache" class="org.exist.xquery.modules.cache.CacheModule"/ -->
+
+            <!-- dependencies for restxq tests -->
+            <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule"/>
+            <module uri="http://exist-db.org/xquery/securitymanager" class="org.exist.xquery.functions.securitymanager.SecurityManagerModule"/>
 
 
             <!-- Needed for XQSuite! -->
