@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,28 +115,27 @@ public class JnlpJarFiles {
             if (pkgz != null) {
                 allFiles.put(FileUtils.fileName(pkgz), pkgz);
             }
-
         }
     }
 
     /**
      * Creates a new instance of JnlpJarFiles
      *
-     * @param jnlpHelper
+     * @param libDir
      */
-    public JnlpJarFiles(final JnlpHelper jnlpHelper) {
+    public JnlpJarFiles(final Path libDir) {
         LOGGER.info("Initializing jar files Webstart");
 
         LOGGER.debug(String.format("Number of webstart jars=%s", allJarNames.length));
 
-        // Setup CORE jars
+        // Setup jars
         for (final String jarname : allJarNames) {
-            Path location = getJarFromLocation(jnlpHelper.getCoreJarsFolder(), jarname);
+            final Path location = getJarFromLocation(libDir, jarname);
             addToJars(location);
         }
 
-        // Setup exist.jar
-        mainJar = jnlpHelper.getExistJarFolder().resolve("exist.jar");
+        // Setup exist-core-x.y.z.jar
+        mainJar = getJarFromLocation(libDir, "exist-core-%latest%");
         addToJars(mainJar);
     }
 
@@ -146,7 +145,9 @@ public class JnlpJarFiles {
      * @return list of jar files.
      */
     public List<Path> getAllWebstartJars() {
-        return allFiles.values().stream().filter((file) -> (FileUtils.fileName(file).endsWith(".jar"))).collect(Collectors.toList());
+        final List<Path> allWebstartJars = allFiles.values().stream().filter((file) -> (FileUtils.fileName(file).endsWith(".jar"))).collect(Collectors.toList());
+        allWebstartJars.sort(Comparator.comparing(p -> p.toAbsolutePath().toString()));
+        return allWebstartJars;
     }
 
     /**
@@ -176,5 +177,4 @@ public class JnlpJarFiles {
     public long getLastModified() throws IOException {
         return (mainJar == null) ? -1 : Files.getLastModifiedTime(mainJar).toMillis();
     }
-
 }

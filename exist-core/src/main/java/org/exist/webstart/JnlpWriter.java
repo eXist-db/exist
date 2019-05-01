@@ -266,7 +266,7 @@ public class JnlpWriter {
         os.flush();
     }
 
-    void sendImage(JnlpHelper jh, JnlpJarFiles jf, String filename, HttpServletResponse response) throws IOException {
+    void sendImage(JnlpJarFiles jf, String filename, HttpServletResponse response) throws IOException {
         LOGGER.debug("Send image " + filename);
 
         String type = getImageMimeType(filename);
