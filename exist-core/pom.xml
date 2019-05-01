@@ -661,7 +661,10 @@
                     <reuseForks>false</reuseForks>
                     <argLine>-Dlog4j.configurationFile=${project.build.testOutputDirectory}/log4j2.xml</argLine>
                     <systemPropertyVariables>
+                        <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
+                        <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
                         <exist.jetty.standalone.webapp.dir>${project.build.testOutputDirectory}/standalone-webapp</exist.jetty.standalone.webapp.dir>
+                        <file.encoding>${project.build.sourceEncoding}</file.encoding>
                     </systemPropertyVariables>
 
                     <excludes>
