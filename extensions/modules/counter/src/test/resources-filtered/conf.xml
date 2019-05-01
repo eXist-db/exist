@@ -53,7 +53,7 @@
         - http://exist-db.org/exist/apps/doc/documentation.xml
         - http://atomic.exist-db.org/
         
-    Version: 5.0.0-SNAPSHOT
+    Version: 3.3.0-SNAPSHOT
 
 -->
 <exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/conf.xsd">
@@ -138,7 +138,6 @@
 
             If you need stable, incremental ids, set the option doc-ids to
             "incremental".
-
         - minDiskSpace:
             The amount of disk space (in megabytes) which should be available for
             the database to continue operations. If free disk space goes below
@@ -146,47 +145,6 @@
             switch to read-only mode in order to prevent potential data loss. 
             Set the limit large enough to allow all pending operations to 
             complete. The default is 1 gigabyte.
-
-        - posix-chown-restricted:
-           As defined by POSIX.1 for _POSIX_CHOWN_RESTRICTED.
-
-           When posix-chown-restricted="true" (the default) then:
-               1. Only a superuser process can change the user ID of the file.
-               2. A non-superuser process can change the group ID of the file
-                  if the process owns the file (the effective user ID equals
-                  the user ID of the file), and group equals either the
-                  effective group ID of the process or one of the
-                  process’s supplementary group IDs.
-           This means that when posix-chown-restricted="true", you can’t change
-           the user ID of your files. You can change the group ID of files that
-           you own, but only to groups that you belong to.
-
-           When posix-chown-restricted="false" you can change the user ID of
-           any file that you own, effectively "giving away the file" to
-           another user. Such a setting has negative security implications,
-           further details can be seen in the "Rationale" section for the
-           chown function in the POSIX.1-2017 (Issue 7, 2018 edition) standard.
-           See: http://pubs.opengroup.org/onlinepubs/9699919799/functions/chown.html#tag_16_59_07
-
-        - preserve-on-copy
-            When copying Collections and Documents within the database, the
-            default (`false`), is not to preserve their attributes
-            (modification time, mode, user-id, group-id, and ACL).
-
-            NOTE: Not preserving attributes, is inline with both the GNU and
-            BSD `cp` commands, and therefore expected behaviour; The target
-            Collection or Document is created following the rules of the
-            target parent, and the effective user and their umask.
-
-            Setting preserve-on-copy="true" changes the default behaviour
-            so that the target Collection or Document of a copy, has the same
-            attributes as the source.
-
-            The preserve-on-copy setting can be overridden on a case-by-case
-            basis by setting the `preserve` flag to either `true` or `false`
-            when calling xmldb:copy(), or via any other API that supports copy.
-            Omitting the preserve flag when calling a copy operation, implies
-            the behaviour that is set in this configuration.
     
         =====================================================================
         
@@ -198,8 +156,8 @@
         collections, you can also increase the collectionCacheSize value 
     -->
     <db-connection cacheSize="256M" checkMaxCacheSize="true" collectionCache="64M" database="native"
-        files="webapp/WEB-INF/data" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
-        doc-ids="default" minDiskSpace="128M" posix-chown-restricted="true" preserve-on-copy="false">
+        files="${basedir}/target/test-data" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
+        doc-ids="default" minDiskSpace="128M">
 
         <!--
             Startup Triggers are executed before the database becomes generally available
@@ -207,11 +165,10 @@
         -->
         <startup>
             <triggers>
-
-		<!--
-		    Trigger for registering the GNU Crypto JCE Provider with Java
-		-->
-		<trigger class="org.exist.security.BouncyCastleJceProviderStartupTrigger"/>
+                <!--
+                    Trigger for registering the GNU Crypto JCE Provider with Java
+                -->
+                <trigger class="org.exist.security.BouncyCastleJceProviderStartupTrigger"/>
 
                 <!--
                     Trigger for registering eXists XML:DB URL handler with Java
@@ -223,31 +180,6 @@
                     <!-- Keep's stream data in memory -->
                     <parameter name="mode" value="memory"/>
                 </trigger>
-
-                <!-- 
-                    EXQuery RESTXQ trigger to load the RESTXQ Registry at startup time 
-                -->
-                <trigger class="org.exist.extensions.exquery.restxq.impl.RestXqStartupTrigger"/>
-                
-                <!-- 
-                    AutoDeploymentTrigger will install any .xar application package it finds
-                    in the autodeploy directory unless the application has already been installed
-                    in the db. 
-                -->   
-                <trigger class="org.exist.repo.AutoDeploymentTrigger"/>
-                
-                <!-- 
-                    XQueryStartupTrigger will execute all xquery scripts stored in the
-                    /db/system/autostart collection during startup of the database. 
-
-                    The collection must be owned by SYSTEM/DBA mode "rwxrwx___" (0770)
-					
-                    Each of the scripts must be owned by a DBA user, group DBA, 
-                    mode "rwxrwx___" (0770) with mime-type "application/xquery". 
-                    The names of the scripts must end with ".xq", ".xqy" or ".xquery".
-                -->
-                <!--<trigger class="org.exist.collections.triggers.XQueryStartupTrigger"/>-->
-                    
             </triggers>
         </startup>
 
@@ -291,9 +223,15 @@
                     by threads, each thread needs a private copy of a query.             
                                                                                          
                 - timeout:                                                               
-                    amount of time that a query will be cached in the query-pool in milliseconds.
+                    amount of time that a query will be cached in the query-pool.        
+                                                                                         
+                - timeout-check-interval:                                                
+                    time between checking for timed out queries. For value "-1"          
+                    the time out is switched off, resulting cached queries to remain     
+                    in the cache forever.                                                
             -->
-        <query-pool max-stack-size="64" size="128" timeout="120000"/>
+        <query-pool max-stack-size="64" size="128" timeout="120000"                
+                    timeout-check-interval="30000"/>
 
         <!--
             Settings for the journaling and recovery of the database. With 
@@ -364,7 +302,7 @@
                 and if inconsistencies are found in the db, it writes an emergency
                 backup to the same directory.
         -->
-        <recovery enabled="yes"  group-commit="no"   journal-dir="webapp/WEB-INF/data"
+        <recovery enabled="yes"  group-commit="no"   journal-dir="${basedir}/target/test-data"
                   size="100M" sync-on-commit="no"  force-restart="no"  consistency-check="yes"/>
 
         <!--
@@ -456,7 +394,7 @@
         suppress-whitespace="none">
 
         <modules>
-            <module id="spatial-index" connectionTimeout="10000" flushAfter="300" class="org.exist.indexing.spatial.GMLHSQLIndex"/>
+
         </modules>
 
         <!--
@@ -580,18 +518,6 @@
     <!--
         Default settings for parsing structured documents:
 
-        - xml (optional)
-
-            - features
-                Any default SAX2 feature flags to set on the parser
-
-                    - feature
-                        - name
-                            the name of the feature flag
-                        - value
-                            the value of the feature flag
-
-
         - html-to-xml (optional)
 
             - class
@@ -628,22 +554,6 @@
                             the value of the feature flag
     -->
     <parser>
-
-        <xml>
-
-            <features>
-
-                <!-- NOTE: the following feature flags should likely be set in production to ensure a secure environment -->
-
-                <!--
-                <feature name="http://xml.org/sax/features/external-general-entities" value="false"/>
-                <feature name="http://xml.org/sax/features/external-parameter-entities" value="false"/>
-                <feature name="http://javax.xml.XMLConstants/feature/secure-processing" value="true"/>
-                -->
-
-            </features>
-
-        </xml>
 
         <!-- html-to-xml class="org.ccil.cowan.tagsoup.Parser"/ -->
 
@@ -816,12 +726,12 @@
             enable-query-rewriting="yes" backwardCompatible="no" 
             enforce-index-use="always"
             raise-error-on-failed-retrieval="no">
-        
+
         <builtin-modules>
-            <module uri="http://exist-db.org/xquery/spatial" class="org.exist.xquery.modules.spatial.SpatialModule" />
-            <module uri="http://exist-db.org/xquery/util" class="org.exist.xquery.functions.util.UtilModule">
-                <parameter name="evalDisabled" value="true"/>
-            </module>
+
+            <!-- Module under test -->
+            <module uri="http://exist-db.org/xquery/counter" class="org.exist.xquery.modules.file.CounterModule"/>
+
         </builtin-modules>
     </xquery>
 
