@@ -844,7 +844,7 @@
             <plugin>
                 <groupId>com.evolvedbinary.appbundler</groupId>
                 <artifactId>appbundler-maven-plugin</artifactId>
-                <version>1.0</version>
+                <version>1.0.1</version>
                 <executions>
                     <execution>
                         <id>exist-db-mac-app</id>
@@ -858,7 +858,7 @@
                             <mainClassName>org.exist.start.Main</mainClassName>
                             <executableName>eXist-JavaAppLauncher</executableName>
                             <jvmRequired>1.8</jvmRequired>
-                            <minimumSystemVersion>10.7</minimumSystemVersion>
+                            <minimumSystemVersion>10.9</minimumSystemVersion>
                             <version>${project.version}</version>
                             <shortVersion>${project.version}</shortVersion>
                             <icon>icon.icns</icon>
