@@ -918,6 +918,7 @@
                                 <option>-Xms128m</option>
                                 <option>-Dfile.encoding=UTF-8</option>
                                 <option>-Dlog4j.configurationFile=$APP_ROOT/Contents/Resources/etc/log4j2.xml</option>
+                                <option>-Dapp.repo=$APP_ROOT/Contents/Java</option>
                                 <option>-Dexist.home=$APP_ROOT/Contents/Resources</option>
                                 <option>-Dexist.configurationFile=$APP_ROOT/Contents/Resources/etc/conf.xml</option>
                                 <option>-Djetty.home=$APP_ROOT/Contents/Resources</option>

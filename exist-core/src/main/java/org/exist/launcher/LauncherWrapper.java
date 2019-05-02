@@ -154,7 +154,7 @@ public class LauncherWrapper {
         final Properties sysProps = System.getProperties();
         for (final Map.Entry<Object, Object> entry : sysProps.entrySet()) {
             final String key = entry.getKey().toString();
-            if (key.startsWith("exist.") || key.startsWith("log4j.") || key.startsWith("jetty.")) {
+            if (key.startsWith("exist.") || key.startsWith("log4j.") || key.startsWith("jetty.") || key.startsWith("app.")) {
                 args.add("-D" + key + "=" + entry.getValue().toString());
                 if (key.equals("exist.home")) {
                     foundExistHomeSysProp = true;
