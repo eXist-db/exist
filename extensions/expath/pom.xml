@@ -44,15 +44,15 @@
         </dependency>
 
         <dependency>
-            <groupId>org.exist-db.thirdparty.org.expath.http.client</groupId>
+            <groupId>org.expath.http.client</groupId>
             <artifactId>http-client-java</artifactId>
-            <version>20181015</version>
+            <version>1.0.0</version>
         </dependency>
 
         <dependency>
-            <groupId>org.exist-db.thirdparty.org.expath.tools</groupId>
+            <groupId>org.expath.tools</groupId>
             <artifactId>tools-java</artifactId>
-            <version>20151116</version>
+            <version>0.3.0</version>
         </dependency>
 
         <dependency>
