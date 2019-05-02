@@ -345,7 +345,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.exist-db.thirdparty.org.expath.packaging</groupId>
+            <groupId>org.expath.packaging</groupId>
             <artifactId>pkg-java</artifactId>
         </dependency>
 
