@@ -6,6 +6,7 @@
 package org.exist.jetty;
 
 import org.apache.xmlrpc.XmlRpcException;
+import org.exist.client.InteractiveClient;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.SystemExitCodes;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -21,10 +22,6 @@ import se.softhouse.jargo.CommandLineParser;
 import se.softhouse.jargo.ParsedArguments;
 
 import java.io.IOException;
-import java.io.InputStream;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Properties;
 
 import static org.exist.util.ArgumentUtil.getOpt;
@@ -111,21 +108,19 @@ public class ServerShutdown {
     }
 
     private static Properties loadProperties() {
-        final Path propFile = ConfigurationHelper.lookup("client.properties");
-        final Properties properties = new Properties();
         try {
-            if (Files.isReadable(propFile)) {
-                try(final InputStream pin = Files.newInputStream(propFile)) {
-                    properties.load(pin);
-                }
-            } else {
-                try(final InputStream pin = ServerShutdown.class.getResourceAsStream("client.properties")) {
-                    properties.load(pin);
-                }
+            final Properties properties = ConfigurationHelper.loadProperties("client.properties", InteractiveClient.class);
+            if (properties != null) {
+                return properties;
             }
+
+            System.err.println("WARN - Unable to find client.properties");
+
         } catch (final IOException e) {
-            System.err.println("WARN - Unable to load properties from: " + propFile.toAbsolutePath().toString());
+            System.err.println("WARN - Unable to load client.properties: " + e.getMessage());
         }
-        return properties;
+
+        // return new empty properties
+        return new Properties();
     }
 }
