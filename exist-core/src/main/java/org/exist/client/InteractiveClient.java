@@ -1862,22 +1862,20 @@ public class InteractiveClient {
     }*/
 
     private Properties loadClientProperties() {
-        final Path propFile = ConfigurationHelper.lookup("client.properties");
-        final Properties properties = new Properties();
         try {
-            if (Files.isReadable(propFile)) {
-                try(final InputStream pin = Files.newInputStream(propFile)) {
-                    properties.load(pin);
-                }
-            } else {
-                try(final InputStream pin = InteractiveClient.class.getResourceAsStream("client.properties")) {
-                    properties.load(pin);
-                }
+            final Properties properties = ConfigurationHelper.loadProperties("client.properties", getClass());
+            if (properties != null) {
+                return properties;
             }
-        } catch (final NullPointerException | IOException e) {
-            System.err.println("WARN - Unable to load properties from: " + propFile.toAbsolutePath().toString());
+
+            System.err.println("WARN - Unable to find client.properties");
+
+        } catch (final IOException e) {
+            System.err.println("WARN - Unable to load client.properties: " + e.getMessage());
         }
-        return properties;
+
+        // return new empty properties
+        return new Properties();
     }
 
     /**

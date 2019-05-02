@@ -1,5 +1,7 @@
 package org.exist.util;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -7,11 +9,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
 import org.exist.xmldb.DatabaseImpl;
+
+import javax.annotation.Nullable;
 
 public class ConfigurationHelper {
     private final static Logger LOG = LogManager.getLogger(ConfigurationHelper.class); //Logger
@@ -176,5 +181,50 @@ public class ConfigurationHelper {
         } else {
             return Paths.get(path);
         }
+    }
+
+    public static @Nullable Properties loadProperties(final String propertiesFileName,
+            @Nullable final Class<?> classPathRef) throws IOException {
+        // 1) try and load from config path
+        Path propFile = ConfigurationHelper.lookup(propertiesFileName);
+        if (Files.isReadable(propFile)) {
+            try (final InputStream pin = Files.newInputStream(propFile)) {
+                final Properties properties = new Properties();
+                properties.load(pin);
+                return properties;
+            }
+        }
+
+        // 2) try and load from config path set by system property
+        propFile = ConfigurationHelper.getFromSystemProperty().map(p -> p.resolveSibling(propertiesFileName)).orElse(null);
+        if (propFile != null && Files.isReadable(propFile)) {
+            try (final InputStream pin = Files.newInputStream(propFile)) {
+                final Properties properties = new Properties();
+                properties.load(pin);
+                return properties;
+            }
+        }
+
+        if (classPathRef != null) {
+            // 3) try and load from classpath classpathRef.getClassName()/client.properties
+            try (final InputStream pin = classPathRef.getResourceAsStream(propertiesFileName)) {
+                if (pin != null) {
+                    final Properties properties = new Properties();
+                    properties.load(pin);
+                    return properties;
+                }
+            }
+
+            // 4) try and load from classpath client.properties
+            try (final InputStream pin = classPathRef.getResourceAsStream("/" + propertiesFileName)) {
+                if (pin != null) {
+                    final Properties properties = new Properties();
+                    properties.load(pin);
+                    return properties;
+                }
+            }
+        }
+
+        return null;
     }
 }
