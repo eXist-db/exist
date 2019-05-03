@@ -361,9 +361,15 @@ public class Collations {
         if (collator == null) {
             return s1.contains(s2);
         } else {
-            final SearchIterator searchIterator =
-                    new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator)collator);
-            return searchIterator.first() >= 0;
+            if (s2.length() == 0) {
+                return true;
+            } else if (s1.length() == 0) {
+                return false;
+            } else {
+                final SearchIterator searchIterator =
+                        new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator) collator);
+                return searchIterator.first() >= 0;
+            }
         }
     }
 
