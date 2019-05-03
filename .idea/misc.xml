@@ -28,6 +28,9 @@
   <component name="FrameworkDetectionExcludesConfiguration">
     <type id="web" />
   </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="XmbQDaQz" />
+  </component>
   <component name="PDMPlugin">
     <option name="skipTestSources" value="false" />
   </component>
