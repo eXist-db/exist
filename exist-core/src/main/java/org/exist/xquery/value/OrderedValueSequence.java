@@ -34,6 +34,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -124,15 +125,9 @@ public class OrderedValueSequence extends AbstractSequence {
 
     public void sort() {
 //		FastQSort.sort(items, 0, count - 1);
-        items =
-                Stream.of(items).filter(Objects::nonNull)
-                        .parallel()
-                        .sorted()
-                        .map(entry -> {
-                            entry.clear();
-                            return entry;
-                        })
-                        .toArray(Entry[]::new);
+
+        Arrays.parallelSort(items, 0, count);
+        Arrays.stream(items, 0, count).parallel().forEach(Entry::clear);
     }
 
     @Override
@@ -172,56 +167,52 @@ public class OrderedValueSequence extends AbstractSequence {
             final NodeSet set = new AVLTreeNodeSet();
             //We can't make it from an ExtArrayNodeSet (probably because it is sorted ?)
             //NodeSet set = new ArraySet(100);
-            for (int i = 0; i < items.length; i++) {
-                //TODO : investigate why we could have null here
-                if (items[i] != null) {
+            for (int i = 0; i < count; i++) {
+                NodeValue v = (NodeValue) items[i].item;
+                if (v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
 
-                    NodeValue v = (NodeValue) items[i].item;
-                    if (v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
+                    // found an in-memory document
+                    final org.exist.dom.memtree.DocumentImpl doc = v.getType() == Type.DOCUMENT ? (org.exist.dom.memtree.DocumentImpl)v : ((NodeImpl) v).getOwnerDocument();
+                    if (doc == null) {
+                        continue;
+                    }
+                    // make this document persistent: doc.makePersistent()
+                    // returns a map of all root node ids mapped to the corresponding
+                    // persistent node. We scan the current sequence and replace all
+                    // in-memory nodes with their new persistent node objects.
+                    final DocumentImpl expandedDoc = doc.expandRefs(null);
+                    final org.exist.dom.persistent.DocumentImpl newDoc = expandedDoc.makePersistent();
+                    if (newDoc != null) {
+                        final NodeId rootId = newDoc.getBrokerPool().getNodeFactory().createInstance();
+                        for (int j = i; j < count; j++) {
+                            v = (NodeValue) items[j].item;
+                            if (v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
+                                NodeImpl node = (NodeImpl) v;
+                                final Document nodeOwnerDoc = node.getNodeType() == Node.DOCUMENT_NODE ? (org.exist.dom.memtree.DocumentImpl)v : ((NodeImpl) v).getOwnerDocument();
 
-                        // found an in-memory document
-                        final org.exist.dom.memtree.DocumentImpl doc = v.getType() == Type.DOCUMENT ? (org.exist.dom.memtree.DocumentImpl)v : ((NodeImpl) v).getOwnerDocument();
-                        if (doc == null) {
-                            continue;
-                        }
-                        // make this document persistent: doc.makePersistent()
-                        // returns a map of all root node ids mapped to the corresponding
-                        // persistent node. We scan the current sequence and replace all
-                        // in-memory nodes with their new persistent node objects.
-                        final DocumentImpl expandedDoc = doc.expandRefs(null);
-                        final org.exist.dom.persistent.DocumentImpl newDoc = expandedDoc.makePersistent();
-                        if (newDoc != null) {
-                            final NodeId rootId = newDoc.getBrokerPool().getNodeFactory().createInstance();
-                            for (int j = i; j < count; j++) {
-                                v = (NodeValue) items[j].item;
-                                if (v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
-                                    NodeImpl node = (NodeImpl) v;
-                                    final Document nodeOwnerDoc = node.getNodeType() == Node.DOCUMENT_NODE ? (org.exist.dom.memtree.DocumentImpl)v : ((NodeImpl) v).getOwnerDocument();
-
-                                    if (nodeOwnerDoc == doc) {
-                                        node = expandedDoc.getNode(node.getNodeNumber());
-                                        NodeId nodeId = node.getNodeId();
-                                        if (nodeId == null) {
-                                            throw new XPathException("Internal error: nodeId == null");
-                                        }
-                                        if (node.getNodeType() == Node.DOCUMENT_NODE) {
-                                            nodeId = rootId;
-                                        } else {
-                                            nodeId = rootId.append(nodeId);
-                                        }
-                                        final NodeProxy p = new NodeProxy(newDoc, nodeId, node.getNodeType());
-                                        if (p != null) {
-                                            // replace the node by the NodeProxy
-                                            items[j].item = p;
-                                        }
+                                if (nodeOwnerDoc == doc) {
+                                    node = expandedDoc.getNode(node.getNodeNumber());
+                                    NodeId nodeId = node.getNodeId();
+                                    if (nodeId == null) {
+                                        throw new XPathException("Internal error: nodeId == null");
+                                    }
+                                    if (node.getNodeType() == Node.DOCUMENT_NODE) {
+                                        nodeId = rootId;
+                                    } else {
+                                        nodeId = rootId.append(nodeId);
+                                    }
+                                    final NodeProxy p = new NodeProxy(newDoc, nodeId, node.getNodeType());
+                                    if (p != null) {
+                                        // replace the node by the NodeProxy
+                                        items[j].item = p;
                                     }
                                 }
                             }
                         }
-                        set.add((NodeProxy) items[i].item);
-                    } else {
-                        set.add((NodeProxy) v);
                     }
+                    set.add((NodeProxy) items[i].item);
+                } else {
+                    set.add((NodeProxy) v);
                 }
             }
             return set;
