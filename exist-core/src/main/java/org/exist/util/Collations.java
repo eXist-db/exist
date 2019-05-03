@@ -109,6 +109,8 @@ public class Collations {
      * @throws XPathException If an error occurs whilst constructing the Collator
      */
     public static @Nullable Collator getCollationFromURI(final String uri) throws XPathException {
+        final Collator collator;
+
         if (uri.startsWith(EXIST_COLLATION_URI) || uri.startsWith(UCA_COLLATION_URI) || uri.startsWith("?")) {
             URI u;
             try {
@@ -116,9 +118,10 @@ public class Collations {
             } catch (final URISyntaxException e) {
                 return null;
             }
+
             final String query = u.getQuery();
             if (query == null) {
-                return Collator.getInstance();
+                collator = Collator.getInstance();
 
             } else {
 
@@ -206,20 +209,20 @@ public class Collations {
                     }
                 }
 
-                return getCollationFromParams(fallback, lang, version,
+                collator = getCollationFromParams(fallback, lang, version,
                         strength, maxVariable, alternate, backwards,
                         normalization, caseLevel, caseFirst, numeric,
                         reorder, decomposition);
             }
         } else if(HTML_ASCII_CASE_INSENSITIVE_COLLATION_URI.equals(uri)) {
             try {
-                return getHtmlAsciiCaseInsensitiveCollator();
+                collator = getHtmlAsciiCaseInsensitiveCollator();
             } catch (final Exception e) {
                 throw new XPathException("Unable to instantiate HTML ASCII Case Insensitive Collator: " + e.getMessage(), e);
             }
         } else if(XQTS_ASCII_CASE_BLIND_COLLATION_URI.equals(uri)) {
             try {
-                return getXqtsAsciiCaseBlindCollator();
+                collator = getXqtsAsciiCaseBlindCollator();
             } catch (final Exception e) {
                 throw new XPathException("Unable to instantiate XQTS ASCII Case Blind Collator: " + e.getMessage(), e);
             }
@@ -234,19 +237,26 @@ public class Collations {
                     logger.error(msg);
                     throw new XPathException(ErrorCodes.FOCH0002, msg);
                 }
-                return (Collator) collatorClass.newInstance();
+                collator = (Collator) collatorClass.newInstance();
             } catch (final Exception e) {
                 final String msg = "The specified collator class " + uriClassName + " could not be found";
                 logger.error(msg);
                 throw new XPathException(ErrorCodes.FOCH0002, msg, e);
             }
         } else if (UNICODE_CODEPOINT_COLLATION_URI.equals(uri)) {
-            return null;
+            collator = null;
         } else {
             final String msg = "Unknown collation : '" + uri + "'";
             logger.error(msg);
             throw new XPathException(ErrorCodes.FOCH0002, msg);
         }
+
+        if (collator != null) {
+            // make immutable and therefore thread-safe!
+            collator.freeze();
+        }
+
+        return collator;
     }
 
     /**
