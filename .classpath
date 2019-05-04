@@ -4,15 +4,15 @@
 	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.5.jar"/>
 	<classpathentry kind="lib" path="extensions/expath/lib/http-client-java-1.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="extensions/expath/lib/tools-java-1.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-annotations-common-0.1.33.jar"/>
-	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-annotations-common-api-0.1.33.jar"/>
-	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-common-0.1.33.jar"/>
-	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-serialization-annotations-0.1.33.jar"/>
-	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-serialization-annotations-api-0.1.33.jar"/>
-	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-xquery-0.1.33.jar"/>
-	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-xquery3-0.1.33.jar"/>
-	<classpathentry kind="lib" path="extensions/exquery/restxq/lib/exquery-restxq-0.1.33.jar"/>
-	<classpathentry kind="lib" path="extensions/exquery/restxq/lib/exquery-restxq-api-0.1.33.jar"/>
+	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-annotations-common-0.1.34.jar"/>
+	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-annotations-common-api-0.1.34.jar"/>
+	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-common-0.1.34.jar"/>
+	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-serialization-annotations-0.1.34.jar"/>
+	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-serialization-annotations-api-0.1.34.jar"/>
+	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-xquery-0.1.34.jar"/>
+	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-xquery3-0.1.34.jar"/>
+	<classpathentry kind="lib" path="extensions/exquery/restxq/lib/exquery-restxq-0.1.34.jar"/>
+	<classpathentry kind="lib" path="extensions/exquery/restxq/lib/exquery-restxq-api-0.1.34.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-analyzers-common-4.10.4.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-analyzers-icu-4.10.4.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-4.10.4.jar"/>
