@@ -93,7 +93,6 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
 
 		//Temporary for testing
 		addPlugin("org.exist.scheduler.SchedulerManager");
-		addPlugin("org.exist.monitoring.MonitoringManager");
 	}
 
 	@Override
