@@ -229,11 +229,6 @@
         <Logger name="de.betterform" additivity="false" level="warn">
             <AppenderRef ref="exist.betterform"/>
         </Logger>
-        
-        <!-- Metadata Storage extension -->
-        <Logger name="mdStorage" additivity="false" level="warn">
-            <AppenderRef ref="exist.mdStorage"/>
-        </Logger>
 
         <!-- expath pkg repo -->
         <Logger name="org.expath.pkg" additivity="false" level="trace">
