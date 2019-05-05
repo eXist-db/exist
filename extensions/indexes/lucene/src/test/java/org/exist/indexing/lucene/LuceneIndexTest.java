@@ -307,6 +307,11 @@ public class LuceneIndexTest {
                 "      <title type='t' xml:lang=\"En\"    > <tag> ADodge    </tag>  </title> \n" + // this should not get indexed -- attribute value does not match
                 "      <title type='t'                    > <tag> AFord     </tag>  </title> \n" + // this should not get indexed -- attribute is entirely missing
                 "   </teiHeader>\n" +
+                "   <text>\n" +
+                "       <group>\n" +
+                "           <text>Nested</text>\n" +
+                "       </group>\n" +
+                "   </text>\n" +
                 "</TEI>";
 
         final String COLLECTION_CONFIG10 =
@@ -316,6 +321,7 @@ public class LuceneIndexTest {
                 "        <lucene diacritics='no'>\n" +
                 "            <analyzer class='org.apache.lucene.analysis.standard.StandardAnalyzer'/>\n" +
                 "            <text match=\"//title[@xml:lang='Sa-Ltn']\"/>\n" +
+                "            <text match=\"/TEI/text\"><ignore qname=\"text\"/></text>\n" +
                 "        </lucene> \n" +
                 "    </index>\n" +
                 "</collection>";
@@ -336,6 +342,8 @@ public class LuceneIndexTest {
             final Occurrences[] p2 = checkIndex(docs, broker, new QName[]{new QName("title")}, "acadillac", 0);
             final Occurrences[] p3 = checkIndex(docs, broker, new QName[]{new QName("title")}, "adodge", 0);
             final Occurrences[] p4 = checkIndex(docs, broker, new QName[]{new QName("title")}, "aford", 0);
+            // nested <text> should be ignored and not indexed by match="/TEI/text"
+            final Occurrences[] p5 = checkIndex(docs, broker, new QName[]{new QName("text")}, "nested", 0);
 
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
