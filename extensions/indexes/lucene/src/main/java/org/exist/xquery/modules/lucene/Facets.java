@@ -41,13 +41,12 @@ public class Facets extends BasicFunction {
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(
                 new QName("facets", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-                "Return a map of facet labels and counts for the result of a Lucene query. Facets and facet counts apply " +
-                        "to the entire sequence returned by ft:query, so the same map will be returned for all nodes in the sequence. " +
-                        "It is thus sufficient to specify one node from the sequence as first argument to this function.",
+                "Return a map of facet labels and counts for the result of a Lucene query.",
                 new SequenceType[] {
-                        new FunctionParameterSequenceType("node", Type.NODE, Cardinality.ZERO_OR_MORE,
-                                "A single node resulting from a call to ft:query for which facet information should be retrieved. " +
-                                        "If the node has no facet information attached, an empty sequence will be returned."),
+                        new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
+                                "A sequence of nodes for which facet counts should be returned. If the nodes in the sequence " +
+                                        "resulted from different Lucene queries, their facet counts will be merged. If no node in the " +
+                                        "the sequence has facets attached or the sequence is empty, an empty map is returned."),
                         new FunctionParameterSequenceType("dimension", Type.STRING, Cardinality.EXACTLY_ONE,
                                 "The facet dimension. This should correspond to a dimension defined in the index configuration")
                 },
@@ -56,13 +55,12 @@ public class Facets extends BasicFunction {
         ),
         new FunctionSignature(
             new QName("facets", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-            "Return a map of facet labels and counts for the result of a Lucene query. Facets and facet counts apply " +
-                    "to the entire sequence returned by ft:query, so the same map will be returned for all nodes in the sequence. " +
-                    "It is thus sufficient to specify one node from the sequence as first argument to this function.",
+            "Return a map of facet labels and counts for the result of a Lucene query.",
             new SequenceType[] {
                     new FunctionParameterSequenceType("node", Type.NODE, Cardinality.ZERO_OR_MORE,
-                            "A single node resulting from a call to ft:query for which facet information should be retrieved. " +
-                                    "If the node has no facet information attached, an empty sequence will be returned."),
+                    "A sequence of nodes for which facet counts should be returned. If the nodes in the sequence " +
+                            "resulted from different Lucene queries, their facet counts will be merged. If no node in the " +
+                            "the sequence has facets attached or the sequence is empty, an empty map is returned."),
                     new FunctionParameterSequenceType("dimension", Type.STRING, Cardinality.EXACTLY_ONE,
                             "The facet dimension. This should correspond to a dimension defined in the index configuration"),
                     new FunctionParameterSequenceType("count", Type.INTEGER, Cardinality.ZERO_OR_ONE,
@@ -74,13 +72,12 @@ public class Facets extends BasicFunction {
         ),
         new FunctionSignature(
             new QName("facets", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-            "Return a map of facet labels and counts for the result of a Lucene query. Facets and facet counts apply " +
-                    "to the entire sequence returned by ft:query, so the same map will be returned for all nodes in the sequence. " +
-                    "It is thus sufficient to specify one node from the sequence as first argument to this function.",
+            "Return a map of facet labels and counts for the result of a Lucene query.",
             new SequenceType[] {
                     new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
-                            "A single node resulting from a call to ft:query for which facet information should be retrieved. " +
-                                    "If the node has no facet information attached, an empty sequence will be returned."),
+                    "A sequence of nodes for which facet counts should be returned. If the nodes in the sequence " +
+                            "resulted from different Lucene queries, their facet counts will be merged. If no node in the " +
+                            "the sequence has facets attached or the sequence is empty, an empty map is returned."),
                     new FunctionParameterSequenceType("dimension", Type.STRING, Cardinality.EXACTLY_ONE,
                             "The facet dimension. This should correspond to a dimension defined in the index configuration"),
                     new FunctionParameterSequenceType("count", Type.INTEGER, Cardinality.ZERO_OR_ONE,
