@@ -430,9 +430,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 LuceneConfig config = getLuceneConfig(broker, docs);
                 Analyzer analyzer = getAnalyzer(config,null, qname);
-                QueryParserWrapper parser = getQueryParser(field, analyzer, docs);
-                options.configureParser(parser.getConfiguration());
-                Query query = queryStr == null ? new ConstantScoreQuery(new FieldValueFilter(field)) : parser.parse(queryStr);
+                Query query;
+                if (queryStr == null) {
+                    query = new ConstantScoreQuery(new FieldValueFilter(field));
+                } else {
+                    QueryParserWrapper parser = getQueryParser(field, analyzer, docs);
+                    options.configureParser(parser.getConfiguration());
+                    query = parser.parse(queryStr);
+                }
                 Optional<Map<String, List<String>>> facets = options.getFacets();
                 if (facets.isPresent() && config != null) {
                     query = drilldown(facets.get(), query, config);
