@@ -36,7 +36,7 @@ public class ShutdownTest {
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
             "	<index>" +
             "       <lucene>" +
-            "           <text match=\"/*\"/>" +
+            "           <text match=\"//SPEECH/*\"/>" +
             "       </lucene>" +
             "	</index>" +
             "</collection>";
@@ -83,7 +83,7 @@ public class ShutdownTest {
                 assertNotNull(xquery);
                 final Sequence result = xquery.execute(broker, "//SPEECH[ft:query(LINE, 'love')]", Sequence.EMPTY_SEQUENCE);
                 assertNotNull(result);
-                assertEquals(result.getItemCount(), 160);
+                assertEquals(160, result.getItemCount());
 
                 transact.commit(transaction);
             }
