@@ -2626,7 +2626,7 @@ public class NativeBroker extends DBBroker {
             final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
             try(final INodeIterator iterator = getNodeIterator(node)) {
                 iterator.next();
-                copyNodes(transaction, iterator, node, new NodePath(), newDoc, false, listener);
+                copyNodes(transaction, iterator, node, new NodePath2(), newDoc, false, listener);
             }
         }
         flush();
@@ -2989,7 +2989,7 @@ public class NativeBroker extends DBBroker {
                 final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
                 try(final INodeIterator iterator = getNodeIterator(node)) {
                     iterator.next();
-                    copyNodes(transaction, iterator, node, new NodePath(), tempDoc, true, listener);
+                    copyNodes(transaction, iterator, node, new NodePath2(), tempDoc, true, listener);
                 }
             }
             flush();
