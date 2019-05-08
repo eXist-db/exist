@@ -55,7 +55,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
-import org.exist.util.SyntaxException;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.XMLReaderObjectFactory.VALIDATION_SETTING;
 import org.exist.util.io.FastByteArrayInputStream;
@@ -85,7 +84,6 @@ public class MutableCollection implements Collection {
     private static final Logger LOG = LogManager.getLogger(Collection.class);
     private static final int SHALLOW_SIZE = 550;
     private static final int DOCUMENT_SIZE = 450;
-    private static final int POOL_PARSER_THRESHOLD = 500;
 
     private int collectionId = UNKNOWN_COLLECTION_ID;
     private XmldbURI path;
@@ -114,7 +112,6 @@ public class MutableCollection implements Collection {
     private long address = BFile.UNKNOWN_ADDRESS;  // Storage address of the collection in the BFile
     private long created = 0;
     private boolean triggersEnabled = true;
-    private XMLReader userReader;
     private volatile boolean isTempCollection;
     private Permission permissions;
     private final CollectionMetadata collectionMetadata;
@@ -1088,6 +1085,17 @@ public class MutableCollection implements Collection {
     @Override
     public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
+        final XMLReader reader = getReader(broker, false, info.getCollectionConfig());
+        try {
+            store(transaction, broker, info, source, reader);
+        } finally {
+            releaseReader(broker, reader);
+        }
+    }
+
+    @Override
+    public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source, final XMLReader reader)
+            throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         storeXMLInternal(transaction, broker, info, storeInfo -> {
             try {
                 final InputStream is = source.getByteStream();
@@ -1103,14 +1111,11 @@ public class MutableCollection implements Collection {
                 // mark is not supported: exception is expected, do nothing
                 LOG.debug("InputStream or CharacterStream underlying the InputSource does not support marking and therefore cannot be re-read.");
             }
-            final XMLReader reader = getReader(broker, false, storeInfo.getCollectionConfig());
             storeInfo.setReader(reader, null);
             try {
                 reader.parse(source);
             } catch(final IOException e) {
                 throw new EXistException(e);
-            } finally {
-                releaseReader(broker, storeInfo, reader);
             }
         });
     }
@@ -1127,7 +1132,7 @@ public class MutableCollection implements Collection {
             } catch(final IOException e) {
                 throw new EXistException(e);
             } finally {
-                releaseReader(broker, storeInfo, reader);
+                releaseReader(broker, reader);
             }
         });
     }
@@ -1265,9 +1270,22 @@ public class MutableCollection implements Collection {
     @Override
     public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputSource source) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         final CollectionConfiguration colconf = getConfiguration(broker);
-        
+        final XMLReader reader = getReader(broker, true, colconf);
+        try {
+            return validateXMLResource(transaction, broker, name, colconf, source, reader);
+        } finally {
+            releaseReader(broker, reader);
+        }
+    }
+
+    @Override
+    public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputSource source, final XMLReader reader) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
+        final CollectionConfiguration colconf = getConfiguration(broker);
+        return validateXMLResource(transaction, broker, name, colconf, source, reader);
+    }
+
+    private IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final CollectionConfiguration colconf, final InputSource source, final XMLReader reader) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         return validateXMLResourceInternal(transaction, broker, name, colconf, (info) -> {
-            final XMLReader reader = getReader(broker, true, colconf);
             info.setReader(reader, null);
             try {
 
@@ -1284,8 +1302,6 @@ public class MutableCollection implements Collection {
                 throw new SAXException("The XML parser reported a problem: " + e.getMessage(), e);
             } catch(final IOException e) {
                 throw new EXistException(e);
-            } finally {
-                releaseReader(broker, info, reader);
             }
         });
     }
@@ -1778,11 +1794,6 @@ public class MutableCollection implements Collection {
         }
     }
 
-    @Override
-    public void setReader(final XMLReader reader){
-        userReader = reader;
-    }
-
     /** 
      * Get XML Reader from ReaderPool and setup validation when needed.
      *
@@ -1793,10 +1804,6 @@ public class MutableCollection implements Collection {
      * @return An XML Reader
      */
     private XMLReader getReader(final DBBroker broker, final boolean validation, final CollectionConfiguration collectionConf) {
-        // If user-defined Reader is set, return it;
-        if (userReader != null) {
-            return userReader;
-        }
         // Get reader from readerpool.
         final XMLReader reader = broker.getBrokerPool().getParserPool().borrowXMLReader();
         
@@ -1817,18 +1824,9 @@ public class MutableCollection implements Collection {
      * Reset validation mode of reader and return reader to reader pool.
      *
      * @param broker The database broker
-     * @param info The indexing info
      * @param reader The XML Reader to release
      */    
-    private void releaseReader(final DBBroker broker, final IndexInfo info, final XMLReader reader) {
-        if(userReader != null){
-            return;
-        }
-        
-        if(info.getIndexer().getDocSize() > POOL_PARSER_THRESHOLD) {
-            return;
-        }
-        
+    private void releaseReader(final DBBroker broker, final XMLReader reader) {
         // Get validation mode from static configuration
         final Configuration config = broker.getConfiguration();
         final String optionValue = (String) config.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE);

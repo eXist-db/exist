@@ -226,13 +226,6 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
     XmldbURI getParentURI();
 
     /**
-     * Set user-defined Reader
-     *
-     * @param reader The XML reader
-     */
-    void setReader(XMLReader reader);
-
-    /**
      * Determines if this Collection has any documents, or child Collections
      *
      * @param broker The database broker
@@ -603,6 +596,23 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
     IndexInfo validateXMLResource(Txn transaction, DBBroker broker, XmldbURI name, InputSource source)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException;
 
+
+    /**
+     * Validates an XML document and prepares it for further storage.
+     * Launches prepare and postValidate triggers.
+     * Since the process is dependent from the collection configuration,
+     * the collection acquires a write lock during the process.
+     *
+     * @param transaction The database transaction
+     * @param broker      The database broker
+     * @param name        the name (without path) of the document
+     * @param source      The source of the document to store
+     * @param reader      The XML reader to use for reading the {@code source}
+     * @return An {@link IndexInfo} with a write lock on the document
+     */
+    IndexInfo validateXMLResource(Txn transaction, DBBroker broker, XmldbURI name, InputSource source, XMLReader reader)
+            throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException;
+
     /**
      * Validates an XML document and prepares it for further storage.
      * Launches prepare and postValidate triggers.
@@ -645,6 +655,21 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param source      The source of the document to store
      */
     void store(Txn transaction, DBBroker broker, IndexInfo info, InputSource source)
+            throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException;
+
+    /**
+     * Stores an XML document into the Collection
+     * <p>
+     * {@link #validateXMLResource(Txn, DBBroker, XmldbURI, InputSource, XMLReader)} should have been called previously
+     * in order to acquire a write lock for the document. Launches the finish trigger.
+     *
+     * @param transaction The database transaction
+     * @param broker      The database broker
+     * @param info        Tracks information between validate and store phases
+     * @param source      The source of the document to store
+     * @param reader      The XML reader to use for reading the {@code source}
+     */
+    void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source, final XMLReader reader)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException;
 
     /**
