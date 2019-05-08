@@ -57,7 +57,7 @@ public class Facets extends BasicFunction {
             new QName("facets", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
             "Return a map of facet labels and counts for the result of a Lucene query.",
             new SequenceType[] {
-                    new FunctionParameterSequenceType("node", Type.NODE, Cardinality.ZERO_OR_MORE,
+                    new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
                     "A sequence of nodes for which facet counts should be returned. If the nodes in the sequence " +
                             "resulted from different Lucene queries, their facet counts will be merged. If no node in the " +
                             "the sequence has facets attached or the sequence is empty, an empty map is returned."),
