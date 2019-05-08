@@ -13,6 +13,11 @@ set -x
 tmp_dmg=/tmp/$2-dmg-tmp
 tmp_dmg_mount=$tmp_dmg-mount
 
+final_app_dir="$(dirname "$1")/$2.app"
+
+# Copy the produced .app to `volname`.app
+cp -r $1 $final_app_dir
+
 # Calculate the size for an image and add 10MB to ensure there is enough space!
 base_size=$(du -sm $1 | sed 's/\([0-9]*\).*/\1/')
 img_size=$(($base_size + 10))
@@ -27,7 +32,7 @@ mkdir -p $tmp_dmg_mount
 sudo mount -o loop,uid=$username $tmp_dmg.dmg $tmp_dmg_mount
 
 # Copy the app into the image
-cp -r $1 $tmp_dmg_mount
+cp -r $final_app_dir $tmp_dmg_mount
 
 # Copy the background, the volume icon and DS_Store files
 mkdir -p $tmp_dmg_mount/$2/.DropDMGBackground
@@ -49,3 +54,9 @@ rm $tmp_dmg.dmg
 
 # Delete the mount point
 rm -r $tmp_dmg_mount
+
+# Delete the link for the app
+unlink $final_app_dir
+
+# Delete the copied `volname`.app used for the DMG
+rm -r $final_app_dir
