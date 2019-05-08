@@ -84,6 +84,7 @@ public class NodePathPattern {
 
     public NodePathPattern(Map<String, String> namespaces, String matchPattern) {
         qnPath = new NodePath();
+        qnPath.setIncludeDescendants(false);
         parseXPathExpression(namespaces, matchPattern);
     }
 
@@ -192,7 +193,7 @@ public class NodePathPattern {
         QName components_i = null;
         for (int j = from_pos; j < other_len; j++) {
             if (i == len) {
-                return true;
+                return qnPath.includeDescendants();
             }
             if (components_i == null)
                 components_i = qnPath.getComponent(i);
