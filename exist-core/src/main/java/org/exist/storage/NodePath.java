@@ -84,6 +84,10 @@ public class NodePath implements Comparable<NodePath> {
         this.includeDescendants = includeDescendants;
     }
 
+    public boolean includeDescendants() {
+        return includeDescendants;
+    }
+
     public void append(final NodePath other) {
         final QName[] newComponents = new QName[length() + other.length()];
         System.arraycopy(components, 0, newComponents, 0, pos);
