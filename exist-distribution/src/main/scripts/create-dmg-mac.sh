@@ -13,8 +13,13 @@ set -x
 tmp_dmg=/tmp/$2-dmg-tmp
 tmp_dmg_mount=$tmp_dmg-mount
 
+final_app_dir="$(dirname "$1")/$2.app"
+
+# Copy the produced .app to `volname`.app
+cp -r $1 $final_app_dir
+
 # Create a temporary Disk Image
-/usr/bin/hdiutil create -fs HFS+ -srcfolder $1 -volname $2 -ov $tmp_dmg -format UDRW
+/usr/bin/hdiutil create -fs HFS+ -srcfolder $final_app_dir -volname $2 -ov $tmp_dmg -format UDRW
 
 # Attach the temporary image
 /usr/bin/hdiutil attach $tmp_dmg.dmg -mountroot $tmp_dmg_mount
@@ -47,3 +52,6 @@ rm $tmp_dmg.dmg
 
 # Delete the mount point
 rm -r $tmp_dmg_mount
+
+# Delete the copied `volname`.app used for the DMG
+rm -r $final_app_dir
