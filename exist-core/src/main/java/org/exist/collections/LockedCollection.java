@@ -202,11 +202,6 @@ public class LockedCollection implements Collection {
     }
 
     @Override
-    public void setReader(final XMLReader reader) {
-        collection.setReader(reader);
-    }
-
-    @Override
     public boolean isEmpty(final DBBroker broker) throws PermissionDeniedException {
         return collection.isEmpty(broker);
     }
@@ -389,6 +384,11 @@ public class LockedCollection implements Collection {
     }
 
     @Override
+    public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputSource source, final XMLReader reader) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
+        return collection.validateXMLResource(transaction, broker, name, source, reader);
+    }
+
+    @Override
     public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final String data) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         return collection.validateXMLResource(transaction, broker, name, data);
     }
@@ -401,6 +401,11 @@ public class LockedCollection implements Collection {
     @Override
     public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         collection.store(transaction, broker, info, source);
+    }
+
+    @Override
+    public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source, final XMLReader reader) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
+        collection.store(transaction, broker, info, source, reader);
     }
 
     @Override
