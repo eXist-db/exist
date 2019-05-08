@@ -446,7 +446,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>xml-maven-plugin</artifactId>
-                <version>1.0.2</version>
                 <configuration>
                     <catalogHandling>local</catalogHandling>
                     <catalogs>
@@ -539,13 +538,6 @@
                         </configuration>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>net.sf.saxon</groupId>
-                        <artifactId>Saxon-HE</artifactId>
-                        <version>${saxon.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
 
             <plugin>
