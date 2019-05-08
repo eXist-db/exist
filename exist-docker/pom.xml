@@ -21,6 +21,11 @@
         <url>scm:git:https://github.com/exist-db/exist.git</url>
     </scm>
 
+    <properties>
+        <assemble.dir>${project.build.directory}/exist-docker-${project.version}-docker-dir</assemble.dir>
+        <exist.uber.jar.filename>exist.uber.jar</exist.uber.jar.filename>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -72,6 +77,54 @@
             </plugin>
 
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>assemble-archives</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <archiveBaseDirectory>${project.basedir}/../exist-distribution/target/exist-distribution-${project.version}-dir</archiveBaseDirectory>
+                            <attach>false</attach>
+                            <descriptors>
+                                <descriptor>src/assembly/dist-assembly-docker.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <outputFile>${assemble.dir}/lib/${exist.uber.jar.filename}</outputFile>
+                            <minimizeJar>true</minimizeJar>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <groupId>io.fabric8</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
                 <version>0.30.0</version>
@@ -87,7 +140,7 @@
                                     <name>existdb/existdb:%l</name>
                                     <build>
                                         <dockerFile>${project.build.outputDirectory}/Dockerfile</dockerFile>
-                                        <contextDir>${project.basedir}/../exist-distribution/target/exist-distribution-${project.version}-dir</contextDir>
+                                        <contextDir>${assemble.dir}</contextDir>
                                     </build>
                                 </image>
                             </images>
