@@ -36,4 +36,19 @@
         <module>extensions</module>
     </modules>
 
+    <profiles>
+        <profile>
+            <id>docker</id>
+            <activation>
+                <property>
+                    <name>docker</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>exist-docker</module>
+            </modules>
+        </profile>
+    </profiles>
+
 </project>
