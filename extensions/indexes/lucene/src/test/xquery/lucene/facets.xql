@@ -75,6 +75,7 @@ declare variable $facet:DOCUMENTS :=
         <document id="D-37/2">
             <title>Ruhe im Wald</title>
             <abstract>Es zwitschern die Vögel im Walde</abstract>
+            <abstract>Über dem Walde weht ein Wind</abstract>
             <category>nature</category>
         </document>
         <document id="Z-49/2">
@@ -134,7 +135,7 @@ declare variable $facet:XCONF1 :=
                     <field name="score" expression="score" type="xs:double"/>
                     <field name="time" expression="time" type="xs:time"/>
                 </text>
-                <text qname="document" index="no">
+                <text qname="document">
                     <field name="title" expression="title"/>
                     <field name="abstract" expression="abstract" analyzer="german"/>
                     <field name="ident" expression="@id/string()" analyzer="keyword"/>
@@ -142,10 +143,12 @@ declare variable $facet:XCONF1 :=
                 </text>
                 <text match="//document/abstract">
                     <field name="german" analyzer="german"/>
+                    <facet dimension="cat" expression="../category"/>
                 </text>
                 <text match="/text/body/div" index="no">
                     <field name="german" if="ancestor::body[@xml:lang = 'de']" analyzer="german"/>
                     <field name="english" if="ancestor::body[@xml:lang = 'en']" analyzer="english"/>
+                    <facet dimension="language" expression="ancestor::body/@xml:lang"/>
                     <ignore qname="note"/>
                 </text>
             </lucene>
@@ -178,12 +181,21 @@ declare
     %test:assertEquals(2, 1, 1, 2)
 function facet:query-all-and-facets() {
     let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
-    let $where := ft:facets(head($result), "place", ())
-    let $from := ft:facets(head($result), "from", ())
-    let $to := ft:facets(head($result), "to", ())
+    let $where := ft:facets($result, "place", ())
+    let $from := ft:facets($result, "from", ())
+    let $to := ft:facets($result, "to", ())
     return (
         $where?Berlin, $where?Hamburg, $from?Susi, $to?Egon
     )
+};
+
+declare
+    %test:assertEmpty
+function facet:query-all-and-non-existing-facet() {
+    let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
+    let $facet := ft:facets($result, "does-not-exist", ())
+    return
+        $facet?*
 };
 
 declare
@@ -203,17 +215,33 @@ function facet:query-and-drill-down($from as xs:string+) {
         count(collection("/db/lucenetest")//letter[ft:query(., "Berlin", $options)])
 };
 
+(:~
+ : The facet 'cat' is defined on both: the index on 'document' and 'document/abstract'.
+ : Querying 'document' should return 1 as facet count, while 'abstract' should return 2
+ : as there are two abstracts being indexed and each has the facet 'nature'.
+ :)
+declare
+    %test:assertEquals(1, 2)
+function facet:multiple-indexes-with-same-facet() {
+    let $result := doc("/db/lucenetest/documents.xml")//document[ft:query(., ())]
+    return
+        ft:facets($result, "cat")?nature,
+    let $result := doc("/db/lucenetest/documents.xml")//document/abstract[ft:query(., ())]
+    return
+        ft:facets($result, "cat")?nature
+};
+
 declare
     %test:assertEquals(4, 2)
 function facet:store-and-remove() {
     let $stored := xmldb:store("/db/lucenetest", "test2.xml", $facet:XML)
     let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
-    let $where := ft:facets(head($result), "place", 10)
+    let $where := ft:facets($result, "place", 10)
     return
         $where?Berlin,
     xmldb:remove("/db/lucenetest", "test2.xml"),
     let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
-    let $where := ft:facets(head($result), "place", 10)
+    let $where := ft:facets($result, "place", 10)
     return
         $where?Berlin
 };
@@ -247,7 +275,7 @@ declare
     %test:assertEquals('{"03":1,"04":1}')
 function facet:hierarchical-facets-retrieve($paths as xs:string*) {
     let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
-    let $facets := ft:facets(head($result), "date", (), $paths)
+    let $facets := ft:facets($result, "date", (), $paths)
     return
         serialize($facets, map { "method": "json" })
 };
@@ -256,12 +284,12 @@ declare
     %test:assertEquals('{"Berlin":2,"Hamburg":1}','{"Wrocław":2}')
 function facet:hierarchical-place() {
     let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
-    let $facets := ft:facets(head($result), "location", 10) (: Returns facet counts for "Germany" and "Poland" :)
+    let $facets := ft:facets($result, "location", 10) (: Returns facet counts for "Germany" and "Poland" :)
     for $country in map:keys($facets)
     order by $country
     return
         serialize(
-            ft:facets(head($result), "location", 10, $country), (: Get facet counts for sub-categories :)
+            ft:facets($result, "location", 10, $country), (: Get facet counts for sub-categories :)
             map { "method": "json" }
         )
 };
@@ -368,13 +396,16 @@ function facet:index-keys() {
     count(collection("/db/lucenetest")/ft:index-keys-for-field("from", (), function($key, $count) { $key }, 10))
 };
 
+(:~
+ : Check if option index="no" is applied properly: no default index, but the fields should be queryable.
+ :)
 declare
-    %test:args("ruhe")
+    %test:args("birds")
     %test:assertEmpty
-    %test:args("title:ruhe")
-    %test:assertEquals("<title>Ruhe im Wald</title>")
+    %test:args("english:birds")
+    %test:assertEquals("<p>And the birds are singing</p>")
 function facet:query-no-index($query as xs:string) {
-    doc("/db/lucenetest/documents.xml")//document[ft:query(., $query)]/title
+    doc("/db/lucenetest/multi-lang.xml")//div[ft:query(., $query)]/p
 };
 
 declare
@@ -384,12 +415,17 @@ function facet:default-analyzer-no-diacritics($query as xs:string) {
     count(collection("/db/lucenetest")//letter[ft:query(., $query)])
 };
 
+(:~
+ : The configuration defines no default index on 'div', but two fields: 'english' and 'german'.
+ : It also configures a facet containing the language. Querying the div with field 'english' set
+ : should result in a facet count of 1 for language 'en'.
+ :)
 declare
     %test:assertEquals(1)
-function facet:query-no-index-but-facet() {
-    let $result := doc("/db/lucenetest/documents.xml")//document[ft:query(., ())]
+function facet:query-no-default-index-but-facet() {
+    let $result := doc("/db/lucenetest/multi-lang.xml")//div[ft:query(., "english:*", map { "leading-wildcard": "yes" })]
     return
-        ft:facets(head($result), "cat")?nature
+        ft:facets($result, "language")?en
 };
 
 declare
@@ -458,4 +494,16 @@ declare
     %test:assertEmpty
 function facet:field-respects-ignore($query as xs:string) {
     doc("/db/lucenetest/multi-lang.xml")//div[ft:query(., $query)]
+};
+
+declare
+    %test:args("vögel")
+    %test:assertEquals(2)
+    %test:args("walde")
+    %test:assertEquals(3)
+function facet:query-with-union-and-facets($query as xs:string) {
+    let $results := doc("/db/lucenetest/documents.xml")//document[ft:query(., $query)] |
+        doc("/db/lucenetest/documents.xml")//document[ft:query(abstract, $query)]
+    return
+        ft:facets($results, "cat")?nature
 };

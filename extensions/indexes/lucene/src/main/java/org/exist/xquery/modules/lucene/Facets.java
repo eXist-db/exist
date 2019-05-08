@@ -21,6 +21,7 @@
 package org.exist.xquery.modules.lucene;
 
 import org.apache.lucene.facet.FacetResult;
+import org.apache.lucene.search.Query;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
@@ -32,52 +33,51 @@ import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
 
 import java.io.IOException;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 public class Facets extends BasicFunction {
 
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(
                 new QName("facets", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-                "Return a map of facet labels and counts for the result of a Lucene query. Facets and facet counts apply " +
-                        "to the entire sequence returned by ft:query, so the same map will be returned for all nodes in the sequence. " +
-                        "It is thus sufficient to specify one node from the sequence as first argument to this function.",
+                "Return a map of facet labels and counts for the result of a Lucene query.",
                 new SequenceType[] {
-                        new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE,
-                                "A single node resulting from a call to ft:query for which facet information should be retrieved. " +
-                                        "If the node has no facet information attached, an empty sequence will be returned."),
+                        new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
+                                "A sequence of nodes for which facet counts should be returned. If the nodes in the sequence " +
+                                        "resulted from different Lucene queries, their facet counts will be merged. If no node in the " +
+                                        "the sequence has facets attached or the sequence is empty, an empty map is returned."),
                         new FunctionParameterSequenceType("dimension", Type.STRING, Cardinality.EXACTLY_ONE,
                                 "The facet dimension. This should correspond to a dimension defined in the index configuration")
                 },
-                new FunctionReturnSequenceType(Type.MAP, Cardinality.ZERO_OR_ONE,
+                new FunctionReturnSequenceType(Type.MAP, Cardinality.EXACTLY_ONE,
                         "A map having the facet label as key and the facet count as value")
         ),
         new FunctionSignature(
             new QName("facets", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-            "Return a map of facet labels and counts for the result of a Lucene query. Facets and facet counts apply " +
-                    "to the entire sequence returned by ft:query, so the same map will be returned for all nodes in the sequence. " +
-                    "It is thus sufficient to specify one node from the sequence as first argument to this function.",
+            "Return a map of facet labels and counts for the result of a Lucene query.",
             new SequenceType[] {
-                    new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE,
-                            "A single node resulting from a call to ft:query for which facet information should be retrieved. " +
-                                    "If the node has no facet information attached, an empty sequence will be returned."),
+                    new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "A sequence of nodes for which facet counts should be returned. If the nodes in the sequence " +
+                            "resulted from different Lucene queries, their facet counts will be merged. If no node in the " +
+                            "the sequence has facets attached or the sequence is empty, an empty map is returned."),
                     new FunctionParameterSequenceType("dimension", Type.STRING, Cardinality.EXACTLY_ONE,
                             "The facet dimension. This should correspond to a dimension defined in the index configuration"),
                     new FunctionParameterSequenceType("count", Type.INTEGER, Cardinality.ZERO_OR_ONE,
                             "The number of facet labels to be returned. Facets with more occurrences in the result will be returned " +
                                     "first.")
             },
-            new FunctionReturnSequenceType(Type.MAP, Cardinality.ZERO_OR_ONE,
+            new FunctionReturnSequenceType(Type.MAP, Cardinality.EXACTLY_ONE,
                     "A map having the facet label as key and the facet count as value")
         ),
         new FunctionSignature(
             new QName("facets", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-            "Return a map of facet labels and counts for the result of a Lucene query. Facets and facet counts apply " +
-                    "to the entire sequence returned by ft:query, so the same map will be returned for all nodes in the sequence. " +
-                    "It is thus sufficient to specify one node from the sequence as first argument to this function.",
+            "Return a map of facet labels and counts for the result of a Lucene query.",
             new SequenceType[] {
-                    new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE,
-                            "A single node resulting from a call to ft:query for which facet information should be retrieved. " +
-                                    "If the node has no facet information attached, an empty sequence will be returned."),
+                    new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "A sequence of nodes for which facet counts should be returned. If the nodes in the sequence " +
+                            "resulted from different Lucene queries, their facet counts will be merged. If no node in the " +
+                            "the sequence has facets attached or the sequence is empty, an empty map is returned."),
                     new FunctionParameterSequenceType("dimension", Type.STRING, Cardinality.EXACTLY_ONE,
                             "The facet dimension. This should correspond to a dimension defined in the index configuration"),
                     new FunctionParameterSequenceType("count", Type.INTEGER, Cardinality.ZERO_OR_ONE,
@@ -87,7 +87,7 @@ public class Facets extends BasicFunction {
                             "For hierarchical facets, specify a sequence of paths leading to the position in the hierarchy you" +
                                     "would like to get facet counts for.")
             },
-                new FunctionReturnSequenceType(Type.MAP, Cardinality.ZERO_OR_ONE,
+                new FunctionReturnSequenceType(Type.MAP, Cardinality.EXACTLY_ONE,
                         "A map having the facet label as key and the facet count as value")
         )
     };
@@ -98,11 +98,6 @@ public class Facets extends BasicFunction {
 
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        final NodeValue nv = (NodeValue) args[0].itemAt(0);
-        if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
-            return Sequence.EMPTY_SEQUENCE;
-        }
-
         final String dimension = args[1].getStringValue();
 
         int count = Integer.MAX_VALUE;
@@ -119,22 +114,39 @@ public class Facets extends BasicFunction {
             }
         }
 
-        final NodeProxy proxy = (NodeProxy) nv;
-        try {
-            Match match = proxy.getMatches();
-            while (match != null) {
-                if (match.getIndexId().equals(LuceneIndex.ID)) {
-                    return getFacetsMap(dimension, count, paths, (LuceneMatch) match);
+        // Find all lucene queries referenced from the input sequence and remember
+        // the first match for each. Every query will have its own facets attached,
+        // so we have to merge them below.
+        final Map<Query, LuceneMatch> luceneQueries = new IdentityHashMap<>();
+        for (final SequenceIterator i = args[0].unorderedIterator(); i.hasNext(); ) {
+            final NodeValue nv = (NodeValue) i.nextItem();
+            if (nv.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                final NodeProxy proxy = (NodeProxy) nv;
+
+                Match match = proxy.getMatches();
+                while (match != null) {
+                    if (match.getIndexId().equals(LuceneIndex.ID)) {
+                        final LuceneMatch luceneMatch = (LuceneMatch) match;
+                        luceneQueries.putIfAbsent(luceneMatch.getQuery(), luceneMatch);
+                    }
+                    match = match.getNextMatch();
                 }
-                match = match.getNextMatch();
             }
-        } catch (IOException e) {
-            throw new XPathException(this, LuceneModule.EXXQDYFT0002, e.getMessage());
         }
-        return Sequence.EMPTY_SEQUENCE;
+
+        // Iterate the found queries/matches and collect facets for each
+        final MapType map = new MapType(context);
+        for (LuceneMatch match : luceneQueries.values()) {
+            try {
+                addFacetsToMap(map, dimension, count, paths, match);
+            } catch (IOException e) {
+                throw new XPathException(this, LuceneModule.EXXQDYFT0002, e.getMessage());
+            }
+        }
+        return map;
     }
 
-    private Sequence getFacetsMap(String dimension, int count, String[] paths, LuceneMatch match) throws IOException, XPathException {
+    private void addFacetsToMap(MapType map, String dimension, int count, String[] paths, LuceneMatch match) throws IOException, XPathException {
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         final org.apache.lucene.facet.Facets facets = index.getFacets(match);
         final FacetResult result;
@@ -144,16 +156,18 @@ public class Facets extends BasicFunction {
             result = facets.getTopChildren(count, dimension, paths);
         }
 
-        if (result == null) {
-            return new MapType(context);
-        } else {
-            final MapType map = new MapType(context);
+        if (result != null) {
             for (int i = 0; i < result.labelValues.length; i++) {
                 final String label = result.labelValues[i].label;
                 final Number value = result.labelValues[i].value;
-                map.add(new StringValue(label), new IntegerValue(value.longValue()));
+                final AtomicValue key = new StringValue(label);
+                if (map.contains(key)) {
+                    final IntegerValue existing = (IntegerValue)map.get(key);
+                    map.add(key, new IntegerValue(value.longValue() + existing.getLong()));
+                } else {
+                    map.add(new StringValue(label), new IntegerValue(value.longValue()));
+                }
             }
-            return map;
         }
     }
 }
