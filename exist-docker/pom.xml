@@ -98,6 +98,32 @@
             </plugin>
 
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>adjust-log4j-for-docker</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>${assemble.dir}/etc</dir>
+                                    <includes>
+                                        <include>log4j2.xml</include>
+                                    </includes>
+                                    <stylesheet>src/main/xslt/log4j2-docker.xslt</stylesheet>
+                                    <outputDir>${assemble.dir}/etc</outputDir>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <executions>
