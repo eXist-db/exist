@@ -177,16 +177,6 @@ public class LockedCollection implements Collection {
     }
 
     @Override
-    public boolean isTriggersEnabled() {
-        return collection.isTriggersEnabled();
-    }
-
-    @Override
-    public void setTriggersEnabled(final boolean enabled) {
-        collection.setTriggersEnabled(enabled);
-    }
-
-    @Override
     public int getMemorySize() {
         return collection.getMemorySize();
     }

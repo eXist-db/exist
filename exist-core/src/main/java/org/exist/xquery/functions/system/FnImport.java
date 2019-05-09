@@ -25,7 +25,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -43,6 +42,8 @@ import java.nio.file.Paths;
 import org.exist.backup.SystemImport;
 import org.exist.backup.restore.listener.AbstractRestoreListener;
 import org.exist.backup.restore.listener.RestoreListener;
+
+import javax.annotation.Nullable;
 
 public class FnImport extends BasicFunction {
 
@@ -123,7 +124,7 @@ public class FnImport extends BasicFunction {
         try {
         	final SystemImport restore = new SystemImport(context.getDatabase());
             final RestoreListener listener = new XMLRestoreListener(builder);
-            restore.restore(listener, org.exist.security.SecurityManager.DBA_USER, adminPass, adminPassAfter, Paths.get(dirOrFile), XmldbURI.EMBEDDED_SERVER_URI.toString());
+            restore.restore(org.exist.security.SecurityManager.DBA_USER, adminPass, adminPassAfter, Paths.get(dirOrFile), listener);
         } catch (final Exception e) {
             throw new XPathException(this, "restore failed with exception: " + e.getMessage(), e);
         }
@@ -145,14 +146,14 @@ public class FnImport extends BasicFunction {
         public final static QName WARN_ELEMENT = new QName("warn", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
         public final static QName ERROR_ELEMENT = new QName("error", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
 	
-        private final MemTreeBuilder builder;
+        @Nullable private final MemTreeBuilder builder;
 
-        private XMLRestoreListener(MemTreeBuilder builder) {
+        private XMLRestoreListener(@Nullable final MemTreeBuilder builder) {
             this.builder = builder;
         }
 
         @Override
-        public void createCollection(String collection) {
+        public void createdCollection(final String collection) {
 			if (builder == null) {
 				SystemImport.LOG.info("Create collection "+collection);
 			} else {
@@ -163,7 +164,7 @@ public class FnImport extends BasicFunction {
         }
 
         @Override
-        public void restored(String resource) {
+        public void restoredResource(final String resource) {
 			if (builder == null) {
 				SystemImport.LOG.info("Restore resource "+resource);
 			} else {
@@ -174,7 +175,7 @@ public class FnImport extends BasicFunction {
         }
 
         @Override
-        public void info(String message) {
+        public void info(final String message) {
 			if (builder == null) {
 				SystemImport.LOG.info(message);
 			} else {
@@ -185,9 +186,7 @@ public class FnImport extends BasicFunction {
         }
 
         @Override
-        public void warn(String message) {
-            super.warn(message);
-            
+        public void warn(final String message) {
 			if (builder == null) {
 				SystemImport.LOG.warn(message);
 			} else {
@@ -198,9 +197,7 @@ public class FnImport extends BasicFunction {
         }
 
         @Override
-        public void error(String message) {
-            super.error(message);
-            
+        public void error(final String message) {
 			if (builder == null) {
 				SystemImport.LOG.error(message);
 			} else {

@@ -19,8 +19,11 @@
  */
 package org.exist.xmlrpc;
 
+import com.evolvedbinary.j8fu.lazy.LazyVal;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.backup.Restore;
+import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.*;
 import org.exist.EXistException;
@@ -102,13 +105,18 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.zip.DeflaterOutputStream;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 
 import org.xmldb.api.base.*;
 
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.exist.xmldb.EXistXPathQueryService.BEGIN_PROTECTED_MAX_LOCKING_RETRIES;
 import static java.nio.file.StandardOpenOption.*;
 
@@ -3575,18 +3583,6 @@ public class RpcConnection implements RpcAPI {
     }
 
     @Override
-    public boolean setTriggersEnabled(final String path, final String value) throws EXistException, PermissionDeniedException {
-        final boolean triggersEnabled = Boolean.parseBoolean(value);
-        return this.<Boolean>writeCollection(XmldbURI.create(path)).apply((collection, broker2, transaction2) -> {
-            if (collection == null) {
-                return false;
-            }
-            collection.setTriggersEnabled(triggersEnabled);
-            return true;
-        });
-    }
-
-    @Override
     public boolean shutdown() throws PermissionDeniedException {
         factory.getBrokerPool().shutdown();
         return true;
@@ -3626,6 +3622,144 @@ public class RpcConnection implements RpcAPI {
             org.exist.plugin.command.Commands.command(collectionURI, params.toArray(new String[params.size()]));
             return null;
         });
+    }
+
+    @Override
+    public String restore(final String newAdminPassword, final String localFile) throws EXistException {
+        final int handle = Integer.parseInt(localFile);
+        final SerializedResult sr = factory.resultSets.getSerializedResult(handle);
+        if (sr == null) {
+            throw new EXistException("Invalid handle specified");
+        }
+
+        final BufferingRestoreListener listener = new BufferingRestoreListener();
+
+        final Future<Void> future = factory.restoreExecutorService.get().submit(() -> {
+            final Path backupFile = sr.result;
+            try {
+                sr.result = null; // de-reference the temp file in the SerializeResult, so it is not re-claimed before we need it
+                factory.resultSets.remove(handle);
+
+                withDb((broker, transaction) -> {
+                    final Restore restore = new Restore();
+                    restore.restore(broker, transaction, newAdminPassword, backupFile, listener);
+                    return null;
+                });
+
+                return null;
+
+            } finally {
+                TemporaryFileManager.getInstance().returnTemporaryFile(backupFile);
+            }
+        });
+
+        final UUID uuid = UUID.randomUUID();
+        factory.restoreTasks.put(uuid, Tuple(listener, future));
+        return uuid.toString();
+    }
+
+    @Override
+    public List<String> getRestoreTaskEvents(final String restoreTaskHandle) throws EXistException {
+        final UUID uuid = UUID.fromString(restoreTaskHandle);
+        final Tuple2<BufferingRestoreListener, Future<Void>> restoreTask = factory.restoreTasks.get(uuid);
+        if (restoreTask == null) {
+            throw new EXistException("No such Restore Task for handle: " + restoreTaskHandle);
+        }
+
+        final BufferingRestoreListener restoreListener = restoreTask._1;
+        final Tuple2<Boolean, List<String>> drained = restoreListener.drain();
+        final boolean finished = drained._1;
+
+        if (finished) {
+            factory.restoreTasks.remove(uuid);
+        }
+
+        if (restoreTask._2.isDone()) {
+            try {
+                restoreTask._2.get();
+            } catch (final ExecutionException e) {
+                throw new EXistException(e);
+            } catch (final InterruptedException e) {
+                // restore interrupt status
+                Thread.currentThread().interrupt();
+                throw new EXistException(e);
+            }
+        }
+
+        return drained._2;
+    }
+
+    static class BufferingRestoreListener implements RestoreListener {
+        @GuardedBy("queueLock") private final Deque<String> queue = new ArrayDeque<>();
+        private final Lock queueLock = new ReentrantLock(true);
+
+        @Override
+        public void started(final long numberOfFiles) {
+            add(RestoreTaskEvent.STARTED, Long.toString(numberOfFiles));
+        }
+
+        @Override
+        public void processingDescriptor(final String backupDescriptor) {
+            add(RestoreTaskEvent.PROCESSING_DESCRIPTOR, backupDescriptor);
+        }
+
+        @Override
+        public void createdCollection(final String collection) {
+            add(RestoreTaskEvent.CREATED_COLLECTION, collection);
+        }
+
+        @Override
+        public void restoredResource(final String resource) {
+            add(RestoreTaskEvent.RESTORED_RESOURCE, resource);
+        }
+
+        @Override
+        public void info(final String message) {
+            add(RestoreTaskEvent.INFO, message);
+        }
+
+        @Override
+        public void warn(final String message) {
+            add(RestoreTaskEvent.WARN, message);
+        }
+
+        @Override
+        public void error(final String message) {
+            add(RestoreTaskEvent.ERROR, message);
+        }
+
+        @Override
+        public void finished() {
+            add(RestoreTaskEvent.FINISHED, null);
+        }
+
+        private void add(final RestoreTaskEvent restoreTaskEvent, @Nullable final String value) {
+            final String event = "" + restoreTaskEvent.getCode() + (value == null ? "" : value);
+            queueLock.lock();
+            try {
+                queue.push(event);
+            } finally {
+                queueLock.unlock();
+            }
+        }
+
+        public Tuple2<Boolean, List<String>> drain() {
+            queueLock.lock();
+            try {
+                boolean finished = false;
+                final List<String> events = new ArrayList<>(queue.size());
+                while (!queue.isEmpty()) {
+                    final String event = queue.pop();
+                    if (!finished && event.charAt(0) == RestoreTaskEvent.FINISHED.getCode()) {
+                        finished = true;
+                    }
+                    events.add(event);
+                }
+                return Tuple(finished, events);
+            } finally {
+                queueLock.unlock();
+            }
+        }
     }
 
     /**

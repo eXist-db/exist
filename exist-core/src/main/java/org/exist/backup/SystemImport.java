@@ -31,18 +31,17 @@ import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.TransactionException;
+import org.exist.storage.txn.Txn;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
 import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xmldb.api.base.ErrorCodes;
-import org.xmldb.api.base.XMLDBException;
 
-import javax.xml.parsers.ParserConfigurationException;
+import javax.annotation.Nullable;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
@@ -64,12 +63,16 @@ public class SystemImport {
     	this.db = db;
 	}
 
-    public void restore(final RestoreListener listener, final String username, final Object credentials, final String newCredentials, final Path f, final String uri) throws XMLDBException, IOException, SAXException, ParserConfigurationException, URISyntaxException, AuthenticationException, ConfigurationException, PermissionDeniedException {
+    public void restore(final String username, final Object credentials, @Nullable final String newCredentials, final Path f, final RestoreListener listener) throws IOException, SAXException, AuthenticationException, ConfigurationException, PermissionDeniedException, TransactionException {
         
         //login
-        try(final DBBroker broker = db.authenticate(username, credentials)) {
-        	//set the new password
-	        setAdminCredentials(broker, newCredentials);
+        try(final DBBroker broker = db.authenticate(username, credentials);
+                final Txn transaction = broker.continueOrBeginTransaction()) {
+
+            //set the new password
+            if (newCredentials != null) {
+                setAdminCredentials(broker, newCredentials);
+            }
 	
 	        //get the backup descriptors, can be more than one if it was an incremental backup
 	        final Deque<BackupDescriptor> descriptors = getBackupDescriptors(f);
@@ -79,29 +82,31 @@ public class SystemImport {
 	        try {
                 reader = parserPool.borrowXMLReader();
 
-                listener.restoreStarting();
+                listener.started(0);
 	
 	            while(!descriptors.isEmpty()) {
 	                final BackupDescriptor descriptor = descriptors.pop();
 	                final EXistInputSource is = descriptor.getInputSource();
 	                is.setEncoding( "UTF-8" );
 	
-	                final SystemImportHandler handler = new SystemImportHandler(broker, listener, uri, descriptor);
+	                final SystemImportHandler handler = new SystemImportHandler(broker, transaction, descriptor, listener);
 	                
 	                reader.setContentHandler(handler);
 	                reader.parse(is);
 	            }
 	        } finally {
-	            listener.restoreFinished();
+	            listener.finished();
 
                 if (reader != null) {
                     parserPool.returnXMLReader(reader);
                 }
 	        }
+
+	        transaction.commit();
         }
     }
     
-    private Deque<BackupDescriptor> getBackupDescriptors(Path contents) throws XMLDBException, IOException {
+    private Deque<BackupDescriptor> getBackupDescriptors(Path contents) throws IOException {
         
         final Deque<BackupDescriptor> descriptors = new ArrayDeque<>();
         
@@ -134,7 +139,7 @@ public class SystemImport {
                     contents = bd.getParentDir().resolve(previous);
 
                     if(!Files.isReadable(contents)) {
-                        throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Required part of incremental backup not found: " + contents.toAbsolutePath().toString());
+                        throw new IOException("Required part of incremental backup not found: " + contents.toAbsolutePath().toString());
                     }
                 }
             }

@@ -90,7 +90,7 @@ public class ExampleTrigger extends FilteringTrigger implements DocumentTrigger 
                 LOG.debug("creating new file for collection contents");
                 // IMPORTANT: temporarily disable triggers on the collection.
                 // We would end up in infinite recursion if we don't do that
-                parent.setTriggersEnabled(false);
+                broker.setTriggersEnabled(false);
                 IndexInfo info = parent.validateXMLResource(null, broker, contentsFile, "<?xml version=\"1.0\"?><contents></contents>");
                 //TODO : unlock the collection here ?
                 parent.store(null, broker, info, "<?xml version=\"1.0\"?><contents></contents>");
@@ -98,7 +98,7 @@ public class ExampleTrigger extends FilteringTrigger implements DocumentTrigger 
             } catch (Exception e) {
                 throw new TriggerException(e.getMessage(), e);
             } finally {
-                parent.setTriggersEnabled(true);
+                broker.setTriggersEnabled(true);
             }
     }
 
@@ -110,7 +110,7 @@ public class ExampleTrigger extends FilteringTrigger implements DocumentTrigger 
 		try {
 			// IMPORTANT: temporarily disable triggers on the collection.
 			// We would end up in infinite recursion if we don't do that
-			getCollection().setTriggersEnabled(false);
+			broker.setTriggersEnabled(false);
 			// create the XUpdate processor
 			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
 			// process the XUpdate
@@ -123,7 +123,7 @@ public class ExampleTrigger extends FilteringTrigger implements DocumentTrigger 
 			throw new TriggerException(e.getMessage(), e);
 		} finally {
 			// IMPORTANT: re-enable trigger processing for the collection.
-			getCollection().setTriggersEnabled(true);
+			broker.setTriggersEnabled(true);
 		}
 	}
 	@Override

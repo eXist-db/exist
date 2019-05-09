@@ -111,7 +111,6 @@ public class MutableCollection implements Collection {
 
     private long address = BFile.UNKNOWN_ADDRESS;  // Storage address of the collection in the BFile
     private long created = 0;
-    private boolean triggersEnabled = true;
     private volatile boolean isTempCollection;
     private Permission permissions;
     private final CollectionMetadata collectionMetadata;
@@ -160,11 +159,6 @@ public class MutableCollection implements Collection {
         final MutableCollection collection = new MutableCollection(broker, path);
         collection.deserialize(broker, inputStream);
         return collection;
-    }
-
-    @Override
-    public boolean isTriggersEnabled() {
-        return triggersEnabled;
     }
 
     @Override
@@ -981,7 +975,7 @@ public class MutableCollection implements Collection {
                 }
 
                 try {
-                    boolean useTriggers = isTriggersEnabled();
+                    boolean useTriggers = broker.isTriggersEnabled();
                     if (CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(name)) {
                         // we remove a collection.xconf configuration file: tell the configuration manager to
                         // reload the configuration.
@@ -1051,7 +1045,7 @@ public class MutableCollection implements Collection {
 
             try(final ManagedDocumentLock docUpdateLock = lockManager.acquireDocumentWriteLock(doc.getURI())) {
                 try {
-                    final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
+                    final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, null, this, broker.isTriggersEnabled() ? getConfiguration(broker) : null);
 
                     trigger.beforeDeleteDocument(broker, transaction, doc);
 
@@ -1403,7 +1397,7 @@ public class MutableCollection implements Collection {
                 addObserversToIndexer(broker, indexer);
                 indexer.setValidating(true);
 
-                final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, indexer, this, isTriggersEnabled() ? config : null);
+                final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, indexer, this, broker.isTriggersEnabled() ? config : null);
                 trigger.setValidating(true);
 
                 info.setTriggers(trigger);
@@ -1673,7 +1667,7 @@ public class MutableCollection implements Collection {
             final Date modified, final DBBroker.PreserveType preserve, final DocumentImpl oldDoc,
             final ManagedCollectionLock collectionLock) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
 
-        final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
+        final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, null, this, broker.isTriggersEnabled() ? getConfiguration(broker) : null);
         final XmldbURI docUri = blob.getFileURI();
         try {
             db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_BINARY, docUri);
@@ -1783,15 +1777,6 @@ public class MutableCollection implements Collection {
     @Override
     public long getCreationTime() {
         return created;
-    }
-
-    @Override
-    public void setTriggersEnabled(final boolean enabled) {
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path)) {
-            this.triggersEnabled = enabled;
-        } catch(final LockException e) {
-            LOG.error(e.getMessage(), e);
-        }
     }
 
     /** 

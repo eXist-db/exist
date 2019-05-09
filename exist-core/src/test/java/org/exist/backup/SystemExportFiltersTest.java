@@ -155,7 +155,7 @@ public class SystemExportFiltersTest {
 
         final SystemImport restore = new SystemImport(pool);
         final RestoreListener listener = new LogRestoreListener();
-        restore.restore(listener, "admin", "", "", file, "xmldb:exist://");
+        restore.restore(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD, null, file, listener);
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
