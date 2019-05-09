@@ -344,6 +344,7 @@ public class LockTable {
                 }
             }
 
+
             // otherwise... pessimistic read
             int foundIdx = -1;
             stamp = entriesLock.readLock();
@@ -357,13 +358,10 @@ public class LockTable {
 
                             long writeStamp = entriesLock.tryConvertToWriteLock(stamp);
                             if (writeStamp != 0l) {
-                                try {
-                                    //TODO(AR) we need to recycle the entry here!    ... nope do it in the caller!
-                                    local.count--;
-                                    return entries.remove(i);
-                                } finally {
-                                    entriesLock.unlockWrite(writeStamp);
-                                }
+                                stamp = writeStamp;
+                                //TODO(AR) we need to recycle the entry here!    ... nope do it in the caller!
+                                local.count--;
+                                return entries.remove(i);
                             }
 
                         } else {
@@ -382,8 +380,9 @@ public class LockTable {
                     }
                 }
             } finally {
-                entriesLock.unlockRead(stamp);
+                entriesLock.unlock(stamp);
             }
+
 
             if (foundIdx > -1) {
                 stamp = entriesLock.writeLock();
@@ -756,15 +755,6 @@ public class LockTable {
          * to the reading thread.
          */
         volatile int count = 0;
-
-        /**
-         * Used as a reference so that we can recycle the Map entry
-         * key for reuse when we are done with this value.
-         *
-         * NOTE: Only ever read and written from the same thread
-         */
-//        EntryKey entryKey;
-
 
         private Entry() {
         }
