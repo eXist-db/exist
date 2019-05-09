@@ -23,8 +23,7 @@ package org.exist.client;
 import org.exist.SystemProperties;
 import org.exist.backup.Backup;
 import org.exist.backup.CreateBackupDialog;
-import org.exist.backup.Restore;
-import org.exist.backup.restore.listener.GuiRestoreListener;
+import org.exist.backup.GuiRestoreServiceTaskListener;
 import org.exist.client.security.EditPropertiesDialog;
 import org.exist.client.security.UserManagerDialog;
 import org.exist.security.*;
@@ -43,6 +42,7 @@ import org.exist.xmldb.*;
 import org.exist.xquery.Constants;
 import org.exist.xquery.util.URIUtils;
 import org.xml.sax.SAXException;
+import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
@@ -1084,19 +1084,20 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 final String newDbaPass = passInput.getPassword().length == 0 ? null : new String(passInput.getPassword());
                 final String restoreFile = f.toAbsolutePath().toString();
 
-                final GuiRestoreListener listener = new GuiRestoreListener(this);
+                final GuiRestoreServiceTaskListener listener = new GuiRestoreServiceTaskListener(this);
                 doRestore(listener, properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER), properties.getProperty(InteractiveClient.PASSWORD, null), newDbaPass, Paths.get(restoreFile), properties.getProperty(InteractiveClient.URI, "xmldb:exist://"));
             }
         }
     }
 
-    private void doRestore(final GuiRestoreListener listener, final String username, final String password, final String dbaPassword, final Path f, final String uri) {
+    private void doRestore(final GuiRestoreServiceTaskListener listener, final String username, final String password, final String dbaPassword, final Path f, final String uri) {
 
         final Runnable restoreTask = () -> {
-            final Restore restore = new Restore();
 
             try {
-                restore.restore(listener, username, password, dbaPassword, f, uri);
+                final Collection collection = DatabaseManager.getCollection(uri, username, password);
+                final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
+                service.restore(f.toAbsolutePath().toString(), dbaPassword, listener);
 
                 if (JOptionPane.showConfirmDialog(null, Messages.getString("ClientFrame.223"), Messages.getString("ClientFrame.224"),
                         JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
@@ -1122,7 +1123,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 showErrorMessage(Messages.getString("ClientFrame.181") + e.getMessage(), e); //$NON-NLS-1$
             } finally {
                 if (listener.hasProblems()) {
-                    showErrorMessage(Messages.getString("ClientFrame.181") + listener.warningsAndErrorsAsString(), null);
+                    showErrorMessage(Messages.getString("ClientFrame.181") + listener.getAllProblems(), null);
                 }
             }
         };

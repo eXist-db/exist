@@ -24,7 +24,6 @@ import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.storage.DBBroker;
-import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xupdate.Modification;
@@ -51,6 +50,7 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
     public void configure(DBBroker broker, Txn transaction, org.exist.collections.Collection parent, Map<String, List<?>> parameters) throws TriggerException {
         super.configure(broker, transaction, parent, parameters);
         XmldbURI docPath = XmldbURI.create("messages.xml");
+        final boolean triggersEnabled = broker.isTriggersEnabled();
         try {
             this.doc = parent.getDocument(broker, docPath);
             if (this.doc == null) {
@@ -58,7 +58,7 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
 
                 // IMPORTANT: temporarily disable triggers on the collection.
                 // We would end up in infinite recursion if we don't do that
-                parent.setTriggersEnabled(false);
+                broker.setTriggersEnabled(false);
                 IndexInfo info = parent.validateXMLResource(transaction, broker, docPath, TEMPLATE);
                 //TODO : unlock the collection here ?
                 parent.store(transaction, broker, info, TEMPLATE);
@@ -68,17 +68,19 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
         } catch (Exception e) {
             throw new TriggerException(e.getMessage(), e);
         } finally {
-            parent.setTriggersEnabled(true);
+            // restore triggers enabled setting
+            broker.setTriggersEnabled(triggersEnabled);
         }
     }
 
 	private void addRecord(DBBroker broker, Txn transaction, String xupdate) throws TriggerException {
         MutableDocumentSet docs = new DefaultDocumentSet();
         docs.add(doc);
+        final boolean triggersEnabled = broker.isTriggersEnabled();
         try {
             // IMPORTANT: temporarily disable triggers on the collection.
             // We would end up in infinite recursion if we don't do that
-            getCollection().setTriggersEnabled(false);
+            broker.setTriggersEnabled(false);
             // create the XUpdate processor
             XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
             // process the XUpdate
@@ -92,7 +94,7 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
             throw new TriggerException(e.getMessage(), e);
         } finally {
             // IMPORTANT: reenable trigger processing for the collection.
-            getCollection().setTriggersEnabled(true);
+            broker.setTriggersEnabled(triggersEnabled);
         }
 
 	}

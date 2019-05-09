@@ -25,6 +25,7 @@ import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
 import org.exist.security.internal.aider.ACEAider;
+import org.exist.xmldb.XmldbURI;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,16 +34,16 @@ import java.util.List;
  *
  * @author Adam Retter <adam@exist-db.org>
  */
-abstract class AbstractDeferredPermission<T> implements DeferredPermission {
+abstract class AbstractDeferredPermission implements DeferredPermission {
 
     final private RestoreListener listener;
-    final private T target;
+    final private XmldbURI target;
     final private String owner;
     final private String group;
     final private int mode;
     final List<ACEAider> aces = new ArrayList<>();
 
-    public AbstractDeferredPermission(final RestoreListener listener, final T target, final String owner, final String group, final int mode) {
+    public AbstractDeferredPermission(final RestoreListener listener, final XmldbURI target, final String owner, final String group, final int mode) {
         this.listener = listener;
         this.target = target;
         this.owner = owner;
@@ -54,7 +55,8 @@ abstract class AbstractDeferredPermission<T> implements DeferredPermission {
         return listener;
     }
 
-    protected T getTarget() {
+    @Override
+    public XmldbURI getTarget() {
         return target;
     }
 

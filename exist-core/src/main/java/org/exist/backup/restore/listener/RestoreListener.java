@@ -28,9 +28,13 @@ import java.util.Observable;
  */
 public interface RestoreListener {
 
-    void createCollection(String collection);
+    void started(long numberOfFiles);
 
-    void restored(String resource);
+    void processingDescriptor(String backupDescriptor);
+
+    void createdCollection(String collection);
+
+    void restoredResource(String resource);
 
     void info(String message);
 
@@ -38,23 +42,5 @@ public interface RestoreListener {
 
     void error(String message);
 
-    String warningsAndErrorsAsString();
-
-    boolean hasProblems();
-
-    void setCurrentCollection(String currentCollectionName);
-
-    void setCurrentResource(String currentResourceName);
-
-    void restoreStarting();
-
-    void restoreFinished();
-
-    void observe(Observable observable);
-
-    void setCurrentBackup(String currentBackup);
-
-    void setNumberOfFiles(long nr);
-
-    void incrementFileCounter();
+    void finished();
 }

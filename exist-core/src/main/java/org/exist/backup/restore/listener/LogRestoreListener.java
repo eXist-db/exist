@@ -30,7 +30,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class LogRestoreListener extends AbstractRestoreListener {
 
-    public final static Logger LOG = LogManager.getLogger(LogRestoreListener.class );
+    public final static Logger LOG = LogManager.getLogger(LogRestoreListener.class);
 
     @Override
     public void info(final String message) {
@@ -39,13 +39,11 @@ public class LogRestoreListener extends AbstractRestoreListener {
 
     @Override
     public void warn(final String message) {
-        super.warn(message);
         LOG.warn(message);
     }
 
     @Override
     public void error(final String message) {
-        super.error(message);
         LOG.error(message);
     }
 }

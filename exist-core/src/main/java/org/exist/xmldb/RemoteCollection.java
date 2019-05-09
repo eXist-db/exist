@@ -246,6 +246,10 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
                 service = new RemoteXUpdateQueryService(xmlRpcClientLease.get(), this);
                 break;
 
+            case "RestoreService":
+                service = new RemoteRestoreService(xmlRpcClientLease.get());
+                break;
+
             default:
                 throw new XMLDBException(ErrorCodes.NO_SUCH_SERVICE);
         }
@@ -721,17 +725,5 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
     @Override
     public boolean isRemoteCollection() throws XMLDBException {
         return true;
-    }
-
-    @Override
-    public void setTriggersEnabled(final boolean triggersEnabled) throws XMLDBException {
-        final List<String> params = new ArrayList<>();
-        params.add(this.getPath());
-        params.add(Boolean.toString(triggersEnabled));
-        try {
-            xmlRpcClientLease.get().execute("setTriggersEnabled", params);
-        } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "API error: " + e.getMessage(), e);
-        }
     }
 }

@@ -406,6 +406,10 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
                 service = new LocalIndexQueryService(user, brokerPool, this);
                 break;
 
+            case "RestoreService":
+                service = new LocalRestoreService(user, brokerPool, this);
+                break;
+
             default:
                 throw new XMLDBException(ErrorCodes.NO_SUCH_SERVICE);
         }
@@ -766,14 +770,6 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
             //TODO : should never happen
             return null;
         }
-    }
-
-    @Override
-    public void setTriggersEnabled(final boolean triggersEnabled) throws XMLDBException {
-        modify().apply((collection, broker, transaction) -> {
-            collection.setTriggersEnabled(triggersEnabled);
-            return null;
-        });
     }
 
     /**

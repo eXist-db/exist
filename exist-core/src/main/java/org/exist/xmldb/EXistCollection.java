@@ -48,6 +48,4 @@ public interface EXistCollection extends Collection {
 
     XmldbURI getPathURI();
 
-    void setTriggersEnabled(boolean triggersEnabled) throws XMLDBException;
-
 }

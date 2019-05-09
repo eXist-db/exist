@@ -14,7 +14,6 @@ import org.exist.storage.lock.*;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
-import org.exist.util.SyntaxException;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -28,7 +27,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.exist.storage.lock.Lock.LockMode.READ_LOCK;
 import static org.exist.storage.lock.Lock.LockMode.WRITE_LOCK;
@@ -184,23 +182,9 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
     boolean isTempCollection();
 
     /**
-     * Are Triggers enabled for this Collection
-     *
-     * @return true of Triggers are enabled
-     */
-    boolean isTriggersEnabled();
-
-    /**
-     * Enables/Disables Triggers for this collection
-     *
-     * @param enabled true if Triggers should be enabled for this Collection
-     */
-    void setTriggersEnabled(final boolean enabled);
-
-    /**
      * Returns the estimated amount of memory used by this collection
      * and its documents. This information is required by the
-     * {@link org.exist.storage.CollectionCacheManager} to be able
+     * {@link org.exist.collections.CollectionCache} to be able
      * to resize the caches.
      *
      * @return estimated amount of memory in bytes
@@ -210,7 +194,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
     /**
      * Returns the estimated amount of memory used by this collection
      * and its documents. This information is required by the
-     * {@link org.exist.storage.CollectionCacheManager} to be able
+     * {@link org.exist.collections.CollectionCache} to be able
      * to resize the caches.
      *
      * @return estimated amount of memory in bytes

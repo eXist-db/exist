@@ -24,37 +24,42 @@ package org.exist.backup.restore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.backup.restore.listener.RestoreListener;
-import org.exist.xmldb.UserManagementService;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.XMLDBException;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
+import org.exist.security.ACLPermission;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.PermissionFactory;
+import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.txn.Txn;
+import org.exist.xmldb.XmldbURI;
+
+import java.util.Optional;
 
 /**
  * 
  * @author Adam Retter <adam@exist-db.org>
  */
-
-class ResourceDeferredPermission extends AbstractDeferredPermission<Resource> {
+class ResourceDeferredPermission extends AbstractDeferredPermission {
 
     private final static Logger LOG = LogManager.getLogger(ResourceDeferredPermission.class);
     
-    public ResourceDeferredPermission(final RestoreListener listener, final Resource resource, final String owner, final String group, final Integer mode) {
-        super(listener, resource, owner, group, mode);
+    public ResourceDeferredPermission(final RestoreListener listener, final XmldbURI resourceUri, final String owner, final String group, final Integer mode) {
+        super(listener, resourceUri, owner, group, mode);
     }
 
     @Override
-    public void apply() {
-        try {
-            final UserManagementService service = (UserManagementService)getTarget().getParentCollection().getService("UserManagementService", "1.0");
-            service.setPermissions(getTarget(), getOwner(), getGroup(), getMode(), getAces()); //persist
-        } catch(final XMLDBException xe) {
-            String name = "unknown";
-            try {
-                name = getTarget().getParentCollection().getName() + "/" + getTarget().getId();
-            } catch(final XMLDBException x) {
-                LOG.error(x.getMessage(), x);
-            }
-            final String msg = "ERROR: Failed to set permissions on Document '" + name + "'.";
-            LOG.error(msg, xe);
+    public void apply(final DBBroker broker, final Txn transaction) {
+        try (final LockedDocument lockedDoc = broker.getXMLResource(getTarget(), Lock.LockMode.WRITE_LOCK)) {
+            final DocumentImpl doc = lockedDoc.getDocument();
+            final Permission permission = doc.getPermissions();
+            PermissionFactory.chown(broker, permission, Optional.ofNullable(getOwner()), Optional.ofNullable(getGroup()));
+            PermissionFactory.chmod(broker, permission, Optional.of(getMode()), Optional.ofNullable(permission instanceof ACLPermission ? getAces() : null));
+            broker.storeXMLResource(transaction, doc);
+        } catch(final PermissionDeniedException e) {
+            final String msg = "ERROR: Failed to set permissions on Document '" + getTarget() + "'.";
+            LOG.error(msg, e);
             getListener().warn(msg);
         }
     }
