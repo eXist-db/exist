@@ -154,25 +154,33 @@
                 <groupId>io.fabric8</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
                 <version>0.30.0</version>
+                <configuration>
+                    <verbose>true</verbose>
+                    <images>
+                        <image>
+                            <!-- DP Todo switch back to %l when merging into develop  -->
+                            <name>existdb/existdb:experimental</name>
+                            <build>
+                                <dockerFile>${project.build.outputDirectory}/Dockerfile</dockerFile>
+                                <contextDir>${assemble.dir}</contextDir>
+                            </build>
+                        </image>
+                    </images>
+                </configuration>
                 <executions>
                     <execution>
+                        <id>build image</id>
                         <phase>package</phase>
                         <goals>
                             <goal>build</goal>
                         </goals>
-                        <configuration>
-                            <verbose>true</verbose>
-                            <images>
-                                <image>
-                                <!-- DP Todo switch back to %l when merging into develop  -->
-                                    <name>existdb/existdb:experimental</name>
-                                    <build>
-                                        <dockerFile>${project.build.outputDirectory}/Dockerfile</dockerFile>
-                                        <contextDir>${assemble.dir}</contextDir>
-                                    </build>
-                                </image>
-                            </images>
-                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>push latest</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>push</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
