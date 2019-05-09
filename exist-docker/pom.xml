@@ -161,9 +161,11 @@
                             <goal>build</goal>
                         </goals>
                         <configuration>
+                            <verbose>true</verbose>
                             <images>
                                 <image>
-                                    <name>existdb/existdb:%l</name>
+                                <!-- DP Todo switch back to %l when merging into develop  -->
+                                    <name>existdb/existdb:experimental</name>
                                     <build>
                                         <dockerFile>${project.build.outputDirectory}/Dockerfile</dockerFile>
                                         <contextDir>${assemble.dir}</contextDir>

@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libpng16-16 \
   ttf-dejavu-core
 
-FROM gcr.io/distroless/java
+FROM gcr.io/distroless/java:8
 
 # Copy over dependancies for Apache FOP, missing from gcr's JRE
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libfreetype.so.6.12.3 /usr/lib/x86_64-linux-gnu/libfreetype.so.6
@@ -50,6 +50,7 @@ ARG CACHE_MEM
 ARG MAX_BROKER
 
 ENV EXIST_HOME "/exist"
+ENV CLASSPATH=/exist/lib/${exist.uber.jar.filename}
 
 ENV JAVA_TOOL_OPTIONS \
   -Dfile.encoding=UTF8 \
@@ -66,13 +67,12 @@ ENV JAVA_TOOL_OPTIONS \
   -XX:+UseCGroupMemoryLimitForHeap \
   -XX:+UseG1GC \
   -XX:+UseStringDeduplication \
-  -XX:MaxRAMFraction=1
+  -XX:MaxRAMFraction=1 \
+  -XX:+ExitOnOutOfMemoryError
 
 HEALTHCHECK CMD [ "java", \
-    "-cp", "/exist/lib/${exist.uber.jar.filename}", \
     "org.exist.start.Main", "client", \
     "--no-gui",  "--xpath", "system:get-version()" ]
 
 ENTRYPOINT [ "java", \
-    "-cp", "/exist/lib/${exist.uber.jar.filename}", \
     "org.exist.start.Main", "jetty" ]
