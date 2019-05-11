@@ -13,7 +13,7 @@
     <packaging>pom</packaging>
 
     <name>eXist-db Docker Image</name>
-    <description>Docker Image of eXist-db NoSQL Database Client/Server</description>
+    <description>Minimal Docker Image of eXist-db NoSQL Database Client/Server with FO support</description>
 
     <scm>
         <connection>scm:git:https://github.com/exist-db/exist.git</connection>
