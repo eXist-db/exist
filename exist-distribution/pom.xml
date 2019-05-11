@@ -24,7 +24,7 @@
     <properties>
         <appassembler.version>2.0.1-SNAPSHOT</appassembler.version>
         <assemble.dir>${project.build.directory}/${project.artifactId}-${project.version}-dir</assemble.dir>
-        <xar.repo.download.base>http://demo.exist-db.org/exist/apps/public-repo/find?processor=${project.version}&amp;abbrev=</xar.repo.download.base>
+        <public.xar.repo.uri>http://demo.exist-db.org/exist/apps/public-repo</public.xar.repo.uri>
         <expath.pkg.dir>${project.build.directory}/expath-pkgs</expath.pkg.dir>
         <mac.bundle.dir>${project.build.directory}/${project.artifactId}-${project.version}.app</mac.bundle.dir>
         <mac.bundle.resources.dir>${mac.bundle.dir}/Contents/Resources</mac.bundle.resources.dir>
@@ -578,102 +578,49 @@
             </plugin>
 
             <plugin>
-                <groupId>com.googlecode.maven-download-plugin</groupId>
-                <artifactId>download-maven-plugin</artifactId>
-                <configuration>
-                    <skipCache>true</skipCache>  <!-- TODO(AR) see: https://github.com/maven-download-plugin/maven-download-plugin/pull/124 -->
-                    <readTimeOut>120000</readTimeOut>
-                    <outputDirectory>${expath.pkg.dir}</outputDirectory>
-                </configuration>
+                <groupId>org.exist-db.maven.plugins</groupId>
+                <artifactId>public-xar-repo-plugin</artifactId>
+                <version>1.0.0</version>
                 <executions>
                     <execution>
-                        <id>autodeploy-dashboard-xar</id>
+                        <id>fetch-xars</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>wget</goal>
+                            <goal>resolve</goal>
                         </goals>
                         <configuration>
-                            <url>${xar.repo.download.base}dashboard</url>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>autodeploy-packageservice-xar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>wget</goal>
-                        </goals>
-                        <configuration>
-                            <url>${xar.repo.download.base}packageservice</url>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>autodeploy-shared-xar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>wget</goal>
-                        </goals>
-                        <configuration>
-                            <url>${xar.repo.download.base}shared</url>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>autodeploy-eXide-xar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>wget</goal>
-                        </goals>
-                        <configuration>
-                            <url>${xar.repo.download.base}eXide</url>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>autodeploy-monex-xar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>wget</goal>
-                        </goals>
-                        <configuration>
-                            <url>${xar.repo.download.base}monex</url>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>autodeploy-functx-xar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>wget</goal>
-                        </goals>
-                        <configuration>
-                            <url>${xar.repo.download.base}functx</url>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>autodeploy-exist-documentation-xar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>wget</goal>
-                        </goals>
-                        <configuration>
-                            <url>${xar.repo.download.base}exist-documentation</url>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>autodeploy-fundocs-xar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>wget</goal>
-                        </goals>
-                        <configuration>
-                            <url>${xar.repo.download.base}fundocs</url>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>autodeploy-markdown-xar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>wget</goal>
-                        </goals>
-                        <configuration>
-                            <url>${xar.repo.download.base}markdown</url>
+                            <repoUri>${public.xar.repo.uri}</repoUri>
+                            <outputDirectory>${expath.pkg.dir}</outputDirectory>
+                            <existDbVersion>${project.version}</existDbVersion>
+                            <packages>
+                                <package>
+                                    <abbrev>dashboard</abbrev>
+                                </package>
+                                <package>
+                                    <abbrev>packageservice</abbrev>
+                                </package>
+                                <package>
+                                    <abbrev>shared</abbrev>
+                                </package>
+                                <package>
+                                    <abbrev>eXide</abbrev>
+                                </package>
+                                <package>
+                                    <abbrev>monex</abbrev>
+                                </package>
+                                <package>
+                                    <abbrev>functx</abbrev>
+                                </package>
+                                <package>
+                                    <abbrev>exist-documentation</abbrev>
+                                </package>
+                                <package>
+                                    <abbrev>fundocs</abbrev>
+                                </package>
+                                <package>
+                                    <abbrev>markdown</abbrev>
+                                </package>
+                            </packages>
                         </configuration>
                     </execution>
                 </executions>
