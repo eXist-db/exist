@@ -30,6 +30,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.TestDataGenerator;
 import org.exist.collections.Collection;
@@ -67,6 +69,8 @@ import org.xmldb.api.modules.CollectionManagementService;
  */
 @RunWith(Parameterized.class)
 public class DeadlockTest {
+
+	private static final Logger LOG = LogManager.getLogger(DeadlockTest.class);
 
 	/** pick a set of random collections to query */
 	private static final int TEST_RANDOM_COLLECTION = 0;
@@ -183,7 +187,7 @@ public class DeadlockTest {
                 wait(DELAY);
             } catch (InterruptedException e) {
             	Thread.currentThread().interrupt();
-                e.printStackTrace();
+                LOG.error(e.getMessage(), e);
                 fail(e.getMessage());
             }
         }
@@ -201,7 +205,7 @@ public class DeadlockTest {
 			terminated = executor.awaitTermination(60 * 60, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 			fail(e.getMessage());
 		}
 		assertTrue(terminated);
@@ -256,7 +260,7 @@ public class DeadlockTest {
 					generator.releaseAll();
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOG.error(e.getMessage(), e);
 //				fail(e.getMessage());
 			}
 		}
@@ -323,7 +327,7 @@ public class DeadlockTest {
 					service.endProtected();
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOG.error(e.getMessage(), e);
 				fail(e.getMessage());
 			}
 		}
@@ -354,7 +358,7 @@ public class DeadlockTest {
                         removed = true;
                     }
                 } catch (final XMLDBException e) {
-                    e.printStackTrace();
+					LOG.error(e.getMessage(), e);
                     fail(e.getMessage());
                 }
             } while (!removed);

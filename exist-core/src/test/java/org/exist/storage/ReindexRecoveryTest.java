@@ -1,5 +1,7 @@
 package org.exist.storage;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -31,6 +33,8 @@ import java.util.Optional;
  * Test crash recovery after reindexing a collection.
  */
 public class ReindexRecoveryTest {
+
+    private static final Logger LOG = LogManager.getLogger(ReindexRecoveryTest.class);
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
@@ -114,7 +118,7 @@ public class ReindexRecoveryTest {
             }
             transact.commit(transaction);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage(), e);
             fail(e.getMessage());
         }
     }

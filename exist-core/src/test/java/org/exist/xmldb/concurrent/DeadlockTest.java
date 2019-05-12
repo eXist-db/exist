@@ -21,6 +21,8 @@
  */
 package org.exist.xmldb.concurrent;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
@@ -33,8 +35,11 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 public class DeadlockTest {
+
+    private static final Logger LOG = LogManager.getLogger(DeadlockTest.class);
 
     public static final String DOCUMENT_CONTENT = "<document>\n"
             + "  <element1>value1</element1>\n"
@@ -99,14 +104,13 @@ public class DeadlockTest {
                             .createResource(Thread.currentThread().getName()
                                     + "_" + i, "XMLResource");
                     document.setContent(DOCUMENT_CONTENT);
-                    System.out.print("storing document " + document.getId()
+                    LOG.info("storing document " + document.getId()
                             + "\n");
                     collection.storeResource(document);
                 }
             } catch (Exception e) {
-                System.err.println("Writer " + Thread.currentThread().getName()
-                        + " failed: " + e);
-                e.printStackTrace();
+                LOG.error(e.getMessage(), e);
+                fail(e.getMessage());
             }
         }
     }

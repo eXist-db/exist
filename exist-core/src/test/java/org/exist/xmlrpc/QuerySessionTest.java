@@ -1,7 +1,10 @@
 package org.exist.xmlrpc;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.TestDataGenerator;
 import org.exist.TestUtils;
+import org.exist.storage.ReindexRecoveryTest;
 import org.exist.test.ExistWebServer;
 import org.junit.*;
 import org.xml.sax.SAXException;
@@ -20,6 +23,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class QuerySessionTest {
+
+    private static final Logger LOG = LogManager.getLogger(QuerySessionTest.class);
 
     @ClassRule
     public final static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
@@ -111,7 +116,7 @@ public class QuerySessionTest {
                 final ResourceSet result = service.query(query);
                 assertEquals(1, result.getSize());
             } catch (final XMLDBException e) {
-                e.printStackTrace();
+                LOG.error(e.getMessage(), e);
                 fail(e.getMessage());
             }
         }
