@@ -1,5 +1,7 @@
 package org.exist.test;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.journal.Journal;
@@ -24,6 +26,8 @@ import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
  * Exist embedded Server Rule for JUnit.
  */
 public class ExistEmbeddedServer extends ExternalResource {
+
+    private static final Logger LOG =  LogManager.getLogger(ExistEmbeddedServer.class);
 
     private final Optional<String> instanceName;
     private final Optional<Path> configFile;
@@ -115,7 +119,7 @@ public class ExistEmbeddedServer extends ExternalResource {
                 }
                 config.setProperty(BrokerPool.PROPERTY_DATA_DIR, temporaryStorage.get());
                 config.setProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR, temporaryStorage.get());
-                System.out.println("Using temporary storage location: " + temporaryStorage.get().toAbsolutePath().toString());
+                LOG.info("Using temporary storage location: " + temporaryStorage.get().toAbsolutePath().toString());
             }
 
             BrokerPool.configure(name, 1, 5, config, Optional.empty());
