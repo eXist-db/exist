@@ -36,16 +36,6 @@ cache:
   directories:
   - $HOME/.m2
 
-# temporary prerequisites
-before_install:
-   - git clone --single-branch --branch adam-custom-build https://github.com/adamretter/appassembler.git /tmp/appassembler
-   - cd /tmp/appassembler
-   - mvn clean install -DskipTests
-   - git clone --single-branch --branch feature/redirect-file-name https://github.com/adamretter/maven-download-plugin.git /tmp/maven-download-plugin
-   - cd /tmp/maven-download-plugin
-   - mvn clean install -DskipTests
-   - cd $TRAVIS_BUILD_DIR
-
 # avoid 10k lines log limit
 install: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=true -B -V -q
 
