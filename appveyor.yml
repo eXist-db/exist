@@ -11,11 +11,15 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
 
+# use -q to avoid 10k lines log limit
 build_script:
-  - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+  - mvn -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=true install -B -V -q
 
+# before_script is a quick workaround the non-idempotent exist-distribution step
+before_test:
+  - cd exist-distribution && mvn clean -q && cd ..
 test_script:
-  - mvn test -B
+  - mvn -Ddocker=true package -B
 
 after_test:
   - ps: |
