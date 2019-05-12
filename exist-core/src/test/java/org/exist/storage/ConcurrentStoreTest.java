@@ -26,8 +26,11 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.ConcurrencyTest;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
@@ -49,6 +52,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 public class ConcurrentStoreTest {
+
+    private static final Logger LOG = LogManager.getLogger(ConcurrencyTest.class);
 
     private static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
 
@@ -167,7 +172,7 @@ public class ConcurrentStoreTest {
 //              Don't commit...
                 pool.getJournalManager().get().flush(true, false);
     	    } catch (Exception e) {
-                e.printStackTrace();
+                LOG.error(e.getMessage(), e);
     	        fail(e.getMessage()); 
             }
         }
@@ -201,7 +206,7 @@ public class ConcurrentStoreTest {
                 
                 transact.commit(transaction);
             } catch (Exception e) {
-                e.printStackTrace();
+                LOG.error(e.getMessage(), e);
                 fail(e.getMessage());
             }
         }

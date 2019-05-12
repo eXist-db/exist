@@ -1,5 +1,7 @@
 package org.exist.storage;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistEmbeddedServer;
@@ -28,6 +30,8 @@ import java.util.concurrent.Executors;
 
 public class DirtyShutdownTest {
 
+    private static final Logger LOG = LogManager.getLogger(DirtyShutdownTest.class);
+
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
     
@@ -41,8 +45,7 @@ public class DirtyShutdownTest {
                 wait(5000);
             } catch (final InterruptedException e) {
                 Thread.currentThread().interrupt();
-                e.printStackTrace();
-
+                LOG.error(e.getMessage(), e);
             }
         }
     }
@@ -75,7 +78,7 @@ public class DirtyShutdownTest {
                 }
             }
         } catch (final PermissionDeniedException | EXistException | URISyntaxException | SAXException | LockException | IOException e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage(), e);
             fail(e.getMessage());
         }
     }

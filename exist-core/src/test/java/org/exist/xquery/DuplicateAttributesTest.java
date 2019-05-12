@@ -22,6 +22,8 @@
 package org.exist.xquery;
 
 import com.googlecode.junittoolbox.ParallelRunner;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
@@ -40,6 +42,8 @@ import org.junit.Test;
 
 @RunWith(ParallelRunner.class)
 public class DuplicateAttributesTest {
+
+    private static final Logger LOG = LogManager.getLogger(DuplicateAttributesTest.class);
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
@@ -98,7 +102,7 @@ public class DuplicateAttributesTest {
             assertEquals(1, result.getSize());
             assertEquals("<node attr=\"a\" b=\"c\" attr2=\"ab\"/>", result.getResource(0).getContent());
         } catch (XMLDBException e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage(), e);
             fail(e.getMessage());
         }
     }

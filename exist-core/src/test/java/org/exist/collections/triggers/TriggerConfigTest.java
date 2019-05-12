@@ -22,6 +22,8 @@ package org.exist.collections.triggers;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.security.PermissionDeniedException;
@@ -50,6 +52,8 @@ import org.junit.runners.Parameterized.Parameters;
  */
 @RunWith(Parameterized.class)
 public class TriggerConfigTest {
+
+    private static final Logger LOG = LogManager.getLogger(TriggerConfigTest.class);
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
@@ -102,7 +106,7 @@ public class TriggerConfigTest {
             assertEquals(1, result.getSize());
             assertEquals(testCollection, result.getResource(0).getContent());
         } catch (XMLDBException e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage(), e);
             fail(e.getMessage());
         }
     }
@@ -125,7 +129,7 @@ public class TriggerConfigTest {
             assertEquals(1, result.getSize());
             assertEquals(testCollection, result.getResource(0).getContent());
         } catch (XMLDBException e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage(), e);
             fail(e.getMessage());
         }
     }
@@ -145,7 +149,7 @@ public class TriggerConfigTest {
             ResourceSet result = qs.query("if (doc-available('" + testCollection + "/messages.xml')) then doc('" + testCollection + "/messages.xml')/events/event[@id = 'STORE-DOCUMENT'] else ()");
             assertEquals("No trigger should have fired. Configuration was removed", 0, result.getSize());
         } catch (XMLDBException e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage(), e);
             fail(e.getMessage());
         }
     }
@@ -171,7 +175,7 @@ public class TriggerConfigTest {
             assertEquals(1, result.getSize());
             assertEquals(testCollection, result.getResource(0).getContent());
         } catch (XMLDBException e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage(), e);
             fail(e.getMessage());
         }
     }
@@ -194,7 +198,7 @@ public class TriggerConfigTest {
                 root.removeResource(resource);
             }
         } catch (XMLDBException e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage(), e);
             fail(e.getMessage());
         }
     }
