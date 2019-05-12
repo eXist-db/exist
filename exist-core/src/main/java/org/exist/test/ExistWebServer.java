@@ -1,6 +1,8 @@
 package org.exist.test;
 
 import net.jcip.annotations.GuardedBy;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.collections.triggers.TriggerException;
@@ -24,6 +26,9 @@ import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
  * Exist Jetty Web Server Rule for JUnit
  */
 public class ExistWebServer extends ExternalResource {
+
+    private static final Logger LOG =  LogManager.getLogger(ExistWebServer.class);
+
     private static final String CONFIG_PROP_FILES = "org.exist.db-connection.files";
     private static final String CONFIG_PROP_JOURNAL_DIR = "org.exist.db-connection.recovery.journal-dir";
 
@@ -95,7 +100,7 @@ public class ExistWebServer extends ExternalResource {
                 final String absTemporaryStorage = temporaryStorage.get().toAbsolutePath().toString();
                 System.setProperty(CONFIG_PROP_FILES, absTemporaryStorage);
                 System.setProperty(CONFIG_PROP_JOURNAL_DIR, absTemporaryStorage);
-                System.out.println("Using temporary storage location: " + absTemporaryStorage);
+                LOG.info("Using temporary storage location: " + absTemporaryStorage);
             }
 
             if(useRandomPort) {
