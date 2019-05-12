@@ -158,6 +158,13 @@
             <artifactId>jaxb-api</artifactId>
         </dependency>
 
+        <!-- needed on JDK 10+ -->
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.exist-db.thirdparty.javax.xml.xquery</groupId>
             <artifactId>xqjapi</artifactId>

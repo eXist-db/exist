@@ -52,6 +52,13 @@
             <artifactId>jaxb-api</artifactId>
         </dependency>
 
+        <!-- needed on JDK 10+ -->
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- needed for starting up a jetty server -->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
@@ -121,6 +128,9 @@
                         <configuration>
                             <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
+                                <!-- needed for runtime on JDK 10+ -->
+                                <ignoredUnusedDeclaredDependency>org.glassfish.jaxb:jaxb-runtime:jar:${jaxb.version}</ignoredUnusedDeclaredDependency>
+
                                 <!-- needed for running tests that depend on eXist-db Jetty server -->
                                 <ignoredUnusedDeclaredDependency>org.exist-db:exist-jetty-config:jar:${project.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-deploy:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
