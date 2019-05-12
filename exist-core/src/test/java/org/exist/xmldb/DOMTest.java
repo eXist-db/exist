@@ -11,6 +11,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.junit.ClassRule;
@@ -34,6 +36,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author jmv
  */
 public class DOMTest {
+
+	private static final Logger LOG =  LogManager.getLogger(DOMTest.class);
 
 	@ClassRule
 	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
@@ -218,7 +222,7 @@ public class DOMTest {
 		}
 
 		public void characters(char[] ch, int start, int length) {
-			System.out.println(
+			LOG.trace(
 				"SAXHandler.characters("
 					+ new String(ch)
 					+ ", "
@@ -229,14 +233,14 @@ public class DOMTest {
 		}
 
 		public void endDocument() {
-			System.out.println("SAXHandler.endDocument()");
+			LOG.trace("SAXHandler.endDocument()");
 		}
 
 		public void endElement(
 			String namespaceURI,
 			String localName,
 			String qName) {
-			System.out.println(
+			LOG.trace(
 				"SAXHandler.endElement("
 					+ namespaceURI
 					+ ", "
@@ -247,11 +251,11 @@ public class DOMTest {
 		}
 
 		public void endPrefixMapping(String prefix) {
-			System.out.println("SAXHandler.endPrefixMapping(" + prefix + ")");
+			LOG.trace("SAXHandler.endPrefixMapping(" + prefix + ")");
 		}
 
 		public void ignorableWhitespace(char[] ch, int start, int length) {
-			System.out.println(
+			LOG.trace(
 				"SAXHandler.ignorableWhitespace("
 					+ new String(ch)
 					+ ", "
@@ -262,7 +266,7 @@ public class DOMTest {
 		}
 
 		public void processingInstruction(String target, String data) {
-			System.out.println(
+			LOG.trace(
 				"SAXHandler.processingInstruction("
 					+ target
 					+ ", "
@@ -271,16 +275,16 @@ public class DOMTest {
 		}
 
 		public void setDocumentLocator(Locator locator) {
-			System.out.println(
+			LOG.trace(
 				"SAXHandler.setDocumentLocator(" + locator + ")");
 		}
 
 		public void skippedEntity(String name) {
-			System.out.println("SAXHandler.skippedEntity(" + name + ")");
+			LOG.trace("SAXHandler.skippedEntity(" + name + ")");
 		}
 
 		public void startDocument() {
-			System.out.println("SAXHandler.startDocument()");
+			LOG.trace("SAXHandler.startDocument()");
 		}
 
 		public void startElement(
@@ -288,7 +292,7 @@ public class DOMTest {
 			String localName,
 			String qName,
 			Attributes atts) {
-			System.out.println(
+			LOG.trace(
 				"SAXHandler.startElement("
 					+ namespaceURI
 					+ ", "
@@ -301,7 +305,7 @@ public class DOMTest {
 		}
 
 		public void startPrefixMapping(String prefix, String xuri) {
-			System.out.println(
+			LOG.trace(
 				"SAXHandler.startPrefixMapping(" + prefix + ", " + xuri + ")");
 		}
 
