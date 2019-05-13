@@ -44,7 +44,7 @@ before_script: cd exist-distribution && mvn clean -q && cd ..
 script: mvn -Ddocker=true package -B
 
 after_failure:
-   - tar -cjf surefire-reports.tar.bz2 exist-core/target/surefire-reports
+   - tar -cjf surefire-reports.tar.bz2 exist-core/target/surefire-reports exist-core/target/test-logs
    - curl -v -u $CHUNK_USER:$CHUNK_PW -sT surefire-reports.tar.bz2 chunk.io
 
 notifications:

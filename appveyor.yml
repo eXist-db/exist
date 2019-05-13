@@ -35,6 +35,8 @@ on_failure:
 artifacts:
   - path: exist-core\target\surefire-reports
     name: surefire-reports
+  - path: exist-core\target\test-logs
+    name: test-logs
 
 cache:
   - C:\Users\appveyor\.m2
