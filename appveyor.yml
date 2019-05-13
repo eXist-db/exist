@@ -15,11 +15,8 @@ environment:
 build_script:
   - mvn -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=true install -B -V -q
 
-# before_script is a quick workaround the non-idempotent exist-distribution step
-before_test:
-  - cd exist-distribution && mvn clean -q && cd ..
 test_script:
-  - mvn -Ddocker=true package -B
+  - mvn -Ddocker=true test -B
 
 after_test:
   - ps: |
