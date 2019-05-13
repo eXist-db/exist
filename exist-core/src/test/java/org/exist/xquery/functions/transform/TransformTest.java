@@ -185,12 +185,12 @@ public class TransformTest {
     private static final String COUNT_DESCENDANTS_TWO_NODES_XSLT =
             "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">\n" +
             "\n" +
-            "\t<xsl:variable name=\"xml\" select=\"document('" + TEST_TWO_NODES_COLLECTION.append(TWO_NODES_XML_NAME).getRawCollectionPath() + "')\"/>\n" +
+            "\t<xsl:variable name=\"xml\" select=\"doc('" + TEST_TWO_NODES_COLLECTION.append(TWO_NODES_XML_NAME).getRawCollectionPath() + "')\"/>\n" +
             "\t\n" +
             "\t<xsl:template match=\"/\">\n" +
             "\t\t<counts>\n" +
-            "\t\t\t<count1><xsl:value-of select=\"count(doc($xml)//*)\"/></count1>\n" +
-            "\t\t\t<count2><xsl:value-of select=\"count(doc($xml)/a//*)\"/></count2>\n" +
+            "\t\t\t<count1><xsl:value-of select=\"count($xml//*)\"/></count1>\n" +
+            "\t\t\t<count2><xsl:value-of select=\"count($xml/a//*)\"/></count2>\n" +
             "\t\t</counts>\n" +
             "\t</xsl:template>\n" +
             "\n" +
