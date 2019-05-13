@@ -78,6 +78,17 @@
                 <filtering>true</filtering>
             </testResource>
         </testResources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <configuration>
+                    <!-- clashes with Ant 1.10.6, see https://github.com/jeremylong/DependencyCheck/issues/1914 -->
+                    <skipSystemScope>true</skipSystemScope>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
 </project>
