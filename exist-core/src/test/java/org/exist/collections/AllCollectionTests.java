@@ -29,7 +29,8 @@ import org.junit.runners.Suite;
         CollectionOrderTest.class,
         CollectionRemovalTest.class,
         CollectionStoreTest.class,
-        CollectionURITest.class
+        CollectionURITest.class,
+        OpenCollectionTest.class
 })
 public class AllCollectionTests {
 }
