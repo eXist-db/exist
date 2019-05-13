@@ -63,8 +63,8 @@ public class ConcurrentQueryTest extends ConcurrentTestBase {
     @Override
     public List<Runner> getRunners() {
         return Arrays.asList(
-                new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C1", "R1.xml", QUERY0),50, 500, 0),
-                new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C1", "R1.xml", QUERY1), 50, 250, 0),
+                new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C1", "R1.xml", QUERY0),50, 100, 0),
+                new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C1", "R1.xml", QUERY1), 50, 50, 0),
                 new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C1", "R1.xml", QUERY2), 50, 0, 0)
         );
     }

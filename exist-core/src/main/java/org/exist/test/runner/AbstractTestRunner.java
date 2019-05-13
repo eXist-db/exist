@@ -53,9 +53,11 @@ import java.util.function.Function;
 public abstract class AbstractTestRunner extends Runner {
 
     protected final Path path;
+    protected final boolean parallel;
 
-    protected AbstractTestRunner(final Path path) {
+    protected AbstractTestRunner(final Path path, final boolean parallel) {
         this.path = path;
+        this.parallel = parallel;
     }
 
     protected static Sequence executeQuery(final Source query, final List<Function<XQueryContext, Tuple2<String, Object>>> externalVariableBindings) throws EXistException, PermissionDeniedException, XPathException, IOException, DatabaseConfigurationException {

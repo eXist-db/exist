@@ -685,12 +685,15 @@
                         <exclude>org.exist.collections.ConcurrencyTest</exclude>
                         <exclude>org.exist.xmldb.concurrent.FragmentsTest</exclude>
 
+                        <!-- NOTE: these tests appear to be invalid -->
+                        <exclude>org.exist.xmldb.concurrent.ConcurrentResourceTest2</exclude>
+                        <exclude>org.exist.xmldb.concurrent.ConcurrentResourceTest3</exclude>
+
                         <!-- NOTE: these take a long time to run and should become integration tests via maven-failsafe-plugin -->
                         <exclude>org.exist.http.underheavyload.DatabaseUnderLoadTest</exclude>
                         <exclude>org.exist.storage.lock.DeadlockTest</exclude>
                         <exclude>org.exist.storage.RemoveCollectionTest</exclude>
                         <exclude>org.exist.xmldb.ShutdownTest</exclude>
-
                     </excludes>
                 </configuration>
             </plugin>

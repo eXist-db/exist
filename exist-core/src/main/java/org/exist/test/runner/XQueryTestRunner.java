@@ -60,8 +60,8 @@ public class XQueryTestRunner extends AbstractTestRunner {
     /**
      * @param path The path to the XQuery file containing the XQSuite tests
      */
-    public XQueryTestRunner(final Path path) throws InitializationError {
-        super(path);
+    public XQueryTestRunner(final Path path, final boolean parallel) throws InitializationError {
+        super(path, parallel);
         this.info = extractTestInfo(path);
     }
 

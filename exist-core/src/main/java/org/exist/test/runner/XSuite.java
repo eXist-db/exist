@@ -83,12 +83,30 @@ public class XSuite extends ParentRunner<Runner> {
         String[] value();
     }
 
+    /**
+     * The <code>XSuiteParallel</code> annotation specifies that the tests will be run in parallel when a class
+     * annotated with <code>@RunWith(XSuite.class)</code> is run.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @Inherited
+    public @interface XSuiteParallel {
+    }
+
     private static String[] getAnnotatedDirectories(final Class<?> klass) throws InitializationError {
         final XSuite.XSuiteFiles annotation = klass.getAnnotation(XSuite.XSuiteFiles.class);
         if (annotation == null) {
             throw new InitializationError(String.format("class '%s' must have a XSuiteFiles annotation", klass.getName()));
         }
         return annotation.value();
+    }
+
+    private static boolean hasParallelAnnotation(@Nullable final Class<?> klass) {
+        if (klass == null) {
+            return false;
+        }
+        final XSuite.XSuiteParallel annotation = klass.getAnnotation(XSuite.XSuiteParallel.class);
+        return annotation != null;
     }
 
     private final List<Runner> runners;
@@ -132,7 +150,7 @@ public class XSuite extends ParentRunner<Runner> {
      * @param suites the directories/files in the suite
      */
     protected XSuite(final RunnerBuilder builder, final Class<?> klass, final String[] suites) throws InitializationError {
-        this(klass, getRunners(klass, suites));
+        this(klass, getRunners(suites, hasParallelAnnotation(klass)));
     }
 
     /**
@@ -147,12 +165,12 @@ public class XSuite extends ParentRunner<Runner> {
     }
 
     /**
-     * Get the runners for the suiteDirectories
+     * Get the runners for the suiteDirectories.
      *
-     * @param klass the root of the suite
      * @param suites/files the directories in the suite
+     * @param parallel should a runner execute tests in parallel
      */
-    private static List<Runner> getRunners(final Class<?> klass, final String[] suites) throws InitializationError {
+    private static List<Runner> getRunners(final String[] suites, final boolean parallel) throws InitializationError {
         if(suites == null) {
             return Collections.emptyList();
         }
@@ -173,7 +191,7 @@ public class XSuite extends ParentRunner<Runner> {
                     try (final Stream<Path> children = Files.list(path)) {
                         for(final Path child : children.collect(Collectors.toList())) {
                             if(!Files.isDirectory(child)) {
-                                final Runner runner = getRunner(child);
+                                final Runner runner = getRunner(child, parallel);
                                 if(runner != null) {
                                     runners.add(runner);
                                 }
@@ -182,7 +200,7 @@ public class XSuite extends ParentRunner<Runner> {
                     }
                 } else {
                     // just a file of test(s)
-                    runners.add(getRunner(path));
+                    runners.add(getRunner(path, parallel));
                 }
             }
 
@@ -192,11 +210,11 @@ public class XSuite extends ParentRunner<Runner> {
         }
     }
 
-    private static @Nullable Runner getRunner(final Path path) throws InitializationError {
+    private static @Nullable Runner getRunner(final Path path, final boolean parallel) throws InitializationError {
         if(XMLFilenameFilter.asPredicate().test(path)) {
-            return new XMLTestRunner(path);
+            return new XMLTestRunner(path, parallel);
         } else if(XQueryFilenameFilter.asPredicate().test(path) && !path.getFileName().toString().equals("runTests.xql")) {
-            return new XQueryTestRunner(path);
+            return new XQueryTestRunner(path, parallel);
         } else {
             return null;
         }

@@ -84,7 +84,7 @@ public class QuerySessionTest {
     @Test
     public void runTasks() {
         ExecutorService executor = Executors.newFixedThreadPool(N_THREADS);
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 100; i++) {
             executor.submit(new QueryTask(QUERY));
         }
 
