@@ -47,8 +47,8 @@ public class FragmentsTest extends ConcurrentTestBase {
     @Override
     public List<Runner> getRunners() {
         return Arrays.asList(
-                new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C1", "test.xml", QUERY), 200, 0, 200),
-                new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C2", "test.xml", QUERY), 200, 0, 200),
+                new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C1", "test.xml", QUERY), 200, 0, 50),
+                new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C2", "test.xml", QUERY), 200, 0, 50),
                 new Runner(new CreateCollectionAction(XmldbURI.LOCAL_DB + "/C1", "testappend.xml"), 200, 0, 0)
         );
     }

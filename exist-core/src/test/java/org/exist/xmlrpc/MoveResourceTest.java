@@ -21,7 +21,11 @@ package org.exist.xmlrpc;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
@@ -59,7 +63,7 @@ import static org.junit.Assert.*;
  */
 public class MoveResourceTest {
 
-    private static final int DELAY = 50;  // milliseconds
+    private static final int DELAY = 10;  // milliseconds
     private static final long TIMEOUT = 5 * 60 * 1000;  // milliseconds
 
     @ClassRule
@@ -77,9 +81,9 @@ public class MoveResourceTest {
     public void testMove() throws InterruptedException, ExecutionException {
 
         final List<Callable<Boolean>> tasks = new ArrayList<>();
-        tasks.add(new MoveThread());
-        tasks.add(new CheckThread());
-        tasks.add(new CheckThread());
+        tasks.add(new MoveThread(50));
+        tasks.add(new CheckThread(100));
+        tasks.add(new CheckThread(100));
 
         ExecutorService service = null;
         try {
@@ -115,18 +119,22 @@ public class MoveResourceTest {
     }
 
     private class MoveThread implements Callable<Boolean> {
+        private final int iterations;
+
+        public MoveThread(final int iterations) {
+            this.iterations = iterations;
+        }
 
         @Override
         public Boolean call() throws IOException, XmlRpcException, InterruptedException {
             final String romeoAndJuliet = readSample();
-            for (int i = 0; i < 100; i++) {
+            final XmlRpcClient xmlrpc = getXmlRpcClient();
+            for (int i = 0; i < iterations; i++) {
                 XmldbURI sourceColl = XmldbURI.ROOT_COLLECTION_URI.append("source" + i);
                 XmldbURI targetColl1 = XmldbURI.ROOT_COLLECTION_URI.append("target");
                 XmldbURI targetColl2 = targetColl1.append("test" + i);
                 XmldbURI sourceResource = sourceColl.append("source.xml");
                 XmldbURI targetResource = targetColl2.append("copied.xml");
-
-                XmlRpcClient xmlrpc = getXmlRpcClient();
 
                 createCollection(xmlrpc, sourceColl);
                 createCollection(xmlrpc, targetColl1);
@@ -160,9 +168,7 @@ public class MoveResourceTest {
                 byte[] data = (byte[]) xmlrpc.execute("getDocument", params);
                 assertTrue(data != null && data.length > 0);
 
-                synchronized (this) {
-                    wait(DELAY);
-                }
+                Thread.sleep(DELAY);
 
                 params.clear();
                 params.add(sourceColl.toString());
@@ -182,24 +188,31 @@ public class MoveResourceTest {
         }
     }
 
-    private class CheckThread implements Callable<Boolean> {
+    private static class CheckThread implements Callable<Boolean> {
+        private static final PoolingHttpClientConnectionManager poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager();
+        private final int iterations;
+
+        public CheckThread(final int iterations) {
+            this.iterations = iterations;
+        }
 
         @Override
         public Boolean call() throws IOException, InterruptedException {
-            final String reqUrl = getRestUri() + "/db?_query=" + URLEncoder.encode("collection('/db')//SPEECH[SPEAKER = 'JULIET']", "UTF-8");
+            final CloseableHttpClient client = HttpClients
+                    .custom()
+                    .setConnectionManager(poolingHttpClientConnectionManager)
+                    .build();
+            final org.apache.http.client.fluent.Executor executor = Executor.newInstance(client);
 
+            final String reqUrl = getRestUri() + "/db?_query=" + URLEncoder.encode("collection('/db')//SPEECH[SPEAKER = 'JULIET']", "UTF-8");
             final Request request = Request.Get(reqUrl);
 
-            for (int i = 0; i < 200; i++) {
-                final HttpResponse response = request
-                        .execute()
-                        .returnResponse();
+            for (int i = 0; i < iterations; i++) {
+                final HttpResponse response = executor.execute(request).returnResponse();
 
                 assertEquals(response.getStatusLine().toString(), HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
-                synchronized (this) {
-                    wait(DELAY);
-                }
+                Thread.sleep(DELAY);
             }
 
             return true;

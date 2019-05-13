@@ -68,8 +68,8 @@ public class XMLTestRunner extends AbstractTestRunner {
     /**
      * @param path The path to the XML file containing the tests
      */
-    public XMLTestRunner(final Path path) throws InitializationError {
-        super(path);
+    public XMLTestRunner(final Path path, final boolean parallel) throws InitializationError {
+        super(path, parallel);
         try {
             this.doc = parse(path);
         } catch (final ParserConfigurationException | IOException | SAXException e) {

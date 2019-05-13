@@ -54,9 +54,9 @@ public class ConcurrentResourceTest extends ConcurrentTestBase {
 	@Override
 	public List<Runner> getRunners() {
 		return Arrays.asList(
-				new Runner(new ReplaceResourceAction(XmldbURI.LOCAL_DB + "/C1/C1-C2", "R1.xml"), 100, 0, 100),
-				new Runner(new ReplaceResourceAction(XmldbURI.LOCAL_DB + "/C1/C1-C2", "R2.xml"), 100, 0, 100),
-				new Runner(new RetrieveResourceAction(XmldbURI.LOCAL_DB + "/C1/C1-C2", "R1.xml"), 150, 500, 100)
+				new Runner(new ReplaceResourceAction(XmldbURI.LOCAL_DB + "/C1/C1-C2", "R1.xml"), 100, 0, 50),
+				new Runner(new ReplaceResourceAction(XmldbURI.LOCAL_DB + "/C1/C1-C2", "R2.xml"), 100, 0, 50),
+				new Runner(new RetrieveResourceAction(XmldbURI.LOCAL_DB + "/C1/C1-C2", "R1.xml"), 150, 200, 50)
 		);
 	}
 }
