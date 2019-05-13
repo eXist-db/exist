@@ -15,6 +15,21 @@ matrix:
     - os: osx
       osx_image: xcode9.3
       env: JAVA_HOME=$(/usr/libexec/java_home)
+      before_install:
+        - sudo chown root:wheel $(brew --prefix)/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
+        - sudo chmod u+s $(brew --prefix)/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
+        - docker-machine create default --driver xhyve
+        - eval $(docker-machine env default)
+
+
+addons:
+  homebrew:
+    packages:
+      - docker
+      - docker-compose
+      - docker-machine
+      - xhyve
+      - docker-machine-driver-xhyve
 
 
 # TODO: DP switch tag to 'release' when merging into develop, not before!
