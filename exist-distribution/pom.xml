@@ -923,6 +923,11 @@
                 <os>
                     <family>mac</family>
                 </os>
+                <!-- Note: Travis Mac doesn't support the hdiutil attach required by create-dmg-mac.sh -->
+                <property>
+                    <name>env.CI</name>
+                    <value>!true</value>
+                </property>
             </activation>
             <build>
                 <plugins>
