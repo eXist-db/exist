@@ -39,9 +39,7 @@ cache:
 # use -q to avoid 10k lines log limit
 install: mvn -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=true install -B -V -q
 
-# before_script is a quick workaround the non-idempotent exist-distribution step
-before_script: cd exist-distribution && mvn clean -q && cd ..
-script: mvn -Ddocker=true package -B
+script: mvn -Ddocker=true test -B
 
 after_failure:
    - tar -cjf surefire-reports.tar.bz2 exist-core/target/surefire-reports exist-core/target/test-logs
