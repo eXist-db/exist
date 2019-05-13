@@ -1,0 +1,113 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.exist-db</groupId>
+        <artifactId>exist-parent</artifactId>
+        <version>5.0.0-RC8-SNAPSHOT</version>
+        <relativePath>../exist-parent</relativePath>
+    </parent>
+
+    <artifactId>exist-deb</artifactId>
+    <packaging>deb</packaging>
+
+    <name>eXist-db Debian Package</name>
+    <description>Debian Package of eXist-db NoSQL Database Client/Server</description>
+
+    <scm>
+        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
+        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
+        <url>scm:git:https://github.com/exist-db/exist.git</url>
+    </scm>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-distribution</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>analyze</id>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <failOnWarning>true</failOnWarning>
+                            <ignoredUnusedDeclaredDependencies>
+                                <ignoredUnusedDeclaredDependency>${project.groupId}:exist-distribution:pom:${project.version}</ignoredUnusedDeclaredDependency>  <!-- needed at runtime to support lucene query syntax -->
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.vafer</groupId>
+                <artifactId>jdeb</artifactId>
+                <version>1.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <verbose>true</verbose>
+                    <snapshotExpand>true</snapshotExpand>
+                    <!-- signPackage>true</signPackage -->
+                    <dataSet>
+                        <data>
+                            <type>template</type>
+                            <paths>
+                                <path>/etc/existdb</path>
+                                <path>/usr/share/existdb/autodeploy</path>
+                                <path>/usr/share/existdb/lib</path>
+                                <path>/var/lib/existdb</path>  <!-- data dir -->
+                                <path>/var/log/existdb</path>
+                            </paths>
+                        </data>
+                        <data>
+                            <src>${basedir}/../exist-distribution/target/exist-distribution-${project.version}-dir/etc</src>
+                            <type>directory</type>
+                            <mapper>
+                                <type>perm</type>
+                                <prefix>/etc/existdb</prefix>
+                                <!-- user>existdb</user>
+                                <group>existdb</group>
+                                <filemode>644</filemode -->
+                            </mapper>
+                        </data>
+                        <data>
+                            <src>${basedir}/../exist-distribution/target/exist-distribution-${project.version}-dir/autodeploy</src>
+                            <type>directory</type>
+                            <mapper>
+                                <type>perm</type>
+                                <prefix>/usr/share/existdb/autodeploy</prefix>
+                                <!-- user>existdb</user>
+                                <group>existdb</group>
+                                <filemode>644</filemode -->
+                            </mapper>
+                        </data>
+                        <data>
+                            <src>${basedir}/../exist-distribution/target/exist-distribution-${project.version}-dir/lib</src>
+                            <type>directory</type>
+                            <mapper>
+                                <type>perm</type>
+                                <prefix>/usr/share/existdb/lib</prefix>
+                                <!-- user>existdb</user>
+                                <group>existdb</group>
+                                <filemode>644</filemode -->
+                            </mapper>
+                        </data>
+                    </dataSet>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+</project>

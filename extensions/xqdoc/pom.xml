@@ -20,10 +20,6 @@
         <url>scm:git:https://github.com/exist-db/exist.git</url>
     </scm>
 
-    <properties>
-        <milton.version>1.8.1.3</milton.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.exist-db</groupId>
