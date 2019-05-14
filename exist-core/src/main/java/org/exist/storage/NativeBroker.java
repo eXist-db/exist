@@ -650,7 +650,7 @@ public class NativeBroker extends DBBroker {
      * @throws TriggerException If a CollectionTrigger throws an exception
      */
     private Tuple2<Boolean, Collection> getOrCreateCollectionExplicit(final Txn transaction, final XmldbURI path, final Optional<Tuple2<Permission, Long>> creationAttributes) throws PermissionDeniedException, IOException, TriggerException {
-        final XmldbURI collectionUri = prepend(path.normalizeCollectionPath());
+        final XmldbURI collectionUri = prepend(path.toCollectionPathURI().normalizeCollectionPath());
         final XmldbURI parentCollectionUri = collectionUri.removeLastSegment();
 
         final CollectionCache collectionsCache = pool.getCollectionsCache();
@@ -874,7 +874,7 @@ public class NativeBroker extends DBBroker {
      */
     private @Nullable @EnsureLocked Collection openCollection(final XmldbURI path, final long address, final LockMode lockMode)
             throws PermissionDeniedException {
-        final XmldbURI collectionUri = prepend(path.normalizeCollectionPath());
+        final XmldbURI collectionUri = prepend(path.toCollectionPathURI().normalizeCollectionPath());
 
         final ManagedCollectionLock collectionLock;
         final Runnable unlockFn;    // we unlock on error, or if there is no Collection
