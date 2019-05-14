@@ -66,20 +66,6 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
     @EnsureContainerLocked(mode=WRITE_LOCK) void setId(int id);
 
     /**
-     * Set the internal storage address of the Collection data
-     *
-     * @param address The internal storage address
-     */
-    @EnsureContainerLocked(mode=WRITE_LOCK) void setAddress(long address);
-
-    /**
-     * Gets the internal storage address of the Collection data
-     *
-     * @return The internal storage address
-     */
-    long getAddress();
-
-    /**
      * Get the URI path of the Collection
      *
      * @return The URI path of the Collection

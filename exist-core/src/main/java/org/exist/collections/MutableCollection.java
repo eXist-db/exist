@@ -109,10 +109,9 @@ public class MutableCollection implements Collection {
      */
     @GuardedBy("LockManager") private LinkedHashSet<XmldbURI> subCollections = new LinkedHashSet<>();
 
-    private long address = BFile.UNKNOWN_ADDRESS;  // Storage address of the collection in the BFile
     private long created = 0;
     private volatile boolean isTempCollection;
-    private Permission permissions;
+    private final Permission permissions;
     private final CollectionMetadata collectionMetadata;
     private final ObservaleMutableCollection observable = new ObservaleMutableCollection();
 
@@ -1757,16 +1756,6 @@ public class MutableCollection implements Collection {
         }
         //Attempt to get configuration
         return manager.getConfiguration(this);
-    }
-
-    @Override
-    public void setAddress(final long addr) {
-        this.address = addr;
-    }
-
-    @Override
-    public long getAddress() {
-        return this.address;
     }
 
     @Override

@@ -1822,7 +1822,6 @@ public class NativeBroker extends DBBroker {
                 if (address == BFile.UNKNOWN_ADDRESS) {
                     throw new IOException("Could not store collection data for '" + collection.getURI() + "', address=BFile.UNKNOWN_ADDRESS");
                 }
-                collection.setAddress(address);
             }
         } catch(final ReadOnlyException e) {
             throw new IOException(DATABASE_IS_READ_ONLY, e);

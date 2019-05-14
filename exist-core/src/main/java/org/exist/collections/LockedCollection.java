@@ -101,16 +101,6 @@ public class LockedCollection implements Collection {
     }
 
     @Override
-    public void setAddress(final long address) {
-        collection.setAddress(address);
-    }
-
-    @Override
-    public long getAddress() {
-        return collection.getAddress();
-    }
-
-    @Override
     public XmldbURI getURI() {
         return collection.getURI();
     }
