@@ -448,7 +448,8 @@
                 <plugin>
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
-                    <version>5.0.0-M3</version>
+                    <!-- TODO(AR) version 5.0.0-M3 seems to be unreliable, see: https://github.com/jeremylong/DependencyCheck/issues/1918 -->
+                    <version>5.0.0-M2</version>
                     <configuration>
                         <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                         <autoconfAnalyzerEnabled>false</autoconfAnalyzerEnabled>
