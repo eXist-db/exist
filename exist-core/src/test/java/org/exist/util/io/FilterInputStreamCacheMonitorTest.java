@@ -20,6 +20,8 @@
 
 package org.exist.util.io;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.ExtendedResource;
@@ -35,24 +37,33 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 public class FilterInputStreamCacheMonitorTest {
 
     @ClassRule
     public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
+    protected final static Logger LOG = LogManager.getLogger(FilterInputStreamCacheMonitorTest.class);
+
     private static String TEST_COLLECTION_NAME = "testFilterInputStreamCacheMonitor";
 
     @BeforeClass
-    public static void setup() throws XMLDBException, IOException, URISyntaxException {
+    public static void setup() throws XMLDBException, URISyntaxException {
+        final FilterInputStreamCacheMonitor monitor = FilterInputStreamCacheMonitor.getInstance();
+        int activeCount = monitor.getActive().size();
+        if (activeCount != 0) {
+            LOG.warn("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "."
+                    +  System.getProperty("line.separator") + monitor.dump()
+                    +  "It is likely that a previous test or process within the same JVM is leaking file handles! This should be investigated...");
+        }
+        monitor.clear();
+
         final Path icon = Paths.get(FilterInputStreamCacheMonitorTest.class.getResource("icon.png").toURI());
 
         final Collection testCollection = existXmldbEmbeddedServer.createCollection(existXmldbEmbeddedServer.getRoot(), TEST_COLLECTION_NAME);
@@ -70,11 +81,14 @@ public class FilterInputStreamCacheMonitorTest {
     }
 
     @Test
-    public void binaryResult() throws XMLDBException, IOException {
+    public void binaryResult() throws XMLDBException {
         final FilterInputStreamCacheMonitor monitor = FilterInputStreamCacheMonitor.getInstance();
 
         // assert no binaries in use yet
-        assertEquals(0, monitor.getActive().size());
+        int activeCount = monitor.getActive().size();
+        if (activeCount != 0) {
+            fail("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "." +  System.getProperty("line.separator") + monitor.dump());
+        }
 
         ResourceSet resourceSet = null;
         try {
@@ -92,7 +106,10 @@ public class FilterInputStreamCacheMonitorTest {
             }
 
             // assert no active binaries as we just closed the resource in the try-with-resources
-            assertEquals(0, monitor.getActive().size());
+            activeCount = monitor.getActive().size();
+            if (activeCount != 0) {
+                fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "."  + System.getProperty("line.separator") + monitor.dump());
+            }
 
         } finally {
             resourceSet.clear();
@@ -100,11 +117,14 @@ public class FilterInputStreamCacheMonitorTest {
     }
 
     @Test
-    public void enclosedExpressionCleanup() throws XMLDBException, IOException {
+    public void enclosedExpressionCleanup() throws XMLDBException {
         final FilterInputStreamCacheMonitor monitor = FilterInputStreamCacheMonitor.getInstance();
 
         // assert no binaries in use yet
-        assertEquals(0, monitor.getActive().size());
+        int activeCount = monitor.getActive().size();
+        if (activeCount != 0) {
+            fail("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "."  + System.getProperty("line.separator") + monitor.dump());
+        }
 
         ResourceSet resourceSet = null;
         try {
@@ -117,7 +137,10 @@ public class FilterInputStreamCacheMonitorTest {
                 assertFalse(resource instanceof LocalBinaryResource);
 
                 // assert still no active binaries (because they have been cleaned up)
-                assertEquals(0, monitor.getActive().size());
+                activeCount = monitor.getActive().size();
+                if (activeCount != 0) {
+                    fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "."  + System.getProperty("line.separator") + monitor.dump());
+                }
             }
 
         } finally {
@@ -126,11 +149,14 @@ public class FilterInputStreamCacheMonitorTest {
     }
 
     @Test
-    public void enclosedExpressionsCleanup() throws XMLDBException, IOException {
+    public void enclosedExpressionsCleanup() throws XMLDBException {
         final FilterInputStreamCacheMonitor monitor = FilterInputStreamCacheMonitor.getInstance();
 
         // assert no binaries in use yet
-        assertEquals(0, monitor.getActive().size());
+        int activeCount = monitor.getActive().size();
+        if (activeCount != 0) {
+            fail("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "." + System.getProperty("line.separator") + monitor.dump());
+        }
 
         ResourceSet resourceSet = null;
         try {
@@ -145,7 +171,10 @@ public class FilterInputStreamCacheMonitorTest {
                 assertFalse(resource instanceof LocalBinaryResource);
 
                 // assert still no active binaries (because they have been cleaned up)
-                assertEquals(0, monitor.getActive().size());
+                activeCount = monitor.getActive().size();
+                if (activeCount != 0) {
+                    fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "."  + System.getProperty("line.separator" ) + monitor.dump());
+                }
             }
 
         } finally {
