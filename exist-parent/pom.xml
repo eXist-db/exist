@@ -582,8 +582,8 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>3.0.0-M3</version>
                     <configuration>
-                        <forkCount>1.5C</forkCount>
                         <reuseForks>false</reuseForks>
+                        <forkCount>2C</forkCount>
                         <argLine>-Dfile.encoding=${project.build.sourceEncoding} -Dlog4j.configurationFile=${project.build.testOutputDirectory}/log4j2.xml</argLine>
                     </configuration>
                 </plugin>
