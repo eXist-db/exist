@@ -13,10 +13,12 @@ environment:
 
 # use -q to avoid 10k lines log limit
 build_script:
-  - mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=true install -B -V -q
+  - cmd: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=false install -B -V -q
+  - sh: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=true install -B -V -q
 
 test_script:
-  - mvn -T 2C -Ddocker=true test -B
+  - cmd: mvn -T 2C -Ddocker=false test -B
+  - sh: mvn -T 2C -Ddocker=true test -B
 
 after_test:
   - ps: |
