@@ -451,14 +451,20 @@
                     <!-- TODO(AR) version 5.0.0-M3 seems to be unreliable, see: https://github.com/jeremylong/DependencyCheck/issues/1918 -->
                     <version>5.0.0-M2</version>
                     <configuration>
+                        <archiveAnalyzerEnabled>false</archiveAnalyzerEnabled>
                         <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                         <autoconfAnalyzerEnabled>false</autoconfAnalyzerEnabled>
                         <cmakeAnalyzerEnabled>false</cmakeAnalyzerEnabled>
+                        <cocoapodsAnalyzerEnabled>false</cocoapodsAnalyzerEnabled>
+                        <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
+                        <nodeAuditAnalyzerEnabled>false</nodeAuditAnalyzerEnabled>
+                        <nexusAnalyzerEnabled>false</nexusAnalyzerEnabled>
                         <nuspecAnalyzerEnabled>false</nuspecAnalyzerEnabled>
                         <nugetconfAnalyzerEnabled>false</nugetconfAnalyzerEnabled>
                         <pyDistributionAnalyzerEnabled>false</pyDistributionAnalyzerEnabled>
                         <pyPackageAnalyzerEnabled>false</pyPackageAnalyzerEnabled>
                         <rubygemsAnalyzerEnabled>false</rubygemsAnalyzerEnabled>
+                        <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
                         <swiftPackageManagerAnalyzerEnabled>false</swiftPackageManagerAnalyzerEnabled>
                     </configuration>
                 </plugin>
