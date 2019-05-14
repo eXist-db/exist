@@ -60,7 +60,7 @@ public class ConcurrencyTest {
     private static final long TIMEOUT_TERMINATION = 1000 * 60 * 3; // 3 minutes (in milliseconds)
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static int CONCURRENT_THREADS = Runtime.getRuntime().availableProcessors() * 3;
 
