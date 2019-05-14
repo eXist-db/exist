@@ -101,8 +101,13 @@ public class MoveResourceTest {
             //wait for all tasks to complete
             final int n = tasks.size();
             for (int i = 0; i < n; i++) {
-                Boolean result = cs.poll(TIMEOUT, TimeUnit.MILLISECONDS).get();
-                assertNotNull(result);
+                final Future<Boolean> future = cs.poll(TIMEOUT, TimeUnit.MILLISECONDS);
+                if (future == null) {
+                    i--;
+                } else {
+                    final Boolean result = future.get();
+                    assertNotNull(result);
+                }
             }
         } finally {
             if (service != null) {
