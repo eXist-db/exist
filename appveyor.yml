@@ -11,10 +11,9 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
 
-# use -q to avoid 10k lines log limit
 build_script:
-  - cmd: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=false install -B -V -q
-  - sh: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=true install -B -V -q
+  - cmd: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=false install -B -V
+  - sh: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=true install -B -V
 
 test_script:
   - cmd: mvn -T 2C -Ddocker=false test -B

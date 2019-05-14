@@ -41,8 +41,7 @@ cache:
   directories:
   - $HOME/.m2
 
-# use -q to avoid 10k lines log limit
-install: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=$BUILD_DOCKER install -B -V -q
+install: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=$BUILD_DOCKER install -B -V
 
 script: mvn -T 2C -Ddocker=$BUILD_DOCKER test -B
 
