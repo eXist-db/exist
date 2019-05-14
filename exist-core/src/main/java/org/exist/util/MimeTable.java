@@ -72,7 +72,7 @@ public class MimeTable {
     private static final String MIME_TYPES_XML_DEFAULT = "org/exist/util/" + MIME_TYPES_XML;    
     
     private static MimeTable instance = null;
-    /** From where the mime table is loeaded for message purpose */
+    /** From where the mime table is loaded for message purpose */
     private String src;
     
     /**
