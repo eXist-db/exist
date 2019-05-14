@@ -36,17 +36,10 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.xml.sax.SAXException;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.XMLDBException;
 
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
@@ -63,43 +56,40 @@ import static org.junit.Assert.assertNotNull;
  */
 public class SystemExportFiltersTest {
 
-    public boolean direct = true;
-
-    private static String COLLECTION_CONFIG =
+    private static final String COLLECTION_CONFIG =
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
             "    <index>" +
             "    </index>" +
             "</collection>";
 
-    private static XmldbURI doc01uri = TEST_COLLECTION_URI.append("test1.xml");
-    private static XmldbURI doc02uri = TEST_COLLECTION_URI.append("test2.xml");
-    private static XmldbURI doc03uri = TEST_COLLECTION_URI.append("test3.xml");
-    private static XmldbURI doc11uri = TEST_COLLECTION_URI.append("test.binary");
+    private static final XmldbURI doc01uri = TEST_COLLECTION_URI.append("test1.xml");
+    private static final XmldbURI doc02uri = TEST_COLLECTION_URI.append("test2.xml");
+    private static final XmldbURI doc03uri = TEST_COLLECTION_URI.append("test3.xml");
+    private static final XmldbURI doc11uri = TEST_COLLECTION_URI.append("test.binary");
     
-    private static String XML1 = "<test attr=\"test\"/>";
-    private static String XML1_BACKUP = "<test attr=\"test\">test</test>";
-    private static String XML2 =
+    private static final String XML1 = "<test attr=\"test\"/>";
+    private static final String XML1_BACKUP = "<test attr=\"test\">test</test>";
+    private static final String XML2 =
         "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n" +
         "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n" +
         "<html xmlns=\"http://www.w3.org/1999/xhtml\"></html>";
-    private static String XML2_PROPER = 
+    private static final String XML2_PROPER =
         "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " +
         "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n" +
         "<html xmlns=\"http://www.w3.org/1999/xhtml\"/>";
 
 
-    private static String XML3 = "<!DOCTYPE html><html></html>";
-    private static String XML3_PROPER = "<!DOCTYPE html>\n<html/>";
+    private static final String XML3 = "<!DOCTYPE html><html></html>";
+    private static final String XML3_PROPER = "<!DOCTYPE html>\n<html/>";
 
-    private static String BINARY = "test";
+    private static final String BINARY = "test";
 
-    @Rule
-    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @Before
-    public void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
+    @BeforeClass
+    public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn txn = pool.getTransactionManager().beginTransaction()) {
@@ -117,20 +107,6 @@ public class SystemExportFiltersTest {
 
             txn.commit();
         }
-
-        rundb();
-    }
-
-    private void rundb() throws ClassNotFoundException, XMLDBException, IllegalAccessException, InstantiationException {
-        final Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        final Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-    }
-
-    @After
-    public void cleanup() throws PermissionDeniedException, IOException, TriggerException, EXistException, LockException {
-        TestUtils.cleanupDB();
     }
 
     @Test
@@ -147,6 +123,7 @@ public class SystemExportFiltersTest {
             final Collection test = broker.getCollection(TEST_COLLECTION_URI);
             assertNotNull(test);
 
+            boolean direct = true;
             final SystemExport sysexport = new SystemExport(broker, null, null, direct);
             file = sysexport.export("backup", false, false, null);
         }
@@ -193,7 +170,7 @@ public class SystemExportFiltersTest {
         return serializer.serialize(document);
     }
 
-    private Collection createCollection(Txn txn, DBBroker broker, XmldbURI uri) throws PermissionDeniedException, IOException, TriggerException {
+    private static Collection createCollection(Txn txn, DBBroker broker, XmldbURI uri) throws PermissionDeniedException, IOException, TriggerException {
         final Collection col = broker.getOrCreateCollection(txn, uri);
         assertNotNull(col);
         broker.saveCollection(txn, col);
@@ -201,7 +178,7 @@ public class SystemExportFiltersTest {
         return col;
     }
 
-    private DocumentImpl storeXMLDocument(Txn txn, DBBroker broker, Collection col, XmldbURI name, String data) throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
+    private static DocumentImpl storeXMLDocument(Txn txn, DBBroker broker, Collection col, XmldbURI name, String data) throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
         IndexInfo info = col.validateXMLResource(txn, broker, name, data);
         assertNotNull(info);
 

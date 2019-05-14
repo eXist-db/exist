@@ -23,21 +23,21 @@ package org.exist.xmldb.concurrent;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.TestUtils;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 public class DeadlockTest {
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final Logger LOG = LogManager.getLogger(DeadlockTest.class);
 
@@ -47,17 +47,14 @@ public class DeadlockTest {
             + "  <element3>value3</element3>\n"
             + "  <element4>value4</element4>\n" + "</document>\n";
 
-    private String rootCollection = XmldbURI.LOCAL_DB;
-    private Collection root;
-
     @Test
     public void deadlock() throws Exception {
-        int threads = 20;
-        int resources = 200;
+        final int threads = 20;
+        final int resources = 200;
 
-        Thread[] writerThreads = new Thread[threads];
+        final Thread[] writerThreads = new Thread[threads];
         for (int i = 0; i < threads; i++) {
-            writerThreads[i] = new WriterThread(rootCollection, resources);
+            writerThreads[i] = new WriterThread(resources);
             writerThreads[i].setName("T" + i);
             writerThreads[i].start();
         }
@@ -66,49 +63,24 @@ public class DeadlockTest {
         }
     }
 
-    @Before
-    public void setUp() throws ClassNotFoundException, XMLDBException, IllegalAccessException, InstantiationException {
-        String driver = "org.exist.xmldb.DatabaseImpl";
-        Class<?> cl = Class.forName(driver);
-        Database database = (Database) cl.newInstance();
-        assertNotNull(database);
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-        root = DatabaseManager.getCollection(rootCollection, "admin", "");
-        assertNotNull(root);
-    }
-
-    @After
-    public void tearDown() throws XMLDBException {
-        DatabaseInstanceManager manager =
-            (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-        assertNotNull(manager);
-        manager.shutdown();
-    }
-
     public static class WriterThread extends Thread {
-        protected Collection collection = null;
-
         protected int resources = 0;
 
-        public WriterThread(String collectionURI, int resources) throws Exception {
-            this.collection = DatabaseManager.getCollection(collectionURI);
+        public WriterThread(final int resources) {
             this.resources = resources;
         }
 
         @Override
         public void run() {
             try {
+                final Collection collection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
                 for (int i = 0; i < resources; i++) {
-                    XMLResource document = (XMLResource) collection
-                            .createResource(Thread.currentThread().getName()
-                                    + "_" + i, "XMLResource");
+                    final XMLResource document = (XMLResource) collection.createResource(Thread.currentThread().getName() + "_" + i, "XMLResource");
                     document.setContent(DOCUMENT_CONTENT);
-                    LOG.info("storing document " + document.getId()
-                            + "\n");
+                    LOG.debug("Storing document " + document.getId());
                     collection.storeResource(document);
                 }
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 LOG.error(e.getMessage(), e);
                 fail(e.getMessage());
             }

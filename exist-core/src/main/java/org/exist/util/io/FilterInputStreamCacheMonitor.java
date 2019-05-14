@@ -42,6 +42,15 @@ public class FilterInputStreamCacheMonitor {
         return INSTANCE;
     }
 
+    /**
+     * Intentionally package private!
+     * 
+     * Only for use by org.exist.util.io.FilterInputStreamCacheMonitorTest
+     */
+    void clear() {
+        activeCaches.clear();
+    }
+
     public void register(final FilterInputStreamCache cache) {
         final long now = System.currentTimeMillis();
         final FilterInputStreamCacheInfo info = new FilterInputStreamCacheInfo(now, cache);
@@ -56,6 +65,25 @@ public class FilterInputStreamCacheMonitor {
 
     public void deregister(final FilterInputStreamCache cache) {
         activeCaches.remove(cache);
+    }
+
+    public String dump() {
+        final StringBuilder builder = new StringBuilder();
+        for (final FilterInputStreamCacheInfo info : getActive()) {
+            final FilterInputStreamCache cache = info.getCache();
+            final String id;
+            if (cache instanceof FileFilterInputStreamCache) {
+                id = ((FileFilterInputStreamCache)cache).getFilePath().normalize().toAbsolutePath().toString();
+            } else if (cache instanceof MemoryMappedFileFilterInputStreamCache) {
+                id = ((MemoryMappedFileFilterInputStreamCache)cache).getFilePath().normalize().toAbsolutePath().toString();
+            } else if (cache instanceof MemoryFilterInputStreamCache) {
+                id = "mem";
+            } else {
+                id = "unknown";
+            }
+            builder.append(info.getRegistered() + ": " + id);
+        }
+        return builder.toString();
     }
 
     public static class FilterInputStreamCacheInfo {

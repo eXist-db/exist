@@ -1,29 +1,25 @@
 package org.exist.xquery.value;
 
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XmldbURI;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XPathQueryService;
+import org.xmldb.api.modules.XQueryService;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class MapTest {
 
-    private static Collection root;
-    private static XPathQueryService queryService;
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(true, true, true);
 
     @Test
-    public void effectiveBooleanValue() throws XMLDBException {
+    public void effectiveBooleanValue() {
         try {
+            final XQueryService queryService = (XQueryService) server.getRoot().getService("XQueryService", "1.0");
             queryService.query("fn:boolean(map{})");
         } catch(final XMLDBException e) {
            final Throwable cause = e.getCause();
@@ -34,23 +30,5 @@ public class MapTest {
            }
         }
         fail("effectiveBooleanValue of a map should cause the error FORG0006");
-    }
-
-    @BeforeClass
-    public static void setUp() throws ClassNotFoundException, XMLDBException, IllegalAccessException, InstantiationException {
-        final Database database = (Database) Class.forName("org.exist.xmldb.DatabaseImpl").newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-        root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-        queryService = (XPathQueryService) root.getService("XPathQueryService", "1.0");
-    }
-
-    @AfterClass
-    public static void tearDown() throws XMLDBException {
-        if (root != null) {
-            final DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-            root.close();
-            dim.shutdown();
-        }
     }
 }
