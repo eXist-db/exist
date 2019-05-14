@@ -5,6 +5,9 @@ dist: xenial
 services:
   - docker
 
+env:
+  - BUILD_DOCKER=true
+
 matrix:
   include:
     - jdk: openjdk8
@@ -14,23 +17,9 @@ matrix:
 
     - os: osx
       osx_image: xcode9.3
-      env: JAVA_HOME=$(/usr/libexec/java_home)
-      before_install:
-        - sudo chown root:wheel $(brew --prefix)/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
-        - sudo chmod u+s $(brew --prefix)/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
-        - docker-machine create default --driver xhyve
-        - eval $(docker-machine env default)
-
-
-addons:
-  homebrew:
-    packages:
-      - docker
-      - docker-compose
-      - docker-machine
-      - xhyve
-      - docker-machine-driver-xhyve
-
+      env:
+         - JAVA_HOME=$(/usr/libexec/java_home)
+         - BUILD_DOCKER=false
 
 # TODO: DP switch tag to 'release' when merging into develop, not before!
 deploy:
@@ -39,6 +28,7 @@ deploy:
   on:
     jdk: openjdk8
     branch: master
+    condition: $BUILD_DOCKER = true
   #  before_script: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   # see https://github.com/travis-ci/dpl/issues/673
   script: >-
@@ -52,9 +42,9 @@ cache:
   - $HOME/.m2
 
 # use -q to avoid 10k lines log limit
-install: mvn -T 1.5C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=true install -B -V -q
+install: mvn -T 1.5C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=$BUILD_DOCKER install -B -V -q
 
-script: mvn -T 1.5C -Ddocker=true test -B
+script: mvn -T 1.5C -Ddocker=$BUILD_DOCKER test -B
 
 after_failure:
    - tar -cjf surefire-reports.tar.bz2 exist-core/target/surefire-reports exist-core/target/test-logs
