@@ -804,8 +804,8 @@ public class NativeBroker extends DBBroker {
             final Optional<Tuple2<Permission, Long>> creationAttributes)
             throws ReadOnlyException, PermissionDeniedException, LockException {
 
-        final Collection collection = creationAttributes.map(attrs -> new MutableCollection(this, collectionUri, attrs._1, attrs._2)).orElseGet(() -> new MutableCollection(this, collectionUri));
-        collection.setId(getNextCollectionId(transaction));
+        final int collectionId = getNextCollectionId(transaction);
+        final Collection collection = creationAttributes.map(attrs -> new MutableCollection(this, collectionId, collectionUri, attrs._1, attrs._2)).orElseGet(() -> new MutableCollection(this, collectionId, collectionUri));
 
         //inherit the group to collection if parent-collection is setGid
         if(parentCollection != null) {
@@ -1810,11 +1810,6 @@ public class NativeBroker extends DBBroker {
         collectionsCache.put(collection);
 
         try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
-
-            if(collection.getId() == Collection.UNKNOWN_COLLECTION_ID) {
-                collection.setId(getNextCollectionId(transaction));
-            }
-
             final Value name = new CollectionStore.CollectionKey(collection.getURI().toString());
             try(final VariableByteOutputStream os = new VariableByteOutputStream(8)) {
                 collection.serialize(os);
@@ -1823,8 +1818,6 @@ public class NativeBroker extends DBBroker {
                     throw new IOException("Could not store collection data for '" + collection.getURI() + "', address=BFile.UNKNOWN_ADDRESS");
                 }
             }
-        } catch(final ReadOnlyException e) {
-            throw new IOException(DATABASE_IS_READ_ONLY, e);
         } catch(final LockException e) {
             throw new IOException(e);
         }
@@ -1841,12 +1834,15 @@ public class NativeBroker extends DBBroker {
         if(nextCollectionId != Collection.UNKNOWN_COLLECTION_ID) {
             return nextCollectionId;
         }
+
         try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
             final Value key = new CollectionStore.CollectionKey(CollectionStore.NEXT_COLLECTION_ID_KEY);
             final Value data = collectionsDb.get(key);
             if(data != null) {
                 nextCollectionId = ByteConversion.byteToInt(data.getData(), OFFSET_COLLECTION_ID);
                 ++nextCollectionId;
+            } else {
+                nextCollectionId = 1;
             }
             final byte[] d = new byte[Collection.LENGTH_COLLECTION_ID];
             ByteConversion.intToByte(nextCollectionId, d, OFFSET_COLLECTION_ID);

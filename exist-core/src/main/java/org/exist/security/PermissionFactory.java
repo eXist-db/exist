@@ -73,7 +73,11 @@ public class PermissionFactory {
     
     /**
      * Get the Default Collection permissions for the current Subject
-     * this includes incorporating their umask
+     * this includes incorporating their umask.
+     *
+     * @param sm the security manager.
+     *
+     * @return a new Permission object, that the caller is free to modify.
      */
     public static Permission getDefaultCollectionPermission(final SecurityManager sm) {
         
