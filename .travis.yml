@@ -52,9 +52,9 @@ cache:
   - $HOME/.m2
 
 # use -q to avoid 10k lines log limit
-install: mvn -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=true install -B -V -q
+install: mvn -T 1.5C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=true install -B -V -q
 
-script: mvn -Ddocker=true test -B
+script: mvn -T 1.5C -Ddocker=true test -B
 
 after_failure:
    - tar -cjf surefire-reports.tar.bz2 exist-core/target/surefire-reports exist-core/target/test-logs
