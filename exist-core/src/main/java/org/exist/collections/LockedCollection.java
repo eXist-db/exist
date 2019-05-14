@@ -96,11 +96,6 @@ public class LockedCollection implements Collection {
     }
 
     @Override
-    public void setId(final int id) {
-        collection.setId(id);
-    }
-
-    @Override
     public XmldbURI getURI() {
         return collection.getURI();
     }

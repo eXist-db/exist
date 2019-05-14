@@ -59,13 +59,6 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
     int getId();
 
     /**
-     * Set the internal id
-     *
-     * @param id The id of the Collection
-     */
-    @EnsureContainerLocked(mode=WRITE_LOCK) void setId(int id);
-
-    /**
      * Get the URI path of the Collection
      *
      * @return The URI path of the Collection

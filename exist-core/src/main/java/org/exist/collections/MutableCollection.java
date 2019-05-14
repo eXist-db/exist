@@ -44,7 +44,6 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
 import org.exist.security.Subject;
 import org.exist.storage.*;
-import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.*;
@@ -85,7 +84,7 @@ public class MutableCollection implements Collection {
     private static final int SHALLOW_SIZE = 550;
     private static final int DOCUMENT_SIZE = 450;
 
-    private int collectionId = UNKNOWN_COLLECTION_ID;
+    private final int collectionId;
     private XmldbURI path;
     private final LockManager lockManager;
 
@@ -97,7 +96,7 @@ public class MutableCollection implements Collection {
      * in this manner locks acquired when iterating are always acquired and released in the same order
      * which gives us deadlock avoidance for Document iteration.
      */
-    @GuardedBy("LockManager") private final LinkedHashMap<String, DocumentImpl> documents = new LinkedHashMap<>();
+    @GuardedBy("LockManager") private final LinkedHashMap<String, DocumentImpl> documents;
 
     /*
      * LinkedHashSet is used to ensure a consistent iteration order of sub-Collections.
@@ -107,9 +106,9 @@ public class MutableCollection implements Collection {
      * in this manner locks acquired when iterating are always acquired and released in the same order
      * which gives us deadlock avoidance for sub-Collection iteration.
      */
-    @GuardedBy("LockManager") private LinkedHashSet<XmldbURI> subCollections = new LinkedHashSet<>();
+    @GuardedBy("LockManager") private final LinkedHashSet<XmldbURI> subCollections;
 
-    private long created = 0;
+    private long created;
     private volatile boolean isTempCollection;
     private final Permission permissions;
     private final CollectionMetadata collectionMetadata;
@@ -119,26 +118,52 @@ public class MutableCollection implements Collection {
      * Constructs a Collection Object (not yet persisted)
      *
      * @param broker The database broker
+     * @param collectionId a unique numeric id for the collection
      * @param path The path of the Collection
      */
-    public MutableCollection(final DBBroker broker, final XmldbURI path) {
-        this(broker, path, null, -1);
+    public MutableCollection(final DBBroker broker, final int collectionId, final XmldbURI path) {
+        this(broker, collectionId, path, null, -1, null, null);
     }
 
     /**
      * Constructs a Collection Object (not yet persisted)
      *
      * @param broker The database broker
+     * @param collectionId a unique numeric id for the collection
      * @param path The path of the Collection
      * @param permissions The permissions of the collection, or null for the default
      * @param created The created time of the collection, or -1 for now
      */
-    public MutableCollection(final DBBroker broker, @EnsureLocked(mode=LockMode.READ_LOCK, type=LockType.COLLECTION) final XmldbURI path, @Nullable final Permission permissions, final long created) {
+    public MutableCollection(final DBBroker broker, final int collectionId,
+            @EnsureLocked(mode=LockMode.READ_LOCK, type=LockType.COLLECTION) final XmldbURI path,
+            @Nullable final Permission permissions, final long created) {
+        this(broker, collectionId, path, permissions, created, null, null);
+    }
+
+    /**
+     * Constructs a Collection Object (not yet persisted)
+     *
+     * @param broker The database broker
+     * @param collectionId a unique numeric id for the collection
+     * @param path The path of the Collection
+     * @param permissions The permissions of the collection, or null for the default
+     * @param created The created time of the collection, or -1 for now
+     * @param subCollections the sub-collections
+     * @param documents the documents in the collection
+     */
+    private MutableCollection(final DBBroker broker, final int collectionId,
+            @EnsureLocked(mode=LockMode.READ_LOCK, type=LockType.COLLECTION) final XmldbURI path,
+            @Nullable final Permission permissions, final long created,
+            @Nullable final LinkedHashSet<XmldbURI> subCollections,
+            @Nullable final LinkedHashMap<String, DocumentImpl> documents) {
         setPath(path);
+        this.collectionId = collectionId;
         this.permissions = permissions != null ? permissions : PermissionFactory.getDefaultCollectionPermission(broker.getBrokerPool().getSecurityManager());
         this.created = created > 0 ? created : System.currentTimeMillis();
         this.lockManager = broker.getBrokerPool().getLockManager();
         this.collectionMetadata = new CollectionMetadata(this);
+        this.subCollections = subCollections != null ? subCollections : new LinkedHashSet<>();
+        this.documents = documents != null ? documents : new LinkedHashMap<>();
     }
 
     /**
@@ -155,9 +180,7 @@ public class MutableCollection implements Collection {
     public static MutableCollection load(final DBBroker broker,
             @EnsureLocked(mode=LockMode.WRITE_LOCK, type=LockType.COLLECTION) final XmldbURI path,
             final VariableByteInput inputStream) throws PermissionDeniedException, IOException, LockException {
-        final MutableCollection collection = new MutableCollection(broker, path);
-        collection.deserialize(broker, inputStream);
-        return collection;
+        return deserialize(broker, path, inputStream);
     }
 
     @Override
@@ -837,7 +860,7 @@ public class MutableCollection implements Collection {
     /**
      * Serializes the Collection to a byte representation
      *
-     * Counterpart method to {@link #deserialize(DBBroker, VariableByteInput)}
+     * Counterpart method to {@link #deserialize(DBBroker, XmldbURI, VariableByteInput)}
      *
      * @param outputStream The output stream to write the collection contents to
      */
@@ -874,12 +897,13 @@ public class MutableCollection implements Collection {
      *
      * Counterpart method to {@link #serialize(VariableByteOutputStream)}
      *
-     * @param broker the database broker
-     * @param istream The input data
+     * @param broker The database broker
+     * @param path The path of the Collection
+     * @param istream The input stream to deserialize the Collection from
      */
-    private void deserialize(final DBBroker broker, final VariableByteInput istream)
+    private static MutableCollection deserialize(final DBBroker broker, final XmldbURI path, final VariableByteInput istream)
             throws IOException, PermissionDeniedException, LockException {
-        collectionId = istream.readInt();
+        final int collectionId = istream.readInt();
         if (collectionId < 0) {
             throw new IOException("Internal error reading collection: invalid collection id");
         }
@@ -888,25 +912,29 @@ public class MutableCollection implements Collection {
 
         //TODO(AR) should we WRITE_LOCK the Collection to stop it being loaded from disk concurrently? see NativeBroker#openCollection line 1030 - already has READ_LOCK ;-)
 //        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
-            subCollections = new LinkedHashSet<>(collLen == 0 ? 16 : collLen);
+            final LinkedHashSet<XmldbURI> subCollections = new LinkedHashSet<>(Math.max(16, collLen));
             for (int i = 0; i < collLen; i++) {
                 subCollections.add(XmldbURI.create(istream.readUTF()));
             }
 
-            permissions.read(istream);
+            final Permission permission = PermissionFactory.getDefaultCollectionPermission(broker.getBrokerPool().getSecurityManager());
+            permission.read(istream);
 
-            created = istream.readLong();
-
-            if (!permissions.validate(broker.getCurrentSubject(), Permission.EXECUTE)) {
+            if (!permission.validate(broker.getCurrentSubject(), Permission.EXECUTE)) {
                 throw new PermissionDeniedException("Permission denied to open the Collection " + path);
             }
 
-            final Collection col = this;
+            final long created = istream.readLong();
+
+            final LinkedHashMap<String, DocumentImpl> documents = new LinkedHashMap<>();
+
+            final MutableCollection collection =
+                new MutableCollection(broker, collectionId, path, permission, created,subCollections, documents);
 
             broker.getCollectionResources(new InternalAccess() {
                 @Override
                 public void addDocument(final DocumentImpl doc) throws EXistException {
-                    doc.setCollection(col);
+                    doc.setCollection(collection);
 
                     if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID) {
                         LOG.error("Document must have ID. [" + doc + "]");
@@ -918,9 +946,11 @@ public class MutableCollection implements Collection {
 
                 @Override
                 public int getId() {
-                    return col.getId();
+                    return collectionId;
                 }
             });
+
+            return collection;
 //        }
     }
 
@@ -1734,11 +1764,6 @@ public class MutableCollection implements Collection {
         } finally {
             broker.getBrokerPool().getProcessMonitor().endJob();
         }
-    }
-
-    @Override
-    public void setId(final int id) {
-        this.collectionId = id;
     }
 
     @Override
