@@ -3690,7 +3690,7 @@ public class RpcConnection implements RpcAPI {
     }
 
     static class BufferingRestoreListener implements RestoreListener {
-        @GuardedBy("queueLock") private final Deque<String> queue = new ArrayDeque<>();
+        @GuardedBy("queueLock") private final Queue<String> queue = new ArrayDeque<>();
         private final Lock queueLock = new ReentrantLock(true);
 
         @Override
@@ -3737,7 +3737,7 @@ public class RpcConnection implements RpcAPI {
             final String event = "" + restoreTaskEvent.getCode() + (value == null ? "" : value);
             queueLock.lock();
             try {
-                queue.push(event);
+                queue.add(event);
             } finally {
                 queueLock.unlock();
             }
@@ -3749,7 +3749,7 @@ public class RpcConnection implements RpcAPI {
                 boolean finished = false;
                 final List<String> events = new ArrayList<>(queue.size());
                 while (!queue.isEmpty()) {
-                    final String event = queue.pop();
+                    final String event = queue.remove();
                     if (!finished && event.charAt(0) == RestoreTaskEvent.FINISHED.getCode()) {
                         finished = true;
                     }
