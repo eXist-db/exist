@@ -19,7 +19,10 @@
  */
 package org.exist.backup;
 
+import org.apache.commons.codec.binary.Base64;
+import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.exist.TestUtils;
+import org.exist.security.MessageDigester;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.AbstractRestoreServiceTaskListener;
 import org.exist.xmldb.EXistRestoreService;
@@ -35,12 +38,14 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
@@ -81,16 +86,30 @@ public class XMLDBRestoreTest {
         final TestRestoreListener listener = new TestRestoreListener();
         final XmldbURI rootUri = XmldbURI.create(getBaseUri()).append(XmldbURI.ROOT_COLLECTION_URI);
 
-        restoreBackup(rootUri, contentsFile, listener);
+        restoreBackup(rootUri, contentsFile, null, listener);
 
         assertEquals(3, listener.restored.size());
         assertEquals(1, listener.warnings.size());
     }
 
-    private static void restoreBackup(final XmldbURI uri, final Path backup, final RestoreServiceTaskListener listener) throws XMLDBException {
+    @Test
+    public void restoreBackupWithDifferentAdminPassword() throws IOException, XMLDBException {
+        final String backupAdminPassword = UUID.randomUUID().toString();
+        final Path contentsFile = createBackupWithDifferentAdminPassword(backupAdminPassword);
+        final TestRestoreListener listener = new TestRestoreListener();
+        final XmldbURI rootUri = XmldbURI.create(getBaseUri()).append(XmldbURI.ROOT_COLLECTION_URI);
+
+        restoreBackup(rootUri, contentsFile, backupAdminPassword, listener);
+
+        assertEquals(3, listener.restored.size());
+        assertEquals(0, listener.warnings.size());
+        assertEquals(0, listener.errors.size());
+    }
+
+    private static void restoreBackup(final XmldbURI uri, final Path backup, @Nullable final String backupPassword, final RestoreServiceTaskListener listener) throws XMLDBException {
         final Collection collection = DatabaseManager.getCollection(uri.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final EXistRestoreService restoreService = (EXistRestoreService) collection.getService("RestoreService", "1.0");
-        restoreService.restore(backup.normalize().toAbsolutePath().toString(), null, listener);
+        restoreService.restore(backup.normalize().toAbsolutePath().toString(), backupPassword, listener);
     }
 
     private static Path createBackupWithInvalidContent() throws IOException {
@@ -121,6 +140,45 @@ public class XMLDBRestoreTest {
         Files.write(col1.resolve("doc3.xml"),  doc3.getBytes(UTF_8));
 
         return contentsFile;
+    }
+
+    private static Path createBackupWithDifferentAdminPassword(final String backupPassword) throws IOException {
+        final Path backupDir = tempFolder.newFolder().toPath();
+        final Path accountsCol = Files.createDirectories(backupDir.resolve("db").resolve("system").resolve("security").resolve("exist").resolve("accounts"));
+
+        final String contents =
+                "<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db/system/security/exist/accounts\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2019-05-15T19:51:06.258+04:00\" deduplicate-blobs=\"false\" version=\"2\">\n" +
+                        "    <acl entries=\"0\" version=\"1\"/>\n" +
+                        "    <resource type=\"XMLResource\" name=\"admin.xml\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2019-05-15T19:51:06.319+04:00\" modified=\"2019-05-15T20:49:40.153+04:00\" filename=\"admin.xml\" mimetype=\"application/xml\">\n" +
+                        "        <acl entries=\"0\" version=\"1\"/>\n" +
+                        "    </resource>\n" +
+                        "    <resource type=\"XMLResource\" name=\"guest.xml\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2019-05-15T19:51:06.512+04:00\" modified=\"2019-05-15T19:51:06.566+04:00\" filename=\"guest.xml\" mimetype=\"application/xml\">\n" +
+                        "        <acl entries=\"0\" version=\"1\"/>\n" +
+                        "    </resource>" +
+                        "</collection>";
+
+        // password for `admin`
+        final String backupPasswordHash = Base64.encodeBase64String(ripemd160(backupPassword));
+        final String backupPasswordDigest = MessageDigester.byteArrayToHex(ripemd160("admin:exist:" + backupPassword));
+
+        final String admin = "<account xmlns=\"http://exist-db.org/Configuration\" id=\"1048574\"><password>{RIPEMD160}" + backupPasswordHash + "</password><digestPassword>" + backupPasswordDigest + "</digestPassword><group name=\"dba\"/><expired>false</expired><enabled>true</enabled><umask>022</umask><metadata key=\"http://exist-db.org/security/description\">System Administrator</metadata><metadata key=\"http://axschema.org/namePerson\">admin</metadata><name>admin</name></account>";
+        final String guest = "<account xmlns=\"http://exist-db.org/Configuration\" id=\"1048573\"><password>{RIPEMD160}q2VXP75jMi+d8E5VAsEr6pD8V5w=</password><group name=\"guest\"/><expired>false</expired><enabled>true</enabled><umask>022</umask><metadata key=\"http://exist-db.org/security/description\">Anonymous User</metadata><metadata key=\"http://axschema.org/namePerson\">guest</metadata><name>guest</name></account>";
+
+        final Path contentsFile = Files.write(accountsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), contents.getBytes(UTF_8));
+        Files.write(accountsCol.resolve("admin.xml"), admin.getBytes(UTF_8));
+        Files.write(accountsCol.resolve("guest.xml"), guest.getBytes(UTF_8));
+
+        return contentsFile;
+    }
+
+    private static byte[] ripemd160(final String s) {
+        final RIPEMD160Digest digester = new RIPEMD160Digest();
+        final byte[] data = s.getBytes();
+        digester.update(data, 0, data.length);
+
+        final byte[] digest = new byte[digester.getDigestSize()];
+        digester.doFinal(digest, 0);
+        return digest;
     }
 
     private static class TestRestoreListener extends AbstractRestoreServiceTaskListener {
