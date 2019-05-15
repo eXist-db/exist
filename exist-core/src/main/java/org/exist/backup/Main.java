@@ -234,10 +234,17 @@ public class Main {
                 final String uri = properties.getProperty(URI_PROP, DEFAULT_URI);
 
                 try {
-                    if (guiMode) {
-                        restoreWithGui(username, optionPass, optionDbaPass, path, uri);
+                    final XmldbURI dbUri;
+                    if(!uri.endsWith(XmldbURI.ROOT_COLLECTION)) {
+                        dbUri = XmldbURI.xmldbUriFor(uri + XmldbURI.ROOT_COLLECTION);
                     } else {
-                        restoreWithoutGui(username, optionPass, optionDbaPass, path, uri, rebuildRepo, quiet);
+                        dbUri = XmldbURI.xmldbUriFor(uri);
+                    }
+
+                    if (guiMode) {
+                        restoreWithGui(username, optionPass, optionDbaPass, path, dbUri);
+                    } else {
+                        restoreWithoutGui(username, optionPass, optionDbaPass, path, dbUri, rebuildRepo, quiet);
                     }
                 } catch (final Exception e) {
                     reportError(e);
@@ -260,11 +267,11 @@ public class Main {
     }
 
     private static void restoreWithoutGui(final String username, final String password,
-            final Optional<String> dbaPassword, final Path f, final String uri, final boolean rebuildRepo,
+            final Optional<String> dbaPassword, final Path f, final XmldbURI uri, final boolean rebuildRepo,
             final boolean quiet) {
         final AggregatingConsoleRestoreServiceTaskListener listener = new AggregatingConsoleRestoreServiceTaskListener(quiet);
         try {
-            final Collection collection = DatabaseManager.getCollection(uri, username, password);
+            final Collection collection = DatabaseManager.getCollection(uri.toString(), username, password);
             final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
             service.restore(f.toAbsolutePath().toString(), dbaPassword.orElse(null), listener);
 
@@ -280,11 +287,7 @@ public class Main {
             System.out.println("Rebuilding application repository ...");
             System.out.println("URI: " + uri);
             try {
-                String rootURI = uri;
-                if (!(rootURI.contains(XmldbURI.ROOT_COLLECTION) || rootURI.endsWith(XmldbURI.ROOT_COLLECTION))) {
-                    rootURI += XmldbURI.ROOT_COLLECTION;
-                }
-                final Collection root = DatabaseManager.getCollection(rootURI, username, dbaPassword.orElse(password));
+                final Collection root = DatabaseManager.getCollection(uri.toString(), username, dbaPassword.orElse(password));
                 if (root != null) {
                     ClientFrame.repairRepository(root);
                     System.out.println("Application repository rebuilt successfully.");
@@ -351,14 +354,14 @@ public class Main {
         }
     }
 
-    private static void restoreWithGui(final String username, final String password, final Optional<String> dbaPassword, final Path f, final String uri) {
+    private static void restoreWithGui(final String username, final String password, final Optional<String> dbaPassword, final Path f, final XmldbURI uri) {
 
         final GuiRestoreServiceTaskListener listener = new GuiRestoreServiceTaskListener();
 
         final Callable<Void> callable = () -> {
 
             try {
-                final Collection collection = DatabaseManager.getCollection(uri, username, password);
+                final Collection collection = DatabaseManager.getCollection(uri.toString(), username, password);
                 final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
                 service.restore(f.toAbsolutePath().toString(), dbaPassword.orElse(null), listener);
 
@@ -368,11 +371,7 @@ public class Main {
                         JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                     System.out.println("Rebuilding application repository ...");
                     try {
-                        String rootURI = uri;
-                        if (!(rootURI.contains(XmldbURI.ROOT_COLLECTION) || rootURI.endsWith(XmldbURI.ROOT_COLLECTION))) {
-                            rootURI += XmldbURI.ROOT_COLLECTION;
-                        }
-                        final Collection root = DatabaseManager.getCollection(rootURI, username, dbaPassword.orElse(password));
+                        final Collection root = DatabaseManager.getCollection(uri.toString(), username, dbaPassword.orElse(password));
                         ClientFrame.repairRepository(root);
                         System.out.println("Application repository rebuilt successfully.");
                     } catch (final XMLDBException e) {
