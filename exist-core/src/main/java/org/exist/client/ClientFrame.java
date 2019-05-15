@@ -1095,7 +1095,14 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         final Runnable restoreTask = () -> {
 
             try {
-                final Collection collection = DatabaseManager.getCollection(uri, username, password);
+                final XmldbURI dbUri;
+                if(!uri.endsWith(XmldbURI.ROOT_COLLECTION)) {
+                    dbUri = XmldbURI.xmldbUriFor(uri + XmldbURI.ROOT_COLLECTION);
+                } else {
+                    dbUri = XmldbURI.xmldbUriFor(uri);
+                }
+
+                final Collection collection = DatabaseManager.getCollection(dbUri.toString(), username, password);
                 final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
                 service.restore(f.toAbsolutePath().toString(), dbaPassword, listener);
 
