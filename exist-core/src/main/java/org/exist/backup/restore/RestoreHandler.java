@@ -317,35 +317,54 @@ public class RestoreHandler extends DefaultHandler {
 
         final XmldbURI docUri = currentCollectionUri.append(docName);
         try {
-            try (final Txn transaction = beginTransaction();
-                    final Collection collection = broker.openCollection(currentCollectionUri, Lock.LockMode.WRITE_LOCK);
-                    final ManagedDocumentLock docLock = broker.getBrokerPool().getLockManager().acquireDocumentWriteLock(docUri)) {
+            try (final Txn transaction = beginTransaction()) {
 
-                if (xmlType) {
-                    final IndexInfo info = collection.validateXMLResource(transaction, broker, docName, is);
-                    info.getDocument().getMetadata().setMimeType(mimeType);
-                    if (dateCreated != null) {
-                        info.getDocument().getMetadata().setCreated(dateCreated.getTime());
-                    }
-                    if (dateModified != null) {
-                        info.getDocument().getMetadata().setLastModified(dateModified.getTime());
-                    }
-                    if (publicId != null || systemId != null) {
-                        final DocumentType docType = new DocumentTypeImpl(nameDocType, publicId, systemId);
-                        info.getDocument().getMetadata().setDocType(docType);
-                    }
-                    collection.store(transaction, broker, info, is);
+                boolean validated = false;
+                try {
+                    try (final Collection collection = broker.openCollection(currentCollectionUri, Lock.LockMode.WRITE_LOCK);
+                         final ManagedDocumentLock docLock = broker.getBrokerPool().getLockManager().acquireDocumentWriteLock(docUri)) {
 
-                } else {
-                    try (final InputStream stream = is.getByteStream()) {
-                        collection.addBinaryResource(transaction, broker, docName, stream, mimeType, -1, dateCreated, dateModified);
+                        if (xmlType) {
+                            final IndexInfo info = collection.validateXMLResource(transaction, broker, docName, is);
+                            validated = true;
+
+                            info.getDocument().getMetadata().setMimeType(mimeType);
+                            if (dateCreated != null) {
+                                info.getDocument().getMetadata().setCreated(dateCreated.getTime());
+                            }
+                            if (dateModified != null) {
+                                info.getDocument().getMetadata().setLastModified(dateModified.getTime());
+                            }
+                            if (publicId != null || systemId != null) {
+                                final DocumentType docType = new DocumentTypeImpl(nameDocType, publicId, systemId);
+                                info.getDocument().getMetadata().setDocType(docType);
+                            }
+                            collection.store(transaction, broker, info, is);
+
+                        } else {
+                            try (final InputStream stream = is.getByteStream()) {
+                                collection.addBinaryResource(transaction, broker, docName, stream, mimeType, -1, dateCreated, dateModified);
+                            }
+                        }
+
+                        transaction.commit();
+
+                        // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                        collection.close();
+                    }
+                } finally {
+                    /*
+                        This allows us to commit the transaction (so the restore doesn't stop)
+                        and still throw an exception to skip over resources that didn't
+                        validate. This preserves eXist-db's previous behaviour
+                        of "best effort attempt" when restoring a backup,
+                        rather than an ACID "all or nothing" approach.
+                     */
+                    if (!validated) {
+                        // because `validated == false` we know that there have only been reads on the transaction/sub-transaction!
+                        transaction.commit();
                     }
                 }
-
-                transaction.commit();
-
-                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
-                collection.close();
             }
 
             final DeferredPermission deferredPermission;
