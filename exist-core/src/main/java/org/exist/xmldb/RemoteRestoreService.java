@@ -22,6 +22,7 @@ package org.exist.xmldb;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.exist.util.FileUtils;
 import org.exist.xmlrpc.RpcAPI;
 import org.xmldb.api.base.Collection;
@@ -99,6 +100,21 @@ public class RemoteRestoreService implements EXistRestoreService {
             restoreTaskHandle = (String)client.execute("restore", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Unable to begin restore: " + e.getMessage());
+        }
+
+        // has the admin password changed?
+        final XmlRpcClientConfigImpl config = (XmlRpcClientConfigImpl) client.getClientConfig();
+        final String currentPassword = config.getBasicPassword();
+        if (newAdminPassword != null && !currentPassword.equals(newAdminPassword)) {
+            config.setBasicPassword(newAdminPassword);
+        }
+        try {
+            Thread.sleep(3000);
+        } catch (final InterruptedException e) {
+            // restore interrupt status
+            Thread.currentThread().interrupt();
+
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e);
         }
 
         // now we need to poll for results...
