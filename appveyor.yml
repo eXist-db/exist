@@ -37,6 +37,6 @@ artifacts:
     name: test-logs
 
 cache:
-  - C:\Users\appveyor\.m2
-  - /home/appveyor/.m2
+  - '%USERPROFILE%\.m2'
+  - '$HOME/.m2'
 
