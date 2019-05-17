@@ -614,21 +614,6 @@ public class MutableCollection implements Collection {
     }
 
     @Override
-    public int getMemorySize() {
-        try {
-            getLock().acquire(LockMode.READ_LOCK);
-            try {
-                return SHALLOW_SIZE + documents.size() * DOCUMENT_SIZE;
-            } finally {
-                getLock().release(LockMode.READ_LOCK);
-            }
-        } catch(final LockException e) {
-            LOG.error(e);
-            return -1;
-        }
-    }
-
-    @Override
     public int getMemorySizeNoLock() {
         return SHALLOW_SIZE + (documents.size() * DOCUMENT_SIZE);
     }
