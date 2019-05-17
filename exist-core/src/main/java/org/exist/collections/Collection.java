@@ -244,7 +244,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      *
      * @return estimated amount of memory in bytes
      */
-    int getMemorySize();
+    int getMemorySizeNoLock();
 
     /**
      * Get the parent Collection.
