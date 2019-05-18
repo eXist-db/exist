@@ -14,7 +14,6 @@ import org.exist.storage.lock.*;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
-import org.exist.util.SyntaxException;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -28,7 +27,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.exist.storage.lock.Lock.LockMode.READ_LOCK;
 import static org.exist.storage.lock.Lock.LockMode.WRITE_LOCK;
@@ -59,27 +57,6 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @return The id of the Collection
      */
     int getId();
-
-    /**
-     * Set the internal id
-     *
-     * @param id The id of the Collection
-     */
-    @EnsureContainerLocked(mode=WRITE_LOCK) void setId(int id);
-
-    /**
-     * Set the internal storage address of the Collection data
-     *
-     * @param address The internal storage address
-     */
-    @EnsureContainerLocked(mode=WRITE_LOCK) void setAddress(long address);
-
-    /**
-     * Gets the internal storage address of the Collection data
-     *
-     * @return The internal storage address
-     */
-    long getAddress();
 
     /**
      * Get the URI path of the Collection
@@ -184,23 +161,9 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
     boolean isTempCollection();
 
     /**
-     * Are Triggers enabled for this Collection
-     *
-     * @return true of Triggers are enabled
-     */
-    boolean isTriggersEnabled();
-
-    /**
-     * Enables/Disables Triggers for this collection
-     *
-     * @param enabled true if Triggers should be enabled for this Collection
-     */
-    void setTriggersEnabled(final boolean enabled);
-
-    /**
      * Returns the estimated amount of memory used by this collection
      * and its documents. This information is required by the
-     * {@link org.exist.storage.CollectionCacheManager} to be able
+     * {@link org.exist.collections.CollectionCache} to be able
      * to resize the caches.
      *
      * @return estimated amount of memory in bytes
@@ -210,7 +173,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
     /**
      * Returns the estimated amount of memory used by this collection
      * and its documents. This information is required by the
-     * {@link org.exist.storage.CollectionCacheManager} to be able
+     * {@link org.exist.collections.CollectionCache} to be able
      * to resize the caches.
      *
      * @return estimated amount of memory in bytes
@@ -224,13 +187,6 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * or null if this is the root Collection (i.e. /db).
      */
     XmldbURI getParentURI();
-
-    /**
-     * Set user-defined Reader
-     *
-     * @param reader The XML reader
-     */
-    void setReader(XMLReader reader);
 
     /**
      * Determines if this Collection has any documents, or child Collections
@@ -603,6 +559,23 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
     IndexInfo validateXMLResource(Txn transaction, DBBroker broker, XmldbURI name, InputSource source)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException;
 
+
+    /**
+     * Validates an XML document and prepares it for further storage.
+     * Launches prepare and postValidate triggers.
+     * Since the process is dependent from the collection configuration,
+     * the collection acquires a write lock during the process.
+     *
+     * @param transaction The database transaction
+     * @param broker      The database broker
+     * @param name        the name (without path) of the document
+     * @param source      The source of the document to store
+     * @param reader      The XML reader to use for reading the {@code source}
+     * @return An {@link IndexInfo} with a write lock on the document
+     */
+    IndexInfo validateXMLResource(Txn transaction, DBBroker broker, XmldbURI name, InputSource source, XMLReader reader)
+            throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException;
+
     /**
      * Validates an XML document and prepares it for further storage.
      * Launches prepare and postValidate triggers.
@@ -645,6 +618,21 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param source      The source of the document to store
      */
     void store(Txn transaction, DBBroker broker, IndexInfo info, InputSource source)
+            throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException;
+
+    /**
+     * Stores an XML document into the Collection
+     * <p>
+     * {@link #validateXMLResource(Txn, DBBroker, XmldbURI, InputSource, XMLReader)} should have been called previously
+     * in order to acquire a write lock for the document. Launches the finish trigger.
+     *
+     * @param transaction The database transaction
+     * @param broker      The database broker
+     * @param info        Tracks information between validate and store phases
+     * @param source      The source of the document to store
+     * @param reader      The XML reader to use for reading the {@code source}
+     */
+    void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source, final XMLReader reader)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException;
 
     /**

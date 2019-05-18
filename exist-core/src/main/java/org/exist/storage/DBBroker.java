@@ -130,6 +130,8 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     private final PreserveType preserveOnCopy;
 
+    private boolean triggersEnabled = true;
+
     public DBBroker(final BrokerPool pool, final Configuration config) {
         this.config = config;
         final Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
@@ -1097,6 +1099,15 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 //            return transactee.apply(existing);
 //        }
 //    }
+
+
+    public boolean isTriggersEnabled() {
+        return triggersEnabled;
+    }
+
+    public void setTriggersEnabled(final boolean triggersEnabled) {
+        this.triggersEnabled = triggersEnabled;
+    }
 
     /**
      * Represents a {@link Subject} change

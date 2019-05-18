@@ -25,7 +25,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.xmldb.XmldbURI;
+import org.exist.security.SecurityManager;
+import org.exist.security.Subject;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -39,6 +43,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 import java.nio.file.Paths;
+import java.util.Optional;
 
 import org.exist.backup.restore.listener.AbstractRestoreListener;
 import org.exist.backup.restore.listener.RestoreListener;
@@ -80,11 +85,19 @@ public class Restore extends BasicFunction {
         final MemTreeBuilder builder = context.getDocumentBuilder();
         builder.startDocument();
         builder.startElement(RESTORE_ELEMENT, null);
-        
+
+        final BrokerPool pool = context.getBroker().getBrokerPool();
         try {
-            final org.exist.backup.Restore restore = new org.exist.backup.Restore();
-            final RestoreListener listener = new XMLRestoreListener(builder);
-            restore.restore(listener, org.exist.security.SecurityManager.DBA_USER, adminPass, adminPassAfter, Paths.get(dirOrFile), XmldbURI.EMBEDDED_SERVER_URI.toString());
+            final Subject admin = pool.getSecurityManager().authenticate(SecurityManager.DBA_USER, adminPass);
+            try (final DBBroker broker = pool.get(Optional.of(admin));
+                    final Txn transaction = broker.continueOrBeginTransaction()) {
+
+                final RestoreListener listener = new XMLRestoreListener(builder);
+                final org.exist.backup.Restore restore = new org.exist.backup.Restore();
+                restore.restore(broker, transaction, adminPassAfter, Paths.get(dirOrFile), listener);
+
+                transaction.commit();
+            }
         } catch (final Exception e) {
             throw new XPathException(this, "restore failed with exception: " + e.getMessage(), e);
         }
@@ -97,26 +110,26 @@ public class Restore extends BasicFunction {
     private static class XMLRestoreListener extends AbstractRestoreListener {
 
         public final static QName COLLECTION_ELEMENT = new QName("collection", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
-	public final static QName RESOURCE_ELEMENT = new QName("resource", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+        public final static QName RESOURCE_ELEMENT = new QName("resource", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
         public final static QName INFO_ELEMENT = new QName("info", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
-	public final static QName WARN_ELEMENT = new QName("warn", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+        public final static QName WARN_ELEMENT = new QName("warn", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
         public final static QName ERROR_ELEMENT = new QName("error", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
 	
         private final MemTreeBuilder builder;
 
-        private XMLRestoreListener(MemTreeBuilder builder) {
+        private XMLRestoreListener(final MemTreeBuilder builder) {
             this.builder = builder;
         }
 
         @Override
-        public void createCollection(String collection) {
+        public void createdCollection(final String collection) {
             builder.startElement(COLLECTION_ELEMENT, null);
             builder.characters(collection);
             builder.endElement();
         }
 
         @Override
-        public void restored(String resource) {
+        public void restoredResource(final String resource) {
             builder.startElement(RESOURCE_ELEMENT, null);
             builder.characters(resource);
             builder.endElement();
@@ -130,18 +143,14 @@ public class Restore extends BasicFunction {
         }
 
         @Override
-        public void warn(String message) {
-            super.warn(message);
-            
+        public void warn(final String message) {
             builder.startElement(WARN_ELEMENT, null);
             builder.characters(message);
             builder.endElement();
         }
 
         @Override
-        public void error(String message) {
-            super.error(message);
-            
+        public void error(final String message) {
             builder.startElement(ERROR_ELEMENT, null);
             builder.characters(message);
             builder.endElement();

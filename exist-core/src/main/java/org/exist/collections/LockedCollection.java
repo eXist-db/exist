@@ -96,21 +96,6 @@ public class LockedCollection implements Collection {
     }
 
     @Override
-    public void setId(final int id) {
-        collection.setId(id);
-    }
-
-    @Override
-    public void setAddress(final long address) {
-        collection.setAddress(address);
-    }
-
-    @Override
-    public long getAddress() {
-        return collection.getAddress();
-    }
-
-    @Override
     public XmldbURI getURI() {
         return collection.getURI();
     }
@@ -177,16 +162,6 @@ public class LockedCollection implements Collection {
     }
 
     @Override
-    public boolean isTriggersEnabled() {
-        return collection.isTriggersEnabled();
-    }
-
-    @Override
-    public void setTriggersEnabled(final boolean enabled) {
-        collection.setTriggersEnabled(enabled);
-    }
-
-    @Override
     public int getMemorySize() {
         return collection.getMemorySize();
     }
@@ -199,11 +174,6 @@ public class LockedCollection implements Collection {
     @Override
     public XmldbURI getParentURI() {
         return collection.getParentURI();
-    }
-
-    @Override
-    public void setReader(final XMLReader reader) {
-        collection.setReader(reader);
     }
 
     @Override
@@ -389,6 +359,11 @@ public class LockedCollection implements Collection {
     }
 
     @Override
+    public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputSource source, final XMLReader reader) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
+        return collection.validateXMLResource(transaction, broker, name, source, reader);
+    }
+
+    @Override
     public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final String data) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         return collection.validateXMLResource(transaction, broker, name, data);
     }
@@ -401,6 +376,11 @@ public class LockedCollection implements Collection {
     @Override
     public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         collection.store(transaction, broker, info, source);
+    }
+
+    @Override
+    public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source, final XMLReader reader) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
+        collection.store(transaction, broker, info, source, reader);
     }
 
     @Override

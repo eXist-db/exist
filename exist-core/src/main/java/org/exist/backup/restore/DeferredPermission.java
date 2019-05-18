@@ -23,6 +23,9 @@ package org.exist.backup.restore;
 
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
+import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
+import org.exist.xmldb.XmldbURI;
 
 /**
  *
@@ -30,7 +33,9 @@ import org.exist.security.ACLPermission.ACE_TARGET;
  */
 public interface DeferredPermission {
     
-    void apply();
-    
+    void apply(final DBBroker broker, final Txn transaction);
+
+    XmldbURI getTarget();
+
     void addACE(int index, ACE_TARGET target, String who, ACE_ACCESS_TYPE access_type, int mode);
 }

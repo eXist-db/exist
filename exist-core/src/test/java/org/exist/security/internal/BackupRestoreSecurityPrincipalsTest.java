@@ -22,14 +22,14 @@ package org.exist.security.internal;
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.backup.Backup;
-import org.exist.backup.Restore;
-import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.BrokerPool;
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.xmldb.EXistRestoreService;
+import org.exist.xmldb.NullRestoreServiceTaskListener;
 import org.exist.xmldb.UserManagementService;
 import org.junit.*;
 import org.w3c.dom.Node;
@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Observable;
 
 import static org.junit.Assert.assertEquals;
 
@@ -146,8 +145,8 @@ public class BackupRestoreSecurityPrincipalsTest {
         jackTest.storeResource(jackDoc);
 
         //restore the database backup
-        final Restore restore = new Restore();
-        restore.restore(new NullRestoreListener(), "admin", "", null, backupFile, "xmldb:exist:///db");
+        final EXistRestoreService service = (EXistRestoreService)server.getRoot().getService("RestoreService", "1.0");
+        service.restore(backupFile.normalize().toAbsolutePath().toString(), null, new NullRestoreServiceTaskListener());
 
 
         //check the current user accounts after the restore
@@ -230,72 +229,5 @@ public class BackupRestoreSecurityPrincipalsTest {
     private Account getUser(final String username) throws XMLDBException {
         final UserManagementService ums = (UserManagementService) server.getRoot().getService("UserManagementService", "1.0");
         return ums.getAccount(username);
-    }
-
-    private static class NullRestoreListener implements RestoreListener {
-
-        @Override
-        public void createCollection(final String collection) {
-        }
-
-        @Override
-        public void restored(final String resource) {
-        }
-
-        @Override
-        public void info(final String message) {
-        }
-
-        @Override
-        public void warn(final String message) {
-        }
-
-        @Override
-        public void error(final String message) {
-        }
-
-        @Override
-        public String warningsAndErrorsAsString() {
-            return null;
-        }
-
-        @Override
-        public boolean hasProblems() {
-            return false;
-        }
-
-        @Override
-        public void setCurrentCollection(final String currentCollectionName) {
-        }
-
-        @Override
-        public void setCurrentResource(final String currentResourceName) {
-        }
-
-        @Override
-        public void restoreStarting() {
-        }
-
-        @Override
-        public void restoreFinished() {
-        }
-
-        @Override
-        public void observe(final Observable observable) {
-        }
-
-        @Override
-        public void setCurrentBackup(final String currentBackup) {
-        }
-
-        @Override
-        public void setNumberOfFiles(long nr) {
-
-        }
-
-        @Override
-        public void incrementFileCounter() {
-
-        }
     }
 }

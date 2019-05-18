@@ -23,8 +23,6 @@ package org.exist.backup.restore;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.security.PermissionFactory;
-import org.exist.storage.lock.*;
 import org.exist.Namespaces;
 import org.exist.backup.BackupDescriptor;
 import org.exist.backup.restore.listener.RestoreListener;
@@ -34,15 +32,11 @@ import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentMetadata;
 import org.exist.dom.persistent.DocumentTypeImpl;
-import org.exist.security.ACLPermission;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
-import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
-import org.exist.security.internal.aider.ACEAider;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock.LockMode;
-import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.EXistInputSource;
 import org.exist.util.ExistSAXParserFactory;
@@ -58,13 +52,18 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
+import javax.annotation.Nullable;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+// TODO(AR) consider merging with org.exist.backup.restore.RestoreHandler
+
 /**
- * Handler for parsing __contents.xml__ files during
+ * Handler for parsing __contents__.xml files during
  * restoration of a db backup
  *
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -81,30 +80,49 @@ public class SystemImportHandler extends DefaultHandler {
     private static final int STRICT_URI_VERSION = 1;
     
     private final DBBroker broker;
+    @Nullable private final Txn transaction;
     
     private final org.exist.backup.RestoreHandler rh;
     
     private final RestoreListener listener;
-    private final String dbBaseUri;
     private final BackupDescriptor descriptor;
     
     //handler state
     private int version = 0;
     private Collection currentCollection;
     private final Deque<DeferredPermission> deferredPermissions = new ArrayDeque<>();
-    
-    public SystemImportHandler(final DBBroker broker, final RestoreListener listener, final String dbBaseUri, final BackupDescriptor descriptor) {
+
+    /**
+     * @param broker the database broker
+     * @param transaction the transaction to use for the entire restore,
+     *                    or null if restoring each collection/resource
+     *                    should occur in its own transaction
+     * @param descriptor the backup descriptor to start restoring from
+     * @param listener the listener to report restore events to
+     */
+    public SystemImportHandler(final DBBroker broker, @Nullable final Txn transaction, final BackupDescriptor descriptor, final RestoreListener listener) {
         this.broker = broker;
+        this.transaction = transaction;
         this.listener = listener;
-        this.dbBaseUri = dbBaseUri;
         this.descriptor = descriptor;
         
         rh = broker.getDatabase().getPluginsManager().getRestoreHandler();
     }
 
+    /**
+     * Either reuses the provided transaction
+     * in a safe manner or starts a new transaction.
+     */
+    private Txn beginTransaction() {
+        if (transaction == null) {
+            return broker.continueOrBeginTransaction();
+        }
+        return new Txn.ReusableTxn(transaction);
+    }
+
     @Override
     public void startDocument() throws SAXException {
-        listener.setCurrentBackup(descriptor.getSymbolicPath());
+        listener.processingDescriptor(descriptor.getSymbolicPath());
         rh.startDocument();
     }
     
@@ -144,13 +162,10 @@ public class SystemImportHandler extends DefaultHandler {
     
     @Override
     public void endElement(final String namespaceURI, final String localName, final String qName) throws SAXException {
-
         if(namespaceURI.equals(Namespaces.EXIST_NS) && ("collection".equals(localName) || "resource".equals(localName))) {
             setDeferredPermissions();
         }
-        
         rh.endElement(namespaceURI, localName, qName);
-
         super.endElement(namespaceURI, localName, qName);
     }
     
@@ -181,7 +196,7 @@ public class SystemImportHandler extends DefaultHandler {
         }
         
         try {
-            listener.createCollection(name);
+            listener.createdCollection(name);
             final XmldbURI collUri;
 
             if(version >= STRICT_URI_VERSION) {
@@ -195,22 +210,19 @@ public class SystemImportHandler extends DefaultHandler {
                 }
             }
 
-        	final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
-        	try(final Txn txn = txnManager.beginTransaction()) {
-        		currentCollection = broker.getOrCreateCollection(txn, collUri);
+        	try(final Txn transaction = beginTransaction()) {
+        		currentCollection = broker.getOrCreateCollection(transaction, collUri);
         		
         		rh.startCollectionRestore(currentCollection, atts);
         		
-                broker.saveCollection(txn, currentCollection);
+                broker.saveCollection(transaction, currentCollection);
 
-        		txnManager.commit(txn);
+                transaction.commit();
         	} catch (final Exception e) {
         		throw new SAXException(e);
     		}
 
             currentCollection = mkcol(collUri, getDateFromXSDateTimeStringForItem(created, name));
-
-            listener.setCurrentCollection(name);
             
             if(currentCollection == null) {
                 throw new SAXException("Collection not found: " + collUri);
@@ -219,9 +231,9 @@ public class SystemImportHandler extends DefaultHandler {
             final DeferredPermission deferredPermission;
             if(name.startsWith(XmldbURI.SYSTEM_COLLECTION)) {
                 //prevents restore of a backup from changing System collection ownership
-                deferredPermission = new CollectionDeferredPermission(listener, currentCollection, SecurityManager.SYSTEM, SecurityManager.DBA_GROUP, Integer.parseInt(mode, 8));
+                deferredPermission = new CollectionDeferredPermission(listener, currentCollection.getURI(), SecurityManager.SYSTEM, SecurityManager.DBA_GROUP, Integer.parseInt(mode, 8));
             } else {
-                deferredPermission = new CollectionDeferredPermission(listener, currentCollection, owner, group, Integer.parseInt(mode, 8));
+                deferredPermission = new CollectionDeferredPermission(listener, currentCollection.getURI(), owner, group, Integer.parseInt(mode, 8));
             }
 
             rh.endCollectionRestore(currentCollection);
@@ -259,9 +271,9 @@ public class SystemImportHandler extends DefaultHandler {
                 reader = parserPool.borrowXMLReader();
 
                 final EXistInputSource is = subDescriptor.getInputSource();
-                is.setEncoding( "UTF-8" );
+                is.setEncoding(UTF_8.displayName());
 
-                final SystemImportHandler handler = new SystemImportHandler(broker, listener, dbBaseUri, subDescriptor);
+                final SystemImportHandler handler = new SystemImportHandler(broker, transaction, subDescriptor, listener);
 
                 reader.setContentHandler(handler);
                 reader.parse(is);
@@ -361,20 +373,13 @@ public class SystemImportHandler extends DefaultHandler {
                 listener.warn(msg);
                 throw new RuntimeException(msg);
             }
-            
-            listener.setCurrentResource(name);
-            if(currentCollection != null) {
-                listener.observe(currentCollection.getObservable());
-            }
-
-			final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
 	
 			DocumentImpl resource = null;
-            try(final Txn txn = txnManager.beginTransaction()) {
+            try(final Txn transaction = beginTransaction()) {
 				if ("XMLResource".equals(type)) {
 					// store as xml resource
 					
-					final IndexInfo info = currentCollection.validateXMLResource(txn, broker, docUri, is);
+					final IndexInfo info = currentCollection.validateXMLResource(transaction, broker, docUri, is);
 					
 					resource = info.getDocument();
 					final DocumentMetadata meta = resource.getMetadata();
@@ -389,30 +394,30 @@ public class SystemImportHandler extends DefaultHandler {
 
 					rh.startDocumentRestore(resource, atts);
 
-					currentCollection.store(txn, broker, info, is);
+					currentCollection.store(transaction, broker, info, is);
 	
 				} else {
 					// store as binary resource
-					resource = currentCollection.validateBinaryResource(txn, broker, docUri);
+					resource = currentCollection.validateBinaryResource(transaction, broker, docUri);
 					
 					rh.startDocumentRestore(resource, atts);
 
-					resource = currentCollection.addBinaryResource(txn, broker, (BinaryDocument)resource, is.getByteStream(), mimetype, is.getByteStreamLength() , date_created, date_modified);
+					resource = currentCollection.addBinaryResource(transaction, broker, (BinaryDocument)resource, is.getByteStream(), mimetype, is.getByteStreamLength() , date_created, date_modified);
 				}
 
-				txnManager.commit(txn);
+                transaction.commit();
 
                 final DeferredPermission deferredPermission;
                 if(name.startsWith(XmldbURI.SYSTEM_COLLECTION)) {
                     //prevents restore of a backup from changing system collection resource ownership
-                    deferredPermission = new ResourceDeferredPermission(listener, resource, SecurityManager.SYSTEM, SecurityManager.DBA_GROUP, Integer.parseInt(perms, 8));
+                    deferredPermission = new ResourceDeferredPermission(listener, resource.getURI(), SecurityManager.SYSTEM, SecurityManager.DBA_GROUP, Integer.parseInt(perms, 8));
                 } else {
-                    deferredPermission = new ResourceDeferredPermission(listener, resource, owner, group, Integer.parseInt(perms, 8));
+                    deferredPermission = new ResourceDeferredPermission(listener, resource.getURI(), owner, group, Integer.parseInt(perms, 8));
                 }
                 
                 rh.endDocumentRestore(resource);
 
-                listener.restored(name);
+                listener.restoredResource(name);
                 
                 return deferredPermission;
 			} catch (final Exception e) {
@@ -439,10 +444,9 @@ public class SystemImportHandler extends DefaultHandler {
 		        final Collection col = broker.getCollection(currentCollection.getURI().append(name));
 		        if(col != null) {
 		        	//delete
-		        	final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
-		        	try(final Txn txn = txnManager.beginTransaction()) {
-		                broker.removeCollection(txn, col);
-		        		txnManager.commit(txn);
+		        	try(final Txn transaction = beginTransaction()) {
+		                broker.removeCollection(transaction, col);
+                        transaction.commit();
 		        	} catch (final Exception e) {
 		                listener.warn("Failed to remove deleted collection: " + name + ": " + e.getMessage());
                     }
@@ -458,14 +462,13 @@ public class SystemImportHandler extends DefaultHandler {
 	        	final DocumentImpl doc = currentCollection.getDocument(broker, uri);
 	        	
 	        	if (doc != null) {
-	        		final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
-		            try(final Txn txn = txnManager.beginTransaction()) {
+		            try(final Txn transaction = beginTransaction()) {
 		            	if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-		                	currentCollection.removeBinaryResource(txn, broker, uri);
+		                	currentCollection.removeBinaryResource(transaction, broker, uri);
 		            	} else {
-		            		currentCollection.removeXMLResource(txn, broker, uri);
+		            		currentCollection.removeXMLResource(transaction, broker, uri);
 		            	}
-		            	txnManager.commit(txn);
+                        transaction.commit();
 	
 		            } catch(final Exception e) {
 		                listener.warn("Failed to remove deleted resource: " + name + ": " + e.getMessage());
@@ -488,9 +491,16 @@ public class SystemImportHandler extends DefaultHandler {
     }
 
     private void setDeferredPermissions() {
-        
         final DeferredPermission deferredPermission = deferredPermissions.pop();
-        deferredPermission.apply();
+        try (final Txn transaction = beginTransaction()) {
+            deferredPermission.apply(broker, transaction);
+
+            transaction.commit();
+        } catch (final TransactionException e) {
+            final String msg = "ERROR: Failed to set permissions on: '" + deferredPermission.getTarget() + "'.";
+            LOG.error(msg, e);
+            listener.warn(msg);
+        }
     }
     
     private Date getDateFromXSDateTimeStringForItem(final String strXSDateTime, final String itemName) {
@@ -515,68 +525,14 @@ public class SystemImportHandler extends DefaultHandler {
     }
     
     private Collection mkcol(final XmldbURI collPath, final Date created) throws SAXException {
-        
-    	final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
-    	try(final Txn txn = txnManager.beginTransaction()) {
-    		final Collection col = broker.getOrCreateCollection(txn, collPath);
-    		
-    		txnManager.commit(txn);
+    	try(final Txn transaction = beginTransaction()) {
+    		final Collection col = broker.getOrCreateCollection(transaction, collPath);
+
+            transaction.commit();
     		
     		return col;
     	} catch (final Exception e) {
     		throw new SAXException(e);
 		}
-    }
-    
-    class CollectionDeferredPermission extends AbstractDeferredPermission<Collection> {
-        
-        public CollectionDeferredPermission(final RestoreListener listener, final Collection collection, final String owner, final String group, final Integer mode) {
-            super(listener, collection, owner, group, mode);
-        }
-
-        @Override
-        public void apply() {
-            final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
-            final LockManager lockManager = broker.getBrokerPool().getLockManager();
-
-            try(final ManagedCollectionLock targetLock = lockManager.acquireCollectionWriteLock(getTarget().getURI());
-                final Txn txn = txnManager.beginTransaction()) {
-                final Permission permission = getTarget().getPermissions();
-                PermissionFactory.chown(broker, permission, Optional.ofNullable(getOwner()), Optional.ofNullable(getGroup()));
-                PermissionFactory.chmod(broker, permission, Optional.of(getMode()), Optional.ofNullable(permission instanceof ACLPermission ? getAces() : null));
-                broker.saveCollection(txn, getTarget());
-
-                txnManager.commit(txn);
-            } catch (final Exception xe) {
-                final String msg = "ERROR: Failed to set permissions on Collection '" + getTarget().getURI() + "'.";
-                LOG.error(msg, xe);
-                getListener().warn(msg);
-            }
-        }
-    }
-
-    class ResourceDeferredPermission extends AbstractDeferredPermission<DocumentImpl> {
-
-        public ResourceDeferredPermission(final RestoreListener listener, final DocumentImpl resource, final String owner, final String group, final Integer mode) {
-            super(listener, resource, owner, group, mode);
-        }
-
-        @Override
-        public void apply() {
-            final LockManager lockManager = broker.getBrokerPool().getLockManager();
-            final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
-            try(final ManagedDocumentLock targetLock = lockManager.acquireDocumentWriteLock(getTarget().getURI());
-                final Txn txn = txnManager.beginTransaction()) {
-                final Permission permission = getTarget().getPermissions();
-                PermissionFactory.chown(broker, permission, Optional.ofNullable(getOwner()), Optional.ofNullable(getGroup()));
-                PermissionFactory.chmod(broker, permission, Optional.of(getMode()), Optional.ofNullable(permission instanceof ACLPermission ? getAces() : null));
-                broker.storeXMLResource(txn, getTarget());
-                txnManager.commit(txn);
-            } catch (final Exception xe) {
-                final String msg = "ERROR: Failed to set permissions on Document '" + getTarget().getURI() + "'.";
-                LOG.error(msg, xe);
-                getListener().warn(msg);
-			}
-        }
     }
 }

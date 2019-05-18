@@ -969,5 +969,37 @@ public interface RpcAPI {
 
     Map<String, Object> getSubResourcePermissions(String parentPath, String name) throws EXistException, PermissionDeniedException, URISyntaxException;
 
-    boolean setTriggersEnabled(String path, String value) throws EXistException, PermissionDeniedException;
+    String restore(String newAdminPassword, String localFile) throws EXistException;
+
+    List<String> getRestoreTaskEvents(String restoreTaskHandle) throws EXistException;
+
+    enum RestoreTaskEvent {
+        STARTED('1'),
+        PROCESSING_DESCRIPTOR('2'),
+        CREATED_COLLECTION('3'),
+        RESTORED_RESOURCE('4'),
+        INFO('5'),
+        WARN('6'),
+        ERROR('7'),
+        FINISHED('8');
+
+        private final char code;
+
+        RestoreTaskEvent(final char code) {
+            this.code = code;
+        }
+
+        public char getCode() {
+            return code;
+        }
+
+        public static RestoreTaskEvent fromCode(final char code) {
+            for (final RestoreTaskEvent restoreTaskEvent : RestoreTaskEvent.values()) {
+                if (restoreTaskEvent.code == code) {
+                    return restoreTaskEvent;
+                }
+            }
+            throw new IllegalArgumentException("Unknown RestoreTaskEvent code: '" + code + "'");
+        }
+    }
 }

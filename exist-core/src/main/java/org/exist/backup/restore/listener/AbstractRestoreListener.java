@@ -21,135 +21,33 @@
  */
 package org.exist.backup.restore.listener;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Observable;
-
 /**
  * @author Adam Retter <adam@exist-db.org>
  */
 public abstract class AbstractRestoreListener implements RestoreListener {
 
-    private final List<Problem> problems = new ArrayList<>();
-    private String currentCollectionName;
-    private String currentResourceName;
-    private List<Observable> observables;
-
     @Override
-    public void restoreStarting() {
+    public void started(final long numberOfFiles) {
         info("Starting restore of backup...");
     }
 
     @Override
-    public void restoreFinished() {
-        info("Finished restore of backup.");
-    }
-
-    @Override
-    public void createCollection(final String collection) {
-        info("Creating collection " + collection);
-    }
-
-    @Override
-    public void setCurrentBackup(final String currentBackup) {
+    public void processingDescriptor(final String currentBackup) {
         info("Processing backup: " + currentBackup);
     }
 
     @Override
-    public void setCurrentCollection(final String currentCollectionName) {
-        this.currentCollectionName = currentCollectionName;
+    public void createdCollection(final String collection) {
+        info("Creating collection " + collection);
     }
 
     @Override
-    public void setCurrentResource(final String currentResourceName) {
-        this.currentResourceName = currentResourceName;
-    }
-
-    @Override
-    public void observe(final Observable observable) {
-
-        if (observables == null) {
-            observables = new ArrayList<>();
-        }
-
-        if (!observables.contains(observable)) {
-            observables.add(observable);
-        }
-    }
-
-    @Override
-    public void restored(final String resource) {
+    public void restoredResource(final String resource) {
         info("Restored " + resource);
     }
 
     @Override
-    public void warn(final String message) {
-        problems.add(new Warning(message));
-    }
-
-    @Override
-    public void error(final String message) {
-        problems.add(new Error(message));
-    }
-
-    @Override
-    public boolean hasProblems() {
-        return !problems.isEmpty();
-    }
-
-    @Override
-    public String warningsAndErrorsAsString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("------------------------------------\n");
-        builder.append("Problems occured found during restore:\n");
-        for (final Problem problem : problems) {
-            builder.append(problem.toString());
-            builder.append(System.getProperty("line.separator"));
-        }
-        return builder.toString();
-    }
-
-    @Override
-    public void setNumberOfFiles(long nr){
-        // NOP
-    }
-
-    @Override
-    public void incrementFileCounter(){
-        // NOP
-    }
-
-    private abstract class Problem {
-        private final String message;
-
-        public Problem(final String message) {
-            this.message = message;
-        }
-
-        protected String getMessage() {
-            return message;
-        }
-    }
-
-    private class Error extends Problem {
-        public Error(final String message) {
-            super(message);
-        }
-
-        @Override
-        public String toString() {
-            return "ERROR: " + getMessage();
-        }
-    }
-
-    private class Warning extends Problem {
-        public Warning(final String message) {
-            super(message);
-        }
-
-        @Override
-        public String toString() {
-            return "WARN: " + getMessage();
-        }
+    public void finished() {
+        info("Finished restore of backup.");
     }
 }

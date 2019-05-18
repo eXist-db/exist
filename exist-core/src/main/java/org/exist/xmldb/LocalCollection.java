@@ -20,6 +20,7 @@
 package org.exist.xmldb;
 
 import java.io.InputStream;
+import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.util.*;
 import javax.xml.transform.OutputKeys;
@@ -91,7 +92,6 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
     private final Random random = new Random();
     private Properties properties = new Properties(defaultProperties);
     private boolean needsSync = false;
-    private XMLReader userReader = null;
 
     /**
      * Create a collection with no parent (root collection).
@@ -406,6 +406,10 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
                 service = new LocalIndexQueryService(user, brokerPool, this);
                 break;
 
+            case "RestoreService":
+                service = new LocalRestoreService(user, brokerPool, this);
+                break;
+
             default:
                 throw new XMLDBException(ErrorCodes.NO_SUCH_SERVICE);
         }
@@ -624,15 +628,30 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
 //          }
 
             try(final ManagedDocumentLock documentLock = broker.getBrokerPool().getLockManager().acquireDocumentWriteLock(collection.getURI().append(resURI))) {
+                XMLReader reader = null;
+
+                /* validate */
                 final IndexInfo info;
-                if (uri != null || res.inputSource != null) {
-                    setupParser(broker, transaction, collection, res);
-                    info = collection.validateXMLResource(transaction, broker, resURI, (uri != null) ? new InputSource(uri) : res.inputSource);
-                } else if (res.root != null) {
+                if (res.root != null) {
                     info = collection.validateXMLResource(transaction, broker, resURI, res.root);
                 } else {
-                    info = collection.validateXMLResource(transaction, broker, resURI, res.content);
+                    final InputSource source;
+                    if (uri != null) {
+                        source = new InputSource(uri);
+                    } else if (res.inputSource != null) {
+                        source = res.inputSource;
+                    } else {
+                        source = new InputSource(new StringReader(res.content));
+                    }
+
+                    if (useHtmlReader(broker, transaction, res)) {
+                        reader = getHtmlReader();
+                        info = collection.validateXMLResource(transaction, broker, resURI, source, reader);
+                    } else {
+                        info = collection.validateXMLResource(transaction, broker, resURI, source);
+                    }
                 }
+
                 //Notice : the document should now have a LockMode.WRITE_LOCK update lock
                 //TODO : check that no exception occurs in order to allow it to be released
                 info.getDocument().getMetadata().setMimeType(res.getMimeType(broker, transaction));
@@ -643,12 +662,25 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
                     info.getDocument().getMetadata().setLastModified(res.datemodified.getTime());
                 }
 
-                if (uri != null || res.inputSource != null) {
-                    collection.store(transaction, broker, info, (uri != null) ? new InputSource(uri) : res.inputSource);
-                } else if (res.root != null) {
+
+                /* store */
+                if (res.root != null) {
                     collection.store(transaction, broker, info, res.root);
                 } else {
-                    collection.store(transaction, broker, info, res.content);
+                    final InputSource source;
+                    if (uri != null) {
+                        source = new InputSource(uri);
+                    } else if (res.inputSource != null) {
+                        source = res.inputSource;
+                    } else {
+                        source = new InputSource(new StringReader(res.content));
+                    }
+
+                    if (reader != null) {
+                        collection.store(transaction, broker, info, source, reader);
+                    } else {
+                        collection.store(transaction, broker, info, source);
+                    }
                 }
 
                 // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
@@ -667,31 +699,47 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
         });
     }
 
-    private void setupParser(final DBBroker broker, final Txn transaction, final Collection collection, final LocalXMLResource res) throws XMLDBException {
+    /**
+     * Determines if a HTML reader should be used for the resource.
+     *
+     * @param broker the database broker
+     * @param transaction the current transaction
+     * @param res the html resource
+     *
+     * @return true if a HTML reader should be used.
+     */
+    private boolean useHtmlReader(final DBBroker broker, final Txn transaction, final LocalXMLResource res) throws XMLDBException {
         final String normalize = properties.getProperty(NORMALIZE_HTML, "no");
-        if((normalize.equalsIgnoreCase("yes") || normalize.equalsIgnoreCase("true")) &&
+        return ((normalize.equalsIgnoreCase("yes") || normalize.equalsIgnoreCase("true")) &&
                 ("text/html".equals(res.getMimeType(broker, transaction)) || res.getId().endsWith(".htm") ||
-                    res.getId().endsWith(".html"))) {
+                        res.getId().endsWith(".html")));
+    }
 
-          final Optional<Either<Throwable, XMLReader>> maybeReaderInst = HtmlToXmlParser.getHtmlToXmlParser(brokerPool.getConfiguration());
-
-            if(maybeReaderInst.isPresent()) {
-                final Either<Throwable, XMLReader> readerInst = maybeReaderInst.get();
-                if (readerInst.isLeft()) {
-                    final String msg = "Unable to parse HTML to XML please ensure the parser is configured in conf.xml and is present on the classpath";
-                    final Throwable t = readerInst.left().get();
-                    LOG.error(msg, t);
-                    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, msg, t);
-                } else {
-                    final XMLReader htmlReader = readerInst.right().get();
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug("Converting HTML to XML using: " + htmlReader.getClass().getName());
-                    }
-                    collection.setReader(htmlReader);
-                }
+    /**
+     * Get's the HTML Reader
+     *
+     * @return the HTML reader configured in conf.xml
+     *
+     * @throws XMLDBException if the HTML reader cannot be retrieved.
+     */
+    private XMLReader getHtmlReader() throws XMLDBException {
+        final Optional<Either<Throwable, XMLReader>> maybeReaderInst = HtmlToXmlParser.getHtmlToXmlParser(brokerPool.getConfiguration());
+        if (maybeReaderInst.isPresent()) {
+            final Either<Throwable, XMLReader> readerInst = maybeReaderInst.get();
+            if (readerInst.isLeft()) {
+                final String msg = "Unable to parse HTML to XML please ensure the parser is configured in conf.xml and is present on the classpath";
+                final Throwable t = readerInst.left().get();
+                LOG.error(msg, t);
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, msg, t);
             } else {
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "There is no HTML to XML parser configured in conf.xml");
+                final XMLReader htmlReader = readerInst.right().get();
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Converting HTML to XML using: " + htmlReader.getClass().getName());
+                }
+                return htmlReader;
             }
+        } else {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "There is no HTML to XML parser configured in conf.xml");
         }
     }
 
@@ -724,22 +772,6 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
         }
     }
 
-    @Override
-    public void setTriggersEnabled(final boolean triggersEnabled) throws XMLDBException {
-        modify().apply((collection, broker, transaction) -> {
-            collection.setTriggersEnabled(triggersEnabled);
-            return null;
-        });
-    }
-
-    /**
-     * Set a user defined reader
-     * @param reader
-     */
-    public void setReader(final XMLReader reader){
-        userReader = reader;
-    }
-
     /**
      * Higher-order-function for performing read-only operations against this collection
      *
@@ -748,10 +780,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      * @return A function to receive a read-only operation to perform against the collection
      */
     protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read() throws XMLDBException {
-        return readOp -> this.<R>read(path).apply((collection, broker, transaction) -> {
-            collection.setReader(userReader);
-            return readOp.apply(collection, broker, transaction);
-        });
+        return readOp -> this.<R>read(path).apply((collection, broker, transaction) -> readOp.apply(collection, broker, transaction));
     }
 
     /**
@@ -765,10 +794,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      * @throws XMLDBException if the collection could not be read
      */
     private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final int errorCode) throws XMLDBException {
-        return readOp -> this.<R>read(path, errorCode).apply((collection, broker, transaction) -> {
-            collection.setReader(userReader);
-            return readOp.apply(collection, broker, transaction);
-        });
+        return readOp -> this.<R>read(path, errorCode).apply((collection, broker, transaction) -> readOp.apply(collection, broker, transaction));
     }
 
     /**
@@ -781,10 +807,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      * @return A function to receive a read-only operation to perform against the collection
      */
     private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final DBBroker broker, final Txn transaction) throws XMLDBException {
-        return readOp -> this.<R>read(broker, transaction, path).apply((collection, broker1, transaction1) -> {
-            collection.setReader(userReader);
-            return readOp.apply(collection, broker1, transaction1);
-        });
+        return readOp -> this.<R>read(broker, transaction, path).apply((collection, broker1, transaction1) -> readOp.apply(collection, broker1, transaction1));
     }
 
     /**
@@ -800,10 +823,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      * @throws XMLDBException if the collection could not be read
      */
     private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final DBBroker broker, final Txn transaction, final int errorCode) throws XMLDBException {
-        return readOp -> this.<R>read(broker, transaction, path, errorCode).apply((collection, broker1, transaction1) -> {
-            collection.setReader(userReader);
-            return readOp.apply(collection, broker1, transaction1);
-        });
+        return readOp -> this.<R>read(broker, transaction, path, errorCode).apply((collection, broker1, transaction1) -> readOp.apply(collection, broker1, transaction1));
     }
 
     /**
@@ -814,10 +834,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      * @return A function to receive a read/write operation to perform against the collection
      */
     private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> modify() throws XMLDBException {
-        return modifyOp -> this.<R>modify(path).apply((collection, broker, transaction) -> {
-            collection.setReader(userReader);
-            return modifyOp.apply(collection, broker, transaction);
-        });
+        return modifyOp -> this.<R>modify(path).apply((collection, broker, transaction) -> modifyOp.apply(collection, broker, transaction));
     }
 
     /**
@@ -830,10 +847,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      * @return A function to receive a read/write operation to perform against the collection
      */
     private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> modify(final DBBroker broker, final Txn transaction) throws XMLDBException {
-        return modifyOp -> this.<R>modify(broker, transaction, path).apply((collection, broker1, transaction1) -> {
-            collection.setReader(userReader);
-            return modifyOp.apply(collection, broker1, transaction1);
-        });
+        return modifyOp -> this.<R>modify(broker, transaction, path).apply((collection, broker1, transaction1) -> modifyOp.apply(collection, broker1, transaction1));
     }
 
     /**
@@ -845,9 +859,6 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      * @return A function to receive an operation to perform on the locked database collection
      */
     protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> with(final LockMode lockMode, final DBBroker broker, final Txn transaction) throws XMLDBException {
-        return op -> this.<R>with(lockMode, broker, transaction, path).apply((collection, broker1, transaction1) -> {
-            collection.setReader(userReader);
-            return op.apply(collection, broker1, transaction1);
-        });
+        return op -> this.<R>with(lockMode, broker, transaction, path).apply((collection, broker1, transaction1) -> op.apply(collection, broker1, transaction1));
     }
 }

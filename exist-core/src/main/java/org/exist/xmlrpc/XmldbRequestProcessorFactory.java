@@ -19,6 +19,9 @@
  */
 package org.exist.xmlrpc;
 
+import com.evolvedbinary.j8fu.lazy.AtomicLazyVal;
+import com.evolvedbinary.j8fu.lazy.LazyVal;
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
@@ -30,6 +33,14 @@ import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
+import org.exist.util.NamedThreadFactory;
+
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Factory creates a new handler for each XMLRPC request. For eXist, the handler is implemented
@@ -45,6 +56,9 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
     private final BrokerPool brokerPool;
     protected final QueryResultCache resultSets = new QueryResultCache();
 
+    protected final AtomicLazyVal<ExecutorService> restoreExecutorService;
+    protected final Map<UUID, Tuple2<RpcConnection.BufferingRestoreListener, Future<Void>>> restoreTasks = new ConcurrentHashMap<>();
+
     /**
      * id of the database registered against the BrokerPool
      */
@@ -56,6 +70,7 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
             this.databaseId = databaseId;
         }
         this.brokerPool = BrokerPool.getInstance(this.databaseId);
+        this.restoreExecutorService = new AtomicLazyVal<>(() -> Executors.newCachedThreadPool(new NamedThreadFactory(brokerPool, "rpc-db-restore")));
     }
 
     @Override
