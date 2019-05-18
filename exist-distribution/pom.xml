@@ -798,6 +798,30 @@
                                         <platform>booter-windows</platform>
                                     </platforms>
                                 </daemon>
+                                <daemon>
+                                    <id>export</id>
+                                    <mainClass>org.exist.start.Main</mainClass>
+                                    <commandLineArguments>
+                                        <commandLineArgument>org.exist.backup.ExportMain</commandLineArgument>
+                                        <commandLineArgument>-x</commandLineArgument>
+                                        <commandLineArgument>-z</commandLineArgument>
+                                    </commandLineArguments>
+                                    <platforms>
+                                        <platform>booter-unix</platform>
+                                        <platform>booter-windows</platform>
+                                    </platforms>
+                                </daemon>
+                                <daemon>
+                                    <id>export-gui</id>
+                                    <mainClass>org.exist.start.Main</mainClass>
+                                    <commandLineArguments>
+                                        <commandLineArgument>org.exist.backup.ExportGUI</commandLineArgument>
+                                    </commandLineArguments>
+                                    <platforms>
+                                        <platform>booter-unix</platform>
+                                        <platform>booter-windows</platform>
+                                    </platforms>
+                                </daemon>
                             </daemons>
                         </configuration>
 
