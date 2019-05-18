@@ -822,6 +822,17 @@
                                         <platform>booter-windows</platform>
                                     </platforms>
                                 </daemon>
+                                <daemon>
+                                    <id>jmxclient</id>
+                                    <mainClass>org.exist.start.Main</mainClass>
+                                    <commandLineArguments>
+                                        <commandLineArgument>org.exist.management.client.JMXClient</commandLineArgument>
+                                    </commandLineArguments>
+                                    <platforms>
+                                        <platform>booter-unix</platform>
+                                        <platform>booter-windows</platform>
+                                    </platforms>
+                                </daemon>
                             </daemons>
                         </configuration>
 
